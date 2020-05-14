@@ -1,0 +1,37 @@
+
+buildscript {
+    repositories {
+        mavenLocal()
+        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot"}
+        maven {url "https://jenkins.cs.ox.ac.uk/artifactory/plugins-release"}
+        jcenter()
+
+    }
+    dependencies {
+        classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+    }
+}
+
+plugins {
+    id 'groovy'
+    id 'io.spring.dependency-management'
+}
+
+apply plugin: 'ox.softeng.ox-brc-standard'
+apply plugin: 'ox.softeng.ox-brc-artifactory'
+
+repositories {
+    mavenLocal()
+    maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot'}
+    maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/libs-release'}
+
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.grails:grails-bom:$grailsVersion")
+    }
+    applyMavenExclusions false
+}
+
+apply from: 'dependencies.gradle'

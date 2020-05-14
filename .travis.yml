@@ -2,6 +2,13 @@ language: groovy
 jdk:
     - openjdk12
 
+jobs:
+    include:
+        -   stage: "Compile"
+            script: ./gradlew :mdm-common:assemble
+        -   stage: "Unit Tests"
+            script: ./gradlew :mdm-common:test
+
 before_cache:
     - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
     - rm -fr $HOME/.gradle/caches/*/plugin-resolution/

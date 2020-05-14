@@ -1,0 +1,32 @@
+dependencies {
+
+    api platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
+
+    implementation group: 'org.codehaus.groovy', name: 'groovy'
+
+    // Logging
+    api group: 'org.slf4j', name: 'slf4j-api'
+    implementation group: 'ch.qos.logback', name: 'logback-classic'
+
+    implementation group: 'org.grails', name: 'grails-core', version: grailsVersion
+    implementation group: 'org.grails', name: 'grails-datastore-gorm'
+    implementation group: 'org.grails', name: 'grails-plugin-validation'
+
+    api group: 'com.bertramlabs.plugins', name: 'asset-pipeline-core', version: assetPipelineVersion
+
+    api group: 'io.micronaut', name: 'micronaut-http'
+
+    //mathpere/grails-hibernate-search-plugin
+    implementation "org.grails.plugins:hibernate-search:$hibernateSearchVersion", {
+        exclude group: 'org.hibernate', module: 'hibernate-ehcache'
+    }
+    implementation "org.hibernate:hibernate-core"
+    api group: 'org.hibernate', name: 'hibernate-search-orm', version: hibernateSearchOrmVersion
+    api 'org.apache.lucene:lucene-analyzers-common'
+
+    constraints{
+        api("org.apache.lucene:lucene-analyzers-common:$luceneVersion"){
+            because 'hibernate-search-orm requires the older version, it has not been updated beyong'
+        }
+    }
+}
