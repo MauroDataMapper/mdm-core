@@ -1,6 +1,11 @@
 # mdm-core
 Core API for Mauro Data Mapper
 
+| Branch | Version | Status |
+| ------ | ------- | ------------ |
+| master | 4.0.0-SNAPSHOT | [![Build Status](https://travis-ci.com/MauroDataMapper/mdm-core.svg?token=LJTgeDtbKGx14XtwJGoQ&branch=master)](https://travis-ci.com/MauroDataMapper/mdm-core) |
+| develop | 4.0.0-SNAPSHOT | [![Build Status](https://travis-ci.com/MauroDataMapper/mdm-core.svg?token=LJTgeDtbKGx14XtwJGoQ&branch=develop)](https://travis-ci.com/MauroDataMapper/mdm-core) |
+
 ## Requirements
 
 * Grails 4.0.3 +
