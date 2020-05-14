@@ -1,0 +1,84 @@
+import java.lang.management.ManagementFactory
+import java.lang.management.RuntimeMXBean
+import java.util.concurrent.TimeUnit
+
+buildscript {
+    repositories {
+        mavenLocal()
+        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot'}
+        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release'}
+        jcenter()
+
+    }
+    dependencies {
+        classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+    }
+    configurations.all {
+        // check for updates every build
+        resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
+    }
+}
+
+apply plugin: 'ox.softeng.ox-brc-base'
+
+task unitTest() {
+    group 'testing'
+    description = 'Catch task for unit test'
+}
+
+task integrationTest() {
+    group 'testing'
+    description = 'Catch task for integration test'
+    mustRunAfter unitTest
+}
+
+task jacocoRootReport() {
+    group 'reporting'
+    description = 'Catch task for all jacoco root report'
+    mustRunAfter unitTest, integrationTest
+}
+
+task staticCodeAnalysis() {
+    group 'reporting'
+    description = 'Catch task for all SCA tasks'
+    mustRunAfter unitTest, integrationTest, jacocoRootReport
+}
+
+check {
+    dependsOn unitTest, integrationTest, jacocoRootReport, staticCodeAnalysis
+}
+
+task('sysProps') {
+    group 'help'
+    doLast {
+        logger.quiet('{}', System.properties.collect {"${it.key}:${it.value}"}.sort().join('\n'))
+    }
+}
+
+task('jvmArgs') {
+    group 'help'
+    doLast {
+        RuntimeMXBean runtimeMxBean2 = ManagementFactory.getRuntimeMXBean()
+        logger.quiet('{}', runtimeMxBean2.getInputArguments().join('\n'))
+    }
+}
+
+if(System.getenv().containsKey('JENKINS')) logger.quiet('Ignoring test failures')
+logger.quiet("Available processors ${Runtime.runtime.availableProcessors()}. Max Unit Test Parallel Forks ${Runtime.runtime.availableProcessors().intdiv(2) ?: 1}")
+subprojects {
+    tasks.register("bomProperties") {
+        group = 'Introspection'
+        description = 'Print properties from all BOMs'
+        doLast {
+            if (project.hasProperty('dependencyManagement')) {
+                Map imported = dependencyManagement.importedProperties
+                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect {k, v -> "$k:$v"}.sort().join('\n  ')
+            }
+        }
+    }
+    afterEvaluate {
+        project.tasks.withType(Test) {
+            ignoreFailures = System.getenv().containsKey('JENKINS')
+        }
+    }
+}
