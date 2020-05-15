@@ -10,7 +10,7 @@ class MdmGrailsPluginMauroDataMapperPlugin extends GrailsPluginMauroDataMapperPl
         HIGHEST_PRECEDENCE + 100
     }
 
-    boolean isMcModule() {
+    boolean isMdmModule() {
         true
     }
 }

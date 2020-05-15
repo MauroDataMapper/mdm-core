@@ -29,7 +29,7 @@ class GrailsPluginMauroDataMapperPlugin extends AbstractMauroDataMapperPlugin {
         LOWEST_PRECEDENCE - 100
     }
 
-    boolean isMcModule() {
+    boolean isMdmModule() {
         false
     }
 }
