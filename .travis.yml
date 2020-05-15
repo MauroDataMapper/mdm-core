@@ -1,31 +1,48 @@
 language: groovy
 jdk:
     - openjdk12
-
 install: skip
-
+stages:
+    - compile
+    - unit test
+    - integration test
+    - functional test
+# In the below config travis has an interesting configuration
+# if no `script:` element provided after the stage then the stage's first step will be to execute the standard "check"
+# Therefore each stage must provide a plain `script:` element, and then any further script: elements can either be provided in the same manner
+# or as a list element `- script:`
 jobs:
     include:
-        -   stage: Compile
-        -   script: "./gradlew :mdm-common:assemble"
-        -   script: "./mdm-core/grailsw compile"
-        -   stage: Unit Tests
-        -   script: "./gradlew :mdm-common:test"
-        -   script: "./mdm-core/grailsw test-app -unit"
-        -   stage: Integration Tests
-        -   script: "./mdm-core/grailsw -Dgrails.integrationTest=true test-app -integration"
-        -   stage: Functional Tests
-        -   script: "./mdm-core/grailsw -Dgrails.functionalTest=true test-app -integration"
-
+        -   stage: compile
+            name: "Common"
+            script: "./gradlew :mdm-common:assemble"
+        -   script: "cd mdm-core && ./grailsw compile"
+            name: "Core"
+        -   stage: unit test
+            name: "Common"
+            script: "./gradlew :mdm-common:test"
+        -   script: "cd mdm-core && ./grailsw test-app -unit"
+            name: "Core"
+        -   stage: integration test
+            name: "Core"
+            script: "cd mdm-core && ./grailsw -Dgrails.integrationTest=true test-app -integration"
+        -   stage: functional test
+            name: "Core"
+            script: "cd mdm-core && ./grailsw -Dgrails.functionalTest=true test-app -integration"
+after_failure:
+    - ./gradlew publish
 before_cache:
     - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
     - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-    -
 cache:
     directories:
         - "$HOME/.gradle/caches/"
         - "$HOME/.gradle/wrapper/"
-        -
 notifications:
     slack:
         secure: V6KfisLk9ss/l3l1Nde4ck64Wqcyuy1vQj0C9JGJJOf/KmNemDAgpc8lUzbC7PrC9u/oZI5JXXyEY10xAfade04QVJEfNaPYRTBG/KnAkkKPC2NrYFOXMqbno3xtLp6XDhCfJmjJ45fwuwjapf4dvZkGy6N6GL+QPc/MxK2Pbzan0zAeHwyj1o2M0PqxQEICbEcgVywExKreCSb9pTSns++bBHJitYffosOBgHg3rRINx4U1SoYkIvb1nlx9qTWZHkIXlqzMOgwa8yBMUlEO3s9/61M7NNnb/SgAXQVe//oCjSh8mdB4gIgGjSbUpXUBjKO0j94GepZ1OBWCqoUhvM27tebTmtLtY/hTzxEPjA41NFR1/xQCT97mhDfiiPU3i1J0jn/hTrcBXeffBAe6BgfCY/KMacl5zWwa2oycswuEhN/1krrRswGMMkh+qsS1VdJUUdsYDzbm/qXl4rGjYAB02dDvMJfCUEC1p8QPfStd6Gq7f3KAXU55ExkMMj8RIKmTfQvnvdCteFhERV0Ipy7qwobr/d5bxiLk8S7D7TwS0REmVYt/cDX1vhYl4x7QdoYQDJzXkZAv9XH4oL3riu7EeDeM7dyJwFKbQzgHlfypog6keIB6A1gcgU2zwkAQ6K6QcWhDBlkqkM0YzpI1lxnA5nu9aiI0Eh0S668ls4M=
+env:
+    global:
+        -   secure: "cRjkZ7AWD2QnqEh3eakOaq9/vQzx8smM3ob4jbk8Gnpx6lM+OBZNTKNCgQS3HyPmr6qmHJAE1t7Ze9JLo9jZ9AkhJZtKPwj2c4YRga6i9wmi+vAQq/DjbrNcbGVC0YMNmcKMwsv7sgR8f4/ubQo0klOgE2b5iryZ+g4Svdk07P0+eZpgw8NxRx+ldedueKvVyLJwuAJQTwf/xORE56IFSCUt1k1G+YovmC8i0aPFTE5r1nrts3EgFoATMKkynZBb/78FMscvvN1hHtslUE909VswchMawOXS4K9BOLNeYX7U5+ktVbPDQHC9IG/R+zkfb/IZGvcXWONSrDFJb8kFURMjW6I/1uvrAhIqa5MUsFXsOrd/ZwMouWVw4wuDH4A9I7sdRSyD7nleO2P9Vsu4XmGG2ufTPgwbbgZ3Bghb3eaG6n4s01ZYS8mzAouwruzbnJvNRMuBbOFW0HJi95qpOds4Scgo0DPuOyOszr8zBZq7c8XwzRXSzE0fUojhtXcNuXBItALsORri9L0LKz+dm/w9u9K+lBOuNmvZ2iLKuXdy6x7Ky9jBAxog1+YIJ222/j9MsrwN7fFVZOCBdu6rmcSDw0MR9QGB5vCh8rMn+UHWmff9fgGJbRyegyk3mnPwJMD6lPPiqFkQ7WE2NIooaQG3Fx8rZ4inWXLt2Ya2DSI="
+        -   secure: "FayyY9xSLvLMfZdVoqf6AcDztt5iPP7VJ9VEf4GQ3If4Os7PhOgN4/1xRbS4J7NkZXXzHU3AYi+W4BoSAVy7VvR6u35JBVFun/ICwpajYIOtFtojhB1Glsn1J+qQKVKcScrJTscLWx7C4XAbtHjObUFS+BJuz4zIOPXtnX70wjdly6L5UpxUZIses7zBoq3TeKjGSGFykgURiFVLke4gyvEdw6KiUjlPN+r/+a5tNiMoRrwVbQH9MQSIdVZsNeSAJxVyj3M2rWM1yTOFQWjikGPKvYXLxhNs0dC9TNZPVVbUcGxi9YhOLYmDjhw/WR49O3bBgr1PgapDXcf0cM++4qi8+nDN/XxXZzpRnk93qPvxpJFdmKyexhWMoUR5Ir1/MBqdyARn68zmAY7moGcarISyLtF/PvsRI3MJNNmysG0e3JX03oRd3BlMmKtgtF1E7usJYYySdRndX+a5KnGnQ9R2g4zamu57uvzUFAtK97vUYAjhsrjUN2xRlKyVtbH0kuaIwsgufsEfnvVqddFyZJR5GSmXhngGL/yl2lwPn0QtltMV+b9i1jiL9iGX4P7G2nVbh9njkXTzyobifF6dZr6qp+W2O9TCESB0dFWbEOWl4GUoJPqprV3ufztBZlCSWTdMxp83LvrVGs9k2UzO6666dNHj06f+0n+cmLS9EXk="
+        -   secure: "WIN5aQNEJwcD9YUu7DWWHNs3ezXi4VFH2USqr72pzCsui6TJQhlfFtc/Q3lEWk9E61UGf5+hE/fCEzSeWZR4+xYDT3Kkxs4SRV4xiIbpZfDGZd726MSUCdQp2YAtZX6iX1yqSr9viaQD+9v3Qn5vZMNPs2ZG+iKkFAVFMrAd8br3u3gik0JyNO4XRw2DvlMLbWB0bt9bAQy9tyz6Pqiz/AY0f4n5tXO3u2Rwm5MHDQPZ8wdCiIzbGZMoQW3h+Q+C9q6+4Bnrxr//tBjp2zrOUFnT5r1j+CPMVX1qOLR/ll/4tjOwmkWfYHK1nBsmuIpKyE5gzqSGRl0Ffqxd304THiMwGSLwrzV7fvsRgOp0o0rZEuwf5eqtQSgd5hXzSkQttKBSlMU8kw71KS+eF7uu6ZJpJ8n5MTSlqIjIgDtHjcrAWGzFMhzhaSwtl+kPb9x8A1kmeKhSaFAHLWES2FFXPFqg5wyRG2ssIFYeNeuII207/LnKd3FFezK7U9DEZnogDVBhwLynHVnJ/6Hmkbc6xV/QcHZeDUyBDdnvLguhOxtNI7BTjaY4jYu3MjB9xtZsBdusTig3h3WPrddZt+5m7dKdKprg4IJYwEh8ccsP9YymgDcLNSg8h02yYKgCwFRKJwaVTjKs5Xbkmm0zCb3nYUdJQi2fMZy8PL+e3W159E8="

@@ -12,6 +12,7 @@ buildscript {
     }
     dependencies {
         classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+        //        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.15.2"
     }
     configurations.all {
         // check for updates every build
@@ -19,7 +20,14 @@ buildscript {
     }
 }
 
+plugins {
+    id 'maven'
+    id "com.jfrog.artifactory" version "4.15.2"
+    id 'maven-publish'
+}
+
 apply plugin: 'ox.softeng.ox-brc-base'
+
 
 task unitTest() {
     group 'testing'
@@ -63,8 +71,11 @@ task('jvmArgs') {
     }
 }
 
-if(System.getenv().containsKey('JENKINS')) logger.quiet('Ignoring test failures')
-logger.quiet("Available processors ${Runtime.runtime.availableProcessors()}. Max Unit Test Parallel Forks ${Runtime.runtime.availableProcessors().intdiv(2) ?: 1}")
+
+logger.quiet(
+    "Available processors ${Runtime.runtime.availableProcessors()}. Max Unit Test Parallel Forks " +
+    "${Runtime.runtime.availableProcessors().intdiv(2) ?: 1}")
+
 subprojects {
     tasks.register("bomProperties") {
         group = 'Introspection'
@@ -79,6 +90,50 @@ subprojects {
     afterEvaluate {
         project.tasks.withType(Test) {
             ignoreFailures = System.getenv().containsKey('JENKINS')
+        }
+    }
+}
+
+/*
+Task to archive up all reports that exist in the project and sub-project
+ */
+task reportsArchive(type: Tar) {
+    archiveClassifier = 'reports'
+    if (System.getenv('TRAVIS')) {
+        archiveVersion = System.getenv('TRAVIS_BUILD_NUMBER')
+    }
+    from("$buildDir/reports") {
+        into "reports/ROOT"
+    }
+
+    doLast {
+        println archiveFileName.get()
+    }
+}
+
+subprojects {
+    String pName = project.name
+    rootProject.tasks.reportsArchive {
+        from("$buildDir/reports") {
+            into "reports/$pName"
+        }
+    }
+}
+
+// Custom publishing to allow us to push the reports up to artifactory from travis
+publishing {
+    repositories{
+        maven {
+            url = "${project.artifactory_contextUrl}/build-reports"
+            credentials {
+                username = "${project.artifactory_user}"
+                password = "${project.artifactory_apiKey}"
+            }
+        }
+    }
+    publications {
+        reports(MavenPublication){
+            artifact tasks.reportsArchive
         }
     }
 }
