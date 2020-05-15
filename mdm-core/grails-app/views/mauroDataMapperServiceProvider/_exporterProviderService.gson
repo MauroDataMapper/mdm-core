@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
+
+inherits template: '/mauroDataMapperServiceProvider/mauroDataMapperService', model: [mauroDataMapperService: exporterProviderService]
+
+model {
+    ExporterProviderService exporterProviderService
+}
+
+json {
+    fileExtension exporterProviderService.fileExtension
+    fileType exporterProviderService.fileType
+    canExportMultipleDomains exporterProviderService.canExportMultipleDomains()
+}

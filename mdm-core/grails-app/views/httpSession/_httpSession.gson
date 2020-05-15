@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
+
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import javax.servlet.http.HttpSession
+
+model {
+    HttpSession httpSession
+}
+
+json {
+    id httpSession.id
+    lastAccessedDateTime OffsetDateTime.ofInstant(Instant.ofEpochMilli(httpSession.lastAccessedTime), ZoneId.systemDefault())
+    creationDateTime OffsetDateTime.ofInstant(Instant.ofEpochMilli(httpSession.creationTime), ZoneId.systemDefault())
+    userEmailAddress httpSession.getAttribute('emailAddress') ?: UnloggedUser.UNLOGGED_EMAIL_ADDRESS
+    lastAccessedUrl httpSession.getAttribute('lastUrl')
+}

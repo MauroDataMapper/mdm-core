@@ -1,0 +1,67 @@
+maurodatamapper:
+    security:
+        public: false
+---
+simplejavamail:
+    smtp:
+        username: username@gmail.com
+        password: password
+        host: smtp.gmail.com
+        port: 587
+    transportstrategy: SMTP_TLS
+    javaxmail.debug: false
+---
+grails:
+    gorm:
+        failOnError: true
+    controllers:
+        upload:
+            maxFileSize: 200000000
+            maxRequestSize: 200000000
+    cors:
+        enabled: true
+        # The following are the defaults
+        #allowedOrigins: ['*']
+        #exposedHeaders: null
+        #maxAge: 1800
+        #allowCredentials: true
+    databinding:
+        dateFormats:
+            - "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+            - "yyyy-MM-dd'T'HH:mm:ss.SSXXX"
+            - "yyyy-MM-dd'T'HH:mm:ss.SXXX"
+            - "yyyy-MM-dd'T'HH:mm:ssXXX"
+            - 'yyyy-MM-dd HH:mm:ss.S'
+            - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+            - "yyyy-MM-dd HH:mm:ss.S z"
+            - "yyyy-MM-dd"
+---
+flyway.enabled: true
+---
+
+hibernate:
+    configClass: uk.ac.ox.softeng.maurodatamapper.core.hibernate.MauroDataMapperHibernateMappingContextConfiguration
+    search:
+        lucene_version: 5.5.5
+        default:
+            indexmanager: near-real-time
+            directory_provider: filesystem
+            optimizer:
+                operation_limit.max: 1000
+                transaction_limit.max: 100
+        # Defaults
+        massindexer:
+            typesToIndexInParallel: 1
+            cacheMode: IGNORE
+            optimizeOnFinish: true
+            optimizeAfterPurge: true
+            purgeAllOnStart: true
+            transactionTimeout: 1800
+            threadsToLoadObjects: 20
+            batchSizeToLoadObjects: 1000
+            idFetchSize: -1 # Use postgres default (should load all)
+
+environments:
+    test:
+        database:
+            creation: 'CREATE SCHEMA IF NOT EXISTS core'

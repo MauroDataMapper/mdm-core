@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ArrayDiff
+
+model {
+    ArrayDiff arrayDiff
+
+}
+
+json("${arrayDiff.fieldName}") {
+    if (arrayDiff.deleted) deleted tmpl.'/diffable/diffable'(arrayDiff.deleted)
+    if (arrayDiff.created) created tmpl.'/diffable/diffable'(arrayDiff.created)
+    if (arrayDiff.modified) modified tmpl.'/diffable/diffable'(arrayDiff.modified)
+}

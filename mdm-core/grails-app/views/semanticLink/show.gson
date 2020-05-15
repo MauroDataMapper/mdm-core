@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+
+model {
+    SemanticLink semanticLink
+}
+
+json tmpl.semanticLink(semanticLink)

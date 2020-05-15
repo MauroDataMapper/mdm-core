@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperProvider
+
+model {
+    MauroDataMapperProvider mauroDataMapperProvider
+}
+
+json {
+    name mauroDataMapperProvider.name
+    version mauroDataMapperProvider.version
+}

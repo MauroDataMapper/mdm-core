@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+
+model {
+    ReferenceFile referenceFile
+}
+
+inherits template: '/catalogueFile/catalogueFile', model: [catalogueFile: referenceFile]
+
+json {
+
+}

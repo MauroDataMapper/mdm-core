@@ -1,0 +1,9 @@
+response.status UNAUTHORIZED.value()
+model {
+    String message
+}
+
+json {
+    message UNAUTHORIZED.reasonPhrase
+    error UNAUTHORIZED.value()
+}

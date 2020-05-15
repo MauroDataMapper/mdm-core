@@ -1,0 +1,7 @@
+import javax.servlet.http.HttpSession
+
+model {
+    Map<String, HttpSession> activeSessions
+}
+
+json g.render(activeSessions)

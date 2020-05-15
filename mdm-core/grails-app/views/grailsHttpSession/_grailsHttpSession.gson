@@ -1,0 +1,11 @@
+import grails.web.servlet.mvc.GrailsHttpSession
+
+model {
+    GrailsHttpSession grailsHttpSession
+}
+
+inherits template: '/httpSession/httpSession', model: [httpSession: grailsHttpSession]
+
+json {
+
+}

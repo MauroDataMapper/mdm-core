@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+
+model {
+    Metadata metadata
+}
+
+json {
+    id metadata.id
+
+    namespace metadata.namespace
+    key metadata.key
+    value metadata.value
+
+    lastUpdated metadata.lastUpdated
+}

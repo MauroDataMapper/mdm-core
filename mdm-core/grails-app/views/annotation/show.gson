@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+
+model {
+    Annotation annotation
+}
+
+json tmpl.annotation(annotation)

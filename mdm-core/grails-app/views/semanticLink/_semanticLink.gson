@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+
+model {
+    SemanticLink semanticLink
+}
+
+json {
+    id semanticLink.id
+    linkType semanticLink.linkType.label
+    domainType semanticLink.domainType
+
+    sourceCatalogueItem tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: semanticLink.catalogueItem)
+    targetCatalogueItem tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: semanticLink.targetCatalogueItem)
+}

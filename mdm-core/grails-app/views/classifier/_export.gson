@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+
+model {
+    Classifier export
+}
+
+json {
+    id export.id
+    label export.label
+    lastUpdated export.lastUpdated
+    if (export.description) description export.description
+}

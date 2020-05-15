@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<Annotation> annotationList
+}
+
+json {
+    count annotationList instanceof PagedResultList ? ((PagedResultList) annotationList).getTotalCount() : annotationList?.size() ?: 0
+    items tmpl.annotation(annotationList ?: [])
+}
+

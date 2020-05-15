@@ -1,0 +1,37 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ContainerTreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
+
+model {
+    TreeItem treeItem
+}
+
+json {
+    id treeItem.id
+    domainType treeItem.domainType
+    label treeItem.label
+    hasChildren treeItem.hasChildren()
+
+    if (treeItem instanceof ContainerTreeItem) {
+        ContainerTreeItem cti = (ContainerTreeItem) treeItem
+        deleted cti.deleted
+        if (cti.containerId) parentFolder cti.containerId
+    } else if (treeItem instanceof ModelTreeItem) {
+        ModelTreeItem mti = (ModelTreeItem) treeItem
+        deleted mti.deleted
+        finalised mti.finalised
+        superseded mti.superseded
+        documentationVersion mti.documentationVersion.toString()
+        folder mti.containerId
+        type mti.modelType
+    } else if (treeItem instanceof ModelItemTreeItem) {
+        ModelItemTreeItem miti = (ModelItemTreeItem) treeItem
+        modelId miti.rootId
+        if (miti.hasParent()) parentId treeItem.parentId
+    }
+
+    if (treeItem.hasChildren() && treeItem.renderChildren) {
+        children tmpl.treeItem(treeItem.children.sort())
+    }
+}

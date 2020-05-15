@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<Folder> folderList
+}
+json {
+    count folderList instanceof PagedResultList ? ((PagedResultList) folderList).getTotalCount() : folderList?.size() ?: 0
+    items tmpl.folder(folderList ?: [])
+}

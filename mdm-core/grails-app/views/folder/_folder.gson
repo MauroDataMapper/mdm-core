@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+
+model {
+    Folder folder
+}
+
+json {
+    id folder.id
+    label folder.label
+    if (folder.deleted) deleted folder.deleted
+    lastUpdated folder.lastUpdated
+    domainType folder.domainType
+    hasChildFolders folder.hasChildFolders()
+}

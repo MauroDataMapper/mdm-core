@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
+
+model {
+    MauroDataMapperService mauroDataMapperService
+}
+
+json {
+    name mauroDataMapperService.name
+    version mauroDataMapperService.version
+    displayName mauroDataMapperService.displayName
+    namespace mauroDataMapperService.namespace
+    allowsExtraMetadataKeys mauroDataMapperService.allowsExtraMetadataKeys()
+    knownMetadataKeys mauroDataMapperService.knownMetadataKeys
+    providerType(mauroDataMapperService.providerType - 'Provider')
+}

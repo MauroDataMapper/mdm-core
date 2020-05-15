@@ -1,0 +1,19 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+
+model {
+    CatalogueItem catalogueItem
+}
+
+json {
+    id catalogueItem.id
+    domainType catalogueItem.domainType
+    label catalogueItem.label
+
+    // Model items should render their model and breadcrumbs to allow link rebuilding in the UI
+    if (catalogueItem instanceof ModelItem) {
+        call('model', (catalogueItem as ModelItem).model.id)
+        breadcrumbs g.render((catalogueItem as ModelItem).getBreadcrumbs())
+    }
+
+}

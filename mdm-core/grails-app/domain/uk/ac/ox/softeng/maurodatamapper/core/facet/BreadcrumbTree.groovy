@@ -1,0 +1,191 @@
+package uk.ac.ox.softeng.maurodatamapper.core.facet
+
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.Breadcrumb
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
+import grails.gorm.DetachedCriteria
+import groovy.util.logging.Slf4j
+import org.grails.datastore.gorm.GormEntity
+
+@Slf4j
+class BreadcrumbTree {
+
+    UUID id
+    UUID domainId
+    String domainType
+    String label
+    Boolean finalised
+    Breadcrumb breadcrumb
+    Boolean topBreadcrumbTree
+    GormEntity domainEntity
+    BreadcrumbTree parent
+
+    String treeString
+
+    static belongsTo = [BreadcrumbTree]
+
+    static hasMany = [
+        children: BreadcrumbTree
+    ]
+
+    static constraints = {
+        finalised nullable: true
+        domainType blank: false
+        label blank: false, nullable: true, validator: {val, obj ->
+            if (val) return true
+            if (!val && obj.domainEntity && !obj.domainEntity.label) return true
+            ['default.null.message']
+        }
+        treeString blank: true
+        parent nullable: true, validator: {val, obj ->
+            obj.topBreadcrumbTree || val ? true : ['default.null.message']
+        }
+        domainId nullable: true, validator: {val, obj ->
+            if (val) return true
+            if (!val && obj.domainEntity && !obj.domainEntity.ident()) return true
+            ['default.null.message']
+        }
+    }
+
+    static mapping = {
+        treeString type: 'text'
+        parent cascade: 'save-update'
+    }
+
+    static mappedBy = [
+        domainEntity: 'none',
+        children    : 'parent'
+    ]
+
+    static transients = ['breadcrumb', 'domainEntity']
+
+    BreadcrumbTree() {
+    }
+
+    BreadcrumbTree(Model model) {
+        this.domainEntity = model
+        this.domainId = model.id
+        this.label = model.label ?: 'NOT_VALID'
+        this.domainType = model.domainType
+        this.finalised = model.finalised
+        this.topBreadcrumbTree = true
+    }
+
+    BreadcrumbTree(ModelItem modelItem) {
+        this.domainEntity = modelItem
+        this.domainId = modelItem.id
+        this.label = modelItem.label ?: 'NOT_VALID'
+        this.domainType = modelItem.domainType
+        this.topBreadcrumbTree = false
+        if (modelItem.pathParent) {
+            BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(modelItem.pathParent)
+            parentTree.addToChildren(this)
+        }
+    }
+
+    def beforeValidate() {
+        if (id && !isDirty()) trackChanges()
+        if (domainEntity) {
+            domainId = domainEntity.id
+            markDirty('domainId', domainEntity.id, getOriginalValue('domainId'))
+            label = domainEntity.label
+            markDirty('label', domainEntity.label, getOriginalValue('label'))
+        }
+        checkTree()
+        children.each {
+            it.beforeValidate()
+        }
+    }
+
+    String getTree() {
+        checkTree()
+        this.treeString
+    }
+
+    void checkTree() {
+        if (!treeString) buildTree()
+        else if (!matchesTree(treeString)) buildTree()
+    }
+
+    void buildTree() {
+        String newTreeString = ''
+        if (parent) {
+            newTreeString += "${parent.getTree()}\n"
+        }
+        newTreeString += getBreadcrumb().toString()
+        setTreeString(newTreeString)
+        log.trace('Tree string for {}:{} ==> {}', domainType, domainId, treeString)
+    }
+
+    void removeFromParent() {
+        parent.removeFromChildren(this)
+    }
+
+    List<Breadcrumb> getBreadcrumbs() {
+        getBreadcrumbsFromTree(getTree()).init()
+    }
+
+    boolean matchesTree(String treeToMatch) {
+        List<Breadcrumb> breadcrumbs = getBreadcrumbsFromTree(treeToMatch)
+        breadcrumbs.last() == getBreadcrumb()
+    }
+
+    boolean matchesPath(String path) {
+        List<Breadcrumb> breadcrumbs = getBreadcrumbsFromTree(getTree())
+
+        if (!path) return breadcrumbs.size() == 1
+
+        List<UUID> pathIds = path.split('/').findAll().collect {Utils.toUuid(it)}
+        if (pathIds.size() + 1 != breadcrumbs.size()) return false
+
+
+        for (int i = 0; i < pathIds.size(); i++) {
+            if (breadcrumbs[i].id != pathIds[i]) return false
+        }
+        true
+    }
+
+    void update(CatalogueItem catalogueItem) {
+        if (catalogueItem.pathParent) {
+            BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(catalogueItem.pathParent)
+            if (parent != parentTree) {
+                if (parent) parent.removeFromChildren(this)
+                parentTree.addToChildren(this)
+            } else if (catalogueItem.pathParent.instanceOf(ModelItem) && !parent.matchesPath(catalogueItem.pathParent.path)) {
+                parent.update(catalogueItem.pathParent)
+            }
+        }
+        buildTree()
+    }
+
+    Breadcrumb getBreadcrumb() {
+        new Breadcrumb(domainId, domainType, label, finalised)
+    }
+
+    static BreadcrumbTree findBreadcrumbTree(CatalogueItem catalogueItem) {
+        if (catalogueItem.breadcrumbTree) return catalogueItem.breadcrumbTree
+        if (catalogueItem.getId()) return BreadcrumbTree.findByCatalogueItem(catalogueItem)
+        null
+    }
+
+    static BreadcrumbTree findOrCreateBreadcrumbTree(CatalogueItem catalogueItem) {
+        BreadcrumbTree breadcrumbTree = findBreadcrumbTree(catalogueItem)
+        if (!breadcrumbTree) breadcrumbTree = new BreadcrumbTree(catalogueItem)
+        breadcrumbTree
+    }
+
+    static List<Breadcrumb> getBreadcrumbsFromTree(String treeString) {
+        treeString.split('\n').collect {new Breadcrumb(it)}
+    }
+
+    static BreadcrumbTree findByCatalogueItem(CatalogueItem catalogueItem) {
+        findByCatalogueItemDomainAndId(catalogueItem.domainType, catalogueItem.id)
+    }
+
+    static BreadcrumbTree findByCatalogueItemDomainAndId(String domainType, UUID domainId) {
+        new DetachedCriteria<BreadcrumbTree>(BreadcrumbTree).eq('domainType', domainType).eq('domainId', domainId).get()
+    }
+}

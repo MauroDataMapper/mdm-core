@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<Classifier> classifierList
+}
+
+json {
+    count classifierList instanceof PagedResultList ? ((PagedResultList) classifierList).getTotalCount() : classifierList?.size() ?: 0
+    items tmpl.classifier(classifierList ?: [])
+}

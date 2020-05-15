@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.importer.ImportParameter
+
+model {
+    ImportParameter importParameter
+}
+
+json {
+    name importParameter.name
+    type importParameter.type
+    optional importParameter.optional
+    displayName importParameter.displayName
+    description importParameter.description
+}

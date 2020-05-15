@@ -1,0 +1,22 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+
+// This is needed to fix the fact that the binding model stores all the types, and seems to model-bind catalogueItem to the first ci in the map
+// So we wipe the map of all types which don't match the actual CI in the binding
+//Map<String, CatalogueItem> cis = binding.variables.findAll {it.value.getClass().getSuperclass() == CatalogueItem} as Map<String, CatalogueItem>
+//cis.each {k, v ->
+//    if (v != binding.getVariable('catalogueItem')) binding.setVariable(k, 'nothing')
+//}
+
+inherits template: '/catalogueItem/baseCatalogueItem', model: [catalogueItem: catalogueItem]
+
+model {
+    CatalogueItem catalogueItem
+}
+
+json {
+    if (catalogueItem.description) description catalogueItem.description
+    if (catalogueItem.aliasesString) aliases catalogueItem.aliases
+    //    if (catalogueItem.semanticLinks) {
+    //        semanticLinks tmpl.'/semanticLink/semanticLink'('semanticLink', catalogueItem.semanticLinks)
+    //    }
+}

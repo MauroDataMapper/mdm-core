@@ -1,0 +1,49 @@
+package uk.ac.ox.softeng.maurodatamapper.core.provider.importer
+
+
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
+
+import org.grails.datastore.gorm.GormEntity
+import org.springframework.core.GenericTypeResolver
+
+trait ImporterProviderService<D extends GormEntity, T extends ImporterProviderServiceParameters>
+    extends MauroDataMapperService {
+
+    abstract D importDomain(User currentUser, T params)
+
+    abstract List<D> importDomains(User currentUser, T params)
+
+    abstract Boolean canImportMultipleDomains()
+
+    Class<T> getImporterProviderServiceParametersClass() {
+        (Class<T>) GenericTypeResolver.resolveTypeArguments(getClass(), ImporterProviderService).last()
+    }
+
+    /**
+     * Returns a new instance object of the defined ImporterProviderServiceParameters parameter.
+     *
+     * The method makes use of Class.newInstance(), this was deprecated in Java9 however is still part of the Groovy extension.
+     * Due to the fact Groovy auto adds empty constructors to all its classes the Java9 method of getDeclaredConstructor.getNewInstance() fails
+     * as there is no declared constructor.
+     *
+     * @return
+     * @throws ApiInternalException
+     */
+    @SuppressWarnings('GrDeprecatedAPIUsage')
+    T createNewImporterProviderServiceParameters() throws ApiInternalException {
+        try {
+            return importerProviderServiceParametersClass.newInstance()
+        } catch (InstantiationException | IllegalAccessException ex) {
+            throw new ApiInternalException('IP01', 'Cannot create new import params instance', ex)
+        }
+    }
+
+    @Override
+    String getProviderType() {
+        ProviderType.IMPORTER.name
+    }
+}

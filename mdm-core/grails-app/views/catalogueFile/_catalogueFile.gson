@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFile
+
+model {
+    CatalogueFile catalogueFile
+}
+
+json {
+    id catalogueFile.id
+    domainType catalogueFile.domainType
+    lastUpdated catalogueFile.lastUpdated
+    fileSize catalogueFile.fileSize
+    fileType catalogueFile.fileType
+    fileName catalogueFile.fileName
+    fileContents catalogueFile.fileContents
+}

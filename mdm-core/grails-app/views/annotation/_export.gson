@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+
+model {
+    Annotation annotation
+}
+
+json {
+    id annotation.id
+    createdBy annotation.createdBy
+    lastUpdated annotation.lastUpdated
+
+    if (!annotation.parentAnnotation) label annotation.label
+    if (annotation.description) description annotation.description
+    if (annotation.childAnnotations) childAnnotations tmpl.'/annotation/export'(annotation.childAnnotations)
+}

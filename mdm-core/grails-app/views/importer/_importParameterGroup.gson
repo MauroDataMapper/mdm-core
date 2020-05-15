@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.importer.ImportParameterGroup
+
+model {
+    ImportParameterGroup importParameterGroup
+}
+
+json {
+    name importParameterGroup.name
+    parameters tmpl.importParameter(importParameterGroup.sortedImportParameters)
+}

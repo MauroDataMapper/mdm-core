@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.importer.ImportParameterGroup
+
+model {
+
+    ImporterProviderService importerProviderService
+    List<ImportParameterGroup> importParameterGroups
+}
+
+json {
+    importer tmpl.'/mauroDataMapperServiceProvider/importerProviderService'(importerProviderService)
+    parameterGroups tmpl.importParameterGroup(importParameterGroups ?: [])
+}

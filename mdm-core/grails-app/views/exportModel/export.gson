@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
+
+model {
+    ExportModel exportModel
+}
+
+json tmpl.exportModel(exportModel)

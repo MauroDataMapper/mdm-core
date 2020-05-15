@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<ReferenceFile> referenceFileList
+}
+
+json {
+    count referenceFileList instanceof PagedResultList ? ((PagedResultList) referenceFileList).getTotalCount() : referenceFileList?.size() ?: 0
+    items tmpl.referenceFile(referenceFileList ?: [])
+}
