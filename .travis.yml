@@ -2,17 +2,30 @@ language: groovy
 jdk:
     - openjdk12
 
+install: skip
+
 jobs:
     include:
-        -   stage: "Compile"
-            script: ./gradlew :mdm-common:assemble
-        -   stage: "Unit Tests"
-            script: ./gradlew :mdm-common:test
+        -   stage: Compile
+        -   script: "./gradlew :mdm-common:assemble"
+        -   script: "./mdm-core/grailsw compile"
+        -   stage: Unit Tests
+        -   script: "./gradlew :mdm-common:test"
+        -   script: "./mdm-core/grailsw test-app -unit"
+        -   stage: Integration Tests
+        -   script: "./mdm-core/grailsw -Dgrails.integrationTest=true test-app -integration"
+        -   stage: Functional Tests
+        -   script: "./mdm-core/grailsw -Dgrails.functionalTest=true test-app -integration"
 
 before_cache:
     - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
     - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+    -
 cache:
     directories:
-        - $HOME/.gradle/caches/
-        - $HOME/.gradle/wrapper/
+        - "$HOME/.gradle/caches/"
+        - "$HOME/.gradle/wrapper/"
+        -
+notifications:
+    slack:
+        secure: V6KfisLk9ss/l3l1Nde4ck64Wqcyuy1vQj0C9JGJJOf/KmNemDAgpc8lUzbC7PrC9u/oZI5JXXyEY10xAfade04QVJEfNaPYRTBG/KnAkkKPC2NrYFOXMqbno3xtLp6XDhCfJmjJ45fwuwjapf4dvZkGy6N6GL+QPc/MxK2Pbzan0zAeHwyj1o2M0PqxQEICbEcgVywExKreCSb9pTSns++bBHJitYffosOBgHg3rRINx4U1SoYkIvb1nlx9qTWZHkIXlqzMOgwa8yBMUlEO3s9/61M7NNnb/SgAXQVe//oCjSh8mdB4gIgGjSbUpXUBjKO0j94GepZ1OBWCqoUhvM27tebTmtLtY/hTzxEPjA41NFR1/xQCT97mhDfiiPU3i1J0jn/hTrcBXeffBAe6BgfCY/KMacl5zWwa2oycswuEhN/1krrRswGMMkh+qsS1VdJUUdsYDzbm/qXl4rGjYAB02dDvMJfCUEC1p8QPfStd6Gq7f3KAXU55ExkMMj8RIKmTfQvnvdCteFhERV0Ipy7qwobr/d5bxiLk8S7D7TwS0REmVYt/cDX1vhYl4x7QdoYQDJzXkZAv9XH4oL3riu7EeDeM7dyJwFKbQzgHlfypog6keIB6A1gcgU2zwkAQ6K6QcWhDBlkqkM0YzpI1lxnA5nu9aiI0Eh0S668ls4M=
