@@ -1,0 +1,57 @@
+package uk.ac.ox.softeng.maurodatamapper.test.json
+
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
+import io.micronaut.http.client.exceptions.HttpClientResponseException
+import net.javacrumbs.jsonunit.core.Option
+
+
+/**
+ * @since 28/11/2017
+ */
+trait ResponseComparer extends JsonComparer {
+
+    HttpResponse<String> jsonCapableResponse
+
+    void verifyJsonErrorResponse(HttpStatus expectedStatus, HttpClientResponseException thrown, expectedJson, Option... addtlOptions) {
+        jsonCapableResponse = thrown.response as HttpResponse<String>
+        verifyJsonResponse expectedStatus, expectedJson, addtlOptions
+    }
+
+    void verifyUnauthorised(HttpResponse response) {
+        verifyResponse HttpStatus.UNAUTHORIZED, response
+    }
+
+    void verifyResponse(HttpStatus expected, HttpResponse response) {
+        try {
+            internalVerifyStatus(expected, response.status)
+        } catch (AssertionError error) {
+            log.error('Response Body\n{}\n', response.body())
+            throw error
+        }
+    }
+
+    void verifyJsonResponse(HttpStatus expectedStatus, expectedJson, Option... addtlOptions) {
+
+        verifyResponse expectedStatus, jsonCapableResponse
+        if (expectedJson) internalCompareResponseBody(expectedJson, jsonCapableResponse.body() as String, addtlOptions)
+        else {
+            if (jsonCapableResponse.body()) log.error('Actual JSON\n{}\n', jsonCapableResponse.body())
+            assert !jsonCapableResponse.body(), 'Should be no content in the response'
+        }
+    }
+
+    private boolean internalVerifyStatus(HttpStatus expected, HttpStatus actual) {
+        if (actual != expected) {
+            log.warn('Failed Response :: {}[{}]', actual.code, actual.reason)
+        }
+        assert actual == expected
+    }
+
+    private void internalCompareResponseBody(expectedJson, String actualJson, Option... addtlOptions) {
+        assert actualJson != null
+        if (expectedJson instanceof List) {
+            verifyJson(expectedJson[0].toString(), actualJson, (expectedJson.findAll {it instanceof Option}.toArray() as Option[]))
+        } else verifyJson(expectedJson.toString(), actualJson, addtlOptions)
+    }
+}
