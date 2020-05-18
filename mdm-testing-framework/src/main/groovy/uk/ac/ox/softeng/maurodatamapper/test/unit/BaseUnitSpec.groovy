@@ -69,7 +69,9 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
             // Don't know why the wiring isnt working but this solves it
             JsonViewResolver resolver = applicationContext.getBean(JsonViewResolver)
             resolver.templateEngine.messageSource = applicationContext.getBean(MessageSource)
-        } catch (NoSuchBeanDefinitionException ignored) {}
+        } catch (NoSuchBeanDefinitionException ignored) {
+            log.warn('No such bean exception', ignored)
+        }
     }
 
     def loadI18nMessagesFromPath(Path messagesFilePath) {

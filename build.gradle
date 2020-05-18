@@ -100,7 +100,7 @@ Task to archive up all reports that exist in the project and sub-project
 task reportsArchive(type: Tar) {
     archiveClassifier = 'reports'
     if (System.getenv('TRAVIS')) {
-        archiveVersion = System.getenv('TRAVIS_BUILD_NUMBER')
+        archiveVersion = System.getenv('TRAVIS_JOB_NUMBER')
     }
     from("$buildDir/reports") {
         into "reports/ROOT"
@@ -116,6 +116,9 @@ subprojects {
     rootProject.tasks.reportsArchive {
         from("$buildDir/reports") {
             into "reports/$pName"
+        }
+        from("$buildDir/logs") {
+            into "logs/$pName"
         }
     }
 }
@@ -133,6 +136,9 @@ publishing {
     }
     publications {
         reports(MavenPublication){
+            if (System.getenv('TRAVIS')) {
+                version = System.getenv('TRAVIS_JOB_NUMBER')
+            }
             artifact tasks.reportsArchive
         }
     }
