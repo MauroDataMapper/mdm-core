@@ -42,7 +42,7 @@ class Annotation implements CatalogueItemAware, PathAware, InformationAware, Cre
             ['default.null.message']
         }
         description validator: {String val, Annotation obj ->
-            obj.parentAnnotation && !val ? ['default.null.message',] : true
+            obj.parentAnnotation && !val ? ['annotation.description.required.message',] : true
         }
     }
 

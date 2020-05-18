@@ -70,7 +70,6 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
             JsonViewResolver resolver = applicationContext.getBean(JsonViewResolver)
             resolver.templateEngine.messageSource = applicationContext.getBean(MessageSource)
         } catch (NoSuchBeanDefinitionException ignored) {
-            log.warn('No such bean exception', ignored)
         }
     }
 
@@ -85,6 +84,7 @@ abstract class BaseUnitSpec extends MdmSpecification implements DataTest, Grails
             messages.stringPropertyNames().each {k ->
                 (messageSource as StaticMessageSource).addMessage(k, Locale.default, messages.getProperty(k))
             }
+            log.info('{} messages loaded from {}', messages.size(), messagesFilePath.toString())
         } else {
             log.warn('MessageSource does not extent StaticMessageSource')
         }

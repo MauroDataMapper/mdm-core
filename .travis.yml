@@ -38,7 +38,7 @@ jobs:
             name: "Core"
             script: "cd mdm-core && ./grailsw -Dgrails.functionalTest=true test-app -integration"
 after_failure:
-    - "cd $TRAVIS_BUILD_DIR && ./gradlew publish --console=plain --info"
+    - "cd $TRAVIS_BUILD_DIR && ./gradlew publish"
 before_cache:
     - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
     - rm -fr $HOME/.gradle/caches/*/plugin-resolution/

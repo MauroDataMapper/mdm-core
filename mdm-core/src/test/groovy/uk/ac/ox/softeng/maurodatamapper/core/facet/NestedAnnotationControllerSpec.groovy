@@ -1,7 +1,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationController
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationController
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
@@ -20,6 +20,9 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
 
     BasicModel basicModel
     Annotation parent
+
+    String nullDescriptionRegex = '.+?description.+?class.+?uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation.+?(with value.+?null.+?does not' +
+                                  ' pass custom validation|cannot be null)'
 
     def setup() {
         mockDomains(Folder, BasicModel, Edit, Annotation)
@@ -105,10 +108,11 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
 
     @Override
     String getExpectedNullSavedJson() {
+
         '''{
   "total": 1,
   "errors": [
-    {"message": "Property [description] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation] cannot be null"}
+    {"message": "${json-unit.regex}''' + nullDescriptionRegex + '''"}
   ]
 }'''
     }
@@ -118,7 +122,7 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
         '''{
   "total": 1,
   "errors": [
-    {"message": "Property [description] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation] cannot be null"}
+    {"message": "${json-unit.regex}''' + nullDescriptionRegex + '''"}
   ]
 }'''
     }
@@ -151,7 +155,7 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
         '''{
   "total": 1,
   "errors": [
-    {"message": "Property [description] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation] cannot be null"}
+    {"message": "${json-unit.regex}''' + nullDescriptionRegex + '''"}
   ]
 }'''
     }
