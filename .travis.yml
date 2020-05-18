@@ -1,7 +1,20 @@
 language: groovy
-jdk:
-    - openjdk12
-install: skip
+dist: bionic
+jdk: openjdk12
+
+before_install:
+    - "[[ -d /home/travis/.sdkman/ ]] && [[ -d /home/travis/.sdkman/bin/ ]] || rm -rf /home/travis/.sdkman/"
+    - curl -sL "https://get.sdkman.io" | bash
+    - echo sdkman_auto_answer=true > $HOME/.sdkman/etc/config
+    - echo sdkman_auto_selfupdate=true >> $HOME/.sdkman/etc/config
+    - source "$HOME/.sdkman/bin/sdkman-init.sh"
+    - sdk version
+install:
+    # Handle java already installed
+    - sdk install java 12.0.2-open || true
+    - unset _JAVA_OPTIONS
+    - unset JAVA_HOME
+    - java -Xmx32m -version
 stages:
     - compile
     - unit test
@@ -38,6 +51,7 @@ cache:
     directories:
         - "$HOME/.gradle/caches/"
         - "$HOME/.gradle/wrapper/"
+        - "$HOME/.sdkman"
 notifications:
     slack:
         secure: V6KfisLk9ss/l3l1Nde4ck64Wqcyuy1vQj0C9JGJJOf/KmNemDAgpc8lUzbC7PrC9u/oZI5JXXyEY10xAfade04QVJEfNaPYRTBG/KnAkkKPC2NrYFOXMqbno3xtLp6XDhCfJmjJ45fwuwjapf4dvZkGy6N6GL+QPc/MxK2Pbzan0zAeHwyj1o2M0PqxQEICbEcgVywExKreCSb9pTSns++bBHJitYffosOBgHg3rRINx4U1SoYkIvb1nlx9qTWZHkIXlqzMOgwa8yBMUlEO3s9/61M7NNnb/SgAXQVe//oCjSh8mdB4gIgGjSbUpXUBjKO0j94GepZ1OBWCqoUhvM27tebTmtLtY/hTzxEPjA41NFR1/xQCT97mhDfiiPU3i1J0jn/hTrcBXeffBAe6BgfCY/KMacl5zWwa2oycswuEhN/1krrRswGMMkh+qsS1VdJUUdsYDzbm/qXl4rGjYAB02dDvMJfCUEC1p8QPfStd6Gq7f3KAXU55ExkMMj8RIKmTfQvnvdCteFhERV0Ipy7qwobr/d5bxiLk8S7D7TwS0REmVYt/cDX1vhYl4x7QdoYQDJzXkZAv9XH4oL3riu7EeDeM7dyJwFKbQzgHlfypog6keIB6A1gcgU2zwkAQ6K6QcWhDBlkqkM0YzpI1lxnA5nu9aiI0Eh0S668ls4M=
