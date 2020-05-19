@@ -1,6 +1,6 @@
 language: groovy
 dist: bionic
-jdk: openjdk12
+#jdk: openjdk12
 
 before_install:
     - "[[ -d /home/travis/.sdkman/ ]] && [[ -d /home/travis/.sdkman/bin/ ]] || rm -rf /home/travis/.sdkman/"
@@ -16,7 +16,6 @@ install:
     - unset JAVA_HOME
     - java -Xmx32m -version
 stages:
-    - compile
     - unit test
     - integration test
     - functional test

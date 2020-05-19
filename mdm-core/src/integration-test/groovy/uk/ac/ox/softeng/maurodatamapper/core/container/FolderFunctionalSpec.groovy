@@ -4,6 +4,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Rollback
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
@@ -129,7 +130,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    @Rollback
+    @Transactional
     void 'Test the permanent delete action correctly deletes an instance'() {
         when: 'The save action is executed with valid data'
         POST('', validJson)
