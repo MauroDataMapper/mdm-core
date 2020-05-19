@@ -202,7 +202,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
         then:
         checkAndSave(domain)
-        domain.metadata.each {save(it)}
+        domain.metadata.each {checkAndSave(it)}
         domain.count() == 1
         Metadata.count() == 1
 

@@ -1,13 +1,13 @@
 package uk.ac.ox.softeng.maurodatamapper.test
 
-
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.test.unit.security.TestUser
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 
 import grails.testing.spock.OnceBefore
 import grails.validation.Validateable
+import grails.validation.ValidationException
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.spockframework.util.Assert
@@ -44,53 +44,34 @@ abstract class MdmSpecification extends Specification {
     }
 
     void check(GormEntity domainObj) {
-        if (!domainObj) Assert.fail('No domain object to save')
-
-        boolean valid = domainObj.validate()
-
-        if (!valid) {
-            outputDomainErrors(domainObj)
-            Assert.fail("Domain object is not valid. Has ${domainObj.errors.errorCount} errors")
+        try {
+            GormUtils.check(messageSource, domainObj)
+        } catch (ValidationException ex) {
+            Assert.fail(ex.message)
         }
     }
 
     void check(Validateable domainObj) {
-        if (!domainObj) Assert.fail('No domain object to save')
-
-        boolean valid = domainObj.validate()
-
-        if (!valid) {
-            outputDomainErrors(domainObj)
-            Assert.fail("Domain object is not valid. Has ${domainObj.errors.errorCount} errors")
+        try {
+            GormUtils.check(messageSource, domainObj)
+        } catch (ValidationException ex) {
+            Assert.fail(ex.message)
         }
     }
 
     void checkAndSave(GormEntity domainObj) {
-        check(domainObj)
-        save(domainObj)
+        try {
+            GormUtils.checkAndSave(messageSource, domainObj)
+        } catch (ValidationException ex) {
+            Assert.fail(ex.message)
+        }
     }
 
     void checkAndSave(GormEntity... domainObjs) {
-        domainObjs.each {checkAndSave(it)}
-    }
-
-    def save(GormEntity domainObj) {
-        domainObj.save(failOnError: true, validate: false, flush: true) ? true : false
-    }
-
-    @CompileStatic(TypeCheckingMode.SKIP)
-    def outputDomainErrors(def domainObj) {
-        log.error 'Errors validating domain: {}', domainObj.class.simpleName
-        System.err.println 'Errors validating domain: ' + domainObj.class.simpleName
-        domainObj.errors.allErrors.each {error ->
-
-            String msg = messageSource ? messageSource.getMessage(error, Locale.default) :
-                         "${error.defaultMessage} :: ${Arrays.asList(error.arguments)}"
-
-            // if (error instanceof FieldError) msg += " :: [${error.field}]"
-
-            log.error msg
-            System.err.println msg
+        try {
+            GormUtils.checkAndSave(messageSource, domainObjs)
+        } catch (ValidationException ex) {
+            Assert.fail(ex.message)
         }
     }
 
