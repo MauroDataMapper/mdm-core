@@ -3,5 +3,8 @@ rootProject.name = 'mdm-core.ROOT'
 include(
     'mdm-common',
     'mdm-testing-framework',
-    'mdm-core'
+    'mdm-core',
+
+    // Plugins
+    'mdm-plugin-email-proxy'
     )

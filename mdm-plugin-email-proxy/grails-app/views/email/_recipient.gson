@@ -1,0 +1,6 @@
+model {
+    Map.Entry<String, String> recipient
+}
+json {
+    call(recipient.key, recipient.value)
+}
