@@ -42,7 +42,7 @@ class EmailService {
             Email email = new Email(sentToEmailAddress: to.values().first(), subject: subject, body: messageBody,
                                     emailServiceUsed: emailer.getDisplayName(),
                                     dateTimeSent: OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC),
-                                    successfullySent: false).save()
+                                    successfullySent: false).save(flush: true)
 
             log.info('Sending an email with emailer "{}"', emailer.getDisplayName())
 
@@ -55,7 +55,7 @@ class EmailService {
                 email.successfullySent = true
             }
 
-            email.save()
+            email.save(flush: true)
             email.successfullySent
         }
         log.info('No emailer configured.  Would have sent message with content: {}', messageBody)
