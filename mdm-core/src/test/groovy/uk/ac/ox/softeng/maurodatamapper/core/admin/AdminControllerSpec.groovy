@@ -96,48 +96,10 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         controller.rebuildLuceneIndexes(indexParameters)
 
         then:
-        response.status == HttpStatus.I_AM_A_TEAPOT.code
+        response.status == HttpStatus.OK.code
         response.json.user == 'unlogged_user@mdm-core.com'
         response.json.indexed
         response.json.timeTakenMilliseconds
         response.json.timeTaken
     }
-
-    /*
-        void 'test rebuild lucene indexes from restful api'() {
-            given:
-            controller.adminService = Mock(AdminService) {
-                rebuildLuceneIndexes(_) >> {sleep(1000)}
-            }
-            LuceneIndexParameters indexParameters = new LuceneIndexParameters()
-
-            when: 'no log in details provided'
-            controller.rebuildLuceneIndexes(indexParameters)
-
-            then:
-            response.status == HttpStatus.UNAUTHORIZED.code
-
-            when: 'logged in as non-admin'
-            response.reset()
-            indexParameters.username = editor.emailAddress
-            indexParameters.password = 'password'
-            controller.rebuildLuceneIndexes(indexParameters)
-
-            then:
-            response.status == HttpStatus.UNAUTHORIZED.code
-
-            when: 'logged in as admin'
-            response.reset()
-            indexParameters.username = admin.emailAddress
-            indexParameters.password = 'password'
-            controller.rebuildLuceneIndexes(indexParameters)
-
-            then:
-            response.status == HttpStatus.I_AM_A_TEAPOT.code
-            response.json.user == 'admin@maurodatamapper.com'
-            response.json.indexed
-            response.json.timeTakenMilliseconds
-            response.json.timeTaken
-        }
-    */
 }

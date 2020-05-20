@@ -6,7 +6,6 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 
-import static io.micronaut.http.HttpStatus.I_AM_A_TEAPOT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -87,7 +86,7 @@ class AdminFunctionalSpec extends BaseFunctionalSpec {
         POST('rebuildLuceneIndexes', [:], Argument.of(String))
 
         then:
-        verifyJsonResponse(I_AM_A_TEAPOT, '''{
+        verifyJsonResponse(OK, '''{
   "user": "unlogged_user@mdm-core.com",
   "indexed": true,
   "timeTakenMilliseconds": "${json-unit.ignore}",
