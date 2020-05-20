@@ -170,7 +170,7 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
             // Preserve the JSESSIONID cookie returned from the server
             if (httpResponse.header(HttpHeaderNames.SET_COOKIE)) {
                 Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(httpResponse.header(HttpHeaderNames.SET_COOKIE))
-                currentCookie = new NettyCookie(cookies.find {it.name() == 'JSESSIONID'})
+                if (cookies.find {it.name() == 'JSESSIONID'}) currentCookie = new NettyCookie(cookies.find {it.name() == 'JSESSIONID'})
             }
 
             httpResponse

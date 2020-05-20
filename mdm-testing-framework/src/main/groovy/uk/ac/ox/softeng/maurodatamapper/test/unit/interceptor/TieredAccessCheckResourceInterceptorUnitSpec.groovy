@@ -18,7 +18,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
     }
 
     @Unroll
-    void 'test access to #action using #idStr is always available'() {
+    void 'TR01 : test access to #action using #idStr is always available'() {
         given:
         if (action == 'no-endpoints') return
 
@@ -64,7 +64,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
     }
 
     @Unroll
-    void 'test access to #action using #userStr is only available to authenticated users'() {
+    void 'TR02 : test access to #action using #userStr is only available to authenticated users'() {
         given:
         if (action == 'no-endpoints') return
 
@@ -112,7 +112,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
     }
 
     @Unroll
-    void 'test access to #action using #idStr is only available to readers'() {
+    void 'TR03 : test access to #action using #idStr is only available to readers'() {
         given:
         if (action == 'no-endpoints') return
 
@@ -158,7 +158,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
 
     @Unroll
-    void 'test access to #action using #idStr is only available to creators'() {
+    void 'TR04 : test access to #action using #idStr is only available to creators'() {
         given:
         if (action == 'no-endpoints') return
 
@@ -204,7 +204,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
     }
 
     @Unroll
-    void 'test access to #action using #idStr is only available to editors'() {
+    void 'TR05 : test access to #action using #idStr is only available to editors'() {
         given:
         if (action == 'no-endpoints') return
 
@@ -249,7 +249,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
     }
 
     @Unroll
-    void 'test access to #action using #idStr is only available to deleters'() {
+    void 'TR06 : test access to #action using #idStr is only available to deleters'() {
         given:
         if (action == 'no-endpoints') return
 
@@ -295,7 +295,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
     }
 
     @Unroll
-    void 'test access to #action using #idStr is only available to admins'() {
+    void 'TR07 : test access to #action using #idStr is only available to admins'() {
         given:
         if (action == 'no-endpoints') return
 
