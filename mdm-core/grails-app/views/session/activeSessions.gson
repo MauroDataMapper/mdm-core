@@ -1,7 +1,9 @@
 import javax.servlet.http.HttpSession
 
 model {
-    Map<String, HttpSession> activeSessions
+    Collection<HttpSession> httpSessionCollection
 }
-
-json g.render(activeSessions)
+json {
+    count httpSessionCollection?.size() ?: 0
+    items g.render(httpSessionCollection ?: [])
+}

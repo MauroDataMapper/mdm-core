@@ -11,7 +11,7 @@ class SessionController implements ResourcelessMdmController {
 
     def activeSessions() {
         HashMap activeSessions = sessionService.getActiveSessionMap(servletContext)
-        respond activeSessions: activeSessions
+        respond view: '/session/activeSessions', [httpSessionCollection: activeSessions.values()]
     }
 
     def isAuthenticatedSession() {

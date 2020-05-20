@@ -31,10 +31,10 @@ class SessionFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse OK, response
 
         and:
-        response.body().any {it.key == sessionId}
+        response.body().count > 0
 
         when:
-        Map info = response.body().find {it.key == sessionId}.value
+        Map info = response.body().items.find {it.id == sessionId}
 
         then:
         info.id == sessionId
