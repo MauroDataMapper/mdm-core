@@ -12,7 +12,7 @@ import grails.web.databinding.DataBindingUtils
 import java.sql.DriverManager
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
-import static org.springframework.http.HttpStatus.I_AM_A_TEAPOT
+import static org.springframework.http.HttpStatus.OK
 
 class AdminController implements ResourcelessMdmController {
 
@@ -56,7 +56,7 @@ class AdminController implements ResourcelessMdmController {
             timeTaken            : Utils.getTimeString(end - start)
         ]
 
-        respond info, status: I_AM_A_TEAPOT
+        respond info, status: OK
 
     }
 
@@ -82,6 +82,6 @@ class AdminController implements ResourcelessMdmController {
                     'OS Version'                      : System.getProperty('os.version'),
                     'OS Architecture'                 : System.getProperty('os.arch'),
                     'Driver Manager Drivers Available': databaseDrivers
-                ], status: I_AM_A_TEAPOT)
+                ], status: OK)
     }
 }

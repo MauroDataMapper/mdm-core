@@ -11,7 +11,6 @@ import static io.micronaut.http.HttpStatus.OK
 
 /**
  * @see AdminController* Controller: admin
- -- * |  DELETE | /api/admin/logoutAllUsers       | Action: logoutAllUsers       |
  * |   POST  | /api/admin/editProperties       | Action: editApiProperties    |
  * |   POST  | /api/admin/rebuildLuceneIndexes | Action: rebuildLuceneIndexes |
  * |   GET   | /api/admin/properties           | Action: apiProperties        |
