@@ -24,6 +24,7 @@ plugins {
     id 'maven'
     id "com.jfrog.artifactory" version "4.15.2"
     id 'maven-publish'
+    id "com.github.hierynomus.license" version "0.15.0" apply false
 }
 
 apply plugin: 'ox.softeng.ox-brc-base'
@@ -112,6 +113,13 @@ task reportsArchive(type: Tar) {
 }
 
 subprojects {
+
+    apply plugin: 'com.github.hierynomus.license'
+
+    license {
+        header = file("${rootDir}/NOTICE")
+    }
+
     String pName = project.name
     rootProject.tasks.reportsArchive {
         from("$buildDir/reports") {
@@ -125,7 +133,7 @@ subprojects {
 
 // Custom publishing to allow us to push the reports up to artifactory from travis
 publishing {
-    repositories{
+    repositories {
         maven {
             url = "${project.artifactory_contextUrl}/build-reports"
             credentials {
@@ -135,7 +143,7 @@ publishing {
         }
     }
     publications {
-        reports(MavenPublication){
+        reports(MavenPublication) {
             if (System.getenv('TRAVIS')) {
                 version = System.getenv('TRAVIS_JOB_NUMBER')
             }
