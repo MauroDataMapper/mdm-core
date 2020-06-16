@@ -39,16 +39,24 @@ if (tasks.findByName('integrationTest')) {
     if (integrationTests && !functionalTests) {
         logger.log(LogLevel.WARN, '<<>> Running integration tests only <<>>')
         integrationTest {
-            exclude {
-                !it.directory && it.name.contains('FunctionalSpec')
+            //            useJUnit {
+            //                includeCategories 'uk.ac.ox.softeng.metadatacatalogue.test.junit.IntegrationTest'
+            //                excludeCategories 'uk.ac.ox.softeng.metadatacatalogue.test.junit.FunctionalTest'
+            //            }
+            filter{
+                excludeTestsMatching '*FunctionalSpec'
             }
         }
     } else if (functionalTests && !integrationTests) {
         logger.log(LogLevel.WARN, '<<>> Running functional tests only <<>>')
         integrationTest {
-            binResultsDir = file("${project.testResultsDir}/functionalTest/binary")
-            exclude {
-                !it.directory && !it.name.contains('FunctionalSpec')
+            binaryResultsDirectory.set(file("${project.testResultsDir}/functionalTest/binary"))
+            //            useJUnit {
+            //                excludeCategories 'uk.ac.ox.softeng.metadatacatalogue.test.junit.IntegrationTest'
+            //                includeCategories 'uk.ac.ox.softeng.metadatacatalogue.test.junit.FunctionalTest'
+            //            }
+            filter{
+                includeTestsMatching '*FunctionalSpec'
             }
             reports {
                 junitXml.destination = file("${project.testResultsDir}/functionalTest")
