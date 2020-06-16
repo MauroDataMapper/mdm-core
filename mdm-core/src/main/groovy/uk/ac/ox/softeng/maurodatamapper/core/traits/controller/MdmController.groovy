@@ -21,8 +21,6 @@ import org.grails.datastore.gorm.GormEntity
 import org.springframework.http.HttpStatus
 
 import static org.springframework.http.HttpStatus.GONE
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
-import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NOT_IMPLEMENTED
 import static org.springframework.http.HttpStatus.OK
 
@@ -40,10 +38,6 @@ trait MdmController implements UserSecurityPolicyManagerAware {
 
     void notYetImplemented() {
         render status: NOT_IMPLEMENTED
-    }
-
-    void methodNotAllowed(String message = '') {
-        render status: METHOD_NOT_ALLOWED, message: message
     }
 
     void gone() {
