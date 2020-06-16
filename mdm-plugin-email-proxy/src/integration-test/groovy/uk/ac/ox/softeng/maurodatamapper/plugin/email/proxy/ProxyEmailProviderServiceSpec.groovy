@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
 import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -28,6 +29,7 @@ import org.springframework.context.MessageSource
  * @since 08/10/2019
  */
 @Integration
+@Slf4j
 class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComparer {
 
     MessageSource messageSource
@@ -53,7 +55,7 @@ class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComp
 
         then:
         verifyJson('''{
-  "fromName": "MCD",
+  "fromName": "MDM",
   "fromAddress": "mdm@mdm.com",
   "to": [{"test user": "test@test.com"}],
   "subject": "Test",
@@ -76,7 +78,7 @@ class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComp
 
         then:
         verifyJson('''{
-  "fromName": "MCD",
+  "fromName": "MDM",
   "fromAddress": "mdm@mdm.com",
   "to": [{"test user": "test@test.com"},{"test user1": "test1@test.com"}],
   "cc": [{"cc user": "cc@test.com"},{"cc user1": "cc1@test.com"}],
