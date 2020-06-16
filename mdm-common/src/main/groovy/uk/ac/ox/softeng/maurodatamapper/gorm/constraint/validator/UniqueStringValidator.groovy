@@ -36,15 +36,13 @@ abstract class UniqueStringValidator<D extends GormEntity> implements Validator<
         if (value == null) return ['default.null.message']
         if (!value) return ['default.blank.message']
 
-        // No id so validation will be performed at collection level
-        if (objectIsNotSaved()) return true
+        // Object parent is not saved so validation will be performed at collection level
+        if (objectParentIsNotSaved()) return true
 
         valueIsNotUnique(value) ? ['default.not.unique.message'] : true
     }
 
-    boolean objectIsNotSaved() {
-        !object.ident()
-    }
+    abstract boolean objectParentIsNotSaved()
 
     abstract boolean valueIsNotUnique(String value)
 }
