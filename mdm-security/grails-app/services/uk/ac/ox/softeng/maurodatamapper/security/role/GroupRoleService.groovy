@@ -31,7 +31,7 @@ import org.springframework.cache.Cache
 @Transactional
 class GroupRoleService {
 
-    public static final String GROUP_ROLES_CACHE_NAME = 'mcSecurityGroupRoles'
+    public static final String GROUP_ROLES_CACHE_NAME = 'mdmSecurityGroupRoles'
 
     GrailsCacheManager grailsCacheManager
 

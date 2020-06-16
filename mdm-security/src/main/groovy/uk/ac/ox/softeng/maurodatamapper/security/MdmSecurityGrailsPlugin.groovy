@@ -58,7 +58,7 @@ The security domain, services and controllers for the Mauro Data Mapper backend.
     def issueManagement = [system: "YouTrack", url: "https://maurodatamapper.myjetbrains.com"]
 
     // Online location of the plugin's browseable source code.
-    def scm = [url: "https://github.com/mauroDataMapper/mdmdm-security@ore"]
+    def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
 
     def dependsOn = [
         mdmCore: '4.0.0 > *'

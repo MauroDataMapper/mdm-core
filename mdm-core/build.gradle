@@ -35,7 +35,7 @@ repositories {
     mavenLocal()
     maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
     maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
-    maven {url "http://repo.grails.org/grails/core"}
+    maven {url "https://repo.grails.org/grails/core"}
 }
 
 configurations {
@@ -127,7 +127,7 @@ grailsPublish {
 This is basically the backend API.
 '''
     developers = [olliefreeman: 'Oliver Freeman', jameswelch: "James Welch",]
-    //issueTrackerUrl = 'http://maurodatamapper.myjetbrains.com' TODO
+    //issueTrackerUrl = 'https://maurodatamapper.myjetbrains.com' TODO
 }
 
 apply from: 'dependencies.gradle'

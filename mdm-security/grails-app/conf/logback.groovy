@@ -39,14 +39,14 @@ String ansiPattern = '%clr(%d{ISO8601}){faint} ' + // Date
 
 String nonAnsiPattern = '%d{ISO8601} [%10.10thread] %-5level %-40.40logger{39} : %msg%n'
 
-String cIProp = System.getProperty('mc.ciMode')
+String cIProp = System.getProperty('mdm.ciMode')
 boolean ciEnv = cIProp ? cIProp.toBoolean() : false
 
 def baseDir = Environment.current == Environment.PRODUCTION ? BuildSettings.BASE_DIR.canonicalFile : BuildSettings.TARGET_DIR.canonicalFile
 def clazz = Environment.current == Environment.PRODUCTION ? RollingFileAppender : FileAppender
 
 File logDir = new File(baseDir, 'logs').canonicalFile
-String logFilename = System.getProperty('mc.logFileName') ?: Environment.current == Environment.PRODUCTION ? baseDir.name : baseDir.parentFile.name
+String logFilename = System.getProperty('mdm.logFileName') ?: Environment.current == Environment.PRODUCTION ? baseDir.name : baseDir.parentFile.name
 
 
 // See http://logback.qos.ch/manual/groovy.html for details on configuration

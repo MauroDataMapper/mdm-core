@@ -24,21 +24,21 @@ EnumerationValue ev = enumerationValue as EnumerationValue
     if (ev.classifiers) {
         'mdm:classifiers' {
             ev.classifiers.each {cl ->
-                layout '/classifier/ev.gml', classifier: cl, ns: 'mc'
+                layout '/classifier/ev.gml', classifier: cl, ns: 'mdm'
             }
         }
     }
     if (ev.metadata) {
         'mdm:metadata' {
             ev.metadata.each {md ->
-                layout '/metadata/ev.gml', metadata: md, ns: 'mc'
+                layout '/metadata/ev.gml', metadata: md, ns: 'mdm'
             }
         }
     }
     if (ev.annotations) {
         'mdm:annotations' {
             ev.annotations.each {ann ->
-                layout '/annotation/ev.gml', annotation: ann, ns: 'mc'
+                layout '/annotation/ev.gml', annotation: ann, ns: 'mdm'
             }
         }
     }
