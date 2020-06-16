@@ -118,6 +118,7 @@ subprojects {
 
     license {
         header = file("${rootDir}/NOTICE")
+        excludes(['**/*.gson','**/*.yml','**/META-INF/**'])
     }
 
     String pName = project.name
