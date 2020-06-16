@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileController
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
@@ -77,7 +77,7 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "fileName": "logback.groovy",
       "domainType": "ReferenceFile",
-      "fileSize": 4327,
+      "fileSize": 4973,
       "id": "${json-unit.matches:id}",
       "fileContents": "${json-unit.matches:fileContents}",
       "fileType": "Unknown"
