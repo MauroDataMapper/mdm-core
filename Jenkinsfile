@@ -60,6 +60,13 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-security info') {
+                    steps {
+                        dir('mdm-security') {
+                            sh './grailsw -v' // Output grails version for verification checks
+                        }
+                    }
+                }
             }
         }
 
@@ -114,6 +121,20 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-security') {
+                    steps {
+                        dir('mdm-security') {
+                            sh "./grailsw test-app -unit"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-security') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -161,6 +182,20 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-security') {
+                    steps {
+                        dir('mdm-security') {
+                            sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-security') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -189,6 +224,20 @@ pipeline {
                     post {
                         always {
                             dir('mdm-plugin-datamodel') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('mdm-security') {
+                    steps {
+                        dir('mdm-security') {
+                            sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-security') {
                                 junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
                             }
                         }
