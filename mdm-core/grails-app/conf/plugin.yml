@@ -82,4 +82,5 @@ hibernate:
 environments:
     test:
         database:
+            name: 'mcTest'
             creation: 'CREATE SCHEMA IF NOT EXISTS core'
