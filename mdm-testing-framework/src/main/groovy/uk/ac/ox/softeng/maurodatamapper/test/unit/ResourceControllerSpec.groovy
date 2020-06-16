@@ -24,9 +24,11 @@ import grails.plugin.json.builder.JsonOutput
 import grails.plugin.json.view.test.JsonRenderResult
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import grails.views.mvc.GenericGroovyTemplateViewResolver
 import groovy.transform.SelfType
 import groovy.util.logging.Slf4j
 import net.javacrumbs.jsonunit.core.Option
+import org.grails.web.servlet.view.CompositeViewResolver
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -74,6 +76,13 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
         log.debug('Setting up resource controller unit spec')
         randomId1 = UUID.randomUUID()
         randomId2 = UUID.randomUUID()
+        // The grails unit spec loads th composite view resolver but only with the gsp resolver
+        // We need to add the jsonViewResolver
+        // Weirdly the base spec does create the smart view resolvers so they are available as referenced beans
+        defineBeans {
+            jsonViewResolver(GenericGroovyTemplateViewResolver, ref('jsonSmartViewResolver'))
+            "${CompositeViewResolver.BEAN_NAME}"(CompositeViewResolver)
+        }
     }
 
     def setup() {

@@ -24,7 +24,6 @@ import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.grails.datastore.gorm.GormEntity
-import org.junit.Before
 import spock.lang.Shared
 
 import java.lang.reflect.ParameterizedType
@@ -47,7 +46,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
     }
 
     @Rollback
-    @Before
+    @OnceBefore
     def checkResourceCount() {
         log.debug('Check resource count is {}', getExpectedInitialResourceCount())
         sessionFactory.currentSession.flush()
@@ -69,7 +68,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
             def items = response.body().items
             items.each {i ->
                 DELETE(getDeleteEndpoint(i.id))
-                assert response.status() == HttpStatus.NO_CONTENT
+                assert response.status() in [HttpStatus.NO_CONTENT, HttpStatus.NOT_FOUND]
             }
         }
     }
@@ -92,6 +91,16 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
     private ParameterizedType getParamterizedTypeSuperClass(def clazz) {
         if (clazz instanceof ParameterizedType) return clazz
         getParamterizedTypeSuperClass(clazz.genericSuperclass)
+    }
+
+    String getSavePath() {
+        getResourcePath()
+    }
+
+    String createNewItem(Map model) {
+        POST(getSavePath(), model, MAP_ARG, true)
+        verifyResponse(HttpStatus.CREATED, response)
+        response.body().id
     }
 
     abstract Map getValidJson()
@@ -160,7 +169,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         List<String> createdIds = []
 
         when: 'The save action is executed with no content'
-        POST('', [:])
+        POST(getSavePath(), [:], MAP_ARG, true)
 
         then: 'The response is correct'
         if (hasDefaultCreation()) {
@@ -175,7 +184,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         }
 
         when: 'The save action is executed with invalid data'
-        POST('', invalidJson)
+        POST(getSavePath(), invalidJson, MAP_ARG, true)
 
         then: 'The response is correct'
         if (hasDefaultCreation()) {
@@ -190,7 +199,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         }
 
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        createNewItem(validJson)
 
         then: 'The response is correct'
         verifyResponse HttpStatus.CREATED, response
@@ -207,7 +216,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
 
     void 'R3 : Test the index action with content'() {
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        createNewItem(validJson)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -227,7 +236,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
 
     void 'R4 : Test the update action correctly updates an instance'() {
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        createNewItem(validJson)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -253,7 +262,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
 
     void 'R5 : Test the show action correctly renders an instance'() {
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        createNewItem(validJson)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
@@ -273,7 +282,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
 
     void 'R6 : Test the delete action correctly deletes an instance'() {
         when: 'The save action is executed with valid data'
-        POST('', validJson)
+        createNewItem(validJson)
 
         then: 'The response is correct'
         response.status == HttpStatus.CREATED

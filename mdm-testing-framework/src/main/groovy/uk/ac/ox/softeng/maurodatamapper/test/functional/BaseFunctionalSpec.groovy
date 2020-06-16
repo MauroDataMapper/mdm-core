@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional
 
 
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
+import uk.ac.ox.softeng.maurodatamapper.test.http.RestClientInterface
 import uk.ac.ox.softeng.maurodatamapper.test.json.ResponseComparer
 
 import grails.gorm.transactions.Transactional
@@ -71,10 +72,7 @@ import java.time.OffsetDateTime
  *}* </pre>
  */
 @Slf4j
-abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseComparer {
-
-    public static final Argument<Map> MAP_ARG = Argument.of(Map)
-    public static final Argument<String> STRING_ARG = Argument.of(String)
+abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseComparer, RestClientInterface {
 
     @Shared
     String baseUrl
@@ -89,7 +87,7 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
     @Autowired
     SessionFactory sessionFactory
 
-    public HttpResponse<Map> response
+    HttpResponse<Map> response
 
     NettyCookie currentCookie
 

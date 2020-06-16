@@ -40,6 +40,10 @@ abstract class ContainedResourceInterceptorUnitSpec<T> extends ResourceIntercept
 
     abstract void setContainingResourceParameters(String id)
 
+    HttpStatus getNoAccessIndexAllowedCode() {
+        HttpStatus.NOT_FOUND
+    }
+
     @Unroll
     void 'CR1 : test read/write access to index is controlled for #type resource'() {
         given:
@@ -58,8 +62,8 @@ abstract class ContainedResourceInterceptorUnitSpec<T> extends ResourceIntercept
 
         where:
         action  | resourceId    || allowed | responseCode
-        'index' | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'index' | noAccessId    || false   | HttpStatus.UNAUTHORIZED
+        'index' | unknownId     || false   | HttpStatus.NOT_FOUND
+        'index' | noAccessId    || false   | HttpStatus.NOT_FOUND
         'index' | readAccessId  || true    | null
         'index' | writeAccessId || true    | null
 

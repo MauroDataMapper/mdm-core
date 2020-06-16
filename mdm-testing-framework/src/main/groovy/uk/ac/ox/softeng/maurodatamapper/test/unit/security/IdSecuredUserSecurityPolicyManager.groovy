@@ -32,7 +32,6 @@ class IdSecuredUserSecurityPolicyManager extends AbstractBasicSecurityPolicyMana
     UUID readAccessId
     UUID noAccessId
     UUID writeAccessId
-    User user
 
     IdSecuredUserSecurityPolicyManager(User user, UUID unknownId, UUID noAccessId, UUID readAccessId, UUID writeAccessId) {
         this.unknownId = unknownId
@@ -75,7 +74,7 @@ class IdSecuredUserSecurityPolicyManager extends AbstractBasicSecurityPolicyMana
     }
 
     @Override
-    boolean isLoggedIn() {
-        UnloggedUser.instance.emailAddress != user.emailAddress && user.emailAddress != 'pending@test.com'
+    boolean isAuthenticated() {
+        UnloggedUser.instance.emailAddress != user.emailAddress && !isPending()
     }
 }

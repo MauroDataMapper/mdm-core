@@ -23,7 +23,10 @@ import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolic
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.artefact.Interceptor
+import grails.views.mvc.GenericGroovyTemplateViewResolver
+import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
 import spock.lang.Unroll
 
@@ -35,7 +38,21 @@ import spock.lang.Unroll
  *
  * @since 03/12/2019
  */
+@Slf4j
 abstract class SimpleInterceptorUnitSpec extends BaseUnitSpec {
+
+    def setupSpec() {
+        log.debug('Setting up base unit beans')
+
+        // The grails unit spec loads th composite view resolver but only with the gsp resolver
+        // We need to add the jsonViewResolver
+        // Weirdly the base spec does create the smart view resolvers so they are available as referenced beans
+        defineBeans {
+            jsonViewResolver(GenericGroovyTemplateViewResolver, ref('jsonSmartViewResolver'))
+            "${CompositeViewResolver.BEAN_NAME}"(CompositeViewResolver)
+        }
+
+    }
 
     abstract Interceptor getInterceptor()
 
@@ -89,7 +106,8 @@ abstract class SimpleInterceptorUnitSpec extends BaseUnitSpec {
         !interceptor.before()
 
         and:
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.FORBIDDEN.code
+        response.json.additional
 
         where:
         action << actions

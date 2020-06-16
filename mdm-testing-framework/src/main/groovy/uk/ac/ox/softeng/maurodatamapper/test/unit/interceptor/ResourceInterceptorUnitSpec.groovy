@@ -24,9 +24,11 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 import uk.ac.ox.softeng.maurodatamapper.test.unit.security.IdSecuredUserSecurityPolicyManager
 
 import grails.testing.web.GrailsWebUnitTest
+import grails.views.mvc.GenericGroovyTemplateViewResolver
 import grails.web.mapping.UrlMappingInfo
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
 import spock.lang.Unroll
 
@@ -62,7 +64,11 @@ abstract class ResourceInterceptorUnitSpec<T> extends BaseUnitSpec implements Gr
     }
 
     HttpStatus getNoAccessIndexAllowedCode() {
-        HttpStatus.UNAUTHORIZED
+        HttpStatus.FORBIDDEN
+    }
+
+    HttpStatus getSaveAllowedCode() {
+        HttpStatus.NOT_FOUND
     }
 
     def getPublicAccessUserSecurityPolicyManager() {
@@ -83,6 +89,14 @@ abstract class ResourceInterceptorUnitSpec<T> extends BaseUnitSpec implements Gr
         idSecuredUserSecurityPolicyManager = new IdSecuredUserSecurityPolicyManager(editor, unknownId, noAccessId, readAccessId, writeAccessId)
         applicationAdminSecuredUserSecurityPolicyManager = new IdSecuredUserSecurityPolicyManager(admin, unknownId, noAccessId, readAccessId,
                                                                                                   writeAccessId)
+
+        // The grails unit spec loads th composite view resolver but only with the gsp resolver
+        // We need to add the jsonViewResolver
+        // Weirdly the base spec does create the smart view resolvers so they are available as referenced beans
+        defineBeans {
+            jsonViewResolver(GenericGroovyTemplateViewResolver, ref('jsonSmartViewResolver'))
+            "${CompositeViewResolver.BEAN_NAME}"(CompositeViewResolver)
+        }
     }
 
     def setup() {
@@ -140,10 +154,10 @@ abstract class ResourceInterceptorUnitSpec<T> extends BaseUnitSpec implements Gr
         where:
         action   || allowed                   | responseCode
         'index'  || noAccessIndexAllowedState | noAccessIndexAllowedCode
-        'show'   || false                     | HttpStatus.UNAUTHORIZED
-        'save'   || false                     | HttpStatus.UNAUTHORIZED
-        'update' || false                     | HttpStatus.UNAUTHORIZED
-        'delete' || false                     | HttpStatus.UNAUTHORIZED
+        'show'   || false                     | HttpStatus.NOT_FOUND
+        'save'   || false                     | getSaveAllowedCode()
+        'update' || false                     | HttpStatus.NOT_FOUND
+        'delete' || false                     | HttpStatus.NOT_FOUND
     }
 
     @Unroll
@@ -164,21 +178,21 @@ abstract class ResourceInterceptorUnitSpec<T> extends BaseUnitSpec implements Gr
 
         where:
         action   | resourceId    || allowed | responseCode
-        'show'   | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'show'   | noAccessId    || false   | HttpStatus.UNAUTHORIZED
+        'show'   | unknownId     || false   | HttpStatus.NOT_FOUND
+        'show'   | noAccessId    || false   | HttpStatus.NOT_FOUND
         'show'   | readAccessId  || true    | null
         'show'   | writeAccessId || true    | null
-        'save'   | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'save'   | noAccessId    || false   | HttpStatus.UNAUTHORIZED
-        'save'   | readAccessId  || false   | HttpStatus.UNAUTHORIZED
+        'save'   | unknownId     || false   | getSaveAllowedCode()
+        'save'   | noAccessId    || false   | getSaveAllowedCode()
+        'save'   | readAccessId  || false   | HttpStatus.FORBIDDEN
         'save'   | writeAccessId || true    | null
-        'update' | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'update' | noAccessId    || false   | HttpStatus.UNAUTHORIZED
-        'update' | readAccessId  || false   | HttpStatus.UNAUTHORIZED
+        'update' | unknownId     || false   | HttpStatus.NOT_FOUND
+        'update' | noAccessId    || false   | HttpStatus.NOT_FOUND
+        'update' | readAccessId  || false   | HttpStatus.FORBIDDEN
         'update' | writeAccessId || true    | null
-        'delete' | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'delete' | noAccessId    || false   | HttpStatus.UNAUTHORIZED
-        'delete' | readAccessId  || false   | HttpStatus.UNAUTHORIZED
+        'delete' | unknownId     || false   | HttpStatus.NOT_FOUND
+        'delete' | noAccessId    || false   | HttpStatus.NOT_FOUND
+        'delete' | readAccessId  || false   | HttpStatus.FORBIDDEN
         'delete' | writeAccessId || true    | null
 
         type = resourceId == unknownId ? 'unknown' :

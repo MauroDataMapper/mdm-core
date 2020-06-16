@@ -104,13 +104,12 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         !interceptor.before()
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.FORBIDDEN.code
 
         when:
         response.reset()
         setParamsId(adminId)
-        params.currentUserSecurityPolicyManager =
-            new IdSecuredUserSecurityPolicyManager(user, unknownId, noAccessId, readAccessId, writeAccessId)
+        params.currentUserSecurityPolicyManager = new IdSecuredUserSecurityPolicyManager(user, unknownId, noAccessId, readAccessId, writeAccessId)
         withRequest(controller: controllerName)
         request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
 
@@ -118,7 +117,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
         setParamsId(adminId)
         interceptor.before() == (UnloggedUser.instance.emailAddress != user.emailAddress && user.emailAddress != 'pending@test.com')
         response.status == (UnloggedUser.instance.emailAddress != user.emailAddress
-                                && user.emailAddress != 'pending@test.com' ? HttpStatus.OK.code : HttpStatus.UNAUTHORIZED.code)
+                                && user.emailAddress != 'pending@test.com' ? HttpStatus.OK.code : HttpStatus.FORBIDDEN.code)
 
         where:
         [action, user] << [interceptor.getAuthenticatedAccessMethods() ?: ['no-endpoints'],
@@ -152,7 +151,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         !interceptor.before()
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.NOT_FOUND.code
 
         when:
         response.reset()
@@ -163,7 +162,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         interceptor.before() == (id in [writeAccessId, readAccessId])
-        response.status == (id in [writeAccessId, readAccessId] ? HttpStatus.OK.code : HttpStatus.UNAUTHORIZED.code)
+        response.status == expectedStatus.code
 
         where:
         [action, id] << [interceptor.getReadAccessMethods() ?: ['no-endpoints'], [unknownId, readAccessId, noAccessId, writeAccessId]].combinations()
@@ -171,6 +170,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
                 id == readAccessId ? 'readAccessId' :
                 id == noAccessId ? 'noAccessId' :
                 'writeAccessId'
+        expectedStatus = id in [writeAccessId, readAccessId] ? HttpStatus.OK : HttpStatus.NOT_FOUND
     }
 
 
@@ -198,7 +198,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         !interceptor.before()
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.NOT_FOUND.code
 
         when:
         response.reset()
@@ -209,7 +209,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         interceptor.before() == (id == writeAccessId)
-        response.status == (id == writeAccessId ? HttpStatus.OK.code : HttpStatus.UNAUTHORIZED.code)
+        response.status == expectedStatus.code
 
         where:
         [action, id] <<
@@ -218,6 +218,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
                 id == readAccessId ? 'readAccessId' :
                 id == noAccessId ? 'noAccessId' :
                 'writeAccessId'
+        expectedStatus = id == writeAccessId ? HttpStatus.OK : id == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
     }
 
     @Unroll
@@ -244,7 +245,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         !interceptor.before()
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.NOT_FOUND.code
 
         when:
         response.reset()
@@ -255,7 +256,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         interceptor.before() == (id == writeAccessId)
-        response.status == (id == writeAccessId ? HttpStatus.OK.code : HttpStatus.UNAUTHORIZED.code)
+        response.status == expectedStatus.code
 
         where:
         [action, id] << [interceptor.getEditAccessMethods() ?: ['no-endpoints'], [unknownId, readAccessId, noAccessId, writeAccessId]].combinations()
@@ -263,6 +264,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
                 id == readAccessId ? 'readAccessId' :
                 id == noAccessId ? 'noAccessId' :
                 'writeAccessId'
+        expectedStatus = id == writeAccessId ? HttpStatus.OK : id == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
     }
 
     @Unroll
@@ -289,7 +291,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         !interceptor.before()
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.NOT_FOUND.code
 
         when:
         response.reset()
@@ -300,7 +302,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         interceptor.before() == (id == writeAccessId)
-        response.status == (id == writeAccessId ? HttpStatus.OK.code : HttpStatus.UNAUTHORIZED.code)
+        response.status == expectedStatus.code
 
         where:
         [action, id] <<
@@ -309,6 +311,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
                 id == readAccessId ? 'readAccessId' :
                 id == noAccessId ? 'noAccessId' :
                 'writeAccessId'
+        expectedStatus = id == writeAccessId ? HttpStatus.OK : id == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
     }
 
     @Unroll
@@ -335,7 +338,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         !interceptor.before()
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.FORBIDDEN.code
 
         when:
         response.reset()
@@ -346,7 +349,7 @@ abstract class TieredAccessCheckResourceInterceptorUnitSpec<T extends TieredAcce
 
         then:
         !interceptor.before()
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.FORBIDDEN.code
 
         when:
         response.reset()
