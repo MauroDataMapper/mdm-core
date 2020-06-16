@@ -86,7 +86,7 @@ class Folder implements Container {
 
 
     boolean hasChildFolders() {
-        countByParentFolder(this)
+        Folder.countByParentFolder(this)
     }
 
     @Override
