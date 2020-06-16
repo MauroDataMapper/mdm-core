@@ -29,4 +29,8 @@ trait SecurableResource {
     }
 
     abstract String getDomainType()
+
+    abstract Boolean getReadableByEveryone()
+
+    abstract Boolean getReadableByAuthenticatedUsers()
 }

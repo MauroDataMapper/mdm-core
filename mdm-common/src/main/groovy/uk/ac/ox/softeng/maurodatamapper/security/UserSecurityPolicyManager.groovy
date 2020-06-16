@@ -22,6 +22,7 @@ package uk.ac.ox.softeng.maurodatamapper.security
  */
 interface UserSecurityPolicyManager {
 
+
     User getUser()
 
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass)
@@ -46,11 +47,17 @@ interface UserSecurityPolicyManager {
 
     boolean userCanDeleteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, boolean permanent)
 
+    boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action)
+
+    List<String> userAvailableActions(Serializable resourceClass, UUID id)
+
     List<String> userAvailableActions(Class resourceClass, UUID id)
 
     List<String> userAvailableActions(String domainType, UUID id)
 
     boolean isApplicationAdministrator()
 
-    boolean isLoggedIn()
+    boolean isAuthenticated()
+
+    boolean isPending()
 }

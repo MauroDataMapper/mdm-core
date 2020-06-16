@@ -18,9 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.security.basic
 
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyManager {
+
+    User user
 
     abstract boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action)
 
@@ -61,6 +64,11 @@ abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyM
     }
 
     @Override
+    List<String> userAvailableActions(Serializable resourceClass, UUID id) {
+        id ? ['delete', 'show', 'update'] : ['index', 'save']
+    }
+
+    @Override
     List<String> userAvailableActions(Class resourceClass, UUID id) {
         id ? ['delete', 'show', 'update'] : ['index', 'save']
     }
@@ -68,5 +76,10 @@ abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyM
     @Override
     List<String> userAvailableActions(String domainType, UUID id) {
         id ? ['delete', 'show', 'update'] : ['index', 'save']
+    }
+
+    @Override
+    boolean isPending() {
+        user.emailAddress == 'pending@test.com'
     }
 }

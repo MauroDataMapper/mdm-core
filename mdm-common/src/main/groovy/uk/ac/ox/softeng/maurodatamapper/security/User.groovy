@@ -43,4 +43,14 @@ trait User extends SecurableResource {
     String toString() {
         getEmailAddress()
     }
+
+    @Override
+    Boolean getReadableByEveryone() {
+        false
+    }
+
+    @Override
+    Boolean getReadableByAuthenticatedUsers() {
+        false
+    }
 }
