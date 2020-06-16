@@ -86,7 +86,7 @@ class Folder implements Container {
 
 
     boolean hasChildFolders() {
-        Folder.countByParentFolder(this)
+        countByParentFolder(this)
     }
 
     @Override
@@ -166,22 +166,14 @@ class Folder implements Container {
     }
 
     static List<Folder> findAllWithIdsInPath(List<String> ids) {
-        Folder.by()
+        by()
             .isNotNull('path')
             .ne('path', '')
-        //      .list()
             .findAll {f ->
                 ids.any {
                     it in f.path.split('/')
                 }
             }
-        //        luceneList {
-        //            should {
-        //                ids.each {
-        //                    keyword 'path', it
-        //                }
-        //            }
-        //        }
     }
 
     static List<Folder> findAllContainedInFolderId(UUID folderId) {

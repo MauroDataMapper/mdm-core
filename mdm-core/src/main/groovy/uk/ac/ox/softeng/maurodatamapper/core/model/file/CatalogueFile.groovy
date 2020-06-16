@@ -82,10 +82,6 @@ trait CatalogueFile implements EditHistoryAware {
         "${getClass().simpleName}:${fileName}"
     }
 
-    //    static DetachedCriteria<CatalogueFile> byCreatedBy(User catalogueUser) {
-    //        new DetachedCriteria<CatalogueFile>(CatalogueFile).eq('createdBy', catalogueUser.emailAddress)
-    //    }
-    //
     static <T extends CatalogueFile> DetachedCriteria<T> withBaseFilter(DetachedCriteria<T> criteria, Map filters) {
         if (filters.fileName) criteria = criteria.ilike('fileName', "%${filters.fileName}%")
         if (filters.fileType) criteria = criteria.ilike('fileType', "%${filters.fileType}%")

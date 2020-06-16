@@ -49,12 +49,12 @@ class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComp
         proxyEmailProviderService.allProps.emailServicePassword = 'svc_password'
 
         when:
-        String msg = proxyEmailProviderService.buildMessage('MCD', 'mcd@mcd.com', ['test user': 'test@test.com'], [:], 'Test', 'Hello')
+        String msg = proxyEmailProviderService.buildMessage('MDM', 'mdm@mdm.com', ['test user': 'test@test.com'], [:], 'Test', 'Hello')
 
         then:
         verifyJson('''{
   "fromName": "MCD",
-  "fromAddress": "mcd@mcd.com",
+  "fromAddress": "mdm@mdm.com",
   "to": [{"test user": "test@test.com"}],
   "subject": "Test",
   "body": "Hello",
@@ -70,14 +70,14 @@ class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComp
         proxyEmailProviderService.allProps.emailServicePassword = 'svc_password'
 
         when:
-        String msg = proxyEmailProviderService.buildMessage('MCD', 'mcd@mcd.com',
+        String msg = proxyEmailProviderService.buildMessage('MDM', 'mdm@mdm.com',
                                                             ['test user': 'test@test.com', 'test user1': 'test1@test.com'],
                                                             ['cc user': 'cc@test.com', 'cc user1': 'cc1@test.com'], 'Test', 'Hello')
 
         then:
         verifyJson('''{
   "fromName": "MCD",
-  "fromAddress": "mcd@mcd.com",
+  "fromAddress": "mdm@mdm.com",
   "to": [{"test user": "test@test.com"},{"test user1": "test1@test.com"}],
   "cc": [{"cc user": "cc@test.com"},{"cc user1": "cc1@test.com"}],
   "subject": "Test",
@@ -93,7 +93,7 @@ class ProxyEmailProviderServiceSpec extends MdmSpecification implements JsonComp
         proxyEmailProviderService.allProps.emailServiceUrl = 'http://localhost'
 
         when:
-        def res = proxyEmailProviderService.sendEmail('MCD', 'mcd@mcd.com', ['Ollie': 'ollie.freeman@gmail.com'], [:], 'Test', 'Hello')
+        def res = proxyEmailProviderService.sendEmail('MDM', 'mdm@mdm.com', ['Ollie': 'ollie.freeman@gmail.com'], [:], 'Test', 'Hello')
         then:
         res != true
     }

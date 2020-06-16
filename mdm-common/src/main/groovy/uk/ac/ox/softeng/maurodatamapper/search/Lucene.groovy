@@ -31,6 +31,7 @@ import org.hibernate.search.exception.SearchException
 @Slf4j
 class Lucene {
 
+    @SuppressWarnings('UnnecessaryQualifiedReference')
     static <T> PaginatedLuceneResult<T> securedPaginatedList(Class<T> clazz,
                                                              List<UUID> allowedIds,
                                                              Map pagination,
@@ -48,6 +49,7 @@ class Lucene {
         }
     }
 
+    @SuppressWarnings('UnnecessaryQualifiedReference')
     static <T> PaginatedLuceneResult<T> paginatedList(Class<T> clazz, Map pagination, @DelegatesTo(HibernateSearchApi) Closure closure) {
 
         if (!ClassPropertyFetcher.forClass(clazz).isReadableProperty('search')) {

@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.search.PathTokenizerAnalyzer
 import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -137,7 +136,7 @@ class Classifier implements Container {
     }
 
     static List<Classifier> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
-        Classifier.search().list closure
+        search().list closure
     }
 
     static List<Classifier> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {

@@ -52,9 +52,6 @@ trait JsonWebUnitSpec extends GrailsWebUnitTest implements JsonComparer {
             } catch (Exception ignored) {
                 log.warn('Cannot render JSON: \n{}', response.text)
             }
-            //            if (expectedJson instanceof List) {
-            //                verifyJson(expectedJson[0].toString(), actual, (expectedJson.findAll {it instanceof Option}.toArray() as Option[]))
-            //            } else
             verifyJson(expectedJson, actual, addtlOptions)
         } else {
             if (response.text) {

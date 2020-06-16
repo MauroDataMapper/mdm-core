@@ -24,7 +24,6 @@ import org.springframework.context.MessageSource
 
 /**
  * @since 13/10/2017
- * TODO xmlnamespacesandversions & dm importers
  */
 @Integration
 class MauroDataMapperServiceProviderServiceSpec extends MdmSpecification {
@@ -73,76 +72,11 @@ class MauroDataMapperServiceProviderServiceSpec extends MdmSpecification {
     void 'test importers'() {
         expect: 'no default importers'
         mauroDataMapperServiceProviderService.dataLoaderProviderServices.size() == 0
-        /*
-        expect:
-        mauroDataMapperServiceProvidingService.importerPlugins.size() == 3
-
-        and:
-        mauroDataMapperServiceProvidingService.findImporter('ox.softeng.maurodatamapper.core.spi.json',
-                                                    'JsonImporterService',
-                                                    '1.1')
-
-        and:
-        mauroDataMapperServiceProvidingService.findImporter('ox.softeng.maurodatamapper.core.spi.xml',
-                                                    'XmlImporterService',
-                                                    dataModelNamespaceVersion)
-                                                    *
-         */
     }
 
     void 'test exporters'() {
         expect: 'no default exporters'
         mauroDataMapperServiceProviderService.dataLoaderProviderServices.size() == 0
-        /*
-        expect:
-        mauroDataMapperServiceProvidingService.exporterPlugins.size() == 3
-
-        and:
-        mauroDataMapperServiceProvidingService.findExporter('ox.softeng.maurodatamapper.core.spi.json',
-                                                    'JsonExporterService',
-                                                    '1.1')
-
-        and:
-        mauroDataMapperServiceProvidingService.findExporter('ox.softeng.maurodatamapper.core.spi.xml',
-                                                    'XmlExporterService',
-                                                    exportNamespaceVersion)
-
-        //        and:
-        //        mauroDataMapperServiceProvidingService.findExporter('ox.softeng.maurodatamapper.spi.msword',
-        //                                                          'MicrosoftWordExporter',
-        //                                                          '0.1')
-         */
     }
 
-    /*
-        void 'test DataModel importers'() {
-            expect:
-            mauroDataMapperServiceProvidingService.dataModelImporterPlugins.size() == 2
-
-            and:
-            mauroDataMapperServiceProvidingService.findDataModelImporter('ox.softeng.maurodatamapper.core.spi.json',
-                                                                 'JsonImporterService',
-                                                                 '1.1')
-
-            and:
-            mauroDataMapperServiceProvidingService.findDataModelImporter('ox.softeng.maurodatamapper.core.spi.xml',
-                                                                 'XmlImporterService',
-                                                                 dataModelNamespaceVersion)
-        }
-
-        void 'test DataModel exporters'() {
-            expect:
-            mauroDataMapperServiceProvidingService.dataModelExporterPlugins.size() == 2
-
-            and:
-            mauroDataMapperServiceProvidingService.findDataModelExporter('ox.softeng.maurodatamapper.core.spi.json',
-                                                                 'JsonExporterService',
-                                                                 '1.1')
-
-            and:
-            mauroDataMapperServiceProvidingService.findDataModelExporter('ox.softeng.maurodatamapper.core.spi.xml',
-                                                                 'XmlExporterService',
-                                                                 exportNamespaceVersion)
-        }
-     */
 }
