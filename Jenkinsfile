@@ -145,20 +145,6 @@ pipeline {
                         }
                     }
                 }
-                stage('mdm-plugin-email-proxy') {
-                    steps {
-                        dir('mdm-plugin-email-proxy') {
-                            sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mdm-plugin-email-proxy') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                            }
-                        }
-                    }
-                }
             }
         }
     }
