@@ -72,8 +72,10 @@ class AnnotationController extends EditLoggingController<Annotation> {
 
     @Override
     protected Annotation updateResource(Annotation resource) {
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
-        annotationService.addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        annotationService.
+            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
     }
 
     @Override

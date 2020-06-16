@@ -58,11 +58,15 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
 
     @Override
     void addCreatedEdit(User creator) {
-        addToEditsTransactionally creator, "{$editLabel} created".toString()
+        addToEditsTransactionally creator, getCreatedEditDescription()
+    }
+
+    String getCreatedEditDescription() {
+        "[$editLabel] created"
     }
 
     @Override
-    void addUpdatedEdit(User editor) {
+    void addUpdatedEdit(User editor, List<String> dirtyPropertyNames) {
         addToEditsTransactionally editor, editLabel, dirtyPropertyNames
     }
 

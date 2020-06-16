@@ -58,7 +58,8 @@ class UrlMappings {
             }
 
             // Open access url
-            get '/session/isAuthenticated'(controller: 'session', action: 'isAuthenticatedSession') // New Url
+            get "/session/isAuthenticated/$sesssionId?"(controller: 'session', action: 'isAuthenticatedSession') // New Url
+            get '/session/keepAlive'(controller: 'session', action: 'keepAlive') // New Url
 
             group '/importer', {
                 get "/parameters/$ns?/$name?/$version?"(controller: 'importer', action: 'parameters')
@@ -66,15 +67,24 @@ class UrlMappings {
 
             '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES) {
                 '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES)
+                put '/readByEveryone'(controller: 'folder', action: 'readByEveryone')
+                delete '/readByEveryone'(controller: 'folder', action: 'readByEveryone')
+                put '/readByAuthenticated'(controller: 'folder', action: 'readByAuthenticated')
+                delete '/readByAuthenticated'(controller: 'folder', action: 'readByAuthenticated')
             }
 
             '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES) {
                 '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES)
-                '/catalogueItems'(controller: 'classifier', action: 'catalogueItems') // New URL
+                get '/catalogueItems'(controller: 'classifier', action: 'catalogueItems') // New URL
+                put '/readByEveryone'(controller: 'classifier', action: 'readByEveryone')
+                delete '/readByEveryone'(controller: 'classifier', action: 'readByEveryone')
+                put '/readByAuthenticated'(controller: 'classifier', action: 'readByAuthenticated')
+                delete '/readByAuthenticated'(controller: 'classifier', action: 'readByAuthenticated')
             }
 
             /*
             Catalogue Item accessible resources
+            All new URLs
              */
             group "/$catalogueItemDomainType/$catalogueItemId", {
                 /*
@@ -116,7 +126,7 @@ class UrlMappings {
             group "/tree/$containerDomainType", {
                 get '/'(controller: 'treeItem', action: 'index')
                 get "/${catalogueItemDomainType}/$catalogueItemId"(controller: 'treeItem', action: 'show')
-                get "/search/$search"(controller: 'treeItem', action: 'search')
+                get "/search/$searchTerm"(controller: 'treeItem', action: 'search')
             }
 
             /*

@@ -37,7 +37,7 @@ class ReferenceFileController extends EditLoggingController<ReferenceFile> {
         if (resource) {
             return render(file: resource.fileContents, fileName: resource.fileName, contentType: resource.contentType)
         }
-        return notFound()
+        return notFound(params.id)
     }
 
     @Override
@@ -71,8 +71,10 @@ class ReferenceFileController extends EditLoggingController<ReferenceFile> {
 
     @Override
     protected ReferenceFile updateResource(ReferenceFile resource) {
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
-        referenceFileService.addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        referenceFileService.
+            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
     }
 
     @Override

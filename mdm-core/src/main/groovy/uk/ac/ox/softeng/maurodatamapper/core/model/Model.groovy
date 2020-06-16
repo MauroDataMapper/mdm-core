@@ -40,6 +40,8 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
 
     Folder folder
     Boolean deleted
+    Boolean readableByEveryone
+    Boolean readableByAuthenticatedUsers
     Boolean finalised
     String modelType
     String author

@@ -72,6 +72,16 @@ class FolderService implements ContainerService<Folder> {
         Folder.findAllContainedInFolderId(containerId)
     }
 
+    @Override
+    List<Folder> findAllReadableByEveryone() {
+        Folder.findAllByReadableByEveryone(true)
+    }
+
+    @Override
+    List<Folder> findAllReadableByAuthenticatedUsers() {
+        Folder.findAllByReadableByAuthenticatedUsers(true)
+    }
+
     Folder get(Serializable id) {
         if (Utils.toUuid(id)) return Folder.get(id)
         if (id instanceof String) return findByFolderPath(id)

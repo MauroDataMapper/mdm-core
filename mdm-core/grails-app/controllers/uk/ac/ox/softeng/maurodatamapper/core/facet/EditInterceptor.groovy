@@ -25,6 +25,11 @@ import groovy.util.logging.Slf4j
 class EditInterceptor extends FacetInterceptor {
 
     @Override
+    Class getFacetClass() {
+        Edit
+    }
+
+    @Override
     String getOwningType() {
         'resource'
     }

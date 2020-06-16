@@ -73,8 +73,10 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
     @Override
     protected SemanticLink updateResource(SemanticLink resource) {
         semanticLinkService.loadCatalogueItemsIntoSemanticLink(resource)
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
-        semanticLinkService.addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        semanticLinkService.
+            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
     }
 
     @Override

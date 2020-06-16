@@ -18,13 +18,20 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
+import grails.gorm.transactions.Transactional
+import org.springframework.beans.factory.annotation.Autowired
 
 class ClassifierController extends EditLoggingController<Classifier> {
 
     static responseFormats = ['json', 'xml']
 
     ClassifierService classifierService
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     ClassifierController() {
         super(Classifier)
@@ -34,18 +41,57 @@ class ClassifierController extends EditLoggingController<Classifier> {
         classifierService.findAllReadableCatalogueItemsByClassifierId(currentUserSecurityPolicyManager, Utils.toUuid(params.classifierId), params)
     }
 
+    @Transactional
+    def readByEveryone() {
+        Classifier instance = queryForResource(params.classifierId)
+
+        if (!instance) return notFound(params.classifierId)
+
+        instance.readableByEveryone = request.method == 'PUT'
+
+        updateResource(instance)
+        updateResponse(instance)
+    }
+
+    @Transactional
+    def readByAuthenticated() {
+        Classifier instance = queryForResource(params.classifierId)
+
+        if (!instance) return notFound(params.classifierId)
+
+        instance.readableByAuthenticatedUsers = request.method == 'PUT'
+
+        updateResource(instance)
+        updateResponse(instance)
+    }
+
     @Override
     protected List<Classifier> listAllReadableResources(Map params) {
         params.sort = params.sort ?: 'label'
         if (params.catalogueItemId) {
-            return classifierService.findAllByCatalogueItemId(currentUserSecurityPolicyManager, Utils.toUuid(params.catalogueItemId), params)
+            return classifierService.findAllByCatalogueItemId(currentUserSecurityPolicyManager, params.catalogueItemId, params)
+        }
+        if (params.classifierId) {
+            return classifierService.findAllByParentClassifierId(params.classifierId, params)
         }
         classifierService.findAllByUser(currentUserSecurityPolicyManager, params)
     }
 
     @Override
     protected void serviceDeleteResource(Classifier resource) {
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.removeSecurityForSecurableResource(resource, currentUser)
+        }
         classifierService.delete(resource)
+    }
+
+    @Override
+    protected Classifier createResource() {
+        Classifier resource = super.createResource() as Classifier
+        if (params.classifierId) {
+            resource.parentClassifier = classifierService.get(params.classifierId)
+        }
+        resource
     }
 
     @Override
@@ -54,6 +100,9 @@ class ClassifierController extends EditLoggingController<Classifier> {
 
         if (params.catalogueItemId) {
             classifierService.addClassifierToCatalogueItem(params.catalogueItemDomainType, params.catalogueItemId, classifier)
+        }
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(classifier, currentUser, classifier.label)
         }
         classifier
     }
@@ -65,5 +114,17 @@ class ClassifierController extends EditLoggingController<Classifier> {
         } else {
             super.deleteResource(resource)
         }
+    }
+
+    @Override
+    protected Classifier updateResource(Classifier resource) {
+        Set<String> changedProperties = resource.getDirtyPropertyNames()
+        Classifier classifier = super.updateResource(resource) as Classifier
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(classifier,
+                                                                                                               changedProperties,
+                                                                                                               currentUser)
+        }
+        classifier
     }
 }

@@ -227,7 +227,7 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     }
 
     List<UUID> filterModelIdsWhereModelIdIsDocumentSuperseded(String modelType, List<UUID> modelIds) {
-
+        if (!modelIds) return []
         List<UUID> sourceForSupersededByIds = VersionLink.by()
             .eq('linkType', VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
             .eq('catalogueItemDomainType', modelType)
@@ -245,7 +245,7 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     }
 
     List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(String modelType, List<UUID> modelIds) {
-
+        if (!modelIds) return []
         List<UUID> sourceForSupersededByIds = VersionLink.by()
             .eq('linkType', VersionLinkType.SUPERSEDED_BY_MODEL)
             .eq('catalogueItemDomainType', modelType)
@@ -262,7 +262,7 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     }
 
     List<UUID> filterModelIdsWhereModelIdIsSuperseded(String modelType, List<UUID> modelIds) {
-
+        if (!modelIds) return []
         List<UUID> sourceForSupersededByIds = VersionLink.by()
             .inList('linkType', VersionLinkType.SUPERSEDED_BY_MODEL, VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
             .eq('catalogueItemDomainType', modelType)

@@ -37,7 +37,7 @@ class FolderInterceptor extends SecurableResourceInterceptor {
 
     @Override
     UUID getId() {
-        params.folderId ?: params.id
+        params.id ?: params.folderId
     }
 
     boolean before() {

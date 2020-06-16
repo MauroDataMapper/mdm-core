@@ -58,6 +58,8 @@ abstract class SecurableResourceInterceptor implements MdmInterceptor {
     boolean checkActionAuthorisationOnSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id,
                                                       boolean directCallsToIndexAllowed = false) {
 
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(securableResourceClass, id)
+
         // Allows for direct calls to secured resources but stops indexing on nested secured resources
         if (directCallsToIndexAllowed && isIndex() && !id) return true
 
@@ -65,19 +67,28 @@ abstract class SecurableResourceInterceptor implements MdmInterceptor {
         // We will have to handle certain controls inside the controller
         if (isDelete()) {
             return currentUserSecurityPolicyManager.userCanDeleteSecuredResourceId(
-                securableResourceClass, id, params.boolean('permanent', false)) ?: unauthorised()
+                securableResourceClass, id, params.boolean('permanent', false)) ?:
+                   forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
-        if (isUpdate()) {
-            return currentUserSecurityPolicyManager.userCanEditSecuredResourceId(securableResourceClass, id) ?: unauthorised()
+        if (isUpdate() || actionName in ['readByEveryone', 'readByAuthenticated']) {
+            return currentUserSecurityPolicyManager.userCanEditSecuredResourceId(securableResourceClass, id) ?:
+                   forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
         if (isSave()) {
-            return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(securableResourceClass, id) ?: unauthorised()
+            // A save wont have an id on a securable resource so it will always be forbidden or allowed
+            return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(securableResourceClass, id) ?: forbiddenDueToPermissions()
+            //forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
-        // If index or show then if user can read then they can see it
-        if (isIndex() || isShow()) {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(securableResourceClass, id) ?: unauthorised()
+        // If index on an id or show then if user can read then they can see it otherwise the id is notFound
+        if ((isIndex() && id) || isShow()) {
+            return canRead ?: notFound(securableResourceClass, id.toString())
+        }
+        // If index and no id then assume policy manager manages this and we know they can can read or not,
+        // But return forbidden rather than not found
+        if (isIndex() && !id) {
+            return canRead ?: forbiddenDueToPermissions()
         }
 
-        unauthorised()
+        unauthorised("Unknown action [${actionName}]")
     }
 }

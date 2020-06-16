@@ -58,14 +58,14 @@ class TreeItemService {
      * @param catalogueItemId
      * @return
      */
-    CatalogueItem findTreeCapableCatalogueItem(UUID catalogueItemId) {
+    CatalogueItem findTreeCapableCatalogueItem(Class catalogueItemClass, UUID catalogueItemId) {
         if (!catalogueItemId) return null
 
-        for (CatalogueItemService service : catalogueItemServices) {
-            CatalogueItem catalogueItem = service.get(catalogueItemId)
-            if (catalogueItem) return catalogueItem
-        }
-        null
+        CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItemClass)}
+        if (!service) throw new ApiBadRequestException('TIS01',
+                                                       "Catalogue Item retrieval for catalogue item [${catalogueItemClass.simpleName}] with no " +
+                                                       "supporting service")
+        service.get(catalogueItemId)
     }
 
     /**
@@ -126,6 +126,10 @@ class TreeItemService {
                                                                                UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                String searchTerm, String domainType) {
         log.info('Creating searched container tree')
+        if (!searchTerm) {
+            log.debug('No search term')
+            return []
+        }
         long start = System.currentTimeMillis()
         List<ContainerTreeItem> tree = []
         ContainerService service = containerServices.find {it.handles(containerClass)}

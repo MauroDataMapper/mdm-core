@@ -31,7 +31,7 @@ trait AddsEditHistory {
 
     abstract void addCreatedEdit(User creator)
 
-    abstract void addUpdatedEdit(User editor)
+    abstract void addUpdatedEdit(User editor, List<String> dirtyPropertyNames)
 
     abstract void addDeletedEdit(User deleter)
 

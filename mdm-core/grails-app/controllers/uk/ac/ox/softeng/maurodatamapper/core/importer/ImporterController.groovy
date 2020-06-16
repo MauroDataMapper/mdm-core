@@ -37,7 +37,7 @@ class ImporterController implements ResourcelessMdmController {
 
         ImporterProviderService importer = mauroDataMapperServiceProviderService.findImporterProvider(params.ns, params.name, params.version)
 
-        if (!importer) return notFound("${params.ns}:${params.name}:${params.version}", ImporterProviderService)
+        if (!importer) return notFound(ImporterProviderService, "${params.ns}:${params.name}:${params.version}")
 
         respond importerProviderService: importer, importParameterGroups: importerService.describeImporterParams(importer)
     }

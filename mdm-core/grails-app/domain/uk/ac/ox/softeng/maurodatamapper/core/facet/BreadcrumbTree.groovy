@@ -138,11 +138,16 @@ class BreadcrumbTree {
     }
 
     void removeFromParent() {
-        parent.removeFromChildren(this)
+        parent?.removeFromChildren(this)
     }
 
     List<Breadcrumb> getBreadcrumbs() {
         getBreadcrumbsFromTree(getTree()).init()
+    }
+
+    @Override
+    String toString() {
+        "BreadcrumbTree:${domainType}:${domainId}:${label}"
     }
 
     boolean matchesTree(String treeToMatch) {

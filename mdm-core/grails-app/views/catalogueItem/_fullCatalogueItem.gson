@@ -6,10 +6,13 @@ inherits template: '/catalogueItem/catalogueItem'
 model {
     CatalogueItem catalogueItem
     UserSecurityPolicyManager userSecurityPolicyManager
+    Class owningSecurableResourceClass
+    UUID owningSecurableResourceId
 }
 
 json {
-    availableActions userSecurityPolicyManager.userAvailableActions(catalogueItem.domainType, catalogueItem.id)
+    availableActions userSecurityPolicyManager.userAvailableActions(owningSecurableResourceClass ?: catalogueItem.domainType,
+                                                                    owningSecurableResourceId ?: catalogueItem.id)
     lastUpdated catalogueItem.lastUpdated
     if (catalogueItem.classifiers) classifiers g.render(catalogueItem.classifiers)
 }

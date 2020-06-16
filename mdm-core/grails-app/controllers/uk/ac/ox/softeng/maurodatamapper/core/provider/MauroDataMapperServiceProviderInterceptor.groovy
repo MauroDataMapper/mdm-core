@@ -23,6 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 class MauroDataMapperServiceProviderInterceptor implements MdmInterceptor {
 
     boolean before() {
-        currentUserSecurityPolicyManager.isApplicationAdministrator() ?: unauthorised()
+        currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
     }
 }

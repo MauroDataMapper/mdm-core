@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 
 import grails.core.GrailsClass
 import groovy.util.logging.Slf4j
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 
@@ -36,9 +37,10 @@ class TreeItemInterceptor implements MdmInterceptor {
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
 
+    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+
     boolean before() {
         mapDomainTypeToClass('container', true)
-
 
         if (!params.containerClass) {
             render status: HttpStatus.NOT_FOUND, model: [path: request.requestURI]
@@ -46,17 +48,18 @@ class TreeItemInterceptor implements MdmInterceptor {
         }
 
         if (actionName in ['documentationSupersededModels', 'modelSupersededModels', 'deletedModels']) {
-            return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: unauthorised()
+            return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
 
         if (isShow()) {
             mapDomainTypeToClass('catalogueItem', true)
             // Verify the user can see the catalogue item to allow them to see the tree
             if (Utils.parentClassIsAssignableFromChild(SecurableResource, params.catalogueItemClass)) {
-                return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, null, null)
+                return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, params.catalogueItemClass,
+                                                                   params.catalogueItemId)
             }
 
-            Model model = getOwningModel()
+            Model model = proxyHandler.unwrapIfProxy(getOwningModel())
             return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, model.getClass(), model.getId())
         }
         // Otherwise top level action so should be allowed through

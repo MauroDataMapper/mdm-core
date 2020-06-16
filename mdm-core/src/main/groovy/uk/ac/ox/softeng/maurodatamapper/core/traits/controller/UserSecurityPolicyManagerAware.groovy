@@ -21,6 +21,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
+import static org.springframework.http.HttpStatus.FORBIDDEN
+import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
+import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.UNAUTHORIZED
 
 /**
@@ -30,12 +33,10 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED
 //@CompileStatic
 trait UserSecurityPolicyManagerAware {
 
+    abstract void renderMapForResponse(Map map)
+
     User getCurrentUser() {
         currentUserSecurityPolicyManager.getUser()
-    }
-
-    Boolean isAuthenticated() {
-        currentUserSecurityPolicyManager.isLoggedIn()
     }
 
     UserSecurityPolicyManager getCurrentUserSecurityPolicyManager() {
@@ -44,12 +45,46 @@ trait UserSecurityPolicyManagerAware {
         applicationContext.getBean(MdmCoreGrailsPlugin.DEFAULT_USER_SECURITY_POLICY_MANAGER_BEAN_NAME) as UserSecurityPolicyManager
     }
 
-    boolean unauthorised() {
-        render status: UNAUTHORIZED
+    boolean methodNotAllowed(String message) {
+        renderMapForResponse status: METHOD_NOT_ALLOWED, message: message
+        false
+    }
+
+    boolean unauthorised(String additionalInformation) {
+        Map model = [additional: additionalInformation]
+        if (request.requestURI) model.path = request.requestURI
+        renderMapForResponse(model: model, status: UNAUTHORIZED, view: '/unauthorised')
+        false
+    }
+
+    boolean forbidden(String additionalInformation) {
+        Map model = [additional: additionalInformation]
+        if (request.requestURI) model.path = request.requestURI
+        renderMapForResponse(model: model, status: FORBIDDEN, view: '/forbidden')
+        false
+    }
+
+    boolean notFound(Class resourceClass, id) {
+        Map model = [resource: resourceClass.simpleName, id: id?.toString() ?: 'null']
+        if (request.requestURI) model.path = request.requestURI
+        renderMapForResponse(model: model, status: NOT_FOUND, view: '/notFound')
         false
     }
 
     void setCurrentUserSecurityPolicyManager(UserSecurityPolicyManager userSecurityPolicyManager) {
         params.currentUserSecurityPolicyManager = userSecurityPolicyManager
+    }
+
+    boolean forbiddenDueToPermissions(List<String> availableActions = []) {
+        forbidden(availableActions ? "User does not have the necessary permissions. Permissions: ${availableActions}" :
+                  'User does not have the necessary permissions')
+    }
+
+    boolean forbiddenDueToNotAuthenticated() {
+        forbidden('User is not authenticated')
+    }
+
+    boolean forbiddenDueToNotApplicationAdministrator() {
+        forbidden('User must be an application administrator')
     }
 }

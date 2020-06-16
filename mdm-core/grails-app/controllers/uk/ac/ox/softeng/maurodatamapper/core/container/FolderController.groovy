@@ -19,17 +19,21 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
+import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 class FolderController extends EditLoggingController<Folder> {
-
     static responseFormats = ['json', 'xml']
 
     FolderService folderService
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     FolderController() {
         super(Folder)
@@ -63,6 +67,30 @@ class FolderController extends EditLoggingController<Folder> {
         updateResponse(instance)
     }
 
+    @Transactional
+    def readByEveryone() {
+        Folder instance = queryForResource(params.folderId)
+
+        if (!instance) return notFound(params.folderId)
+
+        instance.readableByEveryone = request.method == 'PUT'
+
+        updateResource(instance)
+        updateResponse(instance)
+    }
+
+    @Transactional
+    def readByAuthenticated() {
+        Folder instance = queryForResource(params.folderId)
+
+        if (!instance) return notFound(params.folderId)
+
+        instance.readableByAuthenticatedUsers = request.method == 'PUT'
+
+        updateResource(instance)
+        updateResponse(instance)
+    }
+
     @Override
     protected Folder queryForResource(Serializable id) {
         folderService.get(id)
@@ -72,20 +100,40 @@ class FolderController extends EditLoggingController<Folder> {
     protected Folder createResource() {
         Folder resource = super.createResource() as Folder
         if (params.folderId) {
-            folderService.get(params.folderId)?.addToChildFolders(resource)
+            resource.parentFolder = folderService.get(params.folderId)
         }
 
         if (!resource.label) {
             folderService.generateDefaultFolderLabel(resource)
         }
-
         resource
+    }
+
+    @Override
+    protected Folder saveResource(Folder resource) {
+        Folder folder = super.saveResource(resource) as Folder
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(folder, currentUser, folder.label)
+        }
+        folder
+    }
+
+    @Override
+    protected Folder updateResource(Folder resource) {
+        Set<String> changedProperties = resource.getDirtyPropertyNames()
+        Folder folder = super.updateResource(resource) as Folder
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(folder,
+                                                                                                               changedProperties,
+                                                                                                               currentUser)
+        }
+        folder
     }
 
     @Override
     protected List<Folder> listAllReadableResources(Map params) {
         if (params.folderId) {
-            return folderService.findAllByParentFolderId(Utils.toUuid(params.folderId), params)
+            return folderService.findAllByParentFolderId(params.folderId, params)
         }
 
         folderService.findAllByUser(currentUserSecurityPolicyManager, params)
@@ -93,6 +141,9 @@ class FolderController extends EditLoggingController<Folder> {
 
     @Override
     protected void serviceDeleteResource(Folder resource) {
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(resource, currentUser)
+        }
         folderService.delete(resource)
     }
 }

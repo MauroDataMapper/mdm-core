@@ -38,6 +38,8 @@ class Folder implements Container {
 
     UUID id
     Boolean deleted
+    Boolean readableByEveryone
+    Boolean readableByAuthenticatedUsers
 
     Folder parentFolder
 
@@ -73,6 +75,8 @@ class Folder implements Container {
 
     Folder() {
         deleted = false
+        readableByAuthenticatedUsers = false
+        readableByEveryone = false
     }
 
     @Override
@@ -107,9 +111,8 @@ class Folder implements Container {
     }
 
     @Override
-    void addCreatedEdit(User creator) {
-        String description = parentFolder ? "${editLabel} added as child of [${parentFolder.editLabel}]" : "${editLabel} added"
-        addToEditsTransactionally creator, description
+    String getCreatedEditDescription() {
+        parentFolder ? "[${editLabel}] added as child of [${parentFolder.editLabel}]" : "[$editLabel] created"
     }
 
     @Override
@@ -190,6 +193,7 @@ class Folder implements Container {
     }
 
     static List<Folder> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {
+        if (!allowedIds) return []
         luceneList {
             keyword 'label', searchTerm
             filter name: 'idSecured', params: [allowedIds: allowedIds]

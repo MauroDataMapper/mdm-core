@@ -39,9 +39,9 @@ trait CatalogueItemAwareService<K> {
         domain
     }
 
-    K addUpdatedEditToCatalogueItem(User editor, K domain, String catalogueItemDomainType, UUID catalogueItemId) {
+    K addUpdatedEditToCatalogueItem(User editor, K domain, String catalogueItemDomainType, UUID catalogueItemId, List<String> dirtyPropertyNames) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally editor, domain.editLabel, domain.dirtyPropertyNames
+        catalogueItem.addToEditsTransactionally editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
@@ -51,10 +51,9 @@ trait CatalogueItemAwareService<K> {
         domain
     }
 
-
     CatalogueItem findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
         CatalogueItemService service = catalogueItemServices.find {it.handles(domainType)}
-        if (!service) throw new ApiBadRequestException('CIAS02', "Metadata retrieval for catalogue item [${domainType}] with no supporting service")
+        if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${domainType}] with no supporting service")
         service.get(catalogueItemId)
     }
 }

@@ -58,28 +58,33 @@ abstract class TieredAccessSecurableResourceInterceptor extends SecurableResourc
         }
 
         if (actionName in getAuthenticatedAccessMethods()) {
-            return currentUserSecurityPolicyManager.isLoggedIn() ?: unauthorised()
+            return currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToNotAuthenticated()
         }
 
+        if (actionName in getApplicationAdminAccessMethods()) {
+            return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
+        }
+
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(securableResourceClass, id)
+
         if (actionName in getReadAccessMethods()) {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(securableResourceClass, id) ?: unauthorised()
+            return canRead ?: notFound(securableResourceClass, id.toString())
         }
 
         if (actionName in getCreateAccessMethods()) {
-            return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(securableResourceClass, id) ?: unauthorised()
+            return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(securableResourceClass, id) ?:
+                   forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
 
         if (actionName in getEditAccessMethods()) {
-            return currentUserSecurityPolicyManager.userCanEditSecuredResourceId(securableResourceClass, id) ?: unauthorised()
+            return currentUserSecurityPolicyManager.userCanEditSecuredResourceId(securableResourceClass, id) ?:
+                   forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
 
         if (actionName in getDeleteAccessMethods()) {
             return currentUserSecurityPolicyManager.userCanDeleteSecuredResourceId(
-                securableResourceClass, id, params.boolean('permanent', false)) ?: unauthorised()
-        }
-
-        if (actionName in getApplicationAdminAccessMethods()) {
-            return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: unauthorised()
+                securableResourceClass, id, params.boolean('permanent', false)) ?:
+                   forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
 
         checkActionAuthorisationOnSecuredResource(securableResourceClass, id, directCallsToIndexAllowed)

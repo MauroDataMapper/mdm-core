@@ -65,8 +65,10 @@ class MetadataController extends EditLoggingController<Metadata> {
 
     @Override
     protected Metadata updateResource(Metadata resource) {
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
-        metadataService.addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        metadataService.
+            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
     }
 
     @Override

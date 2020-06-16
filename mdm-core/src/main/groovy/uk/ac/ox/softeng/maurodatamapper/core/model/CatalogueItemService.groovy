@@ -111,7 +111,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
     }
 
     K copyCatalogueItemInformation(K original, K copy, User copier) {
-        copy.createdBy = copier
+        copy.createdBy = copier.emailAddress
         copy.label = original.label
         copy.description = original.description
 

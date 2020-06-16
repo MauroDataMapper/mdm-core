@@ -35,6 +35,8 @@ class Classifier implements Container {
     public final static Integer BATCH_SIZE = 1000
 
     UUID id
+    Boolean readableByEveryone
+    Boolean readableByAuthenticatedUsers
 
     Classifier parentClassifier
 
@@ -71,6 +73,8 @@ class Classifier implements Container {
     }
 
     Classifier() {
+        readableByAuthenticatedUsers = false
+        readableByEveryone = false
     }
 
     @Override
@@ -101,9 +105,8 @@ class Classifier implements Container {
     }
 
     @Override
-    void addCreatedEdit(User creator) {
-        String description = parentClassifier ? "${editLabel} as child of [${parentClassifier.editLabel}]" : "${editLabel} added"
-        addToEditsTransactionally creator, description
+    String getCreatedEditDescription() {
+        parentClassifier ? "[${editLabel}] added as child of [${parentClassifier.editLabel}]" : "[$editLabel] created"
     }
 
     @Override
@@ -127,6 +130,10 @@ class Classifier implements Container {
 
     static DetachedCriteria<Classifier> byLabel(String label) {
         by().eq('label', label)
+    }
+
+    static DetachedCriteria<Classifier> byParentClassifierId(UUID id) {
+        by().eq('parentClassifier.id', id)
     }
 
     static List<Classifier> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {

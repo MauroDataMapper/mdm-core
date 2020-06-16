@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.session
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpSession
@@ -31,17 +32,28 @@ class SessionService implements HttpSessionListener {
     public static final String CONTEXT_PROPERTY_NAME = 'activeSessionMap'
 
     HttpSession setUserEmailAddress(HttpSession session, String emailAddress) {
+        if (isInvalidatedSession(session)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
         session.setAttribute('emailAddress', emailAddress)
         storeSession(session)
     }
 
     HttpSession setLastAccessedUrl(HttpSession session, String lastAccessedUrl) {
+        if (isInvalidatedSession(session)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
         session.setAttribute('lastUrl', lastAccessedUrl)
         storeSession(session)
     }
 
-    boolean isAuthenticatedSession(HttpSession session) {
-        session.getAttribute('emailAddress') && retrieveSession(session).getAttribute('emailAddress')
+    boolean isAuthenticatedSession(HttpSession session, String sessionId) {
+        if (isInvalidatedSession(session, sessionId)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
+        retrieveSession(session.servletContext, sessionId).getAttribute('emailAddress')
+    }
+
+    boolean isInvalidatedSession(HttpSession session) {
+        isInvalidatedSession(session, session.id)
+    }
+
+    boolean isInvalidatedSession(HttpSession session, String sessionId) {
+        !getActiveSessionMap(session.servletContext).containsKey(sessionId)
     }
 
     String getSessionEmailAddress(HttpSession session) {

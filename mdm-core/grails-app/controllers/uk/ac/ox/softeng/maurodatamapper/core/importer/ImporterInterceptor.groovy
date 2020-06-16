@@ -23,6 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 class ImporterInterceptor implements MdmInterceptor {
 
     boolean before() {
-        currentUserSecurityPolicyManager.isLoggedIn() ?: unauthorised()
+        currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToNotAuthenticated()
     }
 }

@@ -64,6 +64,16 @@ class ClassifierService implements ContainerService<Classifier> {
         Classifier.getAll(containerIds)
     }
 
+    @Override
+    List<Classifier> findAllReadableByEveryone() {
+        Classifier.findAllByReadableByEveryone(true)
+    }
+
+    @Override
+    List<Classifier> findAllReadableByAuthenticatedUsers() {
+        Classifier.findAllByReadableByAuthenticatedUsers(true)
+    }
+
     Classifier get(Serializable id) {
         Classifier.get(id)
     }
@@ -195,6 +205,10 @@ class ClassifierService implements ContainerService<Classifier> {
         Collection<Classifier> allClassifiersInItem = catalogueItem.classifiers
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
         allClassifiersInItem.findAll {it.id in readableIds}.toList()
+    }
+
+    List<Classifier> findAllByParentClassifierId(UUID parentClassifierId, Map pagination = [:]) {
+        Classifier.byParentClassifierId(parentClassifierId).list(pagination)
     }
 
     Classifier editInformation(Classifier classifier, String label, String description) {

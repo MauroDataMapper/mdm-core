@@ -76,7 +76,7 @@ class VersionLink implements CatalogueItemAware, CreatorAware {
 
     @Override
     String getEditLabel() {
-        "SemanticLink:${linkType}"
+        "VersionLink:${linkType}:${targetModelId}"
     }
 
     void setModel(Model model) {

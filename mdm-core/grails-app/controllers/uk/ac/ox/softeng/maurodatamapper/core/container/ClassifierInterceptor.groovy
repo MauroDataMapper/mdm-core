@@ -41,7 +41,7 @@ class ClassifierInterceptor extends SecurableResourceInterceptor {
 
     @Override
     UUID getId() {
-        params.classifierId ?: params.id
+        params.id ?: params.classifierId
     }
 
     @Override
@@ -54,12 +54,12 @@ class ClassifierInterceptor extends SecurableResourceInterceptor {
 
 
         if (actionName == 'catalogueItems') {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Classifier, getId()) ?: unauthorised()
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Classifier, getId()) ?: notFound(Classifier, getId())
         }
 
         // Must use "containsKey" incase the field is provided but that value is null
         if (params.containsKey('catalogueItemId')) {
-            if (isUpdate()) return unauthorised()
+            if (isUpdate()) return methodNotAllowed('Cannot update via a catalogue item')
 
             if (Utils.parentClassIsAssignableFromChild(SecurableResource, params.catalogueItemClass)) {
                 return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, null, null)

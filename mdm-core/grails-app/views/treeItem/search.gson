@@ -1,8 +1,7 @@
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ContainerTreeItem
 
 model {
-    Iterable<TreeItem> treeItemList
+    Iterable<ContainerTreeItem> containerTreeItemList
 }
-
-json tmpl.treeItem(treeItemList ?: [])
+json tmpl.treeItem(containerTreeItemList ?: [])
 

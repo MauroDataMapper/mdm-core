@@ -31,6 +31,11 @@ import grails.web.servlet.mvc.GrailsParameterMap
 
 trait MdmInterceptor implements UserSecurityPolicyManagerAware, WebAttributes {
 
+    @Override
+    void renderMapForResponse(Map map) {
+        render(map)
+    }
+
     GrailsClass getGrailsResource(GrailsParameterMap params, String resourceParam) {
         String lookup = params[resourceParam]
 
@@ -92,26 +97,46 @@ trait MdmInterceptor implements UserSecurityPolicyManagerAware, WebAttributes {
      */
     boolean checkActionAuthorisationOnUnsecuredResource(Class resourceClass, UUID id,
                                                         Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
+
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
+
         // The 3 tiers of writing are deleting, updating/editing and saving/creation
         // We will have to handle certain controls inside the controller
         if (isDelete()) {
             return currentUserSecurityPolicyManager.userCanDeleteResourceId(resourceClass, id,
-                                                                            owningSecureResourceClass, owningSecureResourceId) ?: unauthorised()
+                                                                            owningSecureResourceClass, owningSecureResourceId) ?:
+                   forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
+
         }
         if (isUpdate()) {
             return currentUserSecurityPolicyManager.userCanEditResourceId(resourceClass, id,
-                                                                          owningSecureResourceClass, owningSecureResourceId) ?: unauthorised()
+                                                                          owningSecureResourceClass, owningSecureResourceId) ?:
+                   forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
         }
         if (isSave()) {
             return currentUserSecurityPolicyManager.userCanCreateResourceId(resourceClass, id,
-                                                                            owningSecureResourceClass, owningSecureResourceId) ?: unauthorised()
-        }
-        // If index or show then if user can read then they can see it
-        if (isIndex() || isShow()) {
-            return currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id,
-                                                                          owningSecureResourceClass, owningSecureResourceId) ?: unauthorised()
+                                                                            owningSecureResourceClass, owningSecureResourceId) ?:
+                   forbiddenOrNotFound(canRead, id ? resourceClass : owningSecureResourceClass, id ?: owningSecureResourceId)
         }
 
-        unauthorised()
+        // If show then if user can read then they can see it otherwise the id is notFound
+        if (isShow()) {
+            return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
+        }
+        // If index and owning resource id then we are trying to index the content in the owning resource
+        // therefore if cannot read then return not found on owning resource otherwise return forbidden
+        if (isIndex()) {
+            if (owningSecureResourceId) {
+                return canRead ?: notFound(owningSecureResourceClass, owningSecureResourceId.toString())
+            }
+            return canRead ?: forbiddenDueToPermissions()
+        }
+
+        unauthorised("Unknown action [${actionName}]")
+    }
+
+    boolean forbiddenOrNotFound(boolean canRead, Class resourceClass, UUID resourceId) {
+        canRead ? forbiddenDueToPermissions() :
+        notFound(resourceClass, resourceId.toString())
     }
 }

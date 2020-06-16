@@ -54,7 +54,7 @@ class EmailService {
     }
 
     @Transactional
-    boolean sendEmail(String fromName, String fromAddress, Map<String, String> to, Map<String, String> cc, String subject, String messageBody) {
+    String sendEmail(String fromName, String fromAddress, Map<String, String> to, Map<String, String> cc, String subject, String messageBody) {
         if (emailer != null) {
             Email email = new Email(sentToEmailAddress: to.values().first(), subject: subject, body: messageBody,
                                     emailServiceUsed: emailer.getDisplayName(),
@@ -73,10 +73,10 @@ class EmailService {
             }
 
             email.save(flush: true)
-            email.successfullySent
+            return email.failureReason
         }
         log.info('No emailer configured.  Would have sent message with content: {}', messageBody)
-        false
+        'No emailer configured'
     }
 
     Map<String, String> buildUserPropertiesMap(User user, InformationAware informationAwareItem, String baseUrl, String passwordResetLink) {
@@ -134,10 +134,15 @@ class EmailService {
                     String messageSubject = getApiPropertyAndSubstitute(subjectProperty, propertiesMap)
                     String fromName = getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_NAME, propertiesMap)
                     String fromAddress = getApiPropertyAndSubstitute(ApiPropertyEnum.EMAIL_FROM_ADDRESS, propertiesMap)
-                    if (sendEmail(fromName, fromAddress, to, [:], messageSubject, messageBody)) log.debug('Email sent successfully')
-                    else log.warn('Email was not sent. Reason unknown')
+                    String result = sendEmail(fromName, fromAddress, to, [:], messageSubject, messageBody)
+                    if (result) log.warn('Email was not sent: [{}]', result)
+                    else log.debug('Email sent successfully')
                 } catch (ApiException apiException) {
-                    log.error('Could not send email!', apiException)
+                    log.error('Could not send email', apiException)
+                } catch (IllegalStateException illegalStateException) {
+                    // Only going to happen in the event the application shuts down before the email is saved
+                    // However as we daemonise the process of sending the email this is possible.
+                    log.warn("Possible failure to send email due to IllegalStateException: ${illegalStateException.message}")
                 }
             }
         })

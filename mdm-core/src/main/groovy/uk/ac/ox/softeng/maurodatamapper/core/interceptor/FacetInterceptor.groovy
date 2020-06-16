@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
@@ -34,6 +35,10 @@ abstract class FacetInterceptor implements MdmInterceptor {
 
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
+
+    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+
+    abstract Class getFacetClass()
 
     String getOwningType() {
         'catalogueItem'
@@ -61,11 +66,11 @@ abstract class FacetInterceptor implements MdmInterceptor {
 
     boolean checkActionAllowedOnFacet() {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, getOwningClass())) {
-            return checkActionAuthorisationOnUnsecuredResource(getOwningClass(), getOwningId(), null, null)
+            return checkActionAuthorisationOnUnsecuredResource(getFacetClass(), params.id, getOwningClass(), getOwningId())
         }
 
-        Model model = getOwningModel()
-        return checkActionAuthorisationOnUnsecuredResource(getOwningClass(), getOwningId(), model.getClass(), model.getId())
+        Model model = proxyHandler.unwrapIfProxy(getOwningModel())
+        return checkActionAuthorisationOnUnsecuredResource(getFacetClass(), params.id, model.getClass(), model.getId())
     }
 
     Model getOwningModel() {

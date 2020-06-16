@@ -8,6 +8,8 @@ model {
 }
 
 json {
+    readableByEveryone classifier.readableByEveryone
+    readableByAuthenticatedUsers classifier.readableByAuthenticatedUsers
     availableActions userSecurityPolicyManager.userAvailableActions(Classifier, classifier.id)
     if (classifier.description) description classifier.description
 }

@@ -23,6 +23,11 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 class AnnotationInterceptor extends FacetInterceptor {
 
     @Override
+    Class getFacetClass() {
+        Annotation
+    }
+
+    @Override
     void checkAdditionalIds() {
         Utils.toUuid(params, 'annotationId')
     }

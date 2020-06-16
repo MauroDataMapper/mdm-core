@@ -17,8 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.session
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
+
+import io.micronaut.http.HttpStatus
 
 class SessionController implements ResourcelessMdmController {
 
@@ -32,6 +33,10 @@ class SessionController implements ResourcelessMdmController {
     }
 
     def isAuthenticatedSession() {
-        respond authenticatedSession: sessionService.isAuthenticatedSession(session)
+        respond authenticatedSession: sessionService.isAuthenticatedSession(session, params.sessionId ?: session.id)
+    }
+
+    def keepAlive() {
+        render status: HttpStatus.CONTINUE
     }
 }

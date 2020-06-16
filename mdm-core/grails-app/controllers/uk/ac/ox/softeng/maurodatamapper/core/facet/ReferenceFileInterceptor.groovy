@@ -22,6 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 
 class ReferenceFileInterceptor extends FacetInterceptor {
 
+    @Override
+    Class getFacetClass() {
+        ReferenceFile
+    }
 
     boolean before() {
         facetResourceChecks()

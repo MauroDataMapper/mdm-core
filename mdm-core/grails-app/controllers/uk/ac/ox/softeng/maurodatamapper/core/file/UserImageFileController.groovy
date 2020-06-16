@@ -40,7 +40,7 @@ class UserImageFileController extends EditLoggingController<UserImageFile> {
         if (resource) {
             return render(file: resource.fileContents, fileName: resource.fileName, contentType: resource.contentType)
         }
-        return notFound()
+        return notFound(params.id)
     }
 
     @Override

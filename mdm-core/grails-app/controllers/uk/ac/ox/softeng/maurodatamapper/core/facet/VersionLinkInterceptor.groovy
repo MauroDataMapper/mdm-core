@@ -27,6 +27,10 @@ import grails.core.GrailsClass
 
 class VersionLinkInterceptor extends FacetInterceptor {
 
+    @Override
+    Class getFacetClass() {
+        VersionLink
+    }
 
     @Override
     String getOwningType() {

@@ -9,6 +9,8 @@ model {
 }
 
 json {
+    readableByEveryone folder.readableByEveryone
+    readableByAuthenticatedUsers folder.readableByAuthenticatedUsers
     availableActions userSecurityPolicyManager.userAvailableActions(Folder, folder.id)
     if (folder.description) description folder.description
 }

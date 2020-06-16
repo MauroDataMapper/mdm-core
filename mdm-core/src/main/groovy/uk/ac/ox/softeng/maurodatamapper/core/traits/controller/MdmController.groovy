@@ -33,6 +33,11 @@ trait MdmController implements UserSecurityPolicyManagerAware {
 
     abstract Class getResource()
 
+    @Override
+    void renderMapForResponse(Map map) {
+        respond(map, map.remove('model'))
+    }
+
     void notYetImplemented() {
         render status: NOT_IMPLEMENTED
     }
@@ -53,10 +58,8 @@ trait MdmController implements UserSecurityPolicyManagerAware {
         notFound(params.id)
     }
 
-    void notFound(id, Class resourceClass = getResource()) {
-        Map model = [resource: resourceClass.simpleName, id: id?.toString() ?: 'null']
-        if (request.requestURI) model.path = request.requestURI
-        respond(model, status: NOT_FOUND, view: '/notFound')
+    boolean notFound(id) {
+        notFound(getResource(), id)
     }
 
     void errorResponse(HttpStatus status, String message) {

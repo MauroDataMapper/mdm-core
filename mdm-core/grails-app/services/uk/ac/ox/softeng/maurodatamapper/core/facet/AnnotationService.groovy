@@ -84,11 +84,11 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
         Annotation.byCatalogueItemId(catalogueItemId).list(pagination)
     }
 
-    List<Annotation> findAllWhereRootAnnotationOfCatalogueItemId(Serializable catalogueItemId, Map paginate = [:]) {
+    List<Annotation> findAllWhereRootAnnotationOfCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
         Annotation.whereRootAnnotationOfCatalogueItemId(catalogueItemId).list(paginate)
     }
 
-    List<Annotation> findAllByParentAnnotationId(Serializable parentAnnotationId, Map paginate = [:]) {
+    List<Annotation> findAllByParentAnnotationId(UUID parentAnnotationId, Map paginate = [:]) {
         try {
             return Annotation.byParentAnnotationId(parentAnnotationId).list(paginate)
         } catch (InvalidDataAccessResourceUsageException ignored) {
@@ -97,7 +97,7 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
         }
     }
 
-    Number countWhereRootAnnotationOfCatalogueItemId(Serializable catalogueItemId) {
+    Number countWhereRootAnnotationOfCatalogueItemId(UUID catalogueItemId) {
         Annotation.whereRootAnnotationOfCatalogueItemId(catalogueItemId).count()
     }
 

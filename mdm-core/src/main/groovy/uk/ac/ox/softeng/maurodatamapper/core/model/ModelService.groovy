@@ -68,6 +68,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.versionLinks) {
             catalogueItem.versionLinks.each {
+                it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
             VersionLink.saveAll(catalogueItem.versionLinks)

@@ -21,6 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 
 class SemanticLinkInterceptor extends FacetInterceptor {
 
+    @Override
+    Class getFacetClass() {
+        SemanticLink
+    }
 
     boolean before() {
         facetResourceChecks()

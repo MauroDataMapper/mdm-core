@@ -73,8 +73,9 @@ class VersionLinkController extends EditLoggingController<VersionLink> {
     @Override
     protected VersionLink updateResource(VersionLink resource) {
         versionLinkService.loadModelsIntoVersionLink(resource)
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
-        versionLinkService.addUpdatedEditToCatalogueItem(currentUser, resource, params.modelDomainType, params.modelId)
+        versionLinkService.addUpdatedEditToCatalogueItem(currentUser, resource, params.modelDomainType, params.modelId, dirtyPropertyNames)
     }
 
     @Override

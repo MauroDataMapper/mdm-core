@@ -20,10 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.tree
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.rest.RestfulController
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 class TreeItemController extends RestfulController<TreeItem> implements MdmController {
@@ -41,6 +43,9 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
 
     TreeItemService treeItemService
 
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
+
     TreeItemController() {
         super(TreeItem, true)
     }
@@ -49,16 +54,16 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         log.debug('Call to tree for catalogue item')
         // If id provided then build the tree for that item, as we build the containers on the default we will assume this a catalogue item
         // Interceptor will have confirmed allowance to read
-        CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(Utils.toUuid(params.catalogueItemId))
-        if (!catalogueItem) return notFound(params.catalogueItemId, CatalogueItem)
+        CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
+        if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
 
         respond(treeItemService.buildCatalogueItemTree(catalogueItem))
     }
 
     def index() {
         log.debug('Call to tree index for {}', params.containerDomainType)
-        if (params.boolean(NO_CACHE_PARAM)) {
-            // TODO
+        if (params.boolean(NO_CACHE_PARAM) && securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.reloadUserSecurityPolicyManager(getCurrentUser().emailAddress)
         }
 
         // Only return the containers

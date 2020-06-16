@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.controller
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.AddsEditHistory
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.artefact.controller.RestResponder
 import grails.gorm.PagedResultList
@@ -61,7 +62,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     @Override
     def show() {
         def resource = queryForResource(params.id)
-        resource ? respond(resource, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'show']) : notFound()
+        resource ? respond(resource, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'show']) : notFound(params.id)
     }
 
     @Transactional
@@ -89,7 +90,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
 
         if (instance == null) {
             transactionStatus.setRollbackOnly()
-            notFound()
+            notFound(params.id)
             return
         }
 
@@ -112,7 +113,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         def instance = queryForResource(params.id)
         if (instance == null) {
             transactionStatus.setRollbackOnly()
-            notFound()
+            notFound(params.id)
             return
         }
 
@@ -139,8 +140,9 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     protected T createResource() {
         T instance = resource.newInstance()
         bindData instance, getObjectToBind()
-        if (instance.hasProperty('createdBy') && currentUser) {
-            instance.createdBy = currentUser.emailAddress
+        User creator = getCurrentUser()
+        if (instance.hasProperty('createdBy') && creator) {
+            instance.createdBy = creator.emailAddress
         }
         instance
     }
@@ -149,15 +151,16 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     protected T saveResource(T resource) {
         log.trace('save resource')
         resource.save flush: true, validate: false
-        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addCreatedEdit(currentUser)
+        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addCreatedEdit(getCurrentUser())
         resource
     }
 
     @Override
     protected T updateResource(T resource) {
         log.trace('update {}', resource.ident())
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
-        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addUpdatedEdit(currentUser)
+        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addUpdatedEdit(getCurrentUser(), dirtyPropertyNames)
         resource
     }
 
@@ -165,7 +168,7 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     protected void deleteResource(T resource) {
         log.trace('delete {}', resource.ident())
         serviceDeleteResource(resource)
-        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addDeletedEdit(currentUser)
+        if (resource.instanceOf(AddsEditHistory) && !params.boolean('noHistory')) resource.addDeletedEdit(getCurrentUser())
     }
 
     protected void updateResponse(T instance) {
