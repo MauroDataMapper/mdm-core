@@ -67,6 +67,13 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-plugin-authentication-basic info') {
+                    steps {
+                        dir('mdm-plugin-authentication-basic') {
+                            sh './grailsw -v' // Output grails version for verification checks
+                        }
+                    }
+                }
             }
         }
 
@@ -130,6 +137,20 @@ pipeline {
                     post {
                         always {
                             dir('mdm-security') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('mdm-plugin-authentication-basic') {
+                    steps {
+                        dir('mdm-plugin-authentication-basic') {
+                            sh "./grailsw test-app -unit"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-authentication-basic') {
                                 junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
                             }
                         }
@@ -238,6 +259,20 @@ pipeline {
                     post {
                         always {
                             dir('mdm-security') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('mdm-plugin-authentication-basic') {
+                    steps {
+                        dir('mdm-plugin-authentication-basic') {
+                            sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-authentication-basic') {
                                 junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
                             }
                         }

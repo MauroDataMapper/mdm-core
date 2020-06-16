@@ -9,4 +9,5 @@ include(
     // Plugins
     'mdm-plugin-email-proxy',
     'mdm-plugin-datamodel',
+    'mdm-plugin-authentication-basic',
     )
