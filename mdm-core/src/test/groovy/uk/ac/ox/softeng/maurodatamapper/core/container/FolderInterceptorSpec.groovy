@@ -42,6 +42,11 @@ class FolderInterceptorSpec extends ResourceInterceptorUnitSpec implements Inter
         HttpStatus.OK
     }
 
+    @Override
+    HttpStatus getSaveAllowedCode() {
+        HttpStatus.FORBIDDEN
+    }
+
     @Unroll
     void 'test read/write access to #action is controlled for #type on nested folder'() {
         given:
@@ -60,25 +65,25 @@ class FolderInterceptorSpec extends ResourceInterceptorUnitSpec implements Inter
 
         where:
         action   | resourceId    || allowed | responseCode
-        'index'  | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'index'  | noAccessId    || false   | HttpStatus.UNAUTHORIZED
+        'index'  | unknownId     || false   | HttpStatus.NOT_FOUND
+        'index'  | noAccessId    || false   | HttpStatus.NOT_FOUND
         'index'  | readAccessId  || true    | null
         'index'  | writeAccessId || true    | null
-        'show'   | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'show'   | noAccessId    || false   | HttpStatus.UNAUTHORIZED
+        'show'   | unknownId     || false   | HttpStatus.NOT_FOUND
+        'show'   | noAccessId    || false   | HttpStatus.NOT_FOUND
         'show'   | readAccessId  || true    | null
         'show'   | writeAccessId || true    | null
-        'save'   | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'save'   | noAccessId    || false   | HttpStatus.UNAUTHORIZED
-        'save'   | readAccessId  || false   | HttpStatus.UNAUTHORIZED
+        'save'   | unknownId     || false   | getSaveAllowedCode()
+        'save'   | noAccessId    || false   | getSaveAllowedCode()
+        'save'   | readAccessId  || false   | HttpStatus.FORBIDDEN
         'save'   | writeAccessId || true    | null
-        'update' | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'update' | noAccessId    || false   | HttpStatus.UNAUTHORIZED
-        'update' | readAccessId  || false   | HttpStatus.UNAUTHORIZED
+        'update' | unknownId     || false   | HttpStatus.NOT_FOUND
+        'update' | noAccessId    || false   | HttpStatus.NOT_FOUND
+        'update' | readAccessId  || false   | HttpStatus.FORBIDDEN
         'update' | writeAccessId || true    | null
-        'delete' | unknownId     || false   | HttpStatus.UNAUTHORIZED
-        'delete' | noAccessId    || false   | HttpStatus.UNAUTHORIZED
-        'delete' | readAccessId  || false   | HttpStatus.UNAUTHORIZED
+        'delete' | unknownId     || false   | HttpStatus.NOT_FOUND
+        'delete' | noAccessId    || false   | HttpStatus.NOT_FOUND
+        'delete' | readAccessId  || false   | HttpStatus.FORBIDDEN
         'delete' | writeAccessId || true    | null
 
         type = resourceId == unknownId ? 'unknown' :

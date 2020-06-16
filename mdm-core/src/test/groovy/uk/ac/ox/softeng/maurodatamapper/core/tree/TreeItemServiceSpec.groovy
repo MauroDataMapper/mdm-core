@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
-import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -29,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ContainerTreeIt
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModelItem
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -797,24 +797,25 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
             findAllModelIdsWithChildren(_) >> []
             get(basicModel.id) >> basicModel
             get(_) >> null
+            handles(BasicModel) >> true
         }
         service.modelServices = [basicModelService]
         service.catalogueItemServices = [basicModelService]
 
         when:
-        def item = service.findTreeCapableCatalogueItem(null)
+        def item = service.findTreeCapableCatalogueItem(BasicModel, null)
 
         then:
         !item
 
         when:
-        item = service.findTreeCapableCatalogueItem(UUID.randomUUID())
+        item = service.findTreeCapableCatalogueItem(BasicModel, UUID.randomUUID())
 
         then:
         !item
 
         when:
-        item = service.findTreeCapableCatalogueItem(basicModel.id)
+        item = service.findTreeCapableCatalogueItem(BasicModel, basicModel.id)
 
         then:
         item

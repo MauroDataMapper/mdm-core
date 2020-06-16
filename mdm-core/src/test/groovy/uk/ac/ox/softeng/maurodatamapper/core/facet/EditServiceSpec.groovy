@@ -74,7 +74,7 @@ class EditServiceSpec extends BaseUnitSpec implements ServiceUnitTest<EditServic
         checkAndSave(classifier)
         classifier.addCreatedEdit(admin)
         classifier.description = 'a description'
-        classifier.addUpdatedEdit(editor)
+        classifier.addUpdatedEdit(editor, classifier.dirtyPropertyNames)
         checkAndSave(classifier)
 
         when:
@@ -90,7 +90,7 @@ class EditServiceSpec extends BaseUnitSpec implements ServiceUnitTest<EditServic
         checkAndSave(folder)
         folder.addCreatedEdit(admin)
         folder.description = 'a description'
-        folder.addUpdatedEdit(editor)
+        folder.addUpdatedEdit(editor, folder.dirtyPropertyNames)
         checkAndSave(folder)
 
         when:

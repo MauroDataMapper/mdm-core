@@ -73,7 +73,8 @@ abstract class CatalogueItemAwareServiceSpec<D extends CatalogueItemAware, T ext
 
     void 'CAIS03 - Test addUpdatedEditToCatalogueItem'() {
         when:
-        def awareItem = service.addUpdatedEditToCatalogueItem(admin, getUpdatedAwareItem(), BasicModel.simpleName, basicModel.id)
+        def awareItem =
+            service.addUpdatedEditToCatalogueItem(admin, getUpdatedAwareItem(), BasicModel.simpleName, basicModel.id, [getChangedPropertyName()])
         BasicModel upd = BasicModel.get(basicModel.id)
 
         then:

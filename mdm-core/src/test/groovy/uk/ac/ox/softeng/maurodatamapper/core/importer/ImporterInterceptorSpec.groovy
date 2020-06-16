@@ -21,8 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterInterceptor
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.SimpleInterceptorUnitSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
+import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
+@Slf4j
 class ImporterInterceptorSpec extends SimpleInterceptorUnitSpec implements InterceptorUnitTest<ImporterInterceptor> {
 
     @Shared

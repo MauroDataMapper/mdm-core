@@ -21,8 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.email.EmailInterceptor
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.SimpleInterceptorUnitSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
+import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
+@Slf4j
 class EmailInterceptorSpec extends SimpleInterceptorUnitSpec implements InterceptorUnitTest<EmailInterceptor> {
 
     @Shared

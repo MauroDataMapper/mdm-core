@@ -27,7 +27,7 @@ import static io.micronaut.http.HttpStatus.OK
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.session.SessionController* Controller: session
  * |   GET   | /api/admin/activeSessions       | Action: activeSessions       |
- * |   GET   | /api/sessions/isAuthenticated       | Action: isAuthenticatedSession       |
+ * |   GET   | /api/sessions/isAuthenticated/$sessionId?       | Action: isAuthenticatedSession       |
  */
 @Integration
 @Slf4j
@@ -64,6 +64,17 @@ class SessionFunctionalSpec extends BaseFunctionalSpec {
     void 'get is authenticated session endpoint'() {
         when:
         GET('session/isAuthenticated')
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().authenticatedSession == false
+    }
+
+    void 'get is authenticated session endpoint using different session id'() {
+        when:
+        GET("session/isAuthenticated/${UUID.randomUUID().toString()}")
 
         then:
         verifyResponse OK, response

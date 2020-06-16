@@ -17,12 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.SimpleInterceptorUnitSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
+import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
+@Slf4j
 class AdminInterceptorSpec extends SimpleInterceptorUnitSpec implements InterceptorUnitTest<AdminInterceptor> {
 
     @Shared

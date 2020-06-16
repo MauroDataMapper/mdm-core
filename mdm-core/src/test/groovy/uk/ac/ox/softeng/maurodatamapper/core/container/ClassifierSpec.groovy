@@ -106,7 +106,7 @@ class ClassifierSpec extends CreatorAwareSpec<Classifier> implements DomainUnitT
 
         when:
         domain.description = 'Changing description'
-        (domain as EditHistoryAware).addUpdatedEdit(editor)
+        (domain as EditHistoryAware).addUpdatedEdit(editor, domain.dirtyPropertyNames)
 
         then:
         checkAndSave(domain)
@@ -120,7 +120,7 @@ class ClassifierSpec extends CreatorAwareSpec<Classifier> implements DomainUnitT
         verifyDomainConstraints item
         item.edits.size() == 2
         item.edits[0].createdBy == admin.emailAddress
-        item.edits[0].description == 'Classifier:test added'
+        item.edits[0].description == '[Classifier:test] created'
 
         item.edits[1].createdBy == editor.emailAddress
         item.edits[1].description == '[Classifier:test] changed properties [description]'

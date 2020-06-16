@@ -17,19 +17,31 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.EditInterceptor
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
+import grails.views.mvc.GenericGroovyTemplateViewResolver
 import io.micronaut.http.HttpStatus
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
 
 class EditInterceptorSpec extends BaseUnitSpec implements InterceptorUnitTest<EditInterceptor> {
+
+    def setupSpec() {
+        // The grails unit spec loads th composite view resolver but only with the gsp resolver
+        // We need to add the jsonViewResolver
+        // Weirdly the base spec does create the smart view resolvers so they are available as referenced beans
+        defineBeans {
+            jsonViewResolver(GenericGroovyTemplateViewResolver, ref('jsonSmartViewResolver'))
+            "${CompositeViewResolver.BEAN_NAME}"(CompositeViewResolver)
+        }
+    }
 
     def setup() {
         mockDomains(Folder, Classifier)
@@ -103,7 +115,7 @@ class EditInterceptorSpec extends BaseUnitSpec implements InterceptorUnitTest<Ed
         !interceptor.before()
 
         and:
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.FORBIDDEN.code
 
     }
 }

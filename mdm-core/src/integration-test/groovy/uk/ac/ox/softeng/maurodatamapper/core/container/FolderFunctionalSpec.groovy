@@ -79,9 +79,11 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "hasChildFolders": false,
   "domainType": "Folder",
-  "availableActions": ["delete", "show", "update"],
   "id": "${json-unit.matches:id}",
-  "label": "Functional Test Folder"
+  "label": "Functional Test Folder",
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "availableActions": ["update","delete","show"]
 }'''
     }
 
@@ -137,9 +139,11 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "hasChildFolders": false,
   "domainType": "Folder",
   "deleted": true,
- "availableActions": ["delete", "show", "update"],
   "id": "${json-unit.matches:id}",
-  "label": "Functional Test Folder"
+  "label": "Functional Test Folder",
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "availableActions": ["update","delete","show"]
 }''')
 
         cleanup:

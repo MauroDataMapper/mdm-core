@@ -61,6 +61,8 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
         deleted = false
         finalised = false
         documentationVersion = Version.from('1.0.0')
+        readableByAuthenticatedUsers = false
+        readableByEveryone = false
         id = UUID.randomUUID()
         breadcrumbTree = new BreadcrumbTree(this)
     }

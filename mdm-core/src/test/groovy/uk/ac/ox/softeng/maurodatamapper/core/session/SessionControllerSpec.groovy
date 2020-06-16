@@ -30,7 +30,7 @@ class SessionControllerSpec extends BaseUnitSpec implements ControllerUnitTest<S
     void 'test isAuthenticatedSession when its not valid'() {
         given:
         controller.sessionService = Mock(SessionService) {
-            1 * isAuthenticatedSession(_) >> false
+            1 * isAuthenticatedSession(_, _) >> false
         }
 
         when:
@@ -45,7 +45,7 @@ class SessionControllerSpec extends BaseUnitSpec implements ControllerUnitTest<S
     void 'test isAuthenticatedSession'() {
         given:
         controller.sessionService = Mock(SessionService) {
-            1 * isAuthenticatedSession(_) >> true
+            1 * isAuthenticatedSession(_, _) >> true
         }
         when:
         request.method = 'GET'

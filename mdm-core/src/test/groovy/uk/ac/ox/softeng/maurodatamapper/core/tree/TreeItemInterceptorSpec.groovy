@@ -26,10 +26,22 @@ import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolic
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
+import grails.views.mvc.GenericGroovyTemplateViewResolver
 import io.micronaut.http.HttpStatus
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
 
 class TreeItemInterceptorSpec extends BaseUnitSpec implements InterceptorUnitTest<TreeItemInterceptor> {
+
+    def setupSpec() {
+        // The grails unit spec loads th composite view resolver but only with the gsp resolver
+        // We need to add the jsonViewResolver
+        // Weirdly the base spec does create the smart view resolvers so they are available as referenced beans
+        defineBeans {
+            jsonViewResolver(GenericGroovyTemplateViewResolver, ref('jsonSmartViewResolver'))
+            "${CompositeViewResolver.BEAN_NAME}"(CompositeViewResolver)
+        }
+    }
 
     def setup() {
         mockDomains(Folder, Classifier, BasicModel)
@@ -130,7 +142,7 @@ class TreeItemInterceptorSpec extends BaseUnitSpec implements InterceptorUnitTes
         !interceptor.before()
 
         and:
-        response.status == HttpStatus.UNAUTHORIZED.code
+        response.status == HttpStatus.NOT_FOUND.code
 
     }
 }

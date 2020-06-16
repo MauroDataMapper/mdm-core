@@ -44,6 +44,7 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
     void 'create session info'() {
         given:
         initialiseContext()
+        service.storeSession(session)
 
         when:
         service.setUserEmailAddress(session, 'test@test.com')
@@ -55,11 +56,15 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
         and:
         httpSession.getAttribute('emailAddress') == 'test@test.com'
         !httpSession.getAttribute('lastUrl')
+
+        and:
+        !service.isInvalidatedSession(session)
     }
 
     void 'update session info'() {
         given:
         initialiseContext()
+        service.storeSession(session)
         service.setUserEmailAddress(session, 'test@test.com')
 
         when:
@@ -74,11 +79,15 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
         and:
         httpSession.getAttribute('emailAddress') == 'test@test.com'
         httpSession.getAttribute('lastUrl') == '/test/url'
+
+        and:
+        !service.isInvalidatedSession(session)
     }
 
     void 'destroy session info'() {
         given:
         initialiseContext()
+        service.storeSession(session)
         service.setUserEmailAddress(session, 'test@test.com')
         service.setLastAccessedUrl(session, '/test/url')
 

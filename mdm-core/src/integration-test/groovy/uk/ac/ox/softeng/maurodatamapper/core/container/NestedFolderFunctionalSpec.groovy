@@ -100,9 +100,11 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "hasChildFolders": false,
   "domainType": "Folder",
-  "availableActions": ["delete", "show", "update"],
   "id": "${json-unit.matches:id}",
-  "label": "Functional Test Folder"
+  "label": "Functional Test Folder",
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "availableActions": ["update","delete","show"]
 }'''
     }
 
@@ -123,7 +125,9 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "hasChildFolders": true,
   "domainType": "Folder",
-  "availableActions": ["delete", "show", "update"],
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "availableActions": ["update","delete","show"],
   "id": "${json-unit.matches:id}",
   "label": "Parent Functional Test Folder"
 }''')
@@ -184,7 +188,9 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
   "hasChildFolders": false,
   "domainType": "Folder",
   "deleted": true,
-  "availableActions": ["delete", "show", "update"],
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "availableActions": ["update","delete","show"],
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Folder"
 }''')
@@ -194,7 +200,6 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    @Rollback
     void 'Test the permanent delete action correctly deletes an instance'() {
         when: 'The save action is executed with valid data'
         POST('', validJson)
@@ -205,16 +210,21 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         when: 'When the delete action is executed on an unknown instance'
         String id = response.body().id
-        DELETE("${baseUrl}folders/${UUID.randomUUID()}?permanent=true")
+        DELETE("${UUID.randomUUID()}?permanent=true")
 
         then: 'The response is correct'
         response.status == HttpStatus.NOT_FOUND
 
         when: 'When the delete action is executed on an existing instance'
-        DELETE("${baseUrl}folders/${id}?permanent=true")
+        DELETE("${id}?permanent=true")
 
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
-        !Folder.get(id)
+
+        when:
+        GET(id)
+
+        then:
+        verifyResponse HttpStatus.NOT_FOUND, response
     }
 }

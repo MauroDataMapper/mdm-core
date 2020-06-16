@@ -107,7 +107,7 @@ class FolderSpec extends CreatorAwareSpec<Folder> implements DomainUnitTest<Fold
 
         when:
         domain.description = 'Changing description'
-        (domain as EditHistoryAware).addUpdatedEdit(editor)
+        (domain as EditHistoryAware).addUpdatedEdit(editor, domain.dirtyPropertyNames)
 
         then:
         checkAndSave(domain)
@@ -121,7 +121,7 @@ class FolderSpec extends CreatorAwareSpec<Folder> implements DomainUnitTest<Fold
         verifyDomainConstraints item
         item.edits.size() == 2
         item.edits[0].createdBy == admin.emailAddress
-        item.edits[0].description == 'Folder:test added'
+        item.edits[0].description == '[Folder:test] created'
 
         item.edits[1].createdBy == editor.emailAddress
         item.edits[1].description == '[Folder:test] changed properties [description]'

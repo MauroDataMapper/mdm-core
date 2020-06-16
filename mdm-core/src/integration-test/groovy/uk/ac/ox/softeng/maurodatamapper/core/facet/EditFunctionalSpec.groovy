@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -33,6 +34,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
  *  | GET | /api/edits/${resourceDomainType}/${resourceId} | Action: index |
  */
 @Integration
+@Slf4j
 class EditFunctionalSpec extends BaseFunctionalSpec {
 
     String getResourcePath() {
@@ -77,7 +79,7 @@ class EditFunctionalSpec extends BaseFunctionalSpec {
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
-      "description": "Folder:Functional Test Folder added"
+      "description": "[Folder:Functional Test Folder] created"
     }
   ]
 }''')
@@ -113,7 +115,7 @@ class EditFunctionalSpec extends BaseFunctionalSpec {
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
-      "description": "Folder:Functional Test Folder added"
+      "description": "[Folder:Functional Test Folder] created"
     }
   ]
 }''')
@@ -149,7 +151,7 @@ class EditFunctionalSpec extends BaseFunctionalSpec {
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
-      "description": "Classifier:Functional Test Classifier added"
+      "description":  "[Classifier:Functional Test Classifier] created"
     }
   ]
 }''')
