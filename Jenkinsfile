@@ -53,6 +53,13 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-plugin-datamodel info') {
+                    steps {
+                        dir('mdm-plugin-datamodel') {
+                            sh './grailsw -v' // Output grails version for verification checks
+                        }
+                    }
+                }
             }
         }
 
@@ -93,6 +100,20 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-plugin-datamodel') {
+                    steps {
+                        dir('mdm-plugin-datamodel') {
+                            sh "./grailsw test-app -unit"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-datamodel') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -126,6 +147,20 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-plugin-datamodel') {
+                    steps {
+                        dir('mdm-plugin-datamodel') {
+                            sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-datamodel') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -140,6 +175,20 @@ pipeline {
                     post {
                         always {
                             dir('mdm-core') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('mdm-plugin-datamodel') {
+                    steps {
+                        dir('mdm-plugin-datamodel') {
+                            sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-datamodel') {
                                 junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
                             }
                         }
