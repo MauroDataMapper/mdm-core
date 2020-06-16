@@ -29,4 +29,8 @@ interface SecurableResourceService<K> {
 
     List<K> list()
 
+    List<K> findAllReadableByEveryone()
+
+    List<K> findAllReadableByAuthenticatedUsers()
+
 }
