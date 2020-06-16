@@ -82,7 +82,7 @@ dependencies {
     profile "org.grails.profiles:plugin", {
         transitive false
     }
-    profile "org.grails.profiles:base:4.0.1.OXBRC", {
+    profile "org.grails.profiles:base:4.1.0.OXBRC", {
         transitive false
     }
     provided "org.springframework.boot:spring-boot-starter-tomcat"

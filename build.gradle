@@ -12,6 +12,9 @@ buildscript {
     }
     dependencies {
         classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+        classpath ('gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'){
+            exclude group: 'org.springframework', module: 'spring-core'
+        }
         //        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.15.2"
     }
     configurations.all {
@@ -24,11 +27,10 @@ plugins {
     id 'maven'
     id "com.jfrog.artifactory" version "4.15.2"
     id 'maven-publish'
-    id "com.github.hierynomus.license" version "0.15.0" apply false
 }
 
 apply plugin: 'ox.softeng.ox-brc-base'
-
+apply plugin: "com.github.hierynomus.license"
 
 task unitTest() {
     group 'testing'
