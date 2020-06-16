@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    DataType dataType
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.fullDataType(dataType: dataType, userSecurityPolicyManager: userSecurityPolicyManager)

@@ -1,0 +1,217 @@
+{
+  "dataModel": {
+    "id": "2b330a20-5650-4819-af6a-e754b047f423",
+    "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
+    "lastUpdated": "2019-01-11T15:05:32.764Z",
+    "metadata": [
+      {
+        "id": "d1ead565-aa7a-44c3-8c40-12c045c8ea7a",
+        "key": "SCTSImport",
+        "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+        "value": "0.1",
+        "lastUpdated": "2019-01-11T15:05:32.765Z"
+      }
+    ],
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "dataTypes": [
+      {
+        "id": "967d89e5-cb39-4b48-93c9-b7dd46ed171b",
+        "label": "24hrTime",
+        "lastUpdated": "2019-01-11T15:05:32.765Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "b704e3ed-7574-471d-9be3-6f490fc9d94d",
+        "label": "external_code",
+        "lastUpdated": "2019-01-11T15:05:32.766Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "0484db03-74c1-4d3d-a06a-71bbd814de70",
+        "label": "text",
+        "lastUpdated": "2019-01-11T15:05:32.767Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "f23ce360-61e6-4fdd-bf6c-021de0cab1fb",
+        "label": "openworld_tick",
+        "lastUpdated": "2019-01-11T15:05:32.767Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "02bb9483-059c-4f73-8449-c9a64d7cffea",
+        "label": "mainly_numeric",
+        "lastUpdated": "2019-01-11T15:05:32.768Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "da5638e9-d2c8-461a-869d-84bd82d6b251",
+        "label": "ASA Grade American Society of Anaesthetists grade",
+        "lastUpdated": "2019-01-11T15:05:32.769Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "d6b4c809-40cc-409a-a5a8-f32ef0caa7a1",
+            "lastUpdated": "2019-01-11T15:05:32.77Z",
+            "index": 0,
+            "key": "3",
+            "value": "Severe systemic disease"
+          },
+          {
+            "id": "7d53b5a1-a9a5-4dff-aba7-66936aa025ee",
+            "lastUpdated": "2019-01-11T15:05:32.771Z",
+            "index": 1,
+            "key": "1",
+            "value": "Healthy person"
+          },
+          {
+            "id": "bbe75716-360a-47c4-8c5a-1b461b81dc91",
+            "lastUpdated": "2019-01-11T15:05:32.771Z",
+            "index": 2,
+            "key": "2",
+            "value": "Mild systemic disease"
+          },
+          {
+            "id": "46422b6b-b910-40f9-8a25-2348753bfd0d",
+            "lastUpdated": "2019-01-11T15:05:32.772Z",
+            "index": 3,
+            "key": "4",
+            "value": "Severe systemic disease that is a constant threat to life"
+          },
+          {
+            "id": "5b7e66c7-cd0e-4365-b6d0-2b19d41124f8",
+            "lastUpdated": "2019-01-11T15:05:32.772Z",
+            "index": 4,
+            "key": "5",
+            "value": "A moribund person who is not expected to survive without the operation"
+          }
+        ]
+      },
+      {
+        "id": "b3d7de85-7605-4b20-855e-ce6c57766fca",
+        "label": "Sex",
+        "lastUpdated": "2019-01-11T15:05:32.773Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "216a6705-5b33-472d-90dd-4c26b40f4433",
+            "lastUpdated": "2019-01-11T15:05:32.774Z",
+            "index": 0,
+            "key": "M",
+            "value": "male"
+          },
+          {
+            "id": "8a5be17f-c6d0-4f78-b3d7-8588ec7a2de6",
+            "lastUpdated": "2019-01-11T15:05:32.774Z",
+            "index": 1,
+            "key": "F",
+            "value": "female"
+          }
+        ]
+      },
+      {
+        "id": "6e22667c-8235-4ed2-892f-c98ab6300b21",
+        "label": "ddmmyyyy",
+        "lastUpdated": "2019-01-11T15:05:32.775Z",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "a7aef5e0-c1e0-414d-8da3-ace2269be72d",
+        "label": "Performance status (ECOG)",
+        "lastUpdated": "2019-01-11T15:05:32.775Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "f0921b6a-93ee-4061-9037-248d421b97ff",
+            "lastUpdated": "2019-01-11T15:05:32.777Z",
+            "index": 0,
+            "key": "2",
+            "value": "Ambulatory and capable of all selfcare but unable to carry out any work activities; up and about more than 50% of waking hours"
+          },
+          {
+            "id": "ee7878f0-1bea-40ec-a497-9d57bf25005e",
+            "lastUpdated": "2019-01-11T15:05:32.777Z",
+            "index": 1,
+            "key": "3",
+            "value": "Capable of only limited selfcare; confined to bed or chair more than 50% of waking hours"
+          },
+          {
+            "id": "c6ea5884-c88b-48a7-b9ba-4e996bb7ee49",
+            "lastUpdated": "2019-01-11T15:05:32.778Z",
+            "index": 2,
+            "key": "0",
+            "value": "Fully active, able to carry on all pre-disease performance without restriction"
+          },
+          {
+            "id": "2a07b8ea-ac2a-4607-9474-c1a3e639b8ee",
+            "lastUpdated": "2019-01-11T15:05:32.778Z",
+            "index": 3,
+            "key": "1",
+            "value": "Restricted in physically strenuous activity but ambulatory and able to carry out work of a light or sedentary nature, e.g., light house work, office work"
+          },
+          {
+            "id": "785f7e4c-05e8-4da1-b13b-4faa514b5eb1",
+            "lastUpdated": "2019-01-11T15:05:32.779Z",
+            "index": 4,
+            "key": "4",
+            "value": "Completely disabled; cannot carry on any selfcare; totally confined to bed or chair"
+          }
+        ]
+      },
+      {
+        "id": "ad2f8f8c-a514-42b4-80ee-bc008149a24a",
+        "label": "Dyspnoea score",
+        "lastUpdated": "2019-01-11T15:05:32.779Z",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "0b573d12-16cd-4272-afb3-ea65f748d5a6",
+            "lastUpdated": "2019-01-11T15:05:32.781Z",
+            "index": 0,
+            "key": "4",
+            "value": "Stops for breath after walking about 100 meters or after a few minutes on level ground"
+          },
+          {
+            "id": "b5f90f2e-625d-4cad-b2f5-a74406c50c5e",
+            "lastUpdated": "2019-01-11T15:05:32.781Z",
+            "index": 1,
+            "key": "3",
+            "value": "Walks slower than contemporaries on level ground because of breathlessness or has to stop for breath when walking at own pace"
+          },
+          {
+            "id": "9969a4fc-4675-4ad7-922b-e19a0411167f",
+            "lastUpdated": "2019-01-11T15:05:32.782Z",
+            "index": 2,
+            "key": "5",
+            "value": "Too breathless to leave the house or breathless when dressing or undressing"
+          },
+          {
+            "id": "910b55b3-e8b7-42d0-adb9-5ac5bd08212b",
+            "lastUpdated": "2019-01-11T15:05:32.782Z",
+            "index": 3,
+            "key": "1",
+            "value": "dyspnoea on strenuous exercise"
+          },
+          {
+            "id": "6d1e52b1-3083-405a-a5b2-f569b4f87f97",
+            "lastUpdated": "2019-01-11T15:05:32.783Z",
+            "index": 4,
+            "key": "2",
+            "value": "when hurrying or walking uphill"
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "2019-01-11T15:05:32.797Z",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "JsonExporterService",
+      "version": "2.0"
+    }
+  }
+}

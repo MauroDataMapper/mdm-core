@@ -13,8 +13,10 @@ buildscript {
     dependencies {
         classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
         classpath ('gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'){
-            exclude group: 'org.springframework', module: 'spring-core'
+          //  exclude group: 'org.springframework', module: 'spring-core'
         }
+       // classpath 'org.springframework:spring-core:5.1.14.RELEASE'
+
         //        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.15.2"
     }
     configurations.all {
@@ -120,7 +122,7 @@ subprojects {
 
     license {
         header = file("${rootDir}/NOTICE")
-        excludes(['**/*.gson','**/*.yml','**/META-INF/**','**/resources/**'])
+        excludes(['**/*.gson','**/*.yml','**/META-INF/**','**/*.txt', '**/*.json'])
     }
 
     String pName = project.name

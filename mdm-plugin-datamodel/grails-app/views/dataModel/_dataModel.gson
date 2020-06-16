@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataModel]
+
+model {
+    DataModel dataModel
+}
+
+json {
+    type dataModel.modelType
+    if (dataModel.classifiers) classifiers g.render(dataModel.classifiers)
+    if (dataModel.deleted) deleted dataModel.deleted
+    if (dataModel.author) author dataModel.author
+    if (dataModel.organisation) organisation dataModel.organisation
+
+}

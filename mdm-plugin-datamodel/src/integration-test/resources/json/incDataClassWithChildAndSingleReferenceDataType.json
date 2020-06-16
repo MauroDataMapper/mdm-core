@@ -1,0 +1,68 @@
+{
+  "dataModel": {
+    "id": "${json-unit.matches:id}",
+    "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "dataTypes": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "child",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "ReferenceType",
+        "referenceClass": {
+          "id": "${json-unit.matches:id}",
+          "label": "child",
+          "dataClassPath": "parent|child"
+        }
+      }
+    ],
+    "childDataClasses": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "parent",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "maxMultiplicity": -1,
+        "minMultiplicity": 1,
+        "dataClasses": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "child",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          }
+        ],
+        "dataElements": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "child",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "dataType": {
+              "id": "${json-unit.matches:id}",
+              "label": "child",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "ReferenceType",
+              "referenceClass": {
+                "id": "${json-unit.matches:id}",
+                "label": "child",
+                "dataClassPath": "parent|child"
+              }
+            },
+            "maxMultiplicity": 1,
+            "minMultiplicity": 1
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "JsonExporterService",
+      "version": "2.0"
+    }
+  }
+}

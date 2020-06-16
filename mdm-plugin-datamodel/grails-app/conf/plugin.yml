@@ -1,0 +1,5 @@
+environments:
+    test:
+        database:
+            name: 'mpdTest'
+            creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS datamodel'

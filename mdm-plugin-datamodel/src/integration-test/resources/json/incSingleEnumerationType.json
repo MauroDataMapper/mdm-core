@@ -1,0 +1,43 @@
+{
+  "dataModel": {
+    "id": "${json-unit.matches:id}",
+    "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "dataTypes": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Sex",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "${json-unit.matches:id}",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 1,
+            "key": "M",
+            "value": "male"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 0,
+            "key": "F",
+            "value": "female"
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "JsonExporterService",
+      "version": "2.0"
+    }
+  }
+}

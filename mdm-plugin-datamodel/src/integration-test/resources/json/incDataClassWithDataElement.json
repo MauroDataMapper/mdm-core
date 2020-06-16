@@ -1,0 +1,66 @@
+{
+  "dataModel": {
+    "id": "${json-unit.ignore}",
+    "label": "National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Standard",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "dataTypes": [
+      {
+        "id": "${json-unit.ignore}",
+        "label": "openworld_tick",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "PrimitiveType"
+      }
+    ],
+    "childDataClasses": [
+      {
+        "id": "${json-unit.ignore}",
+        "label": "Core",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "dataElements": [
+          {
+            "id": "${json-unit.ignore}",
+            "label": "Lung Cancer Surgery",
+            "description": "Is the patient undergoing",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "metadata": [
+              {
+                "id": "${json-unit.ignore}",
+                "key": "Notes",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "value": "N/A",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              },
+              {
+                "id": "${json-unit.ignore}",
+                "key": "Number",
+                "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
+                "value": "93",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              }
+            ],
+            "dataType": {
+              "id": "${json-unit.ignore}",
+              "label": "openworld_tick",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "PrimitiveType"
+            },
+            "maxMultiplicity": 1,
+            "minMultiplicity": 1
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "JsonExporterService",
+      "version": "2.0"
+    }
+  }
+}

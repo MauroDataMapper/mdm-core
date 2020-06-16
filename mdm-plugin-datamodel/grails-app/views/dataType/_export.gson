@@ -1,0 +1,21 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+
+inherits template: '/catalogueItem/export'
+model {
+    DataType export
+}
+json {
+    domainType export.domainType
+    if (export.instanceOf(EnumerationType)) {
+        enumerationValues tmpl.'/enumerationValue/export'(((EnumerationType) export).enumerationValues)
+    } else if (export.instanceOf(ReferenceType)) {
+        referenceClass tmpl.'/dataClass/exportReference'(((ReferenceType) export).referenceClass)
+    } else if (export.instanceOf(PrimitiveType)) {
+        PrimitiveType pt = export as PrimitiveType
+        if (pt.units) units pt.units
+
+    }
+}

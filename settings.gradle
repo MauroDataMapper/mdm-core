@@ -6,5 +6,6 @@ include(
     'mdm-core',
 
     // Plugins
-    'mdm-plugin-email-proxy'
+    'mdm-plugin-email-proxy',
+    'mdm-plugin-datamodel',
     )

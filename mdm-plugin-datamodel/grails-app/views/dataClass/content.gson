@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+
+import grails.gorm.PagedResultList
+
+
+model {
+    Iterable<CatalogueItem> content
+}
+
+json {
+    count content instanceof PagedResultList ? ((PagedResultList) content).getTotalCount() : content?.size() ?: 0
+    items tmpl.content(content)
+}
