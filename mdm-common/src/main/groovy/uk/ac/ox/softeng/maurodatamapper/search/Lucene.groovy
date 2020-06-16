@@ -35,7 +35,7 @@ class Lucene {
                                                              List<UUID> allowedIds,
                                                              Map pagination,
                                                              @DelegatesTo(HibernateSearchApi) Closure... closures) {
-
+        if (!allowedIds) return new PaginatedLuceneResult<T>([], 0)
         paginatedList(clazz, pagination) {
 
             for (Closure closure : closures.findAll()) {
