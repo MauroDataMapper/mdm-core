@@ -4,6 +4,7 @@ include(
     'mdm-common',
     'mdm-testing-framework',
     'mdm-core',
+    'mdm-security',
 
     // Plugins
     'mdm-plugin-email-proxy',

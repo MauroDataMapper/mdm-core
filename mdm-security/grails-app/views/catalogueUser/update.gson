@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    CatalogueUser catalogueUser
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.fullCatalogueUser(catalogueUser: catalogueUser, userSecurityPolicyManager: userSecurityPolicyManager)

@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
+
+model {
+    SecurableResourceGroupRole securableResourceGroupRole
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.securableResourceGroupRole(securableResourceGroupRole: securableResourceGroupRole, userSecurityPolicyManager: userSecurityPolicyManager)

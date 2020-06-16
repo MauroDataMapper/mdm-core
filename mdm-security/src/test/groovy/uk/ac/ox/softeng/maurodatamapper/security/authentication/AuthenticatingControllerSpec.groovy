@@ -1,0 +1,201 @@
+/*
+ * Copyright 2020 University of Oxford
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package uk.ac.ox.softeng.maurodatamapper.security.authentication
+
+
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.UserCredentials
+import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
+import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
+import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
+
+import grails.testing.web.controllers.ControllerUnitTest
+
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import javax.servlet.http.HttpSession
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST
+import static org.springframework.http.HttpStatus.CONFLICT
+import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
+import static org.springframework.http.HttpStatus.NO_CONTENT
+import static org.springframework.http.HttpStatus.OK
+import static org.springframework.http.HttpStatus.UNAUTHORIZED
+
+class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUnitTest<AuthenticatingController>, SecurityUsers {
+    SessionService sessionService
+
+    def setup() {
+        mockDomains(CatalogueUser)
+        SessionController sessionController = mockController(SessionController)
+        implementSecurityUsers('unitTest')
+        sessionService = new SessionService()
+        sessionService.initialiseToContext(session.servletContext)
+        sessionService.storeSession(session)
+        sessionController.sessionService = sessionService
+    }
+
+    void 'test login no credentials'() {
+        given:
+        controller.authenticatingService = Mock(AuthenticatingService) {
+            0 * isAuthenticatedSession(_) >> false
+            0 * authenticateAndObtainUser(_, _, _)
+            0 * registerUserAsLoggedIn(_, _)
+            0 * buildUserSecurityPolicyManager(_)
+        }
+        when:
+        request.method = 'POST'
+        controller.login(null)
+
+        then:
+        response.status == BAD_REQUEST.value()
+        response.errorMessage == 'Username and/or password not provided'
+
+        and:
+        !sessionService.isAuthenticatedSession(session, session.id)
+    }
+
+    void 'test login no such user'() {
+        given:
+        controller.authenticatingService = Mock(AuthenticatingService) {
+            1 * isAuthenticatedSession(_) >> false
+            1 * authenticateAndObtainUser('test@test.com', 'blah', null) >> null
+            0 * registerUserAsLoggedIn(_, _)
+            0 * buildUserSecurityPolicyManager(_)
+        }
+
+        when:
+        request.method = 'POST'
+        controller.login(new UserCredentials(username: 'test@test.com', password: 'blah'))
+
+        then:
+        response.status == UNAUTHORIZED.value()
+
+        and:
+        !sessionService.isAuthenticatedSession(session, session.id)
+    }
+
+    void 'test login invalid credentials'() {
+        given:
+        controller.authenticatingService = Mock(AuthenticatingService) {
+            1 * isAuthenticatedSession(_) >> false
+            1 * authenticateAndObtainUser(admin.emailAddress, 'blah', null) >> null
+            0 * registerUserAsLoggedIn(_, _)
+            0 * buildUserSecurityPolicyManager(_)
+        }
+
+        when:
+        request.method = 'POST'
+        controller.login(new UserCredentials(username: admin.emailAddress, password: 'blah'))
+
+        then:
+        response.status == UNAUTHORIZED.value()
+
+        and:
+        !sessionService.isAuthenticatedSession(session, session.id)
+    }
+
+    void 'test login valid credentials'() {
+        given:
+        controller.authenticatingService = Mock(AuthenticatingService) {
+            1 * isAuthenticatedSession(_) >> false
+            1 * authenticateAndObtainUser(admin.emailAddress, 'password', null) >> admin
+            1 * registerUserAsLoggedIn(_, _) >> {u, s -> sessionService.setUserEmailAddress(s, u.emailAddress)}
+            1 * buildUserSecurityPolicyManager(_)
+        }
+
+        when:
+        request.method = 'POST'
+        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+        OffsetDateTime end = OffsetDateTime.now()
+
+        then:
+        response.status == OK.value()
+        response.json.emailAddress == admin.emailAddress
+        !response.json.password
+
+        and:
+        sessionService.isAuthenticatedSession(session, session.id)
+        session.getAttribute('emailAddress') == admin.emailAddress
+
+        when:
+        HttpSession sessionInfo = sessionService.retrieveSession(session)
+        OffsetDateTime createdTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(sessionInfo.creationTime), ZoneId.systemDefault())
+
+        then:
+        sessionInfo.getAttribute('emailAddress') == admin.emailAddress
+
+        and:
+        createdTime.isBefore(end)
+    }
+
+    void 'test login already logged in'() {
+        given:
+        controller.authenticatingService = Mock(AuthenticatingService) {
+            1 * isAuthenticatedSession(_) >> true
+            0 * authenticateAndObtainUser(admin.emailAddress, 'password', null)
+            0 * registerUserAsLoggedIn(_, _)
+            0 * buildUserSecurityPolicyManager(_)
+        }
+
+        when:
+        request.method = 'POST'
+        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+
+        then:
+        response.status == CONFLICT.value()
+    }
+
+    void 'test login non-post request'() {
+
+        when:
+        request.method = 'PUT'
+        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+
+        then:
+        response.status == METHOD_NOT_ALLOWED.value()
+    }
+
+    void 'test logout'() {
+        given:
+        controller.authenticatingService = Mock(AuthenticatingService) {
+            1 * registerUserAsLoggedOut(_) >> {
+                hs -> sessionService.destroySession(hs)
+            }
+        }
+
+        when:
+        sessionService.setUserEmailAddress(session, reader.emailAddress)
+        request.method = 'GET'
+        controller.logout()
+
+
+        then:
+        response.status == NO_CONTENT.value()
+        session.isNew()
+
+        when:
+        sessionService.isAuthenticatedSession(session, session.id)
+
+        then:
+        thrown(ApiUnauthorizedException)
+    }
+}

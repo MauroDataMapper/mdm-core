@@ -1,0 +1,19 @@
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/catalogueUser/catalogueUser'
+model {
+    CatalogueUser catalogueUser
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+
+    availableActions userSecurityPolicyManager.userAvailableActions(CatalogueUser, catalogueUser.id)
+    if (catalogueUser.lastLogin) lastLogin catalogueUser.lastLogin
+
+    if (catalogueUser.organisation) organisation catalogueUser.organisation
+    if (catalogueUser.jobTitle) jobTitle catalogueUser.jobTitle
+
+    if (catalogueUser.groups) groups tmpl.'/userGroup/userGroup'(catalogueUser.groups)
+}

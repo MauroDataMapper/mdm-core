@@ -14,7 +14,7 @@
 hs_err_pid*
 
 .gradle
-build
+/build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -28,7 +28,7 @@ gradle-app.setting
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
-bin
+/bin/
 
 .DS_Store
 
@@ -90,8 +90,6 @@ $RECYCLE.BIN/
 
 # Mongo Explorer plugin:
 .idea/**/mongoSettings.xml
-.ideaDataSources
-dataSources
 
 ## File-based project format:
 *.iws
@@ -203,9 +201,3 @@ local.properties
 .scala_dependencies
 .worksheet
 
-reports
-.shelf
-~$*.xls*
-
-node_modules/
-package-lock.json

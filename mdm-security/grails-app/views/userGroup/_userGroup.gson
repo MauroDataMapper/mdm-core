@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+
+model {
+    UserGroup userGroup
+}
+
+json {
+    id userGroup.id
+    name userGroup.name
+    if (userGroup.description) description userGroup.description
+}

@@ -1,0 +1,20 @@
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    CatalogueUser catalogueUser
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    id catalogueUser.id
+    emailAddress catalogueUser.emailAddress
+    firstName catalogueUser.firstName
+    lastName catalogueUser.lastName
+    pending catalogueUser.pending
+    disabled catalogueUser.disabled
+    if (catalogueUser.needsToResetPassword) needsToResetPassword catalogueUser.needsToResetPassword
+    createdBy catalogueUser.createdBy
+    //    if (params.boolean('renderImage') && catalogueUser.profilePicture)
+    //        profilePicture g.render(CatalogueFileService.resizeImage(catalogueUser.profilePicture, 24))
+}

@@ -1,0 +1,6 @@
+model {
+    Long pendingCount
+}
+json {
+    count pendingCount ?: 0
+}

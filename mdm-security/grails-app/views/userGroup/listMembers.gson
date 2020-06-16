@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<CatalogueUser> catalogueUserList
+}
+
+json {
+    count catalogueUserList instanceof PagedResultList ? ((PagedResultList) catalogueUserList).getTotalCount() : catalogueUserList?.size() ?: 0
+    items tmpl.'/catalogueUser/catalogueUser'(catalogueUserList ?: [])
+}

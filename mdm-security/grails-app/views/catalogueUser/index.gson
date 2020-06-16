@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<CatalogueUser> catalogueUserList
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    count catalogueUserList instanceof PagedResultList ? ((PagedResultList) catalogueUserList).getTotalCount() : catalogueUserList?.size() ?: 0
+    if (params.boolean('groupsContent', false)) {
+        items tmpl.catalogueUser(catalogueUserList ?: [])
+    } else items tmpl.fullCatalogueUser(catalogueUserList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
+}

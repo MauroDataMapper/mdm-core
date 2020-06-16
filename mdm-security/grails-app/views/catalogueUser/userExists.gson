@@ -1,0 +1,7 @@
+model {
+    Boolean exists
+}
+
+json {
+    userExists exists
+}

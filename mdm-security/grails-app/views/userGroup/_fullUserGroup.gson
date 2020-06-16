@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/userGroup/userGroup'
+
+model {
+    UserGroup userGroup
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    createdBy userGroup.createdBy
+    availableActions userSecurityPolicyManager.userAvailableActions(UserGroup, userGroup.id)
+}
