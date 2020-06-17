@@ -280,6 +280,38 @@ pipeline {
                 }
             }
         }
+        stage('Entire Parallel Functional Test') {
+            parallel {
+                stage('Entire Functional Test') {
+                    steps {
+                        dir('mdm-testing-functional') {
+                            sh "./grailsw test-app"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-testing-functional') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/**/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('Trouble Functional Test') {
+                    steps {
+                        dir('mdm-testing-functional') {
+                            sh "./grailsw -Dgrails.testCategory=TroubleTest test-app"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mc-testing-functional') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/**/*.xml'
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     post {
