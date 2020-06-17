@@ -136,7 +136,7 @@ class Classifier implements Container {
     }
 
     static List<Classifier> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
-        search().list closure
+        Classifier.search().list closure
     }
 
     static List<Classifier> luceneTreeLabelSearch(List<String> allowedIds, String searchTerm) {

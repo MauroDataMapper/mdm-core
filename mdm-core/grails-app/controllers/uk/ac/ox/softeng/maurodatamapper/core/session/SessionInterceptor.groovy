@@ -39,10 +39,8 @@ class SessionInterceptor implements MdmInterceptor {
         sessionService.setLastAccessedUrl(session, request.requestURI)
 
         if (actionName == 'activeSessions') {
-            return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: unauthorised()
             return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
-
 
         true
     }

@@ -107,7 +107,7 @@ This can be done by:
 
 This will provide a code style scheme for OxfordBRC work, and allow you to use the `Code` -> `Reformat Code` option to fully reformat
 and optimise imports. 
-These settings will meet the checkstyle enforced by the Metadata Catalogue code bases.
+These settings will meet the checkstyle enforced by the Mauro Data Mapper code bases.
 
 #### Checkstyle
 
