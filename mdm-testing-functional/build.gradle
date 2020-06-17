@@ -137,4 +137,12 @@ integrationTest {
             excludeCategories 'uk.ac.ox.softeng.maurodatamapper.test.junit.TroubleTest'
         }
     }
+    if(testCategory){
+        binaryResultsDirectory.set(file("${project.testResultsDir}/${testCategory}/binary"))
+        reports {
+            junitXml.destination = file("${project.testResultsDir}/${testCategory}")
+
+        }
+        mergeTestReports.reportOn(file("${project.testResultsDir}/${testCategory}/binary"))
+    }
 }

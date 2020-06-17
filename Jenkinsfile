@@ -305,7 +305,7 @@ pipeline {
                     post {
                         always {
                             dir('mc-testing-functional') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/**/*.xml'
+                                junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
                             }
                         }
                     }
