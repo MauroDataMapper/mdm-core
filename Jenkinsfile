@@ -312,6 +312,11 @@ pipeline {
                 }
             }
         }
+        stage('License Header Check'){
+            steps{
+                sh './gradlew license'
+            }
+        }
     }
 
     post {
