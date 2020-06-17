@@ -18,7 +18,6 @@ buildscript {
 plugins {
     id 'project-report'
     id 'jacoco'
-    //    id 'org.springframework.boot' version "${springBootVersion}" // Apply to latest version to allow java 13 support until next grails release
 }
 
 apply plugin: "idea"
