@@ -17,9 +17,27 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
+
 class BootStrap {
 
+    @Autowired
+    MessageSource messageSource
+
     def init = {servletContext ->
+        environments {
+            development {
+                Folder.withNewTransaction {
+                    Folder folder = Folder.findByLabel('Development Folder')
+                    BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder)
+                    BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder)
+                }
+            }
+        }
     }
     def destroy = {
     }

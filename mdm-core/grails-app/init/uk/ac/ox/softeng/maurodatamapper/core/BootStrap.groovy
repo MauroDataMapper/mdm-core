@@ -18,6 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
@@ -28,8 +31,12 @@ import grails.config.Config
 import grails.core.GrailsApplication
 import grails.util.Environment
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 
 import java.sql.Driver
+
+import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
 @Slf4j
 class BootStrap {
@@ -38,6 +45,9 @@ class BootStrap {
     GrailsApplication grailsApplication
     ApiPropertyService apiPropertyService
     SessionService sessionService
+
+    @Autowired
+    MessageSource messageSource
 
     def init = {servletContext ->
         Utils.outputRuntimeArgs(BootStrap)
@@ -64,6 +74,20 @@ class BootStrap {
         sessionService.initialiseToContext(servletContext)
         loadApiProperties(tmpDir)
         configureEmailers(grailsApplication.config)
+
+        environments {
+            development {
+                Folder.withNewTransaction {
+                    Folder folder = new Folder(label: 'Development Folder', createdBy: StandardEmailAddress.DEVELOPMENT)
+                    checkAndSave(messageSource, folder)
+                }
+                Classifier.withNewTransaction {
+                    Classifier classifier = new Classifier(label: 'Development Classifier', createdBy: StandardEmailAddress.DEVELOPMENT)
+                    checkAndSave(messageSource, classifier)
+                }
+            }
+        }
+
     }
     def destroy = {
     }

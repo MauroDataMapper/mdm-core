@@ -148,7 +148,7 @@ dataSource:
     pooled: true
     jmxExport: true
     driverClassName: org.postgresql.Driver
-    dialect: org.hibernate.dialect.PostgreSQL95Dialect
+    dialect: org.hibernate.dialect.PostgreSQL10Dialect
     formatSql: true
     url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
     dbCreate: none

@@ -1,7 +1,7 @@
 database:
     host: localhost
     port: 5432
-    name: maurodatamapper_4
+    name: maurodatamapper
 ---
 apiUser:
     username: admin@maurodatamapper.com
@@ -154,9 +154,9 @@ environments:
         flyway.enabled: false
         dataSource:
             driverClassName: org.postgresql.Driver
-            dialect: org.hibernate.dialect.PostgreSQL95Dialect
+            dialect: org.hibernate.dialect.PostgreSQL10Dialect
             username: maurodatamapper
             password: MauroDataMapper1234
-            dbCreate: create-drop
+            dbCreate: update
             url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
 ---

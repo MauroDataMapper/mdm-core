@@ -19,14 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
@@ -54,11 +47,11 @@ class BootStrap implements SecurityDefinition {
                 Folder folder2
                 CatalogueUser.withNewTransaction {
 
-                    createModernSecurityUsers('functionalTest')
-                    checkAndSave(messageSource, admin, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
+                    createModernSecurityUsers('functionalTest', false)
+                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
 
-                    createBasicGroups('functionalTest')
-                    checkAndSave(messageSource, admins, editors, readers)
+                    createBasicGroups('functionalTest', false)
+                    checkAndSave(messageSource, editors, readers)
 
                     folder = new Folder(label: 'Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
                     checkAndSave(messageSource, folder)
@@ -100,124 +93,15 @@ class BootStrap implements SecurityDefinition {
                     )
                 }
 
-                DataModel.withNewTransaction {
-                    buildComplexDataModel(folder)
-                    buildSimpleDataModel(folder)
-                }
-            }
-            development {
                 Folder.withNewTransaction {
-                    Folder folder = Folder.findByLabel('Development Folder')
-                    buildComplexDataModel(folder)
-                    buildSimpleDataModel(folder)
+                    folder = Folder.findByLabel('Functional Test Folder')
+                    BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder)
+                    BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder)
                 }
             }
         }
     }
 
     def destroy = {
-    }
-
-    DataModel buildSimpleDataModel(Folder folder) {
-        DataModel simpleDataModel = new DataModel(createdBy: userEmailAddresses.editor, label: 'Simple Test DataModel', folder: folder)
-
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: userEmailAddresses.editor, label: 'test classifier simple',
-                                                             readableByAuthenticatedUsers: true)
-        checkAndSave(messageSource, classifier)
-
-        simpleDataModel.addToClassifiers(classifier)
-
-        checkAndSave(messageSource, simpleDataModel)
-        DataClass dataClass = new DataClass(createdBy: userEmailAddresses.editor, label: 'simple')
-
-        simpleDataModel
-            .addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
-            .addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
-
-            .addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2')
-
-            .addToDataClasses(dataClass)
-
-        checkAndSave(messageSource, simpleDataModel)
-
-        dataClass.addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
-
-        checkAndSave(messageSource, simpleDataModel)
-
-        simpleDataModel
-    }
-
-    DataModel buildComplexDataModel(Folder folder) {
-        DataModel dataModel = new DataModel(createdBy: userEmailAddresses.admin, label: 'Complex Test DataModel', organisation: 'brc', author: 'admin person',
-                                            folder: folder)
-        checkAndSave(messageSource, dataModel)
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: userEmailAddresses.editor, label: 'test classifier',
-                                                             readableByAuthenticatedUsers: true)
-        Classifier classifier1 = Classifier.findOrCreateWhere(createdBy: userEmailAddresses.editor, label: 'test classifier2',
-                                                              readableByAuthenticatedUsers: true)
-        checkAndSave(messageSource, classifier)
-        checkAndSave(messageSource, classifier1)
-
-        dataModel.addToClassifiers(classifier)
-            .addToClassifiers(classifier1)
-
-            .addToMetadata(createdBy: userEmailAddresses.admin, namespace: 'test.com', key: 'mdk1', value: 'mdv1')
-            .addToMetadata(createdBy: userEmailAddresses.admin, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
-
-            .addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com/test', key: 'mdk1', value: 'mdv2')
-
-            .addToAnnotations(createdBy: userEmailAddresses.admin, label: 'test annotation 1')
-
-            .addToAnnotations(createdBy: userEmailAddresses.editor, label: 'test annotation 2', description: 'with description')
-
-            .addToDataTypes(new PrimitiveType(createdBy: userEmailAddresses.admin, label: 'string'))
-
-            .addToDataTypes(new PrimitiveType(createdBy: userEmailAddresses.editor, label: 'integer'))
-
-            .addToDataClasses(createdBy: userEmailAddresses.admin, label: 'emptyclass', description: 'dataclass with desc')
-            .addToDataTypes(new EnumerationType(createdBy: userEmailAddresses.admin, label: 'yesnounknown')
-                                .addToEnumerationValues(key: 'Y', value: 'Yes')
-                                .addToEnumerationValues(key: 'N', value: 'No')
-                                .addToEnumerationValues(key: 'U', value: 'Unknown'))
-
-        DataClass parent =
-            new DataClass(createdBy: userEmailAddresses.admin, label: 'parent', minMultiplicity: 1, maxMultiplicity: -1, dataModel: dataModel)
-        DataClass child = new DataClass(createdBy: userEmailAddresses.admin, label: 'child')
-        parent.addToDataClasses(child)
-        dataModel.addToDataClasses(child)
-        dataModel.addToDataClasses(parent)
-
-        checkAndSave(messageSource, dataModel)
-
-        ReferenceType refType = new ReferenceType(createdBy: userEmailAddresses.editor, label: 'child')
-        child.addToReferenceTypes(refType)
-        dataModel.addToDataTypes(refType)
-
-        DataElement el1 = new DataElement(createdBy: userEmailAddresses.editor, label: 'child', minMultiplicity: 1, maxMultiplicity: 1)
-        refType.addToDataElements(el1)
-        parent.addToDataElements(el1)
-
-        DataClass content = new DataClass(createdBy: userEmailAddresses.editor, label: 'content', description: 'A dataclass with elements',
-                                          minMultiplicity: 0, maxMultiplicity: 1)
-        DataElement el2 = new DataElement(createdBy: userEmailAddresses.editor, label: 'ele1',
-                                          minMultiplicity: 0, maxMultiplicity: 20)
-        dataModel.findDataTypeByLabel('string').addToDataElements(el2)
-        content.addToDataElements(el2)
-        DataElement el3 = new DataElement(createdBy: userEmailAddresses.reader, label: 'element2',
-                                          minMultiplicity: 1, maxMultiplicity: 1)
-        dataModel.findDataTypeByLabel('integer').addToDataElements(el3)
-        content.addToDataElements(el3)
-        dataModel.addToDataClasses(content)
-
-        checkAndSave(messageSource, dataModel)
-
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: userEmailAddresses.editor,
-                                             targetCatalogueItem: DataClass.findByLabel('parent'))
-        DataClass.findByLabel('content').addToSemanticLinks(link)
-
-        checkAndSave(messageSource, dataModel)
-        checkAndSave(messageSource, link)
-
-        dataModel
     }
 }

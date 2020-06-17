@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
@@ -67,19 +68,31 @@ class BootStrap implements SecurityDefinition {
 
         }
 
+        CatalogueUser.withNewTransaction {
+            admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
+            if (!admin) {
+                createAdminUser(StandardEmailAddress.ADMIN)
+                checkAndSave(messageSource, admin)
+            }
+            admins = UserGroup.findByName('administrators')
+            if (!admins) {
+                createAdminGroup(StandardEmailAddress.ADMIN)
+                checkAndSave(messageSource, admins)
+            }
+        }
+
         environments {
             development {
 
                 CatalogueUser.withNewTransaction {
 
-                    createModernSecurityUsers('development')
-                    checkAndSave(messageSource, admin, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
+                    createModernSecurityUsers('development', false)
+                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
 
-                    createBasicGroups('development')
-                    checkAndSave(messageSource, admins, editors, readers)
+                    createBasicGroups('development', false)
+                    checkAndSave(messageSource, editors, readers)
 
-                    Folder folder = new Folder(label: 'Development Folder', createdBy: userEmailAddresses.development)
-                    checkAndSave(messageSource, folder)
+                    Folder folder = Folder.findByLabel('Development Folder')
 
                     // Make editors editor of the test folder
                     checkAndSave(messageSource, new SecurableResourceGroupRole(
@@ -96,9 +109,8 @@ class BootStrap implements SecurityDefinition {
                         groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
                     )
 
-                    Classifier classifier = new Classifier(label: 'Development Classifier',
-                                                           createdBy: userEmailAddresses.development)
-                    checkAndSave(messageSource, classifier)
+                    Classifier classifier = Classifier.findByLabel('Development Classifier')
+
                     // Make editors container admin (existing permissions) of the test folder
                     checkAndSave(messageSource, new SecurableResourceGroupRole(
                         createdBy: userEmailAddresses.development,

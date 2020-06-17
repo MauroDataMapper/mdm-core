@@ -28,7 +28,7 @@ Ensure the following database setup has been run
 -- Create the development user
 CREATE USER maurodatamapper WITH SUPERUSER PASSWORD 'MauroDataMapper1234';
 -- Create the database
-CREATE DATABASE maurodatamapper_4 OWNER maurodatamapper;
+CREATE DATABASE maurodatamapper OWNER maurodatamapper;
 -- Add the schemas for the sub-projects
 CREATE SCHEMA core;
 CREATE SCHEMA datamodel;

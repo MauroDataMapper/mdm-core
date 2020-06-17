@@ -17,9 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.utils
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
-import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 
@@ -40,12 +39,12 @@ trait SecurityDefinition {
     UserGroup readers
 
     Map<String, String> userEmailAddresses = [
-        admin          : 'admin@maurodatamapper.com',
+        admin          : StandardEmailAddress.ADMIN,
 
-        unitTest       : 'unit-test@test.com',
-        integrationTest: 'integration-test@test.com',
-        functionalTest : 'functional-test@test.com',
-        development    : 'development@test.com',
+        unitTest       : StandardEmailAddress.UNIT_TEST,
+        integrationTest: StandardEmailAddress.INTEGRATION_TEST,
+        functionalTest : StandardEmailAddress.FUNCTIONAL_TEST,
+        development    : StandardEmailAddress.DEVELOPMENT,
 
         pending        : 'pending@test.com',
 
@@ -61,7 +60,7 @@ trait SecurityDefinition {
         authenticated2 : 'authenticated2@test.com'
     ]
 
-    void createModernSecurityUsers(String creatorKey) {
+    CatalogueUser createAdminUser(String creatorKey) {
         admin = new CatalogueUser(emailAddress: userEmailAddresses.admin,
                                   firstName: 'Admin',
                                   lastName: 'User',
@@ -69,6 +68,11 @@ trait SecurityDefinition {
                                   jobTitle: 'God',
                                   createdBy: userEmailAddresses[creatorKey])
         admin.encryptAndSetPassword('password')
+        admin
+    }
+
+    void createModernSecurityUsers(String creatorKey, boolean includeAdmin = true) {
+        if (includeAdmin) createAdminUser(creatorKey)
         containerAdmin = new CatalogueUser(emailAddress: userEmailAddresses.containerAdmin,
                                            firstName: 'containerAdmin', lastName: 'User',
                                            createdBy: userEmailAddresses[creatorKey])
@@ -98,10 +102,14 @@ trait SecurityDefinition {
                                           createdBy: userEmailAddresses[creatorKey])
     }
 
-    void createBasicGroups(String creatorKey) {
+    UserGroup createAdminGroup(String creatorKey) {
         admins = new UserGroup(createdBy: userEmailAddresses[creatorKey],
                                name: 'administrators', applicationGroupRole: GroupRole.findByName(GroupRole.APPLICATION_ADMIN_ROLE_NAME))
             .addToGroupMembers(admin)
+    }
+
+    void createBasicGroups(String creatorKey, boolean includeAdmin = true) {
+        if (includeAdmin) createAdminGroup(creatorKey)
         editors = new UserGroup(createdBy: userEmailAddresses[creatorKey],
                                 name: 'editors')
             .addToGroupMembers(containerAdmin)
@@ -111,27 +119,5 @@ trait SecurityDefinition {
             .addToGroupMembers(author)
             .addToGroupMembers(reviewer)
             .addToGroupMembers(reader)
-    }
-
-
-    @Deprecated
-    User getReader1() {
-        throw new IllegalAccessException('Reader1 user is not available')
-    }
-
-    @Deprecated
-    User getReader2() {
-        throw new IllegalAccessException('Reader2 user is not available')
-    }
-
-
-    @Deprecated
-    User getReader3() {
-        throw new IllegalAccessException('Reader3 user is not available')
-    }
-
-    @Deprecated
-    User getReader4() {
-        throw new IllegalAccessException('Reader4 user is not available')
     }
 }
