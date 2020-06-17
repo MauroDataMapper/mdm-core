@@ -13,7 +13,7 @@ buildscript {
     dependencies {
         classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
         classpath ('gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'){
-          //  exclude group: 'org.springframework', module: 'spring-core'
+            exclude group: 'org.springframework', module: 'spring-core'
         }
        // classpath 'org.springframework:spring-core:5.1.14.RELEASE'
 
