@@ -137,22 +137,24 @@ subprojects {
 }
 
 // Custom publishing to allow us to push the reports up to artifactory from travis
-publishing {
-    repositories {
-        maven {
-            url = "${project.artifactory_contextUrl}/build-reports"
-            credentials {
-                username = "${project.artifactory_user}"
-                password = "${project.artifactory_apiKey}"
+if (project.hasProperty('artifactory_user') && project.hasProperty('artifactory_apiKey')) {
+    publishing {
+        repositories {
+            maven {
+                url = "${project.artifactory_contextUrl}/build-reports"
+                credentials {
+                    username = "${project.artifactory_user}"
+                    password = "${project.artifactory_apiKey}"
+                }
             }
         }
-    }
-    publications {
-        reports(MavenPublication) {
-            if (System.getenv('TRAVIS')) {
-                version = System.getenv('TRAVIS_JOB_NUMBER')
+        publications {
+            reports(MavenPublication) {
+                if (System.getenv('TRAVIS')) {
+                    version = System.getenv('TRAVIS_JOB_NUMBER')
+                }
+                artifact tasks.reportsArchive
             }
-            artifact tasks.reportsArchive
         }
     }
 }
