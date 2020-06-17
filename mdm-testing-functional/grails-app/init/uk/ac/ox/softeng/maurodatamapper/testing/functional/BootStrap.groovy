@@ -105,6 +105,13 @@ class BootStrap implements SecurityDefinition {
                     buildSimpleDataModel(folder)
                 }
             }
+            development {
+                Folder.withNewTransaction {
+                    Folder folder = Folder.findByLabel('Development Folder')
+                    buildComplexDataModel(folder)
+                    buildSimpleDataModel(folder)
+                }
+            }
         }
     }
 
@@ -112,27 +119,28 @@ class BootStrap implements SecurityDefinition {
     }
 
     DataModel buildSimpleDataModel(Folder folder) {
-        DataModel simpleDataModel = new DataModel(createdByUser: editor, label: 'Simple Test DataModel', folder: folder)
+        DataModel simpleDataModel = new DataModel(createdBy: userEmailAddresses.editor, label: 'Simple Test DataModel', folder: folder)
 
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: editor.emailAddress, label: 'test classifier simple')
+        Classifier classifier = Classifier.findOrCreateWhere(createdBy: userEmailAddresses.editor, label: 'test classifier simple',
+                                                             readableByAuthenticatedUsers: true)
         checkAndSave(messageSource, classifier)
 
         simpleDataModel.addToClassifiers(classifier)
 
         checkAndSave(messageSource, simpleDataModel)
-        DataClass dataClass = new DataClass(createdByUser: editor, label: 'simple')
+        DataClass dataClass = new DataClass(createdBy: userEmailAddresses.editor, label: 'simple')
 
         simpleDataModel
-            .addToMetadata(createdByUser: editor, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
-            .addToMetadata(createdByUser: editor, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
+            .addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
+            .addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
 
-            .addToMetadata(createdByUser: editor, namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2')
+            .addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2')
 
             .addToDataClasses(dataClass)
 
         checkAndSave(messageSource, simpleDataModel)
 
-        dataClass.addToMetadata(createdByUser: editor, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
+        dataClass.addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
 
         checkAndSave(messageSource, simpleDataModel)
 
@@ -140,60 +148,62 @@ class BootStrap implements SecurityDefinition {
     }
 
     DataModel buildComplexDataModel(Folder folder) {
-        DataModel dataModel = new DataModel(createdByUser: admin, label: 'Complex Test DataModel', organisation: 'brc', author: 'admin person',
+        DataModel dataModel = new DataModel(createdBy: userEmailAddresses.admin, label: 'Complex Test DataModel', organisation: 'brc', author: 'admin person',
                                             folder: folder)
         checkAndSave(messageSource, dataModel)
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: editor.emailAddress, label: 'test classifier')
-        Classifier classifier1 = Classifier.findOrCreateWhere(createdBy: editor.emailAddress, label: 'test classifier2')
+        Classifier classifier = Classifier.findOrCreateWhere(createdBy: userEmailAddresses.editor, label: 'test classifier',
+                                                             readableByAuthenticatedUsers: true)
+        Classifier classifier1 = Classifier.findOrCreateWhere(createdBy: userEmailAddresses.editor, label: 'test classifier2',
+                                                              readableByAuthenticatedUsers: true)
         checkAndSave(messageSource, classifier)
         checkAndSave(messageSource, classifier1)
 
         dataModel.addToClassifiers(classifier)
             .addToClassifiers(classifier1)
 
-            .addToMetadata(createdByUser: admin, namespace: 'test.com', key: 'mdk1', value: 'mdv1')
-            .addToMetadata(createdByUser: admin, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
+            .addToMetadata(createdBy: userEmailAddresses.admin, namespace: 'test.com', key: 'mdk1', value: 'mdv1')
+            .addToMetadata(createdBy: userEmailAddresses.admin, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
 
-            .addToMetadata(createdByUser: editor, namespace: 'test.com/test', key: 'mdk1', value: 'mdv2')
+            .addToMetadata(createdBy: userEmailAddresses.editor, namespace: 'test.com/test', key: 'mdk1', value: 'mdv2')
 
-            .addToAnnotations(createdByUser: admin, label: 'test annotation 1')
+            .addToAnnotations(createdBy: userEmailAddresses.admin, label: 'test annotation 1')
 
-            .addToAnnotations(createdByUser: editor, label: 'test annotation 2', description: 'with description')
+            .addToAnnotations(createdBy: userEmailAddresses.editor, label: 'test annotation 2', description: 'with description')
 
-            .addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
+            .addToDataTypes(new PrimitiveType(createdBy: userEmailAddresses.admin, label: 'string'))
 
-            .addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
+            .addToDataTypes(new PrimitiveType(createdBy: userEmailAddresses.editor, label: 'integer'))
 
-            .addToDataClasses(createdByUser: admin, label: 'emptyclass', description: 'dataclass with desc')
-            .addToDataTypes(new EnumerationType(createdByUser: admin, label: 'yesnounknown')
+            .addToDataClasses(createdBy: userEmailAddresses.admin, label: 'emptyclass', description: 'dataclass with desc')
+            .addToDataTypes(new EnumerationType(createdBy: userEmailAddresses.admin, label: 'yesnounknown')
                                 .addToEnumerationValues(key: 'Y', value: 'Yes')
                                 .addToEnumerationValues(key: 'N', value: 'No')
                                 .addToEnumerationValues(key: 'U', value: 'Unknown'))
 
         DataClass parent =
-            new DataClass(createdByUser: admin, label: 'parent', minMultiplicity: 1, maxMultiplicity: -1, dataModel: dataModel)
-        DataClass child = new DataClass(createdByUser: admin, label: 'child')
+            new DataClass(createdBy: userEmailAddresses.admin, label: 'parent', minMultiplicity: 1, maxMultiplicity: -1, dataModel: dataModel)
+        DataClass child = new DataClass(createdBy: userEmailAddresses.admin, label: 'child')
         parent.addToDataClasses(child)
         dataModel.addToDataClasses(child)
         dataModel.addToDataClasses(parent)
 
         checkAndSave(messageSource, dataModel)
 
-        ReferenceType refType = new ReferenceType(createdByUser: editor, label: 'child')
+        ReferenceType refType = new ReferenceType(createdBy: userEmailAddresses.editor, label: 'child')
         child.addToReferenceTypes(refType)
         dataModel.addToDataTypes(refType)
 
-        DataElement el1 = new DataElement(createdByUser: editor, label: 'child', minMultiplicity: 1, maxMultiplicity: 1)
+        DataElement el1 = new DataElement(createdBy: userEmailAddresses.editor, label: 'child', minMultiplicity: 1, maxMultiplicity: 1)
         refType.addToDataElements(el1)
         parent.addToDataElements(el1)
 
-        DataClass content = new DataClass(createdByUser: editor, label: 'content', description: 'A dataclass with elements',
+        DataClass content = new DataClass(createdBy: userEmailAddresses.editor, label: 'content', description: 'A dataclass with elements',
                                           minMultiplicity: 0, maxMultiplicity: 1)
-        DataElement el2 = new DataElement(createdByUser: editor, label: 'ele1',
+        DataElement el2 = new DataElement(createdBy: userEmailAddresses.editor, label: 'ele1',
                                           minMultiplicity: 0, maxMultiplicity: 20)
         dataModel.findDataTypeByLabel('string').addToDataElements(el2)
         content.addToDataElements(el2)
-        DataElement el3 = new DataElement(createdByUser: reader, label: 'element2',
+        DataElement el3 = new DataElement(createdBy: userEmailAddresses.reader, label: 'element2',
                                           minMultiplicity: 1, maxMultiplicity: 1)
         dataModel.findDataTypeByLabel('integer').addToDataElements(el3)
         content.addToDataElements(el3)
@@ -201,7 +211,7 @@ class BootStrap implements SecurityDefinition {
 
         checkAndSave(messageSource, dataModel)
 
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor,
+        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: userEmailAddresses.editor,
                                              targetCatalogueItem: DataClass.findByLabel('parent'))
         DataClass.findByLabel('content').addToSemanticLinks(link)
 

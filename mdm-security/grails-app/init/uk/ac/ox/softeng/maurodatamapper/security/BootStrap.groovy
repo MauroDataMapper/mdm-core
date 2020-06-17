@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
@@ -93,6 +94,24 @@ class BootStrap implements SecurityDefinition {
                         securableResource: folder,
                         userGroup: readers,
                         groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
+                    )
+
+                    Classifier classifier = new Classifier(label: 'Development Classifier',
+                                                           createdBy: userEmailAddresses.development)
+                    checkAndSave(messageSource, classifier)
+                    // Make editors container admin (existing permissions) of the test folder
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: userEmailAddresses.development,
+                        securableResource: classifier,
+                        userGroup: editors,
+                        groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+                    )
+                    // Make readers reader of the test folder
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: userEmailAddresses.development,
+                        securableResource: classifier,
+                        userGroup: readers,
+                        groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
                     )
                 }
             }
