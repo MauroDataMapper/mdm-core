@@ -71,12 +71,12 @@ class BootStrap implements SecurityDefinition {
         CatalogueUser.withNewTransaction {
             admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
             if (!admin) {
-                createAdminUser(StandardEmailAddress.ADMIN)
+                createAdminUser('admin')
                 checkAndSave(messageSource, admin)
             }
             admins = UserGroup.findByName('administrators')
             if (!admins) {
-                createAdminGroup(StandardEmailAddress.ADMIN)
+                createAdminGroup('admin')
                 checkAndSave(messageSource, admins)
             }
         }
