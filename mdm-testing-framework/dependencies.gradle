@@ -9,17 +9,12 @@ dependencies {
     api group: 'org.slf4j', name: 'slf4j-api'
     implementation group: 'ch.qos.logback', name: 'logback-classic'
 
-    implementation "org.grails:grails-gorm-testing-support"
-    implementation "org.mockito:mockito-core"
-    implementation "io.micronaut:micronaut-http-client"
-    implementation "org.grails:grails-web-testing-support"
-
+    api "org.grails:grails-gorm-testing-support"
+    api "org.mockito:mockito-core"
+    api "io.micronaut:micronaut-http-client"
+    api "org.grails:grails-web-testing-support"
 
     api group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '2.8.0'
     api group: 'org.xmlunit', name: 'xmlunit-core'
     implementation "org.grails.plugins:views-json:$grailsViewsVersion"
-
-    implementation (group: 'uk.ac.ox.ndm.grails', name: 'utils', version: grailsUtilsVersion){
-        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-    }
 }

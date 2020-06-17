@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.xml
 
-import uk.ac.ox.ndm.grails.utils.databinding.converter.JavaLocalDateConverter
-import uk.ac.ox.ndm.grails.utils.databinding.converter.JavaOffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.test.xml.converter.JavaLocalDateConverter
+import uk.ac.ox.softeng.maurodatamapper.test.xml.converter.JavaOffsetDateTimeConverter
 
 import org.w3c.dom.CDATASection
 import org.w3c.dom.Element
