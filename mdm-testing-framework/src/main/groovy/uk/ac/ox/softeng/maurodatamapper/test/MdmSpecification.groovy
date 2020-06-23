@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.test.unit.security.TestUser
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -93,7 +94,7 @@ abstract class MdmSpecification extends Specification {
     }
 
     User getAdmin() {
-        new TestUser(emailAddress: 'admin@maurodatamapper.com',
+        new TestUser(emailAddress: StandardEmailAddress.ADMIN,
                      firstName: 'Admin',
                      lastName: 'User',
                      organisation: 'Oxford BRC Informatics',
