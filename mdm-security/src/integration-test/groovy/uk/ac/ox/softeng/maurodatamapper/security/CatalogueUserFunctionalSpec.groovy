@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
@@ -149,15 +150,17 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 1 // Unlogged user
+        assert CatalogueUser.count() == 2 // Unlogged user & admin user
         implementSecurityUsers('functionalTest')
         assert CatalogueUser.count() == 9
     }
 
     @Transactional
     def cleanupSpec() {
-        CatalogueUser.list().findAll {it.emailAddress != UnloggedUser.instance.emailAddress}.each {it.delete(flush: true)}
-        if (CatalogueUser.count() != 1) {
+        CatalogueUser.list().findAll {
+            !(it.emailAddress in [UnloggedUser.UNLOGGED_EMAIL_ADDRESS, StandardEmailAddress.ADMIN])
+        }.each {it.delete(flush: true)}
+        if (CatalogueUser.count() != 2) {
             Assert.fail("Resource Class ${CatalogueUser.simpleName} has not been emptied")
         }
     }
@@ -185,7 +188,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 }'''
     }
 
-    void "Test the index action"() {
+    void "1 : Test the index action"() {
 
         when:
         GET('catalogueUsers', STRING_ARG)
@@ -233,10 +236,16 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "lastName": "User",
       "pending": false,
       "disabled": false,
-      "createdBy": "functional-test@test.com",
+      "createdBy": "admin@maurodatamapper.com",
       "availableActions": ["update","delete","show"],
       "organisation": "Oxford BRC Informatics",
-      "jobTitle": "God"
+      "jobTitle": "God",
+      "groups": [
+        {
+          "id": "${json-unit.matches:id}",
+          "name": "administrators"
+        }
+      ]
     },
     {
       "id": "${json-unit.matches:id}",
@@ -297,7 +306,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 }'''
     }
 
-    void "Test the save/self registration action correctly persists an instance"() {
+    void "2 : Test the save/self registration action correctly persists an instance"() {
         given:
         reconfigureDefaultUserPrivileges(false)
 
@@ -321,7 +330,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         verifyJsonResponse CREATED, getSelfRegisteredJson(emailId)
     }
 
-    void "Test the admin registration action correctly persists an instance"() {
+    void "3 : Test the admin registration action correctly persists an instance"() {
         given:
         String endpoint = 'admin/catalogueUsers/adminRegister'
 
@@ -355,7 +364,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 }'''
     }
 
-    void "Test the update action correctly updates an instance"() {
+    void "4 : Test the update action correctly updates an instance"() {
         given:
         String id = adminRegisterNewUser()
         Map update = [firstName: 'hello']
@@ -370,7 +379,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         response.body().firstName == 'hello'
     }
 
-    void "Test the show action correctly renders an instance"() {
+    void "5 : Test the show action correctly renders an instance"() {
         given:
         String id = getEditorId().toString()
 
@@ -390,7 +399,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 }'''
     }
 
-    void "Test the delete action correctly deletes an instance"() {
+    void "6 : Test the delete action correctly deletes an instance"() {
         given:
         String id = adminRegisterNewUser()
 
@@ -410,7 +419,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         response.body().disabled == true
     }
 
-    void "Test getting the user preferences"() {
+    void "7 : Test getting the user preferences"() {
         given:
         def id = getEditorId()
 
@@ -421,7 +430,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         verifyResponse OK, response
     }
 
-    void "Test updating the user preferences"() {
+    void "8 : Test updating the user preferences"() {
         given:
         String id = adminRegisterNewUser()
         Map update = [
@@ -447,7 +456,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
     }
 
-    void 'Test user exists'() {
+    void '9 : Test user exists'() {
 
         when: 'checking non-existent user'
         GET("admin/catalogueUsers/userExists/unknown@test.com", MAP_ARG)
@@ -464,7 +473,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         response.body().userExists == true
     }
 
-    void 'Test change password'() {
+    void '10 : Test change password'() {
         given:
         String id = adminRegisterNewUser()
         def tempPassword = getUser(id).tempPassword
@@ -489,7 +498,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         verifyResponse UNPROCESSABLE_ENTITY, response
     }
 
-    void "Test the approve registration works"() {
+    void "11 : Test the approve registration works"() {
         given: 'user self registered'
         String id = selfRegisterNewUser()
 
@@ -503,7 +512,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         !response.body().pending
     }
 
-    void "Test the reject registration works"() {
+    void "12 : Test the reject registration works"() {
         given: 'user self registered'
         String id = selfRegisterNewUser()
 
@@ -518,7 +527,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         response.body().disabled == true
     }
 
-    void 'Test getting list of pending users'() {
+    void '13 : Test getting list of pending users'() {
         given:
         String emailId = UUID.randomUUID().toString()
         String id = selfRegisterNewUser(emailId)
@@ -573,7 +582,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
 
     }
 
-    void 'Test searching'() {
+    void '14 : Test searching'() {
         given:
         def expectedJson = '''{
       "count": 1,
@@ -603,7 +612,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         verifyJsonResponse OK, expectedJson
     }
 
-    void 'Test admin resetting password'() {
+    void '15 : Test admin resetting password'() {
         given:
         String id = selfRegisterNewUser()
 
@@ -627,7 +636,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
         updated.password
     }
 
-    void 'Test user requesting reset link'() {
+    void '16 : Test user requesting reset link'() {
         given:
         String id = selfRegisterNewUser()
         def email = getUser(id).emailAddress

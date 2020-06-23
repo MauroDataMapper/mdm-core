@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
@@ -67,8 +66,8 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 1
-        assert UserGroup.count() == 0
+        assert CatalogueUser.count() == 2
+        assert UserGroup.count() == 1
         implementSecurityUsers('functionalTest')
         assert CatalogueUser.count() == 9
         sessionFactory.currentSession.flush()
@@ -138,6 +137,17 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     void cleanUpData(String id = null) {
         super.cleanUpData(id)
         reconfigureDefaultUserPrivileges(false)
+    }
+
+    @Override
+    int getExpectedInitialResourceCount() {
+        1
+    }
+
+    void verifyR1EmptyIndexResponse() {
+        verifyResponse(OK, response)
+        assert response.body().count == 1
+        assert response.body().items[0].name == 'administrators'
     }
 
     @Transactional

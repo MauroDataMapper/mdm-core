@@ -142,7 +142,7 @@ trait SecurityDefinition {
     void getOrCreateBasicGroups(String creatorKey, boolean includeAdmin = true) {
         if (includeAdmin) {
             admins = UserGroup.findByName('administrators')
-            if (!admin) createAdminGroup(creatorKey)
+            if (!admins) createAdminGroup(creatorKey)
         }
         editors = UserGroup.findByName('editors')
         readers = UserGroup.findByName('readers')

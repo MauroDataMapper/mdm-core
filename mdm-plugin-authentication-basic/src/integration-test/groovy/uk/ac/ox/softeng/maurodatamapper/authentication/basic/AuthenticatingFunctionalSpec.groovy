@@ -17,8 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.authentication.basic
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
@@ -60,7 +61,9 @@ class AuthenticatingFunctionalSpec extends BaseFunctionalSpec implements Securit
 
     @Transactional
     def cleanupSpec() {
-        cleanUpResource(CatalogueUser)
+        CatalogueUser.list().findAll {
+            !(it.emailAddress in [UnloggedUser.UNLOGGED_EMAIL_ADDRESS, StandardEmailAddress.ADMIN])
+        }.each {it.delete(flush: true)}
     }
 
     void 'test logging in'() {
@@ -87,7 +90,7 @@ class AuthenticatingFunctionalSpec extends BaseFunctionalSpec implements Securit
   "lastName": "User",
   "pending": false,
   "disabled": false,
-  "createdBy": "functional-test@test.com"
+  "createdBy": "admin@maurodatamapper.com"
 }''')
 
         when:
