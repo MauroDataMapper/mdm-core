@@ -23,6 +23,7 @@ import org.springframework.core.Ordered
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 /**
  * @since 02/10/2017
@@ -40,7 +41,9 @@ class OffsetDateTimeConverter implements JsonGenerator.Converter, Ordered {
     }
 
     static String toString(OffsetDateTime offsetDateTime) {
-        offsetDateTime?.withOffsetSameInstant(ZoneOffset.UTC)?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        if (!offsetDateTime) return null
+        // Grails cant handle nanoseconds on conversion so we just want to ignore them if we have them
+        offsetDateTime.truncatedTo(ChronoUnit.MILLIS).withOffsetSameInstant(ZoneOffset.UTC)?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     }
 
     @Override
