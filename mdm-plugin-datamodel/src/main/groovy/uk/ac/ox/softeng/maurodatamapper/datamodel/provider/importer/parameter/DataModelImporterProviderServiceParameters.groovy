@@ -52,7 +52,8 @@ Note that if the model is already finalised this will not be overridden.''',
     @ImportParameterConfig(
         displayName = 'Import as New Documentation Version',
         description = '''Should the DataModel/s be imported as new Documentation Version/s.
-If selected then any models with the same name will be superseded and the imported models will be given the latest documentation version of the existing DataModels.
+If selected then any models with the same name will be superseded and the imported models will be given the latest documentation version of the 
+existing DataModels.
 If not selected then the 'DataModel Name' field should be used to ensure the imported DataModel is uniquely named, otherwise you could get an error
 .''',
         order = 0,

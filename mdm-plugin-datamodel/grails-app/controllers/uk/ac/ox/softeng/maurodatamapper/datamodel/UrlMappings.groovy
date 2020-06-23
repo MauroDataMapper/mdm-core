@@ -87,7 +87,6 @@ class UrlMappings {
                 }
                 post "/dataTypes/$otherDataModelId/$dataTypeId"(controller: 'dataType', action: 'copyDataType')
                 "/enumerationTypes/${enumerationTypeId}/enumerationValues"(resources: 'enumerationValue', excludes: DEFAULT_EXCLUDES)
-
             }
 
             group '/dataModels', {
@@ -107,6 +106,15 @@ class UrlMappings {
             group "/folders/$folderId", {
                 get '/dataModels'(controller: 'dataModel', action: 'index')
                 put "/dataModels/$dataModelId"(controller: 'dataModel', action: 'changeFolder')
+            }
+
+            /**
+             * Summary metadata
+             */
+            group "/$catalogueItemDomainType/$catalogueItemId", {
+                '/summaryMetadata'(resources: 'summaryMetadata', excludes: DEFAULT_EXCLUDES) {
+                    '/summaryMetadataReports'(resources: 'summaryMetadataReport', excludes: DEFAULT_EXCLUDES)
+                }
             }
         }
     }

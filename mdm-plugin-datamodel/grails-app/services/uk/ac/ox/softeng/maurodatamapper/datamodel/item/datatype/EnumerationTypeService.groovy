@@ -139,7 +139,7 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
 
     @Override
     EnumerationType updateFacetsAfterInsertingCatalogueItem(EnumerationType enumerationType) {
-        enumerationType = super.updateFacetsAfterInsertingCatalogueItem(enumerationType) as EnumerationType
+        super.updateFacetsAfterInsertingCatalogueItem(enumerationType) as EnumerationType
         enumerationType.enumerationValues.each {
             enumerationValueService.updateFacetsAfterInsertingCatalogueItem(it)
         }

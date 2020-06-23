@@ -26,8 +26,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.DataTypeBindingHelper
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataElementLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -49,7 +51,7 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
 @Slf4j
-class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAware {
+class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAware, SummaryMetadataAware {
 
     public final static Integer BATCH_SIZE = 1000
 
@@ -66,11 +68,12 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     static transients = ['aliases']
 
     static hasMany = [
-        classifiers   : Classifier,
-        metadata      : Metadata,
-        annotations   : Annotation,
-        semanticLinks : SemanticLink,
-        referenceFiles: ReferenceFile,
+        classifiers    : Classifier,
+        metadata       : Metadata,
+        annotations    : Annotation,
+        semanticLinks  : SemanticLink,
+        referenceFiles : ReferenceFile,
+        summaryMetadata: SummaryMetadata
     ]
 
     static constraints = {
@@ -82,6 +85,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     static mapping = {
         semanticLinks cascade: 'all-delete-orphan'
+        summaryMetadata cascade: 'all-delete-orphan'
         dataClass index: 'data_element_data_class_idx' //, cascade: 'none'
         dataType index: 'data_element_data_type_idx', cascade: 'save-update', fetch: 'join'
         model cascade: 'none'

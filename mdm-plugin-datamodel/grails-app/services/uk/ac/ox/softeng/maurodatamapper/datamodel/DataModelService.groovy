@@ -33,6 +33,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -135,6 +136,19 @@ class DataModelService extends ModelService<DataModel> {
         log.debug('Saving {}({}) without batching', dataModel.label, dataModel.ident())
         dataModel.save(failOnError: true, validate: false)
         updateFacetsAfterInsertingCatalogueItem(dataModel)
+    }
+
+    @Override
+    DataModel updateFacetsAfterInsertingCatalogueItem(DataModel catalogueItem) {
+        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+        if (catalogueItem.summaryMetadata) {
+            catalogueItem.summaryMetadata.each {
+                it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
+        }
+        catalogueItem
     }
 
     DataModel saveWithBatching(DataModel dataModel) {

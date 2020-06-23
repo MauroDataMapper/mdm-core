@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+
+model {
+    SummaryMetadata summaryMetadata
+}
+
+json tmpl.summaryMetadata(summaryMetadata)

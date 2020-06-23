@@ -29,6 +29,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataModelDataClassCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.DataModelSearch
@@ -53,21 +55,22 @@ import org.springframework.validation.FieldError
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class DataModel implements Model<DataModel> {
+class DataModel implements Model<DataModel>, SummaryMetadataAware {
 
     UUID id
 
     Boolean hasChild
 
     static hasMany = [
-        dataClasses   : DataClass,
-        dataTypes     : DataType,
-        classifiers   : Classifier,
-        metadata      : Metadata,
-        annotations   : Annotation,
-        semanticLinks : SemanticLink,
-        versionLinks  : VersionLink,
-        referenceFiles: ReferenceFile
+        dataClasses    : DataClass,
+        dataTypes      : DataType,
+        classifiers    : Classifier,
+        metadata       : Metadata,
+        annotations    : Annotation,
+        semanticLinks  : SemanticLink,
+        versionLinks   : VersionLink,
+        referenceFiles : ReferenceFile,
+        summaryMetadata: SummaryMetadata
     ]
 
     static belongsTo = [Folder]
@@ -87,6 +90,7 @@ class DataModel implements Model<DataModel> {
         dataTypes cascade: 'all-delete-orphan'
         semanticLinks cascade: 'all-delete-orphan'
         versionLinks cascade: 'all-delete-orphan'
+        summaryMetadata cascade: 'all-delete-orphan'
         breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
     }
 
@@ -109,7 +113,6 @@ class DataModel implements Model<DataModel> {
         readableByEveryone = false
         breadcrumbTree = new BreadcrumbTree(this)
     }
-
 
     @Override
     String getDomainType() {

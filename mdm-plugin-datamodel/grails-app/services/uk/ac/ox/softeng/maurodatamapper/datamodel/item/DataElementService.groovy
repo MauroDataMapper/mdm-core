@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
@@ -95,6 +96,19 @@ class DataElementService extends ModelItemService<DataElement> {
     DataElement save(DataElement catalogueItem) {
         catalogueItem.save(flush: true)
         updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+    }
+
+    @Override
+    DataElement updateFacetsAfterInsertingCatalogueItem(DataElement catalogueItem) {
+        super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+        if (catalogueItem.summaryMetadata) {
+            catalogueItem.summaryMetadata.each {
+                it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
+        }
+        catalogueItem
     }
 
     @Override

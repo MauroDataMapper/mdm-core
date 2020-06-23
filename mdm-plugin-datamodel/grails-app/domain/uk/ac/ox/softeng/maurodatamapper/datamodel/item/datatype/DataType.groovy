@@ -25,7 +25,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataTypeLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -42,7 +44,7 @@ import org.hibernate.search.annotations.Index
 import org.hibernate.search.bridge.builtin.UUIDBridge
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-abstract class DataType<D> implements ModelItem<D, DataModel> {
+abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAware {
 
     public final static Integer BATCH_SIZE = 1000
 
@@ -54,12 +56,13 @@ abstract class DataType<D> implements ModelItem<D, DataModel> {
     String domainType
 
     static hasMany = [
-        classifiers   : Classifier,
-        metadata      : Metadata,
-        annotations   : Annotation,
-        semanticLinks : SemanticLink,
-        referenceFiles: ReferenceFile,
-        dataElements  : DataElement,
+        classifiers    : Classifier,
+        metadata       : Metadata,
+        annotations    : Annotation,
+        semanticLinks  : SemanticLink,
+        referenceFiles : ReferenceFile,
+        dataElements   : DataElement,
+        summaryMetadata: SummaryMetadata
     ]
 
     static belongsTo = [dataModel: DataModel]
@@ -75,6 +78,7 @@ abstract class DataType<D> implements ModelItem<D, DataModel> {
     static mapping = {
         dataElements cascade: 'delete,lock,refresh,evict,replicate'
         semanticLinks cascade: 'all-delete-orphan'
+        summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_type_data_model_idx', cascade: 'none'
         breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
     }

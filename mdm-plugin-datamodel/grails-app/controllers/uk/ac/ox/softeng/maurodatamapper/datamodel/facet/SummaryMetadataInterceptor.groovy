@@ -15,13 +15,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.bootstrap
+package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
-class StandardEmailAddress {
 
-    static String ADMIN = 'admin@maurodatamapper.com'
-    static String UNIT_TEST = 'unit-test@test.com'
-    static String INTEGRATION_TEST = 'integration-test@test.com'
-    static String FUNCTIONAL_TEST = 'functional-test@test.com'
-    static String DEVELOPMENT = 'development@test.com'
+import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
+
+class SummaryMetadataInterceptor extends FacetInterceptor {
+
+    @Override
+    Class getFacetClass() {
+        SummaryMetadata
+    }
+
+    boolean before() {
+        facetResourceChecks()
+        checkActionAllowedOnFacet()
+    }
 }

@@ -15,13 +15,23 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.bootstrap
+package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
-class StandardEmailAddress {
+enum SummaryMetadataType {
 
-    static String ADMIN = 'admin@maurodatamapper.com'
-    static String UNIT_TEST = 'unit-test@test.com'
-    static String INTEGRATION_TEST = 'integration-test@test.com'
-    static String FUNCTIONAL_TEST = 'functional-test@test.com'
-    static String DEVELOPMENT = 'development@test.com'
+    MAP,
+    NUMBER,
+    STRING
+
+    /*
+    static SummaryMetadataType findForLabel(String label) {
+        values().find {it.label.equalsIgnoreCase(label)}
+    }
+
+    static SummaryMetadataType findFromMap(Map map) {
+        map['summaryMetadataType'] instanceof SummaryMetadataType ? map['summaryMetadataType'] as SummaryMetadataType
+                                                                  : findForLabel(map['summaryMetadataType'] as String)
+    }
+
+     */
 }

@@ -27,7 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataClassLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.ModelItemSearch
@@ -46,7 +48,7 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware {
+class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware {
 
     public final static Integer BATCH_SIZE = 1000
 
@@ -55,14 +57,15 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware {
     DataModel dataModel
 
     static hasMany = [
-        classifiers   : Classifier,
-        metadata      : Metadata,
-        annotations   : Annotation,
-        semanticLinks : SemanticLink,
-        referenceFiles: ReferenceFile,
-        dataClasses   : DataClass,
-        dataElements  : DataElement,
-        referenceTypes: ReferenceType,
+        classifiers    : Classifier,
+        metadata       : Metadata,
+        annotations    : Annotation,
+        semanticLinks  : SemanticLink,
+        referenceFiles : ReferenceFile,
+        dataClasses    : DataClass,
+        dataElements   : DataElement,
+        referenceTypes : ReferenceType,
+        summaryMetadata: SummaryMetadata
     ]
 
     static belongsTo = [DataClass, DataModel]
@@ -84,6 +87,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware {
         dataClasses cascade: 'all-delete-orphan'
         referenceTypes cascade: 'none'
         semanticLinks cascade: 'all-delete-orphan'
+        summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_class_data_model_idx', cascade: 'none'
         parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update'
         breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'

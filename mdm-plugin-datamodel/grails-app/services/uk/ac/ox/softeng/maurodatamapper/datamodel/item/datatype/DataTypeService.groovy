@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -241,10 +242,18 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     @Override
     DataType updateFacetsAfterInsertingCatalogueItem(DataType dataType) {
         if (dataType.instanceOf(EnumerationType)) {
-            return enumerationTypeService.updateFacetsAfterInsertingCatalogueItem(dataType as EnumerationType)
+            enumerationTypeService.updateFacetsAfterInsertingCatalogueItem(dataType as EnumerationType)
         } else {
-            return super.updateFacetsAfterInsertingCatalogueItem(dataType) as DataType
+            super.updateFacetsAfterInsertingCatalogueItem(dataType) as DataType
         }
+        if (dataType.summaryMetadata) {
+            dataType.summaryMetadata.each {
+                it.trackChanges()
+                it.catalogueItemId = dataType.getId()
+            }
+            SummaryMetadata.saveAll(dataType.summaryMetadata)
+        }
+        dataType
     }
 
     @Override
