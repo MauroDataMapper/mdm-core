@@ -18,8 +18,12 @@ import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
 class BootstrapModels {
 
+   public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
+    public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
+
+
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder) {
-        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: 'Simple Test DataModel', folder: folder)
+        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder)
 
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
                                                              readableByAuthenticatedUsers: true)
@@ -48,7 +52,7 @@ class BootstrapModels {
     }
 
     static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder) {
-        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: 'Complex Test DataModel', organisation: 'brc', author: 'admin person',
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: COMPLEX_DATAMODEL_NAME, organisation: 'brc', author: 'admin person',
                                             folder: folder)
         checkAndSave(messageSource, dataModel)
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',

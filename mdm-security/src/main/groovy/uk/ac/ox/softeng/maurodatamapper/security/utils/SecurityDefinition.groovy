@@ -71,53 +71,93 @@ trait SecurityDefinition {
         admin
     }
 
-    void createModernSecurityUsers(String creatorKey, boolean includeAdmin = true) {
-        if (includeAdmin) createAdminUser(creatorKey)
-        containerAdmin = new CatalogueUser(emailAddress: userEmailAddresses.containerAdmin,
-                                           firstName: 'containerAdmin', lastName: 'User',
-                                           createdBy: userEmailAddresses[creatorKey])
-        containerAdmin.encryptAndSetPassword('password')
-        editor = new CatalogueUser(emailAddress: userEmailAddresses.editor,
-                                   firstName: 'editor', lastName: 'User',
-                                   createdBy: userEmailAddresses[creatorKey])
-        editor.encryptAndSetPassword('password')
-        pending = new CatalogueUser(emailAddress: userEmailAddresses.pending,
-                                    firstName: 'pending', lastName: 'User',
-                                    createdBy: userEmailAddresses[creatorKey],
-                                    pending: true,
-                                    organisation: 'Oxford', jobTitle: 'tester')
-        pending.encryptAndSetPassword('test password')
-
-        author = new CatalogueUser(emailAddress: userEmailAddresses.author,
-                                   firstName: 'author', lastName: 'User',
-                                   createdBy: userEmailAddresses[creatorKey])
-        reviewer = new CatalogueUser(emailAddress: userEmailAddresses.reviewer,
-                                     firstName: 'reviewer', lastName: 'User',
-                                     createdBy: userEmailAddresses[creatorKey])
-        reader = new CatalogueUser(emailAddress: userEmailAddresses.reader,
-                                   firstName: 'reader', lastName: 'User',
-                                   createdBy: userEmailAddresses[creatorKey])
-        authenticated = new CatalogueUser(emailAddress: userEmailAddresses.authenticated,
-                                          firstName: 'authenticated', lastName: 'User',
-                                          createdBy: userEmailAddresses[creatorKey])
-    }
-
     UserGroup createAdminGroup(String creatorKey) {
         admins = new UserGroup(createdBy: userEmailAddresses[creatorKey],
                                name: 'administrators', applicationGroupRole: GroupRole.findByName(GroupRole.APPLICATION_ADMIN_ROLE_NAME))
             .addToGroupMembers(admin)
     }
 
+    void createModernSecurityUsers(String creatorKey, boolean includeAdmin = true) {
+        getOrCreateModernSecurityUsers(creatorKey, includeAdmin)
+    }
+
     void createBasicGroups(String creatorKey, boolean includeAdmin = true) {
-        if (includeAdmin) createAdminGroup(creatorKey)
-        editors = new UserGroup(createdBy: userEmailAddresses[creatorKey],
-                                name: 'editors')
-            .addToGroupMembers(containerAdmin)
-            .addToGroupMembers(editor)
-        readers = new UserGroup(createdBy: userEmailAddresses[creatorKey],
-                                name: 'readers')
-            .addToGroupMembers(author)
-            .addToGroupMembers(reviewer)
-            .addToGroupMembers(reader)
+        getOrCreateBasicGroups(creatorKey, includeAdmin)
+    }
+
+    void getOrCreateModernSecurityUsers(String creatorKey, boolean includeAdmin = false) {
+        if (includeAdmin) {
+            admin = CatalogueUser.findByEmailAddress(userEmailAddresses.admin)
+            if (!admin) createAdminUser(creatorKey)
+        }
+        containerAdmin = CatalogueUser.findByEmailAddress(userEmailAddresses.containerAdmin)
+        editor = CatalogueUser.findByEmailAddress(userEmailAddresses.editor)
+        pending = CatalogueUser.findByEmailAddress(userEmailAddresses.pending)
+        author = CatalogueUser.findByEmailAddress(userEmailAddresses.author)
+        reviewer = CatalogueUser.findByEmailAddress(userEmailAddresses.reviewer)
+        reader = CatalogueUser.findByEmailAddress(userEmailAddresses.reader)
+        authenticated = CatalogueUser.findByEmailAddress(userEmailAddresses.authenticated)
+        if (!containerAdmin) {
+            containerAdmin = new CatalogueUser(emailAddress: userEmailAddresses.containerAdmin,
+                                               firstName: 'containerAdmin', lastName: 'User',
+                                               createdBy: userEmailAddresses[creatorKey])
+            containerAdmin.encryptAndSetPassword('password')
+        }
+        if (!editor) {
+            editor = new CatalogueUser(emailAddress: userEmailAddresses.editor,
+                                       firstName: 'editor', lastName: 'User',
+                                       createdBy: userEmailAddresses[creatorKey])
+            editor.encryptAndSetPassword('password')
+        }
+        if (!pending) {
+            pending = new CatalogueUser(emailAddress: userEmailAddresses.pending,
+                                        firstName: 'pending', lastName: 'User',
+                                        createdBy: userEmailAddresses[creatorKey],
+                                        pending: true,
+                                        organisation: 'Oxford', jobTitle: 'tester')
+            pending.encryptAndSetPassword('test password')
+        }
+        if (!author) {
+            author = new CatalogueUser(emailAddress: userEmailAddresses.author,
+                                       firstName: 'author', lastName: 'User',
+                                       createdBy: userEmailAddresses[creatorKey])
+        }
+        if (!reviewer) {
+            reviewer = new CatalogueUser(emailAddress: userEmailAddresses.reviewer,
+                                         firstName: 'reviewer', lastName: 'User',
+                                         createdBy: userEmailAddresses[creatorKey])
+        }
+        if (!reader) {
+            reader = new CatalogueUser(emailAddress: userEmailAddresses.reader,
+                                       firstName: 'reader', lastName: 'User',
+                                       createdBy: userEmailAddresses[creatorKey])
+        }
+        if (!authenticated) {
+            authenticated = new CatalogueUser(emailAddress: userEmailAddresses.authenticated,
+                                              firstName: 'authenticated', lastName: 'User',
+                                              createdBy: userEmailAddresses[creatorKey])
+        }
+    }
+
+    void getOrCreateBasicGroups(String creatorKey, boolean includeAdmin = true) {
+        if (includeAdmin) {
+            admins = UserGroup.findByName('administrators')
+            if (!admin) createAdminGroup(creatorKey)
+        }
+        editors = UserGroup.findByName('editors')
+        readers = UserGroup.findByName('readers')
+        if (!editors) {
+            editors = new UserGroup(createdBy: userEmailAddresses[creatorKey],
+                                    name: 'editors')
+                .addToGroupMembers(containerAdmin)
+                .addToGroupMembers(editor)
+        }
+        if (!readers) {
+            readers = new UserGroup(createdBy: userEmailAddresses[creatorKey],
+                                    name: 'readers')
+                .addToGroupMembers(author)
+                .addToGroupMembers(reviewer)
+                .addToGroupMembers(reader)
+        }
     }
 }

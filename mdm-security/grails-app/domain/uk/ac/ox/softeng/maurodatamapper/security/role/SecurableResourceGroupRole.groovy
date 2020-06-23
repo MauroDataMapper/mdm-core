@@ -116,4 +116,10 @@ class SecurableResourceGroupRole implements EditHistoryAware {
                                                                                                         UUID userGroupId) {
         bySecurableResourceAndGroupRoleId(securableResourceDomainType, securableResourceId, groupRoleId).eq('userGroup.id', userGroupId)
     }
+
+    static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceAndGroupRoleIdAndUserGroupId(SecurableResource securableResource,
+                                                                                                        UUID groupRoleId,
+                                                                                                        UUID userGroupId) {
+        bySecurableResourceAndGroupRoleIdAndUserGroupId(securableResource.domainType, securableResource.resourceId, groupRoleId, userGroupId)
+    }
 }

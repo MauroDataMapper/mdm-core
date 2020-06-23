@@ -187,27 +187,31 @@ class GroupRole implements EditHistoryAware, PathAware, SecurableResource, Compa
         }
     }
 
+    static GroupRole findOrCreate(Map args) {
+        GroupRole.findByName(args.name) ?: new GroupRole(args)
+    }
+
     static GroupRole getDefaultGroupRoleModelStructure() {
-        GroupRole folderGroupAdmin = new GroupRole(name: CONTAINER_GROUP_ADMIN_ROLE_NAME, displayName: 'Container Group Administrator',
-                                                   createdBy: 'mdm-security@maurodatamapper.com', applicationLevelRole: true)
-        GroupRole groupAdmin = new GroupRole(name: GROUP_ADMIN_ROLE_NAME, displayName: 'Group Administrator', applicationLevelRole: true,
-                                             createdBy: 'mdm-security@maurodatamapper.com')
-        GroupRole siteAdmin = new GroupRole(name: SITE_ADMIN_ROLE_NAME, displayName: 'Site Administrator', applicationLevelRole: true,
+        GroupRole folderGroupAdmin = findOrCreate(name: CONTAINER_GROUP_ADMIN_ROLE_NAME, displayName: 'Container Group Administrator',
+                                                  createdBy: 'mdm-security@maurodatamapper.com', applicationLevelRole: true)
+        GroupRole groupAdmin = findOrCreate(name: GROUP_ADMIN_ROLE_NAME, displayName: 'Group Administrator', applicationLevelRole: true,
                                             createdBy: 'mdm-security@maurodatamapper.com')
-        GroupRole appAdmin = new GroupRole(name: APPLICATION_ADMIN_ROLE_NAME, displayName: 'Application Administrator', applicationLevelRole: true,
+        GroupRole siteAdmin = findOrCreate(name: SITE_ADMIN_ROLE_NAME, displayName: 'Site Administrator', applicationLevelRole: true,
                                            createdBy: 'mdm-security@maurodatamapper.com')
-        GroupRole userAdmin = new GroupRole(name: USER_ADMIN_ROLE_NAME, displayName: 'User Administrator', applicationLevelRole: true,
-                                            createdBy: 'mdm-security@maurodatamapper.com')
-        GroupRole containerAdmin = new GroupRole(name: CONTAINER_ADMIN_ROLE_NAME, displayName: 'Container Administrator', applicationLevelRole: false,
-                                                 createdBy: 'mdm-security@maurodatamapper.com')
-        GroupRole editor = new GroupRole(name: EDITOR_ROLE_NAME, displayName: 'Editor', applicationLevelRole: false,
-                                         createdBy: 'mdm-security@maurodatamapper.com')
-        GroupRole author = new GroupRole(name: AUTHOR_ROLE_NAME, displayName: 'Author', applicationLevelRole: false,
-                                         createdBy: 'mdm-security@maurodatamapper.com')
-        GroupRole reviewer = new GroupRole(name: REVIEWER_ROLE_NAME, displayName: 'Reviewer', applicationLevelRole: false,
+        GroupRole appAdmin = findOrCreate(name: APPLICATION_ADMIN_ROLE_NAME, displayName: 'Application Administrator', applicationLevelRole: true,
+                                          createdBy: 'mdm-security@maurodatamapper.com')
+        GroupRole userAdmin = findOrCreate(name: USER_ADMIN_ROLE_NAME, displayName: 'User Administrator', applicationLevelRole: true,
                                            createdBy: 'mdm-security@maurodatamapper.com')
-        GroupRole reader = new GroupRole(name: READER_ROLE_NAME, displayName: 'Reader', applicationLevelRole: false,
-                                         createdBy: 'mdm-security@maurodatamapper.com')
+        GroupRole containerAdmin = findOrCreate(name: CONTAINER_ADMIN_ROLE_NAME, displayName: 'Container Administrator', applicationLevelRole: false,
+                                                createdBy: 'mdm-security@maurodatamapper.com')
+        GroupRole editor = findOrCreate(name: EDITOR_ROLE_NAME, displayName: 'Editor', applicationLevelRole: false,
+                                        createdBy: 'mdm-security@maurodatamapper.com')
+        GroupRole author = findOrCreate(name: AUTHOR_ROLE_NAME, displayName: 'Author', applicationLevelRole: false,
+                                        createdBy: 'mdm-security@maurodatamapper.com')
+        GroupRole reviewer = findOrCreate(name: REVIEWER_ROLE_NAME, displayName: 'Reviewer', applicationLevelRole: false,
+                                          createdBy: 'mdm-security@maurodatamapper.com')
+        GroupRole reader = findOrCreate(name: READER_ROLE_NAME, displayName: 'Reader', applicationLevelRole: false,
+                                        createdBy: 'mdm-security@maurodatamapper.com')
         siteAdmin
             .addToChildren(appAdmin
                                .addToChildren(userAdmin

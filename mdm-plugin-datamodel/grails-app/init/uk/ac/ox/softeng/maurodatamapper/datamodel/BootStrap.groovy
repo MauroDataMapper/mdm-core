@@ -33,8 +33,12 @@ class BootStrap {
             development {
                 Folder.withNewTransaction {
                     Folder folder = Folder.findByLabel('Development Folder')
-                    BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder)
-                    BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder)
+                    if (DataModel.countByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME) == 0) {
+                        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder)
+                    }
+                    if (DataModel.countByLabel(BootstrapModels.SIMPLE_DATAMODEL_NAME) == 0) {
+                        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder)
+                    }
                 }
             }
         }

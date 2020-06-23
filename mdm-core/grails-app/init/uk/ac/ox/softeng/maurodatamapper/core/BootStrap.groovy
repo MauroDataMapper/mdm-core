@@ -78,12 +78,16 @@ class BootStrap {
         environments {
             development {
                 Folder.withNewTransaction {
-                    Folder folder = new Folder(label: 'Development Folder', createdBy: StandardEmailAddress.DEVELOPMENT)
-                    checkAndSave(messageSource, folder)
+                    if (Folder.countByLabel('Development Folder') == 0) {
+                        Folder folder = new Folder(label: 'Development Folder', createdBy: StandardEmailAddress.DEVELOPMENT)
+                        checkAndSave(messageSource, folder)
+                    }
                 }
                 Classifier.withNewTransaction {
-                    Classifier classifier = new Classifier(label: 'Development Classifier', createdBy: StandardEmailAddress.DEVELOPMENT)
-                    checkAndSave(messageSource, classifier)
+                    if (Classifier.countByLabel('Development Classifier') == 0) {
+                        Classifier classifier = new Classifier(label: 'Development Classifier', createdBy: StandardEmailAddress.DEVELOPMENT)
+                        checkAndSave(messageSource, classifier)
+                    }
                 }
             }
         }
