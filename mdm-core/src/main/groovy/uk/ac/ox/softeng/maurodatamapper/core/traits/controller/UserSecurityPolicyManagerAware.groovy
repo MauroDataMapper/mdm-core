@@ -46,7 +46,9 @@ trait UserSecurityPolicyManagerAware {
     }
 
     boolean methodNotAllowed(String message) {
-        renderMapForResponse status: METHOD_NOT_ALLOWED, message: message
+        Map model = [message: message]
+        if (request.requestURI) model.path = request.requestURI
+        renderMapForResponse(model: model, status: METHOD_NOT_ALLOWED, view: '/methodNotAllowed')
         false
     }
 

@@ -161,9 +161,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
             }
             ReferenceFile.saveAll(catalogueItem.referenceFiles)
         }
-        catalogueItem.breadcrumbTree.trackChanges()
-        catalogueItem.breadcrumbTree.beforeValidate()
-        catalogueItem.breadcrumbTree.save()
+        catalogueItem.breadcrumbTree?.trackChanges()
+        catalogueItem.breadcrumbTree?.beforeValidate()
+        catalogueItem.breadcrumbTree?.save()
         catalogueItem
     }
 

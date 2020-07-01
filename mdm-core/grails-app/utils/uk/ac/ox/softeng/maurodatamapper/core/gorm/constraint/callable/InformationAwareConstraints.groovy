@@ -17,10 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+
 /**
  * @since 17/02/2020
  */
-class InformationAwareConstraints {
+class InformationAwareConstraints extends CreatorAwareConstraints {
 
     static constraints = {
         label nullable: false, blank: false

@@ -17,13 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core
 
+
+import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES
+import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_UPDATE
+import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.INCLUDES_INDEX_ONLY
+
 class UrlMappings {
 
     static mappings = {
-        final List<String> DEFAULT_EXCLUDES = ['patch', 'create', 'edit']
-        final List<String> DEFAULT_EXCLUDES_AND_UPDATING = ['patch', 'create', 'edit', 'update']
-        final List<String> INDEX_ONLY = ['index']
-        final List<String> READ_ONLY_INCLUDES = ['index', 'show']
+
 
         '500'(view: '/error')
         '404'(view: '/notFound')
@@ -41,7 +43,7 @@ class UrlMappings {
                 post '/editProperties'(controller: 'admin', action: 'editApiProperties')
                 get '/status'(controller: 'admin', action: 'status')
                 get '/activeSessions'(controller: 'session', action: 'activeSessions')
-                '/emails'(resources: 'email', includes: INDEX_ONLY)
+                '/emails'(resources: 'email', includes: INCLUDES_INDEX_ONLY)
 
                 group "/tree/$containerDomainType/$modelDomainType", {
                     get '/documentationSuperseded'(controller: 'treeItem', action: 'documentationSupersededModels') // New URL
@@ -90,7 +92,7 @@ class UrlMappings {
                 /*
                 Classifiers
                  */
-                '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES_AND_UPDATING)
+                '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
 
                 /*
                 Metadata
@@ -100,8 +102,8 @@ class UrlMappings {
                 /*
                 Annotations
                  */
-                '/annotations'(resources: 'annotation', excludes: DEFAULT_EXCLUDES_AND_UPDATING) {
-                    '/annotations'(resources: 'annotation', excludes: DEFAULT_EXCLUDES_AND_UPDATING)
+                '/annotations'(resources: 'annotation', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE) {
+                    '/annotations'(resources: 'annotation', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
                 }
 
                 /*
