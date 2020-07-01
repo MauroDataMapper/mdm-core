@@ -105,7 +105,7 @@ if (Environment.current != Environment.PRODUCTION) {
     logger('org.hibernate.search.batchindexing.impl', WARN)
     // logger('org.hibernate.SQL', DEBUG)
     // logger 'org.hibernate.type', TRACE
-
+    logger('org.flyway', DEBUG)
     // Track interceptor order
     logger 'grails.artefact.Interceptor', DEBUG
 }

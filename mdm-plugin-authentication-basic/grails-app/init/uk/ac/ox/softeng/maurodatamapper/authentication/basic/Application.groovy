@@ -22,8 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import grails.plugins.metadata.PluginSource
+import org.springframework.context.annotation.ComponentScan
 
 @PluginSource
+@ComponentScan(basePackages = ['uk.ac.ox.softeng.maurodatamapper'])
 class Application extends GrailsAutoConfiguration {
     static void main(String[] args) {
         Utils.outputRuntimeArgs(Application)

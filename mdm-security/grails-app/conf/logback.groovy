@@ -106,7 +106,7 @@ if (Environment.current != Environment.PRODUCTION) {
     //   logger('org.grails.orm.hibernate.cfg', DEBUG)
     //    logger('org.hibernate.SQL', DEBUG)
     // logger 'org.hibernate.type', TRACE
-
+    logger('org.flyway', DEBUG)
     // Track interceptor order
     logger 'grails.artefact.Interceptor', DEBUG, ['STDOUT'], false
 }

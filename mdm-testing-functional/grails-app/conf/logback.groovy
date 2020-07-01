@@ -104,7 +104,7 @@ logger('org.hibernate.search.fulltext_query', DEBUG)
 logger('org.hibernate.search.batchindexing.impl', WARN)
 //    logger('org.hibernate.SQL', DEBUG)
 // logger 'org.hibernate.type', TRACE
-
+logger('org.flyway', DEBUG)
 // Track interceptor order
 logger 'grails.artefact.Interceptor', DEBUG
 logger 'org.simplejavamail.mailer.internal.mailsender.MailSender', OFF

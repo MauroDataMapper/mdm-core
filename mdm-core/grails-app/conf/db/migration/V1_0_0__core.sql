@@ -1,22 +1,4 @@
---
--- Copyright 2020 University of Oxford
---
--- Licensed under the Apache License, Version 2.0 (the "License");
--- you may not use this file except in compliance with the License.
--- You may obtain a copy of the License at
---
---     http://www.apache.org/licenses/LICENSE-2.0
---
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
---
--- SPDX-License-Identifier: Apache-2.0
---
-
--- grails schema-export grails-app/conf/db/migration/V0_0_1__initial.sql
+CREATE SCHEMA IF NOT EXISTS core;
 
 CREATE TABLE core.annotation (
     id                         UUID         NOT NULL,
@@ -58,16 +40,18 @@ CREATE TABLE core.breadcrumb_tree (
     PRIMARY KEY (id)
 );
 CREATE TABLE core.classifier (
-    id                   UUID         NOT NULL,
-    version              INT8         NOT NULL,
-    date_created         TIMESTAMP    NOT NULL,
-    last_updated         TIMESTAMP    NOT NULL,
-    path                 TEXT         NOT NULL,
-    depth                INT4         NOT NULL,
-    parent_classifier_id UUID,
-    created_by           VARCHAR(255) NOT NULL,
-    label                TEXT         NOT NULL,
-    description          TEXT,
+    id                              UUID         NOT NULL,
+    version                         INT8         NOT NULL,
+    date_created                    TIMESTAMP    NOT NULL,
+    last_updated                    TIMESTAMP    NOT NULL,
+    path                            TEXT         NOT NULL,
+    depth                           INT4         NOT NULL,
+    parent_classifier_id            UUID,
+    readable_by_authenticated_users BOOLEAN      NOT NULL,
+    created_by                      VARCHAR(255) NOT NULL,
+    readable_by_everyone            BOOLEAN      NOT NULL,
+    label                           TEXT         NOT NULL,
+    description                     TEXT,
     PRIMARY KEY (id)
 );
 CREATE TABLE core.edit (
@@ -94,17 +78,19 @@ CREATE TABLE core.email (
     PRIMARY KEY (id)
 );
 CREATE TABLE core.folder (
-    id               UUID         NOT NULL,
-    version          INT8         NOT NULL,
-    date_created     TIMESTAMP    NOT NULL,
-    last_updated     TIMESTAMP    NOT NULL,
-    path             TEXT         NOT NULL,
-    deleted          BOOLEAN      NOT NULL,
-    depth            INT4         NOT NULL,
-    parent_folder_id UUID,
-    created_by       VARCHAR(255) NOT NULL,
-    label            TEXT         NOT NULL,
-    description      TEXT,
+    id                              UUID         NOT NULL,
+    version                         INT8         NOT NULL,
+    date_created                    TIMESTAMP    NOT NULL,
+    last_updated                    TIMESTAMP    NOT NULL,
+    path                            TEXT         NOT NULL,
+    deleted                         BOOLEAN      NOT NULL,
+    depth                           INT4         NOT NULL,
+    readable_by_authenticated_users BOOLEAN      NOT NULL,
+    parent_folder_id                UUID,
+    created_by                      VARCHAR(255) NOT NULL,
+    readable_by_everyone            BOOLEAN      NOT NULL,
+    label                           TEXT         NOT NULL,
+    description                     TEXT,
     PRIMARY KEY (id)
 );
 CREATE TABLE core.metadata (

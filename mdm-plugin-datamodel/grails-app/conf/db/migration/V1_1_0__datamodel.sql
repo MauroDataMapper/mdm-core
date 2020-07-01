@@ -1,22 +1,4 @@
---
--- Copyright 2020 University of Oxford
---
--- Licensed under the Apache License, Version 2.0 (the "License");
--- you may not use this file except in compliance with the License.
--- You may obtain a copy of the License at
---
---     http://www.apache.org/licenses/LICENSE-2.0
---
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
---
--- SPDX-License-Identifier: Apache-2.0
---
-
--- grails schema-export grails-app/conf/db/migration/V0_0_1__initial.sql
+CREATE SCHEMA IF NOT EXISTS datamodel;
 
 CREATE TABLE datamodel.data_class (
     id                   UUID         NOT NULL,
@@ -57,23 +39,25 @@ CREATE TABLE datamodel.data_element (
     PRIMARY KEY (id)
 );
 CREATE TABLE datamodel.data_model (
-    id                    UUID         NOT NULL,
-    version               INT8         NOT NULL,
-    date_created          TIMESTAMP    NOT NULL,
-    finalised             BOOLEAN      NOT NULL,
-    date_finalised        TIMESTAMP,
-    documentation_version VARCHAR(255) NOT NULL,
-    model_type            VARCHAR(255) NOT NULL,
-    last_updated          TIMESTAMP    NOT NULL,
-    organisation          VARCHAR(255),
-    deleted               BOOLEAN      NOT NULL,
-    author                VARCHAR(255),
-    breadcrumb_tree_id    UUID         NOT NULL,
-    folder_id             UUID         NOT NULL,
-    created_by            VARCHAR(255) NOT NULL,
-    aliases_string        TEXT,
-    label                 TEXT         NOT NULL,
-    description           TEXT,
+    id                              UUID         NOT NULL,
+    version                         INT8         NOT NULL,
+    date_created                    TIMESTAMP    NOT NULL,
+    finalised                       BOOLEAN      NOT NULL,
+    readable_by_authenticated_users BOOLEAN      NOT NULL,
+    date_finalised                  TIMESTAMP,
+    documentation_version           VARCHAR(255) NOT NULL,
+    readable_by_everyone            BOOLEAN      NOT NULL,
+    model_type                      VARCHAR(255) NOT NULL,
+    last_updated                    TIMESTAMP    NOT NULL,
+    organisation                    VARCHAR(255),
+    deleted                         BOOLEAN      NOT NULL,
+    author                          VARCHAR(255),
+    breadcrumb_tree_id              UUID         NOT NULL,
+    folder_id                       UUID         NOT NULL,
+    created_by                      VARCHAR(255) NOT NULL,
+    aliases_string                  TEXT,
+    label                           TEXT         NOT NULL,
+    description                     TEXT,
     PRIMARY KEY (id)
 );
 CREATE TABLE datamodel.data_type (
@@ -116,37 +100,41 @@ CREATE TABLE datamodel.enumeration_value (
     PRIMARY KEY (id)
 );
 CREATE TABLE datamodel.join_dataClass_to_facet (
-    dataClass_id      UUID NOT NULL,
-    classifier_id     UUID,
-    annotation_id     UUID,
-    semantic_link_id  UUID,
-    reference_file_id UUID,
-    metadata_id       UUID
+    dataClass_id        UUID NOT NULL,
+    classifier_id       UUID,
+    annotation_id       UUID,
+    semantic_link_id    UUID,
+    reference_file_id   UUID,
+    metadata_id         UUID,
+    summary_metadata_id UUID
 );
 CREATE TABLE datamodel.join_dataElement_to_facet (
-    dataElement_id    UUID NOT NULL,
-    classifier_id     UUID,
-    annotation_id     UUID,
-    semantic_link_id  UUID,
-    reference_file_id UUID,
-    metadata_id       UUID
+    dataElement_id      UUID NOT NULL,
+    classifier_id       UUID,
+    annotation_id       UUID,
+    semantic_link_id    UUID,
+    reference_file_id   UUID,
+    metadata_id         UUID,
+    summary_metadata_id UUID
 );
 CREATE TABLE datamodel.join_dataModel_to_facet (
-    dataModel_id      UUID NOT NULL,
-    classifier_id     UUID,
-    annotation_id     UUID,
-    semantic_link_id  UUID,
-    version_link_id   UUID,
-    reference_file_id UUID,
-    metadata_id       UUID
+    dataModel_id        UUID NOT NULL,
+    classifier_id       UUID,
+    annotation_id       UUID,
+    semantic_link_id    UUID,
+    version_link_id     UUID,
+    reference_file_id   UUID,
+    metadata_id         UUID,
+    summary_metadata_id UUID
 );
 CREATE TABLE datamodel.join_dataType_to_facet (
-    dataType_id       UUID NOT NULL,
-    classifier_id     UUID,
-    annotation_id     UUID,
-    semantic_link_id  UUID,
-    reference_file_id UUID,
-    metadata_id       UUID
+    dataType_id         UUID NOT NULL,
+    classifier_id       UUID,
+    annotation_id       UUID,
+    semantic_link_id    UUID,
+    reference_file_id   UUID,
+    metadata_id         UUID,
+    summary_metadata_id UUID
 );
 CREATE TABLE datamodel.join_enumerationValue_to_facet (
     enumerationValue_id UUID NOT NULL,
@@ -155,6 +143,30 @@ CREATE TABLE datamodel.join_enumerationValue_to_facet (
     semantic_link_id    UUID,
     reference_file_id   UUID,
     metadata_id         UUID
+);
+CREATE TABLE datamodel.summary_metadata (
+    id                         UUID         NOT NULL,
+    version                    INT8         NOT NULL,
+    summary_metadata_type      VARCHAR(255) NOT NULL,
+    date_created               TIMESTAMP    NOT NULL,
+    last_updated               TIMESTAMP    NOT NULL,
+    catalogue_item_domain_type VARCHAR(255) NOT NULL,
+    catalogue_item_id          UUID,
+    created_by                 VARCHAR(255) NOT NULL,
+    label                      TEXT         NOT NULL,
+    description                TEXT,
+    PRIMARY KEY (id)
+);
+CREATE TABLE datamodel.summary_metadata_report (
+    id                  UUID         NOT NULL,
+    version             INT8         NOT NULL,
+    date_created        TIMESTAMP    NOT NULL,
+    last_updated        TIMESTAMP    NOT NULL,
+    report_date         TIMESTAMP    NOT NULL,
+    created_by          VARCHAR(255) NOT NULL,
+    report_value        TEXT         NOT NULL,
+    summary_metadata_id UUID         NOT NULL,
+    PRIMARY KEY (id)
 );
 CREATE INDEX data_class_parent_data_class_idx ON datamodel.data_class(parent_data_class_id);
 CREATE INDEX data_class_data_model_idx ON datamodel.data_class(data_model_id);
@@ -168,14 +180,10 @@ CREATE INDEX dataType_created_by_idx ON datamodel.data_type(created_by);
 CREATE INDEX reference_type_reference_class_idx ON datamodel.data_type(reference_class_id);
 CREATE INDEX enumeration_value_enumeration_type_idx ON datamodel.enumeration_value(enumeration_type_id);
 CREATE INDEX enumerationValue_created_by_idx ON datamodel.enumeration_value(created_by);
-ALTER TABLE IF EXISTS core.annotation
-    ADD CONSTRAINT FKnrnwt8d2s4kytg7mis2rg2a5x FOREIGN KEY (parent_annotation_id) REFERENCES core.annotation;
-ALTER TABLE IF EXISTS core.breadcrumb_tree
-    ADD CONSTRAINT FK1hraqwgiiva4reb2v6do4it81 FOREIGN KEY (parent_id) REFERENCES core.breadcrumb_tree;
-ALTER TABLE IF EXISTS core.classifier
-    ADD CONSTRAINT FKahkm58kcer6a9q2v01ealovr6 FOREIGN KEY (parent_classifier_id) REFERENCES core.classifier;
-ALTER TABLE IF EXISTS core.folder
-    ADD CONSTRAINT FK57g7veis1gp5wn3g0mp0x57pl FOREIGN KEY (parent_folder_id) REFERENCES core.folder;
+CREATE INDEX summaryMetadata_created_by_idx ON datamodel.summary_metadata(created_by);
+CREATE INDEX summaryMetadataReport_created_by_idx ON datamodel.summary_metadata_report(created_by);
+CREATE INDEX summary_metadata_report_summary_metadata_idx ON datamodel.summary_metadata_report(summary_metadata_id);
+
 ALTER TABLE IF EXISTS datamodel.data_class
     ADD CONSTRAINT FK71lrhqamsxh1b57sbigrgonq2 FOREIGN KEY (parent_data_class_id) REFERENCES datamodel.data_class;
 ALTER TABLE IF EXISTS datamodel.data_class
@@ -214,6 +222,8 @@ ALTER TABLE IF EXISTS datamodel.join_dataClass_to_facet
     ADD CONSTRAINT FK5n6b907728hblnk0ihhwhbac4 FOREIGN KEY (reference_file_id) REFERENCES core.reference_file;
 ALTER TABLE IF EXISTS datamodel.join_dataClass_to_facet
     ADD CONSTRAINT FKewipna2xjervio2w9rsem7vvu FOREIGN KEY (metadata_id) REFERENCES core.metadata;
+ALTER TABLE IF EXISTS datamodel.join_dataClass_to_facet
+    ADD CONSTRAINT FKgeoshkis2b6trtu8c5etvg72n FOREIGN KEY (summary_metadata_id) REFERENCES datamodel.summary_metadata;
 ALTER TABLE IF EXISTS datamodel.join_dataElement_to_facet
     ADD CONSTRAINT FKdn8e1l2pofwmdpfroe9bkhskm FOREIGN KEY (classifier_id) REFERENCES core.classifier;
 ALTER TABLE IF EXISTS datamodel.join_dataElement_to_facet
@@ -226,6 +236,8 @@ ALTER TABLE IF EXISTS datamodel.join_dataElement_to_facet
     ADD CONSTRAINT FK89immwtwlrbwrel10gjy3yimw FOREIGN KEY (reference_file_id) REFERENCES core.reference_file;
 ALTER TABLE IF EXISTS datamodel.join_dataElement_to_facet
     ADD CONSTRAINT FKg58co9t99dfp0076vkn23hemy FOREIGN KEY (metadata_id) REFERENCES core.metadata;
+ALTER TABLE IF EXISTS datamodel.join_dataElement_to_facet
+    ADD CONSTRAINT FKqef1ustdtk1irqjnohxwhlsxf FOREIGN KEY (summary_metadata_id) REFERENCES datamodel.summary_metadata;
 ALTER TABLE IF EXISTS datamodel.join_dataModel_to_facet
     ADD CONSTRAINT FK1ek18e3t2cki6fch7jmbbati0 FOREIGN KEY (classifier_id) REFERENCES core.classifier;
 ALTER TABLE IF EXISTS datamodel.join_dataModel_to_facet
@@ -240,6 +252,8 @@ ALTER TABLE IF EXISTS datamodel.join_dataModel_to_facet
     ADD CONSTRAINT FKicjxoyym4mvpajl7amd2c96vg FOREIGN KEY (reference_file_id) REFERENCES core.reference_file;
 ALTER TABLE IF EXISTS datamodel.join_dataModel_to_facet
     ADD CONSTRAINT FKn8kvp5hpmtpu6t9ivldafifom FOREIGN KEY (metadata_id) REFERENCES core.metadata;
+ALTER TABLE IF EXISTS datamodel.join_dataModel_to_facet
+    ADD CONSTRAINT FKb1rfqfx6stfaote1vqbh0u65b FOREIGN KEY (summary_metadata_id) REFERENCES datamodel.summary_metadata;
 ALTER TABLE IF EXISTS datamodel.join_dataType_to_facet
     ADD CONSTRAINT FKq73nqfoqdhodobkio53xnoroj FOREIGN KEY (classifier_id) REFERENCES core.classifier;
 ALTER TABLE IF EXISTS datamodel.join_dataType_to_facet
@@ -252,6 +266,8 @@ ALTER TABLE IF EXISTS datamodel.join_dataType_to_facet
     ADD CONSTRAINT FKk6htfwfpc5ty1o1skmlw0ct5h FOREIGN KEY (reference_file_id) REFERENCES core.reference_file;
 ALTER TABLE IF EXISTS datamodel.join_dataType_to_facet
     ADD CONSTRAINT FK685o5rkte9js4kibmx3e201ul FOREIGN KEY (metadata_id) REFERENCES core.metadata;
+ALTER TABLE IF EXISTS datamodel.join_dataType_to_facet
+    ADD CONSTRAINT FKxyctuwpfqyqog98xf69enu2y FOREIGN KEY (summary_metadata_id) REFERENCES datamodel.summary_metadata;
 ALTER TABLE IF EXISTS datamodel.join_enumerationValue_to_facet
     ADD CONSTRAINT FKissxtxxag5rkhtjr2q1pivt64 FOREIGN KEY (classifier_id) REFERENCES core.classifier;
 ALTER TABLE IF EXISTS datamodel.join_enumerationValue_to_facet
@@ -264,3 +280,5 @@ ALTER TABLE IF EXISTS datamodel.join_enumerationValue_to_facet
     ADD CONSTRAINT FK40tuyaalgpyfdnp2wqfl1bl3b FOREIGN KEY (reference_file_id) REFERENCES core.reference_file;
 ALTER TABLE IF EXISTS datamodel.join_enumerationValue_to_facet
     ADD CONSTRAINT FK9xuiuctli6j5hra8j0pw0xbib FOREIGN KEY (metadata_id) REFERENCES core.metadata;
+ALTER TABLE IF EXISTS datamodel.summary_metadata_report
+    ADD CONSTRAINT FK9auhycixx3nly0xthx9eg8i8y FOREIGN KEY (summary_metadata_id) REFERENCES datamodel.summary_metadata;

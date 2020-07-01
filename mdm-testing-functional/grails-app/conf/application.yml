@@ -142,7 +142,7 @@ dataSource:
 environments:
     test:
         database.creation: 'CREATE SCHEMA IF NOT EXISTS CORE\;CREATE SCHEMA IF NOT EXISTS SECURITY\;CREATE SCHEMA IF NOT EXISTS DATAMODEL'
-        flyway.enabled: false
+        spring.flyway.enabled: false
         dataSource:
             driverClassName: org.h2.Driver
             dialect: org.hibernate.dialect.H2Dialect
@@ -151,12 +151,11 @@ environments:
             dbCreate: create
             url: 'jdbc:h2:mem:${database.name};MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;INIT=${database.creation}'
     development:
-        flyway.enabled: false
         dataSource:
             driverClassName: org.postgresql.Driver
             dialect: org.hibernate.dialect.PostgreSQL10Dialect
             username: maurodatamapper
             password: MauroDataMapper1234
-            dbCreate: update
+            dbCreate: none
             url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
 ---

@@ -155,7 +155,7 @@ dataSource:
 ---
 environments:
     test:
-        flyway.enabled: false
+        spring.flyway.enabled: false
         dataSource:
             driverClassName: org.h2.Driver
             dialect: org.hibernate.dialect.H2Dialect
@@ -164,9 +164,7 @@ environments:
             dbCreate: update
             url: 'jdbc:h2:mem:${database.name};MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;INIT=${database.creation}'
     development:
-        #        flyway.enabled: false
         dataSource:
-            #            dbCreate: create
             username: maurodatamapper
             password: MauroDataMapper1234
 

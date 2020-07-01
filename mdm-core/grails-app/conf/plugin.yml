@@ -54,7 +54,10 @@ grails:
             - "yyyy-MM-dd HH:mm:ss.S z"
             - "yyyy-MM-dd"
 ---
-flyway.enabled: true
+spring:
+    flyway:
+        enabled: true
+        ignoreMissingMigrations: true
 ---
 
 hibernate:
