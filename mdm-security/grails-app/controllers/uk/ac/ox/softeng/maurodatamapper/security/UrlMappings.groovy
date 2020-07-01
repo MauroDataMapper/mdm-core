@@ -17,10 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
+import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES
+
 class UrlMappings {
 
     static mappings = {
-        final List<String> DEFAULT_EXCLUDES = ['patch', 'create', 'edit']
 
         group '/api', {
             '/userGroups'(resources: 'userGroup', excludes: DEFAULT_EXCLUDES) {

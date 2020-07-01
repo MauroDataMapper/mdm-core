@@ -84,7 +84,6 @@ class BootStrap implements SecurityDefinition {
 
         environments {
             development {
-
                 CatalogueUser.withNewTransaction {
 
                     getOrCreateModernSecurityUsers('development', false)
