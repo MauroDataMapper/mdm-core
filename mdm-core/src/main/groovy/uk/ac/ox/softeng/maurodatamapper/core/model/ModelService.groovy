@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
@@ -39,6 +41,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
                                            boolean includeModelSuperseded, boolean includeDeleted)
 
+    abstract List<K> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:])
+
     abstract List<UUID> findAllModelIdsWithChildren(List<K> models)
 
     abstract void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink)
@@ -50,6 +54,26 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract List<K> findAllModelSupersededModels(Map pagination)
 
     abstract List<K> findAllDeletedModels(Map pagination)
+
+    abstract List<K> findAllByFolderId(UUID folderId)
+
+    abstract K validate(K model)
+
+    abstract K saveWithBatching(K model)
+
+    abstract K softDeleteModel(K model)
+
+    abstract void permanentDeleteModel(K model)
+
+    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds = [])
+
+    abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments = [:])
+
+    abstract K createNewModelVersion(String label, K dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments = [:])
+
+    ObjectDiff<K> diff(K thisModel, K otherModel) {
+        thisModel.diff(otherModel)
+    }
 
     @Override
     K checkFacetsAfterImportingCatalogueItem(K catalogueItem) {
