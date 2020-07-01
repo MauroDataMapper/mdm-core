@@ -208,7 +208,9 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
 
     @Transactional
     def <T extends GormEntity> void cleanUpResource(Class<T> resourceClass) {
-        resourceClass.list().each {it.delete(flush: true)}
+        log.info('Cleaning {}', resourceClass)
+        resourceClass.deleteAll(resourceClass.list(), flush: true)
+
         if (resourceClass.count() != 0) {
             Assert.fail("Resource Class ${resourceClass.simpleName} has not been emptied")
         }

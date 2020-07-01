@@ -76,7 +76,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
     }
 
     int getExpectedConstrainedErrors() {
-        1
+        1 // label
     }
 
     void setBasicConstrainedBlank() {
@@ -87,6 +87,13 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
     int getExpectedConstrainedBlankErrors() {
         4
+    }
+
+    void verifyBlankConstraints() {
+        assert domain.errors.getFieldError('label').code == 'blank'
+        assert domain.errors.getFieldError('description').code == 'blank'
+        assert domain.errors.getFieldError('aliasesString').code == 'blank'
+        // #4 == breadcrumbtree.label
     }
 
     void 'CI01 : test constrained properties'() {
@@ -118,9 +125,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         thrown(InternalSpockError)
         domain.hasErrors()
         domain.errors.errorCount == expectedConstrainedBlankErrors
-        domain.errors.getFieldError('label').code == 'blank'
-        domain.errors.getFieldError('description').code == 'blank'
-        domain.errors.getFieldError('aliasesString').code == 'blank'
+        verifyBlankConstraints()
     }
 
     void 'CI02 : test metadata addition'() {
@@ -443,8 +448,8 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         and:
         diff.getNumberOfDiffs() == expectedBaseLevelOfDiffs + 1
         diff.diffs[0].fieldName == 'label'
-        diff.diffs[0].left == 'test'
-        diff.diffs[0].right == 'another item'
+        diff.diffs[0].left == domain.label
+        diff.diffs[0].right == other.label
     }
 
     void 'CI12 : test diffing metadata'() {
