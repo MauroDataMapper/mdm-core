@@ -17,29 +17,28 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES
+import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_SAVE
+
 class UrlMappings {
 
     static mappings = {
-
-        // provide plugin url mappings here
-        final List<String> DEFAULT_EXCLUDES = ['patch', 'create', 'edit']
-        final List<String> DEFAULT_NO_SAVE = ['patch', 'create', 'edit', 'save']
 
         group '/api', {
 
             // Allows us to control posting dataModels into folders
             post "/folders/$folderId/dataModels"(controller: 'dataModel', action: 'save') // new URL
 
-            '/dataModels'(resources: 'dataModel', excludes: DEFAULT_NO_SAVE) {
+            '/dataModels'(resources: 'dataModel', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
                 put '/finalise'(controller: 'dataModel', action: 'finalise')
                 put '/newDocumentationVersion'(controller: 'dataModel', action: 'newDocumentationVersion')
                 put '/newModelVersion'(controller: 'dataModel', action: 'newModelVersion') // new URL
 
-                get "/diff/$otherDataModelId"(controller: 'dataModel', action: 'diff')
-                get "/suggestLinks/$otherDataModelId"(controller: 'dataModel', action: 'suggestLinks')
+                get "/diff/$otherModelId"(controller: 'dataModel', action: 'diff')
+                get "/suggestLinks/$otherModelId"(controller: 'dataModel', action: 'suggestLinks')
                 put "/folder/$folderId"(controller: 'dataModel', action: 'changeFolder')
-                get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataModel', action: 'exportDataModel')
+                get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataModel', action: 'exportModel')
 
                 delete '/dataTypes/clean'(controller: 'dataModel', action: 'deleteAllUnusedDataTypes')
                 delete '/dataClasses/clean'(controller: 'dataModel', action: 'deleteAllUnusedDataClasses')
@@ -99,8 +98,8 @@ class UrlMappings {
                     get '/defaultDataTypeProviders'(controller: 'dataModel', action: 'defaultDataTypeProviders') // new url
                 }
 
-                post "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataModel', action: 'exportDataModels')
-                post "/import/$importerNamespace/$importerName/$importerVersion"(controller: 'dataModel', action: 'importDataModels')
+                post "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataModel', action: 'exportModels')
+                post "/import/$importerNamespace/$importerName/$importerVersion"(controller: 'dataModel', action: 'importModels')
             }
 
             group "/folders/$folderId", {

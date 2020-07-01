@@ -271,7 +271,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
 
         then:
-        result.count == 2
+        result.count == 3
         result.results[0].label == 'content'
         result.results[1].label == 'ele1'
 
@@ -280,7 +280,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
 
         then:
-        result.count == 2
+        result.count == 3
         result.results[0].label == 'ele1'
         result.results[1].label == 'element2'
     }

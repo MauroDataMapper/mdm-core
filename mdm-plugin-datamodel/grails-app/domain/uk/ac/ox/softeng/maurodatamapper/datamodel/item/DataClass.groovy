@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -28,14 +27,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemC
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
+import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataClassLabelValidator
-import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
-import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.domain.MultiplicityAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 
 import grails.gorm.DetachedCriteria
@@ -122,9 +121,14 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         parentDataClass ?: dataModel
     }
 
+    @SuppressWarnings('UnnecessaryQualifiedReference')
     @Override
     Boolean hasChildren() {
-        this.dataClasses == null ? false : !this.dataClasses.isEmpty()
+        if (id) {
+            DataClass.byParentDataClassId(this.id).count() != 0
+        } else {
+            this.dataClasses == null ? false : !this.dataClasses.isEmpty()
+        }
     }
 
     @Override

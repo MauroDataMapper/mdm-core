@@ -103,7 +103,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         domain.count() == 1
 
         when:
-        DataModel other = new DataModel(createdBy: editor, label: domain.label, folder: testFolder)
+        DataModel other = new DataModel(createdBy: editor.emailAddress, label: domain.label, folder: testFolder)
         checkAndSave(other)
 
         then:

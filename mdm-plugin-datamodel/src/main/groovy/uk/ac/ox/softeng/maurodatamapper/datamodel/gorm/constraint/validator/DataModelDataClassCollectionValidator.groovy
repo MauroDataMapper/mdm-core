@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 
 /**
  * @since 26/04/2018
