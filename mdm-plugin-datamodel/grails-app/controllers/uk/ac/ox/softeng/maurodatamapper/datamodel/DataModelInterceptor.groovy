@@ -18,21 +18,14 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.interceptor.TieredAccessSecurableResourceInterceptor
+import uk.ac.ox.softeng.maurodatamapper.core.interceptor.ModelInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
-class DataModelInterceptor extends TieredAccessSecurableResourceInterceptor {
-
-    DataModelService dataModelService
-
-    DataModelInterceptor() {
-        match(controller: 'dataModel')
-    }
+class DataModelInterceptor extends ModelInterceptor {
 
     @Override
     def <S extends SecurableResource> Class<S> getSecuredClass() {
@@ -41,10 +34,8 @@ class DataModelInterceptor extends TieredAccessSecurableResourceInterceptor {
 
     @Override
     void checkIds() {
-        Utils.toUuid(params, 'id')
+        super.checkIds()
         Utils.toUuid(params, 'dataModelId')
-        Utils.toUuid(params, 'folderId')
-        Utils.toUuid(params, 'otherDataModelId')
     }
 
     @Override
@@ -53,98 +44,53 @@ class DataModelInterceptor extends TieredAccessSecurableResourceInterceptor {
     }
 
     @Override
-    List<String> getPublicAccessMethods() {
-        ['exporterProviders']
-    }
-
-    @Override
     List<String> getAuthenticatedAccessMethods() {
-        ['importDataModel', 'importDataModels', 'importerProviders', 'defaultDataTypeProviders', 'types']
+        super.getAuthenticatedAccessMethods() + ['defaultDataTypeProviders', 'types']
     }
 
     @Override
     List<String> getReadAccessMethods() {
-        ['exportDataModel', 'newModelVersion', 'hierarchy', 'search']
+        super.getReadAccessMethods() + ['hierarchy', 'search']
     }
 
     @Override
     List<String> getEditAccessMethods() {
-        ['finalise', 'deleteAllUnusedDataClasses', 'deleteAllUnusedDataTypes']
+        super.getEditAccessMethods() + ['deleteAllUnusedDataClasses', 'deleteAllUnusedDataTypes']
     }
 
     @Override
-    List<String> getApplicationAdminAccessMethods() {
-        ['deleteAll', 'documentSuperseded', 'modelSuperseded', 'deleted']
-    }
-
-    boolean before() {
-
-        securableResourceChecks()
-
-
-        if (params.containsKey('folderId')) {
-            boolean canReadFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.folderId)
-
-            // We control addition of DataModels into containers by using container permissions
-            if (isSave()) {
-                return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(Folder, params.folderId) ?:
-                       forbiddenOrNotFound(canReadFolder, Folder, params.folderId)
+    boolean checkExportModelAction() {
+        def json = request.getJSON()
+        params.dataModelIds = []
+        if (json) {
+            if (json instanceof JSONObject) {
+                params.dataModelIds = json.dataModelIds.collect {Utils.toUuid(it)}
             }
-            if (actionName == 'changeFolder') {
-                boolean canReadModel = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, getId())
-
-                if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(DataModel, getId())) {
-                    return forbiddenOrNotFound(canReadModel, DataModel, getId())
-                }
-
-                if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, params.folderId)) {
-                    return forbiddenOrNotFound(canReadFolder, Folder, params.folderId)
-                }
-                return true
-            }
-            if (isIndex() && params.folderId) {
-                return canReadFolder ?: notFound(Folder, params.folderId)
+            if (json instanceof JSONArray) {
+                params.dataModelIds = json.collect {Utils.toUuid(it)}
             }
         }
 
-        if (actionName in ['diff', 'suggestLinks']) {
+        if (!params.dataModelIds) throw new ApiBadRequestException('DMIXX', 'DataModelIds must be supplied in the request body')
+
+        UUID id = params.dataModelIds.find {!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it as UUID)}
+        return !id ?: notFound(DataModel, id)
+    }
+
+    boolean before() {
+        securableResourceChecks()
+
+        if (actionName in ['suggestLinks']) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, getId())) {
                 return notFound(DataModel, getId())
             }
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.otherDataModelId)) {
-                return notFound(DataModel, params.otherDataModelId)
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.otherModelId)) {
+                return notFound(DataModel, params.otherModelId)
             }
             return true
         }
 
-        if (actionName == 'newDocumentationVersion') {
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, getId())) {
-                return notFound(DataModel, getId())
-            }
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(DataModel, getId(), 'newDocumentationVersion') ?:
-                   forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(DataModel, getId()))
-        }
-
-
-        if (actionName == 'exportDataModels') {
-            def json = request.getJSON()
-            params.dataModelIds = []
-            if (json) {
-                if (json instanceof JSONObject) {
-                    params.dataModelIds = json.dataModelIds.collect {Utils.toUuid(it)}
-                }
-                if (json instanceof JSONArray) {
-                    params.dataModelIds = json.collect {Utils.toUuid(it)}
-                }
-            }
-
-            if (!params.dataModelIds) throw new ApiBadRequestException('DMIXX', 'DataModelIds must be supplied in the request body')
-
-            UUID id = params.dataModelIds.find {!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it as UUID)}
-            return !id ?: notFound(DataModel, id)
-        }
-
-        checkTieredAccessActionAuthorisationOnSecuredResource(DataModel, getId())
+        checkModelActionsAuthorised()
     }
 
 }

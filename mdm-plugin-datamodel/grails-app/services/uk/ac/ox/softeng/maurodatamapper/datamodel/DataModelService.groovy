@@ -17,13 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -120,6 +118,17 @@ class DataModelService extends ModelService<DataModel> {
             dm.folder = null
             dm.delete(flush: flush)
         } else delete(dm)
+    }
+
+    @Override
+    DataModel softDeleteModel(DataModel model) {
+        model?.deleted = true
+        model
+    }
+
+    @Override
+    void permanentDeleteModel(DataModel model) {
+        delete(model, true)
     }
 
     List<DataModel> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
@@ -336,7 +345,8 @@ class DataModelService extends ModelService<DataModel> {
         } as Set<EnumerationType>
     }
 
-    DataModel finaliseDataModel(DataModel dataModel, User user, List<Serializable> supersedeModelIds = []) {
+    @Override
+    DataModel finaliseModel(DataModel dataModel, User user, List<Serializable> supersedeModelIds = []) {
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         dataModel.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
@@ -349,8 +359,9 @@ class DataModelService extends ModelService<DataModel> {
         dataModel
     }
 
-    ObjectDiff<DataModel> diff(DataModel thisDataModel, DataModel otherDataModel) {
-        thisDataModel.diff(otherDataModel)
+    @Deprecated
+    DataModel finaliseDataModel(DataModel dataModel, User user, List<Serializable> supersedeModelIds = []) {
+        finaliseModel(dataModel, user, supersedeModelIds)
     }
 
     boolean newVersionCreationIsAllowed(DataModel dataModel) {
@@ -371,37 +382,56 @@ class DataModelService extends ModelService<DataModel> {
         true
     }
 
-    DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions, boolean moveDataFlows,
-                                            boolean throwErrors = false) {
-
+    @Override
+    DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
 
         DataModel newDocVersion = copyDataModel(dataModel, user, copyPermissions, dataModel.label,
-                                                Version.nextMajorVersion(dataModel.documentationVersion), throwErrors)
+                                                Version.nextMajorVersion(dataModel.documentationVersion),
+                                                additionalArguments.throwErrors as boolean)
         setDataModelIsNewDocumentationVersionOfDataModel(newDocVersion, dataModel, user)
-        if (moveDataFlows) {
+        if (additionalArguments.moveDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
             //            moveTargetDataFlows(dataModel, newDocVersion)
         }
 
-        if (newDocVersion.validate()) newDocVersion.save(flush: true)
+        if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
         newDocVersion
     }
 
-    DataModel createNewModelVersion(String label, DataModel dataModel, User user, boolean copyPermissions, boolean copyDataFlows,
-                                    boolean throwErrors = false) {
-
+    @Override
+    DataModel createNewModelVersion(String label, DataModel dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
 
-        DataModel newModelVersion = copyDataModel(dataModel, user, copyPermissions, label, throwErrors)
+        DataModel newModelVersion = copyDataModel(dataModel, user, copyPermissions, label,
+                                                  additionalArguments.throwErrors as boolean)
         setDataModelIsNewModelVersionOfDataModel(newModelVersion, dataModel, user)
-        if (copyDataFlows) {
+        if (additionalArguments.copyDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel copying of DataFlows')
             //copyTargetDataFlows(dataModel, newModelVersion, user)
         }
 
-        if (newModelVersion.validate()) newModelVersion.save(flush: true)
+        if (newModelVersion.validate()) newModelVersion.save(flush: true, validate: false)
         newModelVersion
+    }
+
+    @Deprecated
+    DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions, boolean moveDataFlows,
+                                            boolean throwErrors = false) {
+        createNewDocumentationVersion(dataModel, user, copyPermissions, [
+            moveDataFlows: moveDataFlows,
+            throwErrors  : throwErrors
+        ])
+    }
+
+    @Deprecated
+    DataModel createNewModelVersion(String label, DataModel dataModel, User user, boolean copyPermissions, boolean copyDataFlows,
+                                    boolean throwErrors = false) {
+
+        createNewModelVersion(label, dataModel, user, copyPermissions, [
+            copyDataFlows: copyDataFlows,
+            throwErrors  : throwErrors
+        ])
     }
 
     DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors) {
@@ -724,6 +754,4 @@ class DataModelService extends ModelService<DataModel> {
             dataModel.dateFinalised = dataModel.finalised ? OffsetDateTime.now() : null
         }
     }
-
-
 }
