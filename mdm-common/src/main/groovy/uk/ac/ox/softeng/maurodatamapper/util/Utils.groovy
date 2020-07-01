@@ -113,7 +113,8 @@ class Utils {
             lookup in [
                 it.getPropertyName(),
                 it.getPropertyName() + 's',
-                it.getPropertyName() + 'es'
+                it.getPropertyName() + 'es',
+                it.getPropertyName().replaceFirst(/y$/, 'ies')
             ] || lookup == it.getShortName()
         }
     }

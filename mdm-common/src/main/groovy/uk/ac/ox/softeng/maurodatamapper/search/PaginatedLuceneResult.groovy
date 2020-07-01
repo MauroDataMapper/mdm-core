@@ -54,6 +54,6 @@ class PaginatedLuceneResult<K> {
 
         List<D> offsetList = offsetAmount == null ? sortedList : sortedList.drop(offsetAmount)
         List<D> maxList = max == null ? offsetList : offsetList.take(max)
-        new PaginatedLuceneResult<D>(maxList, maxList.size())
+        new PaginatedLuceneResult<D>(maxList, fullResultSet.size())
     }
 }
