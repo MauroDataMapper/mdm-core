@@ -51,7 +51,8 @@ class BreadcrumbTreeSpec extends BaseUnitSpec implements DomainUnitTest<Breadcru
         domain.errors.errorCount == 5
 
         when:
-        domain.domainId = basicModel.id
+        UUID rid = UUID.randomUUID()
+        domain.domainId = rid
         domain.label = basicModel.label
         domain.domainType = basicModel.domainType
         domain.finalised = basicModel.finalised
@@ -62,11 +63,11 @@ class BreadcrumbTreeSpec extends BaseUnitSpec implements DomainUnitTest<Breadcru
         !domain.errors.hasErrors()
 
         and:
-        domain.breadcrumb.id == basicModel.id
+        domain.breadcrumb.id == rid
         domain.breadcrumb.label == 'test'
         domain.breadcrumb.domainType == BasicModel.simpleName
         !domain.breadcrumb.finalised
-        domain.tree == "${basicModel.id}|${BasicModel.simpleName}|test|false"
+        domain.tree == "${rid}|${BasicModel.simpleName}|test|false"
     }
 
     void "test Modelitem breadcrumb"() {
