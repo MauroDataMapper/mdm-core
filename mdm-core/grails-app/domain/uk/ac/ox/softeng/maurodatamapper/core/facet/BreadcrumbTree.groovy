@@ -60,7 +60,7 @@ class BreadcrumbTree {
         parent nullable: true, validator: {val, obj ->
             obj.topBreadcrumbTree || val ? true : ['default.null.message']
         }
-        domainId nullable: true, validator: {val, obj ->
+        domainId nullable: true, unique: true, validator: {val, obj ->
             if (val) return true
             if (!val && obj.domainEntity && !obj.domainEntity.ident()) return true
             ['default.null.message']
@@ -69,6 +69,7 @@ class BreadcrumbTree {
 
     static mapping = {
         treeString type: 'text'
+        label type: 'text'
         parent cascade: 'save-update'
     }
 
