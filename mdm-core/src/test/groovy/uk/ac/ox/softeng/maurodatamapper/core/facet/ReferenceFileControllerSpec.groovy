@@ -77,7 +77,7 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "fileName": "logback.groovy",
       "domainType": "ReferenceFile",
-      "fileSize": 4973,
+      "fileSize": ${json-unit.any-number},
       "id": "${json-unit.matches:id}",
       "fileContents": "${json-unit.matches:fileContents}",
       "fileType": "Unknown"
