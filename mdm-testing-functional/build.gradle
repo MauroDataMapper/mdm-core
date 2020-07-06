@@ -59,7 +59,9 @@ dependencies {
     compile "org.grails:grails-plugin-databinding"
     compile "org.grails:grails-web-boot"
     compile "org.grails:grails-logging"
-    compile "org.grails.plugins:cache"
+    compile "org.grails.plugins:cache", {
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
+    }
     compile "org.grails.plugins:async"
     compile "org.grails.plugins:events"
     compile "org.grails.plugins:hibernate5:$grailsHibernate5Version"
