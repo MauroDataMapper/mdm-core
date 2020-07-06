@@ -429,7 +429,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
             // Application admin and site admin are the roles we know about, store the highest level present as we need it later to define
             // catalogue item access
-            if (virtualGroupRole.allowedRoles.any {it.name == GroupRole.APPLICATION_ADMIN_ROLE_NAME}) {
+            if (virtualGroupRole.allowedRoles.any {it.name == GroupRole.SITE_ADMIN_ROLE_NAME}) {
                 // If the list of allowed roles is smaller then keep as the highest level of access
                 if (!fullSecureableResourceAccessRole ||
                     fullSecureableResourceAccessRole.allowedRoles.size() > virtualGroupRole.allowedRoles.size()) {

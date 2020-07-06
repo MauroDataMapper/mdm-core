@@ -58,6 +58,7 @@ spring:
     flyway:
         enabled: true
         ignoreMissingMigrations: true
+        baselineOnMigrate: true
 ---
 
 hibernate:

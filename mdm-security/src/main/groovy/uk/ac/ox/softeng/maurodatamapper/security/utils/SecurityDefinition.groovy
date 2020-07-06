@@ -73,7 +73,7 @@ trait SecurityDefinition {
 
     UserGroup createAdminGroup(String creatorKey) {
         admins = new UserGroup(createdBy: userEmailAddresses[creatorKey],
-                               name: 'administrators', applicationGroupRole: GroupRole.findByName(GroupRole.APPLICATION_ADMIN_ROLE_NAME))
+                               name: 'administrators', applicationGroupRole: GroupRole.findByName(GroupRole.SITE_ADMIN_ROLE_NAME))
             .addToGroupMembers(admin)
     }
 
