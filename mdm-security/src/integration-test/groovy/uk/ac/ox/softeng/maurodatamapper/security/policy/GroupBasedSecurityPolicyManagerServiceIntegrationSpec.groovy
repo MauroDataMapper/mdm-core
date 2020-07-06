@@ -149,9 +149,9 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
         and:
         policy.user.id == admin.id
         policy.userGroups.size() == 4
-        policy.applicationPermittedRoles.size() == 4
+        policy.applicationPermittedRoles.size() == 5
         policy.securableResourceGroupRoles.size() == 1
-        policy.virtualSecurableResourceGroupRoles.size() == 72
+        policy.virtualSecurableResourceGroupRoles.size() == 87
 
         when:
         Set<VirtualSecurableResourceGroupRole> folderRoles = policy.virtualSecurableResourceGroupRoles.findAll {it.domainId == folder.id}
@@ -185,11 +185,11 @@ class GroupBasedSecurityPolicyManagerServiceIntegrationSpec extends BaseIntegrat
 
         and:
         // 5 users
-        userRoles.size() == 36
+        userRoles.size() == 45
 
         and:
         // 6 groups
-        groupRoles.size() == 24
+        groupRoles.size() == 30
     }
 
     void 'T03 : test building user security policy manager for admin when made siteadmin'() {
