@@ -17,13 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
-
-import org.springframework.core.Ordered
-
 
 /**
  * This should intercept to load the user's security policy manager into the parameters object to allow downstream interceptors and controllers
@@ -31,7 +27,7 @@ import org.springframework.core.Ordered
  */
 class UserSecurityPolicyManagerInterceptor implements MdmInterceptor {
 
-    public static final Integer ORDER = Ordered.LOWEST_PRECEDENCE + 1000
+    public static final Integer ORDER = HIGHEST_PRECEDENCE + 1000
 
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
 

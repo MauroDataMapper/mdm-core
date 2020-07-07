@@ -19,12 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.session
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 
-import static org.springframework.core.Ordered.LOWEST_PRECEDENCE
+import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 
 class SessionInterceptor implements MdmInterceptor {
 
     SessionService sessionService
-    public static final Integer ORDER = LOWEST_PRECEDENCE + 2000
+    public static final Integer ORDER = HIGHEST_PRECEDENCE + 2000
 
     SessionInterceptor() {
         match(uri: '/**/api/**/')
