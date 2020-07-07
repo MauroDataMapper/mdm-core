@@ -38,11 +38,11 @@ grails:
             maxRequestSize: 200000000
     cors:
         enabled: true
+        allowCredentials: true
         # The following are the defaults
         #allowedOrigins: ['*']
         #exposedHeaders: null
         #maxAge: 1800
-        #allowCredentials: true
     databinding:
         dateFormats:
             - "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
