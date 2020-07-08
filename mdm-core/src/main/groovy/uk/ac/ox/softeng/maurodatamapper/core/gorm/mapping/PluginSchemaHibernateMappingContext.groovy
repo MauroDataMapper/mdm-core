@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping
 
 import grails.plugins.metadata.GrailsPlugin
+import io.micronaut.core.order.Ordered
 import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.Mapping
@@ -25,7 +26,7 @@ import org.grails.orm.hibernate.cfg.Mapping
 /**
  * @since 04/11/2019
  */
-abstract class PluginSchemaHibernateMappingContext extends DynamicHibernateMappingContext {
+abstract class PluginSchemaHibernateMappingContext extends DynamicHibernateMappingContext implements Ordered {
 
     abstract String getPluginName()
 

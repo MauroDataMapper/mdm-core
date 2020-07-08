@@ -17,12 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core
 
+import uk.ac.ox.softeng.maurodatamapper.core.flyway.CustomFlywayConfiguration
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.CoreSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.AnnotationAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.BreadcrumbTreeMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CatalogueItemClassifierAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CatalogueItemMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ClassifierAwareMappingContext
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.CoreSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CreatorAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.InformationAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MetadataAwareMappingContext
@@ -105,7 +106,8 @@ This is basically the backend API.
 
     Closure doWithSpring() {
         {->
-
+            // Dynamically update the Flyway Schemas
+            customFlywayConfiguration CustomFlywayConfiguration
 
             /*
              * Load in the Lucene analysers used by the hibernate search functionality

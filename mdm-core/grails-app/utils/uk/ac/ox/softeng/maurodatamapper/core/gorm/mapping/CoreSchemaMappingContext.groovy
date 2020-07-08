@@ -17,10 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.PluginSchemaHibernateMappingContext
 
 import groovy.util.logging.Slf4j
+import io.micronaut.core.order.Ordered
 
 /**
  * Maps all domains in the mdm-core plugin into the core schema
@@ -29,6 +29,10 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class CoreSchemaMappingContext extends PluginSchemaHibernateMappingContext {
 
+    @Override
+    int getOrder() {
+        Ordered.HIGHEST_PRECEDENCE
+    }
 
     @Override
     String getPluginName() {
