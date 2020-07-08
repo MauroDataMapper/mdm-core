@@ -60,6 +60,13 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-plugin-terminology info') {
+                    steps {
+                        dir('mdm-plugin-datamodel') {
+                            sh './grailsw -v' // Output grails version for verification checks
+                        }
+                    }
+                }
                 stage('mdm-security info') {
                     steps {
                         dir('mdm-security') {
@@ -123,6 +130,20 @@ pipeline {
                     post {
                         always {
                             dir('mdm-plugin-datamodel') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('mdm-plugin-terminology') {
+                    steps {
+                        dir('mdm-plugin-terminology') {
+                            sh "./grailsw test-app -unit"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-terminology') {
                                 junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
                             }
                         }
@@ -203,6 +224,20 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-plugin-terminology') {
+                    steps {
+                        dir('mdm-plugin-terminology') {
+                            sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-terminology') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
+                            }
+                        }
+                    }
+                }
                 stage('mdm-security') {
                     steps {
                         dir('mdm-security') {
@@ -245,6 +280,20 @@ pipeline {
                     post {
                         always {
                             dir('mdm-plugin-datamodel') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('mdm-plugin-terminology') {
+                    steps {
+                        dir('mdm-plugin-terminology') {
+                            sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-terminology') {
                                 junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
                             }
                         }
