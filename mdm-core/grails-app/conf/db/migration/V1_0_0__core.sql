@@ -35,7 +35,7 @@ CREATE TABLE core.breadcrumb_tree (
     domain_id           UUID,
     tree_string         TEXT         NOT NULL,
     top_breadcrumb_tree BOOLEAN      NOT NULL,
-    label               VARCHAR(255),
+    label               TEXT,
     parent_id           UUID,
     PRIMARY KEY (id)
 );
