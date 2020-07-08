@@ -179,7 +179,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass)) {
             return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, REVIEWER_ROLE_NAME)
         }
-        return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
+        return userCanCreateSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
     }
 
     @Override
@@ -188,7 +188,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
             return userCanEditSecuredResourceId(resourceClass, id)
         }
-        return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
+        return userCanEditSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
     }
 
     @Override
@@ -197,7 +197,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
             return userCanDeleteSecuredResourceId(resourceClass, id, false)
         }
-        return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
+        return userCanDeleteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
     }
 
     @Override
