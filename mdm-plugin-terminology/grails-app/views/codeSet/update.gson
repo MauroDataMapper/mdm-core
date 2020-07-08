@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+
+model {
+    CodeSet codeSet
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.fullCodeSet(codeSet: codeSet, userSecurityPolicyManager: userSecurityPolicyManager)
+

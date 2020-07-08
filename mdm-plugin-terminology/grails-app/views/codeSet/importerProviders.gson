@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+
+model {
+    Iterable<ImporterProviderService> importerProviders
+}
+json tmpl.'/mauroDataMapperServiceProvider/importerProviderService'(importerProviders ?: [])
+

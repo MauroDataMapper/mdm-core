@@ -1,0 +1,24 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+
+inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem            : terminology,
+                                                               userSecurityPolicyManager: userSecurityPolicyManager]
+
+model {
+    Terminology terminology
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    type terminology.modelType
+    documentationVersion terminology.documentationVersion.toString()
+    finalised terminology.finalised
+    readableByEveryone terminology.readableByEveryone
+    readableByAuthenticatedUsers terminology.readableByAuthenticatedUsers
+
+    if (terminology.finalised) dateFinalised terminology.dateFinalised
+
+    if (terminology.deleted) deleted terminology.deleted
+    if (terminology.author) author terminology.author
+    if (terminology.organisation) organisation terminology.organisation
+}

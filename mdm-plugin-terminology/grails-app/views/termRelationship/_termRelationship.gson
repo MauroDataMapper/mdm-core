@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: termRelationship]
+
+model {
+    TermRelationship termRelationship
+}
+
+json {
+    relationshipType g.render(termRelationship.relationshipType)
+    sourceTerm g.render(termRelationship.sourceTerm)
+    targetTerm g.render(termRelationship.targetTerm)
+}

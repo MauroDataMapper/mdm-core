@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<TermRelationshipType> termRelationshipTypeList
+}
+
+json {
+    count termRelationshipTypeList instanceof PagedResultList ? ((PagedResultList) termRelationshipTypeList).getTotalCount() :
+          termRelationshipTypeList?.size() ?: 0
+    items tmpl.termRelationshipType(termRelationshipTypeList ?: [])
+}

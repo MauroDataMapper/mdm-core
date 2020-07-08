@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<Term> termList
+}
+
+json {
+    count termList instanceof PagedResultList ? ((PagedResultList) termList).getTotalCount() : termList?.size() ?: 0
+    items tmpl.term(termList ?: [])
+}

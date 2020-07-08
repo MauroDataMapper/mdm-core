@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: codeSet]
+
+model {
+    CodeSet codeSet
+}
+
+json {
+    if (codeSet.classifiers) classifiers g.render(codeSet.classifiers)
+    if (codeSet.deleted) deleted codeSet.deleted
+    if (codeSet.author) author codeSet.author
+    if (codeSet.organisation) organisation codeSet.organisation
+}
