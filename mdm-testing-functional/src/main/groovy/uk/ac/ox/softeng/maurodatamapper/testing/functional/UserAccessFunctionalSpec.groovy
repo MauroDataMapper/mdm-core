@@ -92,7 +92,13 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         verifyResponse OK, response
         response.body().id == id
         validUpdateJson.each {k, v ->
-            assert response.body()[k] == v
+            if (v instanceof Map) {
+                v.each {k1, v1 ->
+                    assert response.body()[k][k1] == v1
+                }
+            } else {
+                assert response.body()[k] == v
+            }
         }
 
         cleanup:
@@ -194,7 +200,13 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         verifyResponse OK, response
         response.body().id == id
         validUpdateJson.each {k, v ->
-            assert response.body()[k] == v
+            if (v instanceof Map) {
+                v.each {k1, v1 ->
+                    assert response.body()[k][k1] == v1
+                }
+            } else {
+                assert response.body()[k] == v
+            }
         }
 
         cleanup:
