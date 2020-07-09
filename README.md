@@ -1,4 +1,4 @@
-# mdm-core
+# Mauro Data Mapper Core Backend Application
 Core API for Mauro Data Mapper
 
 ## Requirements
@@ -21,19 +21,26 @@ In test mode they will use an in-memory H2 database.
 Each sub project is its own gradle or grails application and can be run and tested independantly.
 Please see the Grails [documentation](http://docs.grails.org/latest/) for how to use the CLI and how to develop using Grails.
 
-### Development Mode
-
 Ensure the following database setup has been run
-```postgresql
+```bash
+psql -U postgres
 -- Create the development user
-CREATE USER maurodatamapper WITH SUPERUSER PASSWORD 'MauroDataMapper1234';
+postgres=# CREATE USER maurodatamapper WITH SUPERUSER PASSWORD 'MauroDataMapper1234';
 -- Create the database
-CREATE DATABASE maurodatamapper OWNER maurodatamapper;
+postgres=# CREATE DATABASE maurodatamapper OWNER maurodatamapper;
 -- Add the schemas for the sub-projects
-CREATE SCHEMA core;
-CREATE SCHEMA datamodel;
-CREATE SCHEMA security;
 ```
+
+### Standalone for backend testing
+
+This will bring up all the current plugins/modules available to the MDM core. 
+
+```bash
+cd mdm-testing-functional
+grails run-app
+```
+
+### Development Mode
 
 Any sub-project which provides domains must extend `uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.PluginSchemaHibernateMappingContext`
 this class will provide the name of the schema to be used for those domains.
@@ -46,6 +53,10 @@ grails> run-app
 # debug mode
 grails> run-app --debug-jvm
 ```
+
+## Migrating from Metadata Catalogue
+
+Please see [MC to MDM Migration](https://github.com/MauroDataMapper/mc-to-mdm-migration#mc-to-mdm-migration) repository.
 
 ## Developing
 
