@@ -19,12 +19,14 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels as DataModelBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
+import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
+import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels as TerminologyBootstrapModels
 
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,6 +41,8 @@ class BootStrap implements SecurityDefinition {
     MessageSource messageSource
 
     GroupRoleService groupRoleService
+
+    TerminologyService terminologyService
 
     def init = {servletContext ->
         environments {
@@ -95,8 +99,11 @@ class BootStrap implements SecurityDefinition {
 
                 Folder.withNewTransaction {
                     folder = Folder.findByLabel('Functional Test Folder')
-                    BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder)
-                    BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder)
+                    DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder)
+                    DataModelBootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder)
+                    TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService)
+                    TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder)
+                    TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder)
                 }
             }
         }

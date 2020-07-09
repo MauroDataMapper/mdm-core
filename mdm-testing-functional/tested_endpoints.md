@@ -201,6 +201,48 @@ Controller: summaryMetadataReport
  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id}  | Action: update
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id}  | Action: show
 
+Controller: term
+ |   POST   | /api/terminologies/${terminologyId}/terms  | Action: save
+ |   GET    | /api/terminologies/${terminologyId}/terms  | Action: index
+ |  DELETE  | /api/terminologies/${terminologyId}/terms/${id}  | Action: delete
+ |   PUT    | /api/terminologies/${terminologyId}/terms/${id}  | Action: update
+ |   GET    | /api/terminologies/${terminologyId}/terms/${id}  | Action: show
+
+Controller: termRelationship
+ |   POST   | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships  | Action: save
+ |   GET    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships  | Action: index
+ |  DELETE  | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: delete
+ |   PUT    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: update
+ |   GET    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: show
+ |   GET    | /api/terminologies/${terminologyId}/termRelationshipTypes/${termRelationshipTypeId}/termRelationships  | Action: index
+ |   GET    | /api/terminologies/${terminologyId}/termRelationshipTypes/${termRelationshipTypeId}/termRelationships/${id}  | Action: show
+
+Controller: termRelationshipType
+ |   POST   | /api/terminologies/${terminologyId}/termRelationshipTypes  | Action: save
+ |   GET    | /api/terminologies/${terminologyId}/termRelationshipTypes  | Action: index
+ |  DELETE  | /api/terminologies/${terminologyId}/termRelationshipTypes/${id}  | Action: delete
+ |   PUT    | /api/terminologies/${terminologyId}/termRelationshipTypes/${id}  | Action: update
+ |   GET    | /api/terminologies/${terminologyId}/termRelationshipTypes/${id}  | Action: show
+
+Controller: terminology
+ |   GET    | /api/terminologies/providers/importers  | Action: importerProviders
+ |   GET    | /api/terminologies/providers/exporters  | Action: exporterProviders
+ |  DELETE  | /api/terminologies/${terminologyId}/readByAuthenticated  | Action: readByAuthenticated
+ |   PUT    | /api/terminologies/${terminologyId}/readByAuthenticated  | Action: readByAuthenticated
+ |  DELETE  | /api/terminologies/${terminologyId}/readByEveryone  | Action: readByEveryone
+ |   PUT    | /api/terminologies/${terminologyId}/readByEveryone  | Action: readByEveryone
+ |   PUT    | /api/terminologies/${terminologyId}/newModelVersion  | Action: newModelVersion
+ |   PUT    | /api/terminologies/${terminologyId}/newDocumentationVersion  | Action: newDocumentationVersion
+ |   PUT    | /api/terminologies/${terminologyId}/finalise  | Action: finalise
+ |   POST   | /api/folders/${folderId}/terminologies  | Action: save
+ |   PUT    | /api/terminologies/${terminologyId}/folder/${folderId}  | Action: changeFolder
+ |   GET    | /api/terminologies/${terminologyId}/diff/${otherModelId}  | Action: diff
+ |   PUT    | /api/folders/${folderId}/terminologies/${terminologyId}  | Action: changeFolder
+ |   GET    | /api/terminologies  | Action: index
+ |  DELETE  | /api/terminologies/${id}  | Action: delete
+ |   PUT    | /api/terminologies/${id}  | Action: update
+ |   GET    | /api/terminologies/${id}  | Action: show
+
 Controller: treeItem
  |   GET    | /api/tree/${containerDomainType}/search/${searchTerm}  | Action: search
  |   GET    | /api/tree/${containerDomainType}  | Action: index
