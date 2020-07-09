@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ImportParameterConfig {
 
-    String description() default "";
+    String[] description() default {};
 
     String displayName() default "";
 
@@ -46,4 +46,6 @@ public @interface ImportParameterConfig {
     int order() default Ordered.LOWEST_PRECEDENCE;
 
     boolean password() default false;
+
+    String descriptionJoinDelimiter() default "\n";
 }

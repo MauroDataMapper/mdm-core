@@ -100,7 +100,7 @@ class ImporterService implements DataBinder {
                 order: config.order(),
                 optional: config.optional(),
                 displayName: config.displayName(),
-                description: config.description(),
+                description: config.description().join(config.descriptionJoinDelimiter()),
                 )
             groups[group.name] = group
         }

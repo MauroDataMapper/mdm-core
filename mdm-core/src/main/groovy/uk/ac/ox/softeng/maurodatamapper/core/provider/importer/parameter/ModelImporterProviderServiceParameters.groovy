@@ -24,8 +24,8 @@ class ModelImporterProviderServiceParameters implements ImporterProviderServiceP
 
     @ImportParameterConfig(
         displayName = 'Finalised',
-        description = '''Whether the new model is to be marked as finalised.
-Note that if the model is already finalised this will not be overridden.''',
+        description = ['Whether the new model is to be marked as finalised.',
+            'Note that if the model is already finalised this will not be overridden.'],
         order = 0,
         group = @ImportGroupConfig(
             name = 'Model',
@@ -35,11 +35,13 @@ Note that if the model is already finalised this will not be overridden.''',
 
     @ImportParameterConfig(
         displayName = 'Import as New Documentation Version',
-        description = '''Should the Model/s be imported as new Documentation Version/s.
-If selected then any models with the same name will be superseded and the imported models will be given the latest documentation version of the 
-existing Models.
-If not selected then the 'Model Name' field should be used to ensure the imported DataModel is uniquely named, otherwise you could get an error
-.''',
+        description = [
+            'Should the Model/s be imported as new Documentation Version/s.\n',
+            'If selected then any models with the same name will be superseded and the imported models will be given the latest ',
+            'documentation version of the existing Models.\n',
+            'If not selected then the \'Model Name\' field should be used to ensure the imported Model is uniquely named, ',
+            'otherwise you could get an error.'],
+        descriptionJoinDelimiter = '',
         order = 0,
         group = @ImportGroupConfig(
             name = 'Model',
@@ -60,12 +62,12 @@ If not selected then the 'Model Name' field should be used to ensure the importe
     @ImportParameterConfig(
         optional = true,
         displayName = 'Model name',
-        description = '''Label of Model, this will override any existing name provided in the imported data.
-Note that if importing multiple models this will be ignored.''',
+        description = ['Label of Model, this will override any existing name provided in the imported data.',
+            'Note that if importing multiple models this will be ignored.'],
         order = 0,
         group = @ImportGroupConfig(
             name = 'Model',
             order = 0
         ))
-    String dataModelName
+    String modelName
 }
