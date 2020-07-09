@@ -1,0 +1,7 @@
+model {
+    Boolean authenticatedSession
+}
+
+json {
+    authenticatedSession authenticatedSession
+}

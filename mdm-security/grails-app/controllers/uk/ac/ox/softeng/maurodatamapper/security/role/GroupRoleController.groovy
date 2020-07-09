@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.AddsEditHistory
+import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
 
 class GroupRoleController extends EditLoggingController<GroupRole> {
     static responseFormats = ['json', 'xml']
@@ -31,6 +32,13 @@ class GroupRoleController extends EditLoggingController<GroupRole> {
 
     def listApplicationGroupRoles() {
         List<GroupRole> applicationGroupRoles = groupRoleService.findAllApplicationLevelRoles(params)
+        respond applicationGroupRoles, view: 'index', model: [userSecurityPolicyManager: currentUserSecurityPolicyManager]
+    }
+
+    def listApplicationAccess() {
+        List<GroupRole> applicationGroupRoles = (currentUserSecurityPolicyManager as GroupBasedUserSecurityPolicyManager)
+            .applicationPermittedRoles
+            .toList()
         respond applicationGroupRoles, view: 'index', model: [userSecurityPolicyManager: currentUserSecurityPolicyManager]
     }
 

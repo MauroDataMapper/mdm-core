@@ -36,6 +36,10 @@ class SessionController implements ResourcelessMdmController {
         respond authenticatedSession: sessionService.isAuthenticatedSession(session, params.sessionId ?: session.id)
     }
 
+    def isApplicationAdministrationSession() {
+        respond applicationAdministrationSession: currentUserSecurityPolicyManager.isApplicationAdministrator()
+    }
+
     def keepAlive() {
         render status: HttpStatus.CONTINUE
     }

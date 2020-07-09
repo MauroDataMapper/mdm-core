@@ -56,7 +56,7 @@ class GroupRoleInterceptor extends SecurableResourceInterceptor {
                             params.securableResourceId)
         }
 
-        if (actionName in ['listApplicationGroupRoles']) {
+        if (actionName in ['listApplicationGroupRoles', 'listApplicationAccess']) {
             return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
 

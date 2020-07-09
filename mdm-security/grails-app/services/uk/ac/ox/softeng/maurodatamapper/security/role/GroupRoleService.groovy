@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -113,5 +114,10 @@ class GroupRoleService {
 
     Set<GroupRole> findAllRolesForGroupRole(GroupRole groupRole, Map pagination = [:]) {
         getFromCache(groupRole.name).allowedRoles
+    }
+
+    Set<GroupRole> findAllApplicationLevelRolesForUser(UserSecurityPolicyManager userSecurityPolicyManager) {
+        GroupBasedUserSecurityPolicyManager groupBasedUserSecurityPolicyManager = userSecurityPolicyManager as GroupBasedUserSecurityPolicyManager
+
     }
 }

@@ -71,6 +71,7 @@ class UrlMappings {
                         delete "/userGroups/$userGroupId"(controller: 'userGroup', action: 'updateApplicationGroupRole')
                     }
                 }
+                get '/availableApplicationAccess'(controller: 'groupRole', action: 'listApplicationAccess')
             }
             group "/$securableResourceDomainType/$securableResourceId", {
                 group '/groupRoles', {
