@@ -197,7 +197,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
             return userCanDeleteSecuredResourceId(resourceClass, id, false)
         }
-        return userCanDeleteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
+        return userCanDeleteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, false)
     }
 
     @Override
