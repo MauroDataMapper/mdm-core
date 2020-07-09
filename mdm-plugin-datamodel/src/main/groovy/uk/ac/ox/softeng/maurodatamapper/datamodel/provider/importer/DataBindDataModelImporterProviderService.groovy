@@ -67,7 +67,7 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
 
     DataModel updateImportedModelFromParameters(DataModel dataModel, T params, boolean list = false) {
         if (params.finalised != null) dataModel.finalised = params.finalised
-        if (!list && params.dataModelName) dataModel.label = params.dataModelName
+        if (!list && params.modelName) dataModel.label = params.modelName
         dataModel
     }
 

@@ -692,7 +692,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
-            dataModelName                  : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -736,7 +736,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : true,
-            dataModelName                  : 'Functional Test Model',
+            modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: true,
             importFile                     : [
