@@ -26,7 +26,8 @@ import org.grails.orm.hibernate.cfg.Mapping
 /**
  * @since 04/11/2019
  */
-abstract class PluginSchemaHibernateMappingContext extends DynamicHibernateMappingContext implements Ordered {
+abstract class PluginSchemaHibernateMappingContext extends DynamicHibernateMappingContext
+    implements Ordered, Comparable<PluginSchemaHibernateMappingContext> {
 
     abstract String getPluginName()
 
@@ -43,5 +44,10 @@ abstract class PluginSchemaHibernateMappingContext extends DynamicHibernateMappi
         Mapping mapping = entity.mapping.mappedForm as Mapping
         mapping.table([schema: schemaName])
         null
+    }
+
+    @Override
+    int compareTo(PluginSchemaHibernateMappingContext that) {
+        this.order <=> that.order ?: this.pluginName <=> that.pluginName
     }
 }
