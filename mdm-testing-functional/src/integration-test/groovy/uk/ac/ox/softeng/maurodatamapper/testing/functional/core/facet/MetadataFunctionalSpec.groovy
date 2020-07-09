@@ -53,6 +53,23 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": false,
     "editable": true,
     "keys": [
+      "mdk2"
+    ],
+    "namespace": "terminology.test.com"
+  },
+  {
+    "defaultNamespace": false,
+    "editable": true,
+    "keys": [
+      "mdk1",
+      "mdk2"
+    ],
+    "namespace": "terminology.test.com/simple"
+  },
+  {
+    "defaultNamespace": false,
+    "editable": true,
+    "keys": [
       "mdk1",
       "mdk2"
     ],

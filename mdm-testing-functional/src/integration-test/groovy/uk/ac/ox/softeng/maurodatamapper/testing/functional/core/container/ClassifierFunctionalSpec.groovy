@@ -111,20 +111,6 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 1,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "Functional Test Classifier",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    }
-  ]
-}'''
-    }
-
-    @Override
-    String getAdminIndexJson() {
-        '''{
   "count": 4,
   "items": [
     {
@@ -149,6 +135,11 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     }
   ]
 }'''
+    }
+
+    @Override
+    String getAdminIndexJson() {
+        getEditorIndexJson()
     }
 
     @Override

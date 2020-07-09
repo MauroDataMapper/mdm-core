@@ -170,7 +170,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "lastName": "User",
       "pending": false,
       "disabled": false,
-      "createdBy": "functional-test@test.com",
+      "createdBy": "admin@maurodatamapper.com",
       "availableActions": [
         "update",
         "delete",

@@ -70,27 +70,27 @@ class ImporterFunctionalSpec extends FunctionalSpec {
                 "allowsExtraMetadataKeys": true,
                 "knownMetadataKeys": [],
                 "providerType": "DataModelImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter
-                .DataModelFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter''' +
+        '''.DataModelFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             },
             "parameterGroups": [
                 {
-                    "name": "DataModel",
+                    "name": "Model",
                     "parameters": [
                     {
                         "name": "folderId",
                         "type": "Folder",
                         "optional": false,
                         "displayName": "Folder",
-                        "description": "The folder into which the DataModel/s should be imported."
+                        "description": "The folder into which the Model/s should be imported."
                     },
                     {
-                        "name": "dataModelName",
+                        "name": "modelName",
                         "type": "String",
                         "optional": true,
-                        "displayName": "DataModel name",
-                        "description": "Label of DataModel, this will override any existing name provided in the imported data.\\n''' +
+                        "displayName": "Model name",
+                        "description": "Label of Model, this will override any existing name provided in the imported data.\\n''' +
         '''Note that if importing multiple models this will be ignored."
         },
         {
@@ -106,10 +106,10 @@ class ImporterFunctionalSpec extends FunctionalSpec {
           "type": "Boolean",
           "optional": false,
           "displayName": "Import as New Documentation Version",
-          "description": "Should the DataModel/s be imported as new Documentation Version/s.\\n''' +
+          "description": "Should the Model/s be imported as new Documentation Version/s.\\n''' +
         '''If selected then any models with the same name will be superseded and the imported models will be given the''' +
-        ''' latest documentation version of the existing DataModels.\\n''' +
-        '''If not selected then the \'DataModel Name\' field should be used to ensure the imported DataModel is uniquely''' +
+        ''' latest documentation version of the existing Models.\\n''' +
+        '''If not selected then the \'Model Name\' field should be used to ensure the imported Model is uniquely''' +
         ''' named, otherwise you could get an error."
         }
       ]

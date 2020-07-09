@@ -67,7 +67,7 @@ class AuthenticatingFunctionalSpec extends FunctionalSpec {
   "lastName": "User",
   "pending": false,
   "disabled": false,
-  "createdBy": "functional-test@test.com"
+  "createdBy": "admin@maurodatamapper.com"
 }''')
 
         when:

@@ -17,11 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
@@ -77,8 +75,6 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 @Slf4j
 class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
-
-    DataModelService dataModelService
 
     @Transactional
     String getTestFolderId() {
@@ -1190,7 +1186,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
-            dataModelName                  : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -1223,7 +1219,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         loginAuthenticated()
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
-            dataModelName                  : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -1256,7 +1252,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         loginReader()
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
-            dataModelName                  : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -1289,7 +1285,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
-            dataModelName                  : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [

@@ -81,6 +81,10 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
     "version": "${json-unit.matches:version}"
   },
   {
+    "name": "PluginTerminology",
+    "version": "4.0.0-SNAPSHOT"
+  },
+  {
     "name": "assetPipeline",
     "version": "${json-unit.matches:version}"
   },

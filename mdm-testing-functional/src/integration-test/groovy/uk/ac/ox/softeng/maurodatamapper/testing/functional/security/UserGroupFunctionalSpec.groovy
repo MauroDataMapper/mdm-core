@@ -160,7 +160,7 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     {
       "id": "${json-unit.matches:id}",
       "name": "administrators",
-      "createdBy": "functional-test@test.com",
+      "createdBy": "admin@maurodatamapper.com",
       "availableActions": [ "update","delete","show"]
     },
     {
@@ -199,7 +199,7 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     {
       "id": "${json-unit.matches:id}",
       "name": "administrators",
-      "createdBy": "functional-test@test.com",
+      "createdBy": "admin@maurodatamapper.com",
       "availableActions": ["show"]
     },
     {
@@ -238,7 +238,7 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     {
       "id": "${json-unit.matches:id}",
       "name": "administrators",
-      "createdBy": "functional-test@test.com",
+      "createdBy": "admin@maurodatamapper.com",
       "availableActions": [ "update","delete","show"]
     },
     {

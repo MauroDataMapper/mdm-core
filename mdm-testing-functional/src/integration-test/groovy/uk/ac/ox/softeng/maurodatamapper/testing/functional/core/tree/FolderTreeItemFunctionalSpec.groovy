@@ -63,42 +63,27 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Simple Test DataModel",
+        "domainType": "Terminology",
+        "label": "Complex Test Terminology",
         "hasChildren": true,
         "deleted": false,
         "finalised": false,
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      }
-    ]
-  }
-]'''
-    }
-
-    @Override
-    String getEditorTree() {
-        '''[
-  {
-    "id": "${json-unit.matches:id}",
-    "domainType": "Folder",
-    "label": "Functional Test Folder",
-    "hasChildren": true,
-    "deleted": false,
-    "children": [
+        "type": "Terminology"
+      },
       {
         "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Complex Test DataModel",
+        "domainType": "CodeSet",
+        "label": "Simple Test CodeSet",
         "hasChildren": true,
         "deleted": false,
-        "finalised": false,
+        "finalised": true,
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "CodeSet"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -111,10 +96,27 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Simple Test Terminology",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
       }
     ]
   }
 ]'''
+    }
+
+    @Override
+    String getEditorTree() {
+        getReaderTree()
     }
 
     @Override
@@ -127,7 +129,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "hasChildren": true,
     "deleted": false,
     "children": [
-      {
+       {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
@@ -141,6 +143,30 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Complex Test Terminology",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Simple Test CodeSet",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet"
+      },
+      {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Simple Test DataModel",
         "hasChildren": true,
@@ -150,6 +176,18 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Simple Test Terminology",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
       }
     ]
   },
