@@ -87,6 +87,7 @@ class UrlMappings {
                     }
                 }
                 '/securableResourceGroupRoles'(resources: 'securableResourceGroupRole', excludes: DEFAULT_EXCLUDES)
+                '/permissions'(controller: 'permissions', action: 'permissions')
             }
             group "/$containerDomainType/$containerId", {
                 '/userGroups'(resources: 'userGroup', excludes: DEFAULT_EXCLUDES) {

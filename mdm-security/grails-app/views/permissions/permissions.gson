@@ -1,0 +1,20 @@
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+
+model {
+    SecurableResource securableResource
+    List<UserGroup> readerGroups
+    List<UserGroup> writerGroups
+}
+
+json {
+    readableByEveryone securableResource.readableByEveryone
+    readableByAuthenticated securableResource.readableByAuthenticatedUsers
+
+    readableByGroups g.render(readerGroups)
+    writeableByGroups g.render(writerGroups)
+
+    // Deprecated
+    readableByUsers new ArrayList<>()
+    writeableByUsers new ArrayList<>()
+}
