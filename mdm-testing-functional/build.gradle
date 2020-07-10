@@ -149,3 +149,7 @@ integrationTest {
         mergeTestReports.reportOn(file("${project.testResultsDir}/${testCategory}/binary"))
     }
 }
+
+artifactoryPublish {
+    skip = true
+}

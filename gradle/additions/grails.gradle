@@ -118,6 +118,18 @@ if (compile) {
     compile.setClasspath(compile.getClasspath() + configurations.compileClasspath)
 }
 
+configurations {
+    publishToArtifactory
+}
+
+if(!name.contains('testing')) {
+    javadoc {
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
+        }
+    }
+}
+
 project.afterEvaluate {
 
     project.tasks.withType(JavaCompile) {JavaCompile c ->
@@ -149,4 +161,16 @@ project.afterEvaluate {
         // sourceCompatibility = project.sourceCompatibility
         group 'archives'
     }
+
+    artifactory {
+        publish {
+            defaults {
+                publications('maven')
+                publishBuildInfo = true
+                publishArtifacts = true
+                publishPom = true
+            }
+        }
+    }
+
 }
