@@ -29,6 +29,7 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import spock.lang.Stepwise
+import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -82,7 +83,8 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         log.info('Add group with new authenticated user')
         CatalogueUser authenticated2 = new CatalogueUser(emailAddress: userEmailAddresses.authenticated2,
                                                          firstName: 'authenticated2', lastName: 'User',
-                                                         createdBy: userEmailAddresses.functionalTest)
+                                                         createdBy: userEmailAddresses.functionalTest,
+                                                         tempPassword: SecurityUtils.generateRandomPassword())
         // To allow testing of reader group rights which reader2 is not in
         new UserGroup(
             createdBy: userEmailAddresses.functionalTest,

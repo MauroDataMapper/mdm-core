@@ -120,22 +120,26 @@ trait SecurityDefinition {
         if (!author) {
             author = new CatalogueUser(emailAddress: userEmailAddresses.author,
                                        firstName: 'author', lastName: 'User',
-                                       createdBy: userEmailAddresses[creatorKey])
+                                       createdBy: userEmailAddresses[creatorKey],
+                                       tempPassword: SecurityUtils.generateRandomPassword())
         }
         if (!reviewer) {
             reviewer = new CatalogueUser(emailAddress: userEmailAddresses.reviewer,
                                          firstName: 'reviewer', lastName: 'User',
-                                         createdBy: userEmailAddresses[creatorKey])
+                                         createdBy: userEmailAddresses[creatorKey],
+                                         tempPassword: SecurityUtils.generateRandomPassword())
         }
         if (!reader) {
             reader = new CatalogueUser(emailAddress: userEmailAddresses.reader,
                                        firstName: 'reader', lastName: 'User',
-                                       createdBy: userEmailAddresses[creatorKey])
+                                       createdBy: userEmailAddresses[creatorKey],
+                                       tempPassword: SecurityUtils.generateRandomPassword())
         }
         if (!authenticated) {
             authenticated = new CatalogueUser(emailAddress: userEmailAddresses.authenticated,
                                               firstName: 'authenticated', lastName: 'User',
-                                              createdBy: userEmailAddresses[creatorKey])
+                                              createdBy: userEmailAddresses[creatorKey],
+                                              tempPassword: SecurityUtils.generateRandomPassword())
         }
     }
 

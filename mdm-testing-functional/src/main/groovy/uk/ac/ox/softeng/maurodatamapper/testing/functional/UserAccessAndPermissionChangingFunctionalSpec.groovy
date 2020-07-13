@@ -25,6 +25,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import spock.lang.Stepwise
+import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
@@ -59,7 +60,8 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         log.info('Add group with new authenticated user')
         CatalogueUser authenticated2 = new CatalogueUser(emailAddress: userEmailAddresses.authenticated2,
                                                          firstName: 'authenticated2', lastName: 'User',
-                                                         createdBy: userEmailAddresses.functionalTest)
+                                                         createdBy: userEmailAddresses.functionalTest,
+                                                         tempPassword: SecurityUtils.generateRandomPassword())
         // To allow testing of reader group rights which reader2 is not in
         UserGroup group = new UserGroup(
             createdBy: userEmailAddresses.functionalTest,

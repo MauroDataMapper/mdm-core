@@ -104,7 +104,6 @@ class CatalogueUser implements Principal, CreatorAware, User {
     def beforeValidate() {
         if (pending == null) pending = false
         if (disabled == null) disabled = false
-        if (!password) tempPassword = SecurityUtils.generateRandomPassword()
     }
 
     Boolean ownsItem(CreatorAware item) {
