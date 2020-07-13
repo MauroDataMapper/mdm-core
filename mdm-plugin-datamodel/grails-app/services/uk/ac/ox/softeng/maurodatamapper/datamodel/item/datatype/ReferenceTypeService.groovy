@@ -135,7 +135,7 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
         results
     }
 
-    private ReferenceType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
+    public ReferenceType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
                                                            DataClass referenceClass) {
         String cleanLabel = label.trim()
         DataType dataType = dataModel.findDataTypeByLabel(cleanLabel)

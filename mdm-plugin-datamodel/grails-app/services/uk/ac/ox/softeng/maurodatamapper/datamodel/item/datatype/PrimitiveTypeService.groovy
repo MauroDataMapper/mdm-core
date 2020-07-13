@@ -140,7 +140,7 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> {
         new PrimitiveType(label: label, description: description, createdBy: createdBy, units: units)
     }
 
-    private PrimitiveType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
+    public PrimitiveType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
                                                            String units = null) {
         String cleanLabel = label.trim()
         PrimitiveType primitiveType = dataModel.findDataTypeByLabelAndType(cleanLabel, DataType.PRIMITIVE_DOMAIN_TYPE) as PrimitiveType

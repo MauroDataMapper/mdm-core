@@ -376,7 +376,7 @@ class DataClassService extends ModelItemService<DataClass> {
                       maxMultiplicity: maxMultiplicity)
     }
 
-    private DataClass findOrCreateDataClass(DataModel dataModel, String label, String description, User createdBy,
+    public DataClass findOrCreateDataClass(DataModel dataModel, String label, String description, User createdBy,
                                             Integer minMultiplicity = 1,
                                             Integer maxMultiplicity = 1) {
         DataClass dataClass = findDataClass(dataModel, label)
@@ -387,7 +387,7 @@ class DataClassService extends ModelItemService<DataClass> {
         dataClass
     }
 
-    private DataClass findOrCreateDataClass(DataClass parentDataClass, String label, String description, User createdBy,
+    public DataClass findOrCreateDataClass(DataClass parentDataClass, String label, String description, User createdBy,
                                             Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
         DataClass dataClass = findDataClass(parentDataClass, label)
         if (!dataClass) {
