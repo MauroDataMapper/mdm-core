@@ -22,6 +22,8 @@ grails:
             # Disabled by default for performance reasons
             events: false
         failOnError: true
+    resources:
+        pattern: /**
 info:
     app:
         name: '@info.app.name@'
