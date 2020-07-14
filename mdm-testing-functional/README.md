@@ -222,6 +222,7 @@ Controller: folder
 Controller: groupRole
  |   POST   | /api/admin/groupRoles                                                                                                                | Action: save
  |   GET    | /api/admin/groupRoles                                                                                                                | Action: index
+ |   GET    | /api/admin/availableApplicationAccess                                                                                                | Action: listApplicationAccess
  |   GET    | /api/admin/applicationGroupRoles                                                                                                     | Action: listApplicationGroupRoles
  |  DELETE  | /api/admin/groupRoles/${id}                                                                                                          | Action: delete
  |   PUT    | /api/admin/groupRoles/${id}                                                                                                          | Action: update
@@ -247,6 +248,9 @@ Controller: metadata
  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/metadata/${id}                                                                    | Action: delete
  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/metadata/${id}                                                                    | Action: update
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/metadata/${id}                                                                    | Action: show
+
+Controller: permissions
+ |    *     | /api/${securableResourceDomainType}/${securableResourceId}/permissions                                                               | Action: permissions
 
 Controller: referenceFiles
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles                                                                    | Action: save
@@ -279,6 +283,7 @@ Controller: semanticLink
 
 Controller: session
  |   GET    | /api/session/keepAlive                                                                                                               | Action: keepAlive
+ |   GET    | /api/session/isApplicationAdministration                                                                                             | Action: isApplicationAdministrationSession
  |   GET    | /api/admin/activeSessions                                                                                                            | Action: activeSessions
  |   GET    | /api/session/isAuthenticated/${sesssionId}?                                                                                          | Action: isAuthenticatedSession
 
