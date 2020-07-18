@@ -4,12 +4,6 @@ The current API endpoints have no functional test present in this testing plugin
 and therefore there is no guarantee they will work as expected.
 
 ```
-Controller: catalogueFile
- |  DELETE  | /api/catalogueUsers/${catalogueUserId}/image  | Action: delete
- |   PUT    | /api/catalogueUsers/${catalogueUserId}/image  | Action: update
- |   GET    | /api/catalogueUsers/${catalogueUserId}/image  | Action: show
- |   POST   | /api/catalogueUsers/${catalogueUserId}/image  | Action: save
-
 Controller: classifier
  |   GET    | /api/classifiers/${classifierId}/catalogueItems  | Action: catalogueItems
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers  | Action: save
@@ -120,4 +114,8 @@ Controller: userGroup
 
 Controller: userImageFile
  |   GET    | /api/userImageFiles/${id}  | Action: show
+ |  DELETE  | /api/catalogueUsers/${catalogueUserId}/image  | Action: delete
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/image  | Action: update
+ |   GET    | /api/catalogueUsers/${catalogueUserId}/image  | Action: show
+ |   POST   | /api/catalogueUsers/${catalogueUserId}/image  | Action: save
 ```

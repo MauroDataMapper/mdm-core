@@ -41,12 +41,6 @@ Controller: authenticating
  |   POST   | /api/authentication/login                                                                                                            | Action: login
  |   POST   | /api/admin/activeSessions                                                                                                            | Action: activeSessionsWithCredentials
 
-Controller: catalogueFile
- |  DELETE  | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: delete
- |   PUT    | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: update
- |   GET    | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: show
- |   POST   | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: save
-
 Controller: catalogueUser
  |   POST   | /api/admin/catalogueUsers/adminRegister                                                                                              | Action: adminRegister
  |   GET    | /api/admin/catalogueUsers/pendingCount                                                                                               | Action: pendingCount
@@ -382,6 +376,10 @@ Controller: userGroup
 
 Controller: userImageFile
  |   GET    | /api/userImageFiles/${id}                                                                                                            | Action: show
+ |  DELETE  | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: delete
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: update
+ |   GET    | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: show
+ |   POST   | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: save
 
 Controller: versionLink
  |   POST   | /api/${modelDomainType}/${modelId}/versionLinks                                                                                      | Action: save

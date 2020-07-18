@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.file
 
+import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -34,9 +35,10 @@ class UserImageFileInterceptor implements MdmInterceptor {
     @Override
     boolean before() {
         // UserImageFile access looks at id or userId so we add this to the param list
+        Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'userId')
         Utils.toUuid(params, 'catalogueUserId')
         params.userId = params.catalogueUserId
-        checkActionAuthorisationOnSecuredResource(CatalogueUser, params.catalogueUserId)
+        checkActionAuthorisationOnUnsecuredResource(UserImageFile, params.id, CatalogueUser, params.catalogueUserId)
     }
 }

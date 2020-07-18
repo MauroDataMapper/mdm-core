@@ -33,7 +33,7 @@ class UrlMappings {
             }
 
             '/catalogueUsers'(resources: 'catalogueUser', excludes: DEFAULT_EXCLUDES) {
-                '/image'(single: 'catalogueFile', excludes: DEFAULT_EXCLUDES)
+                '/image'(single: 'userImageFile', excludes: DEFAULT_EXCLUDES)
                 get '/userPreferences'(controller: 'catalogueUser', action: 'userPreferences')
                 put '/userPreferences'(controller: 'catalogueUser', action: 'updateUserPreferences')
                 put '/changePassword'(controller: 'catalogueUser', action: 'changePassword')
