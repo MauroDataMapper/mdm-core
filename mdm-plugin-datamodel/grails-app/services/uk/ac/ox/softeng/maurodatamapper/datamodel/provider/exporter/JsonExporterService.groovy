@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class JsonExporterService extends DataModelExporterProviderService implements TemplateBasedExporter {
 
-    DataModelService dataModelService
     @Autowired
     JsonViewTemplateEngine templateEngine
 

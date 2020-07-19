@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired
  */
 class XmlExporterService extends DataModelExporterProviderService implements TemplateBasedExporter {
 
-    DataModelService dataModelService
     @Autowired
     MarkupViewTemplateEngine templateEngine
 
