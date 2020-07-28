@@ -161,7 +161,6 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     DataModel saveWithBatching(DataModel dataModel) {
-        if (dataModel.ident()) return save(dataModel)
         log.debug('Saving {} using batching', dataModel.label)
         Collection<DataType> dataTypes = []
         Collection<ReferenceType> referenceTypes = []
@@ -753,5 +752,21 @@ class DataModelService extends ModelService<DataModel> {
             dataModel.finalised = finalised
             dataModel.dateFinalised = dataModel.finalised ? OffsetDateTime.now() : null
         }
+    }
+
+    DataModel createAndSaveDataModel(User createdBy, Folder folder, DataModelType type, String label, String description,
+                                     String author, String organisation) {
+        DataModel dataModel = new DataModel(createdBy: createdBy.emailAddress, label: label, description: description, author: author,
+                                            organisation: organisation, type: type, folder: folder)
+
+        // Have to save before adding an edit
+        if (dataModel.validate()) {
+            dataModel.save(flush: true)
+            dataModel.addCreatedEdit(createdBy)
+        } else {
+            throw new ApiInvalidModelException('DMSXX', 'Could not create new DataModel', dataModel.errors)
+        }
+
+        dataModel
     }
 }

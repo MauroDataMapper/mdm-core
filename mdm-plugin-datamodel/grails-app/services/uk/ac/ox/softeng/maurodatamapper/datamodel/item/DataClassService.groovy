@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
@@ -133,12 +132,12 @@ class DataClassService extends ModelItemService<DataClass> {
         Collection<DataElement> dataElements = []
 
         if (alreadySaved) {
-            log.trace('Straight saving {} dataClasses', alreadySaved.size())
+            log.trace('Straight saving {} already saved DataClasses', alreadySaved.size())
             DataClass.saveAll(alreadySaved)
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} datatypes', notSaved.size())
+            log.trace('Batch saving {} new DataClasses in batches of {}', notSaved.size(), DataClass.BATCH_SIZE)
             List batch = []
             int count = 0
             notSaved.each {dc ->
@@ -184,7 +183,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
     void batchSave(List<DataClass> dataClasses) {
         long start = System.currentTimeMillis()
-        log.trace('Batch saving {} dataClasses', dataClasses.size())
+        log.trace('Performing batch save of {} DataClasses', dataClasses.size())
 
         DataClass.saveAll(dataClasses)
         dataClasses.each {updateFacetsAfterInsertingCatalogueItem(it)}
@@ -372,13 +371,13 @@ class DataClassService extends ModelItemService<DataClass> {
 
     private DataClass createDataClass(String label, String description, User createdBy, Integer minMultiplicity = 1,
                                       Integer maxMultiplicity = 1) {
-        new DataClass(label: label, description: description, createdBy: createdBy, minMultiplicity: minMultiplicity,
+        new DataClass(label: label, description: description, createdBy: createdBy.emailAddress, minMultiplicity: minMultiplicity,
                       maxMultiplicity: maxMultiplicity)
     }
 
     public DataClass findOrCreateDataClass(DataModel dataModel, String label, String description, User createdBy,
-                                            Integer minMultiplicity = 1,
-                                            Integer maxMultiplicity = 1) {
+                                           Integer minMultiplicity = 1,
+                                           Integer maxMultiplicity = 1) {
         DataClass dataClass = findDataClass(dataModel, label)
         if (!dataClass) {
             dataClass = createDataClass(label.trim(), description, createdBy, minMultiplicity, maxMultiplicity)
@@ -388,11 +387,11 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     public DataClass findOrCreateDataClass(DataClass parentDataClass, String label, String description, User createdBy,
-                                            Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
+                                           Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
         DataClass dataClass = findDataClass(parentDataClass, label)
         if (!dataClass) {
             dataClass = createDataClass(label.trim(), description, createdBy, minMultiplicity, maxMultiplicity)
-            parentDataClass.addToChildDataClasses(dataClass)
+            parentDataClass.addToDataClasses(dataClass)
             parentDataClass.dataModel.addToDataClasses(dataClass)
         }
         dataClass

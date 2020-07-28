@@ -200,12 +200,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         Collection<DataType> notSaved = dataTypes.findAll {!it.ident()}
 
         if (alreadySaved) {
-            log.trace('Straight saving {} datatypes', alreadySaved.size())
+            log.trace('Straight saving {} already saved DataTypes ', alreadySaved.size())
             DataType.saveAll(alreadySaved)
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} datatypes', notSaved.size())
+            log.trace('Batch saving {} new DataTypes in batches of {}', notSaved.size(), DataType.BATCH_SIZE)
             List batch = []
             int count = 0
 
@@ -226,7 +226,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     void batchSave(List<DataType> dataTypes) {
         long start = System.currentTimeMillis()
-        log.trace('Batch saving {} datatypes', dataTypes.size())
+        log.trace('Performing batch save of {} DataTypes', dataTypes.size())
 
         DataType.saveAll(dataTypes)
         dataTypes.each {dt ->

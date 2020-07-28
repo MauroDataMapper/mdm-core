@@ -177,12 +177,12 @@ class DataElementService extends ModelItemService<DataElement> {
         Collection<DataElement> notSaved = dataElements.findAll {!it.ident()}
 
         if (alreadySaved) {
-            log.trace('Straight saving {} dataelements', alreadySaved.size())
+            log.trace('Straight saving {} already saved DataElements', alreadySaved.size())
             DataElement.saveAll(alreadySaved)
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} dataelements', notSaved.size())
+            log.trace('Batch saving {} new DataElements in batches of {}', notSaved.size(), DataElement.BATCH_SIZE)
             List batch = []
             int count = 0
 
@@ -202,7 +202,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     void batchSave(List<DataElement> dataElements) {
         long start = System.currentTimeMillis()
-        log.trace('Batch saving {} dataElements', dataElements.size())
+        log.trace('Performing batch save of {} DataElements', dataElements.size())
 
         DataElement.saveAll(dataElements)
         dataElements.each {updateFacetsAfterInsertingCatalogueItem(it)}
