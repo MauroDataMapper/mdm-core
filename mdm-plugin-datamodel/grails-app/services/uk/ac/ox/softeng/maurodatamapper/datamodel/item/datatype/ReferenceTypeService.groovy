@@ -135,12 +135,17 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
         results
     }
 
-    public ReferenceType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
-                                                           DataClass referenceClass) {
+    ReferenceType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
+                                                   DataClass referenceClass) {
+        findOrCreateDataTypeForDataModel(dataModel, label, description, createdBy.emailAddress, referenceClass)
+    }
+
+    ReferenceType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, String createdByEmailAddress,
+                                                   DataClass referenceClass) {
         String cleanLabel = label.trim()
         DataType dataType = dataModel.findDataTypeByLabel(cleanLabel)
         if (!dataType) {
-            ReferenceType referenceType = new ReferenceType(label: cleanLabel, description: description, createdBy: createdBy,
+            ReferenceType referenceType = new ReferenceType(label: cleanLabel, description: description, createdBy: createdByEmailAddress,
                                                             referenceClass: referenceClass)
             referenceClass.addToReferenceTypes(referenceType)
             dataModel.addToDataTypes(referenceType)
@@ -148,10 +153,10 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
 
         }
         if (!(dataType.instanceOf(ReferenceType)))
-            return findOrCreateDataTypeForDataModel(dataModel, "Reference${cleanLabel}", description, createdBy, referenceClass)
+            return findOrCreateDataTypeForDataModel(dataModel, "Reference${cleanLabel}", description, createdByEmailAddress, referenceClass)
 
         if (description && dataType.description != description) {
-            return findOrCreateDataTypeForDataModel(dataModel, "${cleanLabel}.1", description, createdBy, referenceClass)
+            return findOrCreateDataTypeForDataModel(dataModel, "${cleanLabel}.1", description, createdByEmailAddress, referenceClass)
         }
         dataType as ReferenceType
     }

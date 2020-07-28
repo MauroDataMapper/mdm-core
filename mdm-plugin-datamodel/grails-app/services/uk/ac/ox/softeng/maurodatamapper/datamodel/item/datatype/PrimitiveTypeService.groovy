@@ -137,15 +137,24 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> {
     }
 
     PrimitiveType createDataType(String label, String description, User createdBy, String units = null) {
-        new PrimitiveType(label: label, description: description, createdBy: createdBy, units: units)
+        createDataType(label, description, createdBy.emailAddress, units)
     }
 
-    public PrimitiveType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
-                                                           String units = null) {
+    PrimitiveType createDataType(String label, String description, String createdByEmailAddress, String units = null) {
+        new PrimitiveType(label: label, description: description, createdBy: createdByEmailAddress, units: units)
+    }
+
+    PrimitiveType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
+                                                   String units = null) {
+        findOrCreateDataTypeForDataModel(dataModel, label, description, createdBy.emailAddress, units)
+    }
+
+    PrimitiveType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, String createdByEmailAddress,
+                                                   String units = null) {
         String cleanLabel = label.trim()
         PrimitiveType primitiveType = dataModel.findDataTypeByLabelAndType(cleanLabel, DataType.PRIMITIVE_DOMAIN_TYPE) as PrimitiveType
         if (!primitiveType) {
-            primitiveType = createDataType(cleanLabel, description, createdBy, units)
+            primitiveType = createDataType(cleanLabel, description, createdByEmailAddress, units)
             dataModel.addToDataTypes(primitiveType)
         }
         primitiveType

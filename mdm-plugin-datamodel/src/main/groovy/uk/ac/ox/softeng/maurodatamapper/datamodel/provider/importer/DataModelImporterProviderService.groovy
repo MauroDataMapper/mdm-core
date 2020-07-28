@@ -42,6 +42,7 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
     @Override
     DataModel importDomain(User currentUser, T params) {
         DataModel dataModel = importDataModel(currentUser, params)
+        if (!dataModel) return null
         if (params.modelName) dataModel.label = params.modelName
         checkImport(currentUser, dataModel, params.finalised, params.importAsNewDocumentationVersion)
     }
