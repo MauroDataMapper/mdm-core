@@ -18,10 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModelItem
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
@@ -122,12 +122,12 @@ class TreeItemSpec extends BaseUnitSpec {
 
     void 'test double level BasicModelItem children'() {
         given:
-        BasicModelItem dataClass2 = new BasicModelItem(label: 'dc2', createdBy: admin)
-        dataClass2.addToChildModelItems(label: 'dc2dc1', createdBy: admin)
-        dataClass2.addToChildModelItems(label: 'dc2dc2', createdBy: admin)
-        basicModel.addToModelItems(label: 'dc1', createdBy: admin)
+        BasicModelItem dataClass2 = new BasicModelItem(label: 'dc2', createdBy: admin.emailAddress)
+        dataClass2.addToChildModelItems(label: 'dc2dc1', createdBy: admin.emailAddress)
+        dataClass2.addToChildModelItems(label: 'dc2dc2', createdBy: admin.emailAddress)
+        basicModel.addToModelItems(label: 'dc1', createdBy: admin.emailAddress)
         basicModel.addToModelItems(dataClass2)
-        basicModel.addToModelItems(label: 'dc3', createdBy: admin)
+        basicModel.addToModelItems(label: 'dc3', createdBy: admin.emailAddress)
         checkAndSave(basicModel)
 
         when:
@@ -214,28 +214,28 @@ class TreeItemSpec extends BaseUnitSpec {
 
     void 'test multiple level BasicModelItem children'() {
         given:
-        BasicModelItem dataClass1 = new BasicModelItem(label: 'dc1', createdBy: admin)
-        dataClass1.addToChildModelItems(label: 'dc1dc1', createdBy: admin)
-        dataClass1.addToChildModelItems(label: 'dc1dc2', createdBy: admin)
-        dataClass1.addToChildModelItems(label: 'dc1dc3', createdBy: admin)
-        dataClass1.addToChildModelItems(label: 'dc1dc4', createdBy: admin)
+        BasicModelItem dataClass1 = new BasicModelItem(label: 'dc1', createdBy: admin.emailAddress)
+        dataClass1.addToChildModelItems(label: 'dc1dc1', createdBy: admin.emailAddress)
+        dataClass1.addToChildModelItems(label: 'dc1dc2', createdBy: admin.emailAddress)
+        dataClass1.addToChildModelItems(label: 'dc1dc3', createdBy: admin.emailAddress)
+        dataClass1.addToChildModelItems(label: 'dc1dc4', createdBy: admin.emailAddress)
 
-        BasicModelItem dataClass223 = new BasicModelItem(label: 'dc2dc2dc3', createdBy: admin)
-        dataClass223.addToChildModelItems(label: 'dc2dc2dc3dc1', createdBy: admin)
-        dataClass223.addToChildModelItems(label: 'dc2dc2dc3dc2', createdBy: admin)
+        BasicModelItem dataClass223 = new BasicModelItem(label: 'dc2dc2dc3', createdBy: admin.emailAddress)
+        dataClass223.addToChildModelItems(label: 'dc2dc2dc3dc1', createdBy: admin.emailAddress)
+        dataClass223.addToChildModelItems(label: 'dc2dc2dc3dc2', createdBy: admin.emailAddress)
 
-        BasicModelItem dataClass22 = new BasicModelItem(label: 'dc2dc2', createdBy: admin)
-        dataClass22.addToChildModelItems(label: 'dc2dc2dc1', createdBy: admin)
-        dataClass22.addToChildModelItems(label: 'dc2dc2dc2', createdBy: admin)
+        BasicModelItem dataClass22 = new BasicModelItem(label: 'dc2dc2', createdBy: admin.emailAddress)
+        dataClass22.addToChildModelItems(label: 'dc2dc2dc1', createdBy: admin.emailAddress)
+        dataClass22.addToChildModelItems(label: 'dc2dc2dc2', createdBy: admin.emailAddress)
         dataClass22.addToChildModelItems(dataClass223)
 
-        BasicModelItem dataClass2 = new BasicModelItem(label: 'dc2', createdBy: admin)
-        dataClass2.addToChildModelItems(label: 'dc2dc1', createdBy: admin)
+        BasicModelItem dataClass2 = new BasicModelItem(label: 'dc2', createdBy: admin.emailAddress)
+        dataClass2.addToChildModelItems(label: 'dc2dc1', createdBy: admin.emailAddress)
         dataClass2.addToChildModelItems(dataClass22)
 
         basicModel.addToModelItems(dataClass1)
         basicModel.addToModelItems(dataClass2)
-        basicModel.addToModelItems(label: 'dc3', createdBy: admin)
+        basicModel.addToModelItems(label: 'dc3', createdBy: admin.emailAddress)
         checkAndSave(basicModel)
 
         when:

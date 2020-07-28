@@ -289,7 +289,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
     void 'diff in element'() {
         when:
         def dm1 = new DataModel(label: 'test model', createdByUser: admin, folder: testFolder)
-        def dt = new PrimitiveType(createdBy: admin, label: 'string')
+        def dt = new PrimitiveType(createdBy: admin.emailAddress, label: 'string')
         dm1.addToDataTypes(dt)
 
 
@@ -298,8 +298,8 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
             c -> c.addToDataElements(new DataElement(label: 'elem 1', dataType: dt, createdByUser: admin))
         }
 
-        def dm2 = new DataModel(label: 'test model', createdBy: admin, folder: testFolder)
-        dt = new PrimitiveType(createdBy: admin, label: 'string')
+        def dm2 = new DataModel(label: 'test model', createdBy: admin.emailAddress, folder: testFolder)
+        dt = new PrimitiveType(createdBy: admin.emailAddress, label: 'string')
         dm2.addToDataTypes(dt)
 
         dm2.addToDataClasses(new DataClass(label: 'class 1', createdByUser: admin))

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
@@ -163,7 +164,14 @@ class ClassifierService implements ContainerService<Classifier> {
     Classifier findOrCreateByLabel(String label, User createdBy) {
         Classifier classifier = Classifier.findByLabel(label)
         if (classifier) return classifier
-        new Classifier(label: label, createdBy: createdBy).addToEdits(createdBy: createdBy, description: "Classifier ${label} created")
+        classifier = new Classifier(label: label, createdBy: createdBy.emailAddress)
+        if (classifier.validate()) {
+            classifier.save(flush: true)
+            classifier.addToEdits(createdBy: createdBy.emailAddress, description: "Classifier ${label} created")
+        } else {
+            throw new ApiInvalidModelException('CSXX', 'Could not create new Classifier', classifier.errors)
+        }
+        classifier
     }
 
     Set<Classifier> findOrCreateAllByLabels(Collection<String> labels, User catalogueUser) {
@@ -175,7 +183,7 @@ class ClassifierService implements ContainerService<Classifier> {
     Classifier findOrCreateClassifier(User catalogueUser, Classifier classifier) {
         Classifier exists = Classifier.findByLabel(classifier.label)
         if (exists) return exists
-        classifier.createdBy = catalogueUser
+        classifier.createdBy = catalogueUser.emailAddress
         classifier
     }
 

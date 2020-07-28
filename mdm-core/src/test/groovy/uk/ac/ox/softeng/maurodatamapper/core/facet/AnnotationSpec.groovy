@@ -91,7 +91,7 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
     void 'test no catalogue item'() {
         given:
         domain.label = 'test'
-        domain.createdBy = admin
+        domain.createdBy = admin.emailAddress
 
         when:
         check(domain)

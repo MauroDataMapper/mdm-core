@@ -157,19 +157,19 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
 
     private EnumerationType addEnumerationValueToEnumerationType(EnumerationType enumerationType, String key, String value, User createdBy) {
         if (key)
-            enumerationType.addToEnumerationValues(key: key, value: value ?: key, createdBy: createdBy)
+            enumerationType.addToEnumerationValues(key: key, value: value ?: key, createdBy: createdBy.emailAddress)
         enumerationType
     }
 
     private EnumerationType addEnumerationValueToEnumerationType(EnumerationType enumerationType, String key, String value, String category,
                                                                  User createdBy) {
         if (key)
-            enumerationType.addToEnumerationValues(key: key, value: value ?: key, category: category, createdBy: createdBy)
+            enumerationType.addToEnumerationValues(key: key, value: value ?: key, category: category, createdBy: createdBy.emailAddress)
         enumerationType
     }
 
     private EnumerationType createDataType(String label, String description, User createdBy) {
-        new EnumerationType(label: label, description: description, createdBy: createdBy)
+        new EnumerationType(label: label, description: description, createdBy: createdBy.emailAddress)
     }
 
     private EnumerationType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy) {
