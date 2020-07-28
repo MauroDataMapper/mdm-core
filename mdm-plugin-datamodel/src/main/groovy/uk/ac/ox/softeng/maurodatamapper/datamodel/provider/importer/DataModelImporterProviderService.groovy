@@ -50,7 +50,7 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
     @Override
     List<DataModel> importDomains(User currentUser, T params) {
         List<DataModel> dataModels = importDataModels(currentUser, params)
-        dataModels?.collect {checkImport(currentUser, it, params.finalised, params.importAsNewDocumentationVersion)}
+        dataModels?.collect { checkImport(currentUser, it, params.finalised, params.importAsNewDocumentationVersion) }
     }
 
     abstract DataModel importDataModel(User currentUser, T params)
@@ -66,6 +66,16 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         dataModelService.checkFinaliseDataModel(dataModel, finalised)
         dataModelService.checkDocumentationVersion(dataModel, importAsNewDocumentationVersion, currentUser)
         classifierService.checkClassifiers(currentUser, dataModel)
+
+        dataModel.dataClasses.each { dc ->
+            classifierService.checkClassifiers(currentUser, dc)
+            dc.dataElements.each { de ->
+                classifierService.checkClassifiers(currentUser, de)
+            }
+        }
+        dataModel.dataTypes.each { dt ->
+            classifierService.checkClassifiers(currentUser, dt)
+        }
         dataModel
     }
 }

@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -52,6 +53,7 @@ class DataClassService extends ModelItemService<DataClass> {
     SemanticLinkService semanticLinkService
     MessageSource messageSource
     SessionFactory sessionFactory
+    ClassifierService classifierService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -162,15 +164,21 @@ class DataClassService extends ModelItemService<DataClass> {
 
     Collection<DataElement> hierarchySaveAllAndGetDataElements(Collection<DataClass> dataClasses) {
 
+        List<Classifier> classifiers = dataClasses.collectMany { it.classifiers ?: [] } as List<Classifier>
+        if (classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
+        }
+
         Collection<DataElement> dataElements = []
 
         // No parent
-        List<DataClass> parents = dataClasses.findAll {!it.parentDataClass}
+        List<DataClass> parents = dataClasses.findAll { !it.parentDataClass }
         dataElements.addAll(saveAllAndGetDataElements(parents))
 
         while (parents) {
 
-            List<DataClass> children = dataClasses.findAll {it.parentDataClass in parents}
+            List<DataClass> children = dataClasses.findAll { it.parentDataClass in parents }
             if (children) {
                 dataElements.addAll(saveAllAndGetDataElements(children))
             }

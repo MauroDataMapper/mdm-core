@@ -21,6 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -54,6 +55,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     PrimitiveTypeService primitiveTypeService
     ReferenceTypeService referenceTypeService
     EnumerationTypeService enumerationTypeService
+    ClassifierService classifierService
 
     @Override
     DataType get(Serializable id) {
@@ -195,9 +197,14 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     def saveAll(Collection<DataType> dataTypes) {
+        List<Classifier> classifiers = dataTypes.collectMany { it.classifiers ?: [] } as List<Classifier>
+        if (classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
+        }
 
-        Collection<DataType> alreadySaved = dataTypes.findAll {it.ident() && it.isDirty()}
-        Collection<DataType> notSaved = dataTypes.findAll {!it.ident()}
+        Collection<DataType> alreadySaved = dataTypes.findAll { it.ident() && it.isDirty() }
+        Collection<DataType> notSaved = dataTypes.findAll { !it.ident() }
 
         if (alreadySaved) {
             log.trace('Straight saving {} already saved DataTypes ', alreadySaved.size())

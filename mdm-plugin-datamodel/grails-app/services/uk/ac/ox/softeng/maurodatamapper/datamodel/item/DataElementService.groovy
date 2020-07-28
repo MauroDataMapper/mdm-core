@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -55,6 +56,7 @@ class DataElementService extends ModelItemService<DataElement> {
     DataClassService dataClassService
     DataTypeService dataTypeService
     SessionFactory sessionFactory
+    ClassifierService classifierService
 
     @Override
     DataElement get(Serializable id) {
@@ -173,8 +175,14 @@ class DataElementService extends ModelItemService<DataElement> {
 
     def saveAll(Collection<DataElement> dataElements) {
 
-        Collection<DataElement> alreadySaved = dataElements.findAll {it.ident() && it.isDirty()}
-        Collection<DataElement> notSaved = dataElements.findAll {!it.ident()}
+        List<Classifier> classifiers = dataElements.collectMany { it.classifiers ?: [] } as List<Classifier>
+        if (classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
+        }
+
+        Collection<DataElement> alreadySaved = dataElements.findAll { it.ident() && it.isDirty() }
+        Collection<DataElement> notSaved = dataElements.findAll { !it.ident() }
 
         if (alreadySaved) {
             log.trace('Straight saving {} already saved DataElements', alreadySaved.size())

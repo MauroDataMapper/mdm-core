@@ -868,6 +868,28 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
+    void 'test importing DataModel with classifiers'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('fullModelWithClassifiers').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }
+
     void 'test export simple DataModel'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [

@@ -66,7 +66,6 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     }
 
     void beforeValidateCatalogueItem() {
-        classifiers?.each {it.beforeValidate()}
         metadata?.each {it.beforeValidate()}
         annotations?.each {it.beforeValidate()}
         referenceFiles?.each {it.beforeValidate()}
