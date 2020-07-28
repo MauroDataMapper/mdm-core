@@ -88,7 +88,7 @@ dependencies {
     }
     provided "org.springframework.boot:spring-boot-starter-tomcat"
     runtime "org.glassfish.web:el-impl:2.1.2-b03"
-    runtime "com.h2database:h2"
+    integrationTestRuntimeOnly "com.h2database:h2"
     runtime "org.apache.tomcat:tomcat-jdbc"
     runtime "javax.xml.bind:jaxb-api:$jaxbApiVersion"
     testCompile "org.grails:grails-gorm-testing-support"

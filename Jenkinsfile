@@ -361,9 +361,30 @@ pipeline {
                 }
             }
         }
+
         stage('License Header Check'){
             steps{
                 sh './gradlew license'
+            }
+        }
+
+        stage('Deploy to Artifactory') {
+            when {
+                allOf {
+                    anyOf {
+                        branch 'master'
+                        branch 'develop'
+                    }
+                    expression {
+                        currentBuild.currentResult == 'SUCCESS'
+                    }
+                }
+
+            }
+            steps {
+                script {
+                    sh "./gradlew artifactoryPublish"
+                }
             }
         }
     }
