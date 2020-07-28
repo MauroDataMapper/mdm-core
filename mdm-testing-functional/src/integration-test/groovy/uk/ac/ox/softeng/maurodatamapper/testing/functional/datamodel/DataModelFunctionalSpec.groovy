@@ -388,7 +388,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
 }'''
     }
 
-    void 'E16 : test getting DataModel hierarchy (as editor)'() {
+    void 'E16a : test getting DataModel hierarchy (as editor)'() {
         when: 'logged in as editor'
         String id = getSimpleDataModelId()
         loginEditor()
@@ -453,6 +453,431 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
       ],
       "dataElements": [
         
+      ]
+    }
+  ]
+}'''
+    }
+
+    void 'E16b : test getting complex DataModel hierarchy (as editor)'() {
+        when: 'logged in as editor'
+        String id = getComplexDataModelId()
+        loginEditor()
+        GET("${id}/hierarchy", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "id": "${json-unit.matches:id}",
+  "domainType": "DataModel",
+  "label": "Complex Test DataModel",
+  "availableActions": [
+    "delete",
+    "show",
+    "update"
+  ],
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "classifiers": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "test classifier",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "test classifier2",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    }
+  ],
+  "type": "Data Standard",
+  "documentationVersion": "1.0.0",
+  "finalised": false,
+  "readableByEveryone": false,
+  "readableByAuthenticatedUsers": false,
+  "author": "admin person",
+  "organisation": "brc",
+  "dataTypes": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceType",
+      "label": "child",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "referenceClass": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataClass",
+        "label": "child",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "parent",
+            "domainType": "DataClass"
+          }
+        ],
+        "parentDataClass": "${json-unit.matches:id}"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "EnumerationType",
+      "label": "yesnounknown",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "enumerationValues": [
+        {
+          "index": 0,
+          "id": "${json-unit.matches:id}",
+          "key": "Y",
+          "value": "Yes",
+          "category": null
+        },
+        {
+          "index": 2,
+          "id": "${json-unit.matches:id}",
+          "key": "U",
+          "value": "Unknown",
+          "category": null
+        },
+        {
+          "index": 1,
+          "id": "${json-unit.matches:id}",
+          "key": "N",
+          "value": "No",
+          "category": null
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "integer",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    }
+  ],
+  "childDataClasses": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "emptyclass",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "description": "dataclass with desc",
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "dataClasses": [
+        
+      ],
+      "dataElements": [
+        
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "parent",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "maxMultiplicity": -1,
+      "minMultiplicity": 1,
+      "dataClasses": [
+        {
+          "id": "${json-unit.matches:id}",
+          "domainType": "DataClass",
+          "label": "child",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "parent",
+              "domainType": "DataClass"
+            }
+          ],
+          "availableActions": [
+            "delete",
+            "show",
+            "update"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "parentDataClass": "${json-unit.matches:id}",
+          "dataClasses": [
+            
+          ],
+          "dataElements": [
+            
+          ],
+          "parentDataClass": "${json-unit.matches:id}"
+        }
+      ],
+      "dataElements": [
+        {
+          "id": "${json-unit.matches:id}",
+          "domainType": "DataElement",
+          "label": "child",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "parent",
+              "domainType": "DataClass"
+            }
+          ],
+          "availableActions": [
+            "delete",
+            "show",
+            "update"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "dataClass": "${json-unit.matches:id}",
+          "dataType": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "ReferenceType",
+            "label": "child",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "referenceClass": {
+              "id": "${json-unit.matches:id}",
+              "domainType": "DataClass",
+              "label": "child",
+              "model": "${json-unit.matches:id}",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test DataModel",
+                  "domainType": "DataModel",
+                  "finalised": false
+                },
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "parent",
+                  "domainType": "DataClass"
+                }
+              ],
+              "parentDataClass": "${json-unit.matches:id}"
+            }
+          },
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "parent",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "maxMultiplicity": -1,
+      "minMultiplicity": 1,
+      "dataClasses": [
+        
+      ],
+      "dataElements": [
+        {
+          "id": "${json-unit.matches:id}",
+          "domainType": "DataElement",
+          "label": "element2",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "content",
+              "domainType": "DataClass"
+            }
+          ],
+          "availableActions": [
+            "delete",
+            "show",
+            "update"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "dataClass": "${json-unit.matches:id}",
+          "dataType": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "PrimitiveType",
+            "label": "integer",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ]
+          },
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "domainType": "DataElement",
+          "label": "ele1",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "content",
+              "domainType": "DataClass"
+            }
+          ],
+          "availableActions": [
+            "delete",
+            "show",
+            "update"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "dataClass": "${json-unit.matches:id}",
+          "dataType": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "PrimitiveType",
+            "label": "string",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ]
+          },
+          "maxMultiplicity": 20,
+          "minMultiplicity": 0
+        }
       ]
     }
   ]

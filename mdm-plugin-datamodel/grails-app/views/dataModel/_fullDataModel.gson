@@ -23,8 +23,13 @@ json {
     if (dataModel.organisation) organisation dataModel.organisation
 
     if (params.boolean('deep', false)) {
-        dataTypes tmpl.'/dataType/fullDataType'(dataModel.dataTypes?.findAll() ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
-        childDataClasses tmpl.'/dataClass/deepDataClass'(dataModel.childDataClasses?.findAll() ?: [],
-                                                         [userSecurityPolicyManager: userSecurityPolicyManager])
+        dataTypes tmpl.'/dataType/fullDataType'('dataType',
+                                                dataModel.dataTypes?.findAll() ?: [],
+                                                [userSecurityPolicyManager: userSecurityPolicyManager]
+        )
+        childDataClasses tmpl.'/dataClass/deepDataClass'(
+            dataModel.childDataClasses?.findAll() ?: [],
+            [userSecurityPolicyManager: userSecurityPolicyManager]
+        )
     }
 }
