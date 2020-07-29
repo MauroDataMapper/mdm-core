@@ -18,9 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security
 
 
-import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
-import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.UserProfilePicture
-import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 
 import grails.gorm.transactions.Transactional
 
@@ -30,11 +28,11 @@ import java.time.OffsetDateTime
 @Transactional
 class AuthorityService {
 
-    CatalogueUser get(Serializable id) {
+    Authority get(Serializable id) {
         Authority.get(id)
     }
 
-    List<CatalogueUser> list(Map pagination) {
+    List<Authority> list(Map pagination) {
         pagination ? Authority.withFilter(pagination).join('groups').list(pagination) : Authority.list()
     }
 
@@ -50,7 +48,7 @@ class AuthorityService {
         Authority.disabled = true
     }
 
-    List<CatalogueUser> findAllByAuthority(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
+    List<Authority> findAllByAuthority(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(CatalogueUser)
         ids ? CatalogueUser.withFilter(pagination, CatalogueUser.byIdInList(ids)).list(pagination) : []
     }
