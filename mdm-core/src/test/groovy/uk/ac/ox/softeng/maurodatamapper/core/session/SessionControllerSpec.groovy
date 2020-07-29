@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.session
 
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.web.controllers.ControllerUnitTest
@@ -54,5 +55,19 @@ class SessionControllerSpec extends BaseUnitSpec implements ControllerUnitTest<S
         then:
         response.status == OK.value()
         response.json.authenticatedSession == true
+    }
+
+    void 'test isApplicationAdministrationSession'() {
+        given:
+        params.currentUserSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
+
+
+        when:
+        request.method = 'GET'
+        controller.isApplicationAdministrationSession()
+
+        then:
+        response.status == OK.value()
+        response.json.applicationAdministrationSession == true
     }
 }

@@ -27,6 +27,7 @@ import static io.micronaut.http.HttpStatus.OK
 /**
  * <pre>
  * Controller: session
+ *  |  GET  | /api/session/isApplicationAdministration     | Action: isApplicationAdministrationSession
  *  |  GET  | /api/session/isAuthenticated  | Action: isAuthenticatedSession
  *  |  GET  | /api/admin/activeSessions     | Action: activeSessions
  * </pre>
@@ -95,5 +96,36 @@ class SessionFunctionalSpec extends FunctionalSpec {
 
         and:
         response.body().authenticatedSession == true
+    }
+
+    void 'get is application administration session endpoint'() {
+        when: 'not logged in'
+        GET('session/isApplicationAdministration')
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().applicationAdministrationSession == false
+
+        when:
+        loginAuthenticated()
+        GET('session/isApplicationAdministration')
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().applicationAdministrationSession == false
+
+        when:
+        loginAdmin()
+        GET('session/isApplicationAdministration')
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().applicationAdministrationSession == true
     }
 }

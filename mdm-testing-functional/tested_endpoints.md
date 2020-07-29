@@ -184,6 +184,7 @@ Controller: semanticLink
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks/${id}  | Action: show
 
 Controller: session
+ |   GET    | /api/session/isApplicationAdministration     | Action: isApplicationAdministrationSession
  |   GET    | /api/admin/activeSessions  | Action: activeSessions
  |   GET    | /api/session/isAuthenticated/${sesssionId}?  | Action: isAuthenticatedSession
 

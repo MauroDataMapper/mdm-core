@@ -25,9 +25,13 @@ import groovy.util.logging.Slf4j
 import static io.micronaut.http.HttpStatus.OK
 
 /**
- * @see uk.ac.ox.softeng.maurodatamapper.core.session.SessionController* Controller: session
+ * <pre>
+ * Controller: session
+ * |   GET   | /api/session/isApplicationAdministration     | Action: isApplicationAdministrationSession
  * |   GET   | /api/admin/activeSessions       | Action: activeSessions       |
  * |   GET   | /api/sessions/isAuthenticated/$sessionId?       | Action: isAuthenticatedSession       |
+ * </pre>
+ * @see uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
  */
 @Integration
 @Slf4j
@@ -81,5 +85,16 @@ class SessionFunctionalSpec extends BaseFunctionalSpec {
 
         and:
         response.body().authenticatedSession == false
+    }
+
+    void 'get is application administration session endpoint'() {
+        when:
+        GET('session/isApplicationAdministration')
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().applicationAdministrationSession == true
     }
 }

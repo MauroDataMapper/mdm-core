@@ -333,6 +333,6 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
 
     void givenParameters() {
         params.currentUserSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
-        params.editable = true
+        params.editable = true //TODO remove
     }
 }
