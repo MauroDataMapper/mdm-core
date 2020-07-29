@@ -17,14 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import java.net.URL
 
 
 class Authority implements InformationAware, CreatorAware {
 
     UUID id
-    Url url
+    URL url
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
