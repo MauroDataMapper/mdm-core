@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import org.springframework.core.Ordered
 
@@ -50,7 +52,8 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     }
 
     VirtualSecurableResourceGroupRole forSecurableResource(SecurableResource securableResource) {
-        this.forSecurableResource(securableResource.domainType, securableResource.resourceId)
+        boolean isFinalised = Utils.parentClassIsAssignableFromChild(Model, securableResource.class) ? (securableResource as Model).finalised : false
+        this.forSecurableResource(securableResource.domainType, securableResource.resourceId).asFinalisedModel(isFinalised)
     }
 
     VirtualSecurableResourceGroupRole withAccessLevel(GroupRole groupRole) {

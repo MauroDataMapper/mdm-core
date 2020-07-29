@@ -959,6 +959,34 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
             "delete"
         ]
 
+        when: 'log out and log back in again in as editor available actions are correct'
+        logout()
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        response.body().availableActions == [
+            "show",
+            "comment",
+            "softDelete",
+            "delete"
+        ]
+
+        when: 'log out and log back in again in as admin available actions are correct'
+        logout()
+        loginAdmin()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        response.body().availableActions == [
+            "show",
+            "comment",
+            "softDelete",
+            "delete"
+        ]
+
         cleanup:
         removeValidIdObject(id)
     }

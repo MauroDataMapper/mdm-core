@@ -537,7 +537,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                 virtualSecurableResourceGroupRoles.addAll(
                     inheritedContainerRoles.collect {igr ->
                         new VirtualSecurableResourceGroupRole()
-                            .forSecurableResource(r.domainType, r.resourceId)
+                            .forSecurableResource(r)
                             .definedByAccessLevel(accessRole.groupRole)
                             .withAccessLevel(igr)
                     }
