@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
+model {
+    Authority authority
+}
+
+json {
+    id authority.id
+    url authority.url
+    label authority.label
+    description authority.description
+}

@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
@@ -50,6 +51,13 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     String author
     String organisation
     OffsetDateTime dateFinalised
+    Authority authority
+
+    static belongsTo = Authority
+
+    static constraints = {
+        [authority, label] unique: true
+    }
 
     @BindUsing({obj, source -> Version.from(source['documentationVersion'] as String)})
     Version documentationVersion
