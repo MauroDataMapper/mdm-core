@@ -21,15 +21,4 @@ json {
     if (dataModel.deleted) deleted dataModel.deleted
     if (dataModel.author) author dataModel.author
     if (dataModel.organisation) organisation dataModel.organisation
-
-    if (params.boolean('deep', false)) {
-        dataTypes tmpl.'/dataType/fullDataType'('dataType',
-                                                dataModel.dataTypes?.findAll() ?: [],
-                                                [userSecurityPolicyManager: userSecurityPolicyManager]
-        )
-        childDataClasses tmpl.'/dataClass/deepDataClass'(
-            dataModel.childDataClasses?.findAll() ?: [],
-            [userSecurityPolicyManager: userSecurityPolicyManager]
-        )
-    }
 }

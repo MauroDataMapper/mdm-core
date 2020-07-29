@@ -27,9 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.DataBootstrap
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
@@ -656,7 +656,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].label')
+        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -680,7 +680,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].dataElements[0].dataType')
+        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].dataElements[0].dataType')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

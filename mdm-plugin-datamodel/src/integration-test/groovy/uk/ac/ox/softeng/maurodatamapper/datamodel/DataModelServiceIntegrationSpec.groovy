@@ -690,7 +690,7 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].label')
+        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -715,7 +715,7 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].dataElements[0].dataType')
+        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].dataElements[0].dataType')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

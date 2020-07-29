@@ -126,8 +126,8 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         modelType = DataModelType.findForLabel(type)?.label
     }
 
-    Set<DataClass> getChildDataClasses() {
-        dataClasses.findAll {!it.parentDataClass}
+    List<DataClass> getChildDataClasses() {
+        dataClasses?.findAll { !it.parentDataClass }?.sort() ?: [] as List<DataClass>
     }
 
     @Override
@@ -157,12 +157,15 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
     }
 
     int countDataTypesByLabel(String label) {
-        dataTypes?.count {it.label == label} ?: 0
+        dataTypes?.count { it.label == label } ?: 0
     }
 
-
     Set<DataElement> getAllDataElements() {
-        dataClasses.collect {it.dataElements}.findAll().flatten().toSet() as Set<DataElement>
+        dataClasses.collect { it.dataElements }.findAll().flatten().toSet() as Set<DataElement>
+    }
+
+    List<DataType> getSortedDataTypes() {
+        dataTypes?.sort() ?: []
     }
 
     @Override

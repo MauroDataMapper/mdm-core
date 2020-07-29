@@ -72,7 +72,8 @@ class DataModelController extends ModelController<DataModel> {
 
     def hierarchy() {
         params.deep = true
-        show()
+        def resource = queryForResource(params.dataModelId)
+        resource ? respond(resource, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'hierarchy']) : notFound(params.id)
     }
 
     @Override

@@ -1054,12 +1054,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "classifiers": [
     {
       "id": "${json-unit.matches:id}",
-      "label": "test classifier",
+      "label": "test classifier2",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
     {
       "id": "${json-unit.matches:id}",
-      "label": "test classifier2",
+      "label": "test classifier",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     }
   ],
@@ -1071,6 +1071,89 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "author": "admin person",
   "organisation": "brc",
   "dataTypes": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "EnumerationType",
+      "label": "yesnounknown",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "enumerationValues": [
+        {
+          "index": 2,
+          "id": "${json-unit.matches:id}",
+          "key": "U",
+          "value": "Unknown",
+          "category": null
+        },
+        {
+          "index": 0,
+          "id": "${json-unit.matches:id}",
+          "key": "Y",
+          "value": "Yes",
+          "category": null
+        },
+        {
+          "index": 1,
+          "id": "${json-unit.matches:id}",
+          "key": "N",
+          "value": "No",
+          "category": null
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "integer",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "delete",
+        "show",
+        "update"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceType",
@@ -1110,11 +1193,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         ],
         "parentDataClass": "${json-unit.matches:id}"
       }
-    },
+    }
+  ],
+  "childDataClasses": [
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "EnumerationType",
-      "label": "yesnounknown",
+      "domainType": "DataClass",
+      "label": "content",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -1124,78 +1209,105 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
           "finalised": false
         }
       ],
+      "description": "A dataclass with elements",
       "availableActions": [
         "delete",
         "show",
         "update"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "enumerationValues": [
+      "maxMultiplicity": 1,
+      "minMultiplicity": 0,
+      "dataClasses": [
+        
+      ],
+      "dataElements": [
         {
-          "index": 0,
           "id": "${json-unit.matches:id}",
-          "key": "Y",
-          "value": "Yes",
-          "category": null
+          "domainType": "DataElement",
+          "label": "element2",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "content",
+              "domainType": "DataClass"
+            }
+          ],
+          "availableActions": [
+            "delete",
+            "show",
+            "update"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "dataClass": "${json-unit.matches:id}",
+          "dataType": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "PrimitiveType",
+            "label": "integer",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ]
+          },
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1
         },
         {
-          "index": 2,
           "id": "${json-unit.matches:id}",
-          "key": "U",
-          "value": "Unknown",
-          "category": null
-        },
-        {
-          "index": 1,
-          "id": "${json-unit.matches:id}",
-          "key": "N",
-          "value": "No",
-          "category": null
+          "domainType": "DataElement",
+          "label": "ele1",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "content",
+              "domainType": "DataClass"
+            }
+          ],
+          "availableActions": [
+            "delete",
+            "show",
+            "update"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "dataClass": "${json-unit.matches:id}",
+          "dataType": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "PrimitiveType",
+            "label": "string",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ]
+          },
+          "maxMultiplicity": 20,
+          "minMultiplicity": 0
         }
       ]
     },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "string",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "integer",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    }
-  ],
-  "childDataClasses": [
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
@@ -1341,117 +1453,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
           },
           "maxMultiplicity": 1,
           "minMultiplicity": 1
-        }
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "parent",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "maxMultiplicity": -1,
-      "minMultiplicity": 1,
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "element2",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "content",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "delete",
-            "show",
-            "update"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "integer",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "ele1",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "content",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "delete",
-            "show",
-            "update"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "string",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          "maxMultiplicity": 20,
-          "minMultiplicity": 0
         }
       ]
     }
