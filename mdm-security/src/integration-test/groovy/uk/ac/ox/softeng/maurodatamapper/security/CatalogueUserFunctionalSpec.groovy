@@ -254,7 +254,6 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "lastName": "User",
       "pending": false,
       "disabled": false,
-      "needsToResetPassword": true,
       "createdBy": "unlogged_user@mdm-core.com",
       "availableActions": ["update","delete","show"]
     },

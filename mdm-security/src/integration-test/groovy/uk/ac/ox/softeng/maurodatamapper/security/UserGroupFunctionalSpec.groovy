@@ -191,7 +191,6 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
       "lastName": "User",
       "pending": false,
       "disabled": false,
-      "needsToResetPassword": true,
       "createdBy": "unlogged_user@mdm-core.com"
     }
   ]
@@ -227,7 +226,6 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
       "lastName": "User",
       "pending": false,
       "disabled": false,
-      "needsToResetPassword": true,
       "createdBy": "unlogged_user@mdm-core.com"
     },
     {
@@ -279,7 +277,6 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
       "lastName": "User",
       "pending": false,
       "disabled": false,
-      "needsToResetPassword": true,
       "createdBy": "unlogged_user@mdm-core.com"
     }
   ]

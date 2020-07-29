@@ -375,11 +375,11 @@ Controller: userGroup
  |   GET    | /api/${containerDomainType}/${containerId}/userGroups/${id}                                                                          | Action: show
 
 Controller: userImageFile
- |   GET    | /api/userImageFiles/${id}                                                                                                            | Action: show
  |  DELETE  | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: delete
  |   PUT    | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: update
  |   GET    | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: show
  |   POST   | /api/catalogueUsers/${catalogueUserId}/image                                                                                         | Action: save
+ |   GET    | /api/userImageFiles/${id}                                                                                                            | Action: show
 
 Controller: versionLink
  |   POST   | /api/${modelDomainType}/${modelId}/versionLinks                                                                                      | Action: save
