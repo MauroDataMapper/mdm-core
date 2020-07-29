@@ -79,6 +79,18 @@ abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyM
     }
 
     @Override
+    List<String> userAvailableActions(String resourceDomainType, UUID id, Class<? extends SecurableResource> owningSecureResourceClass,
+                                      UUID owningSecureResourceId) {
+        id ? ['delete', 'show', 'update'] : ['index', 'save']
+    }
+
+    @Override
+    List<String> userAvailableActions(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass,
+                                      UUID owningSecureResourceId) {
+        id ? ['delete', 'show', 'update'] : ['index', 'save']
+    }
+
+    @Override
     boolean isPending() {
         user.emailAddress == 'pending@test.com'
     }

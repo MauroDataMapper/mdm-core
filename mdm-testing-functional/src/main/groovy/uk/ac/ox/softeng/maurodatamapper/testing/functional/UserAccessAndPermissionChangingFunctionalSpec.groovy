@@ -87,7 +87,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
     }
 
     List<String> getEditorAvailableActions() {
-        ['update', 'delete', 'show']
+        ['show', 'update', 'delete']
     }
 
     List<String> getReaderAvailableActions() {

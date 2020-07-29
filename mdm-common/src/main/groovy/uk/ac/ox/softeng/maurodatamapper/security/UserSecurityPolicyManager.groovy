@@ -49,11 +49,17 @@ interface UserSecurityPolicyManager {
 
     boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action)
 
-    List<String> userAvailableActions(Serializable resourceClass, UUID id)
+    List<String> userAvailableActions(Serializable securableResourceClass, UUID id)
 
-    List<String> userAvailableActions(Class resourceClass, UUID id)
+    List<String> userAvailableActions(Class<? extends SecurableResource> securableResourceClass, UUID id)
 
-    List<String> userAvailableActions(String domainType, UUID id)
+    List<String> userAvailableActions(String securableResourceDomainType, UUID id)
+
+    List<String> userAvailableActions(String resourceDomainType, UUID id,
+                                      Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId)
+
+    List<String> userAvailableActions(Class resourceClass, UUID id,
+                                      Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId)
 
     boolean isApplicationAdministrator()
 

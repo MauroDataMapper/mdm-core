@@ -141,7 +141,6 @@ class TermFunctionalSpec extends UserAccessFunctionalSpec {
   ],
   "availableActions": [
     "delete",
-    "softDelete",
     "update",
     "save",
     "show",

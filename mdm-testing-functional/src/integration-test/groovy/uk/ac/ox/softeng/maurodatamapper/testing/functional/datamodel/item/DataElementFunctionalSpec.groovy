@@ -243,7 +243,6 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
   ],
    "availableActions": [
     "delete",
-    "softDelete",
     "update",
     "save",
     "show",
@@ -273,13 +272,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         assert body.breadcrumbs[1].domainType == 'DataClass'
 
         assert body.availableActions == [
-            "delete",
-            "softDelete",
-            "update",
-            "save",
-            "show",
-            "comment",
-            "editDescription"
+            'show', 'comment', 'editDescription', 'update', 'save', 'delete'
         ]
         assert body.lastUpdated
         assert body.maxMultiplicity == 20

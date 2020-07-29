@@ -225,7 +225,6 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
   ],
   "availableActions": [
     "delete",
-    "softDelete",
     "update",
     "save",
     "show",
@@ -252,13 +251,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         assert body.breadcrumbs.first().finalised == false
 
         assert body.availableActions == [
-            "delete",
-            "softDelete",
-            "update",
-            "save",
-            "show",
-            "comment",
-            "editDescription"
+            'show', 'comment', 'editDescription', 'update', 'save', 'delete'
         ]
         assert body.lastUpdated
     }
@@ -303,13 +296,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-    "delete",
-    "softDelete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+    "show","comment","editDescription","update","save","delete"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "enumerationValues": [
@@ -373,13 +360,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-    "delete",
-    "softDelete",
-    "update",
-    "save",
-    "show",
-    "comment",
-    "editDescription"
+   "show","comment","editDescription","update","save","delete"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "referenceClass": {

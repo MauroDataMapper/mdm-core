@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.policy
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
@@ -41,6 +41,21 @@ import groovy.util.logging.Slf4j
 
 import java.util.function.Predicate
 
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.DELETE_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FULL_DELETE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODELITEM_DISALLOWED_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_AUTHOR_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_CONTAINER_ADMIN_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_DISALLOWED_FINALISED_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_EDITOR_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_REVIEWER_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_DOCUMENTATION_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.READ_ONLY_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SOFT_DELETE_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_CREATE_AND_EDIT_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.APPLICATION_ADMIN_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.AUTHOR_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.CONTAINER_ADMIN_ROLE_NAME
@@ -154,8 +169,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
         virtualSecurableResourceGroupRoles
-            .findAll {it.domainType == securableResourceClass.simpleName}
-            .collect {it.domainId}
+            .findAll { it.domainType == securableResourceClass.simpleName }
+            .collect { it.domainId }
             .toSet()
             .toList()
     }
@@ -213,17 +228,73 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     @Override
     boolean userCanCreateSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        userCanWriteSecuredResourceId(securableResourceClass, id, 'save')
+        userCanWriteSecuredResourceId(securableResourceClass, id, SAVE_ACTION)
     }
 
     @Override
     boolean userCanEditSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        userCanWriteSecuredResourceId(securableResourceClass, id, 'update')
+        userCanWriteSecuredResourceId(securableResourceClass, id, UPDATE_ACTION)
     }
 
     @Override
     boolean userCanDeleteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, boolean permanent) {
-        userCanWriteSecuredResourceId(securableResourceClass, id, permanent ? 'delete' : 'softDelete')
+        userCanWriteSecuredResourceId(securableResourceClass, id, permanent ? DELETE_ACTION : SOFT_DELETE_ACTION)
+    }
+
+    @Override
+    boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action) {
+
+        if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
+            // If no id then its a top level container and therefore anyone who's logged in can create
+            if (!id) return isAuthenticated()
+            if (action == SAVE_ACTION) {
+                // Editors can save new folders and models
+                return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+            }
+            return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+        }
+
+        if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass)) {
+            // User cannot delete themselves
+            if (action in FULL_DELETE_ACTIONS && id == user.id) {
+                return false
+            }
+            return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, USER_ADMIN_ROLE_NAME)
+        }
+
+        if (Utils.parentClassIsAssignableFromChild(UserGroup, securableResourceClass)) {
+            switch (action) {
+                case SAVE_ACTION:
+                    return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
+                default:
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, GROUP_ADMIN_ROLE_NAME)
+            }
+        }
+
+        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
+            switch (action) {
+                case NEW_DOCUMENTATION_ACTION:
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? role.isFinalisedModel() : false
+                case DELETE_ACTION:
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+                case SOFT_DELETE_ACTION:
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                case UPDATE_ACTION:
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
+                    return role ? !role.isFinalisedModel() : false
+                case SAVE_ACTION:
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? !role.isFinalisedModel() : false
+                default:
+                    log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
+                    return false
+            }
+        }
+
+        log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
+        false
+
     }
 
     @Override
@@ -252,8 +323,30 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     @Override
+    List<String> userAvailableActions(String resourceDomainType, UUID id, Class<? extends SecurableResource> owningSecureResourceClass,
+                                      UUID owningSecureResourceId) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, resourceDomainType)
+        userAvailableActions(grailsClass.clazz, id, owningSecureResourceClass, owningSecureResourceId)
+    }
+
+    @Override
+    List<String> userAvailableActions(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass,
+                                      UUID owningSecureResourceId) {
+
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
+            return userAvailableActions(resourceClass, id)
+        }
+
+        List<String> owningResourceActions = userAvailableActions(owningSecureResourceClass, owningSecureResourceId)
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, resourceClass)) {
+            return owningResourceActions - MODELITEM_DISALLOWED_ACTIONS
+        }
+        return owningResourceActions
+    }
+
+    @Override
     boolean isApplicationAdministrator() {
-        applicationPermittedRoles.any {it.name == APPLICATION_ADMIN_ROLE_NAME}
+        applicationPermittedRoles.any { it.name == APPLICATION_ADMIN_ROLE_NAME }
     }
 
     @Override
@@ -283,7 +376,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             it.securableResourceDomainType == securableResourceDomainType && it.securableResourceId == securableResourceId
         }
         if (!found) return null
-        found.collect {it.groupRole}.sort().first()
+        found.collect { it.groupRole }.sort().first()
     }
 
     boolean hasUserAdminRights() {
@@ -297,7 +390,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     private List<String> securedResourceUserAvailableActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
 
         if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass)) {
-            return getStandardActionsWithControlRole(securableResourceClass, id, USER_ADMIN_ROLE_NAME) ?: ['show']
+            return getStandardActionsWithControlRole(securableResourceClass, id, USER_ADMIN_ROLE_NAME) ?: READ_ONLY_ACTIONS
         }
 
         if (Utils.parentClassIsAssignableFromChild(UserGroup, securableResourceClass)) {
@@ -311,88 +404,34 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
             VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
             if (role) {
-                return role.isFinalisedModel() ? ['delete', 'softDelete', 'show', 'comment'] :
-                       ['delete', 'softDelete', 'update', 'save', 'show', 'comment', 'editDescription']
+                return MODEL_CONTAINER_ADMIN_ACTIONS - getFinalisedActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             if (role) {
-                return role.isFinalisedModel() ? ['softDelete', 'show', 'comment'] :
-                       ['softDelete', 'update', 'save', 'show', 'comment', 'editDescription']
+                return MODEL_EDITOR_ACTIONS - getFinalisedActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
             if (role) {
-                return role.isFinalisedModel() ? ['show', 'comment'] : ['show', 'comment', 'editDescription']
+                return MODEL_AUTHOR_ACTIONS - getFinalisedActionsToRemove(role)
             }
             if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, REVIEWER_ROLE_NAME)) {
-                return ['show', 'comment']
+                return MODEL_REVIEWER_ACTIONS
             }
             if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, READER_ROLE_NAME)) {
-                return ['show']
+                return READ_ONLY_ACTIONS
             }
         }
         log.warn('Attempt to gain available actions for unknown secured class {} id {} to {}', securableResourceClass.simpleName, id)
         []
     }
 
-    @Override
-    boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action) {
-
-        if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
-            // If no id then its a top level container and therefore anyone who's logged in can create
-            if (!id) return isAuthenticated()
-            if (action in ['save']) {
-                // Editors can save new folders and models
-                return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-            }
-            return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
-        }
-
-        if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass)) {
-            // User cannot delete themselves
-            if (action in ['delete', 'softDelete'] && id == user.id) {
-                return false
-            }
-            return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, USER_ADMIN_ROLE_NAME)
-        }
-
-        if (Utils.parentClassIsAssignableFromChild(UserGroup, securableResourceClass)) {
-            switch (action) {
-                case 'save':
-                    return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
-                default:
-                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, GROUP_ADMIN_ROLE_NAME)
-            }
-        }
-
-        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
-            switch (action) {
-                case 'newDocumentationVersion':
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                    return role ? role.isFinalisedModel() : false
-                case 'delete':
-                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
-                case 'softDelete':
-                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                case 'update':
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
-                    return role ? !role.isFinalisedModel() : false
-                case 'save':
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                    return role ? !role.isFinalisedModel() : false
-                default:
-                    log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
-                    return false
-            }
-        }
-
-        log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
-        false
-
+    private List<String> getFinalisedActionsToRemove(VirtualSecurableResourceGroupRole role) {
+        role.isFinalisedModel() ? MODEL_DISALLOWED_FINALISED_ACTIONS : []
     }
 
     private boolean hasAnyAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         if (id) {
-            return virtualSecurableResourceGroupRoles.any {it.domainType == securableResourceClass.simpleName && it.domainId == id}
+            return virtualSecurableResourceGroupRoles.any { it.domainType == securableResourceClass.simpleName && it.domainId == id }
         }
 
         // No id means indexing endpoint
@@ -405,7 +444,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
         }
 
-        return virtualSecurableResourceGroupRoles.any {it.domainType == securableResourceClass.simpleName}
+        return virtualSecurableResourceGroupRoles.any { it.domainType == securableResourceClass.simpleName }
     }
 
     private VirtualSecurableResourceGroupRole getSpecificLevelAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass,
@@ -419,14 +458,16 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     private boolean hasApplicationLevelRole(String rolename) {
-        applicationPermittedRoles.any {it.name == rolename}
+        applicationPermittedRoles.any { it.name == rolename }
     }
 
     private List<String> getStandardActionsWithControlRole(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {
         if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, roleName)) {
-            return id ? ['update', 'delete', 'show'] : ['save', 'update', 'delete', 'show']
+            return id ? STANDARD_EDIT_ACTIONS : STANDARD_CREATE_AND_EDIT_ACTIONS
         } else if (hasAnyAccessToSecuredResource(securableResourceClass, id)) {
-            return ['show']
+            return READ_ONLY_ACTIONS
         } else return []
     }
+
+
 }

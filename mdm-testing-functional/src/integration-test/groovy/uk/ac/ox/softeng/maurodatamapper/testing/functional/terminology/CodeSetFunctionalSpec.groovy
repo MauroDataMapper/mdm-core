@@ -177,7 +177,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['delete', 'softDelete', 'update', 'save', 'show', 'comment', 'editDescription']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
     }
 
     List<String> getReaderAvailableActions() {
@@ -281,10 +281,10 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         response.body().finalised == true
         response.body().dateFinalised
         response.body().availableActions == [
-            "delete",
-            "softDelete",
             "show",
-            "comment"
+            "comment",
+            "softDelete",
+            "delete"
         ]
 
         cleanup:

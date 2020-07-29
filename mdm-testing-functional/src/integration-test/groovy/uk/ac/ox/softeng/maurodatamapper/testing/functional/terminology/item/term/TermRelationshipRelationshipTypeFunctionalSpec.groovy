@@ -96,7 +96,6 @@ class TermRelationshipRelationshipTypeFunctionalSpec extends ReadOnlyUserAccessF
   ],
   "availableActions": [
     "delete",
-    "softDelete",
     "update",
     "save",
     "show",

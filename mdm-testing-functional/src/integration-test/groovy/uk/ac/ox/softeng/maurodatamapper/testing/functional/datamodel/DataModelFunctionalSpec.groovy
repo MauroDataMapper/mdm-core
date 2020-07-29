@@ -188,7 +188,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['delete', 'softDelete', 'update', 'save', 'show', 'comment', 'editDescription']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
     }
 
     List<String> getReaderAvailableActions() {
@@ -440,7 +440,6 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
       ],
       "availableActions": [
         "delete",
-        "softDelete",
         "update",
         "save",
         "show",
@@ -471,20 +470,24 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
   "domainType": "DataModel",
   "label": "Complex Test DataModel",
   "availableActions": [
-    "delete",
     "show",
-    "update"
+    "comment",
+    "editDescription",
+    "update",
+    "save",
+    "softDelete",
+    "delete"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "classifiers": [
     {
       "id": "${json-unit.matches:id}",
-      "label": "test classifier",
+      "label": "test classifier2",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
     {
       "id": "${json-unit.matches:id}",
-      "label": "test classifier2",
+      "label": "test classifier",
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     }
   ],
@@ -496,6 +499,98 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
   "author": "admin person",
   "organisation": "brc",
   "dataTypes": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "EnumerationType",
+      "label": "yesnounknown",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "show",
+        "comment",
+        "editDescription",
+        "update",
+        "save",
+        "delete"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "enumerationValues": [
+        {
+          "index": 0,
+          "id": "${json-unit.matches:id}",
+          "key": "Y",
+          "value": "Yes",
+          "category": null
+        },
+        {
+          "index": 1,
+          "id": "${json-unit.matches:id}",
+          "key": "N",
+          "value": "No",
+          "category": null
+        },
+        {
+          "index": 2,
+          "id": "${json-unit.matches:id}",
+          "key": "U",
+          "value": "Unknown",
+          "category": null
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "integer",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "show",
+        "comment",
+        "editDescription",
+        "update",
+        "save",
+        "delete"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "availableActions": [
+        "show",
+        "comment",
+        "editDescription",
+        "update",
+        "save",
+        "delete"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "ReferenceType",
@@ -510,9 +605,12 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         }
       ],
       "availableActions": [
-        "delete",
         "show",
-        "update"
+        "comment",
+        "editDescription",
+        "update",
+        "save",
+        "delete"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "referenceClass": {
@@ -535,92 +633,130 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         ],
         "parentDataClass": "${json-unit.matches:id}"
       }
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "EnumerationType",
-      "label": "yesnounknown",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "enumerationValues": [
-        {
-          "index": 0,
-          "id": "${json-unit.matches:id}",
-          "key": "Y",
-          "value": "Yes",
-          "category": null
-        },
-        {
-          "index": 2,
-          "id": "${json-unit.matches:id}",
-          "key": "U",
-          "value": "Unknown",
-          "category": null
-        },
-        {
-          "index": 1,
-          "id": "${json-unit.matches:id}",
-          "key": "N",
-          "value": "No",
-          "category": null
-        }
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "string",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "integer",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
     }
   ],
   "childDataClasses": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "content",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "description": "A dataclass with elements",
+      "availableActions": [
+        "show",
+        "comment",
+        "editDescription",
+        "update",
+        "save",
+        "delete"
+      ],
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "maxMultiplicity": 1,
+      "minMultiplicity": 0,
+      "dataClasses": [
+        
+      ],
+      "dataElements": [
+        {
+          "id": "${json-unit.matches:id}",
+          "domainType": "DataElement",
+          "label": "ele1",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "content",
+              "domainType": "DataClass"
+            }
+          ],
+          "availableActions": [
+            "show",
+            "comment",
+            "editDescription",
+            "update",
+            "save",
+            "delete"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "dataClass": "${json-unit.matches:id}",
+          "dataType": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "PrimitiveType",
+            "label": "string",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ]
+          },
+          "maxMultiplicity": 20,
+          "minMultiplicity": 0
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "domainType": "DataElement",
+          "label": "element2",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test DataModel",
+              "domainType": "DataModel",
+              "finalised": false
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "content",
+              "domainType": "DataClass"
+            }
+          ],
+          "availableActions": [
+            "show",
+            "comment",
+            "editDescription",
+            "update",
+            "save",
+            "delete"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "dataClass": "${json-unit.matches:id}",
+          "dataType": {
+            "id": "${json-unit.matches:id}",
+            "domainType": "PrimitiveType",
+            "label": "integer",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ]
+          },
+          "maxMultiplicity": 1,
+          "minMultiplicity": 1
+        }
+      ]
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataClass",
@@ -636,9 +772,12 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
       ],
       "description": "dataclass with desc",
       "availableActions": [
-        "delete",
         "show",
-        "update"
+        "comment",
+        "editDescription",
+        "update",
+        "save",
+        "delete"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dataClasses": [
@@ -662,9 +801,12 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         }
       ],
       "availableActions": [
-        "delete",
         "show",
-        "update"
+        "comment",
+        "editDescription",
+        "update",
+        "save",
+        "delete"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "maxMultiplicity": -1,
@@ -689,9 +831,12 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
             }
           ],
           "availableActions": [
-            "delete",
             "show",
-            "update"
+            "comment",
+            "editDescription",
+            "update",
+            "save",
+            "delete"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "parentDataClass": "${json-unit.matches:id}",
@@ -724,9 +869,12 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
             }
           ],
           "availableActions": [
-            "delete",
             "show",
-            "update"
+            "comment",
+            "editDescription",
+            "update",
+            "save",
+            "delete"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "dataClass": "${json-unit.matches:id}",
@@ -768,117 +916,6 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
           "minMultiplicity": 1
         }
       ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "parent",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "show",
-        "update"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "maxMultiplicity": -1,
-      "minMultiplicity": 1,
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "element2",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "content",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "delete",
-            "show",
-            "update"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "integer",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "ele1",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "content",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "delete",
-            "show",
-            "update"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "string",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          "maxMultiplicity": 20,
-          "minMultiplicity": 0
-        }
-      ]
     }
   ]
 }'''
@@ -916,10 +953,10 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         response.body().finalised == true
         response.body().dateFinalised
         response.body().availableActions == [
-            "delete",
-            "softDelete",
             "show",
-            "comment"
+            "comment",
+            "softDelete",
+            "delete"
         ]
 
         cleanup:

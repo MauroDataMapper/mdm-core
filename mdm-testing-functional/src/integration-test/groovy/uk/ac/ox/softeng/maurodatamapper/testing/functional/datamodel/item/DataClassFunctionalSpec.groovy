@@ -99,7 +99,6 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
   ],
   "availableActions": [
     "delete",
-    "softDelete",
     "update",
     "save",
     "show",
@@ -182,13 +181,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         assert body.breadcrumbs.first().finalised == false
 
         assert body.availableActions == [
-            "delete",
-            "softDelete",
-            "update",
-            "save",
-            "show",
-            "comment",
-            "editDescription"
+            'show', 'comment', 'editDescription', 'update', 'save', 'delete'
         ]
         assert body.lastUpdated
         assert body.maxMultiplicity == -1

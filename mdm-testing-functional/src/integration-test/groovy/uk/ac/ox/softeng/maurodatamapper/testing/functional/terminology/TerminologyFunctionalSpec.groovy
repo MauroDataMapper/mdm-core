@@ -183,7 +183,7 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['delete', 'softDelete', 'update', 'save', 'show', 'comment', 'editDescription']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
     }
 
     List<String> getReaderAvailableActions() {
@@ -306,10 +306,10 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         response.body().finalised == true
         response.body().dateFinalised
         response.body().availableActions == [
-            "delete",
-            "softDelete",
             "show",
-            "comment"
+            "comment",
+            "softDelete",
+            "delete"
         ]
 
         cleanup:

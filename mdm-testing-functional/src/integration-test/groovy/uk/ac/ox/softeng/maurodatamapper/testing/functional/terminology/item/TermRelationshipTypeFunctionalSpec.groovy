@@ -156,7 +156,6 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
   ],
   "availableActions": [
     "delete",
-    "softDelete",
     "update",
     "save",
     "show",

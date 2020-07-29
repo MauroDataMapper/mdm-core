@@ -126,7 +126,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     @Override
     void verifyDefaultCreationResponse(HttpResponse<Map> response, int count) {
         assert response.body().label == count ? "New Folder (${count})".toString() : 'New Folder'
-        assert response.body().availableActions == ['update', 'delete', 'show']
+        assert response.body().availableActions == ['show', 'update', 'delete']
         assert response.body().readableByEveryone == false
         assert response.body().readableByAuthenticatedUsers == false
     }
