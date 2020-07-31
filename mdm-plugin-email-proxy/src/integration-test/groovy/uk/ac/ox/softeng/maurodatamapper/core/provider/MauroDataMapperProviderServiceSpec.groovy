@@ -35,7 +35,7 @@ class MauroDataMapperProviderServiceSpec extends MdmSpecification {
 
     void 'test modules'() {
         expect:
-        mauroDataMapperProviderService.modulesList.size() == 90
+        mauroDataMapperProviderService.modulesList.size() == 91
         mauroDataMapperProviderService.javaModules.size() == 68
         mauroDataMapperProviderService.allGrailsPluginModules.size() == 22
         mauroDataMapperProviderService.grailsPluginModules.size() == 20
