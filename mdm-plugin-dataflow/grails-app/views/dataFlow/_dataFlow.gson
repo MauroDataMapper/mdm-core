@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataFlow]
+model {
+    DataFlow dataFlow
+}
+
+json {
+    source g.render(dataFlow.source)
+    target g.render(dataFlow.target)
+    diagramLayout dataFlow.diagramLayout
+}

@@ -14,17 +14,16 @@ buildscript {
     }
 }
 
-
 plugins {
     id 'project-report'
+    id 'jacoco'
 }
 
 apply plugin: "idea"
-apply plugin: "war"
-apply plugin: "org.grails.grails-web"
+apply plugin: "org.grails.grails-plugin"
+apply plugin: "org.grails.grails-plugin-publish"
 apply plugin: "org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
-
 
 apply plugin: 'ox.softeng.ox-brc-base'
 apply plugin: 'ox.softeng.ox-brc-artifactory'
@@ -63,7 +62,7 @@ dependencies {
         exclude group: "org.codehaus.groovy", module: "groovy-all"
     }
     compile "org.grails.plugins:async"
-    compile "org.grails.plugins:events"
+    //compile "org.grails:grails-plugin-async"
     compile "org.grails.plugins:hibernate5:$grailsHibernate5Version"
     compile "org.hibernate:hibernate-core"
     compile "org.grails.plugins:views-json:$grailsViewsVersion"
@@ -72,6 +71,9 @@ dependencies {
     compileOnly "io.micronaut:micronaut-inject-groovy"
     console "org.grails:grails-console"
     // Until the fixes are published we need to use our versions of the profiles
+    profile "org.grails.profiles:rest-api-plugin", {
+        transitive false
+    }
     profile "org.grails.profiles:rest-api", {
         transitive false
     }
@@ -81,6 +83,7 @@ dependencies {
     profile "org.grails.profiles:base:4.1.0.OXBRC", {
         transitive false
     }
+    provided "org.springframework.boot:spring-boot-starter-tomcat"
     runtime "org.glassfish.web:el-impl:2.1.2-b03"
     integrationTestRuntimeOnly "com.h2database:h2"
     runtime "org.apache.tomcat:tomcat-jdbc"
@@ -89,6 +92,8 @@ dependencies {
     testCompile "org.mockito:mockito-core"
     testCompile "io.micronaut:micronaut-http-client"
     testCompile "org.grails:grails-web-testing-support"
+    //testCompile "org.grails:grails-plugin-testing"
+    testCompile "io.micronaut:micronaut-http-client"
 }
 
 bootRun {
@@ -102,54 +107,32 @@ bootRun {
     System.properties.each {prop ->
         systemProperty prop.key, prop.value
     }
-
     String springProfilesActive = 'spring.profiles.active'
     systemProperty springProfilesActive, System.getProperty(springProfilesActive)
-    systemProperty 'user.dir', projectDir
 }
+// enable if you wish to package this plugin as a standalone application
+bootJar.enabled = false
+grailsPublish {
+    // TODO: Provide values here
+    user = ''
+    key = ''
+    githubSlug = 'MauroDataMapper/mdm-core'
+    license {
+        name = 'Apache-2.0'
+    }
+    title = "Mauro Data Mapper DataFlow Plugin"
+    desc = '''The DataModel domain, services and controllers for the MauroDataMapper backend.'''
+    developers = [olliefreeman: 'Oliver Freeman', jameswelch: "James Welch",]
+    //issueTrackerUrl = 'https://maurodatamapper.myjetbrains.com' TODO
+}
+
 
 grails {
     plugins {
         compile project(':mdm-core')
-        compile project(':mdm-plugin-authentication-basic')
         compile project(':mdm-plugin-datamodel')
-        compile project(':mdm-plugin-terminology')
-        //        compile project(':mdm-plugin-email-proxy')
-        compile project(':mdm-security')
-        compile project(':mdm-plugin-dataflow')
     }
 }
 
 apply from: 'dependencies.gradle'
 apply from: "${rootDir}/gradle/additions/grails.gradle"
-
-String testCategory = ''
-
-if (System.getProperty('grails.testCategory')) {
-    testCategory = System.getProperty('grails.testCategory')
-
-}
-
-
-integrationTest {
-    //    failFast true
-    useJUnit {
-        if(testCategory){
-            includeCategories "uk.ac.ox.softeng.maurodatamapper.test.junit.${testCategory}".toString()
-        }else {
-            excludeCategories 'uk.ac.ox.softeng.maurodatamapper.test.junit.TroubleTest'
-        }
-    }
-    if(testCategory){
-        binaryResultsDirectory.set(file("${project.testResultsDir}/${testCategory}/binary"))
-        reports {
-            junitXml.destination = file("${project.testResultsDir}/${testCategory}")
-
-        }
-        mergeTestReports.reportOn(file("${project.testResultsDir}/${testCategory}/binary"))
-    }
-}
-
-artifactoryPublish {
-    skip = true
-}

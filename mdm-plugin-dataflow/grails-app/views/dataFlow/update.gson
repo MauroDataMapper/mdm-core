@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    DataFlow dataFlow
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.fullDataFlow(dataFlow: dataFlow, userSecurityPolicyManager: userSecurityPolicyManager)

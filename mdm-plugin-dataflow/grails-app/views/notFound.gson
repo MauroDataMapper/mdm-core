@@ -1,0 +1,13 @@
+response.status NOT_FOUND.value()
+
+model {
+    String path
+    String resource
+    String id
+}
+
+json {
+    path path
+    if (resource) resource resource
+    if (id) id id
+}

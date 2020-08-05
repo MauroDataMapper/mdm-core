@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels as DataFlowBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels as DataModelBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
@@ -104,6 +105,9 @@ class BootStrap implements SecurityDefinition {
                     TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService)
                     TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder)
                     TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder)
+                    DataFlowBootstrapModels.buildAndSaveSourceDataModel(messageSource, folder)
+                    DataFlowBootstrapModels.buildAndSaveTargetDataModel(messageSource, folder)
+                    DataFlowBootstrapModels.buildAndSaveSampleDataFlow(messageSource)
                 }
             }
         }
