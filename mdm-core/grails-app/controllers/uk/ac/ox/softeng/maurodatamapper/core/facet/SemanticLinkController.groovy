@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 
+import grails.gorm.transactions.Transactional
+
 class SemanticLinkController extends EditLoggingController<SemanticLink> {
 
     static responseFormats = ['json', 'xml']
@@ -83,5 +85,23 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
     protected void deleteResource(SemanticLink resource) {
         serviceDeleteResource(resource)
         semanticLinkService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+    }
+
+    @Transactional
+    @Override
+    protected boolean validateResource(SemanticLink instance, String view) {
+        // Ensure only assignable link types are constructed via the controller
+        if (!instance.linkType.isAssignable) {
+            instance.errors.rejectValue('linkType',
+                                        'semanticlink.linktype.must.be.assignable.message',
+                                        ['linkType', SemanticLink, instance.linkType].toArray(),
+                                        'Property [{0}] of class [{1}] with value [{2}] cannot be used')
+        }
+        if (instance.hasErrors() || !instance.validate()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
+        }
+        true
     }
 }

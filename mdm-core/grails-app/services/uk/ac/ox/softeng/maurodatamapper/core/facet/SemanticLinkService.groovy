@@ -59,14 +59,24 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
         semanticLink.save(flush: true)
     }
 
-    void delete(SemanticLink semanticLink) {
+    void delete(SemanticLink semanticLink, boolean cleanFromOwner = true) {
         if (!semanticLink) return
 
-        CatalogueItemService service = catalogueItemServices.find {it.handles(semanticLink.catalogueItemDomainType)}
-        if (!service) throw new ApiBadRequestException('SLS01', 'Semantic link removal for catalogue item with no supporting service')
-        service.removeSemanticLinkFromCatalogueItem(semanticLink.catalogueItemId, semanticLink)
+        if (cleanFromOwner) {
+            CatalogueItemService service = catalogueItemServices.find {it.handles(semanticLink.catalogueItemDomainType)}
+            if (!service) throw new ApiBadRequestException('SLS01', 'Semantic link removal for catalogue item with no supporting service')
+            service.removeSemanticLinkFromCatalogueItem(semanticLink.catalogueItemId, semanticLink)
+        }
 
         semanticLink.delete()
+    }
+
+    void deleteAll(List<SemanticLink> semanticLinks, boolean cleanFromOwner = true) {
+        if (cleanFromOwner) {
+            semanticLinks.each {delete(it)}
+        } else {
+            SemanticLink.deleteAll(semanticLinks)
+        }
     }
 
     SemanticLink loadCatalogueItemsIntoSemanticLink(SemanticLink semanticLink) {
@@ -150,6 +160,13 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
     SemanticLink findBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(CatalogueItem sourceCatalogueItem, CatalogueItem targetCatalogueItem,
                                                                             SemanticLinkType linkType) {
         SemanticLink.bySourceCatalogueItemAndTargetCatalogueItemAndLinkType(sourceCatalogueItem, targetCatalogueItem, linkType).get()
+    }
+
+    List<SemanticLink> findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(List<UUID> sourceCatalogueItemIds,
+                                                                                                     List<UUID> targetCatalogueItemIds,
+                                                                                                     SemanticLinkType linkType) {
+        SemanticLink.bySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(sourceCatalogueItemIds,
+                                                                                            targetCatalogueItemIds, linkType).list()
     }
 
     List<SemanticLink> findAllBySourceCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
