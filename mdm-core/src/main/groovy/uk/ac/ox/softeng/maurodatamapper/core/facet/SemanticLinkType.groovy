@@ -32,7 +32,7 @@ enum SemanticLinkType {
 
     SemanticLinkType(String label) {
         this.label = label
-        this.isAssignable = false
+        this.isAssignable = true
     }
 
     SemanticLinkType(String label, boolean isAssignable) {

@@ -91,7 +91,7 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
     @Override
     protected boolean validateResource(SemanticLink instance, String view) {
         // Ensure only assignable link types are constructed via the controller
-        if (!instance.linkType.isAssignable) {
+        if (instance.linkType && !instance.linkType.isAssignable) {
             instance.errors.rejectValue('linkType',
                                         'semanticlink.linktype.must.be.assignable.message',
                                         ['linkType', SemanticLink, instance.linkType].toArray(),
