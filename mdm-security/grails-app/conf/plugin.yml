@@ -1,8 +1,3 @@
 maurodatamapper:
     security:
         public: false
-
-environments:
-    test:
-        name: 'msTest'
-        database.creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS security'
