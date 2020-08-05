@@ -159,10 +159,7 @@ environments:
             dbCreate: create
             url: 'jdbc:h2:mem:${database.name};LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;INIT=${database.creation}'
     development:
-        spring.flyway.enabled: false
         dataSource:
             username: maurodatamapper
             password: MauroDataMapper1234
-            dbCreate: create
-
 ---
