@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test.functional
 
+import io.micronaut.http.HttpStatus
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemFacetFunctionalSpec
@@ -71,5 +72,58 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends CatalogueItemF
   "label": "Some interesting summary",
   "summaryMetadataType": "NUMBER"
 }'''
+    }
+
+    Map getSummaryMetadataReportJson() {
+        [
+            name                  : 'Sex Example',
+            description           : 'Value Distribution',
+            label                 : 'Some interesting summary',
+            summaryMetadataType   : 'MAP',
+            summaryMetadataReports: [
+                [
+                    reportDate : '2020-01-29T07:31:57.519Z',
+                    reportValue : '{\"Female\":20562,\"Male\":17407,\"Unknown\":604}'
+                ],
+                [
+                    reportDate : '2020-02-29T07:31:57.519Z',
+                    reportValue : '{\"Female\":19562,\"Male\":18407,\"Unknown\":704}'
+                ],
+                [
+                    reportDate : '2020-03-29T07:31:57.519Z',
+                    reportValue : '{\"Female\":18562,\"Male\":19407,\"Unknown\":804}'
+                ],
+                [
+                    reportDate : '2020-04-29T07:31:57.519Z',
+                    reportValue : '{\"Female\":17562,\"Male\":20407,\"Unknown\":904}'
+                ]
+            ]
+        ]
+    }
+
+    void 'CISM01: test including summaryMetadataReport in summaryMetadata'() {
+        when:
+        def id = createNewItem(summaryMetadataReportJson)
+        GET("${savePath}/${id}", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse(HttpStatus.OK, '''{
+  "id": "${json-unit.matches:id}",
+  "createdBy": "unlogged_user@mdm-core.com",
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "label": "Some interesting summary",
+  "description": "Value Distribution",
+  "summaryMetadataType": "MAP"
+}''')
+        when:
+        GET("${savePath}/${id}/summaryMetadataReports", MAP_ARG, true)
+
+        then:
+        verifyResponse(HttpStatus.OK, response)
+        assert response.body().count == 4
+        assert response.body().items.size() == 4
+
+        cleanup:
+        cleanUpData(id)
     }
 }
