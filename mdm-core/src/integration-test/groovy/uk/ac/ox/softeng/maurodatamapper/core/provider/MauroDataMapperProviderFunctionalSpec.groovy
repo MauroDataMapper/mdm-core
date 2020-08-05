@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.provider
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 
 import static io.micronaut.http.HttpStatus.OK
@@ -28,6 +29,7 @@ import static io.micronaut.http.HttpStatus.OK
  * @see MauroDataMapperProviderController* |   GET   | /api/admin/modules              | Action: modules              |
  * @since 28/10/2019
  */
+@Slf4j
 @Integration
 class MauroDataMapperProviderFunctionalSpec extends BaseFunctionalSpec {
 

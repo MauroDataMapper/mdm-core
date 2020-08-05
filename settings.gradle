@@ -12,4 +12,5 @@ include(
     'mdm-plugin-datamodel',
     'mdm-plugin-authentication-basic',
     'mdm-plugin-terminology',
+    'mdm-plugin-dataflow',
     )

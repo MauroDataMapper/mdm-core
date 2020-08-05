@@ -133,7 +133,7 @@ hibernate:
             provider: org.ehcache.jsr107.EhcacheCachingProvider
             missing_cache_strategy: create
     search:
-        default.indexBase: '/tmp/lucene/plugin/datamodel'
+        default.indexBase: '/tmp/lucene/plugin/terminology'
 
 ---
 dataSource:
@@ -148,6 +148,9 @@ dataSource:
 environments:
     test:
         spring.flyway.enabled: false
+        database:
+            name: 'mptTest'
+            creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS terminology'
         dataSource:
             driverClassName: org.h2.Driver
             dialect: org.hibernate.dialect.H2Dialect

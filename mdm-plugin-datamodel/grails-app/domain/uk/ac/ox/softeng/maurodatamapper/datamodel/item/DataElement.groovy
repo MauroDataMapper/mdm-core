@@ -83,12 +83,10 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     static mapping = {
-        semanticLinks cascade: 'all-delete-orphan'
         summaryMetadata cascade: 'all-delete-orphan'
         dataClass index: 'data_element_data_class_idx' //, cascade: 'none'
         dataType index: 'data_element_data_type_idx', cascade: 'save-update', fetch: 'join'
         model cascade: 'none'
-        breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
     }
 
     static mappedBy = [

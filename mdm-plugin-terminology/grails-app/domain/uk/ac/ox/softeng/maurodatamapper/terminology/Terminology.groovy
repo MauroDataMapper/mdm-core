@@ -73,9 +73,6 @@ class Terminology implements Model<Terminology> {
     static mapping = {
         documentationVersion type: VersionUserType
         folder cascade: 'none'
-        semanticLinks cascade: 'all-delete-orphan'
-        versionLinks cascade: 'all-delete-orphan'
-        breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
         terms cascade: 'all-delete-orphan'
         termRelationshipTypes cascade: 'all-delete-orphan'
     }

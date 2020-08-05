@@ -17,15 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.json
 
+import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import net.javacrumbs.jsonunit.core.Option
+import org.junit.Assert
 
 
 /**
  * @since 28/11/2017
  */
+@Slf4j
 trait ResponseComparer extends JsonComparer {
 
     HttpResponse<String> jsonCapableResponse
@@ -41,9 +44,10 @@ trait ResponseComparer extends JsonComparer {
 
     void verifyResponse(HttpStatus expected, HttpResponse response) {
         try {
-            internalVerifyStatus(expected, response.status)
+            Assert.assertEquals('Failed Response code', expected, response.status())
         } catch (AssertionError error) {
-            log.error('Response Body\n{}\n', response.body())
+            log.warn('', response.status().code, response.status().reason)
+            log.error('Failed Response :: {}[{}]\nResponse Body\n{}\n', response.status().code, response.status().reason, response.body())
             throw error
         }
     }
@@ -56,13 +60,6 @@ trait ResponseComparer extends JsonComparer {
             if (jsonCapableResponse.body()) log.error('Actual JSON\n{}\n', jsonCapableResponse.body())
             assert !jsonCapableResponse.body(), 'Should be no content in the response'
         }
-    }
-
-    private boolean internalVerifyStatus(HttpStatus expected, HttpStatus actual) {
-        if (actual != expected) {
-            log.warn('Failed Response :: {}[{}]', actual.code, actual.reason)
-        }
-        assert actual == expected
     }
 
     private void internalCompareResponseBody(expectedJson, String actualJson, Option... addtlOptions) {

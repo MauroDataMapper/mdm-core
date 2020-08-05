@@ -84,7 +84,6 @@ class TermService extends ModelItemService<Term> {
     void delete(Term term, boolean flush = false) {
         if (!term) return
         Terminology terminology = proxyHandler.unwrapIfProxy(term.terminology) as Terminology
-        terminology.breadcrumbTree = proxyHandler.unwrapIfProxy(terminology.breadcrumbTree) as BreadcrumbTree
         term.terminology = terminology
 
         term.terminology.removeFromTerms(term)

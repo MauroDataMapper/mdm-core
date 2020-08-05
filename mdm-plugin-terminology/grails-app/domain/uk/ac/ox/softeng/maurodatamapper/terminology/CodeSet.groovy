@@ -67,9 +67,6 @@ class CodeSet implements Model<CodeSet> {
     static mapping = {
         documentationVersion type: VersionUserType
         folder cascade: 'none'
-        semanticLinks cascade: 'all-delete-orphan'
-        versionLinks cascade: 'all-delete-orphan'
-        breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
         terms cascade: 'none', index: 'jcstt_term_idx', joinTable: [
             name  : 'join_codeset_to_term',
             key   : 'codeSet_id',

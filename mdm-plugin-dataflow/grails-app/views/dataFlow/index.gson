@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<DataFlow> dataFlowList
+}
+
+json {
+    count dataFlowList instanceof PagedResultList ? ((PagedResultList) dataFlowList).getTotalCount() : dataFlowList?.size() ?: 0
+    items tmpl.dataFlow(dataFlowList ?: [])
+}

@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -83,7 +84,6 @@ class DataClassService extends ModelItemService<DataClass> {
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = proxyHandler.unwrapIfProxy(dataClass.dataModel)
-        dataModel.breadcrumbTree = proxyHandler.unwrapIfProxy(dataModel.breadcrumbTree)
         dataClass.dataModel = dataModel
         if (dataClass.parentDataClass) {
             DataClass parent = dataClass.parentDataClass
@@ -617,5 +617,46 @@ class DataClassService extends ModelItemService<DataClass> {
         }
 
         results
+    }
+
+    void addDataClassIsFromDataClasses(DataClass dataClass, Collection<DataClass> fromDataClasses, User user) {
+        addDataClassesAreFromDataClasses([dataClass], fromDataClasses, user)
+    }
+
+    void addDataClassesAreFromDataClass(Collection<DataClass> dataClasses, DataClass fromDataClass, User user) {
+        addDataClassesAreFromDataClasses(dataClasses, [fromDataClass], user)
+    }
+
+    void addDataClassesAreFromDataClasses(Collection<DataClass> dataClasses, Collection<DataClass> fromDataClasses, User user) {
+        if (!dataClasses || !fromDataClasses) throw new ApiInternalException('DCSXX', 'No DataClasses or FromDataClasses exist to create links')
+        List<SemanticLink> alreadyExistingLinks = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
+            dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
+        dataClasses.each {de ->
+            fromDataClasses.each {fde ->
+                // If no link already exists then add a new one
+                if (!alreadyExistingLinks.any {it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id}) {
+                    setDataClassIsFromDataClass(de, fde, user)
+                }
+            }
+        }
+    }
+
+    void removeDataClassIsFromDataClasses(DataClass dataClass, Collection<DataClass> fromDataClasses) {
+        removeDataClassesAreFromDataClasses([dataClass], fromDataClasses)
+    }
+
+    void removeDataClassesAreFromDataClass(Collection<DataClass> dataClasses, DataClass fromDataClass) {
+        removeDataClassesAreFromDataClasses(dataClasses, [fromDataClass])
+    }
+
+    void removeDataClassesAreFromDataClasses(Collection<DataClass> dataClasses, Collection<DataClass> fromDataClasses) {
+        if (!dataClasses || !fromDataClasses) throw new ApiInternalException('DCSXX', 'No DataClasses or FromDataClasses exist to remove links')
+        List<SemanticLink> links = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
+            dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
+        semanticLinkService.deleteAll(links)
+    }
+
+    void setDataClassIsFromDataClass(DataClass source, DataClass target, User user) {
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
 }

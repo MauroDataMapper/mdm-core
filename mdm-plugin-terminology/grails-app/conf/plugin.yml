@@ -1,5 +1,0 @@
-environments:
-    test:
-        database:
-            name: 'mptTest'
-            creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS terminology'

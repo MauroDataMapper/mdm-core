@@ -117,6 +117,14 @@ class SemanticLink implements CatalogueItemAware, CreatorAware {
             .eq('linkType', linkType)
     }
 
+    static DetachedCriteria<SemanticLink> bySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(List<UUID> sourceCatalogueItemIds,
+        List<UUID> targetCatalogueItemIds,
+        SemanticLinkType linkType) {
+        by().inList('catalogueItemId', sourceCatalogueItemIds)
+            .inList('targetCatalogueItemId',targetCatalogueItemIds)
+            .eq('linkType', linkType)
+    }
+
     static DetachedCriteria<SemanticLink> withFilter(DetachedCriteria<SemanticLink> criteria, Map filters) {
         if (filters.linkType) criteria = criteria.eq('linkType', SemanticLinkType.findForLabel(filters.linkType))
         criteria

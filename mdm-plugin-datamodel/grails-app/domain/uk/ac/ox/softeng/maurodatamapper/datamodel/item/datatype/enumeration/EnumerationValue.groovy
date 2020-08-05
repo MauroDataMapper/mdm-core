@@ -70,10 +70,8 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
         key type: 'text'
         value type: 'text'
         category type: 'text'
-        semanticLinks cascade: 'all-delete-orphan'
         enumerationType index: 'enumeration_value_enumeration_type_idx', fetch: 'join'
         model cascade: 'none'
-        breadcrumbTree cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [:]

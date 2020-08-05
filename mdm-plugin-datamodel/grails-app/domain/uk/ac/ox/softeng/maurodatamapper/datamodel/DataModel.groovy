@@ -87,10 +87,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         folder cascade: 'none'
         dataClasses cascade: 'all-delete-orphan'
         dataTypes cascade: 'all-delete-orphan'
-        semanticLinks cascade: 'all-delete-orphan'
-        versionLinks cascade: 'all-delete-orphan'
         summaryMetadata cascade: 'all-delete-orphan'
-        breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
     }
 
     static mappedBy = [

@@ -123,6 +123,14 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
         // No-op
     }
 
+    Map<String, Object> responseBody() {
+        response.body()
+    }
+
+    String jsonResponseBody() {
+        jsonCapableResponse.body()
+    }
+
     /********** Rest Requests *******/
 
     def <O> HttpResponse<O> GET(String resourceEndpoint, Argument<O> bodyType = MAP_ARG, boolean cleanEndpoint = false) {

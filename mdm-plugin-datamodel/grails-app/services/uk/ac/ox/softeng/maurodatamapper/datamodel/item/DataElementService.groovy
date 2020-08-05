@@ -17,11 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -57,6 +59,7 @@ class DataElementService extends ModelItemService<DataElement> {
     DataTypeService dataTypeService
     SessionFactory sessionFactory
     ClassifierService classifierService
+    SemanticLinkService semanticLinkService
 
     @Override
     DataElement get(Serializable id) {
@@ -393,43 +396,44 @@ class DataElementService extends ModelItemService<DataElement> {
         parent.findDataElement(original.label)
     }
 
-    void addDataElementsAreFromDataElements(Collection<DataElement> sourceElements, Collection<DataElement> targetElements,
-                                            User catalogueUser) {
-        sourceElements.each {se ->
-            addDataElementIsFromDataElements(se, targetElements, catalogueUser)
-        }
+    void addDataElementIsFromDataElements(DataElement dataElement, Collection<DataElement> fromDataElements, User user) {
+        addDataElementsAreFromDataElements([dataElement], fromDataElements, user)
     }
 
-    void addDataElementsAreFromDataElement(Collection<DataElement> sourceElements, DataElement targetElement,
-                                           User catalogueUser) {
-        sourceElements.findAll {se -> !(targetElement.id in se.semanticLinks.collect {it.targetCatalogueItemId})}.each {se ->
-            setCatalogueItemRefinesCatalogueItem(se, targetElement, catalogueUser)
-        }
+    void addDataElementsAreFromDataElement(Collection<DataElement> dataElements, DataElement fromDataElement, User user) {
+        addDataElementsAreFromDataElements(dataElements, [fromDataElement], user)
     }
 
-    void addDataElementIsFromDataElements(DataElement sourceElement, Collection<DataElement> targetElements,
-                                          User catalogueUser) {
-        targetElements.findAll {te -> !(te.id in sourceElement.semanticLinks.collect {it.targetCatalogueItemId})}.each {te ->
-            setCatalogueItemRefinesCatalogueItem(sourceElement, te, catalogueUser)
-        }
-
-    }
-
-    void removeDataElementIsFromDataElements(DataElement sourceElement, Collection<DataElement> targetElements) {
-        List<SemanticLink> links = []
-        links += sourceElement.semanticLinks.findAll {it.targetCatalogueItemId in targetElements.collect {it.id}}
-        links.each {
-            sourceElement.removeFromSemanticLinks(it)
-        }
-    }
-
-    void removeDataElementsAreFromDataElement(Collection<DataElement> sourceElements, DataElement targetElement) {
-        sourceElements.each {sourceElement ->
-            List<SemanticLink> links = []
-            links += sourceElement.semanticLinks.findAll {it.targetCatalogueItemId == targetElement.id}
-            links.each {
-                sourceElement.removeFromSemanticLinks(it)
+    void addDataElementsAreFromDataElements(Collection<DataElement> dataElements, Collection<DataElement> fromDataElements, User user) {
+        if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to create links')
+        List<SemanticLink> alreadyExistingLinks = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
+            dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
+        dataElements.each {de ->
+            fromDataElements.each {fde ->
+                // If no link already exists then add a new one
+                if (!alreadyExistingLinks.any {it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id}) {
+                    setDataElementIsFromDataElement(de, fde, user)
+                }
             }
         }
+    }
+
+    void removeDataElementIsFromDataElements(DataElement dataElement, Collection<DataElement> fromDataElements) {
+        removeDataElementsAreFromDataElements([dataElement], fromDataElements)
+    }
+
+    void removeDataElementsAreFromDataElement(Collection<DataElement> dataElements, DataElement fromDataElement) {
+        removeDataElementsAreFromDataElements(dataElements, [fromDataElement])
+    }
+
+    void removeDataElementsAreFromDataElements(Collection<DataElement> dataElements, Collection<DataElement> fromDataElements) {
+        if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to remove links')
+        List<SemanticLink> links = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
+            dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
+        semanticLinkService.deleteAll(links)
+    }
+
+    void setDataElementIsFromDataElement(DataElement source, DataElement target, User user) {
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
 }

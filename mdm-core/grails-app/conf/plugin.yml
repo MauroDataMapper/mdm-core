@@ -82,9 +82,3 @@ hibernate:
             threadsToLoadObjects: 20
             batchSizeToLoadObjects: 1000
             idFetchSize: -1 # Use postgres default (should load all)
-
-environments:
-    test:
-        database:
-            name: 'mdmTest'
-            creation: 'CREATE SCHEMA IF NOT EXISTS core'

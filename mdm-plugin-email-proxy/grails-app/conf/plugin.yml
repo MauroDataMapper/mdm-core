@@ -1,5 +1,0 @@
-environments:
-    test:
-        database:
-            name: 'mpepTest'
-            creation: 'CREATE SCHEMA IF NOT EXISTS core'

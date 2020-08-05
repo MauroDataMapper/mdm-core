@@ -62,9 +62,6 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
     static mapping = {
         sourceTerm index: 'term_relationship_source_term_idx'
         targetTerm index: 'term_relationship_target_term_idx'
-        semanticLinks cascade: 'all-delete-orphan'
-        model cascade: 'none'
-        breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
     }
 
     static transients = ['aliases', 'model']
