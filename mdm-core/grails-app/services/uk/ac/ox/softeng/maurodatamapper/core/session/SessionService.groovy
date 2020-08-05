@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.session
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 
 import javax.servlet.ServletContext
+import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionEvent
 import javax.servlet.http.HttpSessionListener
@@ -44,16 +45,20 @@ class SessionService implements HttpSessionListener {
     }
 
     boolean isAuthenticatedSession(HttpSession session, String sessionId) {
-        if (isInvalidatedSession(session, sessionId)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
+        if (isInvalidatedSession(session.servletContext, sessionId)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
         retrieveSession(session.servletContext, sessionId).getAttribute('emailAddress')
     }
 
     boolean isInvalidatedSession(HttpSession session) {
-        isInvalidatedSession(session, session.id)
+        isInvalidatedSession(session.servletContext, session.id)
     }
 
-    boolean isInvalidatedSession(HttpSession session, String sessionId) {
-        !getActiveSessionMap(session.servletContext).containsKey(sessionId)
+    boolean isInvalidatedSession(ServletContext servletContext, HttpSession session) {
+        isInvalidatedSession(servletContext, session.id)
+    }
+
+    boolean isInvalidatedSession(ServletContext servletContext, String sessionId) {
+        !isSessionStored(servletContext, sessionId)
     }
 
     String getSessionEmailAddress(HttpSession session) {
@@ -62,7 +67,7 @@ class SessionService implements HttpSessionListener {
 
     void destroySession(HttpSession session) {
         session.invalidate()
-        getActiveSessionMap(session.servletContext).remove(session.id)
+        removeSession(session.servletContext, session.id)
     }
 
     /**
@@ -71,7 +76,11 @@ class SessionService implements HttpSessionListener {
      * @param session
      */
     HttpSession storeSession(HttpSession session) {
-        getActiveSessionMap(session.servletContext).put(session.id, session)
+        storeSession(session.servletContext, session)
+    }
+
+    HttpSession storeSession(ServletContext servletContext, HttpSession session) {
+        getActiveSessionMap(servletContext).put(session.id, session)
     }
 
     /**
@@ -88,6 +97,14 @@ class SessionService implements HttpSessionListener {
         getActiveSessionMap(servletContext).get(id)
     }
 
+    void removeSession(ServletContext servletContext, String id) {
+        getActiveSessionMap(servletContext).remove(id)
+    }
+
+    boolean isSessionStored(ServletContext servletContext, String id) {
+        getActiveSessionMap(servletContext).containsKey(id)
+    }
+
     /**
      * Create a map to store the active sessions and add this service as a listener.
      * Should be called in bootstrap
@@ -97,7 +114,7 @@ class SessionService implements HttpSessionListener {
         servletContext.setAttribute(CONTEXT_PROPERTY_NAME, new HashMap<String, HttpSession>())
     }
 
-    HashMap<String, HttpSession> getActiveSessionMap(ServletContext servletContext) {
+    private static HashMap<String, HttpSession> getActiveSessionMap(ServletContext servletContext) {
         servletContext.getAttribute(CONTEXT_PROPERTY_NAME) as HashMap<String, HttpSession>
     }
 
@@ -110,6 +127,6 @@ class SessionService implements HttpSessionListener {
     @Override
     void sessionDestroyed(HttpSessionEvent event) {
         // This will be called by either our destroySession or by the servlet context auto destroying a session
-        getActiveSessionMap(event.session.servletContext).remove(event.session.id)
+        removeSession(event.session.servletContext, event.session.id)
     }
 }

@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.policy
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -41,9 +42,12 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.compiler.GrailsCompileStatic
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import grails.plugin.cache.GrailsCache
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.grails.plugin.cache.GrailsCacheManager
 import org.springframework.beans.factory.annotation.Autowired
@@ -619,6 +623,12 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                 virtualSecurableResourceGroupRoles.add(new VirtualSecurableResourceGroupRole()
                                                            .forSecurableResource(model)
                                                            .withAccessLevel(readerRole.groupRole))
+
+                // Need to make sure the owning folders are readable
+                virtualSecurableResourceGroupRoles.addAll(buildReadableContainerInheritance(model.folder,
+                                                                                            readerRole.allowedRoles,
+                                                                                            null,
+                                                                                            readerRole.groupRole))
             }
         }
         virtualSecurableResourceGroupRoles
@@ -652,8 +662,51 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                 virtualSecurableResourceGroupRoles.add(new VirtualSecurableResourceGroupRole()
                                                            .forSecurableResource(model)
                                                            .withAccessLevel(readerRole.groupRole))
+
+                // Need to make sure the owning folders are readable
+                virtualSecurableResourceGroupRoles.addAll(buildReadableContainerInheritance(model.folder,
+                                                                                            readerRole.allowedRoles,
+                                                                                            null,
+                                                                                            readerRole.groupRole))
             }
         }
+        virtualSecurableResourceGroupRoles
+    }
+
+    private Set<VirtualSecurableResourceGroupRole> buildReadableContainerInheritance(Container container, Set<GroupRole> accessRoles,
+                                                                                     UserGroup userGroup,
+                                                                                     GroupRole appliedGroupRole) {
+
+        if (!container) return [] as HashSet
+
+        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = accessRoles.collect {igr ->
+            new VirtualSecurableResourceGroupRole()
+                .forSecurableResource(container)
+                .withAccessLevel(igr)
+                .definedByGroup(userGroup)
+                .definedByAccessLevel(appliedGroupRole)
+        }.toSet()
+
+        // Build parents
+        if (container.depth != 0) {
+
+            List<UUID> ids = container.path.split('/').toList().findAll().collect {Utils.toUuid(it)}
+
+            ContainerService containerService = containerServices.find {it.handles(container.domainType)}
+            containerService.getAll(ids).each {c ->
+                virtualSecurableResourceGroupRoles.addAll(accessRoles.collect {igr ->
+                    new VirtualSecurableResourceGroupRole()
+                        .forSecurableResource(c)
+                        .withAccessLevel(igr)
+                        .definedByGroup(userGroup)
+                        .definedByAccessLevel(appliedGroupRole)
+                })
+            }
+
+
+        }
+
+
         virtualSecurableResourceGroupRoles
     }
 
