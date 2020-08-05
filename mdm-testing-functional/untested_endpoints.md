@@ -12,30 +12,11 @@ Controller: classifier
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers/${id}  | Action: show
 
 Controller: codeSet
- |   GET    | /api/codeSets/providers/importers  | Action: importerProviders
- |   GET    | /api/codeSets/providers/exporters  | Action: exporterProviders
  |   POST   | /api/codeSets/import/${importerNamespace}/${importerName}/${importerVersion}  | Action: importModels
  |   POST   | /api/codeSets/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportModels
- |  DELETE  | /api/codeSets/${codeSetId}/readByAuthenticated  | Action: readByAuthenticated
- |   PUT    | /api/codeSets/${codeSetId}/readByAuthenticated  | Action: readByAuthenticated
- |  DELETE  | /api/codeSets/${codeSetId}/readByEveryone  | Action: readByEveryone
- |   PUT    | /api/codeSets/${codeSetId}/readByEveryone  | Action: readByEveryone
- |   PUT    | /api/codeSets/${codeSetId}/newModelVersion  | Action: newModelVersion
- |   PUT    | /api/codeSets/${codeSetId}/newDocumentationVersion  | Action: newDocumentationVersion
- |   PUT    | /api/codeSets/${codeSetId}/finalise  | Action: finalise
- |   POST   | /api/folders/${folderId}/codeSets  | Action: save
- |   GET    | /api/folders/${folderId}/codeSets  | Action: index
  |  DELETE  | /api/codeSets/${codeSetId}/terms/${termId}  | Action: alterTerms
  |   PUT    | /api/codeSets/${codeSetId}/terms/${termId}  | Action: alterTerms
- |   PUT    | /api/codeSets/${codeSetId}/folder/${folderId}  | Action: changeFolder
- |   GET    | /api/codeSets/${codeSetId}/diff/${otherModelId}  | Action: diff
- |   PUT    | /api/folders/${folderId}/codeSets/${codeSetId}  | Action: changeFolder
  |   GET    | /api/codeSets/${codeSetId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportModel
- |   GET    | /api/codeSets  | Action: index
- |  DELETE  | /api/codeSets  | Action: deleteAll
- |  DELETE  | /api/codeSets/${id}  | Action: delete
- |   PUT    | /api/codeSets/${id}  | Action: update
- |   GET    | /api/codeSets/${id}  | Action: show
 
 Controller: dataClass
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
@@ -46,6 +27,14 @@ Controller: dataClass
 Controller: dataElement
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${dataElementId}/suggestLinks/${otherDataModelId}  | Action: suggestLinks
  |   GET    | /api/dataModels/${dataModelId}/dataTypes/${dataTypeId}/dataElements  | Action: index
+
+Controller: dataFlow
+ |   GET    | /api/dataFlows/providers/importers  | Action: importerProviders
+ |   GET    | /api/dataFlows/providers/exporters  | Action: exporterProviders
+ |   POST   | /api/dataFlows/import/${importerNamespace}/${importerName}/${importerVersion}  | Action: importDataFlows
+ |   POST   | /api/dataFlows/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportDataFlows
+ |   POST   | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/import/${importerNamespace}/${importerName}/${importerVersion}  | Action: importDataFlow
+ |   GET    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportDataFlow
 
 Controller: dataModel
  |  DELETE  | /api/dataModels/${dataModelId}/dataClasses/clean  | Action: deleteAllUnusedDataClasses

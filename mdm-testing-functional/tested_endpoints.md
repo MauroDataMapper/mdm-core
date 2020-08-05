@@ -63,6 +63,26 @@ Controller: classifier
  |   PUT    | /api/classifiers/${id}  | Action: update
  |   GET    | /api/classifiers/${id}  | Action: show
 
+Controller: codeSet
+ |   GET    | /api/codeSets/providers/importers  | Action: importerProviders
+ |   GET    | /api/codeSets/providers/exporters  | Action: exporterProviders
+ |  DELETE  | /api/codeSets/${codeSetId}/readByAuthenticated  | Action: readByAuthenticated
+ |   PUT    | /api/codeSets/${codeSetId}/readByAuthenticated  | Action: readByAuthenticated
+ |  DELETE  | /api/codeSets/${codeSetId}/readByEveryone  | Action: readByEveryone
+ |   PUT    | /api/codeSets/${codeSetId}/readByEveryone  | Action: readByEveryone
+ |   PUT    | /api/codeSets/${codeSetId}/newModelVersion  | Action: newModelVersion
+ |   PUT    | /api/codeSets/${codeSetId}/newDocumentationVersion  | Action: newDocumentationVersion
+ |   PUT    | /api/codeSets/${codeSetId}/finalise  | Action: finalise
+ |   POST   | /api/folders/${folderId}/codeSets  | Action: save
+ |   GET    | /api/folders/${folderId}/codeSets  | Action: index
+ |   PUT    | /api/codeSets/${codeSetId}/folder/${folderId}  | Action: changeFolder
+ |   GET    | /api/codeSets/${codeSetId}/diff/${otherModelId}  | Action: diff
+ |   PUT    | /api/folders/${folderId}/codeSets/${codeSetId}  | Action: changeFolder
+ |   GET    | /api/codeSets  | Action: index
+ |  DELETE  | /api/codeSets/${id}  | Action: delete
+ |   PUT    | /api/codeSets/${id}  | Action: update
+ |   GET    | /api/codeSets/${id}  | Action: show
+
 Controller: dataClass
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses  | Action: save
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses  | Action: index
@@ -77,6 +97,15 @@ Controller: dataClass
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${id}  | Action: show
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${otherDataModelId}/${otherDataClassId}  | Action: copyDataClass
 
+ Controller: dataClassComponent
+ |   POST   | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents  | Action: save
+ |   GET    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents  | Action: index
+ |  DELETE  | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${id}  | Action: delete
+ |   PUT    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${id}  | Action: update
+ |   GET    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${id}  | Action: show
+ |  DELETE  | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/${type}/${dataClassId}  | Action: alterDataClasses
+ |   PUT    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/${type}/${dataClassId}                                                        | Action: alterDataClasses
+
 Controller: dataElement
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements  | Action: save
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements  | Action: index
@@ -84,6 +113,23 @@ Controller: dataElement
  |   PUT    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${id}  | Action: update
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${id}  | Action: show
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${otherDataModelId}/${otherDataClassId}/${dataElementId}  | Action: copyDataElement
+
+ Controller: dataElementComponent
+ |   POST   | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/dataElementComponents  | Action: save
+ |   GET    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/dataElementComponents  | Action: index
+ |  DELETE  | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/dataElementComponents/${id}  | Action: delete
+ |   PUT    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/dataElementComponents/${id}  | Action: update
+ |   GET    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/dataElementComponents/${id}  | Action: show
+ |  DELETE  | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/dataElementComponents/${dataElementComponentId}/${type}/${dataElementId}  | Action: alterDataElements
+ |   PUT    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/dataElementComponents/${dataElementComponentId}/${type}/${dataElementId} | Action: alterDataElements
+
+ Controller: dataFlow
+ |   PUT    | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/diagramLayout  | Action: updateDiagramLayout
+ |   POST   | /api/dataModels/${dataModelId}/dataFlows  | Action: save
+ |   GET    | /api/dataModels/${dataModelId}/dataFlows  | Action: index
+ |  DELETE  | /api/dataModels/${dataModelId}/dataFlows/${id}  | Action: delete
+ |   PUT    | /api/dataModels/${dataModelId}/dataFlows/${id}  | Action: update
+ |   GET    | /api/dataModels/${dataModelId}/dataFlows/${id}  
 
 Controller: dataModel
  |   GET    | /api/dataModels/providers/defaultDataTypeProviders  | Action: defaultDataTypeProviders
