@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -57,6 +58,7 @@ import java.time.ZoneOffset
 
 @Slf4j
 @Transactional
+@SuppressWarnings('unused')
 class DataModelService extends ModelService<DataModel> {
 
     DataTypeService dataTypeService
@@ -737,7 +739,7 @@ class DataModelService extends ModelService<DataModel> {
                 List<DataModel> existingModels = findAllByLabel(dataModel.label)
                 existingModels.each {existing ->
                     log.debug('Setting DataModel as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseDataModel(existing, catalogueUser)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser)
                     setDataModelIsNewDocumentationVersionOfDataModel(dataModel, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
@@ -768,5 +770,9 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         dataModel
+    }
+
+    void setDataModelIsFromDataModel(DataModel source, DataModel target, User user) {
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
 }
