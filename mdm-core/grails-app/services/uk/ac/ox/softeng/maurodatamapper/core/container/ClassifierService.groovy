@@ -239,6 +239,7 @@ class ClassifierService implements ContainerService<Classifier> {
     }
 
     void checkClassifiers(User catalogueUser, def classifiedItem) {
+        if (!classifiedItem.classifiers) return
         Set<Classifier> classifiers = [] as HashSet
         classifiers.addAll(classifiedItem.classifiers ?: [])
 
