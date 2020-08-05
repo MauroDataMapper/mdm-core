@@ -65,9 +65,7 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     }
 
     static mapping = {
-        semanticLinks cascade: 'all-delete-orphan'
         terminology index: 'term_relationship_type_terminology_idx', cascade: 'all-delete-orphan'
-        breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
     }
 
     static mappedBy = [

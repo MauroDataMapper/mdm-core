@@ -89,9 +89,7 @@ class Term implements ModelItem<Term, Terminology> {
             key   : 'term_id',
             column: 'codeSet_id'
         ]
-        semanticLinks cascade: 'all-delete-orphan'
         terminology index: 'term_terminology_idx', cascade: 'all-delete-orphan'
-        breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
     }
 
     static mappedBy = [

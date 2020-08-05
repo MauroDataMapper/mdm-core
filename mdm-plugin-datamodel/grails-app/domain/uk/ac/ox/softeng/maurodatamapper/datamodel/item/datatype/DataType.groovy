@@ -77,10 +77,8 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
 
     static mapping = {
         dataElements cascade: 'delete,lock,refresh,evict,replicate'
-        semanticLinks cascade: 'all-delete-orphan'
         summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_type_data_model_idx', cascade: 'none'
-        breadcrumbTree cascade: 'all-delete-orphan', fetch: 'join'
     }
 
     static mappedBy = [

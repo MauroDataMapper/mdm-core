@@ -84,7 +84,6 @@ class DataClassService extends ModelItemService<DataClass> {
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = proxyHandler.unwrapIfProxy(dataClass.dataModel)
-        dataModel.breadcrumbTree = proxyHandler.unwrapIfProxy(dataModel.breadcrumbTree)
         dataClass.dataModel = dataModel
         if (dataClass.parentDataClass) {
             DataClass parent = dataClass.parentDataClass
