@@ -55,10 +55,6 @@ class SummaryMetadataReport implements CreatorAware {
         SummaryMetadata.simpleName
     }
 
-    def beforeValidate() {
-        if (this.createdBy == null) this.createdBy = summaryMetadata.createdBy
-    }
-
     String getEditLabel() {
         "Summary Metadata Report:${reportDate}"
     }
