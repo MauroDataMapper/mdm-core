@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -49,8 +50,8 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     void setupDomainData() {
         log.debug('Setting up DataElementServiceSpec')
-
-        dataModel = new DataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
+        dataModel = new DataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))

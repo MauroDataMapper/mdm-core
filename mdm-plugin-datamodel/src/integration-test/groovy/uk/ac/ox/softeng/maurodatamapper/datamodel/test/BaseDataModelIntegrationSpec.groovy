@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.AdminService
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -54,7 +55,8 @@ abstract class BaseDataModelIntegrationSpec extends BaseIntegrationSpec {
     }
 
     DataModel buildSimpleDataModel() {
-        DataModel simpleDataModel = new DataModel(createdByUser: editor, label: 'Simple Test DataModel', folder: testFolder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
+        DataModel simpleDataModel = new DataModel(createdByUser: editor, label: 'Simple Test DataModel', folder: testFolder, authority: testAuthority)
 
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: editor.emailAddress, label: 'test classifier simple')
         checkAndSave(classifier)
@@ -82,8 +84,9 @@ abstract class BaseDataModelIntegrationSpec extends BaseIntegrationSpec {
     }
 
     DataModel buildComplexDataModel() {
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
         DataModel dataModel = new DataModel(createdByUser: admin, label: 'Complex Test DataModel', organisation: 'brc', author: 'admin person',
-                                            folder: testFolder)
+                                            folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: editor.emailAddress, label: 'test classifier')
         Classifier classifier1 = Classifier.findOrCreateWhere(createdBy: editor.emailAddress, label: 'test classifier2')

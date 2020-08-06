@@ -11,5 +11,5 @@ json {
     if (terminology.deleted) deleted terminology.deleted
     if (terminology.author) author terminology.author
     if (terminology.organisation) organisation terminology.organisation
-
+    authority g.render(terminology.authority)
 }

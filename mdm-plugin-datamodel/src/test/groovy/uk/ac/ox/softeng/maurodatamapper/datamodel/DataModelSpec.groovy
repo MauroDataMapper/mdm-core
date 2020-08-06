@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -43,7 +43,9 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
     @Override
     DataModel createValidDomain(String label) {
-        new DataModel(folder: testFolder, label: label, type: DataModelType.DATA_STANDARD, createdByUser: editor)
+        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
+        checkAndSave(testAuthority)
+        new DataModel(folder: testFolder, label: label, type: DataModelType.DATA_STANDARD, createdByUser: editor, authority: testAuthority)
     }
 
     @Override
@@ -103,7 +105,8 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         domain.count() == 1
 
         when:
-        DataModel other = new DataModel(createdBy: editor.emailAddress, label: domain.label, folder: testFolder)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
+        DataModel other = new DataModel(createdBy: editor.emailAddress, label: domain.label, folder: testFolder, authority: testAuthority)
         checkAndSave(other)
 
         then:
@@ -113,8 +116,9 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
     void 'simple diff of label'() {
         when:
-        def dm1 = new DataModel(label: 'test model 1', folder: testFolder)
-        def dm2 = new DataModel(label: 'test model 2', folder: testFolder)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
+        def dm1 = new DataModel(label: 'test model 1', folder: testFolder, authority: testAuthority)
+        def dm2 = new DataModel(label: 'test model 2', folder: testFolder, authority: testAuthority )
         Diff<DataModel> diff = dm1.diff(dm2)
 
         then:
@@ -136,7 +140,8 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         domain.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'integer'))
 
         when: 'adding empty dataclass'
-        domain.addToDataClasses(createdByUser: admin, label: 'emptyclass')
+        Authority testAuthority = Authority.findByLabel('Test Authority')
+        domain.addToDataClasses(createdByUser: admin, label: 'emptyclass', authority: testAuthority)
 
         then:
         checkAndSave(domain)
@@ -270,8 +275,9 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
     void 'diff in class'() {
         when:
-        def dm1 = new DataModel(label: 'test model', folder: testFolder)
-        def dm2 = new DataModel(label: 'test model', folder: testFolder)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
+        def dm1 = new DataModel(label: 'test model', folder: testFolder, authority: testAuthority)
+        def dm2 = new DataModel(label: 'test model', folder: testFolder, authority: testAuthority)
         dm1.addToDataClasses(new DataClass(label: 'class 1'))
         Diff<DataModel> diff = dm1.diff(dm2)
         then:
@@ -288,7 +294,8 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
     void 'diff in element'() {
         when:
-        def dm1 = new DataModel(label: 'test model', createdByUser: admin, folder: testFolder)
+        Authority testAuthority = Authority.findByLabel('Test Authority')
+        def dm1 = new DataModel(label: 'test model', createdByUser: admin, folder: testFolder, authority: testAuthority)
         def dt = new PrimitiveType(createdBy: admin.emailAddress, label: 'string')
         dm1.addToDataTypes(dt)
 

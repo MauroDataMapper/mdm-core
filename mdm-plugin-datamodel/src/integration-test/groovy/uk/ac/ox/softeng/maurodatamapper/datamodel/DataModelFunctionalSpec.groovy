@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -625,7 +625,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
     "documentationVersion": "1.0.0",
-    "finalised": false
+    "finalised": false,
+    "authority": "$json-unit.matches:authority}"
   },
   "exportMetadata": {
     "exportedBy": "Unlogged User",
@@ -660,7 +661,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
     "documentationVersion": "1.0.0",
-    "finalised": false
+    "finalised": false,
+    "authority": "$json-unit.matches:authority}"
   },
   "exportMetadata": {
     "exportedBy": "Unlogged User",
@@ -738,6 +740,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             finalised                      : true,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: true,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -829,6 +832,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -851,6 +855,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -873,6 +878,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -895,6 +901,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -957,6 +964,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1468,6 +1476,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1481,6 +1490,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1767,6 +1777,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1813,6 +1824,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1879,6 +1891,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1892,6 +1905,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1919,6 +1933,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -1932,6 +1947,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',

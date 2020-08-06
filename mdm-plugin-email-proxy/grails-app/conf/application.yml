@@ -22,6 +22,9 @@
 maurodatamapper:
     security:
         public: true
+    authority:
+        name: 'Mauro Data Mapper'
+        url: http://localhost
 grails:
     profile: rest-api-plugin
     codegen:

@@ -17,10 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
-import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
+import uk.ac.ox.softeng.maurodatamapper.security.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
 
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,8 +35,6 @@ class AuthorityController extends EditLoggingController<Authority> /* implements
 
     AuthorityService authorityService
 
-    ApiPropertyService apiPropertyService
-
     AuthorityController() {
         super(Authority)
     }
@@ -43,7 +42,25 @@ class AuthorityController extends EditLoggingController<Authority> /* implements
     @Override
     protected Authority createResource() {
         Authority instance = super.createResource() as Authority
+        instance.label = authorityService.defaultAuthority()
         instance
+    }
+
+    @Override
+    protected Authority saveResource(Authority resource) {
+        Authority authority = super.saveResource(resource)
+        authority
+    }
+
+    protected Classifier updateResource(Classifier resource) {
+        Set<String> changedProperties = resource.getDirtyPropertyNames()
+        Classifier classifier = super.updateResource(resource) as Classifier
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(classifier,
+                    changedProperties,
+                    currentUser)
+        }
+        classifier
     }
 
     @Override
@@ -53,21 +70,12 @@ class AuthorityController extends EditLoggingController<Authority> /* implements
 
     @Override
     protected List<Authority> listAllReadableResources(Map params) {
-        if (params.containsKey('authorityId')) {
-            return authorityService.findAllByAuthority(Utils.toUuid(params.authorityId), params)
-        }
-        authorityService.findAllByAuthority(params)
+        authorityService.list()
     }
 
     @Override
     void serviceDeleteResource(Authority resource) {
         authorityService.delete(resource)
-    }
-
-    @Override
-    protected Authority saveResource(Authority resource) {
-        Authority authority = super.saveResource(resource)
-        authority
     }
 
 }

@@ -17,16 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
+import grails.core.GrailsApplication
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 
 import grails.gorm.transactions.Transactional
 
-import java.security.NoSuchAlgorithmException
-import java.time.OffsetDateTime
-
 @Transactional
 class AuthorityService {
+    GrailsApplication grailsApplication
 
     Authority get(Serializable id) {
         Authority.get(id)
@@ -40,17 +38,8 @@ class AuthorityService {
         Authority.count()
     }
 
-    void delete(Serializable id) {
-        delete(get(id))
-    }
-
-    void delete(Authority authority) {
-        Authority.disabled = true
-    }
-
-    List<Authority> findAllByAuthority(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
-        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(CatalogueUser)
-        ids ? CatalogueUser.withFilter(pagination, CatalogueUser.byIdInList(ids)).list(pagination) : []
+    Authority getDefaultAuthority(){
+        return Authority.findByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name'))
     }
 
 }

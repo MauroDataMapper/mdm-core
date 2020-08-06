@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -43,8 +43,8 @@ class EnumerationValueServiceSpec extends CatalogueItemServiceSpec implements Se
     def setup() {
         log.debug('Setting up EnumerationValueServiceSpec Unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
-
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder)
+        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
+        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
         checkAndSave(dataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))

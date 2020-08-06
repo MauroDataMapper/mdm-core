@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -48,7 +48,8 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         mockArtefact(DataElementService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder)
+        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
+        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
         checkAndSave(dataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
@@ -175,7 +176,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         when:
         DataClass vsimple = new DataClass(label: 'vsimple', createdByUser: editor)
         dataModel.addToDataClasses(vsimple)
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder)
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
 
         then:
         checkAndSave(dataModel)
@@ -220,7 +221,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         DataElement element = new DataElement(createdByUser: admin, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
         content.addToDataElements(element)
         dataModel.addToDataClasses(content)
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder)
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
 
         expect:
         checkAndSave(dataModel)
@@ -269,7 +270,8 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'test copying complex dataclass'() {
         given:
         DataClass complex = dataModel.dataClasses.find {it.label == 'Unit grandparent'}
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder)
+
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
 
         expect:
         checkAndSave(copyModel)

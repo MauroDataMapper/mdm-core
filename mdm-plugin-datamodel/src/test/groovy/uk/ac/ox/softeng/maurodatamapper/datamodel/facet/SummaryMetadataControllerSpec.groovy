@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -43,7 +44,9 @@ class SummaryMetadataControllerSpec extends ResourceControllerSpec<SummaryMetada
         mockDomains(Folder, DataModel, SummaryMetadata, SummaryMetadataReport)
         log.debug('Setting up summary metadata controller unit')
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
-        dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'))
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost")
+        checkAndSave(testAuthority)
+        dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
         checkAndSave dataModel
 
         dataModel.

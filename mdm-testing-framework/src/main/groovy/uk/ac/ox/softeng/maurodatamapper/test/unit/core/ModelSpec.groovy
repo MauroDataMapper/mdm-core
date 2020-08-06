@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.unit.core
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
@@ -40,6 +40,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
         super.setValidDomainValues()
         domain.folder = Folder.findByLabel('catalogue')
         domain.documentationVersion = Version.from('1')
+        domain.authority = new Authority(label: 'Test Authority', url: "https://localhost")
     }
 
     @Override
@@ -47,6 +48,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
         super.verifyDomainConstraints(domain)
         domain.folder == Folder.findByLabel('catalogue')
         domain.documentationVersion == Version.from('1')
+        domain.authority = new Authority(label: 'Test Authority', url: "https://localhost")
         assert domain.modelType
         domain.finalised != null
         domain.deleted != null

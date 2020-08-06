@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
@@ -29,10 +30,18 @@ class Authority implements InformationAware, CreatorAware {
     UUID id
     URL url
 
+    static hasMany = {
+        models: Model
+    }
+
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
         label unique : true
         url unique: true
     }
 
+    @Override
+    String getDomainType() {
+        return null
+    }
 }

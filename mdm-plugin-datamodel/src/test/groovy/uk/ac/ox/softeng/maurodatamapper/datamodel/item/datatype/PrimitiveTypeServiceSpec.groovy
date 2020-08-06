@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -52,8 +53,8 @@ class PrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<P
         mockDomains(Classifier, Folder, Annotation, BreadcrumbTree, Edit, Metadata, ReferenceFile, SemanticLink,
                     DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder)
+        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
+        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
         checkAndSave(dataModel)
 
         PrimitiveType primitiveType = new PrimitiveType(createdByUser: editor, label: 'varchar')

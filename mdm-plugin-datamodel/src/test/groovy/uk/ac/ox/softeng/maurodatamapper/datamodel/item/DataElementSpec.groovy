@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -40,7 +41,8 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
     def setup() {
         log.debug('Setting up DataClassSpec unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder)
+        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
+        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
 
         checkAndSave(dataSet)
         assert DataModel.count() == 1

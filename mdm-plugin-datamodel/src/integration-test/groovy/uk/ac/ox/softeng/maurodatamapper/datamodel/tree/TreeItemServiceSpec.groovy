@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.tree
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -60,16 +60,16 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         simpleDataModel = buildSimpleDataModel()
 
         checkAndSave(new Folder(label: 'empty folder', createdBy: editor.emailAddress))
-
+        checkAndSave(new Authority(label: 'Test Authority', url: 'https://localhost'))
         Classifier testClassifier = new Classifier(label: 'integration test classifier', createdByUser: admin)
         testClassifier.addToChildClassifiers(new Classifier(label: 'empty classifier', createdByUser: admin))
         checkAndSave(testClassifier)
 
-        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'tdm', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'tdm', type: DataModelType.DATA_ASSET, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
             .addToClassifiers(testClassifier)
-        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'dm2', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'dm2', type: DataModelType.DATA_ASSET, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
             .addToClassifiers(testClassifier)
-        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'dm3', type: DataModelType.DATA_STANDARD, folder: testFolder,
+        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'dm3', type: DataModelType.DATA_STANDARD, folder: testFolder, authority: Authority.findByLabel('Test Authority'),
                                              deleted: true)
             .addToClassifiers(testClassifier)
 

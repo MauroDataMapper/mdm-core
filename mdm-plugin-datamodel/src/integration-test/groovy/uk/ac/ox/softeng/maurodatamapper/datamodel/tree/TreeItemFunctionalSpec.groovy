@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.tree
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -55,8 +56,9 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert Folder.count() == 0
         assert DataModel.count() == 0
         folder = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
         DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
-                                            folder: folder).save(flush: true)
+                                            folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
         otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: 'functionalTest@test.com',
                                          folder: folder).save(flush: true).id
@@ -105,7 +107,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "authority" : "${json-unit.matches:authority}"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -117,7 +120,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "authority": "${json-unit.matches:authority}" 
       }
     ]
   }
@@ -210,7 +214,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": true,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "authority": "${json-unit.matches:authority}"
       }
     ]
   }
@@ -260,7 +265,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": true,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "authority": "${json-unit.matches:authority}"
       }
     ]
   }
@@ -314,7 +320,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "authority": "${json-unit.matches:authority}"
       }
     ]
   }

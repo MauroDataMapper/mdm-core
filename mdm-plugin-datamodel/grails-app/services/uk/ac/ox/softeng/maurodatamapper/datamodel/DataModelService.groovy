@@ -446,7 +446,8 @@ class DataModelService extends ModelService<DataModel> {
         DataModel copy = new DataModel(author: original.author,
                                        organisation: original.organisation, modelType: original.modelType,
                                        finalised: false, deleted: false, documentationVersion: copyVersion,
-                                       folder: original.folder
+                                       folder: original.folder,
+                                       authority: original.authority
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier)

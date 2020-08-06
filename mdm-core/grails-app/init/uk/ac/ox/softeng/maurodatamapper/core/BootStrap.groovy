@@ -18,12 +18,14 @@
 package uk.ac.ox.softeng.maurodatamapper.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
+import uk.ac.ox.softeng.maurodatamapper.security.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -45,6 +47,7 @@ class BootStrap {
     GrailsApplication grailsApplication
     ApiPropertyService apiPropertyService
     SessionService sessionService
+    AuthorityService authorityService
 
     @Autowired
     MessageSource messageSource
@@ -70,10 +73,18 @@ class BootStrap {
 
         log.info('Deployment tmp dir: {}', tmpDir)
 
-
         sessionService.initialiseToContext(servletContext)
         loadApiProperties(tmpDir)
         configureEmailers(grailsApplication.config)
+
+
+        Authority.withNewTransaction {
+            if (!authorityService.getDefaultAuthority()) {
+                Authority authority = new Authority(label: grailsApplication.config.getProperty('maurodatamapper.authority.name').toString(),
+                                                    url: grailsApplication.config.getProperty('maurodatamapper.authority.url').toURL())
+                checkAndSave(messageSource, authority)
+            }
+        }
 
         environments {
             development {
@@ -151,4 +162,5 @@ class BootStrap {
             BootStrapUser
         }
     }
+
 }

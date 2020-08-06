@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -39,7 +40,10 @@ class BootstrapModels {
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder) {
-        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder)
+        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
+        checkAndSave(messageSource, testAuthority)
+
+        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: testAuthority)
 
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
                                                              readableByAuthenticatedUsers: true)
@@ -68,8 +72,11 @@ class BootstrapModels {
     }
 
     static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder) {
+        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
+        checkAndSave(messageSource, testAuthority)
+
         DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: COMPLEX_DATAMODEL_NAME, organisation: 'brc', author: 'admin person',
-                                            folder: folder)
+                                            folder: folder, authority: testAuthority)
         checkAndSave(messageSource, dataModel)
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
                                                              readableByAuthenticatedUsers: true)

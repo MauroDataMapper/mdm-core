@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -38,7 +39,8 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
     def setup() {
         log.debug('Setting up DataClassSpec unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder)
+        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
+        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
         dataSet.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
         dataSet.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'integer'))
 
@@ -181,7 +183,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
     void 'test unique label naming for direct child dataclasses of 2 datamodels'() {
         given:
         setValidDomainValues()
-        DataModel dataModel = new DataModel(label: 'another mode', createdByUser: editor, folder: testFolder)
+        DataModel dataModel = new DataModel(label: 'another mode', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
 
         expect: 'domain is currently valid'
         checkAndSave(domain)

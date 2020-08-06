@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -76,8 +77,9 @@ class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
         assert Folder.count() == 0
         assert DataModel.count() == 0
         folder = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
         DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
-                                            folder: folder).save(flush: true)
+                                            folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
         otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: 'functionalTest@test.com',
                                          folder: folder).save(flush: true).id
@@ -321,6 +323,7 @@ class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
         POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folder.id.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
@@ -376,6 +379,7 @@ class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
         POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folder.id.toString(),
+            authority                      : Authority.findByLabel('Test Authority'),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',

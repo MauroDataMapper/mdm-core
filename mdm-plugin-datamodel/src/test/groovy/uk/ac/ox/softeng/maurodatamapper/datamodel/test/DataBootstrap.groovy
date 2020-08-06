@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -45,7 +46,10 @@ trait DataBootstrap {
     abstract User getAdmin()
 
     DataModel buildSimpleDataModel() {
-        DataModel simpleDataModel = new DataModel(createdByUser: editor, label: 'Simple Test DataModel', folder: testFolder)
+        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
+        checkAndSave(testAuthority)
+
+        DataModel simpleDataModel = new DataModel(createdByUser: editor, label: 'Simple Test DataModel', folder: testFolder, authority: testAuthority)
 
         simpleDataModel.addToClassifiers(Classifier.findOrCreateWhere(createdBy: editor.emailAddress, label: 'test classifier simple'))
 
@@ -65,8 +69,11 @@ trait DataBootstrap {
     }
 
     DataModel buildComplexDataModel() {
+        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
+        checkAndSave(testAuthority)
+
         DataModel dataModel = new DataModel(createdByUser: admin, label: 'Complex Test DataModel', organisation: 'brc', author: 'admin person',
-                                            folder: testFolder)
+                                            folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: editor.emailAddress, label: 'test classifier')
 
