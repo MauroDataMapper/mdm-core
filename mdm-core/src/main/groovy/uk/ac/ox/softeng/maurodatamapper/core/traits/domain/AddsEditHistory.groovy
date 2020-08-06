@@ -19,12 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import groovy.transform.CompileStatic
+import grails.compiler.GrailsCompileStatic
 
 /**
  * @since 01/12/2017
  */
-@CompileStatic
+@GrailsCompileStatic
 trait AddsEditHistory {
 
     public static final List<String> DIRTY_PROPERTY_NAMES_TO_IGNORE = ['version', 'lastUpdated']

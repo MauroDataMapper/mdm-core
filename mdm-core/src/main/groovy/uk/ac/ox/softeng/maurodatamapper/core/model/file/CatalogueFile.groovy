@@ -19,15 +19,15 @@ package uk.ac.ox.softeng.maurodatamapper.core.model.file
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 
+import grails.compiler.GrailsCompileStatic
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
-import groovy.transform.CompileStatic
 import org.springframework.web.multipart.MultipartFile
 
 import java.nio.file.Files
 import java.nio.file.Path
 
-@CompileStatic
+@GrailsCompileStatic
 trait CatalogueFile implements EditHistoryAware {
 
     @BindUsing({

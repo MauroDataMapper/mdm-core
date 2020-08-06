@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.util
 
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
+import groovy.transform.CompileStatic
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,6 +30,7 @@ import java.lang.management.RuntimeMXBean
 /**
  * @since 15/03/2018
  */
+@CompileStatic
 class Utils {
 
     static String timeTaken(long start) {
@@ -38,9 +40,9 @@ class Utils {
     static String getTimeString(long duration) {
         StringBuilder sb = new StringBuilder()
 
-        long secs = duration / 1000
+        long secs = (duration / 1000) as long
         long ms = duration - (secs * 1000)
-        long mins = secs / 60
+        long mins = (secs / 60) as long
         secs = secs % 60
 
         if (mins > 0) {

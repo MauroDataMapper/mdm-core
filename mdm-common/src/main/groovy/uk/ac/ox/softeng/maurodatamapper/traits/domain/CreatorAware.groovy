@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
 
@@ -29,6 +30,7 @@ import java.time.OffsetDateTime
  * @since 25/09/2017
  */
 @SelfType(GormEntity)
+@GrailsCompileStatic
 trait CreatorAware {
 
     OffsetDateTime dateCreated

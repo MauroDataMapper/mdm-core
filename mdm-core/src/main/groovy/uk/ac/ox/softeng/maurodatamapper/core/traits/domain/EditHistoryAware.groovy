@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
+import grails.compiler.GrailsCompileStatic
 import groovy.transform.CompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
@@ -29,7 +30,7 @@ import org.grails.datastore.gorm.GormEntity
  * @since 26/09/2017
  */
 @SelfType(GormEntity)
-@CompileStatic
+@GrailsCompileStatic
 trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
 
     void addToEditsTransactionally(User createdBy, String description) {

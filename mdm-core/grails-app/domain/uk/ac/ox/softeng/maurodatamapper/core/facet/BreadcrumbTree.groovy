@@ -21,13 +21,17 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.Breadcrumb
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 
 @Slf4j
+@GrailsCompileStatic
 class BreadcrumbTree {
 
     UUID id
@@ -37,7 +41,7 @@ class BreadcrumbTree {
     Boolean finalised
     Breadcrumb breadcrumb
     Boolean topBreadcrumbTree
-    GormEntity domainEntity
+    CatalogueItem domainEntity
     BreadcrumbTree parent
 
     String treeString
@@ -51,16 +55,16 @@ class BreadcrumbTree {
     static constraints = {
         finalised nullable: true
         domainType blank: false
-        label blank: false, nullable: true, validator: {val, obj ->
+        label blank: false, nullable: true, validator: {String val, BreadcrumbTree obj ->
             if (val) return true
             if (!val && obj.domainEntity && !obj.domainEntity.label) return true
             ['default.null.message']
         }
         treeString blank: true
-        parent nullable: true, validator: {val, obj ->
+        parent nullable: true, validator: {BreadcrumbTree val, BreadcrumbTree obj ->
             obj.topBreadcrumbTree || val ? true : ['default.null.message']
         }
-        domainId nullable: true, unique: true, validator: {val, obj ->
+        domainId nullable: true, unique: true, validator: {UUID val, BreadcrumbTree obj ->
             if (val) return true
             if (!val && obj.domainEntity && !obj.domainEntity.ident()) return true
             ['default.null.message']
@@ -99,7 +103,7 @@ class BreadcrumbTree {
         this.domainType = modelItem.domainType
         this.topBreadcrumbTree = false
         if (modelItem.pathParent) {
-            BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(modelItem.pathParent)
+            BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(modelItem.pathParent as CatalogueItem)
             parentTree.addToChildren(this)
         }
     }
@@ -113,7 +117,7 @@ class BreadcrumbTree {
             markDirty('label', domainEntity.label, getOriginalValue('label'))
         }
         checkTree()
-        children.each {
+        children?.each {
             it.beforeValidate()
         }
     }
@@ -172,13 +176,19 @@ class BreadcrumbTree {
     }
 
     void update(CatalogueItem catalogueItem) {
-        if (catalogueItem.pathParent) {
-            BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(catalogueItem.pathParent)
-            if (parent != parentTree) {
-                if (parent) parent.removeFromChildren(this)
-                parentTree.addToChildren(this)
-            } else if (catalogueItem.pathParent.instanceOf(ModelItem) && !parent.matchesPath(catalogueItem.pathParent.path)) {
-                parent.update(catalogueItem.pathParent)
+
+        if (catalogueItem.instanceOf(PathAware)) {
+
+            PathAware pathAware = catalogueItem as PathAware
+
+            if (pathAware.pathParent && pathAware.pathParent.instanceOf(CatalogueItem)) {
+                BreadcrumbTree parentTree = findOrCreateBreadcrumbTree(pathAware.pathParent as CatalogueItem)
+                if (parent != parentTree) {
+                    if (parent) parent.removeFromChildren(this)
+                    parentTree.addToChildren(this)
+                } else if (pathAware.pathParent.instanceOf(ModelItem) && !parent.matchesPath((pathAware.pathParent as ModelItem).path)) {
+                    parent.update((pathAware.pathParent as ModelItem))
+                }
             }
         }
         buildTree()
@@ -196,7 +206,14 @@ class BreadcrumbTree {
 
     static BreadcrumbTree findOrCreateBreadcrumbTree(CatalogueItem catalogueItem) {
         BreadcrumbTree breadcrumbTree = findBreadcrumbTree(catalogueItem)
-        if (!breadcrumbTree) breadcrumbTree = new BreadcrumbTree(catalogueItem)
+        if (!breadcrumbTree) {
+            if (catalogueItem.instanceOf(Model)) {
+                breadcrumbTree = new BreadcrumbTree(catalogueItem as Model)
+            }
+            if (catalogueItem.instanceOf(ModelItem)) {
+                breadcrumbTree = new BreadcrumbTree(catalogueItem as ModelItem)
+            }
+        }
         breadcrumbTree
     }
 

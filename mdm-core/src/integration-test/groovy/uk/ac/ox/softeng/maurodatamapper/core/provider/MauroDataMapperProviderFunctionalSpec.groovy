@@ -371,6 +371,38 @@ class MauroDataMapperProviderFunctionalSpec extends BaseFunctionalSpec {
   {
     "name": "jdk.zipfs",
     "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "openj9.cuda",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "openj9.dataaccess",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "openj9.dtfj",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "openj9.gpu",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "openj9.jvm",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "openj9.sharedclasses",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "openj9.traceformat",
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "name": "openj9.zosconditionhandling",
+    "version": "${json-unit.matches:version}"
   }
 ]''')
     }

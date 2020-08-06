@@ -30,14 +30,18 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.search.Lucene
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.DetachedCriteria
+import org.grails.datastore.gorm.GormEntity
 import grails.plugins.hibernate.search.HibernateSearchApi
+import groovy.transform.SelfType
 import groovy.util.logging.Slf4j
 
 /**
  * @since 06/12/2019
  */
 @Slf4j
+@SelfType(GormEntity)
 trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistoryAware, Diffable<D>,
     CatalogueItemClassifierAware,
     MetadataAware,

@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
+import grails.compiler.GrailsCompileStatic
+import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
 
 /**
@@ -25,7 +27,11 @@ import org.grails.datastore.gorm.GormEntity
  * typed to the actual class rather than PathAware
  * @since 18/09/2017
  */
+@SelfType(GormEntity)
+@GrailsCompileStatic
 trait PathAware {
+
+    public static final String UNSET = 'UNSET'
 
     String path
     Integer depth
@@ -43,10 +49,10 @@ trait PathAware {
             if (ge.instanceOf(PathAware)) {
                 PathAware parent = ge as PathAware
                 depth = parent.depth + 1
-                path = "${parent.getPath()}/${parent.getId()}"
+                path = "${parent.getPath()}/${parent.getId() ?: UNSET}"
             } else {
                 depth = 1
-                path = "/${ge.ident().toString()}"
+                path = "/${ge.ident()?.toString() ?: UNSET}"
             }
         } else {
             depth = 0
@@ -56,7 +62,7 @@ trait PathAware {
     }
 
     String getPath() {
-        if (!path || path.contains('null')) buildPath()
+        if (!path || path.contains(UNSET)) buildPath()
         path
     }
 

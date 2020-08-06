@@ -27,6 +27,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
+import groovy.transform.SelfType
+import org.grails.datastore.gorm.GormEntity
 import org.grails.datastore.gorm.query.criteria.AbstractDetachedCriteria
 
 import java.time.OffsetDateTime
@@ -36,6 +38,7 @@ import java.time.OffsetDateTime
  *
  * @since 04/11/2019
  */
+@SelfType(GormEntity)
 trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableResource, Comparable<D>, VersionLinkAware {
 
     Folder folder
