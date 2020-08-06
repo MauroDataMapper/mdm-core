@@ -17,10 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.core.search.AbstractCatalogueItemSearchService
+import uk.ac.ox.softeng.maurodatamapper.core.search.CatalogueItemSearchDomainProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
@@ -30,48 +32,28 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.Enum
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchparamfilter.DataModelTypeFilter
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
-class SearchService extends AbstractCatalogueItemSearchService {
+class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
 
     PaginatedLuceneResult<ModelItem> findAllByDataModelIdByLuceneSearch(UUID dataModelId, SearchParams searchParams, Map pagination = [:]) {
-        findAllModelItemsByOwningIdsByLuceneSearch([dataModelId], searchParams, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataModelId], searchParams, pagination)
     }
 
     PaginatedLuceneResult<ModelItem> findAllByDataClassIdByLuceneSearch(UUID dataClassId, SearchParams searchParams, Map pagination = [:]) {
-        findAllModelItemsByOwningIdsByLuceneSearch([dataClassId], searchParams, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataClassId], searchParams, pagination)
     }
 
     @Override
-    List<Class<ModelItem>> getDomainsToSearch(SearchParams searchParams) {
-
-        if (searchParams.domainTypes) {
-            List<Class<ModelItem>> domainsToSearch = []
-
-            if (DataClass.simpleName in searchParams.domainTypes) {
-                domainsToSearch.add DataClass
-            }
-            if (DataElement.simpleName in searchParams.domainTypes) {
-                domainsToSearch.add DataElement
-            }
-            if (ReferenceType.simpleName in searchParams.domainTypes) {
-                domainsToSearch.add ReferenceType
-            }
-            if (EnumerationType.simpleName in searchParams.domainTypes) {
-                domainsToSearch.add EnumerationType
-            }
-            if (PrimitiveType.simpleName in searchParams.domainTypes) {
-                domainsToSearch.add PrimitiveType
-            }
-            if (EnumerationValue.simpleName in searchParams.domainTypes) {
-                domainsToSearch.add EnumerationValue
-            }
-
-            return domainsToSearch
-        }
-        [DataClass, DataElement, ReferenceType, EnumerationType, PrimitiveType, EnumerationValue] as List<Class<ModelItem>>
+    Set<Class<ModelItem>> getDomainsToSearch() {
+        (getSearchableCatalogueItemDomains() - [DataModel]) as HashSet<Class<ModelItem>>
     }
 
     @Override
-    List<Class<SearchParamFilter>> getSearchParamFilters() {
-        super.getSearchParamFilters() + [DataModelTypeFilter] as List<Class<SearchParamFilter>>
+    Set<Class<SearchParamFilter>> getSearchParamFilters() {
+        super.getSearchParamFilters() + [DataModelTypeFilter] as HashSet<Class<SearchParamFilter>>
+    }
+
+    @Override
+    Set<Class<CatalogueItem>> getSearchableCatalogueItemDomains() {
+        [DataModel, DataClass, DataElement, ReferenceType, EnumerationType, PrimitiveType, EnumerationValue] as HashSet<Class<CatalogueItem>>
     }
 }

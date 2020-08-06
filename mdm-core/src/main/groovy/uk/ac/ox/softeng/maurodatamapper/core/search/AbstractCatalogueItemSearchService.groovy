@@ -1,7 +1,24 @@
+/*
+ * Copyright 2020 University of Oxford
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifierFilterFilter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifiersFilter
@@ -20,11 +37,11 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 @GrailsCompileStatic
-abstract class AbstractCatalogueItemSearchService {
+abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
-    abstract List<Class<ModelItem>> getDomainsToSearch(SearchParams searchParams)
+    abstract Set<Class<K>> getDomainsToSearch()
 
-    List<Class<SearchParamFilter>> getSearchParamFilters() {
+    Set<Class<SearchParamFilter>> getSearchParamFilters() {
         [
             UpdatedBeforeFilter,
             UpdatedAfterFilter,
@@ -32,15 +49,24 @@ abstract class AbstractCatalogueItemSearchService {
             CreatedAfterFilter,
             ClassifiersFilter,
             ClassifierFilterFilter
-        ] as List<Class<SearchParamFilter>>
+        ] as HashSet<Class<SearchParamFilter>>
     }
 
-    PaginatedLuceneResult<ModelItem> findAllModelItemsByOwningIdsByLuceneSearch(List<UUID> owningIds, SearchParams searchParams,
-                                                                                Map pagination = [:]) {
+    Set<Class<K>> getFilteredDomainsToSearch(SearchParams searchParams) {
+        Set<Class<K>> allDomains = getDomainsToSearch()
+        if (!searchParams.domainTypes) return allDomains
 
+        allDomains.findAll {domainClass ->
+            domainClass.simpleName in searchParams.domainTypes
+        }
+    }
+
+    PaginatedLuceneResult<K> findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(List<UUID> owningIds,
+                                                                                  SearchParams searchParams,
+                                                                                  Map pagination = [:]) {
         Closure additional = null
 
-        List<Class<SearchParamFilter>> searchParamFilters = getSearchParamFilters()
+        Set<Class<SearchParamFilter>> searchParamFilters = getSearchParamFilters()
 
         searchParamFilters.each {f ->
             SearchParamFilter filter = f.getDeclaredConstructor().newInstance()
@@ -52,7 +78,7 @@ abstract class AbstractCatalogueItemSearchService {
                 }
             }
         }
-        List<Class<ModelItem>> domainsToSearch = getDomainsToSearch(searchParams)
+        Set<Class<K>> domainsToSearch = getFilteredDomainsToSearch(searchParams)
 
         if (!domainsToSearch) {
             throw new ApiBadRequestException('SSXX', 'Owning IDs search attempted with filtered domains provided but no domains match this search ' +
@@ -61,7 +87,7 @@ abstract class AbstractCatalogueItemSearchService {
 
         long start = System.currentTimeMillis()
 
-        List<ModelItem> modelItems
+        List<K> modelItems
 
         if (searchParams.labelOnly) {
             log.debug('Performing lucene label search')
@@ -71,26 +97,30 @@ abstract class AbstractCatalogueItemSearchService {
             modelItems = performStandardSearch(domainsToSearch, owningIds, searchParams.searchTerm, additional)
         }
 
-        PaginatedLuceneResult<ModelItem> results = PaginatedLuceneResult.paginateFullResultSet(modelItems, pagination)
+        PaginatedLuceneResult<K> results = PaginatedLuceneResult.paginateFullResultSet(modelItems, pagination)
 
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}")
         results
     }
 
     @CompileDynamic
-    protected List<ModelItem> performLabelSearch(List<Class<ModelItem>> domainsToSearch, List<UUID> owningIds, String searchTerm,
-                                                 @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+    protected List<K> performLabelSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
+                                         @DelegatesTo(HibernateSearchApi) Closure additional = null) {
 
-        domainsToSearch.collect {domain ->
+        List<K> allFound = domainsToSearch.collect {domain ->
             domain.luceneLabelSearch(domain, searchTerm, owningIds, [:], additional).results
-        }.flatten().findAll {!(it.id in owningIds)}
+        }.flatten() as List<K>
+        // Remove null entries and any which have an owning id, as we only want those inside the owners
+        allFound.findAll {!(it.id in owningIds)}
     }
 
     @CompileDynamic
-    protected List<ModelItem> performStandardSearch(List<Class<ModelItem>> domainsToSearch, List<UUID> owningIds, String searchTerm,
-                                                    @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-        domainsToSearch.collect {domain ->
+    protected List<K> performStandardSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
+                                            @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+        List<K> allFound = domainsToSearch.collect {domain ->
             domain.luceneStandardSearch(domain, searchTerm, owningIds, [:], additional).results
-        }.flatten().findAll {!(it.id in owningIds)}
+        }.flatten() as List<K>
+        // Remove null entries and any which have an owning id, as we only want those inside the owners
+        allFound.findAll {!(it.id in owningIds)} as List<K>
     }
 }

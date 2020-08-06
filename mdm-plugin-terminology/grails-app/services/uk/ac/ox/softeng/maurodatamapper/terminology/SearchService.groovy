@@ -17,28 +17,27 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.AbstractCatalogueItemSearchService
+import uk.ac.ox.softeng.maurodatamapper.core.search.CatalogueItemSearchDomainProvider
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 
-class SearchService extends AbstractCatalogueItemSearchService {
+class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
 
     PaginatedLuceneResult<ModelItem> findAllByTerminologyIdByLuceneSearch(UUID terminologyId, SearchParams searchParams, Map pagination = [:]) {
-        findAllModelItemsByOwningIdsByLuceneSearch([terminologyId], searchParams, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([terminologyId], searchParams, pagination)
     }
 
     @Override
-    List<Class<ModelItem>> getDomainsToSearch(SearchParams searchParams) {
+    Set<Class<ModelItem>> getDomainsToSearch() {
+        [Term]
+    }
 
-        if (searchParams.domainTypes) {
-            List<Class<ModelItem>> domainsToSearch = []
-            if (Term.simpleName in searchParams.domainTypes) {
-                domainsToSearch.add Term
-            }
-        }
-        return [Term]
+    @Override
+    Set<Class<CatalogueItem>> getSearchableCatalogueItemDomains() {
+        [Term, Terminology] as HashSet<Class<CatalogueItem>>
     }
 }
