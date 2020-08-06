@@ -95,6 +95,7 @@ class Utils {
     }
 
     static UUID toUuid(Serializable id) {
+        if (!id) return null
         id instanceof UUID ? id : toUuid(id.toString())
     }
 
