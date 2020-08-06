@@ -25,7 +25,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.SearchService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.web.servlet.mvc.GrailsParameterMap
@@ -38,7 +37,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     DataModelService dataModelService
 
-    SearchService searchService
+    SearchService mdmPluginDataModelSearchService
 
     DataClassController() {
         super(DataClass)
@@ -70,9 +69,14 @@ class DataClassController extends CatalogueItemController<DataClass> {
         searchParams.searchTerm = searchParams.searchTerm ?: params.search
         params.max = params.max ?: searchParams.max ?: 10
         params.offset = params.offset ?: searchParams.offset ?: 0
+        params.sort = params.sort ?: searchParams.sort ?: 'label'
+        if (searchParams.order) {
+            params.order = searchParams.order
+        }
 
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataClassIdByLuceneSearch(Utils.toUuid(params.dataClassId),
-                                                                                                   searchParams, params)
+        PaginatedLuceneResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataClassIdByLuceneSearch(params.dataClassId,
+                                                                                                                     searchParams,
+                                                                                                                     params)
         respond result
     }
 

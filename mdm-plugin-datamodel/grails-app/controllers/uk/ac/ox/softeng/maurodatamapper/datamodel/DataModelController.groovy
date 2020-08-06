@@ -47,7 +47,7 @@ class DataModelController extends ModelController<DataModel> {
     ]
 
     DataModelService dataModelService
-    SearchService searchService
+    SearchService mdmPluginDataModelSearchService
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
@@ -172,9 +172,13 @@ class DataModelController extends ModelController<DataModel> {
         searchParams.searchTerm = searchParams.searchTerm ?: params.search
         params.max = params.max ?: searchParams.max ?: 10
         params.offset = params.offset ?: searchParams.offset ?: 0
+        params.sort = params.sort ?: searchParams.sort ?: 'label'
+        if (searchParams.order) {
+            params.order = searchParams.order
+        }
 
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(params.dataModelId,
-                                                                                                   searchParams, params)
+        PaginatedLuceneResult<ModelItem> result = mdmPluginDataModelSearchService.findAllByDataModelIdByLuceneSearch(params.dataModelId,
+                                                                                                                     searchParams, params)
         respond result
     }
 

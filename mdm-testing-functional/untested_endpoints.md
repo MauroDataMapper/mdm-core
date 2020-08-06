@@ -19,8 +19,6 @@ Controller: codeSet
  |   GET    | /api/codeSets/${codeSetId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportModel
 
 Controller: dataClass
- |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
- |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/content  | Action: content
  |   GET    | /api/dataModels/${dataModelId}/allDataClasses  | Action: all
 
@@ -40,8 +38,6 @@ Controller: dataModel
  |  DELETE  | /api/dataModels/${dataModelId}/dataClasses/clean  | Action: deleteAllUnusedDataClasses
  |  DELETE  | /api/dataModels/${dataModelId}/dataTypes/clean  | Action: deleteAllUnusedDataTypes
  |   GET    | /api/folders/${folderId}/dataModels  | Action: index
- |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
- |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
  |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherDataModelId}  | Action: suggestLinks
  |  DELETE  | /api/dataModels  | Action: deleteAll
 

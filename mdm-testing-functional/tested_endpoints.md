@@ -96,6 +96,8 @@ Controller: dataClass
  |   PUT    | /api/dataModels/${dataModelId}/dataClasses/${id}  | Action: update
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${id}  | Action: show
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${otherDataModelId}/${otherDataClassId}  | Action: copyDataClass
+ |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
+ |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
 
  Controller: dataClassComponent
  |   POST   | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents  | Action: save
@@ -155,6 +157,8 @@ Controller: dataModel
  |  DELETE  | /api/dataModels/${id}  | Action: delete
  |   PUT    | /api/dataModels/${id}  | Action: update
  |   GET    | /api/dataModels/${id}  | Action: show
+ |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
+ |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
 
 Controller: dataType
  |   POST   | /api/dataModels/${dataModelId}/dataTypes  | Action: save

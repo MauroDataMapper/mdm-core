@@ -35,7 +35,7 @@ class TermController extends CatalogueItemController<Term> {
     CodeSetService codeSetService
     TerminologyService terminologyService
 
-    SearchService searchService
+    SearchService mdmPluginTerminologySearchService
 
     TermController() {
         super(Term)
@@ -51,9 +51,14 @@ class TermController extends CatalogueItemController<Term> {
         searchParams.searchTerm = searchParams.searchTerm ?: params.search
         params.max = params.max ?: searchParams.max ?: 10
         params.offset = params.offset ?: searchParams.offset ?: 0
-        params.sort = params.sort ?: 'code'
+        params.sort = params.sort ?: searchParams.sort ?: 'code'
+        if (searchParams.order) {
+            params.order = searchParams.order
+        }
 
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByTerminologyIdByLuceneSearch(params.terminologyId, searchParams, params)
+        PaginatedLuceneResult<ModelItem> result = mdmPluginTerminologySearchService.findAllByTerminologyIdByLuceneSearch(params.terminologyId,
+                                                                                                                         searchParams,
+                                                                                                                         params)
 
         respond result
     }

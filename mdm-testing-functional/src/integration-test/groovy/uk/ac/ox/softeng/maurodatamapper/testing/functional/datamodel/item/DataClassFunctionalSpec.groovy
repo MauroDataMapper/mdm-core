@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -26,6 +25,8 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * <pre>
@@ -37,6 +38,9 @@ import io.micronaut.http.HttpResponse
  *  |  GET     | /api/dataModels/${dataModelId}/dataClasses/${id}  | Action: show
  *
  *  |  POST    | /api/dataModels/${dataModelId}/dataClasses/${otherDataModelId}/${otherDataClassId}  | Action: copyDataClass
+ *
+ *  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
+ *  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassController
  */
@@ -57,7 +61,12 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
     @Transactional
     @Override
     String getExpectedTargetId() {
-        DataClass.byDataModelIdAndLabel(Utils.toUuid(complexDataModelId), 'parent').get().id.toString()
+        getDataClassIdByLabel 'parent'
+    }
+
+    @Transactional
+    String getDataClassIdByLabel(String label) {
+        DataClass.byDataModelIdAndLabel(Utils.toUuid(complexDataModelId), label).get().id.toString()
     }
 
     @Override
@@ -186,6 +195,102 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         assert body.lastUpdated
         assert body.maxMultiplicity == -1
         assert body.minMultiplicity == 1
+    }
+
+    void 'S01 : test searching for metadata "mdk1" in empty dataclass'() {
+        given:
+        def term = 'mdk1'
+        def id = getDataClassIdByLabel('emptyclass')
+
+        when: 'not logged in'
+        GET("$id/search?searchTerm=$term")
+
+        then:
+        verifyNotFound(response, getComplexDataModelId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        GET("$id/search?searchTerm=$term")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+    }
+
+    void 'S02 : test searching for metadata "mdk1" in content dataclass'() {
+        given:
+        def term = 'mdk1'
+        def id = getDataClassIdByLabel('content')
+
+        when: 'not logged in'
+        GET("$id/search?searchTerm=$term")
+
+        then:
+        verifyNotFound(response, getComplexDataModelId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        GET("$id/search?searchTerm=$term")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'DataElement'
+        responseBody().items.first().label == 'ele1'
+        responseBody().items.first().breadcrumbs.size() == 2
+    }
+
+    void 'S03 : test searching for label "ele*" in content dataclass'() {
+        given:
+        def term = 'ele*'
+        def id = getDataClassIdByLabel('content')
+
+        when: 'not logged in'
+        GET("$id/search?searchTerm=$term")
+
+        then:
+        verifyNotFound(response, getComplexDataModelId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        GET("$id/search?searchTerm=$term&sort=label")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items[0].domainType == 'DataElement'
+        responseBody().items[0].label == 'ele1'
+        responseBody().items[0].breadcrumbs.size() == 2
+        responseBody().items[1].domainType == 'DataElement'
+        responseBody().items[1].label == 'element2'
+        responseBody().items[1].breadcrumbs.size() == 2
+    }
+
+    void 'S04 : test searching for label "ele*" in content dataclass using post'() {
+        given:
+        def term = 'ele*'
+        def id = getDataClassIdByLabel('content')
+
+        when: 'not logged in'
+        POST("$id/search", [searchTerm: term])
+
+        then:
+        verifyNotFound(response, getComplexDataModelId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST("$id/search", [searchTerm: term, sort: 'label'])
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items[0].domainType == 'DataElement'
+        responseBody().items[0].label == 'ele1'
+        responseBody().items[0].breadcrumbs.size() == 2
+        responseBody().items[1].domainType == 'DataElement'
+        responseBody().items[1].label == 'element2'
+        responseBody().items[1].breadcrumbs.size() == 2
     }
 
     /*
@@ -407,67 +512,6 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
 '''
     }
 
-    void 'test searching for metadata "mdk1" in content dataclass'() {
-        given:
-        def term = 'mdk1'
-        def id = DataClass.findByLabel('content').id
 
-        when: 'not logged in'
-        RestResponse response = restGet("$id/search?search={search}", [search: term])
-
-        then:
-        verifyUnauthorised(response)
-
-        when: 'logged in as normal user'
-        loginEditor()
-        response = restGet("$id/search?search={search}", [search: term])
-
-        then:
-        verifyResponse OK, response, '''{
-  "count": 1,
-  "items": [
-    {
-      "domainType": "DataElement",
-      "id": "${json-unit.matches:id}",
-      "label": "ele1",
-      "breadcrumbs": [
-        {
-          "domainType": "DataModel",
-          "finalised": false,
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel"
-        },
-        {
-          "domainType": "DataClass",
-          "id": "${json-unit.matches:id}",
-          "label": "content"
-        }
-      ]
-    }
-  ]
-}'''
-    }
-
-    void 'test searching for metadata "mdk1" in empty dataclass'() {
-        given:
-        def term = 'mdk1'
-        def id = DataClass.findByLabel('emptyclass').id
-
-        when: 'not logged in'
-        RestResponse response = restGet("$id/search?search={search}", [search: term])
-
-        then:
-        verifyUnauthorised(response)
-
-        when: 'logged in as normal user'
-        loginEditor()
-        response = restGet("$id/search?search={search}", [search: term])
-
-        then:
-        verifyResponse OK, response, '''{
-  "count": 0,
-  "items": []
-}'''
-    }
     */
 }

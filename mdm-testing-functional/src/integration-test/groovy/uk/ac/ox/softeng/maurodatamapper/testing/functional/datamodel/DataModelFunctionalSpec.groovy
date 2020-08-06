@@ -69,6 +69,9 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  POST    | /api/dataModels/import/${importerNamespace}/${importerName}/${importerVersion}                 | Action: importDataModels
  *  |  POST    | /api/dataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                 | Action: exportDataModels
  *  |  GET     | /api/dataModels/${dataModelId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportDataModel
+ *
+ *  |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
+ *  |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelController
  */
@@ -1850,301 +1853,353 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         removeValidIdObject(id, NOT_FOUND)
     }
 
+
+    void 'S01 : test searching for label "emptyclass" in complex model'() {
+        given:
+        def term = 'emptyclass'
+
+        when: 'not logged in'
+        GET("${getComplexDataModelId()}/search?searchTerm=${term}")
+
+        then:
+        verifyNotFound(response, getComplexDataModelId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        GET("${getComplexDataModelId()}/search?searchTerm=${term}")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.size() == 1
+        responseBody().items.first().label == 'emptyclass'
+        responseBody().items.first().domainType == 'DataClass'
+        responseBody().items.first().breadcrumbs.size() == 1
+    }
+
+    void 'S02 : test searching for label "emptyclass" in simple model'() {
+        given:
+        def term = 'emptyclass'
+
+        when: 'not logged in'
+        GET("${getSimpleDataModelId()}/search?searchTerm=${term}")
+
+        then:
+        verifyNotFound(response, getSimpleDataModelId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        GET("${getSimpleDataModelId()}/search?searchTerm=${term}")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+    }
+
+    void 'S03 : test searching for label "c*" in complex model'() {
+        given:
+        def term = 'c*'
+
+        when: 'not logged in'
+        GET("${getComplexDataModelId()}/search?searchTerm=${term}")
+
+        then:
+        verifyNotFound(response, getComplexDataModelId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        GET("${getComplexDataModelId()}/search?searchTerm=${term}")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 4
+        responseBody().items.size() == 4
+        responseBody().items[0].label == 'child'
+        responseBody().items[0].domainType == 'DataClass'
+        responseBody().items[1].label == 'child'
+        responseBody().items[1].domainType == 'DataElement'
+        responseBody().items[2].label == 'child'
+        responseBody().items[2].domainType == 'ReferenceType'
+        responseBody().items[3].label == 'content'
+        responseBody().items[3].domainType == 'DataClass'
+    }
+
+    void 'S04 : test searching for label "c*" in complex model using post'() {
+        given:
+        def term = 'c*'
+
+        when: 'not logged in'
+        POST("${getComplexDataModelId()}/search", [searchTerm: term, sort: 'label'])
+
+        then:
+        verifyNotFound(response, getComplexDataModelId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST("${getComplexDataModelId()}/search", [
+            searchTerm : term,
+            sort       : 'label',
+            domainTypes: ['DataClass'],
+        ])
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.size() == 2
+        responseBody().items[0].label == 'child'
+        responseBody().items[0].domainType == 'DataClass'
+        responseBody().items[1].label == 'content'
+        responseBody().items[1].domainType == 'DataClass'
+    }
+
     /*
-
-            void 'test searching for label "emptyclass" in complex model'() {
+            void 'test deleting multiple models'() {
                 given:
-                def term = 'emptyclass'
+                def idstoDelete = []
+                def response
+                loginEditor()
+                (1..4).each {n ->
+                    response = post('') {
+                        json {
+                            folder = Folder.findByLabel('Test Folder').id.toString()
+                            label = "Functional Test Model ${n}"
+                        }
+                    }
+                    verifyResponse CREATED, response
+                    idstoDelete << response.json.id
+                }
+                logout()
 
-                when: 'not logged in'
-                RestResponse GET(" $   { getComplexDataModelId()
-            }
+                when:
+                loginEditor()
+                response = delete('') {
+                    json {
+                        ids = idstoDelete
+                    }
+                }
 
-            /  search ? search = {search} " , [ search: term ] )
+                then:
+                verifyUnauthorised response
 
-            then :
+                when:
+                loginAdmin()
+                response = delete('') {
+                    json {
+                        ids = idstoDelete
+                        permanent = false
+                    }
+                }
 
-            verifyUnauthorised(response)
-
-            when : 'logged in as normal user'
-
-            loginEditor()
-
-            GET(" $  { getComplexDataModelId() }  / search ? search = {search} " , [ search: term ])
-
-            then :
-            verifyResponse OK, response
-            , '''{
-                      "count": 1,
-                      "items": [
-                        {
-                          "domainType": "DataClass",
-                          "description": "dataclass with desc",
-                          "id": "${json-unit.matches:id}",
-                          "label": "emptyclass",
-                          "breadcrumbs": [
+                then:
+                verifyResponse(OK, response, '''{
+                          "count": 4,
+                          "items": [
                             {
+                              "deleted": true,
                               "domainType": "DataModel",
-                              "finalised": false,
+                              "documentationVersion": "1.0.0",
                               "id": "${json-unit.matches:id}",
-                              "label": "Complex Test DataModel"
+                              "label": "Functional Test Model 1",
+                              "type": "Data Standard"
+                            },
+                            {
+                              "deleted": true,
+                              "domainType": "DataModel",
+                              "documentationVersion": "1.0.0",
+                              "id": "${json-unit.matches:id}",
+                              "label": "Functional Test Model 2",
+                              "type": "Data Standard"
+                            },
+                            {
+                              "deleted": true,
+                              "domainType": "DataModel",
+                              "documentationVersion": "1.0.0",
+                              "id": "${json-unit.matches:id}",
+                              "label": "Functional Test Model 3",
+                              "type": "Data Standard"
+                            },
+                            {
+                              "deleted": true,
+                              "domainType": "DataModel",
+                              "documentationVersion": "1.0.0",
+                              "id": "${json-unit.matches:id}",
+                              "label": "Functional Test Model 4",
+                              "type": "Data Standard"
                             }
                           ]
-                        }
-                      ]
-                    }'''
-        }
+                        }''')
 
-        void 'test searching for label "emptyclass" in simple model'() {
+                when:
+                loginAdmin()
+                response = delete('') {
+                    json {
+                        ids = idstoDelete
+                    }
+                }
+
+                then:
+                verifyResponse(NO_CONTENT, response)
+            }
+
+            /*
+
+            void setupForLinkSuggestions() {
+            loginEditor()
+            DataType newDataType = simpleTestDataModel.findDataTypeByLabel("string")
+            def response
+            if (!newDataType) {
+            response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataTypes") {
+            json {
+            domainType = 'PrimitiveType'
+            label = 'string'
+            }
+            }
+            assert (response.statusCode.'2xxSuccessful')
+            newDataType = simpleTestDataModel.findDataTypeByLabel("string")
+            }
+            DataClass targetDataClass = DataClass.findByDataModelAndLabel(simpleTestDataModel, "simple")
+
+            response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataClasses/${targetDataClass.id}/dataElements") {
+            json {
+            domainType = 'DataElement'
+            label = 'ele1'
+            description = 'most obvious match'
+            dataType = {
+            domainType = 'PrimitiveType'
+            id = newDataType.id.toString()
+            }
+
+            }
+            }
+            assert (response.statusCode.'2xxSuccessful')
+            response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataClasses/${targetDataClass.id}/dataElements") {
+            json {
+            domainType = 'DataElement'
+            label = 'ele2'
+            description = 'least obvious match'
+            dataType = {
+            domainType = 'PrimitiveType'
+            id = newDataType.id.toString()
+            }
+
+            }
+            }
+            assert (response.statusCode.'2xxSuccessful')
+            adminService.rebuildLuceneIndexes(new LuceneIndexParameters())
+            logout()
+            }
+
+            void 'test get link suggestions for a model'() {
             given:
-            def term = 'emptyclass'
+            setupForLinkSuggestions()
+
+            String endpoint = "${apiPath}/" +
+                  "dataModels/${getComplexDataModelId()}/" +
+                  "suggestLinks/${getSimpleDataModelId()}"
+
+
+            String expectedJson = expectedLinkSuggestions(expectedLinkSuggestionResults())
+
 
             when: 'not logged in'
-            RestResponse GET(" $   { getSimpleDataModelId ()
-        }
+            GET(endpoint)
 
-        / search ? search = {search} ", [ search: term ] )
+            then:
+            verifyResponse UNAUTHORIZED, response
 
-            then :
-        verifyUnauthorised(response)
+            when: 'logged in as reader'
+            loginUser(reader2)
+            GET(endpoint)
 
-        when: 'logged in as normal user'
-        loginEditor()
-        GET(" $ { getSimpleDataModelId ( ) } / search ? search = {search} ", [search: term])
+            then:
+            verifyResponse OK, response, expectedJson
 
-                                                    then:
-        verifyResponse OK, response, '''{
-                      "count": 0,
-                      "items": []
-                    }'''
-        }
+            when: 'logged in as writer'
+            loginEditor()
+            GET(endpoint)
 
-        void 'test deleting multiple models'() {
+            then:
+            verifyResponse OK, response, expectedJson
+            }
+
+
+            void 'test get link suggestions for a model with no data elements in the target'() {
             given:
-            def idstoDelete = []
-            def response
+
+            String endpoint = "${apiPath}/" +
+                  "dataModels/${getComplexDataModelId()}/" +
+                  "suggestLinks/${getSimpleDataModelId()}"
+
+            String expectedJson = expectedLinkSuggestions(["", "", ""])
+
+            when: 'not logged in'
+            GET(endpoint)
+
+            then:
+            verifyResponse UNAUTHORIZED, response
+
+            when: 'logged in as reader'
+            loginUser(reader2)
+            GET(endpoint)
+
+            then:
+            verifyResponse OK, response, expectedJson
+
+            when: 'logged in as writer'
             loginEditor()
-            (1..4).each {n ->
-                response = post('') {
-                    json {
-                        folder = Folder.findByLabel('Test Folder').id.toString()
-                        label = "Functional Test Model ${n}"
-                    }
-                }
-                verifyResponse CREATED, response
-                idstoDelete << response.json.id
-            }
-            logout()
-
-            when:
-            loginEditor()
-            response = delete('') {
-                json {
-                    ids = idstoDelete
-                }
-            }
+            GET(endpoint)
 
             then:
-            verifyUnauthorised response
-
-            when:
-            loginAdmin()
-            response = delete('') {
-                json {
-                    ids = idstoDelete
-                    permanent = false
-                }
+            verifyResponse OK, response, expectedJson
             }
 
-            then:
-            verifyResponse(OK, response, '''{
-                      "count": 4,
-                      "items": [
-                        {
-                          "deleted": true,
-                          "domainType": "DataModel",
-                          "documentationVersion": "1.0.0",
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Model 1",
-                          "type": "Data Standard"
-                        },
-                        {
-                          "deleted": true,
-                          "domainType": "DataModel",
-                          "documentationVersion": "1.0.0",
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Model 2",
-                          "type": "Data Standard"
-                        },
-                        {
-                          "deleted": true,
-                          "domainType": "DataModel",
-                          "documentationVersion": "1.0.0",
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Model 3",
-                          "type": "Data Standard"
-                        },
-                        {
-                          "deleted": true,
-                          "domainType": "DataModel",
-                          "documentationVersion": "1.0.0",
-                          "id": "${json-unit.matches:id}",
-                          "label": "Functional Test Model 4",
-                          "type": "Data Standard"
-                        }
-                      ]
-                    }''')
-
-            when:
-            loginAdmin()
-            response = delete('') {
-                json {
-                    ids = idstoDelete
-                }
-            }
-
-            then:
-            verifyResponse(NO_CONTENT, response)
-        }
-
-        /*
-
-        void setupForLinkSuggestions() {
-        loginEditor()
-        DataType newDataType = simpleTestDataModel.findDataTypeByLabel("string")
-        def response
-        if (!newDataType) {
-        response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataTypes") {
-        json {
-        domainType = 'PrimitiveType'
-        label = 'string'
-        }
-        }
-        assert (response.statusCode.'2xxSuccessful')
-        newDataType = simpleTestDataModel.findDataTypeByLabel("string")
-        }
-        DataClass targetDataClass = DataClass.findByDataModelAndLabel(simpleTestDataModel, "simple")
-
-        response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataClasses/${targetDataClass.id}/dataElements") {
-        json {
-        domainType = 'DataElement'
-        label = 'ele1'
-        description = 'most obvious match'
-        dataType = {
-        domainType = 'PrimitiveType'
-        id = newDataType.id.toString()
-        }
-
-        }
-        }
-        assert (response.statusCode.'2xxSuccessful')
-        response = post(apiPath + "/dataModels/${getSimpleDataModelId()}/dataClasses/${targetDataClass.id}/dataElements") {
-        json {
-        domainType = 'DataElement'
-        label = 'ele2'
-        description = 'least obvious match'
-        dataType = {
-        domainType = 'PrimitiveType'
-        id = newDataType.id.toString()
-        }
-
-        }
-        }
-        assert (response.statusCode.'2xxSuccessful')
-        adminService.rebuildLuceneIndexes(new LuceneIndexParameters())
-        logout()
-        }
-
-        void 'test get link suggestions for a model'() {
-        given:
-        setupForLinkSuggestions()
-
-        String endpoint = "${apiPath}/" +
-              "dataModels/${getComplexDataModelId()}/" +
-              "suggestLinks/${getSimpleDataModelId()}"
-
-
-        String expectedJson = expectedLinkSuggestions(expectedLinkSuggestionResults())
-
-
-        when: 'not logged in'
-        GET(endpoint)
-
-        then:
-        verifyResponse UNAUTHORIZED, response
-
-        when: 'logged in as reader'
-        loginUser(reader2)
-        GET(endpoint)
-
-        then:
-        verifyResponse OK, response, expectedJson
-
-        when: 'logged in as writer'
-        loginEditor()
-        GET(endpoint)
-
-        then:
-        verifyResponse OK, response, expectedJson
-        }
-
-
-        void 'test get link suggestions for a model with no data elements in the target'() {
-        given:
-
-        String endpoint = "${apiPath}/" +
-              "dataModels/${getComplexDataModelId()}/" +
-              "suggestLinks/${getSimpleDataModelId()}"
-
-        String expectedJson = expectedLinkSuggestions(["", "", ""])
-
-        when: 'not logged in'
-        GET(endpoint)
-
-        then:
-        verifyResponse UNAUTHORIZED, response
-
-        when: 'logged in as reader'
-        loginUser(reader2)
-        GET(endpoint)
-
-        then:
-        verifyResponse OK, response, expectedJson
-
-        when: 'logged in as writer'
-        loginEditor()
-        GET(endpoint)
-
-        then:
-        verifyResponse OK, response, expectedJson
-        }
-
-        String expectedLinkSuggestions(List<String> results) {
-        '''{
-          "links": [
-            {
-              "sourceDataElement": {
-                "domainType": "DataElement",
-                "dataClass": "${json-unit.matches:id}",
-                "dataType": {
-                  "domainType": "ReferenceType",
-                  "dataModel": "${json-unit.matches:id}",
-                  "id": "${json-unit.matches:id}",
-                  "label": "child",
-                  "breadcrumbs": [
-                    {
-                      "domainType": "DataModel",
-                      "finalised": false,
+            String expectedLinkSuggestions(List<String> results) {
+            '''{
+              "links": [
+                {
+                  "sourceDataElement": {
+                    "domainType": "DataElement",
+                    "dataClass": "${json-unit.matches:id}",
+                    "dataType": {
+                      "domainType": "ReferenceType",
+                      "dataModel": "${json-unit.matches:id}",
                       "id": "${json-unit.matches:id}",
-                      "label": "Complex Test DataModel"
-                    }
-                  ],
-                  "referenceClass": {
-                    "domainType": "DataClass",
+                      "label": "child",
+                      "breadcrumbs": [
+                        {
+                          "domainType": "DataModel",
+                          "finalised": false,
+                          "id": "${json-unit.matches:id}",
+                          "label": "Complex Test DataModel"
+                        }
+                      ],
+                      "referenceClass": {
+                        "domainType": "DataClass",
+                        "dataModel": "${json-unit.matches:id}",
+                        "parentDataClass": "${json-unit.matches:id}",
+                        "id": "${json-unit.matches:id}",
+                        "label": "child",
+                        "breadcrumbs": [
+                          {
+                            "domainType": "DataModel",
+                            "finalised": false,
+                            "id": "${json-unit.matches:id}",
+                            "label": "Complex Test DataModel"
+                          },
+                          {
+                            "domainType": "DataClass",
+                            "id": "${json-unit.matches:id}",
+                            "label": "parent"
+                          }
+                        ]
+                      }
+                    },
                     "dataModel": "${json-unit.matches:id}",
-                    "parentDataClass": "${json-unit.matches:id}",
+                    "maxMultiplicity": 1,
                     "id": "${json-unit.matches:id}",
                     "label": "child",
+                    "minMultiplicity": 1,
                     "breadcrumbs": [
                       {
                         "domainType": "DataModel",
@@ -2158,248 +2213,228 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
                         "label": "parent"
                       }
                     ]
-                  }
-                },
-                "dataModel": "${json-unit.matches:id}",
-                "maxMultiplicity": 1,
-                "id": "${json-unit.matches:id}",
-                "label": "child",
-                "minMultiplicity": 1,
-                "breadcrumbs": [
-                  {
-                    "domainType": "DataModel",
-                    "finalised": false,
-                    "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel"
                   },
-                  {
-                    "domainType": "DataClass",
-                    "id": "${json-unit.matches:id}",
-                    "label": "parent"
-                  }
-                ]
-              },
-              "results": [''' + results[2] + '''
+                  "results": [''' + results[2] + '''
 
-              ]
-            },
-            {
-              "sourceDataElement": {
-                "domainType": "DataElement",
-                "dataClass": "${json-unit.matches:id}",
-                "dataType": {
-                  "domainType": "PrimitiveType",
-                  "dataModel": "${json-unit.matches:id}",
-                  "id": "${json-unit.matches:id}",
-                  "label": "string",
-                  "breadcrumbs": [
-                    {
-                      "domainType": "DataModel",
-                      "finalised": false,
-                      "id": "${json-unit.matches:id}",
-                      "label": "Complex Test DataModel"
-                    }
                   ]
                 },
-                "dataModel": "${json-unit.matches:id}",
-                "maxMultiplicity": 20,
-                "id": "${json-unit.matches:id}",
-                "label": "ele1",
-                "minMultiplicity": 0,
-                "breadcrumbs": [
-                  {
-                    "domainType": "DataModel",
-                    "finalised": false,
-                    "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel"
-                  },
-                  {
-                    "domainType": "DataClass",
-                    "id": "${json-unit.matches:id}",
-                    "label": "content"
-                  }
-                ]
-              },
-              "results": [''' + results[0] + '''
-
-              ]
-            },
-            {
-              "sourceDataElement": {
-                "domainType": "DataElement",
-                "dataClass": "${json-unit.matches:id}",
-                "dataType": {
-                  "domainType": "PrimitiveType",
-                  "dataModel": "${json-unit.matches:id}",
-                  "id": "${json-unit.matches:id}",
-                  "label": "integer",
-                  "breadcrumbs": [
-                    {
-                      "domainType": "DataModel",
-                      "finalised": false,
+                {
+                  "sourceDataElement": {
+                    "domainType": "DataElement",
+                    "dataClass": "${json-unit.matches:id}",
+                    "dataType": {
+                      "domainType": "PrimitiveType",
+                      "dataModel": "${json-unit.matches:id}",
                       "id": "${json-unit.matches:id}",
-                      "label": "Complex Test DataModel"
-                    }
+                      "label": "string",
+                      "breadcrumbs": [
+                        {
+                          "domainType": "DataModel",
+                          "finalised": false,
+                          "id": "${json-unit.matches:id}",
+                          "label": "Complex Test DataModel"
+                        }
+                      ]
+                    },
+                    "dataModel": "${json-unit.matches:id}",
+                    "maxMultiplicity": 20,
+                    "id": "${json-unit.matches:id}",
+                    "label": "ele1",
+                    "minMultiplicity": 0,
+                    "breadcrumbs": [
+                      {
+                        "domainType": "DataModel",
+                        "finalised": false,
+                        "id": "${json-unit.matches:id}",
+                        "label": "Complex Test DataModel"
+                      },
+                      {
+                        "domainType": "DataClass",
+                        "id": "${json-unit.matches:id}",
+                        "label": "content"
+                      }
+                    ]
+                  },
+                  "results": [''' + results[0] + '''
+
                   ]
                 },
-                "dataModel": "${json-unit.matches:id}",
-                "maxMultiplicity": 1,
-                "id": "${json-unit.matches:id}",
-                "label": "element2",
-                "minMultiplicity": 1,
-                "breadcrumbs": [
-                  {
-                    "domainType": "DataModel",
-                    "finalised": false,
+                {
+                  "sourceDataElement": {
+                    "domainType": "DataElement",
+                    "dataClass": "${json-unit.matches:id}",
+                    "dataType": {
+                      "domainType": "PrimitiveType",
+                      "dataModel": "${json-unit.matches:id}",
+                      "id": "${json-unit.matches:id}",
+                      "label": "integer",
+                      "breadcrumbs": [
+                        {
+                          "domainType": "DataModel",
+                          "finalised": false,
+                          "id": "${json-unit.matches:id}",
+                          "label": "Complex Test DataModel"
+                        }
+                      ]
+                    },
+                    "dataModel": "${json-unit.matches:id}",
+                    "maxMultiplicity": 1,
                     "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel"
+                    "label": "element2",
+                    "minMultiplicity": 1,
+                    "breadcrumbs": [
+                      {
+                        "domainType": "DataModel",
+                        "finalised": false,
+                        "id": "${json-unit.matches:id}",
+                        "label": "Complex Test DataModel"
+                      },
+                      {
+                        "domainType": "DataClass",
+                        "id": "${json-unit.matches:id}",
+                        "label": "content"
+                      }
+                    ]
                   },
-                  {
-                    "domainType": "DataClass",
-                    "id": "${json-unit.matches:id}",
-                    "label": "content"
-                  }
-                ]
-              },
-              "results": [''' + results[1] + '''
+                  "results": [''' + results[1] + '''
 
+                  ]
+                }
               ]
+            }'''
             }
-          ]
-        }'''
-        }
 
-        List<String> expectedLinkSuggestionResults() {
-        ['''
-        {
-            "score": 0.70164835,
-            "dataElement": {
-                "domainType": "DataElement",
-                "dataClass": "${json-unit.matches:id}",
-                "dataType": {
-                    "domainType": "PrimitiveType",
+            List<String> expectedLinkSuggestionResults() {
+            ['''
+            {
+                "score": 0.70164835,
+                "dataElement": {
+                    "domainType": "DataElement",
+                    "dataClass": "${json-unit.matches:id}",
+                    "dataType": {
+                        "domainType": "PrimitiveType",
+                        "dataModel": "${json-unit.matches:id}",
+                        "id": "${json-unit.matches:id}",
+                        "label": "string",
+                        "breadcrumbs": [
+                            {
+                                "domainType": "DataModel",
+                                "finalised": false,
+                                "id": "${json-unit.matches:id}",
+                                "label": "Simple Test DataModel"
+                            }
+                        ]
+                    },
                     "dataModel": "${json-unit.matches:id}",
+                    "description": "most obvious match",
                     "id": "${json-unit.matches:id}",
-                    "label": "string",
+                    "label": "ele1",
                     "breadcrumbs": [
                         {
                             "domainType": "DataModel",
                             "finalised": false,
                             "id": "${json-unit.matches:id}",
                             "label": "Simple Test DataModel"
+                        },
+                        {
+                            "domainType": "DataClass",
+                            "id": "${json-unit.matches:id}",
+                            "label": "simple"
                         }
                     ]
-                },
-                "dataModel": "${json-unit.matches:id}",
-                "description": "most obvious match",
-                "id": "${json-unit.matches:id}",
-                "label": "ele1",
-                "breadcrumbs": [
-                    {
-                        "domainType": "DataModel",
-                        "finalised": false,
+                }
+            },
+            {
+                "score": 0.35714078,
+                "dataElement": {
+                    "domainType": "DataElement",
+                    "dataClass": "${json-unit.matches:id}",
+                    "dataType": {
+                        "domainType": "PrimitiveType",
+                        "dataModel": "${json-unit.matches:id}",
                         "id": "${json-unit.matches:id}",
-                        "label": "Simple Test DataModel"
+                        "label": "string",
+                        "breadcrumbs": [
+                            {
+                                "domainType": "DataModel",
+                                "finalised": false,
+                                "id": "${json-unit.matches:id}",
+                                "label": "Simple Test DataModel"
+                            }
+                        ]
                     },
-                    {
-                        "domainType": "DataClass",
-                        "id": "${json-unit.matches:id}",
-                        "label": "simple"
-                    }
-                ]
-            }
-        },
-        {
-            "score": 0.35714078,
-            "dataElement": {
-                "domainType": "DataElement",
-                "dataClass": "${json-unit.matches:id}",
-                "dataType": {
-                    "domainType": "PrimitiveType",
                     "dataModel": "${json-unit.matches:id}",
+                    "description": "least obvious match",
                     "id": "${json-unit.matches:id}",
-                    "label": "string",
+                    "label": "ele2",
                     "breadcrumbs": [
                         {
                             "domainType": "DataModel",
                             "finalised": false,
                             "id": "${json-unit.matches:id}",
                             "label": "Simple Test DataModel"
+                        },
+                        {
+                            "domainType": "DataClass",
+                            "id": "${json-unit.matches:id}",
+                            "label": "simple"
                         }
                     ]
-                },
-                "dataModel": "${json-unit.matches:id}",
-                "description": "least obvious match",
-                "id": "${json-unit.matches:id}",
-                "label": "ele2",
-                "breadcrumbs": [
-                    {
-                        "domainType": "DataModel",
-                        "finalised": false,
+                }
+            }''', '''
+            {
+                "score": 0.05167392,
+                "dataElement": {
+                    "domainType": "DataElement",
+                    "dataClass": "${json-unit.matches:id}",
+                    "dataType": {
+                        "domainType": "PrimitiveType",
+                        "dataModel": "${json-unit.matches:id}",
                         "id": "${json-unit.matches:id}",
-                        "label": "Simple Test DataModel"
+                        "label": "string",
+                        "breadcrumbs": [
+                            {
+                                "domainType": "DataModel",
+                                "finalised": false,
+                                "id": "${json-unit.matches:id}",
+                                "label": "Simple Test DataModel"
+                            }
+                        ]
                     },
-                    {
-                        "domainType": "DataClass",
-                        "id": "${json-unit.matches:id}",
-                        "label": "simple"
-                    }
-                ]
-            }
-        }''', '''
-        {
-            "score": 0.05167392,
-            "dataElement": {
-                "domainType": "DataElement",
-                "dataClass": "${json-unit.matches:id}",
-                "dataType": {
-                    "domainType": "PrimitiveType",
                     "dataModel": "${json-unit.matches:id}",
+                    "description": "least obvious match",
                     "id": "${json-unit.matches:id}",
-                    "label": "string",
+                    "label": "ele2",
                     "breadcrumbs": [
                         {
                             "domainType": "DataModel",
                             "finalised": false,
                             "id": "${json-unit.matches:id}",
                             "label": "Simple Test DataModel"
+                        },
+                        {
+                            "domainType": "DataClass",
+                            "id": "${json-unit.matches:id}",
+                            "label": "simple"
                         }
                     ]
-                },
-                "dataModel": "${json-unit.matches:id}",
-                "description": "least obvious match",
-                "id": "${json-unit.matches:id}",
-                "label": "ele2",
-                "breadcrumbs": [
-                    {
-                        "domainType": "DataModel",
-                        "finalised": false,
-                        "id": "${json-unit.matches:id}",
-                        "label": "Simple Test DataModel"
-                    },
-                    {
-                        "domainType": "DataClass",
-                        "id": "${json-unit.matches:id}",
-                        "label": "simple"
-                    }
-                ]
+                }
+            }''', '''''']
             }
-        }''', '''''']
-        }
 
-        @Override
-        void additionalCleanup() {
-        logger.info("Additional cleanup")
-        DataClass toDataClass = DataClass.findByDataModelAndLabel(simpleTestDataModel, 'simple')
-        DataElement.findAllByDataClass(toDataClass).each {
-        dataElementService.delete it
-        }
-        DataType.findAllByDataModel(simpleTestDataModel).each {
-        dataTypeService.delete it
-        }
-        }
-f
-        */
+            @Override
+            void additionalCleanup() {
+            logger.info("Additional cleanup")
+            DataClass toDataClass = DataClass.findByDataModelAndLabel(simpleTestDataModel, 'simple')
+            DataElement.findAllByDataClass(toDataClass).each {
+            dataElementService.delete it
+            }
+            DataType.findAllByDataModel(simpleTestDataModel).each {
+            dataTypeService.delete it
+            }
+            }
+    f
+            */
 
     String getExpectedDiffJson() {
         '''{
