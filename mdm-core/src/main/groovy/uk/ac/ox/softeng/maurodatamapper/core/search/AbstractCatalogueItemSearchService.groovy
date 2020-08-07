@@ -63,6 +63,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
     PaginatedLuceneResult<K> findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(List<UUID> owningIds,
                                                                                   SearchParams searchParams,
+                                                                                  boolean removeOwningIds,
                                                                                   Map pagination = [:]) {
         Closure additional = null
 
@@ -86,17 +87,22 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
         long start = System.currentTimeMillis()
 
-        List<K> modelItems
+        List<K> items
 
         if (searchParams.labelOnly) {
             log.debug('Performing lucene label search')
-            modelItems = performLabelSearch(domainsToSearch, owningIds, searchParams.searchTerm, additional)
+            items = performLabelSearch(domainsToSearch, owningIds, searchParams.searchTerm, additional)
         } else {
             log.debug('Performing lucene standard search')
-            modelItems = performStandardSearch(domainsToSearch, owningIds, searchParams.searchTerm, additional)
+            items = performStandardSearch(domainsToSearch, owningIds, searchParams.searchTerm, additional)
         }
 
-        PaginatedLuceneResult<K> results = PaginatedLuceneResult.paginateFullResultSet(modelItems, pagination)
+        if (removeOwningIds) {
+            // Remove null entries and any which have an owning id, as we only want those inside the owners
+            items = items.findAll {!(it.id in owningIds)}
+        }
+
+        PaginatedLuceneResult<K> results = PaginatedLuceneResult.paginateFullResultSet(items, pagination)
 
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}")
         results
@@ -105,21 +111,17 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     @CompileDynamic
     protected List<K> performLabelSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                          @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-
-        List<K> allFound = domainsToSearch.collect {domain ->
+        domainsToSearch.collect {domain ->
             domain.luceneLabelSearch(domain, searchTerm, owningIds, [:], additional).results
-        }.flatten() as List<K>
-        // Remove null entries and any which have an owning id, as we only want those inside the owners
-        allFound.findAll {!(it.id in owningIds)}
+        }.flatten().findAll() as List<K>
+
     }
 
     @CompileDynamic
     protected List<K> performStandardSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                             @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-        List<K> allFound = domainsToSearch.collect {domain ->
+        domainsToSearch.collect {domain ->
             domain.luceneStandardSearch(domain, searchTerm, owningIds, [:], additional).results
-        }.flatten() as List<K>
-        // Remove null entries and any which have an owning id, as we only want those inside the owners
-        allFound.findAll {!(it.id in owningIds)} as List<K>
+        }.flatten().findAll() as List<K>
     }
 }

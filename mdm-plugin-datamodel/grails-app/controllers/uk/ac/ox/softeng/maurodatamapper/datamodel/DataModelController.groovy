@@ -47,6 +47,8 @@ class DataModelController extends ModelController<DataModel> {
     ]
 
     DataModelService dataModelService
+
+    @Autowired
     SearchService mdmPluginDataModelSearchService
 
     @Autowired

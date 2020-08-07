@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -51,7 +52,7 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
 
     PaginatedLuceneResult<CatalogueItem> findAllByFolderIdByLuceneSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
         List<UUID> modelIds = getAllModelIdsInFolderId(folderId)
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(modelIds, searchParams, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(modelIds, searchParams, false, pagination)
     }
 
     PaginatedLuceneResult<CatalogueItem> findAllReadableByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
@@ -59,11 +60,13 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
 
         if (!modelServices) return new PaginatedLuceneResult<CatalogueItem>([], 0)
 
-        List<UUID> readableIds = getAllReadableContainerIds(userSecurityPolicyManager)
+        List<UUID> readableFolderIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
 
-        if (!readableIds) return new PaginatedLuceneResult<CatalogueItem>([], 0)
+        if (!readableFolderIds) return new PaginatedLuceneResult<CatalogueItem>([], 0)
 
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(readableIds, searchParams, pagination)
+        List<UUID> readableModelIds = readableFolderIds.collectMany {containerId -> getAllModelIdsInFolderId(containerId)}
+
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(readableModelIds, searchParams, false, pagination)
     }
 
     @Override
@@ -84,7 +87,7 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
         allSearchParamFilters ? allSearchParamFilters.toSet() : new HashSet<Class<SearchParamFilter>>()
     }
 
-    List<UUID> getAllReadableContainerIds(UserSecurityPolicyManager userSecurityPolicyManager) {
+    protected List<UUID> getAllReadableContainerIds(UserSecurityPolicyManager userSecurityPolicyManager) {
         containerServices.collect {service ->
             ParameterizedType parameterizedType = (ParameterizedType) service.getClass().genericInterfaces.find {genericInterface ->
                 genericInterface instanceof ParameterizedType &&
@@ -96,7 +99,7 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
         }.findAll() as List<UUID>
     }
 
-    List<UUID> getAllReadableModelIds(UserSecurityPolicyManager userSecurityPolicyManager) {
+    protected List<UUID> getAllReadableModelIds(UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!modelServices) return new ArrayList<UUID>()
         modelServices.collect {service ->
             ParameterizedType parameterizedType = (ParameterizedType) service.getClass().genericInterfaces.find {genericInterface ->
@@ -109,8 +112,8 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
         }.findAll() as List<UUID>
     }
 
-    List<UUID> getAllModelIdsInFolderId(UUID folderId) {
-
+    protected List<UUID> getAllModelIdsInFolderId(UUID folderId) {
+        if (!modelServices) return new ArrayList<UUID>()
         List<UUID> containedFolderIds = folderService.findAllContainersInside(folderId).collect {it.id}
         containedFolderIds.add(folderId)
         modelServices.collectMany {service ->

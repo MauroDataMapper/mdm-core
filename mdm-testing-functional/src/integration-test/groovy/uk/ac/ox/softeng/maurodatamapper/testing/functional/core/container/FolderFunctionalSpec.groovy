@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
@@ -49,6 +49,11 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 @Slf4j
 class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+
+    @Transactional
+    String getTestFolderId() {
+        Folder.findByLabel('Functional Test Folder').id.toString()
+    }
 
     @Override
     String getResourcePath() {
@@ -193,57 +198,281 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 }'''
     }
 
-    /*TODO searching
+    void 'S01 : test searching for label "Test" in empty folder'() {
+        given:
+        def id = getValidId()
+        def term = 'test'
 
-        void 'test searching for label "test" in the test folder'() {
-            given:
-            def term = 'test'
+        when: 'not logged in'
+        GET("${id}/search?searchTerm=${term}")
 
-            when: 'not logged in'
-            RestResponse response = restGet("${testFolder.id}/search?search={search}", [search: term])
+        then:
+        verifyNotFound(response, id)
 
-            then:
-            verifyUnauthorised(response)
+        when: 'not logged in'
+        loginAuthenticated()
+        GET("${id}/search?searchTerm=${term}")
 
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet("${testFolder.id}/search?search={search}", [search: term])
+        then:
+        verifyNotFound(response, id)
 
-            then:
-            verifyResponse OK, response, '''{
-      "count": 2,
-      "items": [
+        when: 'logged in as reader user'
+        loginReader()
+        GET("${id}/search?searchTerm=${term}")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'S02 : test searching for "simple" in the test folder'() {
+        given:
+        String term = 'simple'
+
+        when: 'not logged in'
+        GET("${getTestFolderId()}/search?searchTerm=${term}")
+
+        then:
+        verifyNotFound(response, getTestFolderId())
+
+        when: 'logged in as authenticated'
+        loginAuthenticated()
+        GET("${getTestFolderId()}/search?searchTerm=${term}")
+
+        then:
+        verifyNotFound(response, getTestFolderId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        GET("${getTestFolderId()}/search?searchTerm=${term}", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 5,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "STT01: Simple Test Term 01",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
         {
-          "domainType": "DataModel",
           "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel"
-        },
-        {
-          "domainType": "DataModel",
-          "id": "${json-unit.matches:id}",
-          "label": "Simple Test DataModel"
+          "label": "Simple Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
         }
       ]
-    }'''
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "STT02: Simple Test Term 02",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
         }
-
-        void 'test searching for label "test" in empty folder'() {
-            given:
-            def id = createNewItem()
-            def term = 'test'
-
-            when: 'not logged in'
-            RestResponse response = restGet("${id}/search?search={search}", [search: term])
-
-            then:
-            verifyUnauthorised(response)
-
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet("${id}/search?search={search}", [search: term])
-
-            then:
-            verifyResponse OK, response, '''{"count": 0,"items": []}'''
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Simple Test DataModel"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "Simple Test Terminology"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "simple",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
         }
-        */
+      ]
+    }
+  ]
+}'''
+    }
+
+    void 'S03 : test searching for "simple" in the test folder using POST'() {
+        given:
+        String term = 'simple'
+
+        when: 'not logged in'
+        POST("${getTestFolderId()}/search", [searchTerm: term])
+
+        then:
+        verifyNotFound(response, getTestFolderId())
+
+        when: 'logged in as authenticated'
+        loginAuthenticated()
+        POST("${getTestFolderId()}/search", [searchTerm: term])
+
+        then:
+        verifyNotFound(response, getTestFolderId())
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST("${getTestFolderId()}/search", [searchTerm: term, sort: 'label'], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 5,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "STT01: Simple Test Term 01",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "STT02: Simple Test Term 02",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Simple Test DataModel"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "Simple Test Terminology"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "simple",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    }
+  ]
+}'''
+    }
+
+    void 'S03 : test searching for "simple" in the test folder limited to DataModel'() {
+        given:
+        String term = 'simple'
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST("${getTestFolderId()}/search", [searchTerm: term, sort: 'label', domainTypes: ['DataModel']])
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().label == BootstrapModels.SIMPLE_DATAMODEL_NAME
+        responseBody().items.first().domainType == 'DataModel'
+    }
+
+    void 'S04 : test searching for "simple" in the test folder using POST with pagination'() {
+        given:
+        String term = 'simple'
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST("${getTestFolderId()}/search", [searchTerm: term, sort: 'label', max: 2, offset: 0], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 5,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "STT01: Simple Test Term 01",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "STT02: Simple Test Term 02",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Simple Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ]
+    }
+  ]
+}'''
+    }
+
+    void 'S05 : test searching for "simple" in the test folder using POST with pagination and offset'() {
+        given:
+        String term = 'simple'
+
+        when: 'logged in as reader user'
+        loginReader()
+        POST("${getTestFolderId()}/search", [searchTerm: term, sort: 'label', max: 2, offset: 2], STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 5,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Simple Test DataModel"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "Simple Test Terminology"
+    }
+  ]
+}'''
+    }
 }

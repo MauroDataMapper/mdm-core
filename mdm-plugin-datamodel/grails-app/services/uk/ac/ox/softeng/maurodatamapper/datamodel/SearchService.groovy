@@ -35,11 +35,11 @@ import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
 
     PaginatedLuceneResult<ModelItem> findAllByDataModelIdByLuceneSearch(UUID dataModelId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataModelId], searchParams, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataModelId], searchParams, true, pagination)
     }
 
     PaginatedLuceneResult<ModelItem> findAllByDataClassIdByLuceneSearch(UUID dataClassId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataClassId], searchParams, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataClassId], searchParams, true, pagination)
     }
 
     @Override

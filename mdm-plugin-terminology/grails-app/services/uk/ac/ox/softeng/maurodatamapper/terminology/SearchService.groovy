@@ -28,7 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implements CatalogueItemSearchDomainProvider {
 
     PaginatedLuceneResult<ModelItem> findAllByTerminologyIdByLuceneSearch(UUID terminologyId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([terminologyId], searchParams, pagination)
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([terminologyId], searchParams, true, pagination)
     }
 
     @Override

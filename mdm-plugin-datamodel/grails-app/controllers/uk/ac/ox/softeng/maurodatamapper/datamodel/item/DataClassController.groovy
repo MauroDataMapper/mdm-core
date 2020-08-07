@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
 import grails.gorm.transactions.Transactional
 import grails.web.servlet.mvc.GrailsParameterMap
+import org.springframework.beans.factory.annotation.Autowired
 
 class DataClassController extends CatalogueItemController<DataClass> {
 
@@ -37,6 +38,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     DataModelService dataModelService
 
+    @Autowired
     SearchService mdmPluginDataModelSearchService
 
     DataClassController() {
