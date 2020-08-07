@@ -44,9 +44,8 @@ class FolderInterceptor extends SecurableResourceInterceptor {
         securableResourceChecks()
 
         if (actionName == 'search') {
-            currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.folderId) ?: notFound(Folder,
-                                                                                                               params.folderId.toString()
-            )
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.folderId) ?:
+                   notFound(Folder, params.folderId.toString())
         }
 
         checkActionAuthorisationOnSecuredResource(Folder, getId(), true)

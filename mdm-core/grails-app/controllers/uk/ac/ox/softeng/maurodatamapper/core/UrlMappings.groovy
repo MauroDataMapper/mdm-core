@@ -92,8 +92,8 @@ class UrlMappings {
              Full Searching
              */
             group '/catalogueItems', {
-                post '/search'(controller: 'searching', action: 'search')
-                get '/search'(controller: 'searching', action: 'search')
+                post '/search'(controller: 'search', action: 'search')
+                get '/search'(controller: 'search', action: 'search')
             }
 
             /*

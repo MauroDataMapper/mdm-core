@@ -59,7 +59,7 @@ class SearchInterceptorSpec extends BaseUnitSpec implements InterceptorUnitTest<
     }
 
     String getControllerName() {
-        'searching'
+        'search'
     }
 
     def getPublicAccessUserSecurityPolicyManager() {

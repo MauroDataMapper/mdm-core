@@ -255,8 +255,8 @@ pipeline {
             }
         }
 
-        stage('Parallel Functional Test') {
-            parallel {
+//        stage('Parallel Functional Test') {
+//            parallel {
                 stage('mdm-core') {
                     steps {
                         dir('mdm-core') {
@@ -359,8 +359,8 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
+//            }
+//        }
 
         stage('License Header Check'){
             steps{

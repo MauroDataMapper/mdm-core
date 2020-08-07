@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.ClassifierFilterFilter
@@ -81,8 +81,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         Set<Class<K>> domainsToSearch = getFilteredDomainsToSearch(searchParams)
 
         if (!domainsToSearch) {
-            throw new ApiBadRequestException('SSXX', 'Owning IDs search attempted with filtered domains provided but no domains match this search ' +
-                                                     'service')
+            return new PaginatedLuceneResult<K>(new ArrayList<K>(), 0)
         }
 
         long start = System.currentTimeMillis()

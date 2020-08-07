@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.search
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
@@ -37,6 +38,8 @@ import java.lang.reflect.ParameterizedType
 @GrailsCompileStatic
 class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
 
+    FolderService folderService
+
     @Autowired(required = false)
     List<ContainerService> containerServices
 
@@ -47,15 +50,16 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
     List<CatalogueItemSearchDomainProvider> catalogueItemSearchDomainProviders
 
     PaginatedLuceneResult<CatalogueItem> findAllByFolderIdByLuceneSearch(UUID folderId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([folderId], searchParams, pagination)
+        List<UUID> modelIds = getAllModelIdsInFolderId(folderId)
+        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(modelIds, searchParams, pagination)
     }
 
     PaginatedLuceneResult<CatalogueItem> findAllReadableByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                        SearchParams searchParams, Map pagination = [:]) {
 
-        if (!containerServices && !modelServices) return new PaginatedLuceneResult<CatalogueItem>([], 0)
+        if (!modelServices) return new PaginatedLuceneResult<CatalogueItem>([], 0)
 
-        List<UUID> readableIds = getAllReadableContainerIds(userSecurityPolicyManager) + getAllReadableModelIds(userSecurityPolicyManager)
+        List<UUID> readableIds = getAllReadableContainerIds(userSecurityPolicyManager)
 
         if (!readableIds) return new PaginatedLuceneResult<CatalogueItem>([], 0)
 
@@ -64,17 +68,25 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
 
     @Override
     Set<Class<CatalogueItem>> getDomainsToSearch() {
-        catalogueItemSearchDomainProviders.collectMany {it.searchableCatalogueItemDomains}.toSet()
+        if (!catalogueItemSearchDomainProviders) return new HashSet<Class<CatalogueItem>>()
+        List<Class<CatalogueItem>> allSearchableDomains = catalogueItemSearchDomainProviders.collectMany {provider ->
+            provider.searchableCatalogueItemDomains
+        }
+        allSearchableDomains ? allSearchableDomains.toSet() : new HashSet<Class<CatalogueItem>>()
     }
 
     @Override
     Set<Class<SearchParamFilter>> getSearchParamFilters() {
-        catalogueItemSearchDomainProviders.collectMany {it.searchParamFilters}.toSet()
+        if (!catalogueItemSearchDomainProviders) return new HashSet<Class<SearchParamFilter>>()
+        List<Class<SearchParamFilter>> allSearchParamFilters = catalogueItemSearchDomainProviders.collectMany {provider ->
+            provider.searchParamFilters
+        }
+        allSearchParamFilters ? allSearchParamFilters.toSet() : new HashSet<Class<SearchParamFilter>>()
     }
 
     List<UUID> getAllReadableContainerIds(UserSecurityPolicyManager userSecurityPolicyManager) {
         containerServices.collect {service ->
-            ParameterizedType parameterizedType = (ParameterizedType) getClass().genericInterfaces.find {genericInterface ->
+            ParameterizedType parameterizedType = (ParameterizedType) service.getClass().genericInterfaces.find {genericInterface ->
                 genericInterface instanceof ParameterizedType &&
                 ContainerService.isAssignableFrom((Class) ((ParameterizedType) genericInterface).rawType)
             }
@@ -85,8 +97,9 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
     }
 
     List<UUID> getAllReadableModelIds(UserSecurityPolicyManager userSecurityPolicyManager) {
+        if (!modelServices) return new ArrayList<UUID>()
         modelServices.collect {service ->
-            ParameterizedType parameterizedType = (ParameterizedType) getClass().genericInterfaces.find {genericInterface ->
+            ParameterizedType parameterizedType = (ParameterizedType) service.getClass().genericInterfaces.find {genericInterface ->
                 genericInterface instanceof ParameterizedType &&
                 ModelService.isAssignableFrom((Class) ((ParameterizedType) genericInterface).rawType)
             }
@@ -94,5 +107,16 @@ class SearchService extends AbstractCatalogueItemSearchService<CatalogueItem> {
             Class<Model> modelClass = parameterizedType?.actualTypeArguments[0] as Class<Model>
             userSecurityPolicyManager.listReadableSecuredResourceIds(modelClass)
         }.findAll() as List<UUID>
+    }
+
+    List<UUID> getAllModelIdsInFolderId(UUID folderId) {
+
+        List<UUID> containedFolderIds = folderService.findAllContainersInside(folderId).collect {it.id}
+        containedFolderIds.add(folderId)
+        modelServices.collectMany {service ->
+            containedFolderIds.collectMany {fId ->
+                (service.findAllByContainerId(folderId) as List<Model>).collect {model -> model.id}
+            }
+        }
     }
 }
