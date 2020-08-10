@@ -119,6 +119,23 @@ task reportsArchive(type: Tar) {
     }
 }
 
+task rootTestReport(type: TestReport){
+    group = 'reporting'
+    destinationDir = file("${buildDir}/reports/tests")
+    testResultDirs = files("${buildDir}/test-results")
+    FileCollection testResultContentDir =  files("${buildDir}/test-results")
+    outputs.upToDateWhen { false }
+
+    doFirst{
+        (testResultContentDir.getAsFileTree().visit { FileVisitDetails details ->
+            if(details.directory && details.name == 'binary' ){
+                logger.info("Reporting on ${details.path}")
+                reportOn files(details.file)
+            }
+        })
+    }
+}
+
 subprojects {
 
     apply plugin: 'com.github.hierynomus.license'
@@ -147,7 +164,19 @@ subprojects {
             into "logs/$pName"
         }
     }
+
+    afterEvaluate{
+        project.tasks.withType(Test){ testTask ->
+            doLast{
+                copy {
+                    from project.file("${project.buildDir}/test-results")
+                    into rootProject.file("${rootProject.buildDir}/test-results/${project.name}")
+                }
+            }
+        }
+    }
 }
+
 
 // Custom publishing to allow us to push the reports up to artifactory from travis
 if (project.hasProperty('artifactory_user') && project.hasProperty('artifactory_apiKey')) {
