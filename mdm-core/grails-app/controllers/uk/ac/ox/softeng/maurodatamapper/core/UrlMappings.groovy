@@ -74,6 +74,9 @@ class UrlMappings {
                 delete '/readByEveryone'(controller: 'folder', action: 'readByEveryone')
                 put '/readByAuthenticated'(controller: 'folder', action: 'readByAuthenticated')
                 delete '/readByAuthenticated'(controller: 'folder', action: 'readByAuthenticated')
+
+                post '/search'(controller: 'folder', action: 'search')
+                get '/search'(controller: 'folder', action: 'search')
             }
 
             '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES) {
@@ -83,6 +86,14 @@ class UrlMappings {
                 delete '/readByEveryone'(controller: 'classifier', action: 'readByEveryone')
                 put '/readByAuthenticated'(controller: 'classifier', action: 'readByAuthenticated')
                 delete '/readByAuthenticated'(controller: 'classifier', action: 'readByAuthenticated')
+            }
+
+            /*
+             Full Searching
+             */
+            group '/catalogueItems', {
+                post '/search'(controller: 'search', action: 'search')
+                get '/search'(controller: 'search', action: 'search')
             }
 
             /*

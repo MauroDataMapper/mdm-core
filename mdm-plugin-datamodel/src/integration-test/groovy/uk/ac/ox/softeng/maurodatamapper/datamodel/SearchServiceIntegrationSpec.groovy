@@ -27,9 +27,13 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
+import grails.core.GrailsApplication
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 
 @Slf4j
 @Integration
@@ -38,7 +42,13 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     UUID complexDataModelId
     UUID simpleDataModelId
-    SearchService searchService
+    @Autowired
+    SearchService mdmPluginDataModelSearchService
+    ApplicationContext applicationContext
+
+    SearchService getSearchService() {
+        mdmPluginDataModelSearchService
+    }
 
     @Override
     void setupDomainData() {
@@ -55,14 +65,14 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         SearchParams searchParams = new SearchParams(search: 'simple')
-        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 1
 
         when:
         searchParams = new SearchParams(search: 'nothing')
-        modelItems = searchService.performStandardSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
@@ -75,14 +85,14 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         SearchParams searchParams = new SearchParams(search: 'simple')
-        List<ModelItem> modelItems = searchService.performLabelSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        List<ModelItem> modelItems = searchService.performLabelSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 1
 
         when:
         searchParams = new SearchParams(search: 'nothing')
-        modelItems = searchService.performLabelSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performLabelSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
@@ -95,32 +105,32 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         SearchParams searchParams = new SearchParams(search: 'simple')
-        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 1
 
         when:
         searchParams = new SearchParams(search: 'nothing')
-        modelItems = searchService.performStandardSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
         when:
         searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performStandardSearch([DataElement], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performStandardSearch([DataElement].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
         when:
         searchParams = new SearchParams(search: 'simple', domainType: '')
-        modelItems = searchService.performStandardSearch([ReferenceType], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performStandardSearch([ReferenceType].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
         when:
         searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performStandardSearch([DataClass, PrimitiveType], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performStandardSearch([DataClass, PrimitiveType].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 1
@@ -133,35 +143,35 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         SearchParams searchParams = new SearchParams(search: 'simple')
-        List<ModelItem> modelItems = searchService.performLabelSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        List<ModelItem> modelItems = searchService.performLabelSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 1
 
         when:
         searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performLabelSearch([DataClass, DataElement], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performLabelSearch([DataClass, DataElement].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 1
 
         when:
         searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performLabelSearch([DataElement], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performLabelSearch([DataElement].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
 
         when:
         searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performLabelSearch([ReferenceType], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performLabelSearch([ReferenceType].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
 
         when:
         searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performLabelSearch([DataElement, PrimitiveType], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performLabelSearch([DataElement, PrimitiveType].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
@@ -174,13 +184,13 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'standard search'
         SearchParams searchParams = new SearchParams(search: 'mdk1')
-        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 1
 
         when: 'label only search'
-        modelItems = searchService.performLabelSearch([DataClass], [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performLabelSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0

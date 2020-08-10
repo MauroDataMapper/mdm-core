@@ -21,23 +21,24 @@ import grails.validation.Validateable
 
 class SearchParams implements Validateable {
 
-    String domainType
     Integer max
     Integer offset
+    // asc or desc
+    String order
+    // field to sort by
+    String sort
     String searchTerm
-    Boolean labelOnly = false
-    List<String> domainTypes = []
-    List<String> dataModelTypes = []
+    Boolean labelOnly
+    List<String> domainTypes
+    List<String> dataModelTypes
     Date lastUpdatedBefore
     Date lastUpdatedAfter
     Date createdBefore
     Date createdAfter
-    List<String> classifiers = []
-    List<List> classifierFilter = []
-    String sortField = ""
+    List<String> classifiers
+    List<List> classifierFilter
 
     static constraints = {
-        domainType nullable: true
         offset nullable: true, min: 0
         max nullable: true, min: 0
         searchTerm nullable: true, blank: false
@@ -45,6 +46,16 @@ class SearchParams implements Validateable {
         lastUpdatedAfter nullable: true
         createdBefore nullable: true
         createdAfter nullable: true
+        sort nullable: true
+        order nullable: true
+    }
+
+    SearchParams() {
+        domainTypes = []
+        dataModelTypes = []
+        classifiers = []
+        classifierFilter = []
+        labelOnly = false
     }
 
     void setLimit(Integer limit) {
@@ -55,7 +66,7 @@ class SearchParams implements Validateable {
         searchTerm = term
     }
 
-    List<String> getDomainTypes() {
-        domainTypes ?: domainType ? [domainType] : []
+    void setDomainType(String domainType) {
+        domainTypes = [domainType]
     }
 }

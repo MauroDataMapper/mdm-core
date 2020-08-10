@@ -17,10 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
+import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
+import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,12 +33,32 @@ class FolderController extends EditLoggingController<Folder> {
     static responseFormats = ['json', 'xml']
 
     FolderService folderService
+    SearchService mdmCoreSearchService
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
 
     FolderController() {
         super(Folder)
+    }
+
+    def search(SearchParams searchParams) {
+
+        if (searchParams.hasErrors()) {
+            respond searchParams.errors
+            return
+        }
+
+        searchParams.searchTerm = searchParams.searchTerm ?: params.search
+        params.max = params.max ?: searchParams.max ?: 10
+        params.offset = params.offset ?: searchParams.offset ?: 0
+        params.sort = params.sort ?: searchParams.sort ?: 'label'
+        if (searchParams.order) {
+            params.order = searchParams.order
+        }
+
+        PaginatedLuceneResult<CatalogueItem> result = mdmCoreSearchService.findAllByFolderIdByLuceneSearch(params.folderId, searchParams, params)
+        respond result
     }
 
     @Override

@@ -46,41 +46,6 @@ pipeline {
                         }
                     }
                 }
-                stage('mdm-plugin-email-proxy info') {
-                    steps {
-                        dir('mdm-plugin-email-proxy') {
-                            sh './grailsw -v' // Output grails version for verification checks
-                        }
-                    }
-                }
-                stage('mdm-plugin-datamodel info') {
-                    steps {
-                        dir('mdm-plugin-datamodel') {
-                            sh './grailsw -v' // Output grails version for verification checks
-                        }
-                    }
-                }
-                stage('mdm-plugin-terminology info') {
-                    steps {
-                        dir('mdm-plugin-datamodel') {
-                            sh './grailsw -v' // Output grails version for verification checks
-                        }
-                    }
-                }
-                stage('mdm-security info') {
-                    steps {
-                        dir('mdm-security') {
-                            sh './grailsw -v' // Output grails version for verification checks
-                        }
-                    }
-                }
-                stage('mdm-plugin-authentication-basic info') {
-                    steps {
-                        dir('mdm-plugin-authentication-basic') {
-                            sh './grailsw -v' // Output grails version for verification checks
-                        }
-                    }
-                }
             }
         }
 
@@ -88,6 +53,30 @@ pipeline {
             steps {
                 sh "./gradlew jenkinsClean"
                 sh './gradlew compile'
+            }
+        }
+
+        stage('License Header Check') {
+            steps {
+                sh './gradlew license'
+            }
+        }
+
+        // Deploy develop branch even if tests fail if the code builds, as it'll be an unstable snapshot but we should still deploy
+        stage('Deploy develop to Artifactory') {
+            when {
+                allOf {
+                    branch 'develop'
+                    expression {
+                        currentBuild.currentResult == 'SUCCESS'
+                    }
+                }
+
+            }
+            steps {
+                script {
+                    sh "./gradlew artifactoryPublish"
+                }
             }
         }
 
@@ -177,6 +166,20 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-plugin-dataflow') {
+                    steps {
+                        dir('mdm-plugin-dataflow') {
+                            sh "./grailsw test-app -unit"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-dataflow') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -252,10 +255,24 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-plugin-dataflow') {
+                    steps {
+                        dir('mdm-plugin-dataflow') {
+                            sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-dataflow') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        stage('Parallel Functional Test') {
+        stage('Parallel Functional Test 1') {
             parallel {
                 stage('mdm-core') {
                     steps {
@@ -271,6 +288,25 @@ pipeline {
                         }
                     }
                 }
+                stage('mdm-security') {
+                    steps {
+                        dir('mdm-security') {
+                            sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-security') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Parallel Functional Test 2') {
+            parallel {
                 stage('mdm-plugin-datamodel') {
                     steps {
                         dir('mdm-plugin-datamodel') {
@@ -299,15 +335,20 @@ pipeline {
                         }
                     }
                 }
-                stage('mdm-security') {
+            }
+        }
+
+        stage('Parallel Functional Test 3') {
+            parallel {
+                stage('mdm-plugin-dataflow') {
                     steps {
-                        dir('mdm-security') {
+                        dir('mdm-plugin-datamodel') {
                             sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
                         }
                     }
                     post {
                         always {
-                            dir('mdm-security') {
+                            dir('mdm-plugin-datamodel') {
                                 junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
                             }
                         }
@@ -329,6 +370,7 @@ pipeline {
                 }
             }
         }
+
         stage('Entire Parallel Functional Test') {
             parallel {
                 stage('Entire Functional Test') {
@@ -362,24 +404,14 @@ pipeline {
             }
         }
 
-        stage('License Header Check'){
-            steps{
-                sh './gradlew license'
-            }
-        }
-
         stage('Deploy to Artifactory') {
             when {
                 allOf {
-                    anyOf {
-                        branch 'master'
-                        branch 'develop'
-                    }
+                    branch 'master'
                     expression {
                         currentBuild.currentResult == 'SUCCESS'
                     }
                 }
-
             }
             steps {
                 script {

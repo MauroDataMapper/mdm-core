@@ -29,7 +29,8 @@ import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpStatus
 
 /**
- * @see uk.ac.ox.softeng.maurodatamapper.core.container.FolderController* Controller: folder
+ * <pre>
+ * Controller: folder
  *  | POST   | /api/folders       | Action: save   |
  *  | GET    | /api/folders       | Action: index  |
  *  | DELETE | /api/folders/${id} | Action: delete |
@@ -37,6 +38,11 @@ import io.micronaut.http.HttpStatus
  *  | GET    | /api/folders/${id} | Action: show   |
  *
  *  | DELETE | /api/folders/${folderId}/permanent  | Action: delete |
+ *
+ *  |   GET    | /api/folders/${folderId}/search   | Action: search
+ *  |   POST   | /api/folders/${folderId}/search   | Action: search
+ * </pre>
+ * @see uk.ac.ox.softeng.maurodatamapper.core.container.FolderController
  */
 @Integration
 @Slf4j
@@ -151,7 +157,6 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    @Transactional
     void 'Test the permanent delete action correctly deletes an instance'() {
         when: 'The save action is executed with valid data'
         POST('', validJson)
@@ -172,6 +177,47 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
-        !Folder.get(id)
+
+        when: 'Trying to get the folder'
+        GET(id)
+
+        then:
+        response.status() == HttpStatus.NOT_FOUND
+    }
+
+    void 'test searching for label "test" in empty folder'() {
+        given:
+        def id = createNewItem(validJson)
+        def term = 'test'
+
+        when:
+        GET("${id}/search?searchTerm=${term}")
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+
+        cleanup:
+        DELETE(getDeleteEndpoint(id))
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'test searching for label "test" in empty folder using POST'() {
+        given:
+        def id = createNewItem(validJson)
+        def term = 'test'
+
+        when:
+        POST("${id}/search", [searchTerm: term])
+
+        then:
+        verifyResponse HttpStatus.OK, response
+        responseBody().count == 0
+        responseBody().items.isEmpty()
+
+        cleanup:
+        DELETE(getDeleteEndpoint(id))
+        assert response.status() == HttpStatus.NO_CONTENT
     }
 }

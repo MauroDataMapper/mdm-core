@@ -56,6 +56,8 @@ Controller: email
 Controller: folder
  |   POST   | /api/folders/${folderId}/folders                                                                      | Action: save
  |   GET    | /api/folders/${folderId}/folders                                                                      | Action: index
+ |   GET    | /api/folders/${folderId}/search                                                                       | Action: search
+ |   POST   | /api/folders/${folderId}/search                                                                       | Action: search
  |  DELETE  | /api/folders/${folderId}/readByAuthenticated                                                          | Action: readByAuthenticated
  |   PUT    | /api/folders/${folderId}/readByAuthenticated                                                          | Action: readByAuthenticated
  |  DELETE  | /api/folders/${folderId}/readByEveryone                                                               | Action: readByEveryone
@@ -96,6 +98,10 @@ Controller: referenceFiles
  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}                               | Action: update
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}                               | Action: show
 
+Controller: search
+ |   GET    | /api/catalogueItems/search                                                                            | Action: search
+ |   POST   | /api/catalogueItems/search                                                                            | Action: search
+
 Controller: semanticLink
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks                                      | Action: save
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks                                      | Action: index
@@ -124,5 +130,5 @@ Controller: versionLink
  |   GET    | /api/${modelDomainType}/${modelId}/versionLinks                                                       | Action: index
  |  DELETE  | /api/${modelDomainType}/${modelId}/versionLinks/${id}                                                 | Action: delete
  |   PUT    | /api/${modelDomainType}/${modelId}/versionLinks/${id}                                                 | Action: update
- |   GET    | /api/${modelDomainType}/${modelId}/versionLinks/${id}                                                 | Action: show                                    |
+ |   GET    | /api/${modelDomainType}/${modelId}/versionLinks/${id}                                                 | Action: show
 ```
