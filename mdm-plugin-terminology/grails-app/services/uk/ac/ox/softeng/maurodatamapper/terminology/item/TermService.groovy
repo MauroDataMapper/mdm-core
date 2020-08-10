@@ -70,8 +70,8 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    Term save(Term term) {
-        term.save(flush: true)
+    Term save(Map args = [flush: true], Term term) {
+        term.save(args)
         updateFacetsAfterInsertingCatalogueItem(term)
     }
 
@@ -183,7 +183,7 @@ class TermService extends ModelItemService<Term> {
 
         copiedTerminologyOrCodeSet.addToTerms(copy)
 
-        if (copy.validate()) copy.save(validate: false)
+        if (copy.validate()) save(validate: false, copy)
         else throw new ApiInvalidModelException('DC01', 'Copied Term is invalid', copy.errors, messageSource)
 
         copy.trackChanges()

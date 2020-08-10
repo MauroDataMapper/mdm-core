@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationS
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 @Integration
 @Rollback
@@ -47,6 +48,8 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     Boolean buildComplex = false
 
     DataModel complexDataModel
+
+    UserSecurityPolicyManager userSecurityPolicyManager
 
     void setupDomainData() {
         log.debug('Setting up DataElementServiceSpec')
@@ -251,8 +254,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = dataElementService.copyDataElement(dataModel, original, editor)
-        copyClass.addToDataElements(copy)
+        DataElement copy = dataElementService.copyDataElement(dataModel, copyClass, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(dataModel)
@@ -290,8 +292,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = dataElementService.copyDataElement(dataModel, original, admin)
-        copyClass.addToDataElements(copy)
+        DataElement copy = dataElementService.copyDataElement(dataModel, copyClass, original, admin, userSecurityPolicyManager)
 
         then:
         checkAndSave(copy)
@@ -331,8 +332,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(copyModel)
 
         when:
-        DataElement copy = dataElementService.copyDataElement(copyModel, original, editor)
-        copyClass.addToDataElements(copy)
+        DataElement copy = dataElementService.copyDataElement(copyModel, copyClass, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)

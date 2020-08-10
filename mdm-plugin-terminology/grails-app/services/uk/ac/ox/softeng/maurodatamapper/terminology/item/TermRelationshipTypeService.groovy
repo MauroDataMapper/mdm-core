@@ -61,8 +61,8 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
-    TermRelationshipType save(TermRelationshipType termRelationshipType) {
-        termRelationshipType.save(flush: true)
+    TermRelationshipType save(Map args = [flush: true], TermRelationshipType termRelationshipType) {
+        termRelationshipType.save(args)
         updateFacetsAfterInsertingCatalogueItem(termRelationshipType)
     }
 

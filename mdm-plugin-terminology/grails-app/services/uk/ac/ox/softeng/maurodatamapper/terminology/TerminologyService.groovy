@@ -133,9 +133,9 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology save(Terminology terminology) {
+    Terminology save(Map args = [failOnError: true, validate: false], Terminology terminology) {
         log.debug('Saving {}({}) without batching', terminology.label, terminology.ident())
-        terminology.save(failOnError: true, validate: false)
+        terminology.save(args)
         updateFacetsAfterInsertingCatalogueItem(terminology)
     }
 
@@ -286,7 +286,7 @@ class TerminologyService extends ModelService<Terminology> {
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         if (copy.validate()) {
-            copy.save(validate: false)
+            save(validate: false, copy)
             editService.createAndSaveEdit(copy.id, copy.domainType,
                                           "Terminology ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier

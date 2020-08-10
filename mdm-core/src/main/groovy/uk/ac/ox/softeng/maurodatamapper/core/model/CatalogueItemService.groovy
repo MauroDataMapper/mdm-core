@@ -19,10 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -36,6 +39,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
 
     @Autowired
     GrailsApplication grailsApplication
+    @Autowired
+    ClassifierService classifierService
+    MetadataService metadataService
+    @Autowired
+    SemanticLinkService semanticLinkService
 
     abstract Class<K> getCatalogueItemClass()
 
@@ -56,6 +64,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
     abstract void delete(K catalogueItem)
 
     abstract K save(K catalogueItem)
+    abstract K save(Map args, K catalogueItem)
 
     abstract K get(Serializable id)
 
@@ -110,16 +119,15 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
         get(catalogueItemId).removeFromReferenceFiles(referenceFile)
     }
 
-    K copyCatalogueItemInformation(K original, K copy, User copier) {
+    K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager = null) {
         copy.createdBy = copier.emailAddress
         copy.label = original.label
         copy.description = original.description
 
-        original.classifiers.each {copy.addToClassifiers(it)}
-        original.metadata.each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
+        metadataService.findAllByCatalogueItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
 
-
-        original.semanticLinks.each {link ->
+        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
                                     targetCatalogueItemDomainType: link.targetCatalogueItemDomainType)

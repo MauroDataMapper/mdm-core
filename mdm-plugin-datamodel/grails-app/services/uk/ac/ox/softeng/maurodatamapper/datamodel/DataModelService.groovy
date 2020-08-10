@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -71,6 +72,7 @@ class DataModelService extends ModelService<DataModel> {
     EditService editService
     ClassifierService classifierService
     AuthorityService authorityService
+    SummaryMetadataService summaryMetadataService
 
     SessionFactory sessionFactory
 
@@ -146,9 +148,10 @@ class DataModelService extends ModelService<DataModel> {
         updated
     }
 
-    DataModel save(DataModel dataModel) {
+    @Override
+    DataModel save(Map args = [failOnError: true, validate: false], DataModel dataModel) {
         log.debug('Saving {}({}) without batching', dataModel.label, dataModel.ident())
-        dataModel.save(failOnError: true, validate: false)
+        dataModel.save(args)
         updateFacetsAfterInsertingCatalogueItem(dataModel)
     }
 
@@ -394,9 +397,14 @@ class DataModelService extends ModelService<DataModel> {
     DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
 
-        DataModel newDocVersion = copyDataModel(dataModel, user, copyPermissions, dataModel.label,
+        DataModel newDocVersion = copyDataModel(dataModel,
+                                                user,
+                                                copyPermissions,
+                                                dataModel.label,
                                                 Version.nextMajorVersion(dataModel.documentationVersion),
-                                                additionalArguments.throwErrors as boolean)
+                                                additionalArguments.throwErrors as boolean,
+                                                additionalArguments.userSecurityPolicyManager as UserSecurityPolicyManager,
+                                                true)
         setDataModelIsNewDocumentationVersionOfDataModel(newDocVersion, dataModel, user)
         if (additionalArguments.moveDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
@@ -412,7 +420,8 @@ class DataModelService extends ModelService<DataModel> {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
 
         DataModel newModelVersion = copyDataModel(dataModel, user, copyPermissions, label,
-                                                  additionalArguments.throwErrors as boolean)
+                                                  additionalArguments.throwErrors as boolean,
+                                                  additionalArguments.userSecurityPolicyManager as UserSecurityPolicyManager)
         setDataModelIsNewModelVersionOfDataModel(newModelVersion, dataModel, user)
         if (additionalArguments.copyDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel copying of DataFlows')
@@ -423,12 +432,14 @@ class DataModelService extends ModelService<DataModel> {
         newModelVersion
     }
 
-    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors) {
-        copyDataModel(original, copier, copyPermissions, label, Version.from('1'), throwErrors)
+    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                            UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyDataModel(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
     }
 
     DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label,
-                            Version copyVersion, boolean throwErrors) {
+                            Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean
+                                    copySummaryMetadata = false) {
 
         DataModel copy = new DataModel(author: original.author,
                                        organisation: original.organisation, modelType: original.modelType,
@@ -437,7 +448,7 @@ class DataModelService extends ModelService<DataModel> {
                                        authority: original.authority
         )
 
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
         copy.label = label
 
         if (copyPermissions) {
@@ -451,7 +462,7 @@ class DataModelService extends ModelService<DataModel> {
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         if (copy.validate()) {
-            copy.save(validate: false)
+            save(validate: false, copy)
             editService.createAndSaveEdit(copy.id, copy.domainType,
                                           "DataModel ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
@@ -463,14 +474,14 @@ class DataModelService extends ModelService<DataModel> {
         if (original.dataTypes) {
             // Copy all the datatypes
             original.dataTypes.each {dt ->
-                dataTypeService.copyDataType(copy, dt, copier)
+                dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
 
         if (original.childDataClasses) {
             // Copy all the dataclasses (this will also match up the reference types)
             original.childDataClasses.each {dc ->
-                dataClassService.copyDataClass(copy, dc, copier)
+                dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager)
             }
         }
 
@@ -492,6 +503,21 @@ class DataModelService extends ModelService<DataModel> {
             }
         }
 
+        copy
+    }
+
+    @Override
+    DataModel copyCatalogueItemInformation(DataModel original,
+                                           DataModel copy,
+                                           User copier,
+                                           UserSecurityPolicyManager userSecurityPolicyManager = null,
+                                           boolean copySummaryMetadata = false){
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        if (copySummaryMetadata) {
+            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
+            }
+        }
         copy
     }
 

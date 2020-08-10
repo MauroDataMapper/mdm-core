@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -42,6 +43,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     DataModel complexDataModel
     DataModel simpleDataModel
     DataModelService dataModelService
+
+    UserSecurityPolicyManager userSecurityPolicyManager
 
     @Override
     void setupDomainData() {
@@ -349,19 +352,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'creating new doc version'
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor)
-        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [moveDataFlows            : false,
+                                                                                                      throwErrors: true,
+                                                                                                      userSecurityPolicyManager:
+                                                                                                              userSecurityPolicyManager])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [moveDataFlows            : false, throwErrors: true,
+                                                                                               userSecurityPolicyManager: userSecurityPolicyManager])
 
         then:
         result.errors.allErrors.size() == 1
@@ -376,19 +377,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'creating new doc version'
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor)
-        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [moveDataFlows            : false, throwErrors:
+                true,
+                                                                                                     userSecurityPolicyManager:
+                                                                                                             userSecurityPolicyManager])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [moveDataFlows            : false, throwErrors: true,
+                                                                                              userSecurityPolicyManager: userSecurityPolicyManager])
 
         then:
         result.errors.allErrors.size() == 1
@@ -401,10 +400,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new version on draft model is not allowed'
         DataModel dataModel = dataModelService.get(id)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [copyDataFlows            : false, throwErrors: true,
+                                                                                                              userSecurityPolicyManager:
+                                                                                                                      userSecurityPolicyManager])
 
         then:
         result.errors.allErrors.size() == 1
@@ -419,10 +417,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def result =
+                dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, [copyDataFlows            : false, throwErrors: true,
+                                                                                                          userSecurityPolicyManager:
+                                                                                                                  userSecurityPolicyManager])
 
         then:
         result.instanceOf(DataModel)
@@ -490,10 +488,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [copyDataFlows            : false, throwErrors: true,
+                                                                                                              userSecurityPolicyManager:
+                                                                                                                      userSecurityPolicyManager])
 
         then:
         result.instanceOf(DataModel)
@@ -559,19 +556,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'creating new version'
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor)
-        def newVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def newVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [moveDataFlows            : false, throwErrors: true,
+                                                                                                   userSecurityPolicyManager:
+                                                                                                           userSecurityPolicyManager])
 
         then:
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, [
-            moveDataFlows: false,
-            throwErrors  : true
-        ])
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false,
+                                                            [copyDataFlows: false, throwErrors: true, userSecurityPolicyManager:
+                                                                    userSecurityPolicyManager])
 
         then:
         result.errors.allErrors.size() == 1

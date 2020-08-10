@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationS
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 @Slf4j
 @Integration
@@ -35,6 +36,7 @@ import groovy.util.logging.Slf4j
 class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     DataClassService dataClassService
+    UserSecurityPolicyManager userSecurityPolicyManager
 
     @Override
     void setupDomainData() {
@@ -268,7 +270,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataClass original = dataClassService.get(vsimple.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -320,7 +322,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataClass original = dataClassService.get(content.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -356,14 +358,14 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
         //copyModel.addToDataTypes(new ReferenceType(createdByUser:editor, label: 'dataclass'))
-        dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor)
+        dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor, userSecurityPolicyManager)
 
         expect:
         checkAndSave(copyModel)
 
         when:
         DataClass original = dataClassService.get(complex.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)

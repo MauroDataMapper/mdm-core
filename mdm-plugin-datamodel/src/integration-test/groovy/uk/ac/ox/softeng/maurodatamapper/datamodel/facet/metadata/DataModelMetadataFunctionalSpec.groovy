@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.metadata
 
-
+import io.micronaut.http.HttpResponse
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -50,6 +50,21 @@ class DataModelMetadataFunctionalSpec extends CatalogueItemMetadataFunctionalSpe
     @Shared
     DataType dataType
 
+
+    String getCatalogueItemCopyPath() {
+        "dataModels/${sourceDataModelId}/newModelVersion"
+    }
+
+    @Transactional
+    String getSourceDataModelId() {
+        DataModel.findByLabel('Functional Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getDestinationDataModelId() {
+        // newModelVersion doesn't require a destination data model
+    }
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -80,4 +95,20 @@ class DataModelMetadataFunctionalSpec extends CatalogueItemMetadataFunctionalSpe
     String getCatalogueItemDomainResourcePath() {
         'dataModels'
     }
+
+    @Override
+    void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
+        // Metadata only copied for new doc version
+    }
+
+    @Override
+    HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
+        /// Metadata only copied for new doc version
+    }
+
+    @Override
+    void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
+        // Metadata only copied for new doc version
+    }
+
 }

@@ -63,8 +63,6 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         } else {
             GET('')
             assert response.status() == HttpStatus.OK
-            GET('')
-            assert response.status() == HttpStatus.OK
             def items = response.body().items
             items.each {i ->
                 DELETE(getDeleteEndpoint(i.id))

@@ -58,8 +58,8 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
     }
 
     @Override
-    DataElementComponent save(DataElementComponent dataElementComponent) {
-        dataElementComponent.save(flush: true)
+    DataElementComponent save(Map args = [flush: true], DataElementComponent dataElementComponent) {
+        dataElementComponent.save(args)
         updateFacetsAfterInsertingCatalogueItem(dataElementComponent)
     }
 

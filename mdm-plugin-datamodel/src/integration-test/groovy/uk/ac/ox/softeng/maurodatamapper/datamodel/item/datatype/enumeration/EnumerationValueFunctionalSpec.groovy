@@ -89,7 +89,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec EnumerationValueFunctionalSpec')
-        cleanUpResources(DataType, DataModel, Folder)
+        cleanUpResources(EnumerationType, DataType, DataModel, Folder)
         Authority.findByLabel('Test Authority').delete(flush: true)
     }
 

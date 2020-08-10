@@ -60,8 +60,8 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
     }
 
     @Override
-    EnumerationValue save(EnumerationValue catalogueItem) {
-        catalogueItem.save(flush: true)
+    EnumerationValue save(Map args = [flush: true], EnumerationValue catalogueItem) {
+        catalogueItem.save(args)
     }
 
 

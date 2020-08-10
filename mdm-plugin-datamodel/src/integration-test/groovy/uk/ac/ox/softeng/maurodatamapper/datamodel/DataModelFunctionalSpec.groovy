@@ -17,27 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
-
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import static io.micronaut.http.HttpStatus.*
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
-
-import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static io.micronaut.http.HttpStatus.OK
-import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * @see DataModelController* Controller: dataModel
@@ -1796,19 +1789,19 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test searching for label "emptyclass" in complex model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('complexDataModel').toList()
+                ]
         ])
 
         verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        def term = 'emptyclass'
+        String id = response.body().items[0].id
+        String term = 'emptyclass'
 
         expect:
         id
@@ -1837,24 +1830,26 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                         }
                       ]
                     }'''
+        cleanup:
+        cleanUpData(id)
     }
 
     void 'test searching for label "emptyclass" in simple model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('simpleDataModel').toList()
+                ]
         ])
 
         verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        def term = 'emptyclass'
+        String id = response.body().items[0].id
+        String term = 'emptyclass'
 
         expect:
         id
@@ -1866,6 +1861,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         response.body().count == 0
         response.body().items.size() == 0
+
+        cleanup:
+        cleanUpData(id)
     }
 
     @Transactional
@@ -1943,6 +1941,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse OK, expectedLinkSuggestions(['', '', ''])
+
+        cleanup:
+        cleanUpData(complexDataModelId)
+        cleanUpData(simpleDataModelId)
     }
 
     void 'test get link suggestions for a model'() {
@@ -1984,6 +1986,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse OK, expectedLinkSuggestions(expectedLinkSuggestionResults())
+
+        cleanup:
+        cleanUpData(complexDataModelId)
+        cleanUpData(simpleDataModelId)
     }
 
 

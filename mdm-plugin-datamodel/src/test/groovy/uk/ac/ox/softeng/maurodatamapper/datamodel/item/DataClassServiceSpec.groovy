@@ -283,7 +283,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when:
         DataClass original = service.get(complex.id)
-        DataClass copy = service.copyDataClassMatchingAllReferenceTypes(copyModel, original, editor, null)
+        DataClass copy = service.copyDataClassMatchingAllReferenceTypes(copyModel, original, editor, null, null)
 
         then:
         checkAndSave(copyModel)

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test.functional
 
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
@@ -36,6 +37,11 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 abstract class CatalogueItemSummaryMetadataFunctionalSpec extends CatalogueItemFacetFunctionalSpec<SummaryMetadata> {
+
+    abstract String getSourceDataModelId()
+
+    abstract String getDestinationDataModelId()
+
     @Override
     String getFacetResourcePath() {
         'summaryMetadata'
@@ -99,6 +105,42 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends CatalogueItemF
                 ]
             ]
         ]
+    }
+
+    void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
+        verifyResponse(HttpStatus.CREATED, response)
+    }
+
+    HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
+        String copyId = response.body().id
+        GET(getCopyResourcePath(copyId), MAP_ARG, true)
+    }
+
+    void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
+        verifyResponse(HttpStatus.OK, response)
+        // summary metadata should not be copied for DC/DT/DE
+        assert response.body().count == 0
+        assert response.body().items.size() == 0
+    }
+
+    void 'CIF01 : Test facet copied with catalogue item'() {
+        given: 'Create new facet on catalogue item'
+        def id = createNewItem(validJson)
+
+        when: 'Copy catalogue item'
+        POST(catalogueItemCopyPath, [:], MAP_ARG, true)
+
+        then: 'Check successful copy'
+        verifyCIF01SuccessfulCatalogueItemCopy(response)
+
+        when: 'Retrieve the facets on the newly copied catalogue item'
+        requestCIF01CopiedCatalogueItemFacet(response)
+
+        then: 'Check our recent new facet was copied with the catalogue item'
+        verifyCIF01CopiedFacetSuccessfully(response)
+
+        cleanup: 'Remove facet from source catalogue item'
+        cleanUpData(id)
     }
 
     void 'CISM01: test including summaryMetadataReport in summaryMetadata'() {

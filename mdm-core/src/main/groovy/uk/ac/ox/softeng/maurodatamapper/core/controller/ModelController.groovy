@@ -17,6 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.controller
 
+import grails.artefact.Artefact
+import grails.gorm.transactions.Transactional
+import grails.web.mime.MimeType
+import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
@@ -36,16 +42,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.artefact.Artefact
-import grails.gorm.transactions.Transactional
-import grails.web.mime.MimeType
-import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
-
-import static org.springframework.http.HttpStatus.CREATED
-import static org.springframework.http.HttpStatus.NO_CONTENT
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
+import static org.springframework.http.HttpStatus.*
 
 @Slf4j
 @Artefact('Controller')
@@ -243,7 +240,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        T copy = getModelService().createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions)
+        T copy = getModelService().createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions,
+                                                                 [userSecurityPolicyManager: currentUserSecurityPolicyManager])
 
         if (!validateResource(copy, 'create')) return
 
@@ -270,7 +268,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         try {
-            T copy = getModelService().createNewModelVersion(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions)
+            T copy = getModelService().createNewModelVersion(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
+                                                             [userSecurityPolicyManager: currentUserSecurityPolicyManager])
 
             if (!validateResource(copy, 'create')) return
 

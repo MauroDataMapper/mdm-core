@@ -32,6 +32,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -55,6 +57,7 @@ class DataClassService extends ModelItemService<DataClass> {
     MessageSource messageSource
     SessionFactory sessionFactory
     ClassifierService classifierService
+    SummaryMetadataService summaryMetadataService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -71,8 +74,8 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     @Override
-    DataClass save(DataClass dataClass) {
-        dataClass.save(flush: true)
+    DataClass save(Map args = [flush: true], DataClass dataClass) {
+        dataClass.save(args)
         updateFacetsAfterInsertingCatalogueItem(dataClass)
     }
 
@@ -465,24 +468,26 @@ class DataClassService extends ModelItemService<DataClass> {
         findDataClassByPath(parent, pathLabels)
     }
 
-    DataClass copyDataClassMatchingAllReferenceTypes(DataModel copiedDataModel, DataClass original, User copier, Serializable parentDataClassId) {
-        DataClass copiedDataClass = copyDataClass(copiedDataModel, original, copier, parentDataClassId)
+    DataClass copyDataClassMatchingAllReferenceTypes(DataModel copiedDataModel, DataClass original, User copier, UserSecurityPolicyManager
+            userSecurityPolicyManager, Serializable parentDataClassId) {
+        DataClass copiedDataClass = copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager, parentDataClassId)
         log.debug('Copied required DataClass, now checking for reference classes which haven\'t been matched or added')
-        matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, original.dataModel, copier)
+        matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, original.dataModel, copier, userSecurityPolicyManager)
         copiedDataClass
 
     }
 
-    DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier, Serializable parentDataClassId = null) {
-
+    DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier, UserSecurityPolicyManager
+            userSecurityPolicyManager,
+                            Serializable parentDataClassId = null, boolean copySummaryMetadata = false) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 
         DataClass copy = new DataClass(
-            minMultiplicity: original.minMultiplicity,
-            maxMultiplicity: original.maxMultiplicity
+                minMultiplicity: original.minMultiplicity,
+                maxMultiplicity: original.maxMultiplicity
         )
 
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataClasses(copy)
@@ -491,8 +496,8 @@ class DataClassService extends ModelItemService<DataClass> {
             get(parentDataClassId).addToDataClasses(copy)
         }
 
-        if (copy.validate()) copy.save(validate: false)
-        else throw new ApiInvalidModelException('DC01', 'Copied DataClass is invalid', copy.errors, messageSource)
+        if (copy.validate()) save(validate: false, copy)
+        else throw new ApiInvalidModelException('DCS01', 'Copied DataClass is invalid', copy.errors, messageSource)
 
         copy.trackChanges()
         // Assuming DC is valid then we can start adding all its components
@@ -508,18 +513,34 @@ class DataClassService extends ModelItemService<DataClass> {
 
         copy.dataClasses = []
         original.dataClasses.each {child ->
-            copy.addToDataClasses(copyDataClass(copiedDataModel, child, copier))
+            copy.addToDataClasses(Class(copiedDataModel, child, copier, userSecurityPolicyManager))
         }
         copy.dataElements = []
         original.dataElements.each {element ->
-            copy.addToDataElements(dataElementService.copyDataElement(copiedDataModel, element, copier))
+            dataElementService.copyDataElement(copiedDataModel, copy, original.dataModel, element, copier, userSecurityPolicyManager)
         }
 
         copy
 
     }
 
-    void matchUpAndAddMissingReferenceTypeClasses(DataModel copiedDataModel, DataModel originalDataModel, User copier) {
+    @Override
+    DataClass copyCatalogueItemInformation(DataClass original,
+                                           DataClass copy,
+                                           User copier,
+                                           UserSecurityPolicyManager userSecurityPolicyManager = null,
+                                           boolean copySummaryMetadata = false){
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        if (copySummaryMetadata) {
+            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
+            }
+        }
+        copy
+    }
+
+    void matchUpAndAddMissingReferenceTypeClasses(DataModel copiedDataModel, DataModel originalDataModel, User copier,
+                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
         Set<ReferenceType> emptyReferenceTypes = findAllEmptyReferenceTypes(copiedDataModel)
         if (!emptyReferenceTypes) return
         log.debug('Found {} empty reference types', emptyReferenceTypes.size())
@@ -530,12 +551,12 @@ class DataClassService extends ModelItemService<DataClass> {
             DataClass copiedDataClass = findDataClassByPath(copiedDataModel, originalDataClassPath.split(/\|/).toList())
             if (!copiedDataClass) {
                 log.debug('Creating DataClass {} for referenceType {}', ort.referenceClass.label, rt.label)
-                copiedDataClass = copyDataClass(copiedDataModel, ort.referenceClass, copier)
+                copiedDataClass = copyDataClass(copiedDataModel, ort.referenceClass, copier, userSecurityPolicyManager)
             }
             copiedDataClass.addToReferenceTypes(rt)
         }
         // Recursively loop until no empty reference classes
-        matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier)
+        matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier, userSecurityPolicyManager)
     }
 
 

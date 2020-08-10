@@ -188,8 +188,8 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    TermRelationship save(TermRelationship catalogueItem) {
-        catalogueItem.save(flush: true)
+    TermRelationship save(Map args = [flush: true], TermRelationship catalogueItem) {
+        catalogueItem.save(args)
         updateFacetsAfterInsertingCatalogueItem(catalogueItem)
     }
 

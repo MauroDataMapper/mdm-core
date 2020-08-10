@@ -131,9 +131,9 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet save(CodeSet codeSet) {
+    CodeSet save(Map args = [failOnError: true, validate: false], CodeSet codeSet) {
         log.debug('Saving {}({}) without batching', codeSet.label, codeSet.ident())
-        codeSet.save(failOnError: true, validate: false)
+        codeSet.save(args)
         updateFacetsAfterInsertingCatalogueItem(codeSet)
     }
 
@@ -298,7 +298,7 @@ class CodeSetService extends ModelService<CodeSet> {
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         if (copy.validate()) {
-            copy.save(validate: false)
+            save(validate: false, copy)
             editService.createAndSaveEdit(copy.id, copy.domainType,
                                           "CodeSet ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier

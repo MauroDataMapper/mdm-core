@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 
 import grails.testing.services.ServiceUnitTest
@@ -45,6 +46,8 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
     UUID id
 
     DataModel dataModel
+
+    UserSecurityPolicyManager userSecurityPolicyManager
 
     def setup() {
         log.debug('Setting up DataElementServiceSpec Unit')
@@ -168,8 +171,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = service.copyDataElement(dataModel, original, editor)
-        copyClass.addToDataElements(copy)
+        DataElement copy = service.copyDataElement(dataModel, copyClass, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(dataModel)
@@ -206,8 +208,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = service.copyDataElement(dataModel, original, admin)
-        copyClass.addToDataElements(copy)
+        DataElement copy = service.copyDataElement(dataModel, copyClass, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copy)
@@ -247,8 +248,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(copyModel)
 
         when:
-        DataElement copy = service.copyDataElement(copyModel, original, editor)
-        copyClass.addToDataElements(copy)
+        DataElement copy = service.copyDataElement(copyModel, copyClass, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)

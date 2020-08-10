@@ -31,7 +31,7 @@ class DataElementLabelValidator extends UniqueStringValidator<DataElement> {
 
     @Override
     boolean objectParentIsNotSaved() {
-        !object.dataClass.ident()
+        !object.dataClass?.ident()
     }
 
     @Override

@@ -65,4 +65,12 @@ abstract class CatalogueItemFacetFunctionalSpec<D extends GormEntity> extends Re
         cleanUpResources(Folder)
         Authority.findByLabel('Test Authority').delete(flush: true)
     }
+
+    String getCatalogueItemCopyPath() {
+        "dataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"
+    }
+
+    String getCopyResourcePath(String copyId) {
+        "${catalogueItemDomainResourcePath}/${copyId}/${facetResourcePath}"
+    }
 }

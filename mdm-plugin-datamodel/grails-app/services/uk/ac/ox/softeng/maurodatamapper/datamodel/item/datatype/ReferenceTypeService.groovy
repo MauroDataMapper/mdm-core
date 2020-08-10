@@ -70,8 +70,8 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     }
 
     @Override
-    ReferenceType save(ReferenceType catalogueItem) {
-        catalogueItem.save(flush: true)
+    ReferenceType save(Map args = [flush: true], ReferenceType catalogueItem) {
+        catalogueItem.save(args)
     }
 
 

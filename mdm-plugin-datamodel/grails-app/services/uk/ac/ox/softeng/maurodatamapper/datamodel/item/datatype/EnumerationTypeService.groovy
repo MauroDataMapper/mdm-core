@@ -72,8 +72,8 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
     }
 
     @Override
-    EnumerationType save(EnumerationType catalogueItem) {
-        catalogueItem.save(flush: true)
+    EnumerationType save(Map args = [flush: true], EnumerationType catalogueItem) {
+        catalogueItem.save(args)
     }
 
     @Override

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
@@ -29,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -48,7 +50,6 @@ import org.hibernate.SessionFactory
 @Transactional
 class DataTypeService extends ModelItemService<DataType> implements DefaultDataTypeProvider {
 
-    DataModelService dataModelService
     DataElementService dataElementService
     DataClassService dataClassService
     SessionFactory sessionFactory
@@ -56,6 +57,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     ReferenceTypeService referenceTypeService
     EnumerationTypeService enumerationTypeService
     ClassifierService classifierService
+    SummaryMetadataService summaryMetadataService
 
     @Override
     DataType get(Serializable id) {
@@ -102,8 +104,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    DataType save(DataType catalogueItem) {
-        catalogueItem.save(flush: true)
+    DataType save(Map args = [flush: true], DataType catalogueItem) {
+        catalogueItem.save(args)
         updateFacetsAfterInsertingCatalogueItem(catalogueItem)
     }
 
@@ -288,7 +290,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     private void setCreatedBy(User creator, DataType dataType) {
-        throw new ApiNotYetImplementedException('DESXX', 'DataType setting created by')
+        throw new ApiNotYetImplementedException('DTSXX', 'DataType setting created by')
     }
 
     private def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
@@ -332,14 +334,18 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                     referenceType.referenceClass = null
                 }
             }
-        } else {
+        }
+        else {
             log.trace('Making best guess for matching reference class as no path nor bound class')
             DataClass dataClass = dataModel.dataClasses.find {it.label == bindingMap.referenceClass.label}
             if (dataClass) dataClass.addToReferenceTypes(referenceType)
         }
     }
 
-    DataType copyDataType(DataModel copiedDataModel, DataType original, User copier) {
+    DataType copyDataType(DataModel copiedDataModel, DataModel originalDataModel = copiedDataModel, DataType original, User copier,
+                          UserSecurityPolicyManager
+                                  userSecurityPolicyManager,
+                          boolean copySummaryMetadata = false) {
 
         DataType copy
 
@@ -362,11 +368,32 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
         }
 
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataTypes(copy)
 
+        dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier,
+                                                                  userSecurityPolicyManager)
+
+        if (copy.validate()) save(validate: false, copy)
+        else throw new ApiInvalidModelException('DTS01', 'Copied DataType is invalid', copy.errors)
+
+        copy
+    }
+
+    @Override
+    DataType copyCatalogueItemInformation(DataType original,
+                                          DataType copy,
+                                          User copier,
+                                          UserSecurityPolicyManager userSecurityPolicyManager = null,
+                                          boolean copySummaryMetadata = false){
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        if (copySummaryMetadata) {
+            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
+            }
+        }
         copy
     }
 

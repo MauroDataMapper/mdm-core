@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -43,17 +42,31 @@ class DataClassSummaryMetadataFunctionalSpec extends CatalogueItemSummaryMetadat
     @Shared
     DataModel dataModel
     @Shared
+    DataModel destinationDataModel
+    @Shared
     DataClass dataClass
     @Shared
     DataElement dataElement
     @Shared
     DataType dataType
 
+    @Transactional
+    String getSourceDataModelId() {
+        DataModel.findByLabel('Functional Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getDestinationDataModelId() {
+        DataModel.findByLabel('Destination Test DataModel').id.toString()
+    }
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+                                  folder: folder, authority: testAuthority).save(flush: true)
+        destinationDataModel = new DataModel(label: 'Destination Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   dataModel: dataModel).save(flush: true)

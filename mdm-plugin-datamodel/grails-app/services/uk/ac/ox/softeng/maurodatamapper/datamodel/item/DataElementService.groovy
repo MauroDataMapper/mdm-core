@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
@@ -31,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
@@ -54,12 +56,12 @@ import javax.persistence.EntityManager
 @Transactional
 class DataElementService extends ModelItemService<DataElement> {
 
-    DataModelService dataModelService
     DataClassService dataClassService
     DataTypeService dataTypeService
     SessionFactory sessionFactory
     ClassifierService classifierService
     SemanticLinkService semanticLinkService
+    SummaryMetadataService summaryMetadataService
 
     @Override
     DataElement get(Serializable id) {
@@ -98,8 +100,8 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     @Override
-    DataElement save(DataElement catalogueItem) {
-        catalogueItem.save(flush: true)
+    DataElement save(Map args = [flush: true], DataElement catalogueItem) {
+        catalogueItem.save(args)
         updateFacetsAfterInsertingCatalogueItem(catalogueItem)
     }
 
@@ -331,7 +333,10 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement
     }
 
-    DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier) {
+    DataElement copyDataElement(DataModel copiedDataModel, DataClass copiedDataClass, DataModel originalDataModel = copiedDataModel,
+                                DataElement original, User
+                                        copier,
+                                UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
@@ -342,11 +347,34 @@ class DataElementService extends ModelItemService<DataElement> {
 
         // If theres no DataType then copy the original's DataType into the DataModel
         if (!dataType) {
-            dataType = dataTypeService.copyDataType(copiedDataModel, original.dataType, copier)
+            dataType = dataTypeService.copyDataType(copiedDataModel, originalDataModel, original.dataType, copier,
+                                                    userSecurityPolicyManager)
         }
 
         copy.dataType = dataType
 
+        copiedDataClass.addToDataElements(copy)
+
+        dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier, userSecurityPolicyManager)
+
+        if (copy.validate()) save(validate: false, copy)
+        else throw new ApiInvalidModelException('DES01', 'Copied DataElement is invalid', copy.errors)
+
+        copy
+    }
+
+    @Override
+    DataElement copyCatalogueItemInformation(DataElement original,
+                                             DataElement copy,
+                                             User copier,
+                                             UserSecurityPolicyManager userSecurityPolicyManager = null,
+                                             boolean copySummaryMetadata = false){
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        if (copySummaryMetadata) {
+            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
+            }
+        }
         copy
     }
 

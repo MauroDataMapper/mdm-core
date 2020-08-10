@@ -63,12 +63,13 @@ class DataTypeController extends CatalogueItemController<DataType> {
         }
 
         DataModel dataModel = dataModelService.get(params.dataModelId)
+        DataModel originalDataModel = dataModelService.get(params.otherDataModelId)
         DataType original = dataTypeService.findByDataModelIdAndId(params.otherDataModelId, params.dataTypeId)
 
         if (!original) return notFound(params.dataTypeId)
         DataType copy
         try {
-            copy = dataTypeService.copyDataType(dataModel, original, currentUser)
+            copy = dataTypeService.copyDataType(dataModel, originalDataModel, original, currentUser, currentUserSecurityPolicyManager)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422
