@@ -201,7 +201,6 @@ class CodeSetService extends ModelService<CodeSet> {
     CodeSet finaliseModel(CodeSet codeSet, User user, List<Serializable> supersedeModelIds = []) {
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        codeSet.breadcrumbTree.finalise()
         codeSet.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised CodeSet',
                                  description: "CodeSet finalised by ${user.firstName} ${user.lastName} on " +
                                               "${OffsetDateTimeConverter.toString(codeSet.dateFinalised)}")
