@@ -422,11 +422,10 @@ pipeline {
     }
 
     post {
-        always {
+        unstable{
             script {
                 sh "./gradlew rootTestReport"
             }
-            outputTestResults()
             publishHTML([
                 allowMissing         : false,
                 alwaysLinkToLastBuild: true,
@@ -436,6 +435,9 @@ pipeline {
                 reportName           : 'Complete Test Report',
                 reportTitles         : 'Test'
             ])
+        }
+        always {
+            outputTestResults()
             jacoco execPattern: '**/build/jacoco/*.exec'
             archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.log'
             slackNotification()
