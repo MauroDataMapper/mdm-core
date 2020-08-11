@@ -52,7 +52,6 @@ class SemanticLink implements CatalogueItemAware, CreatorAware {
 
     static mapping = {
         batchSize 20
-        createdBy cascade: 'none', index: 'semantic_link_created_by_idx'
         catalogueItemId index: 'semantic_link_catalogue_item_idx'
         targetCatalogueItemId index: 'semantic_link_target_catalogue_item_idx'
     }

@@ -37,6 +37,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
+import org.grails.datastore.mapping.validation.CascadeValidateType
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class CodeSet implements Model<CodeSet> {
@@ -66,8 +67,8 @@ class CodeSet implements Model<CodeSet> {
 
     static mapping = {
         documentationVersion type: VersionUserType
-        folder cascade: 'none'
-        terms cascade: 'none', index: 'jcstt_term_idx', joinTable: [
+        folder cascade: 'none', cascadeValidate: CascadeValidateType.NONE
+        terms cascade: 'none', cascadeValidate: CascadeValidateType.NONE, index: 'jcstt_term_idx', joinTable: [
             name  : 'join_codeset_to_term',
             key   : 'codeSet_id',
             column: 'term_id'

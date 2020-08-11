@@ -35,9 +35,7 @@ class CreatorAwareMappingContext extends DynamicHibernateMappingContext {
 
     @Override
     Property updateDomainMapping(PersistentEntity entity) {
-        String dType = entity.javaClass.simpleName
         updateProperty(entity, 'createdBy', [
-            cascade: 'none',
             index  : "${entity.decapitalizedName}_created_by_idx".toString()
         ])
     }

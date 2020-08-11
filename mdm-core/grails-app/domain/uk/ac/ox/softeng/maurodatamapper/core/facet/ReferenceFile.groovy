@@ -41,7 +41,6 @@ class ReferenceFile implements CatalogueFile, CatalogueItemAware {
     }
 
     static mapping = {
-        createdBy cascade: 'none', index: 'referencefile_created_by_idx'
     }
 
     static transients = ['catalogueItem']

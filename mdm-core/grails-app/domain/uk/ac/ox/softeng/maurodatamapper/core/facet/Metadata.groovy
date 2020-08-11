@@ -56,7 +56,6 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
         key type: 'text'
         value type: 'text'
         catalogueItemId index: 'metadata_catalogue_item_idx'
-        createdBy cascade: 'none', index: 'metadata_created_by_idx'
     }
 
     static search = {

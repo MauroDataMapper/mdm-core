@@ -64,7 +64,6 @@ class Annotation implements CatalogueItemAware, PathAware, InformationAware, Cre
     }
 
     static mapping = {
-        createdBy cascade: 'none', index: 'annotation_created_by_idx'
         parentAnnotation index: 'annotation_parent_annotation_idx'
         childAnnotations sort: 'dateCreated', order: 'asc', cascade: 'all-delete-orphan'
     }

@@ -52,7 +52,6 @@ class VersionLink implements CatalogueItemAware, CreatorAware {
 
     static mapping = {
         batchSize 20
-        createdBy cascade: 'none', index: 'version_link_created_by_idx'
         catalogueItemId index: 'version_link_catalogue_item_idx'
         targetModelId index: 'version_link_target_model_idx'
     }

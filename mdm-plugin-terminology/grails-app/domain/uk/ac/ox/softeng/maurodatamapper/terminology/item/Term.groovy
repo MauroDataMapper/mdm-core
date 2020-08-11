@@ -39,6 +39,7 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import org.apache.lucene.analysis.core.KeywordAnalyzer
 import org.grails.datastore.gorm.GormEntity
+import org.grails.datastore.mapping.validation.CascadeValidateType
 import org.hibernate.search.annotations.Field
 import org.hibernate.search.annotations.FieldBridge
 import org.hibernate.search.annotations.Index
@@ -84,7 +85,7 @@ class Term implements ModelItem<Term, Terminology> {
 
     static mapping = {
         definition type: 'text'
-        codeSets cascade: 'none', index: 'jcstt_codeset_idx', joinTable: [
+        codeSets cascade: 'none', cascadeValidate: CascadeValidateType.NONE, index: 'jcstt_codeset_idx', joinTable: [
             name  : 'join_codeset_to_term',
             key   : 'term_id',
             column: 'codeSet_id'
