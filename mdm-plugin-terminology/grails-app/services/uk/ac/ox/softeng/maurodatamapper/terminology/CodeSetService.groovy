@@ -266,7 +266,7 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet newModelVersion = copyCodeSet(codeSet, user, copyPermissions, label, additionalArguments.throwErrors as boolean)
         setCodeSetIsNewModelVersionOfCodeSet(newModelVersion, codeSet, user)
 
-        if (newModelVersion.validate()) newModelVersion.save(flush: true, validate: false)
+        if (newModelVersion.validate()) save(newModelVersion)
         newModelVersion
     }
 
@@ -307,7 +307,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
         // Copy all the terms
         original.terms?.each {term ->
-            termService.copyTerm(copy, term, copier)
+            copy.addToTerms(term)
         }
 
         if (original.semanticLinks) {
