@@ -139,7 +139,7 @@ class BreadcrumbTree {
 
     void updateTree() {
         buildTree()
-        children.each {it.updateTree()}
+        children?.each {it.updateTree()}
     }
 
     void buildTree() {
