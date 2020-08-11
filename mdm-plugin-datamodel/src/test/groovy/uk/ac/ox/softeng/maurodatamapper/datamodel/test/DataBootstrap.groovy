@@ -46,8 +46,7 @@ trait DataBootstrap {
     abstract User getAdmin()
 
     DataModel buildSimpleDataModel() {
-        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
-        checkAndSave(testAuthority)
+        Authority testAuthority = Authority.findByLabel('Mauro Data Mapper')
 
         DataModel simpleDataModel = new DataModel(createdByUser: editor, label: 'Simple Test DataModel', folder: testFolder, authority: testAuthority)
 
@@ -69,8 +68,7 @@ trait DataBootstrap {
     }
 
     DataModel buildComplexDataModel() {
-        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
-        checkAndSave(testAuthority)
+        Authority testAuthority = Authority.findByLabel('Mauro Data Mapper')
 
         DataModel dataModel = new DataModel(createdByUser: admin, label: 'Complex Test DataModel', organisation: 'brc', author: 'admin person',
                                             folder: testFolder, authority: testAuthority)

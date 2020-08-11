@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.security.AuthorityService
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
 class AuthorityController extends EditLoggingController<Authority> /* implements RestResponder */ {
+
     static responseFormats = ['json', 'xml']
 
     static allowedMethods = [
@@ -35,28 +37,35 @@ class AuthorityController extends EditLoggingController<Authority> /* implements
 
     AuthorityService authorityService
 
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
+
     AuthorityController() {
         super(Authority)
     }
 
-    @Override
-    protected Authority createResource() {
+    protected Authority createResource(String label, URL url, String description) {
         Authority instance = super.createResource() as Authority
-        instance.label = authorityService.defaultAuthority()
+        instance.label = label
+        instance.url = url
+        instance.description = description
         instance
     }
 
     @Override
     protected Authority saveResource(Authority resource) {
-        Authority authority = super.saveResource(resource)
+        Authority authority = super.saveResource(resource) as Authority
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(resource, currentUser, resource.label)
+        }
         authority
     }
 
-    protected Classifier updateResource(Classifier resource) {
+    protected Authority updateResource(Authority resource) {
         Set<String> changedProperties = resource.getDirtyPropertyNames()
-        Classifier classifier = super.updateResource(resource) as Classifier
+        Authority authority = super.updateResource(resource) as Authority
         if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(classifier,
+            currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(authority,
                     changedProperties,
                     currentUser)
         }

@@ -42,6 +42,6 @@ class Authority implements InformationAware, CreatorAware {
 
     @Override
     String getDomainType() {
-        return null
+        return Authority.simpleName
     }
 }

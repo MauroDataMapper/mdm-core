@@ -79,9 +79,10 @@ class BootStrap {
 
 
         Authority.withNewTransaction {
-            if (!authorityService.getDefaultAuthority()) {
+            if (!authorityService.defaultAuthorityExists()) {
                 Authority authority = new Authority(label: grailsApplication.config.getProperty('maurodatamapper.authority.name').toString(),
-                                                    url: grailsApplication.config.getProperty('maurodatamapper.authority.url').toURL())
+                                                    url: grailsApplication.config.getProperty('maurodatamapper.authority.url').toURL(),
+                                                    createdBy: StandardEmailAddress.ADMIN)
                 checkAndSave(messageSource, authority)
             }
         }

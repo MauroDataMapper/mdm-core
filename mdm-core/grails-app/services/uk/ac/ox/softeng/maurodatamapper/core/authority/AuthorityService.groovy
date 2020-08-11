@@ -31,7 +31,7 @@ class AuthorityService {
     }
 
     List<Authority> list(Map pagination) {
-        pagination ? Authority.withFilter(pagination).join('groups').list(pagination) : Authority.list()
+        pagination ? Authority.list(pagination) : Authority.list()
     }
 
     Long count() {
@@ -42,4 +42,7 @@ class AuthorityService {
         return Authority.findByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name'))
     }
 
+    boolean defaultAuthorityExists(){
+        return Authority.countByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name')) > 0
+    }
 }
