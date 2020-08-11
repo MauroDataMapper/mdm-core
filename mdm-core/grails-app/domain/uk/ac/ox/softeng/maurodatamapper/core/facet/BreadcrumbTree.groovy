@@ -108,6 +108,11 @@ class BreadcrumbTree {
         }
     }
 
+    void finalise() {
+        finalised = true
+        updateTree()
+    }
+
     def beforeValidate() {
         if (id && !isDirty()) trackChanges()
         if (domainEntity) {
@@ -130,6 +135,11 @@ class BreadcrumbTree {
     void checkTree() {
         if (!treeString) buildTree()
         else if (!matchesTree(treeString)) buildTree()
+    }
+
+    void updateTree() {
+        buildTree()
+        children.each {it.updateTree()}
     }
 
     void buildTree() {

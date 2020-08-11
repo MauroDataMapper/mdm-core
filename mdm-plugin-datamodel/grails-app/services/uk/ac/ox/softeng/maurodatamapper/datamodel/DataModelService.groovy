@@ -350,6 +350,7 @@ class DataModelService extends ModelService<DataModel> {
     DataModel finaliseModel(DataModel dataModel, User user, List<Serializable> supersedeModelIds = []) {
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        dataModel.breadcrumbTree.finalise()
         dataModel.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                    description: "DataModel finalised by ${user.firstName} ${user.lastName} on " +
                                                 "${OffsetDateTimeConverter.toString(dataModel.dateFinalised)}")

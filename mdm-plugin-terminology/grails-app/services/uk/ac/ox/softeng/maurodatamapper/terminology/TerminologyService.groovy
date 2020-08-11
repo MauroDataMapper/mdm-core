@@ -203,7 +203,7 @@ class TerminologyService extends ModelService<Terminology> {
     Terminology finaliseModel(Terminology terminology, User user, List<Serializable> supersedeModelIds = []) {
         terminology.finalised = true
         terminology.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-
+        terminology.breadcrumbTree.finalise()
         terminology.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Terminology',
                                      description: "Terminology finalised by ${user.firstName} ${user.lastName} on " +
                                                   "${OffsetDateTimeConverter.toString(terminology.dateFinalised)}")
