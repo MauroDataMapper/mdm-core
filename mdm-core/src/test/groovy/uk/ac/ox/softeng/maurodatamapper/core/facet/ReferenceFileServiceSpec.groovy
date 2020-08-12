@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
@@ -29,6 +30,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 @Slf4j
 class ReferenceFileServiceSpec extends CatalogueItemAwareServiceSpec<ReferenceFile, ReferenceFileService>
     implements ServiceUnitTest<ReferenceFileService> {
@@ -37,10 +40,12 @@ class ReferenceFileServiceSpec extends CatalogueItemAwareServiceSpec<ReferenceFi
     ReferenceFile logFile
 
     def setup() {
-        mockDomains(Folder, BasicModel, Edit, ReferenceFile)
-
+        mockDomains(Folder, BasicModel, Edit, ReferenceFile, Authority)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
         Path lf = Paths.get('grails-app/conf/logback.groovy')
         logFile = new ReferenceFile().with {
             fileName = lf.fileName

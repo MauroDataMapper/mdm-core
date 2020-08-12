@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
@@ -25,20 +25,27 @@ import uk.ac.ox.softeng.maurodatamapper.core.util.test.CatalogueItemAwareService
 
 import grails.testing.services.ServiceUnitTest
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, VersionLinkService>
     implements ServiceUnitTest<VersionLinkService> {
 
     UUID id
     BasicModel basicModel2
     BasicModel basicModel3
+    Authority testAuthority
 
     def setup() {
-        mockDomains(Folder, BasicModel, Edit, VersionLink)
-
+        mockDomains(Folder, BasicModel, Edit, VersionLink, Authority)
+        testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        basicModel3 = new BasicModel(label: 'dm3', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
+        basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                     authority: testAuthority)
+        basicModel3 = new BasicModel(label: 'dm3', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                     authority: testAuthority)
         checkAndSave basicModel
         checkAndSave(basicModel2)
         checkAndSave(basicModel3)
@@ -289,7 +296,8 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
 
     void 'test filtering of document superseded models'() {
         given:
-        BasicModel basicModel4 = new BasicModel(label: 'dm4', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel4 = new BasicModel(label: 'dm4', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                                authority: testAuthority)
         checkAndSave basicModel4
 
         // bm1 SUPERSEDED_BY_MODEL bm2
@@ -322,7 +330,8 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
 
     void 'test filtering of model superseded models'() {
         given:
-        BasicModel basicModel4 = new BasicModel(label: 'dm4', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel4 = new BasicModel(label: 'dm4', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                                authority: testAuthority)
         checkAndSave basicModel4
 
         // bm1 SUPERSEDED_BY_MODEL bm2 -- bm1 superseded
@@ -378,7 +387,8 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
 
     void 'test filtering of superseded models'() {
         given:
-        BasicModel basicModel4 = new BasicModel(label: 'dm4', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel4 = new BasicModel(label: 'dm4', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                                authority: testAuthority)
         checkAndSave basicModel4
 
         // bm1 SUPERSEDED_BY_MODEL bm2 -- bm1 superseded
@@ -415,7 +425,8 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
 
     void 'test finding latest superseding model'() {
         given:
-        BasicModel basicModel4 = new BasicModel(label: 'dm4', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel4 = new BasicModel(label: 'dm4', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                                authority: testAuthority)
         checkAndSave basicModel4
 
         // bm1 SUPERSEDED_BY_MODEL bm2 -- bm1 superseded

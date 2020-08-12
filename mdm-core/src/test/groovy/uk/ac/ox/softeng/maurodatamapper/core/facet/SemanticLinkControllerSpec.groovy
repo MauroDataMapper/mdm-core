@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkController
@@ -32,6 +33,7 @@ import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import groovy.util.logging.Slf4j
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 import static uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType.ABSTRACTS
 import static uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType.DOES_NOT_ABSTRACT
 import static uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType.DOES_NOT_REFINE
@@ -47,14 +49,15 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     BasicModel basicModel3
 
     def setup() {
-        mockDomains(Folder, BasicModel)
+        mockDomains(Folder, BasicModel, Authority)
         log.debug('Setting up semantic link controller unit')
         mockDomains(Folder, BasicModel, Edit, SemanticLink)
-
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        basicModel3 = new BasicModel(label: 'dm3', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
+        basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
+        basicModel3 = new BasicModel(label: 'dm3', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
         checkAndSave basicModel
         checkAndSave(basicModel2)
         checkAndSave(basicModel3)

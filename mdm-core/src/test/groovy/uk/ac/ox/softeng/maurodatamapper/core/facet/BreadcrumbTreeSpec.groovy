@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
@@ -26,15 +27,19 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 class BreadcrumbTreeSpec extends BaseUnitSpec implements DomainUnitTest<BreadcrumbTree> {
 
     BasicModel basicModel
     Folder misc
 
     def setup() {
-        mockDomains(Folder, BasicModel, BasicModelItem)
+        mockDomains(Folder, BasicModel, BasicModelItem, Authority)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
-        basicModel = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc)
+        basicModel = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc, authority: testAuthority)
         checkAndSave(misc)
         checkAndSave(basicModel)
     }

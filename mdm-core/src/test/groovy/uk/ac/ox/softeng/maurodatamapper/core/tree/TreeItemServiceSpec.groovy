@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.tree
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
@@ -37,14 +38,18 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.testing.services.ServiceUnitTest
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeItemService> {
 
     FolderService folderService
     ClassifierService classifierService
+    Authority testAuthority
 
     def setup() {
-        mockDomains(Folder, BasicModel, BasicModelItem)
-
+        mockDomains(Folder, BasicModel, BasicModelItem, Authority)
+        testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         Folder folder = new Folder(label: 'parent', createdBy: editor.emailAddress).save(flush: true, failOnError: true)
         folder.addToChildFolders(new Folder(label: 'editorChild', createdBy: editor.emailAddress))
@@ -280,7 +285,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
         checkAndSave(basicModel)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
@@ -339,8 +345,10 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
+        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
+                                                authority: testAuthority)
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
@@ -424,9 +432,11 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'), deleted: true,
-                                               finalised: true)
+                                               finalised: true,
+                                               authority: testAuthority)
         BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
-                                                documentationVersion: Version.from('2.1.0'))
+                                                documentationVersion: Version.from('2.1.0'),
+                                                authority: testAuthority)
         basicModel2.addToVersionLinks(new VersionLink(linkType: VersionLinkType.SUPERSEDED_BY_MODEL, targetModel: basicModel))
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
@@ -509,8 +519,10 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
+        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
+                                                authority: testAuthority)
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
@@ -593,8 +605,10 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('dmFolder'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
+        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('dmFolder'),
+                                                authority: testAuthority)
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
@@ -687,8 +701,10 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('reader2Child'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
+        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('reader2Child'),
+                                                authority: testAuthority)
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
@@ -789,7 +805,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(_) >> Folder.list().collect {it.id}
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
         checkAndSave(basicModel)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
@@ -831,7 +848,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
         checkAndSave(basicModel)
         ModelService basicModelService = Stub() {
             findAllReadableModels(_, true, true, true) >> [basicModel]
@@ -859,7 +877,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
         checkAndSave(basicModel)
 
         BasicModelItem item1 = new BasicModelItem(label: 'bmi1', createdBy: admin.emailAddress, model: basicModel, description: 'basic model item')
@@ -917,7 +936,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
         checkAndSave(basicModel)
 
         BasicModelItem item1 = new BasicModelItem(label: 'bmi1', createdBy: admin.emailAddress, model: basicModel, description: 'basic model item')
@@ -983,7 +1003,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
         checkAndSave(basicModel)
 
         BasicModelItem item1 = new BasicModelItem(label: 'bmi1', createdBy: admin.emailAddress, model: basicModel, description: 'basic model item')
@@ -1042,7 +1063,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
         checkAndSave(basicModel)
 
         BasicModelItem item1 = new BasicModelItem(label: 'bmi1', createdBy: admin.emailAddress, model: basicModel, description: 'basic model item')
@@ -1434,9 +1456,11 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
         basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
-                                     documentationVersion: Version.from('2.1.0'))
+                                     documentationVersion: Version.from('2.1.0'),
+                                     authority: testAuthority)
         basicModel2.addToVersionLinks(new VersionLink(linkType: VersionLinkType.SUPERSEDED_BY_MODEL, targetModel: basicModel))
         checkAndSave(basicModel)
         checkAndSave(basicModel2)

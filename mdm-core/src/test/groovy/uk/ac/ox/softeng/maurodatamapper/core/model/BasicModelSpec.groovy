@@ -46,6 +46,7 @@ class BasicModelSpec extends ModelSpec<BasicModel> implements DomainUnitTest<Bas
     @Override
     BasicModel createValidDomain(String label) {
         new BasicModel(label: label, folder: Folder.findByLabel('catalogue'), createdBy: editor.emailAddress,
-                       documentationVersion: Version.from('1'))
+                       documentationVersion: Version.from('1'),
+                       authority: testAuthority)
     }
 }

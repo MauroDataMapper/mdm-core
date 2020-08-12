@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileController
@@ -32,6 +33,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 @Slf4j
 class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> implements
     DomainUnitTest<ReferenceFile>,
@@ -40,10 +43,13 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
     BasicModel basicModel
 
     def setup() {
-        mockDomains(Folder, BasicModel)
+        mockDomains(Folder, BasicModel, Authority)
         log.debug('Setting up referenceFile controller unit')
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
         checkAndSave(basicModel)
         Path lf = Paths.get('grails-app/conf/logback.groovy')
 

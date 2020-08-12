@@ -40,7 +40,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
         super.setValidDomainValues()
         domain.folder = Folder.findByLabel('catalogue')
         domain.documentationVersion = Version.from('1')
-        domain.authority = new Authority(label: 'Test Authority', url: "https://localhost")
+        domain.authority = testAuthority
     }
 
     @Override
@@ -48,7 +48,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
         super.verifyDomainConstraints(domain)
         domain.folder == Folder.findByLabel('catalogue')
         domain.documentationVersion == Version.from('1')
-        domain.authority = new Authority(label: 'Test Authority', url: "https://localhost")
+        domain.authority = testAuthority
         assert domain.modelType
         domain.finalised != null
         domain.deleted != null

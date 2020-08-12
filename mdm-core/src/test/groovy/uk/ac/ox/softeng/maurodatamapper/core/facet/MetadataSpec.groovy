@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
@@ -24,14 +25,19 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 class MetadataSpec extends CreatorAwareSpec<Metadata> implements DomainUnitTest<Metadata> {
 
     BasicModel db
     Folder misc
 
     def setup() {
+        mockDomains(Folder, Authority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
-        db = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
+        db = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc, authority: testAuthority)
         mockDomains(Folder, BasicModel)
         checkAndSave(misc)
         checkAndSave(db)

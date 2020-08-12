@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationController
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
@@ -30,6 +31,8 @@ import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import groovy.util.logging.Slf4j
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 @Slf4j
 class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> implements
     DomainUnitTest<Annotation>,
@@ -42,10 +45,13 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
                                   ' pass custom validation|cannot be null)'
 
     def setup() {
-        mockDomains(Folder, BasicModel, Edit, Annotation)
+        mockDomains(Folder, BasicModel, Edit, Annotation, Authority)
         log.debug('Setting up annotation controller unit')
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
         checkAndSave basicModel
 
         basicModel.addToAnnotations(createdBy: admin.emailAddress, label: 'annotation 1')

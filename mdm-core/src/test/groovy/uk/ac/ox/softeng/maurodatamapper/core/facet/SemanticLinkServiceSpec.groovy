@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
@@ -25,18 +25,25 @@ import uk.ac.ox.softeng.maurodatamapper.core.util.test.CatalogueItemAwareService
 
 import grails.testing.services.ServiceUnitTest
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink, SemanticLinkService>
     implements ServiceUnitTest<SemanticLinkService> {
 
     UUID id
 
     def setup() {
-        mockDomains(Folder, BasicModel, Edit, SemanticLink)
+        mockDomains(Folder, BasicModel, Edit, SemanticLink, Authority)
 
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        BasicModel basicModel3 = new BasicModel(label: 'dm3', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
+        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                                authority: testAuthority)
+        BasicModel basicModel3 = new BasicModel(label: 'dm3', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                                authority: testAuthority)
         checkAndSave basicModel
         checkAndSave(basicModel2)
         checkAndSave(basicModel3)

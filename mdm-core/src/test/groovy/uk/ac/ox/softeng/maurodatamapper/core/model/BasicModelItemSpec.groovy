@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
@@ -36,8 +37,10 @@ class BasicModelItemSpec extends ModelItemSpec<BasicModelItem> implements Domain
 
     def setup() {
         log.debug('Setting up BasicModelItem unit')
-        mockDomains(BasicModel)
-        checkAndSave(new BasicModel(label: 'test model', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue')))
+        mockDomains(BasicModel, Authority)
+
+        checkAndSave(new BasicModel(label: 'test model', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority))
     }
 
     @Override

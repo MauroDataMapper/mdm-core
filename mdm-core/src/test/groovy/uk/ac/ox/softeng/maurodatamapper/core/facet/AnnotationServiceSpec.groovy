@@ -17,13 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.CatalogueItemAwareServiceSpec
 
 import grails.testing.services.ServiceUnitTest
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
 class AnnotationServiceSpec extends CatalogueItemAwareServiceSpec<Annotation, AnnotationService> implements ServiceUnitTest<AnnotationService> {
 
@@ -32,10 +34,12 @@ class AnnotationServiceSpec extends CatalogueItemAwareServiceSpec<Annotation, An
     Annotation nested
 
     def setup() {
-        mockDomains(Folder, BasicModel, Edit, Annotation)
-
+        mockDomains(Folder, BasicModel, Edit, Annotation, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
 
         basicModel.addToAnnotations(createdBy: admin.emailAddress, label: 'annotation 1')
         parent = new Annotation(createdBy: editor.emailAddress, label: 'parent annotation', description: 'the parent')

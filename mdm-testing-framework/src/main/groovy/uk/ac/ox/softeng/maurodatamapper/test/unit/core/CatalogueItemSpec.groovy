@@ -37,6 +37,8 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.spockframework.util.InternalSpockError
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 /**
  * @since 21/09/2017
  */
@@ -59,9 +61,9 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
     def setup() {
         log.debug('Setting up CatalogueItem unit')
-        mockDomains(Classifier, Folder, Annotation, BreadcrumbTree, Edit, Metadata, ReferenceFile, SemanticLink)
+        mockDomains(Classifier, Folder, Annotation, BreadcrumbTree, Edit, Metadata, ReferenceFile, SemanticLink, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
+        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST))
     }
 
     Folder getTestFolder() {

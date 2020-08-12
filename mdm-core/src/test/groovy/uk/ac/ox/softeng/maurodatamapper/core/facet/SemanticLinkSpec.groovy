@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -26,16 +27,20 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 class SemanticLinkSpec extends CreatorAwareSpec<SemanticLink> implements DomainUnitTest<SemanticLink> {
 
     BasicModel db, db2
     Folder misc
 
     def setup() {
-        mockDomains(Folder, BasicModel)
+        mockDomains(Folder, BasicModel, Authority)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
-        db = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc)
-        db2 = new BasicModel(createdBy: admin.emailAddress, label: 'test2', folder: misc)
+        db = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc, authority: testAuthority)
+        db2 = new BasicModel(createdBy: admin.emailAddress, label: 'test2', folder: misc, authority: testAuthority)
         checkAndSave(misc)
         checkAndSave(db)
         checkAndSave(db2)
