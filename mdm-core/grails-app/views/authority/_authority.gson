@@ -8,5 +8,5 @@ json {
     id authority.id
     url authority.url
     label authority.label
-    description authority.description
+    if (authority.description) description authority.description
 }

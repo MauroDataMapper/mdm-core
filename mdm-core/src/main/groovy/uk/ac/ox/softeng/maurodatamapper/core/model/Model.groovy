@@ -60,7 +60,6 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     }
 
     static mapping = {
-        authority default: Authority.findByLabel('Mauro Data Mapper')
     }
 
     @BindUsing({obj, source -> Version.from(source['documentationVersion'] as String)})

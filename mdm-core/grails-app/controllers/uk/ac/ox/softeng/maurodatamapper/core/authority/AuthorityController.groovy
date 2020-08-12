@@ -17,23 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
-import uk.ac.ox.softeng.maurodatamapper.security.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-
-import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
-import static org.springframework.http.HttpStatus.NO_CONTENT
-class AuthorityController extends EditLoggingController<Authority> /* implements RestResponder */ {
+@Slf4j
+class AuthorityController extends EditLoggingController<Authority> {
 
     static responseFormats = ['json', 'xml']
-
-    static allowedMethods = [
-    ]
 
     AuthorityService authorityService
 
@@ -42,14 +35,6 @@ class AuthorityController extends EditLoggingController<Authority> /* implements
 
     AuthorityController() {
         super(Authority)
-    }
-
-    protected Authority createResource(String label, URL url, String description) {
-        Authority instance = super.createResource() as Authority
-        instance.label = label
-        instance.url = url
-        instance.description = description
-        instance
     }
 
     @Override
@@ -69,7 +54,7 @@ class AuthorityController extends EditLoggingController<Authority> /* implements
                     changedProperties,
                     currentUser)
         }
-        classifier
+        authority
     }
 
     @Override

@@ -19,13 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
-import uk.ac.ox.softeng.maurodatamapper.security.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -80,9 +80,10 @@ class BootStrap {
 
         Authority.withNewTransaction {
             if (!authorityService.defaultAuthorityExists()) {
-                Authority authority = new Authority(label: grailsApplication.config.getProperty('maurodatamapper.authority.name').toString(),
-                                                    url: grailsApplication.config.getProperty('maurodatamapper.authority.url').toURL(),
-                                                    createdBy: StandardEmailAddress.ADMIN)
+                Authority authority = new Authority(label: grailsApplication.config.getProperty('maurodatamapper.authority.name'),
+                                                    url: grailsApplication.config.getProperty('maurodatamapper.authority.url'),
+                                                    createdBy: StandardEmailAddress.ADMIN,
+                                                    readableByEveryone: true)
                 checkAndSave(messageSource, authority)
             }
         }

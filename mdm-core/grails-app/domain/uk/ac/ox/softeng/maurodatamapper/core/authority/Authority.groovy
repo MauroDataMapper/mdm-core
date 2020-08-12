@@ -17,31 +17,38 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import java.net.URL
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
-
-class Authority implements InformationAware, CreatorAware {
+class Authority implements InformationAware, CreatorAware, SecurableResource {
 
     UUID id
-    URL url
+    String url
+    Boolean readableByEveryone
+    Boolean readableByAuthenticatedUsers
 
     static hasMany = {
-        models: Model
+        models:
+        Model
     }
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
-        label unique : true
-        url unique: true
+        label unique: 'url'
+        url blank: false
+    }
+
+    Authority() {
+        readableByAuthenticatedUsers = false
+        readableByEveryone = false
     }
 
     @Override
     String getDomainType() {
-        return Authority.simpleName
+        Authority.simpleName
     }
 }

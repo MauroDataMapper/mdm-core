@@ -15,11 +15,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.security
+package uk.ac.ox.softeng.maurodatamapper.core.authority
 
-import grails.core.GrailsApplication
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 
+import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 
 @Transactional
@@ -38,11 +38,19 @@ class AuthorityService {
         Authority.count()
     }
 
-    Authority getDefaultAuthority(){
-        return Authority.findByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name'))
+    void delete(Authority authority) {
+        authority.delete(flush: true)
     }
 
-    boolean defaultAuthorityExists(){
-        return Authority.countByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name')) > 0
+    Authority save(Authority authority) {
+        authority.save(failOnError: true, validate: false)
+    }
+
+    Authority getDefaultAuthority() {
+        Authority.findByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name'))
+    }
+
+    boolean defaultAuthorityExists() {
+        Authority.countByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name')) > 0
     }
 }
