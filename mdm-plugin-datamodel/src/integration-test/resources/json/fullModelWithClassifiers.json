@@ -124,6 +124,11 @@
     "organisation": "NHS Digital3",
     "documentationVersion": "2.0.0",
     "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
     "dataTypes": [
       {
         "id": "9419365b-669c-4f8f-9023-274b7b70b4c2",

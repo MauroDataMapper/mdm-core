@@ -37,9 +37,9 @@ class SummaryMetadataReportSpec extends CreatorAwareSpec<SummaryMetadataReport> 
     OffsetDateTime dateTime
 
     def setup() {
-        mockDomains(Folder, DataModel, SummaryMetadata)
+        mockDomains(Folder, DataModel, SummaryMetadata, Authority)
         misc = new Folder(createdBy: StandardEmailAddress.UNIT_TEST, label: 'misc')
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
+        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
         db = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: Authority.findByLabel('Test Authority'))
         checkAndSave(misc)
         checkAndSave(db)

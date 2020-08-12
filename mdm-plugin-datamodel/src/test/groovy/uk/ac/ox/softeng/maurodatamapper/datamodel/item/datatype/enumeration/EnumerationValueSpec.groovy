@@ -35,8 +35,7 @@ class EnumerationValueSpec extends ModelItemSpec<EnumerationValue> implements Do
     def setup() {
         log.debug('Setting up EnumerationValueSpec unit')
         mockDomains(DataModel, EnumerationType)
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
         enumerationType = new EnumerationType(createdByUser: admin, label: 'et', dataModel: dataSet)
         dataSet.addToDataTypes(enumerationType)
         checkAndSave(dataSet)

@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.unit.service
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -38,12 +40,17 @@ class CatalogueItemServiceSpec extends BaseUnitSpec {
 
     def setup() {
         log.debug('Setting up CatalogueItemServiceSpec unit')
-        mockDomains(Classifier, Folder, Annotation, Edit, Metadata, ReferenceFile, SemanticLink, BreadcrumbTree)
-        checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
+        mockDomains(Classifier, Folder, Annotation, Edit, Metadata, ReferenceFile, SemanticLink, BreadcrumbTree, Authority)
+        checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
+        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
     }
 
     Folder getTestFolder() {
         Folder.findByLabel('catalogue')
+    }
+
+    Authority getTestAuthority() {
+        Authority.findByLabel('Test Authority')
     }
 
     @Override

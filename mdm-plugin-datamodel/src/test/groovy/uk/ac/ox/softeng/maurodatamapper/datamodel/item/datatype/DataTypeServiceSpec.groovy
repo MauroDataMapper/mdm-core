@@ -47,8 +47,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         mockArtefact(EnumerationTypeService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
 
         PrimitiveType primitiveType = new PrimitiveType(createdByUser: editor, label: 'varchar')
@@ -179,7 +178,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
     void 'test copying primitive datatype'() {
         given:
         DataType original = PrimitiveType.findByLabel('string')
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)
@@ -211,7 +210,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
     void 'test copying enumeration datatype'() {
         given:
         DataType original = EnumerationType.findByLabel('yesnounknown')
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)
@@ -246,7 +245,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
     void 'test copying reference datatype'() {
         given:
         DataType original = ReferenceType.findByLabel('dataclass')
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)

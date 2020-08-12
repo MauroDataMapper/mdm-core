@@ -30,6 +30,8 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+
 /**
  * @see DataClassController* Controller: dataClass
  *  | POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses       | Action: save   |
@@ -64,18 +66,20 @@ class NestedDataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
         log.debug('Check and setup test data')
         assert Folder.count() == 0
         assert DataModel.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
-        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
-        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: 'functionalTest@test.com',
-                                         folder: folder).save(flush: true).id
-        DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
+        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
+                                         folder: folder, authority: testAuthority).save(flush: true).id
+        DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
                                             dataModel: dataModel).save(flush: true)
         dataClassId = dataClass.id
 
-        dataTypeId = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
+        dataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                        dataModel: dataModel).save(flush: true).id
 
         sessionFactory.currentSession.flush()
@@ -85,6 +89,7 @@ class NestedDataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
     def cleanupSpec() {
         log.debug('CleanupSpec NestedDataClassFunctionalSpec')
         cleanUpResources(DataType, DataModel, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

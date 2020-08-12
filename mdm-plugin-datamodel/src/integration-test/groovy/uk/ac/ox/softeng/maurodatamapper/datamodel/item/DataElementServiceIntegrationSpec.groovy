@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -50,7 +50,6 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     void setupDomainData() {
         log.debug('Setting up DataElementServiceSpec')
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
         dataModel = new DataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
 
@@ -196,7 +195,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'test findAllByDataModelId'() {
         given:
         setupData()
-        DataModel other = new DataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder)
+        DataModel other = new DataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder, authority: testAuthority)
         other.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
         other.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
         DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
@@ -219,7 +218,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     void 'test findAllByDataModelIdAndLabelIlike'() {
         given:
         setupData()
-        DataModel other = new DataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder)
+        DataModel other = new DataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder, authority: testAuthority)
         other.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
         other.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
 
@@ -324,7 +323,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataElement original = dataElementService.get(id)
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder)
+        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
         DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
         copyModel.addToDataClasses(copyClass)
 

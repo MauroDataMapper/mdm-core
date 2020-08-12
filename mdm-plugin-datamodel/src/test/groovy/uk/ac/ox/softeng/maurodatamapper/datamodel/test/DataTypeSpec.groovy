@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -36,9 +36,6 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
     def setup() {
         log.debug('Setting up DataTypeSpec unit')
         mockDomain(DataModel)
-
-        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
-        checkAndSave(testAuthority)
 
         dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
 
@@ -107,7 +104,7 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
     void 'DT02 : test unique label naming across datamodels'() {
         given:
         setValidDomainValues()
-        DataModel dataModel = new DataModel(label: 'another model', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel dataModel = new DataModel(label: 'another model', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)

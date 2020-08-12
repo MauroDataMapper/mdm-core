@@ -48,8 +48,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         mockArtefact(DataElementService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
@@ -176,7 +175,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         when:
         DataClass vsimple = new DataClass(label: 'vsimple', createdByUser: editor)
         dataModel.addToDataClasses(vsimple)
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
         then:
         checkAndSave(dataModel)
@@ -221,7 +220,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         DataElement element = new DataElement(createdByUser: admin, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
         content.addToDataElements(element)
         dataModel.addToDataClasses(content)
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(dataModel)
@@ -271,7 +270,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         given:
         DataClass complex = dataModel.dataClasses.find {it.label == 'Unit grandparent'}
 
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)

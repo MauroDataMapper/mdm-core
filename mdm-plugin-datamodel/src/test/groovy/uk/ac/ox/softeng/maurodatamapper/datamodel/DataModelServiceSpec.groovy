@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -32,7 +33,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
-import uk.ac.ox.softeng.maurodatamapper.datamodel.test.DataBootstrap
+
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
@@ -42,7 +43,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 
 @Slf4j
-class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<DataModelService>, DataBootstrap {
+class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<DataModelService> {
 
     UUID id
     DataModel complexDataModel
@@ -62,8 +63,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
 
-        Authority testAuthority = Authority.findByLabel('Test Authority')
-
         DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder, authority: testAuthority)
@@ -81,6 +80,14 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         verifyBreadcrumbTrees()
         id = dataModel1.id
+    }
+
+    DataModel buildSimpleDataModel(Authority authority) {
+        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, testFolder, testAuthority)
+    }
+
+    DataModel buildComplexDataModel() {
+        BootstrapModels.buildAndSaveComplexDataModel(messageSource, testFolder, testAuthority)
     }
 
     void "test get"() {
@@ -133,7 +140,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void "test save"() {
 
         when:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel dataModel = new DataModel(createdByUser: reader2, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder, authority: testAuthority)
         service.save(dataModel)
 
@@ -526,7 +532,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
 
         when:
@@ -545,7 +550,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         check.addToDataTypes(new PrimitiveType(createdByUser: admin))
 
@@ -565,7 +569,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV04 : test validation on invalid dataclass model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         check.addToDataClasses(new DataClass(createdByUser: admin))
 
@@ -585,7 +588,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV05 : test validation on invalid dataclass dataelement model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataElements(createdByUser: admin)
@@ -607,7 +609,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV06 : test validation on invalid reference datatype model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin, label: 'ref')
         check.addToDataClasses(dc)
@@ -629,7 +630,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV07 : test validation on invalid nested reference datatype model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin)
         check.addToDataClasses(dc)
@@ -652,7 +652,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV08 : test validation on invalid nested dataclass model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataClasses(new DataClass(createdByUser: admin))
@@ -675,7 +674,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV09 : test validation on invalid nested dataclass dataelement model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         DataClass child = new DataClass(createdByUser: admin, label: 'child')
@@ -700,7 +698,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV10 : test validation on invalid double nested dataclass model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
@@ -725,7 +722,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV11 : test validation on invalid double nested dataclass dataelement model'() {
         given:
-        Authority testAuthority = Authority.findByLabel('Test Authority')
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')

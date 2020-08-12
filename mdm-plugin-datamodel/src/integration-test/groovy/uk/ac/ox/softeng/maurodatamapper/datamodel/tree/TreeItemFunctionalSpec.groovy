@@ -30,6 +30,8 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.OK
 
@@ -53,21 +55,23 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
-        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
+
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+
+        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
-        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: 'functionalTest@test.com',
-                                         folder: folder).save(flush: true).id
+        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
+                                         folder: folder, authority: testAuthority).save(flush: true).id
 
-        new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
+        new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
                       dataModel: dataModel).save(flush: true)
 
-        Classifier classifier = new Classifier(label: 'Functional Test Classifier', createdBy: 'functionalTest@test.com').save(flush: true)
-        new Classifier(label: 'Functional Test Classifier 2', createdBy: 'functionalTest@test.com').save(flush: true)
+        Classifier classifier = new Classifier(label: 'Functional Test Classifier', createdBy: FUNCTIONAL_TEST).save(flush: true)
+        new Classifier(label: 'Functional Test Classifier 2', createdBy: FUNCTIONAL_TEST).save(flush: true)
         dataModel.addToClassifiers(classifier).save(flush: true)
 
         sessionFactory.currentSession.flush()
@@ -77,6 +81,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     def cleanupSpec() {
         log.debug('CleanupSpec')
         cleanUpResources(DataModel, Folder, Classifier, DataClass)
+        Authority.findByLabel('Test Authority').delete(flush:true)
     }
 
     @Override
@@ -107,8 +112,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "authority" : "${json-unit.matches:authority}"
+        "type": "Data Standard"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -120,8 +124,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "authority": "${json-unit.matches:authority}" 
+        "type": "Data Standard"
       }
     ]
   }
@@ -214,8 +217,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": true,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "authority": "${json-unit.matches:authority}"
+        "type": "Data Standard"
       }
     ]
   }
@@ -265,8 +267,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": true,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "authority": "${json-unit.matches:authority}"
+        "type": "Data Standard"
       }
     ]
   }
@@ -320,8 +321,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "authority": "${json-unit.matches:authority}"
+        "type": "Data Standard"
       }
     ]
   }

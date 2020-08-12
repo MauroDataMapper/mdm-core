@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.versionlink
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -54,14 +54,10 @@ class DataModelVersionLinkFunctionalSpec extends ModelVersionLinkFunctionalSpec 
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        Folder folder = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
         otherDataModel = new DataModel(label: 'Functional Test DataModel 2', createdBy: 'functionalTest@test.com',
-                                       folder: folder).save(flush: true)
+                                       folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
                                   dataModel: dataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',

@@ -41,13 +41,13 @@
     "annotations": [
       {
         "id": "${json-unit.matches:id}",
-        "createdBy": "admin@maurodatamapper.com",
+        "createdBy": "development@test.com",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "label": "test annotation 1"
       },
       {
         "id": "${json-unit.matches:id}",
-        "createdBy": "editor@test.com",
+        "createdBy": "development@test.com",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "label": "test annotation 2",
         "description": "with description"
@@ -58,6 +58,11 @@
     "organisation": "brc",
     "documentationVersion": "1.0.0",
     "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
     "dataTypes": [
       {
         "id": "${json-unit.matches:id}",

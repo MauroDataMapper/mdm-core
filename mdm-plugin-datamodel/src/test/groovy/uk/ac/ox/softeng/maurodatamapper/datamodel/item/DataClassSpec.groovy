@@ -39,8 +39,8 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
     def setup() {
         log.debug('Setting up DataClassSpec unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+
+        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
         dataSet.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
         dataSet.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'integer'))
 
@@ -183,7 +183,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
     void 'test unique label naming for direct child dataclasses of 2 datamodels'() {
         given:
         setValidDomainValues()
-        DataModel dataModel = new DataModel(label: 'another mode', createdByUser: editor, folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel dataModel = new DataModel(label: 'another mode', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)

@@ -50,8 +50,8 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         log.debug('Setting up DataElementServiceSpec Unit')
         mockArtefact(DataTypeService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+
+        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
@@ -239,7 +239,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
     void 'test copying DataElement with datatype not present'() {
         given:
         DataElement original = service.get(id)
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
         DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
         copyModel.addToDataClasses(copyClass)
 

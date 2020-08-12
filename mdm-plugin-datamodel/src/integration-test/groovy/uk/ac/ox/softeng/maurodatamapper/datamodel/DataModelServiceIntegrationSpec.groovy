@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -37,8 +38,8 @@ import spock.lang.Stepwise
 @Slf4j
 @Integration
 @Rollback
-@Stepwise
-class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec {
+//@Stepwise
+class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     DataModel complexDataModel
     DataModel simpleDataModel
@@ -51,9 +52,12 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
 
-        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder)
-        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder)
-        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder)
+        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                             authority: testAuthority)
+        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                             authority: testAuthority)
+        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder,
+                                             authority: testAuthority)
 
         checkAndSave(dataModel1)
         checkAndSave(dataModel2)
@@ -132,7 +136,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
         setupData()
 
         when:
-        DataModel dataModel = new DataModel(createdByUser: reader2, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder)
+        DataModel dataModel = new DataModel(createdByUser: reader2, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder,
+                                            authority: testAuthority)
         dataModel = dataModelService.validate(dataModel)
 
         then:
@@ -550,7 +555,7 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
 
         when:
         DataModel invalid = dataModelService.validate(check)
@@ -569,7 +574,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         check.addToDataTypes(new PrimitiveType(createdByUser: admin))
 
         when:
@@ -589,7 +595,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV04 : test validation on invalid dataclass model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         check.addToDataClasses(new DataClass(createdByUser: admin))
 
         when:
@@ -609,7 +616,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV05 : test validation on invalid dataclass dataelement model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataElements(createdByUser: admin)
         check.addToDataClasses(parent)
@@ -631,7 +639,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV06 : test validation on invalid reference datatype model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin, label: 'ref')
         check.addToDataClasses(dc)
         check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref'))
@@ -653,7 +662,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV07 : test validation on invalid nested reference datatype model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin)
         check.addToDataClasses(dc)
         check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref', referenceClass: dc))
@@ -676,7 +686,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV08 : test validation on invalid nested dataclass model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataClasses(new DataClass(createdByUser: admin))
         check.addToDataClasses(parent)
@@ -699,7 +710,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV09 : test validation on invalid nested dataclass dataelement model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         DataClass child = new DataClass(createdByUser: admin, label: 'child')
         child.addToDataElements(createdByUser: admin, label: 'el')
@@ -724,7 +736,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV10 : test validation on invalid double nested dataclass model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         grandparent.addToDataClasses(parent)
@@ -749,7 +762,8 @@ class DataModelServiceIntegrationSpec extends uk.ac.ox.softeng.maurodatamapper.d
     void 'DMSV11 : test validation on invalid double nested dataclass dataelement model'() {
         given:
         setupData()
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         grandparent.addToDataClasses(parent)

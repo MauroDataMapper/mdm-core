@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.unit.core
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ArrayDiff
@@ -60,10 +61,15 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         log.debug('Setting up CatalogueItem unit')
         mockDomains(Classifier, Folder, Annotation, BreadcrumbTree, Edit, Metadata, ReferenceFile, SemanticLink)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
+        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
     }
 
     Folder getTestFolder() {
         Folder.findByLabel('catalogue')
+    }
+
+    Authority getTestAuthority() {
+        Authority.findByLabel('Test Authority')
     }
 
     int getExpectedBaseLevelOfDiffs() {

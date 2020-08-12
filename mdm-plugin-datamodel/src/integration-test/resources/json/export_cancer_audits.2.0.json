@@ -15,6 +15,11 @@
     "type": "Data Standard",
     "documentationVersion": "1.0.0",
     "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
     "dataTypes": [
       {
         "id": "e4118bb0-7294-4e95-a90b-460bf6e08189",

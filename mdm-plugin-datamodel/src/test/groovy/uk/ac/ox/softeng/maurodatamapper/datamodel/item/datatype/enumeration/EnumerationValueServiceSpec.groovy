@@ -43,8 +43,8 @@ class EnumerationValueServiceSpec extends CatalogueItemServiceSpec implements Se
     def setup() {
         log.debug('Setting up EnumerationValueServiceSpec Unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+
+        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))

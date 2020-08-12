@@ -31,6 +31,8 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.OK
 
@@ -65,17 +67,17 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
-        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost").save(flush: true)
-        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
 
-        dataTypeId = new EnumerationType(label: 'Functional Test DataType', createdBy: 'functionalTest@test.com',
+        dataTypeId = new EnumerationType(label: 'Functional Test DataType', createdBy: FUNCTIONAL_TEST,
                                          dataModel: dataModel)
-            .addToEnumerationValues(key: 'A', value: 'A value', createdBy: 'functionalTest@test.com')
+            .addToEnumerationValues(key: 'A', value: 'A value', createdBy: FUNCTIONAL_TEST)
             .save(flush: true).id
 
         enumerationValueId = EnumerationValue.findByKey('A').id
@@ -88,6 +90,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
     def cleanupSpec() {
         log.debug('CleanupSpec EnumerationValueFunctionalSpec')
         cleanUpResources(DataType, DataModel, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

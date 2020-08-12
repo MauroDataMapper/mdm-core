@@ -54,11 +54,8 @@ class DataClassSummaryMetadataReportFunctionalSpec extends CatalogueItemSummaryM
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        Folder folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true)
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                  folder: folder).save(flush: true)
+                                  folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   dataModel: dataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,

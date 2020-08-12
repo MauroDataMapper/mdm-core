@@ -41,8 +41,8 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
     def setup() {
         log.debug('Setting up DataClassSpec unit')
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
-        checkAndSave(new Authority(label: 'Test Authority', url: "https://localhost"))
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: Authority.findByLabel('Test Authority'))
+
+        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
 
         checkAndSave(dataSet)
         assert DataModel.count() == 1
