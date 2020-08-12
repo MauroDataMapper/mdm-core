@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 
@@ -28,16 +29,18 @@ class BootStrap {
     @Autowired
     MessageSource messageSource
 
+    AuthorityService authorityService
+
     def init = {servletContext ->
         environments {
             development {
                 Folder.withNewTransaction {
                     Folder folder = Folder.findByLabel('Development Folder')
                     if (DataModel.countByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder)
+                        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authorityService.defaultAuthority)
                     }
                     if (DataModel.countByLabel(BootstrapModels.SIMPLE_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder)
+                        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authorityService.defaultAuthority)
                     }
                 }
             }

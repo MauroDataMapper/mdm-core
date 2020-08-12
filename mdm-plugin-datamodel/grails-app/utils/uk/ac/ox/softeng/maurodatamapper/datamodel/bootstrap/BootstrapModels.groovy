@@ -39,11 +39,8 @@ class BootstrapModels {
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
 
-    static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder) {
-        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
-        checkAndSave(messageSource, testAuthority)
-
-        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: testAuthority)
+    static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
 
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
                                                              readableByAuthenticatedUsers: true)
@@ -71,12 +68,10 @@ class BootstrapModels {
         simpleDataModel
     }
 
-    static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder) {
-        Authority testAuthority = new Authority (label: 'Test Authority', url: 'https://localhost')
-        checkAndSave(messageSource, testAuthority)
+    static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder, Authority authority) {
 
         DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: COMPLEX_DATAMODEL_NAME, organisation: 'brc', author: 'admin person',
-                                            folder: folder, authority: testAuthority)
+                                            folder: folder, authority: authority)
         checkAndSave(messageSource, dataModel)
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
                                                              readableByAuthenticatedUsers: true)
