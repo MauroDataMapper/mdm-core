@@ -75,7 +75,7 @@ class UserGroupService {
 
     List<UserGroup> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(UserGroup)
-        ids ? UserGroup.findAllByIdInList(ids, pagination) : []
+        ids ? UserGroup.withFilter(pagination, UserGroup.byIdInList(ids)).list(pagination) : []
     }
 
     List<UserGroup> findAllByApplicationGroupRoleId(UUID groupRoleId, Map pagination = [:]) {

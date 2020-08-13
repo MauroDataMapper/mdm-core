@@ -117,10 +117,13 @@ class UserGroup implements EditHistoryAware, SecurableResource, Principal {
         by().not {inList('name', names)}
     }
 
-    static DetachedCriteria<UserGroup> withFilter(Map filters) {
-        DetachedCriteria<UserGroup> criteria = by()
+    static DetachedCriteria<UserGroup> withFilter(Map filters, DetachedCriteria<CatalogueUser> criteria = by()) {
         if (filters.label) criteria = criteria.ilike('name', "%${filters.label}%")
         if (filters.name) criteria = criteria.ilike('name', "%${filters.name}%")
         criteria
+    }
+
+    static DetachedCriteria<UserGroup> byIdInList(List<UUID> ids) {
+        by().inList('id', ids)
     }
 }
