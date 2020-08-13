@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
@@ -40,10 +41,9 @@ class BootstrapModels {
     public static final String SIMPLE_TERMINOLOGY_NAME = 'Simple Test Terminology'
     public static final String SIMPLE_CODESET_NAME = 'Simple Test CodeSet'
 
-    static Terminology buildAndSaveSimpleTerminology(MessageSource messageSource, Folder folder) {
+    static Terminology buildAndSaveSimpleTerminology(MessageSource messageSource, Folder folder, Authority authority) {
         Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: SIMPLE_TERMINOLOGY_NAME, folder: folder,
-                                                  author: 'Test Bootstrap',
-                                                  organisation: 'Oxford BRC')
+                                                  author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
                                                              readableByAuthenticatedUsers: true)
@@ -64,11 +64,10 @@ class BootstrapModels {
         terminology
     }
 
-    static CodeSet buildAndSaveSimpleCodeSet(MessageSource messageSource, Folder folder) {
+    static CodeSet buildAndSaveSimpleCodeSet(MessageSource messageSource, Folder folder, Authority authority) {
 
         CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: SIMPLE_CODESET_NAME, folder: folder,
-                                      author: 'Test Bootstrap',
-                                      organisation: 'Oxford BRC')
+                                      author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
                                                              readableByAuthenticatedUsers: true)
@@ -95,10 +94,10 @@ class BootstrapModels {
         codeSet
     }
 
-    static Terminology buildAndSaveComplexTerminology(MessageSource messageSource, Folder folder, TerminologyService terminologyService) {
+    static Terminology buildAndSaveComplexTerminology(MessageSource messageSource, Folder folder, TerminologyService terminologyService,
+                                                      Authority authority) {
         Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: COMPLEX_TERMINOLOGY_NAME, folder: folder,
-                                                  author: 'Test Bootstrap',
-                                                  organisation: 'Oxford BRC')
+                                                  author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
                                                              readableByAuthenticatedUsers: true)
