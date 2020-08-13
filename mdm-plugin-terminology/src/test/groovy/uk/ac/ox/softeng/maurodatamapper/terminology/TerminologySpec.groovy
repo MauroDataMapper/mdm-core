@@ -47,7 +47,7 @@ class TerminologySpec extends ModelSpec<Terminology> implements DomainUnitTest<T
 
     @Override
     Terminology createValidDomain(String label) {
-        new Terminology(folder: testFolder, label: label, createdBy: StandardEmailAddress.UNIT_TEST)
+        new Terminology(folder: testFolder, label: label, createdBy: StandardEmailAddress.UNIT_TEST, authority: testAuthority)
     }
 
     @Override
@@ -57,7 +57,7 @@ class TerminologySpec extends ModelSpec<Terminology> implements DomainUnitTest<T
 
     void 'test simple terminology valid'() {
         when:
-        Terminology simple = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, testFolder)
+        Terminology simple = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, testFolder, testAuthority)
 
         then:
         check(simple)
@@ -68,7 +68,7 @@ class TerminologySpec extends ModelSpec<Terminology> implements DomainUnitTest<T
 
     void 'test complex terminology valid'() {
         when:
-        Terminology complex = BootstrapModels.buildAndSaveComplexTerminology(messageSource, testFolder, null)
+        Terminology complex = BootstrapModels.buildAndSaveComplexTerminology(messageSource, testFolder, null, testAuthority)
 
         then:
         check(complex)
@@ -86,7 +86,8 @@ class TerminologySpec extends ModelSpec<Terminology> implements DomainUnitTest<T
         domain.count() == 1
 
         when:
-        Terminology other = new Terminology(createdBy: StandardEmailAddress.UNIT_TEST, label: domain.label, folder: testFolder)
+        Terminology other = new Terminology(createdBy: StandardEmailAddress.UNIT_TEST, label: domain.label, folder: testFolder,
+                                            authority: testAuthority)
         checkAndSave(other)
 
         then:
@@ -96,8 +97,8 @@ class TerminologySpec extends ModelSpec<Terminology> implements DomainUnitTest<T
 
     void 'simple diff of label'() {
         when:
-        def t1 = new Terminology(label: 'test model 1', folder: testFolder)
-        def t2 = new Terminology(label: 'test model 2', folder: testFolder)
+        def t1 = new Terminology(label: 'test model 1', folder: testFolder, authority: testAuthority)
+        def t2 = new Terminology(label: 'test model 2', folder: testFolder, authority: testAuthority)
         Diff<Terminology> diff = t1.diff(t2)
 
         then:

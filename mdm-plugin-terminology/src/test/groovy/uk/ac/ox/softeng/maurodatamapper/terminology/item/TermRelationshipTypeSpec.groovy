@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -29,6 +30,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelItemSpec
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+
 class TermRelationshipTypeSpec extends ModelItemSpec<TermRelationshipType> implements DomainUnitTest<TermRelationshipType> {
 
     Terminology terminology
@@ -39,7 +42,8 @@ class TermRelationshipTypeSpec extends ModelItemSpec<TermRelationshipType> imple
         testFolder = new Folder(createdBy: StandardEmailAddress.UNIT_TEST, label: 'testFolder')
         checkAndSave(testFolder)
 
-        terminology = new Terminology(label: 'test terminology', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder)
+        terminology =
+            new Terminology(label: 'test terminology', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder, authority: testAuthority)
         checkAndSave(terminology)
     }
 
@@ -111,7 +115,8 @@ class TermRelationshipTypeSpec extends ModelItemSpec<TermRelationshipType> imple
     void 'test unique label naming across terminologies'() {
         given:
         setValidDomainValues()
-        Terminology terminology2 = new Terminology(label: 'test terminology 2', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder)
+        Terminology terminology2 = new Terminology(label: 'test terminology 2', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder,
+                                                   authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)

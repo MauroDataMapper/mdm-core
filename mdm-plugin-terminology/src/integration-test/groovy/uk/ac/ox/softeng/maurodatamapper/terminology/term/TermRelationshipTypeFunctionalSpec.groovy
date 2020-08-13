@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.term
 
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
@@ -30,6 +30,8 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 /**
  * <pre>
@@ -57,11 +59,12 @@ class TermRelationshipTypeFunctionalSpec extends ResourceFunctionalSpec<TermRela
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert Terminology.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true)
-        Terminology terminology = new Terminology(label: 'Functional Test Terminology', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                                  folder: folder).save(flush: true)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Terminology terminology = new Terminology(label: 'Functional Test Terminology', createdBy: FUNCTIONAL_TEST,
+                                                  folder: folder, authority: testAuthority).save(flush: true)
         terminologyId = terminology.id
         sessionFactory.currentSession.flush()
     }
@@ -70,6 +73,7 @@ class TermRelationshipTypeFunctionalSpec extends ResourceFunctionalSpec<TermRela
     def cleanupSpec() {
         log.debug('CleanupSpec TermFunctionalSpec')
         cleanUpResources(TermRelationship, Term, TermRelationshipType, Terminology, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

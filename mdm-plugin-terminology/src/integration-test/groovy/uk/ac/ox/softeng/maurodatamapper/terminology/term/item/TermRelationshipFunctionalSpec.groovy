@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.term.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
@@ -71,11 +72,12 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert Terminology.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST).save(flush: true)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
         Terminology terminology = new Terminology(label: 'Functional Test Terminology', createdBy: FUNCTIONAL_TEST,
-                                                  folder: folder).save(flush: true)
+                                                  folder: folder, authority: testAuthority).save(flush: true)
         terminologyId = terminology.id
         Term term = new Term(code: 'FT01', definition: 'Functional Test 01', createdBy: FUNCTIONAL_TEST,
                              terminology: terminology).save(flush: true)
@@ -93,6 +95,7 @@ class TermRelationshipFunctionalSpec extends ResourceFunctionalSpec<TermRelation
     def cleanupSpec() {
         log.debug('CleanupSpec TermFunctionalSpec')
         cleanUpResources(TermRelationship, Term, TermRelationshipType, Terminology, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

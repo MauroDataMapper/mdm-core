@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.test
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.AdminService
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
@@ -38,6 +40,7 @@ abstract class BaseTerminologyIntegrationSpec extends BaseIntegrationSpec {
     Terminology terminology
     Terminology simpleTerminology
     Terminology complexTerminology
+    Authority testAuthority
 
     Folder getTestFolder() {
         folder
@@ -47,7 +50,9 @@ abstract class BaseTerminologyIntegrationSpec extends BaseIntegrationSpec {
     void preDomainDataSetup() {
         folder = new Folder(label: 'catalogue', createdBy: admin.emailAddress)
         checkAndSave(folder)
-        simpleTerminology = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder)
-        complexTerminology = BootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService)
+        testAuthority = new Authority(label: 'Test Authority', url: 'http://localhost', createdBy: StandardEmailAddress.INTEGRATION_TEST)
+        checkAndSave(testAuthority)
+        simpleTerminology = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, testAuthority)
+        complexTerminology = BootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, testAuthority)
     }
 }

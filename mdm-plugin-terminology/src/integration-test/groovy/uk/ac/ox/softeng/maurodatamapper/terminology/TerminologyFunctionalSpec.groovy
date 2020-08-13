@@ -142,7 +142,12 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
   "documentationVersion": "1.0.0",
   "finalised": false,
   "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false
+  "readableByAuthenticatedUsers": false,
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  }
 }'''
     }
 

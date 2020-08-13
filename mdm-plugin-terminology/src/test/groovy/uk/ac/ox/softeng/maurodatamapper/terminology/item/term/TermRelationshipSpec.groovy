@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -35,7 +36,8 @@ class TermRelationshipSpec extends ModelItemSpec<TermRelationship> implements Do
     TermRelationshipType relationshipType
 
     def setup() {
-        mockDomains(Terminology, TermRelationship, TermRelationshipType, Folder, Term)
+        mockDomains(Terminology, TermRelationship, TermRelationshipType, Folder, Term, Authority)
+
         Folder testFolder = new Folder(createdBy: StandardEmailAddress.UNIT_TEST, label: 'testFolder')
         checkAndSave(testFolder)
 
@@ -43,7 +45,8 @@ class TermRelationshipSpec extends ModelItemSpec<TermRelationship> implements Do
         term2 = new Term(code: 'TT02', definition: 'TT01', createdBy: StandardEmailAddress.UNIT_TEST)
         relationshipType = new TermRelationshipType(label: 'child of', createdBy: StandardEmailAddress.UNIT_TEST, displayLabel: 'Child Of')
 
-        terminology = new Terminology(label: 'test terminology', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder)
+        terminology = new Terminology(label: 'test terminology', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder,
+                                      authority: testAuthority)
         terminology.addToTerms(term1).addToTerms(term2).addToTermRelationshipTypes(relationshipType)
         checkAndSave(terminology)
     }

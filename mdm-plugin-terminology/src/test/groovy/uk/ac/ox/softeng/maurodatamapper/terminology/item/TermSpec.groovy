@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
@@ -26,6 +27,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelItemSpec
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 import spock.lang.Ignore
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 /**
  * @since 30/04/2018
@@ -37,10 +40,12 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
     TermRelationshipType parentTo
 
     def setup() {
-        mockDomains(Terminology, TermRelationship, TermRelationshipType)
-        terminology = new Terminology(label: 'test terminology', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder)
-        childOf =
-            new TermRelationshipType(label: 'child of', createdBy: StandardEmailAddress.UNIT_TEST, displayLabel: 'Child Of', childRelationship: true)
+        mockDomains(Terminology, TermRelationship, TermRelationshipType, Authority)
+
+        terminology = new Terminology(label: 'test terminology', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder,
+                                      authority: testAuthority)
+        childOf = new TermRelationshipType(label: 'child of', createdBy: StandardEmailAddress.UNIT_TEST, displayLabel: 'Child Of',
+                                           childRelationship: true)
         parentTo = new TermRelationshipType(label: 'parent to', createdBy: StandardEmailAddress.UNIT_TEST, displayLabel: 'Parent To',
                                             parentalRelationship: true)
         terminology.addToTermRelationshipTypes(childOf).addToTermRelationshipTypes(parentTo)
@@ -137,7 +142,8 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
     void 'test unique label naming with validation done at terminology level'() {
         given:
         setValidDomainValues()
-        Terminology localTerminology = new Terminology(label: 'local test terminology', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder)
+        Terminology localTerminology = new Terminology(label: 'local test terminology', createdBy: StandardEmailAddress.UNIT_TEST,
+                                                       folder: testFolder, authority: testAuthority)
         terminology.removeFromTerms(domain)
         localTerminology.addToTerms(domain)
 
@@ -178,7 +184,8 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
     void 'test unique label naming across terminologies'() {
         given:
         setValidDomainValues()
-        Terminology terminology2 = new Terminology(label: 'test terminology 2', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder)
+        Terminology terminology2 = new Terminology(label: 'test terminology 2', createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder,
+                                                   authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)
@@ -232,104 +239,5 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
         thrown(InternalSpockError)
         domain.hasErrors()
 
-    }
-
-    @Ignore('To be moved into service level spec')
-    void 'test no tree structure item'() {
-        given:
-        setValidDomainValues()
-
-        expect:
-        !domain.isParentTerm()
-        !domain.isChildTerm()
-
-        and:
-        domain.hasNoHierarchy()
-
-        and:
-        domain.isRootTerm()
-        domain.depth == Integer.MAX_VALUE
-    }
-
-    @Ignore('To be moved into service level spec')
-    void 'test parent and child item from parental relationship'() {
-        given:
-        setValidDomainValues()
-        Term term2 = new Term(code: 'TT02', definition: 'TT02', createdBy: StandardEmailAddress.UNIT_TEST)
-        terminology.addToTerms(term2)
-        checkAndSave(terminology)
-
-        when:
-        TermRelationship relationship = new TermRelationship(sourceTerm: domain, targetTerm: term2, relationshipType: parentTo,
-                                                             createdBy: StandardEmailAddress.UNIT_TEST)
-        domain.addToSourceTermRelationships(relationship)
-        term2.addToTargetTermRelationships(relationship)
-
-        then:
-        checkAndSave(domain)
-        checkAndSave(term2)
-
-        and:
-        domain.isParentTerm()
-        !domain.isChildTerm()
-
-        and:
-        !domain.hasNoHierarchy()
-
-        and:
-        domain.isRootTerm()
-        domain.depth == 1
-
-        and:
-        !term2.isParentTerm()
-        term2.isChildTerm()
-
-        and:
-        !term2.hasNoHierarchy()
-
-        and:
-        !term2.isRootTerm()
-        term2.depth == 2
-    }
-
-    @Ignore('To be moved into service level spec')
-    void 'test parent and child item from child relationship'() {
-        given:
-        setValidDomainValues()
-        Term term2 = new Term(code: 'TT02', definition: 'TT02', createdBy: StandardEmailAddress.UNIT_TEST)
-        terminology.addToTerms(term2)
-        checkAndSave(terminology)
-
-        when:
-        TermRelationship relationship = new TermRelationship(sourceTerm: term2, targetTerm: domain, relationshipType: childOf,
-                                                             createdBy: StandardEmailAddress.UNIT_TEST)
-        domain.addToTargetTermRelationships(relationship)
-        term2.addToSourceTermRelationships(relationship)
-
-        then:
-        checkAndSave(domain)
-        checkAndSave(term2)
-
-        and:
-        domain.isParentTerm()
-        !domain.isChildTerm()
-
-        and:
-        !domain.hasNoHierarchy()
-
-        and:
-        domain.isRootTerm()
-        domain.depth == 1
-
-        and:
-        !term2.isParentTerm()
-        term2.isChildTerm()
-
-        and:
-        !term2.hasNoHierarchy()
-
-        and:
-        !term2.isRootTerm()
-        term2.depth == 2
     }
 }

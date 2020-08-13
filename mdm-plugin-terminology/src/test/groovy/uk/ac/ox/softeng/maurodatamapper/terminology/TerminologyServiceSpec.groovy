@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -36,7 +37,7 @@ import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.UNIT_TEST
 
 @Slf4j
 class TerminologyServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<TerminologyService> {
@@ -53,14 +54,14 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         mockArtefact(VersionLinkService)
         mockArtefact(SemanticLinkService)
         mockArtefact(EditService)
-        mockDomains(Terminology, Term, TermRelationship, TermRelationshipType)
+        mockDomains(Terminology, Term, TermRelationship, TermRelationshipType, Authority)
 
-        complexTerminology = BootstrapModels.buildAndSaveComplexTerminology(messageSource, testFolder, null)
-        simpleTerminology = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, testFolder)
+        complexTerminology = BootstrapModels.buildAndSaveComplexTerminology(messageSource, testFolder, null, testAuthority)
+        simpleTerminology = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, testFolder, testAuthority)
 
-        Terminology terminology1 = new Terminology(createdBy: UNIT_TEST, label: 'test terminology 1', folder: testFolder)
-        Terminology terminology2 = new Terminology(createdBy: UNIT_TEST, label: 'test terminology 2', folder: testFolder)
-        Terminology terminology3 = new Terminology(createdBy: UNIT_TEST, label: 'test terminology 3', folder: testFolder)
+        Terminology terminology1 = new Terminology(createdBy: UNIT_TEST, label: 'test terminology 1', folder: testFolder, authority: testAuthority)
+        Terminology terminology2 = new Terminology(createdBy: UNIT_TEST, label: 'test terminology 2', folder: testFolder, authority: testAuthority)
+        Terminology terminology3 = new Terminology(createdBy: UNIT_TEST, label: 'test terminology 3', folder: testFolder, authority: testAuthority)
 
         checkAndSave(terminology1)
         checkAndSave(terminology2)
@@ -124,7 +125,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
     void "test save"() {
 
         when:
-        Terminology terminology = new Terminology(createdBy: UNIT_TEST, label: 'saving test', folder: testFolder)
+        Terminology terminology = new Terminology(createdBy: UNIT_TEST, label: 'saving test', folder: testFolder, authority: testAuthority)
         service.save(terminology)
 
         then:
@@ -491,7 +492,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
-        Terminology check = new Terminology(createdBy: UNIT_TEST, folder: testFolder)
+        Terminology check = new Terminology(createdBy: UNIT_TEST, folder: testFolder, authority: testAuthority)
 
         when:
         Terminology invalid = service.validate(check)
@@ -509,7 +510,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
     void 'DMSV03 : test validation on invalid term model'() {
         given:
-        Terminology check = new Terminology(createdBy: UNIT_TEST, label: 'test invalid', folder: testFolder)
+        Terminology check = new Terminology(createdBy: UNIT_TEST, label: 'test invalid', folder: testFolder, authority: testAuthority)
         check.addToTerms(new Term(createdBy: UNIT_TEST))
 
         when:

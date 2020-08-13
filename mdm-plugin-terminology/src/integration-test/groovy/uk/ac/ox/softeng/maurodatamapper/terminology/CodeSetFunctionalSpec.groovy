@@ -149,7 +149,12 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "documentationVersion": "1.0.0",
   "finalised": false,
   "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false
+  "readableByAuthenticatedUsers": false,
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  }
 }'''
     }
 
@@ -188,6 +193,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
+    @PendingFeature(reason = 'Semantic links arent being copied properly')
     void 'test creating a new model version of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
@@ -542,7 +548,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         when:
         POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0',
-             [terminologyIds: [id, id2]], STRING_ARG
+             [codeSetIds: [id, id2]], STRING_ARG
         )
 
         then:
