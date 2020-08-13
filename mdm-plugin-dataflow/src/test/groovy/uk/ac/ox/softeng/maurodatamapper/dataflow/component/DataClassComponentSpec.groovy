@@ -55,8 +55,10 @@ class DataClassComponentSpec extends ModelItemSpec<DataClassComponent> implement
         sourceCl = new DataClass(createdBy: StandardEmailAddress.UNIT_TEST, label: 'sourceClass').addToDataElements(sourceEl)
         targetCl = new DataClass(createdBy: StandardEmailAddress.UNIT_TEST, label: 'targetClass').addToDataElements(targetEl)
 
-        source = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'source', folder: testFolder, type: DataModelType.DATA_ASSET)
-        target = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'target', folder: testFolder, type: DataModelType.DATA_ASSET)
+        source = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'source', folder: testFolder, type: DataModelType.DATA_ASSET,
+                               authority: testAuthority)
+        target = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'target', folder: testFolder, type: DataModelType.DATA_ASSET,
+                               authority: testAuthority)
 
         source.addToDataTypes(sourceDt)
         source.addToDataClasses(sourceCl)

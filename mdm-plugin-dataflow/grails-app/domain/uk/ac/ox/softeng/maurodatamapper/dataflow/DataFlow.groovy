@@ -184,6 +184,10 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
 
 
     static DetachedCriteria<DataFlow> byClassifierId(UUID classifierId) {
-        by().eq('classifiers.id', classifierId)
+        where {
+            classifiers {
+                eq 'id', classifierId
+            }
+        }
     }
 }

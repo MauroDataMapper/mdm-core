@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -29,6 +29,8 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
 
 /**
  * <pre>
@@ -71,12 +73,14 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true)
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
 
-        sourceDataModelId = BootstrapModels.buildAndSaveSourceDataModel(messageSource, folder).id
-        targetDataModelId = BootstrapModels.buildAndSaveTargetDataModel(messageSource, folder).id
+
+        sourceDataModelId = BootstrapModels.buildAndSaveSourceDataModel(messageSource, folder, testAuthority).id
+        targetDataModelId = BootstrapModels.buildAndSaveTargetDataModel(messageSource, folder, testAuthority).id
 
         sessionFactory.currentSession.flush()
     }
@@ -85,6 +89,7 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     def cleanupSpec() {
         log.debug('CleanupSpec DataFlowFunctionalSpec')
         cleanUpResources(DataModel, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     String getResourcePath() {
