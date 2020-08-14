@@ -75,7 +75,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     Map getValidJson() {
         [
             domainType: 'PrimitiveType',
-            label     : 'date'
+            label: 'Functional Data Type'
         ]
     }
 
@@ -213,7 +213,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         '''{
   "id": "${json-unit.matches:id}",
   "domainType": "PrimitiveType",
-  "label": "date",
+  "label": "Functional Data Type",
   "model": "${json-unit.matches:id}",
   "breadcrumbs": [
     {
@@ -380,5 +380,8 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     "minMultiplicity": 1
   }
 }'''
+
+        cleanup:
+        removeValidIdObject(id)
     }
 }

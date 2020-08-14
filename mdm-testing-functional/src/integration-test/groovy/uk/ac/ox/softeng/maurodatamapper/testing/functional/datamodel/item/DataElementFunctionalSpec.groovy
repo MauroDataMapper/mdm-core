@@ -28,6 +28,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 
 /**
  * <pre>
@@ -72,6 +73,22 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
     @Override
     String getExpectedTargetId() {
         DataElement.byDataClassIdAndLabel(Utils.toUuid(getContentDataClassId()), 'ele1').get().id.toString()
+    }
+
+    @Override
+    void cleanupCopiedItem(String id) {
+        String dtId = getDataElementDataTypeId(id)
+        assert dtId
+        removeValidIdObject(id)
+        loginAdmin()
+        DELETE("dataModels/${getSimpleDataModelId()}/dataTypes/${dtId}", MAP_ARG, true)
+        verifyResponse HttpStatus.NO_CONTENT, response
+    }
+
+    @Transactional
+    String getDataElementDataTypeId(String id) {
+        DataElement dataElement = DataElement.get(id)
+        dataElement.dataTypeId.toString()
     }
 
     @Transactional

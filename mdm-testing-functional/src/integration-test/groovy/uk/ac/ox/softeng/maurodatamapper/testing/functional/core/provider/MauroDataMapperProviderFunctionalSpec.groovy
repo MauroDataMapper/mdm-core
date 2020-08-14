@@ -73,6 +73,10 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
      "version": "${json-unit.matches:version}"
   },
   {
+    "name": "PluginDataflow",
+     "version": "${json-unit.matches:version}"
+  },
+  {
     "name": "PluginDatamodel",
      "version": "${json-unit.matches:version}"
   },

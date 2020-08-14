@@ -225,7 +225,12 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         }
       ],
       "author": "Test Bootstrap",
-      "organisation": "Oxford BRC"
+      "organisation": "Oxford BRC",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      }
     },
     {
       "id": "${json-unit.matches:id}",
@@ -244,7 +249,12 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         }
       ],
       "author": "Test Bootstrap",
-      "organisation": "Oxford BRC"
+      "organisation": "Oxford BRC",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      }
     }
   ]
 }'''
@@ -270,7 +280,12 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
     "show",
     "comment",
     "editDescription"
-  ]
+  ],
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  }
 }'''
     }
 

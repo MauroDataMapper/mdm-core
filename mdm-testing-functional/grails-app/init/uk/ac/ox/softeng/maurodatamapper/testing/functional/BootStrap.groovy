@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels as DataFlowBootstrapModels
@@ -44,6 +46,8 @@ class BootStrap implements SecurityDefinition {
     GroupRoleService groupRoleService
 
     TerminologyService terminologyService
+
+    AuthorityService authorityService
 
     def init = {servletContext ->
         environments {
@@ -100,13 +104,14 @@ class BootStrap implements SecurityDefinition {
 
                 Folder.withNewTransaction {
                     folder = Folder.findByLabel('Functional Test Folder')
-                    DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder)
-                    DataModelBootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder)
-                    TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService)
-                    TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder)
-                    TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder)
-                    DataFlowBootstrapModels.buildAndSaveSourceDataModel(messageSource, folder)
-                    DataFlowBootstrapModels.buildAndSaveTargetDataModel(messageSource, folder)
+                    Authority authority = authorityService.getDefaultAuthority()
+                    DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
+                    DataModelBootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
+                    TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
+                    TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, authority)
+                    TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)
+                    DataFlowBootstrapModels.buildAndSaveSourceDataModel(messageSource, folder, authority)
+                    DataFlowBootstrapModels.buildAndSaveTargetDataModel(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveSampleDataFlow(messageSource)
                 }
             }

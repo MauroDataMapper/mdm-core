@@ -229,28 +229,8 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 2,
+  "count": 4,
   "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Complex Test DataModel",
-      "type": "Data Standard",
-      "classifiers": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "test classifier",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "test classifier2",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
-        }
-      ],
-      "author": "admin person",
-      "organisation": "brc"
-    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -263,6 +243,38 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "SourceFlowDataModel",
+      "type": "Data Asset"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Complex Test DataModel",
+      "type": "Data Standard",
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier2",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ],
+      "author": "admin person",
+      "organisation": "brc"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "TargetFlowDataModel",
+      "type": "Data Asset"
     }
   ]
 }'''
@@ -280,6 +292,11 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
   "documentationVersion": "1.0.0",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  },
   "availableActions": [
     "delete",
     "softDelete",
@@ -345,6 +362,11 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "show",
     "comment"
   ],
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  },
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "classifiers": [
     {
@@ -411,6 +433,11 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         "comment",
         "editDescription"
       ],
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  },
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "classifiers": [
     {
@@ -481,6 +508,11 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "softDelete",
     "delete"
   ],
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  },
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "classifiers": [
     {
@@ -1407,7 +1439,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         verifyJsonResponse OK, '''[
   {
     "name": "JsonExporterService",
-    "version": "2.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "JSON DataModel Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -1419,7 +1451,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
   },
   {
     "name": "XmlExporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "XML DataModel Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -1448,7 +1480,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         verifyJsonResponse OK, '''[
   {
     "name": "JsonImporterService",
-    "version": "2.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "JSON DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -1459,7 +1491,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
   },
   {
     "name": "XmlImporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "XML DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -1580,7 +1612,12 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
     "documentationVersion": "1.0.0",
-    "finalised": false
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+    }
   },
   "exportMetadata": {
     "exportedBy": "reader User",
@@ -1647,7 +1684,12 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
     "documentationVersion": "1.0.0",
-    "finalised": false
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+    }
   },
   "exportMetadata": {
     "exportedBy": "reader User",
@@ -1909,7 +1951,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
 
         when: 'logged in as reader user'
         loginReader()
-        GET("${getComplexDataModelId()}/search?searchTerm=${term}")
+        GET("${getComplexDataModelId()}/search?searchTerm=${term}&sort=domainType")
 
         then:
         verifyResponse OK, response
@@ -1917,12 +1959,13 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         responseBody().items.size() == 4
         responseBody().items[0].label == 'child'
         responseBody().items[0].domainType == 'DataClass'
-        responseBody().items[1].label == 'child'
-        responseBody().items[1].domainType == 'DataElement'
+        responseBody().items[1].label == 'content'
+        responseBody().items[1].domainType == 'DataClass'
         responseBody().items[2].label == 'child'
-        responseBody().items[2].domainType == 'ReferenceType'
-        responseBody().items[3].label == 'content'
-        responseBody().items[3].domainType == 'DataClass'
+        responseBody().items[2].domainType == 'DataElement'
+        responseBody().items[3].label == 'child'
+        responseBody().items[3].domainType == 'ReferenceType'
+
     }
 
     void 'S04 : test searching for label "c*" in complex model using post'() {
