@@ -124,10 +124,13 @@ apply from: 'dependencies.gradle'
 apply from: "${rootDir}/gradle/additions/grails.gradle"
 
 String testCategory = ''
+String testPackage = ''
 
-if (System.getProperty('grails.testCategory')) {
-    testCategory = System.getProperty('grails.testCategory')
-
+if (System.getProperty('grails.test.category')) {
+    testCategory = System.getProperty('grails.test.category')
+}
+if (System.getProperty('grails.test.package')) {
+    testPackage = System.getProperty('grails.test.package')
 }
 
 
@@ -135,11 +138,28 @@ integrationTest {
     //    failFast true
     useJUnit {
         if(testCategory){
-            includeCategories "uk.ac.ox.softeng.maurodatamapper.test.junit.${testCategory}".toString()
+            includeCategories "uk.ac.ox.softeng.maurodatamapper.test.junit.${testCategory}"
         }else {
             excludeCategories 'uk.ac.ox.softeng.maurodatamapper.test.junit.TroubleTest'
         }
     }
+
+    if(testPackage){
+        logger.quiet('Filtering to tests on {}',"uk.ac.ox.softeng.maurodatamapper.testing.functional.${testPackage}.*")
+        filter {
+            includeTestsMatching "uk.ac.ox.softeng.maurodatamapper.testing.functional.${testPackage}.*"
+        }
+
+        binaryResultsDirectory.set(file("${project.testResultsDir}/${testPackage}/binary"))
+        reports {
+            junitXml.destination = file("${project.testResultsDir}/${testPackage}")
+
+        }
+        mergeTestReports.reportOn(file("${project.testResultsDir}/${testPackage}/binary"))
+
+        systemProperty('mdm.logFileName', "e2e-${testPackage}.log")
+    }
+
     if(testCategory){
         binaryResultsDirectory.set(file("${project.testResultsDir}/${testCategory}/binary"))
         reports {
