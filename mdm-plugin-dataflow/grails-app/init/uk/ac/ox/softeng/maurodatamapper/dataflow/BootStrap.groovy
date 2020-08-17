@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -26,6 +28,7 @@ import org.springframework.context.MessageSource
 class BootStrap {
 
     MessageSource messageSource
+    AuthorityService authorityService
 
     def init = {servletContext ->
 
@@ -33,11 +36,12 @@ class BootStrap {
             development {
                 Folder.withNewTransaction {
                     Folder folder = Folder.findByLabel('Development Folder')
+                    Authority authority = authorityService.getDefaultAuthority()
                     if (DataModel.countByLabel(BootstrapModels.SOURCE_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveSourceDataModel(messageSource, folder)
+                        BootstrapModels.buildAndSaveSourceDataModel(messageSource, folder, authority)
                     }
                     if (DataModel.countByLabel(BootstrapModels.TARGET_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveTargetDataModel(messageSource, folder)
+                        BootstrapModels.buildAndSaveTargetDataModel(messageSource, folder, authority)
                     }
                     if (DataFlow.countByLabel(BootstrapModels.DATAFLOW_NAME) == 0) {
                         BootstrapModels.buildAndSaveSampleDataFlow(messageSource)
