@@ -108,6 +108,30 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Terminology"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "SourceFlowDataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "TargetFlowDataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset"
       }
     ]
   }
@@ -188,6 +212,30 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Terminology"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "SourceFlowDataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "TargetFlowDataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset"
       }
     ]
   },

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
@@ -28,6 +29,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import spock.lang.Stepwise
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 /**
  * @since 30/10/2017
  */
@@ -37,10 +40,12 @@ class TreeItemSpec extends BaseUnitSpec {
     Folder misc
 
     def setup() {
-        mockDomains(BasicModel, BasicModelItem, Folder)
+        mockDomains(BasicModel, BasicModelItem, Folder, Authority)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
         checkAndSave(misc)
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: misc)
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: misc, authority: testAuthority)
         checkAndSave(basicModel)
     }
 

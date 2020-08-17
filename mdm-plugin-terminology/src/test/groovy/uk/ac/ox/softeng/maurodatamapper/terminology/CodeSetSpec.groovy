@@ -39,7 +39,7 @@ class CodeSetSpec extends ModelSpec<CodeSet> implements DomainUnitTest<CodeSet> 
 
     @Override
     CodeSet createValidDomain(String label) {
-        new CodeSet(label: label, createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder)
+        new CodeSet(label: label, createdBy: StandardEmailAddress.UNIT_TEST, folder: testFolder, authority: testAuthority)
     }
 
     @Override

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -68,6 +69,7 @@ class DataModelService extends ModelService<DataModel> {
     VersionLinkService versionLinkService
     EditService editService
     ClassifierService classifierService
+    AuthorityService authorityService
 
     SessionFactory sessionFactory
 
@@ -289,6 +291,7 @@ class DataModelService extends ModelService<DataModel> {
 
     void checkImportedDataModelAssociations(User importingUser, DataModel dataModel, Map bindingMap = [:]) {
         dataModel.createdBy = importingUser.emailAddress
+        dataModel.authority = authorityService.getDefaultAuthority()
         checkFacetsAfterImportingCatalogueItem(dataModel)
 
         if (dataModel.dataTypes) {
@@ -446,7 +449,8 @@ class DataModelService extends ModelService<DataModel> {
         DataModel copy = new DataModel(author: original.author,
                                        organisation: original.organisation, modelType: original.modelType,
                                        finalised: false, deleted: false, documentationVersion: copyVersion,
-                                       folder: original.folder
+                                       folder: original.folder,
+                                       authority: original.authority
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier)

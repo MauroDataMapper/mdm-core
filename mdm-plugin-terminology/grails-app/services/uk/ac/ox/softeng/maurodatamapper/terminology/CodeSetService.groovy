@@ -278,7 +278,7 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
                                    finalised: false, deleted: false, documentationVersion: copyVersion,
-                                   folder: original.folder
+                                   folder: original.folder, authority: original.authority
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier)

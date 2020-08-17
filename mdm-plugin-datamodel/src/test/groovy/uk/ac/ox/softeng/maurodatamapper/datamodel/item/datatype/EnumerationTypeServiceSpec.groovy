@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
@@ -47,13 +49,17 @@ class EnumerationTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest
         Folder.findByLabel('catalogue')
     }
 
+    Authority getTestAuthority() {
+        Authority.findByLabel('Test Authority')
+    }
+
     def setup() {
         log.debug('Setting up DataClassServiceSpec Unit')
         mockDomains(Classifier, Folder, Annotation, BreadcrumbTree, Edit, Metadata, ReferenceFile, SemanticLink,
-                    DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
+                    DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder)
+        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
+        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))

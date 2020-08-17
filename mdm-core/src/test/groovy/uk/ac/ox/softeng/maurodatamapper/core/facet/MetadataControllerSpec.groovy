@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataController
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
@@ -31,6 +33,8 @@ import spock.lang.Unroll
 
 import java.time.OffsetDateTime
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
@@ -41,10 +45,13 @@ class MetadataControllerSpec extends ResourceControllerSpec<Metadata> implements
     BasicModel basicModel
 
     def setup() {
-        mockDomains(Folder, BasicModel)
+        mockDomains(Folder, BasicModel, Authority)
         log.debug('Setting up metadata controller unit')
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        Authority  testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
         checkAndSave(basicModel)
         domain.properties = [namespace  : 'http://test.com', key: 'existing', value: 'v1', createdBy: admin.emailAddress,
                              dateCreated: OffsetDateTime.now()]

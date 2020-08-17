@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -29,6 +30,8 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -84,30 +87,32 @@ class DataElementFunctionalSpec extends ResourceFunctionalSpec<DataElement> {
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
-        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
-                                            folder: folder).save(flush: true)
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+
+        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
+                                            folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
-        DataModel otherDataModel = new DataModel(label: 'Functional Test DataModel 2', createdBy: 'functionalTest@test.com',
-                                                 folder: folder).save(flush: true)
+        DataModel otherDataModel = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
+                                                 folder: folder, authority: testAuthority).save(flush: true)
         otherDataModelId = otherDataModel.id
 
-        DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
+        DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
                                             dataModel: dataModel).save(flush: true)
         dataClassId = dataClass.id
-        DataClass otherDataClass = new DataClass(label: 'Functional Test DataClass 2', createdBy: 'functionalTest@test.com',
+        DataClass otherDataClass = new DataClass(label: 'Functional Test DataClass 2', createdBy: FUNCTIONAL_TEST,
                                                  dataModel: otherDataModel).save(flush: true)
         otherDataClassId = otherDataClass.id
 
-        dataTypeId = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
+        dataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                        dataModel: dataModel).save(flush: true).id
 
-        differentDataTypeId = new PrimitiveType(label: 'text', createdBy: 'functionalTest@test.com',
+        differentDataTypeId = new PrimitiveType(label: 'text', createdBy: FUNCTIONAL_TEST,
                                                 dataModel: dataModel).save(flush: true).id
 
-        otherDataTypeId = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
+        otherDataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                             dataModel: otherDataModel).save(flush: true).id
 
         sessionFactory.currentSession.flush()
@@ -123,6 +128,7 @@ class DataElementFunctionalSpec extends ResourceFunctionalSpec<DataElement> {
     def cleanupSpec() {
         log.debug('CleanupSpec DataModelFunctionalSpec')
         cleanUpResources(DataType, DataClass, DataModel, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

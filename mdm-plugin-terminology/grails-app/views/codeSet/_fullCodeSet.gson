@@ -20,4 +20,6 @@ json {
     if (codeSet.deleted) deleted codeSet.deleted
     if (codeSet.author) author codeSet.author
     if (codeSet.organisation) organisation codeSet.organisation
+
+    authority tmpl.'/authority/authority'(codeSet.authority)
 }

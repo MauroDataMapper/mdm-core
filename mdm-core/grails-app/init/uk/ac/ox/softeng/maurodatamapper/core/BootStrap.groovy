@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -45,6 +47,7 @@ class BootStrap {
     GrailsApplication grailsApplication
     ApiPropertyService apiPropertyService
     SessionService sessionService
+    AuthorityService authorityService
 
     @Autowired
     MessageSource messageSource
@@ -70,10 +73,20 @@ class BootStrap {
 
         log.info('Deployment tmp dir: {}', tmpDir)
 
-
         sessionService.initialiseToContext(servletContext)
         loadApiProperties(tmpDir)
         configureEmailers(grailsApplication.config)
+
+
+        Authority.withNewTransaction {
+            if (!authorityService.defaultAuthorityExists()) {
+                Authority authority = new Authority(label: grailsApplication.config.getProperty('maurodatamapper.authority.name'),
+                                                    url: grailsApplication.config.getProperty('maurodatamapper.authority.url'),
+                                                    createdBy: StandardEmailAddress.ADMIN,
+                                                    readableByEveryone: true)
+                checkAndSave(messageSource, authority)
+            }
+        }
 
         environments {
             development {
@@ -151,4 +164,5 @@ class BootStrap {
             BootStrapUser
         }
     }
+
 }

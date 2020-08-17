@@ -16,6 +16,8 @@ DataModel dm = dataModel as DataModel
     'mdm:finalised'(dm.finalised)
     if (dm.finalised) 'mdm:dateFinalised'(OffsetDateTimeConverter.toString(dm.dateFinalised))
 
+    layout '/authority/export.gml', authority: dm.authority, ns: 'mdm'
+
     if (dm.dataTypes) {
         'mdm:dataTypes' {
             dm.dataTypes.each {dt ->

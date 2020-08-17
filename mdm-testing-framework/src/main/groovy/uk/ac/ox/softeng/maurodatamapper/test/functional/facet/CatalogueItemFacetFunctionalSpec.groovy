@@ -17,13 +17,26 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
+import grails.gorm.transactions.Transactional
+import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
+import spock.lang.Shared
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 @Slf4j
 abstract class CatalogueItemFacetFunctionalSpec<D extends GormEntity> extends ResourceFunctionalSpec<D> {
+
+    @Shared
+    Folder folder
+
+    @Shared
+    Authority testAuthority
 
     abstract UUID getCatalogueItemId()
 
@@ -34,5 +47,22 @@ abstract class CatalogueItemFacetFunctionalSpec<D extends GormEntity> extends Re
     @Override
     String getResourcePath() {
         "${getCatalogueItemDomainResourcePath()}/${getCatalogueItemId()}/${getFacetResourcePath()}"
+    }
+
+    @OnceBefore
+    @Transactional
+    def checkAndSetupFolderAndAuthority() {
+        log.debug('Check and setup test data')
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+    }
+
+    @Transactional
+    def cleanupSpec() {
+        log.debug('CleanupSpec CatalogueItemFacetFunctionalSpec')
+        cleanUpResources(Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 }

@@ -202,3 +202,4 @@ local.properties
 .worksheet
 
 src/main/resources/*.properties
+build-cache

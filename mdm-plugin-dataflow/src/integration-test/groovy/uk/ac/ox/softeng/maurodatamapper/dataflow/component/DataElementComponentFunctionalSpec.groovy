@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -34,6 +34,8 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
 
 /**
  * <pre>
@@ -92,44 +94,45 @@ class DataElementComponentFunctionalSpec extends ResourceFunctionalSpec<DataElem
     def checkAndSetupData() {
 
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST).save(flush: true)
-        DataModel sourceDataModel = new DataModel(label: 'Functional Test DataModel Source', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                                  folder: folder, type: DataModelType.DATA_ASSET).save(flush: true)
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+        DataModel sourceDataModel = new DataModel(label: 'Functional Test DataModel Source', createdBy: FUNCTIONAL_TEST,
+                                                  folder: folder, type: DataModelType.DATA_ASSET, authority: testAuthority).save(flush: true)
         sourceDataModelId = sourceDataModel.id
-        DataModel targetDataModel = new DataModel(label: 'Functional Test DataModel Target', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                                  folder: folder, type: DataModelType.DATA_ASSET).save(flush: true)
+        DataModel targetDataModel = new DataModel(label: 'Functional Test DataModel Target', createdBy: FUNCTIONAL_TEST,
+                                                  folder: folder, type: DataModelType.DATA_ASSET, authority: testAuthority).save(flush: true)
         targetDataModelId = targetDataModel.id
 
-        DataClass sourceDataClass = new DataClass(label: 'Functional Test DataClass Source', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        DataClass sourceDataClass = new DataClass(label: 'Functional Test DataClass Source', createdBy: FUNCTIONAL_TEST,
                                                   dataModel: sourceDataModel).save(flush: true)
-        DataClass targetDataClass = new DataClass(label: 'Functional Test DataClass Target', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        DataClass targetDataClass = new DataClass(label: 'Functional Test DataClass Target', createdBy: FUNCTIONAL_TEST,
                                                   dataModel: targetDataModel).save(flush: true)
 
-        DataType sourceDataType = new PrimitiveType(label: 'Functional Test DataType Source', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        DataType sourceDataType = new PrimitiveType(label: 'Functional Test DataType Source', createdBy: FUNCTIONAL_TEST,
                                                     dataModel: sourceDataModel).save(flush: true)
 
-        DataType targetDataType = new PrimitiveType(label: 'Functional Test DataType Target', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        DataType targetDataType = new PrimitiveType(label: 'Functional Test DataType Target', createdBy: FUNCTIONAL_TEST,
                                                     dataModel: targetDataModel).save(flush: true)
 
-        sourceDataElementId = new DataElement(label: 'Functional Test DataElement Source', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        sourceDataElementId = new DataElement(label: 'Functional Test DataElement Source', createdBy: FUNCTIONAL_TEST,
                                               dataClass: sourceDataClass, dataType: sourceDataType).save(flush: true).id
 
-        targetDataElementId = new DataElement(label: 'Functional Test DataElement Target', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        targetDataElementId = new DataElement(label: 'Functional Test DataElement Target', createdBy: FUNCTIONAL_TEST,
                                               dataClass: targetDataClass, dataType: targetDataType).save(flush: true).id
 
-        sourceDataElementId2 = new DataElement(label: 'Functional Test DataElement Source 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        sourceDataElementId2 = new DataElement(label: 'Functional Test DataElement Source 2', createdBy: FUNCTIONAL_TEST,
                                                dataClass: sourceDataClass, dataType: sourceDataType).save(flush: true).id
 
-        targetDataElementId2 = new DataElement(label: 'Functional Test DataElement Target 2', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        targetDataElementId2 = new DataElement(label: 'Functional Test DataElement Target 2', createdBy: FUNCTIONAL_TEST,
                                                dataClass: targetDataClass, dataType: targetDataType).save(flush: true).id
 
-        DataFlow dataFlow = new DataFlow(label: 'Functional Test DataFlow', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        DataFlow dataFlow = new DataFlow(label: 'Functional Test DataFlow', createdBy: FUNCTIONAL_TEST,
                                          source: sourceDataModel, target: targetDataModel).save(flush: true)
         dataFlowId = dataFlow.id
 
-        dataClassComponentId = new DataClassComponent(label: 'Functional Test DataClassComponent', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        dataClassComponentId = new DataClassComponent(label: 'Functional Test DataClassComponent', createdBy: FUNCTIONAL_TEST,
                                                       dataFlow: dataFlow,
                                                       sourceDataClasses: [sourceDataClass],
                                                       targetDataClasses: [targetDataClass]).save(flush: true).id
@@ -148,6 +151,7 @@ class DataElementComponentFunctionalSpec extends ResourceFunctionalSpec<DataElem
     def cleanupSpec() {
         log.debug('CleanupSpec DataModelFunctionalSpec')
         cleanUpResources(DataClassComponent, DataFlow, DataElement, DataType, DataClass, DataModel, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
+import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.spock.OnceBefore
@@ -29,7 +30,6 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import spock.lang.Stepwise
-import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -131,6 +131,24 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         logout()
     }
 
+    void cleanupCopiedItem(String id) {
+        removeValidIdObject(id)
+    }
+
+    void checkSimpleDataModelIsClean() {
+        String dmId = getSimpleDataModelId()
+        loginEditor()
+        GET("dataModels/${dmId}/dataTypes", MAP_ARG, true)
+        assert responseBody().count == 0
+        GET("dataModels/${dmId}/dataClasses", MAP_ARG, true)
+        assert responseBody().count == 1
+        String dcId = responseBody().items.first().id
+        GET("dataModels/${dmId}/dataClasses/${dcId}/dataClasses", MAP_ARG, true)
+        assert responseBody().count == 0
+        GET("dataModels/${dmId}/dataClasses/${dcId}/dataElements", MAP_ARG, true)
+        assert responseBody().count == 0
+    }
+
     @Override
     List<String> getPermanentGroupNames() {
         super.getPermanentGroupNames() + ['copyPermissionsGroup']
@@ -193,8 +211,15 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         verifyResponse CREATED, response
         verifyCopiedResponseBody response
 
-        when:
+        when: 'verify the id exists'
         id = response.body().id
+        GET(getAlternativePath(id), MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+
+        when:
         GET("${getCatalogueItemDomainType()}/${id}/semanticLinks", MAP_ARG, true)
 
         then:
@@ -207,7 +232,8 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         response.body().items.first().sourceCatalogueItem.domainType == response.body().items.first().targetCatalogueItem.domainType
 
         cleanup:
-        removeValidIdObject(id)
+        cleanupCopiedItem(id)
+        checkSimpleDataModelIsClean()
     }
 
     void 'C02 : test copying (as writer of TO DataModel and reader of FROM DataModel)'() {
@@ -244,7 +270,8 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
 
         cleanup:
         removeEditorReaderPermission()
-        removeValidIdObject(id)
+        cleanupCopiedItem(id)
+        checkSimpleDataModelIsClean()
     }
 
     void 'C03 : test copying (as reader of TO DataModel and writer of FROM DataModel)'() {

@@ -108,7 +108,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         String exported = importAndExport(loadTestFile(testName))
 
         then:
-        validateExportedModel(testName, exported)
+        validateExportedModel(testName, exported.replace(/Mauro Data Mapper/, 'Test Authority'))
 
         where:
         testName << [
@@ -153,13 +153,15 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         then:
         if (test) {
-            validateExportedModel("${DATAMODEL_WITH_DATATYPES_FILENAME}.${exporterService.version}", exported)
+            validateExportedModel("${DATAMODEL_WITH_DATATYPES_FILENAME}.${exporterService.version}",
+                                  exported.replace(/Mauro Data Mapper/, 'Test Authority'))
         } else true
 
         where:
         version << [
             '2.0',
-            '3.0'
+            '3.0',
+            '3.1'
         ]
 
     }
@@ -186,7 +188,8 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         then:
         if (test) {
-            validateExportedModel("${COMPLETE_DATAMODEL_EXPORT_FILENAME}.${exporterService.version}", exported)
+            validateExportedModel("${COMPLETE_DATAMODEL_EXPORT_FILENAME}.${exporterService.version}",
+                                  exported.replace(/Mauro Data Mapper/, 'Test Authority'))
         } else true
 
         where:

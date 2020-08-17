@@ -44,11 +44,14 @@ class DataFlowServiceSpec extends BaseDataFlowIntegrationSpec {
 
     @Override
     void setupDomainData() {
-        DataModel a = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'a', folder: folder, type: DataModelType.DATA_ASSET)
+        DataModel a = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'a', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
         checkAndSave(a)
-        DataModel b = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'b', folder: folder, type: DataModelType.DATA_ASSET)
+        DataModel b = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'b', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
         checkAndSave(b)
-        DataModel c = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'c', folder: folder, type: DataModelType.DATA_ASSET)
+        DataModel c = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'c', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
         checkAndSave(c)
 
         DataFlow ab = new DataFlow(createdBy: StandardEmailAddress.INTEGRATION_TEST, source: a, target: b, label: 'a to b')
@@ -56,13 +59,20 @@ class DataFlowServiceSpec extends BaseDataFlowIntegrationSpec {
 
         checkAndSave(ab, bc)
 
-        DataModel d = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'd', folder: folder, type: DataModelType.DATA_ASSET)
-        DataModel e = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'e', folder: folder, type: DataModelType.DATA_ASSET)
-        DataModel f = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'f', folder: folder, type: DataModelType.DATA_ASSET)
-        DataModel g = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'g', folder: folder, type: DataModelType.DATA_ASSET)
-        DataModel h = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'h', folder: folder, type: DataModelType.DATA_ASSET)
-        DataModel i = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'i', folder: folder, type: DataModelType.DATA_ASSET)
-        DataModel j = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'j', folder: folder, type: DataModelType.DATA_ASSET)
+        DataModel d = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'd', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
+        DataModel e = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'e', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
+        DataModel f = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'f', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
+        DataModel g = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'g', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
+        DataModel h = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'h', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
+        DataModel i = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'i', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
+        DataModel j = new DataModel(createdBy: StandardEmailAddress.INTEGRATION_TEST, label: 'j', folder: folder, type: DataModelType.DATA_ASSET,
+                                    authority: testAuthority)
 
         checkAndSave(d, e, f, g, h, i, j)
 

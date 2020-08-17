@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.controller
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
@@ -53,6 +54,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
     FolderService folderService
+    AuthorityService authorityService
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
 
     ExporterService exporterService
@@ -493,6 +495,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     protected T createResource() {
         T model = super.createResource() as T
         model.folder = folderService.get(params.folderId)
+        model.authority = authorityService.getDefaultAuthority()
         model
     }
 

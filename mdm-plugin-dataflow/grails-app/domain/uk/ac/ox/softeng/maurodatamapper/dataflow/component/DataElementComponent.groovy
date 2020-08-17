@@ -183,6 +183,10 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
     }
 
     static DetachedCriteria<DataElementComponent> byClassifierId(UUID classifierId) {
-        by().eq('classifiers.id', classifierId)
+        where {
+            classifiers {
+                eq 'id', classifierId
+            }
+        }
     }
 }

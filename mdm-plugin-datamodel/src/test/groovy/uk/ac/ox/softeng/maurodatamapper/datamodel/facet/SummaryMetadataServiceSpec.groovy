@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
@@ -37,10 +38,12 @@ class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMe
     DataModel dataModel
 
     def setup() {
-        mockDomains(Folder, DataModel, Edit, SummaryMetadata, SummaryMetadataReport)
+        mockDomains(Folder, DataModel, Edit, SummaryMetadata, SummaryMetadataReport, Authority)
         mockArtefact(DataModelService)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
-        dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'))
+        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
+        dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
+                                  authority: Authority.findByLabel('Test Authority'))
         checkAndSave(dataModel)
 
         dataModel.

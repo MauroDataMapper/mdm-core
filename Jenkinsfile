@@ -11,7 +11,7 @@ pipeline {
 
     options {
         timestamps()
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 45, unit: 'MINUTES')
         skipStagesAfterUnstable()
         buildDiscarder(logRotator(numToKeepStr: '30'))
     }
@@ -58,7 +58,9 @@ pipeline {
 
         stage('License Header Check') {
             steps {
-                sh './gradlew license'
+                warnError('Missing License Headers') {
+                    sh './gradlew license'
+                }
             }
         }
 
@@ -335,25 +337,6 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
-
-        stage('Parallel Functional Test 3') {
-            parallel {
-                stage('mdm-plugin-dataflow') {
-                    steps {
-                        dir('mdm-plugin-datamodel') {
-                            sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mdm-plugin-datamodel') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                            }
-                        }
-                    }
-                }
                 stage('mdm-plugin-authentication-basic') {
                     steps {
                         dir('mdm-plugin-authentication-basic') {
@@ -371,12 +354,31 @@ pipeline {
             }
         }
 
-        stage('Entire Parallel Functional Test') {
+        stage('Parallel Functional Test 3') {
             parallel {
-                stage('Entire Functional Test') {
+                stage('mdm-plugin-dataflow') {
+                    steps {
+                        dir('mdm-plugin-dataflow') {
+                            sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-plugin-dataflow') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+//        stage('E2E Parallel Functional Test') {
+//            parallel {
+                stage('Core Functional Test') {
                     steps {
                         dir('mdm-testing-functional') {
-                            sh "./grailsw test-app"
+                            sh "./grailsw -Dgrails.test.package=core test-app"
                         }
                     }
                     post {
@@ -387,10 +389,80 @@ pipeline {
                         }
                     }
                 }
+                stage('Security Functional Test') {
+                    steps {
+                        dir('mdm-testing-functional') {
+                            sh "./grailsw -Dgrails.test.package=security test-app"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-testing-functional') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/core/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('Authentication Functional Test') {
+                    steps {
+                        dir('mdm-testing-functional') {
+                            sh "./grailsw -Dgrails.test.package=authentication test-app"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-testing-functional') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/authentication/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('DataModel Functional Test') {
+                    steps {
+                        dir('mdm-testing-functional') {
+                            sh "./grailsw -Dgrails.test.package=datamodel test-app"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-testing-functional') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/datamodel/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('Terminology Functional Test') {
+                    steps {
+                        dir('mdm-testing-functional') {
+                            sh "./grailsw -Dgrails.test.package=terminology test-app"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-testing-functional') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/terminology/*.xml'
+                            }
+                        }
+                    }
+                }
+                stage('DataFlow Functional Test') {
+                    steps {
+                        dir('mdm-testing-functional') {
+                            sh "./grailsw -Dgrails.test.package=dataflow test-app"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-testing-functional') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/dataflow/*.xml'
+                            }
+                        }
+                    }
+                }
                 stage('Trouble Functional Test') {
                     steps {
                         dir('mdm-testing-functional') {
-                            sh "./grailsw -Dgrails.testCategory=TroubleTest test-app"
+                            sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
                         }
                     }
                     post {
@@ -401,8 +473,8 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
+//            }
+//        }
 
         stage('Deploy to Artifactory') {
             when {

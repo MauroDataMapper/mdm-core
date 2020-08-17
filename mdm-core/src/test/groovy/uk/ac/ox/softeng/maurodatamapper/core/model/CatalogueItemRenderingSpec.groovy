@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModelItem
@@ -26,6 +27,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.plugin.json.view.test.JsonViewTest
 import groovy.util.logging.Slf4j
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
 /**
  * @since 06/02/2020
@@ -38,10 +41,12 @@ class CatalogueItemRenderingSpec extends BaseUnitSpec implements JsonViewTest, J
     Folder misc
 
     def setup() {
-        mockDomains(Folder, BasicModel, BasicModelItem)
+        mockDomains(Folder, BasicModel, BasicModelItem, Authority)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         misc = new Folder(createdBy: admin.emailAddress, label: 'misc')
         basicModel = new BasicModel(createdBy: admin.emailAddress, label: 'test', folder: misc,
-                                    description: 'a very basic model')
+                                    description: 'a very basic model', authority: testAuthority)
         basicModelItem = new BasicModelItem(createdBy: editor.emailAddress, label: 'content', description: 'some sort of content in a model')
         basicModel.addToModelItems(basicModelItem)
         checkAndSave(misc)

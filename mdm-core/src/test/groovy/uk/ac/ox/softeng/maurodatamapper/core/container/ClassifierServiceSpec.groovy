@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -29,6 +30,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.services.ServiceUnitTest
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.UNIT_TEST
+
 class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<ClassifierService> {
 
     Classifier parent
@@ -36,8 +39,7 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
     UUID id
 
     def setup() {
-        mockDomains(Classifier, BasicModel)
-
+        mockDomains(Classifier, BasicModel, Folder, Authority)
         Classifier cl = new Classifier(createdBy: admin.emailAddress, label: 'classifier1')
         checkAndSave(cl)
         parent = new Classifier(createdBy: editor.emailAddress, label: 'parent classifier', description: 'the parent')
@@ -204,9 +206,13 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Classifier) >> Classifier.list().collect {it.id}
 
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
+        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                                authority: testAuthority)
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
 
@@ -249,9 +255,13 @@ class ClassifierServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Clas
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Classifier) >> [Classifier.findByLabel('classifier1').id]
 
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
-        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                               authority: testAuthority)
+        BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                                authority: testAuthority)
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
 

@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.0" xmlns:mdm="http://maurodatamapper.com/dataModel/3.0">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.1" xmlns:mdm="http://maurodatamapper.com/dataModel/3.1">
   <mdm:dataModel>
     <mdm:id>412d7b5f-247b-4136-a663-584610ad491b</mdm:id>
     <mdm:label>Complex Test DataModel</mdm:label>
@@ -61,13 +61,13 @@
     <mdm:annotations>
       <mdm:annotation>
         <mdm:id>bb1b78be-a54a-498e-8676-1d543982dd08</mdm:id>
-        <mdm:createdBy>admin@maurodatamapper.com</mdm:createdBy>
+        <mdm:createdBy>development@test.com</mdm:createdBy>
         <mdm:lastUpdated>2020-04-12T16:48:47.509604Z</mdm:lastUpdated>
         <mdm:label>test annotation 1</mdm:label>
       </mdm:annotation>
       <mdm:annotation>
         <mdm:id>0f6f85e2-d1e0-497b-9797-3b58a474fa40</mdm:id>
-        <mdm:createdBy>editor@test.com</mdm:createdBy>
+        <mdm:createdBy>development@test.com</mdm:createdBy>
         <mdm:lastUpdated>2020-04-12T16:48:47.510166Z</mdm:lastUpdated>
         <mdm:label>test annotation 2</mdm:label>
         <mdm:description>with description</mdm:description>
@@ -78,6 +78,12 @@
     <mdm:organisation>brc</mdm:organisation>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>
+    <mdm:authority>
+      <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
+      <mdm:label>Test Authority</mdm:label>
+      <mdm:url>http://localhost</mdm:url>
+      <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
+    </mdm:authority>
     <mdm:dataTypes>
       <mdm:dataType>
         <mdm:id>554c36e4-19f6-4491-a3bd-8290ceef54a5</mdm:id>
@@ -217,7 +223,7 @@
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>XmlExporterService</exp:name>
-      <exp:version>3.0</exp:version>
+      <exp:version>3.1</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

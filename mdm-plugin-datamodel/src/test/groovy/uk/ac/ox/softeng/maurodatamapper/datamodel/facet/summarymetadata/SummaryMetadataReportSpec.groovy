@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -36,9 +37,10 @@ class SummaryMetadataReportSpec extends CreatorAwareSpec<SummaryMetadataReport> 
     OffsetDateTime dateTime
 
     def setup() {
-        mockDomains(Folder, DataModel, SummaryMetadata)
+        mockDomains(Folder, DataModel, SummaryMetadata, Authority)
         misc = new Folder(createdBy: StandardEmailAddress.UNIT_TEST, label: 'misc')
-        db = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc)
+        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
+        db = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: Authority.findByLabel('Test Authority'))
         checkAndSave(misc)
         checkAndSave(db)
         summaryMetadata = new SummaryMetadata(summaryMetadataType: SummaryMetadataType.NUMBER, label: 'test',

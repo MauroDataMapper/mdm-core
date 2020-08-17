@@ -12,6 +12,9 @@ apiUser:
 maurodatamapper:
     security:
         public: false
+    authority:
+        name: 'Mauro Data Mapper'
+        url: http://localhost
 grails:
     profile: rest-api
     codegen:

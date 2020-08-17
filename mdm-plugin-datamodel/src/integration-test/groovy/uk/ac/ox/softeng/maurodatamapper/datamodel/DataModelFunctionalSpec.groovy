@@ -30,7 +30,8 @@ import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
-import spock.lang.Stepwise
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -66,7 +67,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-@Stepwise
+//@Stepwise
 class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     @Shared
@@ -80,11 +81,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        folderId = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true).id
+        folderId = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert folderId
-        movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: 'functionalTest@test.com').save(flush: true).id
+        movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
     }
 
@@ -135,7 +134,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "documentationVersion": "1.0.0",
   "id": "${json-unit.matches:id}",
   "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false
+  "readableByAuthenticatedUsers": false,
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  }
 }'''
     }
 
@@ -625,7 +629,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
     "documentationVersion": "1.0.0",
-    "finalised": false
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+    }
   },
   "exportMetadata": {
     "exportedBy": "Unlogged User",
@@ -660,7 +669,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "Data Standard",
     "documentationVersion": "1.0.0",
-    "finalised": false
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+    }
   },
   "exportMetadata": {
     "exportedBy": "Unlogged User",
@@ -905,8 +919,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         verifyResponse CREATED, response
         def id = response.body().items[0].id
-        String expected = new String(loadTestFile('simpleDataModel')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                   '"exportedBy": "Unlogged User",')
+        String expected = new String(loadTestFile('simpleDataModel'))
+            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
+            .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id
@@ -936,8 +951,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         verifyResponse CREATED, response
         def id = response.body().items[0].id
-        String expected = new String(loadTestFile('complexDataModel')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                    '"exportedBy": "Unlogged User",')
+        String expected = new String(loadTestFile('complexDataModel'))
+            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
+            .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id
@@ -1001,6 +1017,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "documentationVersion": "1.0.0",
   "availableActions": ["delete","show","update"],
   "finalised": false,
+  "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+    },
   "id": "${json-unit.matches:id}",
   "label": "Simple Test DataModel",
   "type": "Data Standard",
@@ -1066,6 +1087,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "type": "Data Standard",
   "documentationVersion": "1.0.0",
   "finalised": false,
+  "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Mauro Data Mapper"
+  },
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "author": "admin person",

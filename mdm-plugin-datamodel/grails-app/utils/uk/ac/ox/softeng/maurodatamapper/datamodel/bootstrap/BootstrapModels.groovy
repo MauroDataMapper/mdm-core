@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -38,8 +39,8 @@ class BootstrapModels {
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
 
-    static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder) {
-        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder)
+    static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
 
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
                                                              readableByAuthenticatedUsers: true)
@@ -67,9 +68,10 @@ class BootstrapModels {
         simpleDataModel
     }
 
-    static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder) {
+    static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+
         DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: COMPLEX_DATAMODEL_NAME, organisation: 'brc', author: 'admin person',
-                                            folder: folder)
+                                            folder: folder, authority: authority)
         checkAndSave(messageSource, dataModel)
         Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
                                                              readableByAuthenticatedUsers: true)

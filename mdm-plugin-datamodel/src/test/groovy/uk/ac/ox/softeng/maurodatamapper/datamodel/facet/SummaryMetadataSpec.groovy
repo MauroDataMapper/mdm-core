@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -32,7 +33,8 @@ class SummaryMetadataSpec extends CreatorAwareSpec<SummaryMetadata> implements D
 
     def setup() {
         misc = new Folder(createdBy: StandardEmailAddress.UNIT_TEST, label: 'misc')
-        db = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost")
+        db = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: testAuthority)
         mockDomains(Folder, DataModel, SummaryMetadata)
         checkAndSave(misc)
         checkAndSave(db)

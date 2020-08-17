@@ -17,8 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationController
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationController
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
@@ -26,6 +27,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import groovy.util.logging.Slf4j
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
 @Slf4j
 class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implements
@@ -35,10 +38,13 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
     BasicModel basicModel
 
     def setup() {
-        mockDomains(Folder, BasicModel, Annotation)
+        mockDomains(Folder, BasicModel, Annotation, Authority)
         log.debug('Setting up annotation controller unit')
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
         checkAndSave basicModel
 
         basicModel.addToAnnotations(createdBy: admin.emailAddress, label: 'annotation 1')

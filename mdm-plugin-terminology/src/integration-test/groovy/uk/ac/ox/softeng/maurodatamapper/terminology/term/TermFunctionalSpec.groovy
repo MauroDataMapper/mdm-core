@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.term
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
@@ -79,15 +80,16 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert Terminology.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST).save(flush: true)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
         Terminology terminology = new Terminology(label: 'Functional Test Terminology', createdBy: FUNCTIONAL_TEST,
-                                                  folder: folder).save(flush: true)
+                                                  folder: folder, authority: testAuthority).save(flush: true)
         terminologyId = terminology.id
 
-        complexTerminologyId = BootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService).id
-        simpleTerminologyId = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder).id
+        complexTerminologyId = BootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, testAuthority).id
+        simpleTerminologyId = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, testAuthority).id
 
         sessionFactory.currentSession.flush()
     }
@@ -96,6 +98,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     def cleanupSpec() {
         log.debug('CleanupSpec TermFunctionalSpec')
         cleanUpResources(TermRelationship, Term, TermRelationshipType, Terminology, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

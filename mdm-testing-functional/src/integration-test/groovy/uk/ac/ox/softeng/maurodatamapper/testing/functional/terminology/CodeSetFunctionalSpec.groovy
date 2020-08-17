@@ -219,7 +219,12 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         }
       ],
       "author": "Test Bootstrap",
-      "organisation": "Oxford BRC"
+      "organisation": "Oxford BRC",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      }
     }
   ]
 }'''
@@ -245,7 +250,12 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
     "show",
     "comment",
     "editDescription"
-  ]
+  ],
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  }
 }'''
     }
 

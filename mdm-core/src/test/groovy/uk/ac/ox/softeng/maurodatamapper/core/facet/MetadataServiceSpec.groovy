@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
@@ -28,13 +28,15 @@ import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 
 import grails.testing.services.ServiceUnitTest
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+
 class MetadataServiceSpec extends CatalogueItemAwareServiceSpec<Metadata, MetadataService> implements ServiceUnitTest<MetadataService> {
 
     MauroDataMapperService mauroDataMapperService
     UUID id
 
     def setup() {
-        mockDomains(Folder, BasicModel, Edit, Metadata)
+        mockDomains(Folder, BasicModel, Edit, Metadata, Authority)
         mockArtefact(BasicEmailProviderService)
         mockArtefact(MauroDataMapperServiceProviderService)
 
@@ -42,9 +44,11 @@ class MetadataServiceSpec extends CatalogueItemAwareServiceSpec<Metadata, Metada
         MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService =
             applicationContext.getBean(MauroDataMapperServiceProviderService)
 
-
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: UNIT_TEST)
+        checkAndSave(testAuthority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
-        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'))
+        basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
+                                    authority: testAuthority)
 
         Metadata metadata = new Metadata(createdBy: reader1.emailAddress, namespace: 'https://integration.test.com', key: 'key1', value: 'value1')
         basicModel.addToMetadata(metadata)

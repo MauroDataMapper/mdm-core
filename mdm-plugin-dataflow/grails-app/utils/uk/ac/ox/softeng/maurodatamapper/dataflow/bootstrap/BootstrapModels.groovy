@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
@@ -38,9 +39,10 @@ class BootstrapModels {
     public static final String TARGET_DATAMODEL_NAME = 'TargetFlowDataModel'
     public static final String DATAFLOW_NAME = 'Sample DataFlow'
 
-    static DataModel buildAndSaveSourceDataModel(MessageSource messageSource, Folder folder) {
+    static DataModel buildAndSaveSourceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
 
-        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: SOURCE_DATAMODEL_NAME, folder: folder, type: DataModelType.DATA_ASSET)
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: SOURCE_DATAMODEL_NAME, folder: folder, type: DataModelType.DATA_ASSET,
+                                            authority: authority)
         checkAndSave(messageSource, dataModel)
 
         PrimitiveType string = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
@@ -77,9 +79,10 @@ class BootstrapModels {
         dataModel
     }
 
-    static DataModel buildAndSaveTargetDataModel(MessageSource messageSource, Folder folder) {
+    static DataModel buildAndSaveTargetDataModel(MessageSource messageSource, Folder folder, Authority authority) {
 
-        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: TARGET_DATAMODEL_NAME, folder: folder, type: DataModelType.DATA_ASSET)
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: TARGET_DATAMODEL_NAME, folder: folder, type: DataModelType.DATA_ASSET,
+                                            authority: authority)
         checkAndSave(messageSource, dataModel)
 
         PrimitiveType string = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')

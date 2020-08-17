@@ -159,6 +159,10 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
     }
 
     static DetachedCriteria<DataClassComponent> byClassifierId(UUID classifierId) {
-        by().eq('classifiers.id', classifierId)
+        where {
+            classifiers {
+                eq 'id', classifierId
+            }
+        }
     }
 }

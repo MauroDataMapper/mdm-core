@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -31,6 +32,8 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -73,16 +76,18 @@ class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        assert Folder.count() == 0
-        assert DataModel.count() == 0
-        folder = new Folder(label: 'Functional Test Folder', createdBy: 'functionalTest@test.com').save(flush: true)
-        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
-                                            folder: folder).save(flush: true)
-        dataModelId = dataModel.id
-        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: 'functionalTest@test.com',
-                                         folder: folder).save(flush: true).id
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
 
-        dataTypeId = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
+        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
+                                            folder: folder, authority: testAuthority).save(flush: true)
+        dataModelId = dataModel.id
+        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
+                                         folder: folder, authority: testAuthority).save(flush: true).id
+
+        dataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                        dataModel: dataModel).save(flush: true).id
 
         sessionFactory.currentSession.flush()
@@ -92,6 +97,7 @@ class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
     def cleanupSpec() {
         log.debug('CleanupSpec DataClassFunctionalSpec')
         cleanUpResources(DataType, DataModel, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override

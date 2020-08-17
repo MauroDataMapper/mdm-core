@@ -39,8 +39,8 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     @Override
     void setupDomainData() {
         log.debug('Setting up DataClassServiceIntegrationSpec')
-
-        dataModel = new DataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder)
+        dataModel = new DataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder,
+                                  authority: testAuthority)
         checkAndSave(dataModel)
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
@@ -258,7 +258,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder)
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
         DataClass vsimple = new DataClass(label: 'vsimple', createdByUser: editor)
         dataModel.addToDataClasses(vsimple)
 
@@ -305,7 +305,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataElement element = new DataElement(createdByUser: admin, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
         content.addToDataElements(element)
         dataModel.addToDataClasses(content)
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder)
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(dataModel)
@@ -353,7 +353,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataClass complex = dataModel.dataClasses.find {it.label == 'Integration grandparent'}
-        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder)
+        DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
         //copyModel.addToDataTypes(new ReferenceType(createdByUser:editor, label: 'dataclass'))
         dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor)

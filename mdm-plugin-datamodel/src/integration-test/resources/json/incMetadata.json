@@ -14,7 +14,12 @@
     ],
     "type": "Data Standard",
     "documentationVersion": "1.0.0",
-    "finalised": false
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    }
   },
   "exportMetadata": {
     "exportedBy": "Admin User",
