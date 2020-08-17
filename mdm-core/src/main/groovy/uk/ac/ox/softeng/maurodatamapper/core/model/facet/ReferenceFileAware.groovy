@@ -18,30 +18,30 @@
 package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
-import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
-import groovy.transform.CompileStatic
+import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
+import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 30/01/2020
  */
-@SelfType(CatalogueItem)
-@CompileStatic
+@SelfType(GormEntity)
+@GrailsCompileStatic
 trait ReferenceFileAware {
     abstract Set<ReferenceFile> getReferenceFiles()
 
-    CatalogueItem addToReferenceFiles(ReferenceFile add) {
+    def addToReferenceFiles(ReferenceFile add) {
         add.setCatalogueItem(this as CatalogueItem)
         addTo('referenceFiles', add)
     }
 
-    CatalogueItem addToReferenceFiles(Map args) {
+    def addToReferenceFiles(Map args) {
         addToReferenceFiles(new ReferenceFile(args))
     }
 
-    CatalogueItem removeFromReferenceFiles(ReferenceFile referenceFiles) {
+    def removeFromReferenceFiles(ReferenceFile referenceFiles) {
         removeFrom('referenceFiles', referenceFiles)
     }
 }

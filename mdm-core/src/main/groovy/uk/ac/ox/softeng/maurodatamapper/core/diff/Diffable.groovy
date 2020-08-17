@@ -17,6 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
+import grails.compiler.GrailsCompileStatic
+
+@GrailsCompileStatic
 interface Diffable<T extends Diffable> {
 
     ObjectDiff<T> diff(T obj)

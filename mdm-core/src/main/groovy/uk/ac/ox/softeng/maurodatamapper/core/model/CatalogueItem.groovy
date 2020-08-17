@@ -19,35 +19,28 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.facet.*
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.container.CatalogueItemClassifierAware
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.AnnotationAware
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.ReferenceFileAware
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SemanticLinkAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.search.Lucene
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
-import grails.compiler.GrailsCompileStatic
 import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.GormEntity
 import grails.plugins.hibernate.search.HibernateSearchApi
 import groovy.transform.SelfType
 import groovy.util.logging.Slf4j
+import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 06/12/2019
  */
 @Slf4j
 @SelfType(GormEntity)
-trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistoryAware, Diffable<D>,
-    CatalogueItemClassifierAware,
-    MetadataAware,
-    AnnotationAware,
-    SemanticLinkAware,
-    ReferenceFileAware {
+trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistoryAware, Diffable<D>, CatalogueItemClassifierAware, MultiFacetAware {
 
     String aliasesString
     BreadcrumbTree breadcrumbTree

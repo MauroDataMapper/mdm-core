@@ -21,14 +21,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import groovy.transform.CompileStatic
+import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
+import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 30/01/2020
  */
-@SelfType(CatalogueItem)
-@CompileStatic
+@SelfType(GormEntity)
+@GrailsCompileStatic
 trait MetadataAware {
 
     abstract Set<Metadata> getMetadata()
@@ -41,7 +42,7 @@ trait MetadataAware {
         metadata?.find {it.namespace == namespace && it.key == key}
     }
 
-    CatalogueItem addToMetadata(Metadata add) {
+    def addToMetadata(Metadata add) {
         Metadata existing = findMetadataByNamespaceAndKey(add.namespace, add.key)
         if (existing) {
             existing.value = add.value
@@ -53,23 +54,23 @@ trait MetadataAware {
         }
     }
 
-    CatalogueItem addToMetadata(Map args) {
+    def addToMetadata(Map args) {
         addToMetadata(new Metadata(args))
     }
 
-    CatalogueItem addToMetadata(String namespace, String key, String value, User createdBy) {
+    def addToMetadata(String namespace, String key, String value, User createdBy) {
         addToMetadata(namespace, key, value, createdBy.emailAddress)
     }
 
-    CatalogueItem addToMetadata(String namespace, String key, String value, String createdBy) {
+    def addToMetadata(String namespace, String key, String value, String createdBy) {
         addToMetadata(new Metadata(namespace: namespace, key: key, value: value, createdBy: createdBy))
     }
 
-    CatalogueItem addToMetadata(String namespace, String key, String value) {
+    def addToMetadata(String namespace, String key, String value) {
         addToMetadata(namespace: namespace, key: key, value: value)
     }
 
-    CatalogueItem removeFromMetadata(Metadata metadata) {
+    def removeFromMetadata(Metadata metadata) {
         removeFrom('metadata', metadata)
     }
 }

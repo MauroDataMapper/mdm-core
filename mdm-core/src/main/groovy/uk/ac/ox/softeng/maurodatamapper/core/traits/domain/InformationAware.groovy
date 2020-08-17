@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
-import groovy.transform.CompileStatic
+import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
 
@@ -25,7 +25,7 @@ import org.grails.datastore.gorm.GormEntity
  * @since 20/09/2017
  */
 @SelfType(GormEntity)
-@CompileStatic
+@GrailsCompileStatic
 trait InformationAware {
 
     String description

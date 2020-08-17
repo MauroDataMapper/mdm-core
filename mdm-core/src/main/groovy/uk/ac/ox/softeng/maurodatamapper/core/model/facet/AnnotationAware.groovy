@@ -18,30 +18,30 @@
 package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
-import groovy.transform.CompileStatic
+import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
+import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 30/01/2020
  */
-@SelfType(CatalogueItem)
-@CompileStatic
+@SelfType([GormEntity])
+@GrailsCompileStatic
 trait AnnotationAware {
     abstract Set<Annotation> getAnnotations()
 
-    CatalogueItem addToAnnotations(Annotation add) {
+    def addToAnnotations(Annotation add) {
         add.setCatalogueItem(this as CatalogueItem)
         addTo('annotations', add)
     }
 
-    CatalogueItem addToAnnotations(Map args) {
+    def addToAnnotations(Map args) {
         addToAnnotations(new Annotation(args))
     }
 
-    CatalogueItem removeFromAnnotations(Annotation annotations) {
+    def removeFromAnnotations(Annotation annotations) {
         removeFrom('annotations', annotations)
     }
 }

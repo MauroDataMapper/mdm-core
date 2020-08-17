@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.model.container
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
-import groovy.transform.CompileStatic
+import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
 
@@ -28,22 +28,22 @@ import org.grails.datastore.gorm.GormEntity
  * @since 20/
  * 04/2018
  */
-@SelfType(CatalogueItem)
-@CompileStatic
+@SelfType(GormEntity)
+@GrailsCompileStatic
 trait CatalogueItemClassifierAware {
 
     abstract Set<Classifier> getClassifiers()
 
     CatalogueItem addToClassifiers(Classifier classifier) {
-        addTo('classifiers', classifier)
+        addTo('classifiers', classifier) as CatalogueItem
     }
 
     CatalogueItem addToClassifiers(Map args) {
-        addTo('classifiers', args)
+        addTo('classifiers', args) as CatalogueItem
     }
 
     CatalogueItem removeFromClassifiers(Classifier classifier) {
-        removeFrom('classifiers', classifier)
+        removeFrom('classifiers', classifier) as CatalogueItem
     }
 
     static abstract CatalogueItem findByIdJoinClassifiers(UUID id)
