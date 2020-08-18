@@ -66,6 +66,7 @@ class CodeSet implements Model<CodeSet> {
     }
 
     static mapping = {
+        modelVersion type: VersionUserType
         documentationVersion type: VersionUserType
         folder cascade: 'none', cascadeValidate: CascadeValidateType.NONE
         terms cascade: 'none', cascadeValidate: CascadeValidateType.NONE, index: 'jcstt_term_idx', joinTable: [
@@ -91,6 +92,7 @@ class CodeSet implements Model<CodeSet> {
         deleted = false
         readableByAuthenticatedUsers = false
         readableByEveryone = false
+        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -33,7 +32,6 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
-import spock.lang.Stepwise
 
 @Slf4j
 @Integration
@@ -175,7 +173,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.documentationVersion == Version.from('1')
 
         when:
-        dataModelService.finaliseDataModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin, Version.from('1'))
 
         then:
         checkAndSave(dataModel)
@@ -187,6 +185,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.finalised
         dataModel.dateFinalised
         dataModel.documentationVersion == Version.from('1')
+        dataModel.modelVersion == Version.from('1')
     }
 
     void 'DMSC01 : test creating a new documentation version on draft model'() {
@@ -195,7 +194,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new doc version on draft model is not allowed'
         DataModel dataModel = dataModelService.get(id)
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1
@@ -208,9 +210,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'finalising model and then creating a new doc version is allowed'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseDataModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(result)
@@ -274,9 +279,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'finalising model and then creating a new doc version is allowed'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseDataModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, false, true)
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(result)
@@ -340,14 +348,20 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new doc version'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseDataModel(dataModel, editor)
-        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        dataModelService.finaliseModel(dataModel, editor)
+        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1
@@ -361,14 +375,20 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new doc version'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseDataModel(dataModel, editor)
-        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, true, false, true)
+        dataModelService.finaliseModel(dataModel, editor)
+        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, false, true)
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1
@@ -381,7 +401,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new version on draft model is not allowed'
         DataModel dataModel = dataModelService.get(id)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, false, true)
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1
@@ -394,9 +417,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'finalising model and then creating a new version is allowed'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseDataModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, false, true)
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.instanceOf(DataModel)
@@ -462,9 +488,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'finalising model and then creating a new version is allowed'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseDataModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, false, true)
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.instanceOf(DataModel)
@@ -529,14 +558,20 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new version'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseDataModel(dataModel, editor)
-        def newVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        dataModelService.finaliseModel(dataModel, editor)
+        def newVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, false, true)
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1

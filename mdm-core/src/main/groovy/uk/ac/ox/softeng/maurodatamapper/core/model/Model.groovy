@@ -17,14 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Version
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
@@ -53,6 +52,13 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     OffsetDateTime dateFinalised
     Authority authority
 
+    @BindUsing({obj, source -> Version.from(source['documentationVersion'] as String)})
+    Version documentationVersion
+
+    @BindUsing({obj, source -> Version.from(source['modelVersion'] as String)})
+    Version modelVersion
+    String branchName
+
     static belongsTo = Authority
 
     static constraints = {
@@ -61,9 +67,6 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
 
     static mapping = {
     }
-
-    @BindUsing({obj, source -> Version.from(source['documentationVersion'] as String)})
-    Version documentationVersion
 
     abstract Boolean hasChildren()
 
@@ -88,6 +91,8 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
             .appendString('author', lhs.author, rhs.author)
             .appendString('organisation', lhs.organisation, rhs.organisation)
             .appendString('documentationVersion', lhs.documentationVersion.toString(), rhs.documentationVersion.toString())
+            .appendString('modelVersion', lhs.modelVersion.toString(), rhs.modelVersion.toString())
+            .appendString('branchName', lhs.branchName, rhs.branchName)
             .appendOffsetDateTime('dateFinalised', lhs.dateFinalised, rhs.dateFinalised)
     }
 

@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -736,8 +737,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test import basic DataModel as new documentation version'() {
         given:
         String id = createNewItem([
-            label    : 'Functional Test Model',
-            finalised: true
+            label       : 'Functional Test Model',
+            finalised   : true,
+            modelVersion: Version.from('1.0.0')
         ])
 
         GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)

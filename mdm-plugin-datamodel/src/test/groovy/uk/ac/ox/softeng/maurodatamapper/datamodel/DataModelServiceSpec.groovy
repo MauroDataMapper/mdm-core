@@ -33,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
-
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
@@ -173,7 +172,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         dataModel.documentationVersion == Version.from('1')
 
         when:
-        service.finaliseDataModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin)
 
         then:
         checkAndSave(dataModel)
@@ -191,7 +190,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new doc version on draft model is not allowed'
         DataModel dataModel = service.get(id)
-        def result = service.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        def result = service.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1
@@ -201,9 +203,12 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
         when: 'finalising model and then creating a new doc version is allowed'
         DataModel dataModel = service.get(id)
-        service.finaliseDataModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = service.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        def result = service.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(result)
@@ -264,9 +269,12 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'DMSC03 : test creating a new documentation version on finalised model with permission copying'() {
         when: 'finalising model and then creating a new doc version is allowed'
         DataModel dataModel = service.get(id)
-        service.finaliseDataModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = service.createNewDocumentationVersion(dataModel, editor, true, false, true)
+        def result = service.createNewDocumentationVersion(dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(result)
@@ -328,14 +336,20 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new doc version'
         DataModel dataModel = service.get(id)
-        service.finaliseDataModel(dataModel, editor)
-        def newDocVersion = service.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        service.finaliseModel(dataModel, editor)
+        def newDocVersion = service.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = service.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        def result = service.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1
@@ -347,14 +361,20 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new doc version'
         DataModel dataModel = service.get(id)
-        service.finaliseDataModel(dataModel, editor)
-        def newDocVersion = service.createNewDocumentationVersion(dataModel, editor, true, false, true)
+        service.finaliseModel(dataModel, editor)
+        def newDocVersion = service.createNewDocumentationVersion(dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = service.createNewDocumentationVersion(dataModel, editor, true, false, true)
+        def result = service.createNewDocumentationVersion(dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1
@@ -366,7 +386,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new version on draft model is not allowed'
         DataModel dataModel = service.get(id)
-        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, false, true)
+        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1
@@ -377,9 +400,12 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'finalising model and then creating a new version is allowed'
         DataModel dataModel = service.get(id)
-        service.finaliseDataModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, false, true)
+        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.instanceOf(DataModel)
@@ -443,9 +469,12 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'finalising model and then creating a new version is allowed'
         DataModel dataModel = service.get(id)
-        service.finaliseDataModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, false, true)
+        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.instanceOf(DataModel)
@@ -508,14 +537,20 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new version'
         DataModel dataModel = service.get(id)
-        service.finaliseDataModel(dataModel, editor)
-        def newVersion = service.createNewDocumentationVersion(dataModel, editor, false, false, true)
+        service.finaliseModel(dataModel, editor)
+        def newVersion = service.createNewDocumentationVersion(dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
-        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, false, true)
+        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, [
+            moveDataFlows: false,
+            throwErrors  : true
+        ])
 
         then:
         result.errors.allErrors.size() == 1

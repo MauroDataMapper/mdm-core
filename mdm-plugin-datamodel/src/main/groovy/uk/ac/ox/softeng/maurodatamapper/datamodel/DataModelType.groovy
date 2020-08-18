@@ -38,7 +38,7 @@ enum DataModelType {
         values().find {it.label.equalsIgnoreCase(label)}
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     static DataModelType getValidType(DataModelType dataModelType) {
         if (!dataModelType) return null
         return DATA_STANDARD

@@ -110,7 +110,8 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
     @Override
     Map getInvalidJson() {
         [
-            label: BootstrapModels.SIMPLE_CODESET_NAME
+            label    : 'Functional Test CodeSet',
+            finalised: true
         ]
     }
 

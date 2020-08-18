@@ -17,8 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -34,6 +32,8 @@ import grails.testing.gorm.DomainUnitTest
 import groovy.util.logging.Slf4j
 import org.spockframework.util.InternalSpockError
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.UNIT_TEST
+
 @Slf4j
 class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataModel> {
 
@@ -42,7 +42,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         mockDomains(DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
     }
 
-    DataModel buildSimpleDataModel(Authority authority) {
+    DataModel buildSimpleDataModel() {
         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, testFolder, testAuthority)
     }
 
@@ -52,7 +52,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
     @Override
     DataModel createValidDomain(String label) {
-        new DataModel(folder: testFolder, label: label, type: DataModelType.DATA_STANDARD, createdByUser: editor, authority: testAuthority)
+        new DataModel(folder: testFolder, label: label, type: DataModelType.DATA_STANDARD, createdBy: UNIT_TEST, authority: testAuthority)
     }
 
     @Override
@@ -87,45 +87,10 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         checkAndSave(complex)
     }
 
-    void 'test updating a datamodel label'() {
-        when:
-        setValidDomainValues()
-        checkAndSave(domain)
-
-        then:
-        domain.count() == 1
-
-        when:
-        domain.label = 'a new better label'
-        checkAndSave(domain)
-
-        then:
-        noExceptionThrown()
-    }
-
-    void 'test creating a new model with the same name as existing'() {
-        when:
-        setValidDomainValues()
-        checkAndSave(domain)
-
-        then:
-        domain.count() == 1
-
-        when:
-        Authority testAuthority = testAuthority
-        DataModel other = new DataModel(createdBy: editor.emailAddress, label: domain.label, folder: testFolder, authority: testAuthority)
-        checkAndSave(other)
-
-        then:
-        thrown(InternalSpockError)
-        other.errors.getFieldError('label').code == 'default.not.unique.message'
-    }
-
     void 'simple diff of label'() {
         when:
-        Authority testAuthority = testAuthority
-        def dm1 = new DataModel(label: 'test model 1', folder: testFolder, authority: testAuthority)
-        def dm2 = new DataModel(label: 'test model 2', folder: testFolder, authority: testAuthority)
+        def dm1 = new DataModel(label: 'test model 1', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
+        def dm2 = new DataModel(label: 'test model 2', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
         Diff<DataModel> diff = dm1.diff(dm2)
 
         then:
@@ -143,12 +108,11 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
         given:
         setValidDomainValues()
-        domain.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
-        domain.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'integer'))
+        domain.addToDataTypes(new PrimitiveType(createdBy: UNIT_TEST, label: 'string'))
+        domain.addToDataTypes(new PrimitiveType(createdBy: UNIT_TEST, label: 'integer'))
 
         when: 'adding empty dataclass'
-        Authority testAuthority = testAuthority
-        domain.addToDataClasses(createdByUser: admin, label: 'emptyclass', authority: testAuthority)
+        domain.addToDataClasses(createdBy: UNIT_TEST, label: 'emptyclass', authority: testAuthority)
 
         then:
         checkAndSave(domain)
@@ -165,8 +129,8 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         empty.dataModel.id == domain.id
 
         when: 'creating a dataclass with child dataclass'
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        parent.addToDataClasses(createdByUser: admin, label: 'child')
+        DataClass parent = new DataClass(createdBy: UNIT_TEST, label: 'parent')
+        parent.addToDataClasses(createdBy: UNIT_TEST, label: 'child')
         domain.addToDataClasses(parent)
 
         then:
@@ -192,9 +156,9 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         childS.dataModel.id == domain.id
 
         when: 'creating dataclass with dataelements'
-        DataClass content = new DataClass(createdByUser: editor, label: 'content', description: 'A dataclass with elements')
-        content.addToDataElements(createdByUser: editor, label: 'ele1', dataType: domain.findDataTypeByLabel('string'))
-        content.addToDataElements(createdByUser: reader1, label: 'element2', dataType: domain.findDataTypeByLabel('integer'))
+        DataClass content = new DataClass(createdBy: UNIT_TEST, label: 'content', description: 'A dataclass with elements')
+        content.addToDataElements(createdBy: UNIT_TEST, label: 'ele1', dataType: domain.findDataTypeByLabel('string'))
+        content.addToDataElements(createdBy: UNIT_TEST, label: 'element2', dataType: domain.findDataTypeByLabel('integer'))
         domain.addToDataClasses(content)
 
         then:
@@ -217,7 +181,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         setValidDomainValues()
 
         when: 'adding invalid dataclass'
-        domain.addToDataClasses(createdByUser: admin, description: 'emptyclass')
+        domain.addToDataClasses(createdBy: UNIT_TEST, description: 'emptyclass')
         checkAndSave(domain)
 
         then:
@@ -230,7 +194,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         setValidDomainValues()
 
         when: 'creating a dataclass with invalid dataclass'
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
+        DataClass parent = new DataClass(createdBy: UNIT_TEST, label: 'parent')
         parent.addToDataClasses(label: 'child')
         domain.addToDataClasses(parent)
         checkAndSave(domain)
@@ -245,8 +209,8 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         setValidDomainValues()
 
         when: 'creating dataclass with invalid dataelement'
-        DataClass content = new DataClass(createdByUser: editor, label: 'content', description: 'A dataclass with elements')
-        content.addToDataElements(createdByUser: editor, label: 'ele1', dataType: domain.findDataTypeByLabel('string'))
+        DataClass content = new DataClass(createdBy: UNIT_TEST, label: 'content', description: 'A dataclass with elements')
+        content.addToDataElements(createdBy: UNIT_TEST, label: 'ele1', dataType: domain.findDataTypeByLabel('string'))
         domain.addToDataClasses(content)
         !checkAndSave(domain)
 
@@ -262,8 +226,8 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         setValidDomainValues()
 
         when: 'adding datatypes'
-        domain.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
-        domain.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'integer'))
+        domain.addToDataTypes(new PrimitiveType(createdBy: UNIT_TEST, label: 'string'))
+        domain.addToDataTypes(new PrimitiveType(createdBy: UNIT_TEST, label: 'integer'))
 
         then:
         checkAndSave(domain)
@@ -271,8 +235,8 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         PrimitiveType.count() == 2
 
         when: 'adding invalid datatype and annotation'
-        domain.addToDataTypes(new PrimitiveType(createdByUser: admin, description: 'string'))
-        domain.addToAnnotations(label: 'annotation', createdBy: editor.emailAddress)
+        domain.addToDataTypes(new PrimitiveType(createdBy: UNIT_TEST, description: 'string'))
+        domain.addToAnnotations(label: 'annotation', createdBy: UNIT_TEST)
         checkAndSave(domain)
 
         then:
@@ -282,7 +246,6 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
     void 'diff in class'() {
         when:
-        Authority testAuthority = testAuthority
         def dm1 = new DataModel(label: 'test model', folder: testFolder, authority: testAuthority)
         def dm2 = new DataModel(label: 'test model', folder: testFolder, authority: testAuthority)
         dm1.addToDataClasses(new DataClass(label: 'class 1'))
@@ -301,24 +264,23 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
     void 'diff in element'() {
         when:
-        Authority testAuthority = testAuthority
-        def dm1 = new DataModel(label: 'test model', createdByUser: admin, folder: testFolder, authority: testAuthority)
-        def dt = new PrimitiveType(createdBy: admin.emailAddress, label: 'string')
+        def dm1 = new DataModel(label: 'test model', createdBy: UNIT_TEST, folder: testFolder, authority: testAuthority)
+        def dt = new PrimitiveType(createdBy: UNIT_TEST, label: 'string')
         dm1.addToDataTypes(dt)
 
 
-        dm1.addToDataClasses(new DataClass(label: 'class 1', createdByUser: admin))
+        dm1.addToDataClasses(new DataClass(label: 'class 1', createdBy: UNIT_TEST))
         dm1.childDataClasses.each {
-            c -> c.addToDataElements(new DataElement(label: 'elem 1', dataType: dt, createdByUser: admin))
+            c -> c.addToDataElements(new DataElement(label: 'elem 1', dataType: dt, createdBy: UNIT_TEST))
         }
 
-        def dm2 = new DataModel(label: 'test model', createdBy: admin.emailAddress, folder: testFolder)
-        dt = new PrimitiveType(createdBy: admin.emailAddress, label: 'string')
+        def dm2 = new DataModel(label: 'test model', createdBy: UNIT_TEST, folder: testFolder)
+        dt = new PrimitiveType(createdBy: UNIT_TEST, label: 'string')
         dm2.addToDataTypes(dt)
 
-        dm2.addToDataClasses(new DataClass(label: 'class 1', createdByUser: admin))
+        dm2.addToDataClasses(new DataClass(label: 'class 1', createdBy: UNIT_TEST))
         dm2.childDataClasses.each {
-            c -> c.addToDataElements(new DataElement(label: 'elem 2', dataType: dt, createdByUser: admin))
+            c -> c.addToDataElements(new DataElement(label: 'elem 2', dataType: dt, createdBy: UNIT_TEST))
         }
 
 

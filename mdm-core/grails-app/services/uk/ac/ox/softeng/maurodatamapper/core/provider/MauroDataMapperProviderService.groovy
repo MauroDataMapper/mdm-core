@@ -21,8 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperProvider
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.AbstractMauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.GrailsPluginMauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.JavaModule
-import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MdmGrailsPluginMauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
+import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MdmGrailsPluginMauroDataMapperPlugin
 
 import grails.plugins.GrailsPluginManager
 import org.springframework.beans.factory.annotation.Autowired
@@ -41,7 +41,7 @@ class MauroDataMapperProviderService {
         modulesList.find {it.name.equalsIgnoreCase(name) && it.version.equalsIgnoreCase(version)}
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     Set<MauroDataMapperPlugin> getModules() {
         modulesList
     }

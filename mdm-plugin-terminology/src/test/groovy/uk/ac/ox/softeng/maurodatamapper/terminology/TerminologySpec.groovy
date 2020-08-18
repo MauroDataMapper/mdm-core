@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelSpec
 
 import grails.testing.gorm.DomainUnitTest
 import groovy.util.logging.Slf4j
-import org.spockframework.util.InternalSpockError
 
 @Slf4j
 class TerminologySpec extends ModelSpec<Terminology> implements DomainUnitTest<Terminology> {
@@ -75,24 +74,6 @@ class TerminologySpec extends ModelSpec<Terminology> implements DomainUnitTest<T
 
         and:
         checkAndSave(complex)
-    }
-
-    void 'test creating a new model with the same name as existing'() {
-        when:
-        setValidDomainValues()
-        checkAndSave(domain)
-
-        then:
-        domain.count() == 1
-
-        when:
-        Terminology other = new Terminology(createdBy: StandardEmailAddress.UNIT_TEST, label: domain.label, folder: testFolder,
-                                            authority: testAuthority)
-        checkAndSave(other)
-
-        then:
-        thrown(InternalSpockError)
-        other.errors.getFieldError('label').code == 'default.not.unique.message'
     }
 
     void 'simple diff of label'() {

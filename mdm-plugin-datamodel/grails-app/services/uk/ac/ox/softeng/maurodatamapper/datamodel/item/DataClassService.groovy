@@ -535,7 +535,7 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     private Set<ReferenceType> getAllNestedReferenceTypes(DataClass dataClass) {
         Set<ReferenceType> referenceTypes = []
         referenceTypes.addAll(dataClass.referenceTypes ?: [])

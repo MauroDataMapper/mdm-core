@@ -143,7 +143,7 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         false
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     DataElementComponent findByDataFlowIdAndId(UUID dataFlowId, Serializable id) {
         DataElementComponent.byDataFlowIdAndId(dataFlowId, Utils.toUuid(id)).find()
     }
@@ -152,7 +152,7 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         DataElementComponent.byDataClassComponentIdAndId(dataClassComponentId, Utils.toUuid(id)).find()
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     List<DataElementComponent> findAllByDataFlowId(UUID dataFlowId, Map pagination = [:]) {
         DataElementComponent.byDataFlowId(dataFlowId).list(pagination)
     }
@@ -161,7 +161,7 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         DataElementComponent.byDataClassComponentId(dataClassComponentId).list(pagination)
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     List<DataElementComponent> findAllByDataFlowIdAndDataClassId(UUID dataFlowId, UUID dataClassId, Map pagination = [:]) {
         DataElementComponent.byDataFlowIdAndDataClassId(dataFlowId, dataClassId).list(pagination)
     }

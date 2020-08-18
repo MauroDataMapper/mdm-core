@@ -150,7 +150,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         terminology.documentationVersion == Version.from('1')
 
         when:
-        service.finaliseTerminology(terminology, admin)
+        service.finaliseModel(terminology, admin)
 
         then:
         checkAndSave(terminology)
@@ -168,7 +168,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new doc version on draft model is not allowed'
         Terminology terminology = service.get(id)
-        def result = service.createNewDocumentationVersion(terminology, editor, false, true)
+        def result = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -178,9 +178,9 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
         when: 'finalising model and then creating a new doc version is allowed'
         Terminology terminology = service.get(id)
-        service.finaliseTerminology(terminology, admin)
+        service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
-        def result = service.createNewDocumentationVersion(terminology, editor, false, true)
+        def result = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
 
         then:
         checkAndSave(result)
@@ -237,9 +237,9 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
     void 'DMSC03 : test creating a new documentation version on finalised model with permission copying'() {
         when: 'finalising model and then creating a new doc version is allowed'
         Terminology terminology = service.get(id)
-        service.finaliseTerminology(terminology, admin)
+        service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
-        def result = service.createNewDocumentationVersion(terminology, editor, true, true)
+        def result = service.createNewDocumentationVersion(terminology, editor, true, [throwErrors: true])
 
         then:
         checkAndSave(result)
@@ -297,14 +297,14 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new doc version'
         Terminology terminology = service.get(id)
-        service.finaliseTerminology(terminology, editor)
-        def newDocVersion = service.createNewDocumentationVersion(terminology, editor, false, true)
+        service.finaliseModel(terminology, editor)
+        def newDocVersion = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old terminology'
-        def result = service.createNewDocumentationVersion(terminology, editor, false, true)
+        def result = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -316,14 +316,14 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new doc version'
         Terminology terminology = service.get(id)
-        service.finaliseTerminology(terminology, editor)
-        def newDocVersion = service.createNewDocumentationVersion(terminology, editor, true, true)
+        service.finaliseModel(terminology, editor)
+        def newDocVersion = service.createNewDocumentationVersion(terminology, editor, true, [throwErrors: true])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old terminology'
-        def result = service.createNewDocumentationVersion(terminology, editor, true, false, true)
+        def result = service.createNewDocumentationVersion(terminology, editor, true, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -335,7 +335,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new version on draft model is not allowed'
         Terminology terminology = service.get(id)
-        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, true)
+        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -346,9 +346,9 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'finalising model and then creating a new version is allowed'
         Terminology terminology = service.get(id)
-        service.finaliseTerminology(terminology, admin)
+        service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
-        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, true)
+        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, [throwErrors: true])
 
         then:
         result.instanceOf(Terminology)
@@ -408,9 +408,9 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'finalising model and then creating a new version is allowed'
         Terminology terminology = service.get(id)
-        service.finaliseTerminology(terminology, admin)
+        service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
-        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, true)
+        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, [throwErrors: true])
 
         then:
         result.instanceOf(Terminology)
@@ -468,14 +468,14 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new version'
         Terminology terminology = service.get(id)
-        service.finaliseTerminology(terminology, editor)
-        def newVersion = service.createNewDocumentationVersion(terminology, editor, false, true)
+        service.finaliseModel(terminology, editor)
+        def newVersion = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
 
         then:
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old terminology'
-        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, true)
+        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1

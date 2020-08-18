@@ -17,14 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.DataLoadable
-import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -47,7 +46,7 @@ trait DataLoaderProviderService<T extends DataLoadable> implements MauroDataMapp
 
     abstract List<String> getClassifiers()
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     List<T> importData(User catalogueUser) throws ApiException {
         importData(Version.from(getVersion()), catalogueUser)
     }

@@ -31,9 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * This is a temporary controller until the UI can be updated to handle the new {@link SecurableResourceGroupRole}
- * @deprecated
+ * @Deprecated (forRemoval = true)
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 class PermissionsController implements ResourcelessMdmController {
     static responseFormats = ['json', 'xml']
 

@@ -72,6 +72,7 @@ class Terminology implements Model<Terminology> {
 
     static mapping = {
         documentationVersion type: VersionUserType
+        modelVersion type: VersionUserType
         folder cascade: 'none'
         terms cascade: 'all-delete-orphan'
         termRelationshipTypes cascade: 'all-delete-orphan'
@@ -96,6 +97,7 @@ class Terminology implements Model<Terminology> {
         breadcrumbTree = new BreadcrumbTree(this)
         termRelationshipTypes = []
         terms = []
+        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override

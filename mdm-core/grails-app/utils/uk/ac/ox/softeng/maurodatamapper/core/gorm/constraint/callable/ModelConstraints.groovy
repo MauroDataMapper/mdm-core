@@ -17,23 +17,32 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.DocumentationVersionValidator
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.ModelLabelValidator
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.ModelVersionValidator
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 /**
  * @since 17/02/2020
  */
 class ModelConstraints extends CatalogueItemConstraints {
 
+    public static final String DEFAULT_BRANCH_NAME = 'main'
+
     static constraints = {
         folder nullable: false
         deleted nullable: false
         finalised nullable: false
         modelType nullable: false, blank: false
-        documentationVersion nullable: false
+        documentationVersion nullable: false, validator: {Version val, Model obj -> new DocumentationVersionValidator(obj).isValid(val)}
         author nullable: true, blank: false
         organisation nullable: true, blank: false
         dateFinalised nullable: true
 
-        label validator: {val, obj -> new ModelLabelValidator(obj).isValid(val)}
+        modelVersion nullable: true, validator: {Version val, Model obj -> new ModelVersionValidator(obj).isValid(val)}
+        branchName nullable: false
+
+        label validator: {String val, Model obj -> new ModelLabelValidator(obj).isValid(val)}
     }
 }

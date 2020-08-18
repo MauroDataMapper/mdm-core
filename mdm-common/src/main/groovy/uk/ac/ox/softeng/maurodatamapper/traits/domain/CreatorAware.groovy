@@ -45,7 +45,7 @@ trait CreatorAware {
 
     abstract String getDomainType()
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     void setCreatedByUser(User user) {
         this.createdBy = user?.emailAddress
     }

@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import org.springframework.context.MessageSource
 
@@ -88,6 +89,7 @@ class BootstrapModels {
 
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        codeSet.modelVersion = Version.from('1.0.0')
 
         checkAndSave(messageSource, codeSet)
 
