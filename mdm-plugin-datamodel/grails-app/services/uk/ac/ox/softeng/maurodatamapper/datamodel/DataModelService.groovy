@@ -350,9 +350,10 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, List<Serializable> supersedeModelIds = []) {
+    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = []) {
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        dataModel.modelVersion = modelVersion
         dataModel.breadcrumbTree.finalise()
         dataModel.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                    description: "DataModel finalised by ${user.firstName} ${user.lastName} on " +
@@ -364,9 +365,10 @@ class DataModelService extends ModelService<DataModel> {
         dataModel
     }
 
-    @Deprecated
-    DataModel finaliseDataModel(DataModel dataModel, User user, List<Serializable> supersedeModelIds = []) {
-        finaliseModel(dataModel, user, supersedeModelIds)
+    @Deprecated(forRemoval = true)
+    @Override
+    DataModel finaliseModel(DataModel model, User user, List<Serializable> supersedeModelIds) {
+        finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
     }
 
     boolean newVersionCreationIsAllowed(DataModel dataModel) {
@@ -418,25 +420,6 @@ class DataModelService extends ModelService<DataModel> {
 
         if (newModelVersion.validate()) newModelVersion.save(flush: true, validate: false)
         newModelVersion
-    }
-
-    @Deprecated
-    DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions, boolean moveDataFlows,
-                                            boolean throwErrors = false) {
-        createNewDocumentationVersion(dataModel, user, copyPermissions, [
-            moveDataFlows: moveDataFlows,
-            throwErrors  : throwErrors
-        ])
-    }
-
-    @Deprecated
-    DataModel createNewModelVersion(String label, DataModel dataModel, User user, boolean copyPermissions, boolean copyDataFlows,
-                                    boolean throwErrors = false) {
-
-        createNewModelVersion(label, dataModel, user, copyPermissions, [
-            copyDataFlows: copyDataFlows,
-            throwErrors  : throwErrors
-        ])
     }
 
     DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors) {
@@ -560,7 +543,6 @@ class DataModelService extends ModelService<DataModel> {
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         !domainType || domainType == DataModel.simpleName
     }
-
 
     @Override
     List<DataModel> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
@@ -754,10 +736,13 @@ class DataModelService extends ModelService<DataModel> {
         }
     }
 
-    void checkFinaliseDataModel(DataModel dataModel, boolean finalised) {
+    void checkfinaliseModel(DataModel dataModel, boolean finalised) {
         if (finalised && !dataModel.finalised) {
             dataModel.finalised = finalised
             dataModel.dateFinalised = dataModel.finalised ? OffsetDateTime.now() : null
+        }
+        if (dataModel.finalised && !dataModel.modelVersion) {
+            dataModel.modelVersion = Version.from('1.0.0')
         }
     }
 

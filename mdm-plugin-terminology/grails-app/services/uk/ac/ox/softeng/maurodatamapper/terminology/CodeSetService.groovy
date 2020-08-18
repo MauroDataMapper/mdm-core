@@ -192,15 +192,11 @@ class CodeSetService extends ModelService<CodeSet> {
         latest
     }
 
-    @Deprecated
-    CodeSet finaliseCodeSet(CodeSet codeSet, User user, List<Serializable> supersedeModelIds = []) {
-        finaliseModel(codeSet, user, supersedeModelIds)
-    }
-
     @Override
-    CodeSet finaliseModel(CodeSet codeSet, User user, List<Serializable> supersedeModelIds = []) {
+    CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = []) {
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        codeSet.modelVersion = modelVersion
         codeSet.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised CodeSet',
                                  description: "CodeSet finalised by ${user.firstName} ${user.lastName} on " +
                                               "${OffsetDateTimeConverter.toString(codeSet.dateFinalised)}")
@@ -210,6 +206,13 @@ class CodeSetService extends ModelService<CodeSet> {
                                       user)
         codeSet
     }
+
+    @Deprecated(forRemoval = true)
+    @Override
+    CodeSet finaliseModel(CodeSet model, User user, List<Serializable> supersedeModelIds) {
+        finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
+    }
+
 
     boolean newVersionCreationIsAllowed(CodeSet codeSet) {
         if (!codeSet.finalised) {
@@ -229,7 +232,7 @@ class CodeSetService extends ModelService<CodeSet> {
         true
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     CodeSet createNewDocumentationVersion(CodeSet codeSet, User user, boolean copyPermissions,
                                           boolean throwErrors = false) {
         createNewDocumentationVersion(codeSet, user, copyPermissions, [throwErrors: throwErrors])
@@ -250,7 +253,7 @@ class CodeSetService extends ModelService<CodeSet> {
         newDocVersion
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     CodeSet createNewModelVersion(String label, CodeSet codeSet, User user, boolean copyPermissions,
                                   boolean throwErrors = false) {
         createNewModelVersion(label, codeSet, user, copyPermissions, [throwErrors: throwErrors])
@@ -543,7 +546,7 @@ class CodeSetService extends ModelService<CodeSet> {
                 List<CodeSet> existingModels = findAllByLabel(codeSet.label)
                 existingModels.each {existing ->
                     log.debug('Setting CodeSet as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseCodeSet(existing, catalogueUser)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser)
                     setCodeSetIsNewDocumentationVersionOfCodeSet(codeSet, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
@@ -553,7 +556,7 @@ class CodeSetService extends ModelService<CodeSet> {
         }
     }
 
-    void checkFinaliseCodeSet(CodeSet codeSet, boolean finalised) {
+    void checkfinaliseModel(CodeSet codeSet, boolean finalised) {
         if (finalised && !codeSet.finalised) {
             codeSet.finalised = finalised
             codeSet.dateFinalised = codeSet.finalised ? OffsetDateTime.now() : null

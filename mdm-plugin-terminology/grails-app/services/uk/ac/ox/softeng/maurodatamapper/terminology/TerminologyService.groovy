@@ -194,15 +194,12 @@ class TerminologyService extends ModelService<Terminology> {
         latest
     }
 
-    @Deprecated
-    Terminology finaliseTerminology(Terminology terminology, User user, List<Serializable> supersedeModelIds = []) {
-        finaliseModel(terminology, user, supersedeModelIds)
-    }
-
     @Override
-    Terminology finaliseModel(Terminology terminology, User user, List<Serializable> supersedeModelIds = []) {
+    Terminology finaliseModel(Terminology terminology, User user, Version modelVersion = Version.from('1.0.0'),
+                              List<Serializable> supersedeModelIds = []) {
         terminology.finalised = true
         terminology.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        terminology.modelVersion = modelVersion
         terminology.breadcrumbTree.finalise()
         terminology.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Terminology',
                                      description: "Terminology finalised by ${user.firstName} ${user.lastName} on " +
@@ -212,6 +209,12 @@ class TerminologyService extends ModelService<Terminology> {
                                       "${OffsetDateTimeConverter.toString(terminology.dateFinalised)}",
                                       user)
         terminology
+    }
+
+    @Deprecated(forRemoval = true)
+    @Override
+    Terminology finaliseModel(Terminology model, User user, List<Serializable> supersedeModelIds) {
+        finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
     }
 
     boolean newVersionCreationIsAllowed(Terminology terminology) {
@@ -231,12 +234,6 @@ class TerminologyService extends ModelService<Terminology> {
         true
     }
 
-    @Deprecated
-    Terminology createNewDocumentationVersion(Terminology terminology, User user, boolean copyPermissions,
-                                              boolean throwErrors = false) {
-        createNewDocumentationVersion(terminology, user, copyPermissions, [throwErrors: throwErrors])
-    }
-
     @Override
     Terminology createNewDocumentationVersion(Terminology terminology, User user, boolean copyPermissions, Map<String, Object> additionalArguments) {
 
@@ -249,12 +246,6 @@ class TerminologyService extends ModelService<Terminology> {
 
         if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
         newDocVersion
-    }
-
-    @Deprecated
-    Terminology createNewModelVersion(String label, Terminology terminology, User user, boolean copyPermissions,
-                                      boolean throwErrors = false) {
-        createNewModelVersion(label, terminology, user, copyPermissions, [throwErrors: throwErrors])
     }
 
     @Override
@@ -594,7 +585,7 @@ class TerminologyService extends ModelService<Terminology> {
                 List<Terminology> existingModels = findAllByLabel(terminology.label)
                 existingModels.each {existing ->
                     log.debug('Setting Terminology as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseTerminology(existing, catalogueUser)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser)
                     setTerminologyIsNewDocumentationVersionOfTerminology(terminology, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
@@ -604,7 +595,7 @@ class TerminologyService extends ModelService<Terminology> {
         }
     }
 
-    void checkFinaliseTerminology(Terminology terminology, boolean finalised) {
+    void checkfinaliseModel(Terminology terminology, boolean finalised) {
         if (finalised && !terminology.finalised) {
             terminology.finalised = finalised
             terminology.dateFinalised = terminology.finalised ? OffsetDateTime.now() : null

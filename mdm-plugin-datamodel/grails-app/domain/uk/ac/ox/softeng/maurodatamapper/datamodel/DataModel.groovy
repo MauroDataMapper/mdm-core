@@ -84,6 +84,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
 
     static mapping = {
         documentationVersion type: VersionUserType
+        modelVersion type: VersionUserType
         folder cascade: 'none'
         dataClasses cascade: 'all-delete-orphan'
         dataTypes cascade: 'all-delete-orphan'
@@ -108,6 +109,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         readableByAuthenticatedUsers = false
         readableByEveryone = false
         breadcrumbTree = new BreadcrumbTree(this)
+        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override
