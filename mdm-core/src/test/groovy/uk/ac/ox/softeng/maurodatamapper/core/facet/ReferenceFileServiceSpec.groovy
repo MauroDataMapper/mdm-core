@@ -46,6 +46,7 @@ class ReferenceFileServiceSpec extends CatalogueItemAwareServiceSpec<ReferenceFi
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)
+        checkAndSave(basicModel)
         Path lf = Paths.get('grails-app/conf/logback.groovy')
         logFile = new ReferenceFile().with {
             fileName = lf.fileName

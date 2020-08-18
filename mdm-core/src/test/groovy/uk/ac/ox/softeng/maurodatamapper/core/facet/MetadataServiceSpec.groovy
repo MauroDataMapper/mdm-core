@@ -49,7 +49,7 @@ class MetadataServiceSpec extends CatalogueItemAwareServiceSpec<Metadata, Metada
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)
-
+        checkAndSave(basicModel)
         Metadata metadata = new Metadata(createdBy: reader1.emailAddress, namespace: 'https://integration.test.com', key: 'key1', value: 'value1')
         basicModel.addToMetadata(metadata)
         basicModel.addToMetadata(createdBy: editor.emailAddress, namespace: 'https://integration.test.com', key: 'key2', value: 'value2')

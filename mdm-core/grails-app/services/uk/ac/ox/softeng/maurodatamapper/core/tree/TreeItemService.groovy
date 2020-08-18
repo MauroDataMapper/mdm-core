@@ -240,7 +240,7 @@ class TreeItemService {
         ContainerService service = containerServices.find {it.handles(containerClass)}
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         List<K> readableContainers = service.getAll(readableContainerIds)
-        readableContainers.collect {new ContainerTreeItem(it as Container)}
+        readableContainers.findAll().collect {new ContainerTreeItem(it as Container)}
     }
 
     private List<ModelTreeItem> getAllReadableModelTreeItems(UserSecurityPolicyManager userSecurityPolicyManager, String containerPropertyName,

@@ -432,7 +432,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'), deleted: true,
-                                               finalised: true,
+                                               finalised: true, modelVersion: Version.from('1.0.0'),
                                                authority: testAuthority)
         BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
                                                 documentationVersion: Version.from('2.1.0'),

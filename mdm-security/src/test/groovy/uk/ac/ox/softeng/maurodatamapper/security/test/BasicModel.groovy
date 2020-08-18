@@ -61,8 +61,8 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
         deleted = false
         finalised = false
         documentationVersion = Version.from('1.0.0')
-        id = UUID.randomUUID()
         breadcrumbTree = new BreadcrumbTree(this)
+        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override
@@ -86,6 +86,11 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
+    }
+
+    def beforeInsert() {
+        id = UUID.randomUUID()
+        breadcrumbTree = new BreadcrumbTree(this)
     }
 
     BasicModel addToModelItems(Map map) {
