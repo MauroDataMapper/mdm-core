@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
@@ -65,7 +66,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
-    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds = [])
+    abstract K finaliseModel(K model, User user, Version modelVersion, List<Serializable> supersedeModelIds)
+
+    abstract K finaliseModel(K model, User user, Version modelVersion)
+
+    @Deprecated(forRemoval = true)
+    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds)
 
     abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments = [:])
 
