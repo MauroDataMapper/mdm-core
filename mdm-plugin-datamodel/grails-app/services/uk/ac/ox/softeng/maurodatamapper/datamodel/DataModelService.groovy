@@ -303,11 +303,11 @@ class DataModelService extends ModelService<DataModel> {
         if (dataModel.dataClasses) {
             Collection<DataClass> dataClasses = dataModel.childDataClasses
             dataClasses.each {dc ->
-                dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc)
+                dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
             }
         }
 
-        if (dataModel.dataTypes) {
+        if (bindingMap && dataModel.dataTypes) {
             Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll {it.instanceOf(ReferenceType)} as Set<ReferenceType>
             if (referenceTypes) {
                 log.debug('Matching {} ReferenceType referenceClasses', referenceTypes.size())

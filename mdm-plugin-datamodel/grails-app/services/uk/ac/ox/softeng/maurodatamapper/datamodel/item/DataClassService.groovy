@@ -281,13 +281,13 @@ class DataClassService extends ModelItemService<DataClass> {
         }
     }
 
-    void checkImportedDataClassAssociations(User importingUser, DataModel dataModel, DataClass dataClass) {
+    void checkImportedDataClassAssociations(User importingUser, DataModel dataModel, DataClass dataClass, boolean matchDataTypes = false) {
         dataModel.addToDataClasses(dataClass)
         dataClass.createdBy = importingUser.emailAddress
         checkFacetsAfterImportingCatalogueItem(dataClass)
         if (dataClass.dataClasses) {
             dataClass.dataClasses.each {dc ->
-                checkImportedDataClassAssociations(importingUser, dataModel, dc)
+                checkImportedDataClassAssociations(importingUser, dataModel, dc, matchDataTypes)
             }
         }
         if (dataClass.dataElements) {
@@ -295,7 +295,7 @@ class DataClassService extends ModelItemService<DataClass> {
                 de.createdBy = importingUser.emailAddress
                 dataElementService.checkFacetsAfterImportingCatalogueItem(de)
             }
-            dataElementService.matchUpDataTypes(dataModel, dataClass.dataElements)
+            if (matchDataTypes) dataElementService.matchUpDataTypes(dataModel, dataClass.dataElements)
         }
     }
 
