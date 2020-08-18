@@ -22,6 +22,7 @@ class ResourceActions {
     public static final String SHOW_ACTION = 'show'
     public static final String UPDATE_ACTION = 'update'
     public static final String DELETE_ACTION = 'delete'
+    public static final String DISABLE_ACTION = 'disable'
     public static final String INDEX_ACTION = 'index'
     public static final String SAVE_ACTION = 'save'
     public static final String COMMENT_ACTION = 'comment'
@@ -39,6 +40,11 @@ class ResourceActions {
     public static final List<String> MODEL_EDITOR_ACTIONS = MODEL_AUTHOR_ACTIONS + [UPDATE_ACTION, SAVE_ACTION, SOFT_DELETE_ACTION]
     public static final List<String> MODEL_CONTAINER_ADMIN_ACTIONS = MODEL_EDITOR_ACTIONS + [DELETE_ACTION]
 
+    public static final List<String> CONTAINER_EDITOR_ACTIONS = READ_ONLY_ACTIONS + [UPDATE_ACTION, SAVE_ACTION, SOFT_DELETE_ACTION]
+    public static final List<String> CONTAINER_CONTAINER_ADMIN_ACTIONS = CONTAINER_EDITOR_ACTIONS + [DELETE_ACTION]
+
     public static final List<String> MODEL_DISALLOWED_FINALISED_ACTIONS = [UPDATE_ACTION, SAVE_ACTION, EDIT_DESCRIPTION_ACTION]
     public static final List<String> MODELITEM_DISALLOWED_ACTIONS = [SOFT_DELETE_ACTION]
+
+    public static final List<String> USER_ADMIN_ACTIONS = [SHOW_ACTION, UPDATE_ACTION, DISABLE_ACTION]
 }

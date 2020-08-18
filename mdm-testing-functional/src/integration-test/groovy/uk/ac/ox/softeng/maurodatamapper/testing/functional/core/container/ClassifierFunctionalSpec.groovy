@@ -81,6 +81,11 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     }
 
     @Override
+    List<String> getEditorAvailableActions() {
+        ['show', 'update', 'save', 'softDelete', 'delete']
+    }
+
+    @Override
     String getEditorGroupRoleName() {
         GroupRole.CONTAINER_ADMIN_ROLE_NAME
     }
@@ -150,7 +155,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   "label": "Functional Test Classifier 2",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["update","delete","show"]
+  "availableActions": ["show","update","save","softDelete","delete"]
 }'''
     }
 }

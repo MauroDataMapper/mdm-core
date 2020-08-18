@@ -123,7 +123,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
   "lastName": "new user",
   "needsToResetPassword": true,
   "emailAddress": "user@functional-test.com",
-  "availableActions": ["delete","show", "update"],
+  "availableActions": ["disable","show", "update"],
   "disabled": false,
   "id": "${json-unit.matches:id}",
   "pending": false,
@@ -173,7 +173,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "admin@maurodatamapper.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
@@ -197,7 +197,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ],
       "lastLogin": "${json-unit.matches:offsetDateTime}"
@@ -213,7 +213,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ],
       "groups": [
@@ -233,7 +233,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ],
       "groups": [
@@ -253,7 +253,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
@@ -274,7 +274,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ],
       "organisation": "Oxford",
@@ -291,7 +291,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
@@ -313,7 +313,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "functional-test@test.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ],
       "groups": [
@@ -333,7 +333,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "createdBy": "unlogged_user@mdm-core.com",
       "availableActions": [
         "update",
-        "delete",
+        "disable",
         "show"
       ]
     }
@@ -485,7 +485,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["delete","show", "update"],
+      "availableActions": ["disable","show", "update"],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
       "groups": [
         {
@@ -508,7 +508,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["delete","show", "update"],
+      "availableActions": ["disable","show", "update"],
       "lastLogin": "${json-unit.matches:offsetDateTime}",
       "groups": [
         {
@@ -849,7 +849,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": true,
       "disabled": false,
       "createdBy": "functional-test@test.com",
-      "availableActions": [ "update","delete","show"],
+      "availableActions": [ "update","disable","show"],
       "organisation": "Oxford",
       "jobTitle": "tester"
     },
@@ -861,7 +861,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": true,
       "disabled": true,
       "createdBy": "user@functional-test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [ "update","disable","show"]
     }
   ]
 }'''
@@ -888,7 +888,7 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
       "pending": true,
       "disabled": true,
       "createdBy": "user@functional-test.com",
-      "availableActions": [ "update","delete","show"]
+      "availableActions": [ "update","disable","show"]
     }
   ]
 }'''

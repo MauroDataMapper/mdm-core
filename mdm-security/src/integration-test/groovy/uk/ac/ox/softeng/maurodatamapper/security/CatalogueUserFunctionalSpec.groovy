@@ -205,7 +205,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["update","delete","show"]
+      "availableActions": ["update","disable","show"]
     },
     {
       "id": "${json-unit.matches:id}",
@@ -216,7 +216,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["update","delete","show"]
+      "availableActions": ["update","disable","show"]
     },
     {
       "id": "${json-unit.matches:id}",
@@ -227,7 +227,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["update","delete","show"]
+      "availableActions": ["update","disable","show"]
     },
     {
       "id": "${json-unit.matches:id}",
@@ -237,7 +237,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": false,
       "disabled": false,
       "createdBy": "admin@maurodatamapper.com",
-      "availableActions": ["update","delete","show"],
+      "availableActions": ["update","disable","show"],
       "organisation": "Oxford BRC Informatics",
       "jobTitle": "God",
       "groups": [
@@ -255,7 +255,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": false,
       "disabled": false,
       "createdBy": "unlogged_user@mdm-core.com",
-      "availableActions": ["update","delete","show"]
+      "availableActions": ["update","disable","show"]
     },
     {
       "id": "${json-unit.matches:id}",
@@ -265,7 +265,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": true,
       "disabled": false,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["update","delete","show"],
+      "availableActions": ["update","disable","show"],
       "organisation": "Oxford",
       "jobTitle": "tester"
     },
@@ -278,7 +278,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["update","delete","show"]
+      "availableActions": ["update","disable","show"]
     },
     {
       "id": "${json-unit.matches:id}",
@@ -288,7 +288,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "pending": false,
       "disabled": false,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["update","delete","show"]
+      "availableActions": ["update","disable","show"]
     },
     {
       "id": "${json-unit.matches:id}",
@@ -299,7 +299,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
       "disabled": false,
       "needsToResetPassword": true,
       "createdBy": "functional-test@test.com",
-      "availableActions": ["update","delete","show"]
+      "availableActions": ["update","disable","show"]
     }
   ]
 }'''
@@ -355,7 +355,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
   "lastName": "new user",
   "needsToResetPassword": true,
   "emailAddress": "''' + emailId + '''@functional-test.com",
-  "availableActions": ["delete","show", "update"],
+  "availableActions": ["disable","show", "update"],
   "disabled": false,
   "id": "${json-unit.matches:id}",
   "createdBy": "admin@maurodatamapper.com",
@@ -390,7 +390,7 @@ class CatalogueUserFunctionalSpec extends BaseFunctionalSpec implements Security
   "firstName": "editor",
   "lastName": "User",
   "emailAddress": "editor@test.com",
-  "availableActions": ["delete","show", "update"],
+  "availableActions": ["disable","show", "update"],
   "pending": false,
   "createdBy": "functional-test@test.com",
   "disabled": false,

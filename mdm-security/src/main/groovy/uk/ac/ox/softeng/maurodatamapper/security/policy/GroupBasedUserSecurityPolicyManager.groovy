@@ -41,6 +41,8 @@ import groovy.util.logging.Slf4j
 
 import java.util.function.Predicate
 
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_CONTAINER_ADMIN_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_EDITOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.DELETE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FULL_DELETE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODELITEM_DISALLOWED_ACTIONS
@@ -56,6 +58,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.S
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_CREATE_AND_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.USER_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.APPLICATION_ADMIN_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.AUTHOR_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.CONTAINER_ADMIN_ROLE_NAME
@@ -247,8 +250,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
             // If no id then its a top level container and therefore anyone who's logged in can create
             if (!id) return isAuthenticated()
-            if (action == SAVE_ACTION) {
-                // Editors can save new folders and models
+            if (action in [SAVE_ACTION, SOFT_DELETE_ACTION]) {
+                // Editors can save new folders and models and SOFT DELETE
                 return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             }
             return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
@@ -390,7 +393,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     private List<String> securedResourceUserAvailableActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
 
         if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass)) {
-            return getStandardActionsWithControlRole(securableResourceClass, id, USER_ADMIN_ROLE_NAME) ?: READ_ONLY_ACTIONS
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, USER_ADMIN_ROLE_NAME)) {
+                return USER_ADMIN_ACTIONS
+            }
+            return READ_ONLY_ACTIONS
         }
 
         if (Utils.parentClassIsAssignableFromChild(UserGroup, securableResourceClass)) {
@@ -398,7 +404,16 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
 
         if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
-            return getStandardActionsWithControlRole(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)) {
+                return CONTAINER_CONTAINER_ADMIN_ACTIONS
+            }
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)) {
+                return CONTAINER_EDITOR_ACTIONS
+            }
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, READER_ROLE_NAME)) {
+                return READ_ONLY_ACTIONS
+            }
+            return []
         }
 
         if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
@@ -420,6 +435,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, READER_ROLE_NAME)) {
                 return READ_ONLY_ACTIONS
             }
+            return []
         }
         log.warn('Attempt to gain available actions for unknown secured class {} id {} to {}', securableResourceClass.simpleName, id)
         []
@@ -431,7 +447,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private boolean hasAnyAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         if (id) {
-            return virtualSecurableResourceGroupRoles.any { it.domainType == securableResourceClass.simpleName && it.domainId == id }
+            return virtualSecurableResourceGroupRoles.any {
+                it.domainType == securableResourceClass.simpleName && it.domainId == id
+            }
         }
 
         // No id means indexing endpoint
@@ -444,6 +462,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
         }
 
+        log.error("***** Second BOOOM not sure we should be here")
         return virtualSecurableResourceGroupRoles.any { it.domainType == securableResourceClass.simpleName }
     }
 
@@ -463,7 +482,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private List<String> getStandardActionsWithControlRole(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {
         if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, roleName)) {
-            return id ? STANDARD_EDIT_ACTIONS : STANDARD_CREATE_AND_EDIT_ACTIONS
+            if (id) return STANDARD_EDIT_ACTIONS
+            log.error("**** **** BOOM how'd we get here")
+            return STANDARD_CREATE_AND_EDIT_ACTIONS
         } else if (hasAnyAccessToSecuredResource(securableResourceClass, id)) {
             return READ_ONLY_ACTIONS
         } else return []
