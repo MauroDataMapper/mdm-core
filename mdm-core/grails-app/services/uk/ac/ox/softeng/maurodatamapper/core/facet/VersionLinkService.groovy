@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -206,7 +206,7 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
             .get()
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     List<VersionLink> findAllByModelIdAndType(UUID modelId, String type, Map paginate = [:]) {
         switch (type) {
             case 'source':

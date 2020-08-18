@@ -133,12 +133,12 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
         new DetachedCriteria<DataElementComponent>(DataElementComponent)
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     static DetachedCriteria<DataElementComponent> byDataFlowId(UUID dataFlowId) {
         by().eq('dataClassComponent.dataFlow.id', dataFlowId)
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     static DetachedCriteria<DataElementComponent> byDataFlowIdAndId(UUID dataFlowId, UUID id) {
         byDataFlowId(dataFlowId).idEq(id)
     }
@@ -170,7 +170,7 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
         by().eq('targetDataElements.id', dataElementId)
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     static DetachedCriteria<DataElementComponent> byDataFlowIdAndDataClassId(UUID dataFlowId, UUID dataClassId) {
         byDataFlowId(dataFlowId).or {
             sourceDataElements {

@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
@@ -181,7 +181,7 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
         SemanticLink.withFilter(SemanticLink.byAnyCatalogueItemId(catalogueItemId), paginate).list(paginate)
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     List<SemanticLink> findAllByCatalogueItemIdAndType(UUID catalogueItemId, String type, Map paginate = [:]) {
         switch (type) {
             case 'source':

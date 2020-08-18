@@ -22,9 +22,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 
 /**
  * This is a temporary interceptor until the UI can be updated to handle the new {@link SecurableResourceGroupRole}
- * @deprecated
+ * @Deprecated (forRemoval = true)
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 class PermissionsInterceptor implements MdmInterceptor {
 
     boolean before() {
