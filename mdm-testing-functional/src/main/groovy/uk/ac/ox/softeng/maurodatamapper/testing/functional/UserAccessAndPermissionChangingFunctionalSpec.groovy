@@ -20,12 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import spock.lang.Stepwise
-import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 

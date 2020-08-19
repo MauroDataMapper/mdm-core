@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.util.Version
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 
 /**
  * @since 07/01/2020

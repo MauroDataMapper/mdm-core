@@ -17,9 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.tree
 
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.tree.TreeItemFunctionalSpec
+
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.tree.TreeItemFunctionalSpec
 
 /**
  * <pre>

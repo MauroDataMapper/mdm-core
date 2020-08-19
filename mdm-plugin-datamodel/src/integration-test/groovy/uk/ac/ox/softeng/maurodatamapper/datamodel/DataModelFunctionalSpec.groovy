@@ -783,7 +783,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each {n ->
+        (1..4).each { n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()

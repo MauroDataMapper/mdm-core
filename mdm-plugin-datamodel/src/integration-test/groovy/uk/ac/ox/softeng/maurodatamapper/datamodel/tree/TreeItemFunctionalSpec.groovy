@@ -81,7 +81,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     def cleanupSpec() {
         log.debug('CleanupSpec')
         cleanUpResources(DataModel, Folder, Classifier, DataClass)
-        Authority.findByLabel('Test Authority').delete(flush:true)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override
