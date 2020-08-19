@@ -240,6 +240,41 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     }
   ]
 }'''
+
+        when:
+        GET("$id/edits", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "[UserGroup:testers] created"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "${json-unit.any-string}"
+    }
+  ]
+}'''
+
+        when:
+        GET("${baseUrl}catalogueUsers/${getUserId(userEmailAddresses.authenticated)}/edits", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "${json-unit.any-string}"
+    }
+  ]
+}'''
     }
 
     void 'test removing a user from a group'() {
@@ -278,6 +313,56 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
       "pending": false,
       "disabled": false,
       "createdBy": "unlogged_user@mdm-core.com"
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/edits", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 3,
+  "items": [
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "[UserGroup:testers] created"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "${json-unit.any-string}"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "${json-unit.any-string}"
+    }
+  ]
+}'''
+
+        when:
+        GET("${baseUrl}catalogueUsers/${getUserId(userEmailAddresses.authenticated)}/edits", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 3,
+  "items": [
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "${json-unit.any-string}"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "${json-unit.any-string}"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "unlogged_user@mdm-core.com",
+      "description": "${json-unit.any-string}"
     }
   ]
 }'''
