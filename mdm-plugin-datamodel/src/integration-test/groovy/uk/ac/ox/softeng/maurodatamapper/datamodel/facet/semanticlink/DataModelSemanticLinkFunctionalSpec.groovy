@@ -32,6 +32,8 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Shared
 
+import java.beans.Transient
+
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkController
  */
@@ -47,6 +49,8 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
     DataElement dataElement
     @Shared
     DataType dataType
+    @Shared
+    DataModel targetDataModel
 
     String getCatalogueItemCopyPath() {
         "dataModels/${sourceDataModelId}/newForkModel"
@@ -67,7 +71,9 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
-                                  folder: folder, authority: testAuthority).save(flush: true)
+                                  folder: folder).save(flush: true)
+        targetDataModel = new DataModel(label: 'Functional Test Target DataModel', createdBy: 'functionalTest@test.com',
+                folder: folder).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
                                   dataModel: dataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',

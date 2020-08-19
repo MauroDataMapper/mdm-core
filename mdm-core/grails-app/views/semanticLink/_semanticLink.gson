@@ -8,6 +8,7 @@ json {
     id semanticLink.id
     linkType semanticLink.linkType.label
     domainType semanticLink.domainType
+    unconfirmed semanticLink.unconfirmed
 
     sourceCatalogueItem tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: semanticLink.catalogueItem)
     targetCatalogueItem tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: semanticLink.targetCatalogueItem)

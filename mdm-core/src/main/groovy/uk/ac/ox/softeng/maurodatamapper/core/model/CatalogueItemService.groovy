@@ -148,7 +148,8 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
         semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
-                                    targetCatalogueItemDomainType: link.targetCatalogueItemDomainType)
+                                    targetCatalogueItemDomainType: link.targetCatalogueItemDomainType,
+                                    unconfirmed: true)
         }
 
         copy
