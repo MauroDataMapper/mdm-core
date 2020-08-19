@@ -11,5 +11,4 @@ json {
     fileSize catalogueFile.fileSize
     fileType catalogueFile.fileType
     fileName catalogueFile.fileName
-    fileContents catalogueFile.fileContents
 }

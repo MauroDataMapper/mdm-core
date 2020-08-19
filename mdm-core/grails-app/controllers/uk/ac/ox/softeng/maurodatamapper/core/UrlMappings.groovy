@@ -129,7 +129,7 @@ class UrlMappings {
                 /*
                 Reference Files
                  */
-                '/referenceFiles'(resources: 'referenceFiles', excludes: DEFAULT_EXCLUDES)
+                '/referenceFiles'(resources: 'referenceFile', excludes: DEFAULT_EXCLUDES)
             }
 
             /*

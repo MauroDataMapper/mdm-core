@@ -222,6 +222,13 @@ Controller: metadata
  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/metadata/${id}  | Action: update
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/metadata/${id}  | Action: show
 
+Controller: referenceFile
+ |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles  | Action: save
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles  | Action: index
+ |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}  | Action: delete
+ |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}  | Action: update
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}  | Action: show
+
 Controller: securableResourceGroupRole
  |  DELETE  | /api/${securableResourceDomainType}/${securableResourceId}/groupRoles/${groupRoleId}/userGroups/${userGroupId}  | Action: delete
  |   POST   | /api/${securableResourceDomainType}/${securableResourceId}/groupRoles/${groupRoleId}/userGroups/${userGroupId}  | Action: save

@@ -50,12 +50,7 @@ Controller: groupRole
  |   GET    | /api/admin/groupRoles/${id}  | Action: show
  |   GET    | /api/${securableResourceDomainType}/${securableResourceId}/groupRoles  | Action: listGroupRolesAvailableToSecurableResource
 
-Controller: referenceFiles
- |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles  | Action: save
- |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles  | Action: index
- |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}  | Action: delete
- |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}  | Action: update
- |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}  | Action: show
+
 
 Controller: securableResourceGroupRole
  |   POST   | /api/userGroups/${userGroupId}/securableResourceGroupRoles  | Action: save

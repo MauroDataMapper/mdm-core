@@ -278,7 +278,7 @@ Controller: metadata
 Controller: permissions
  |    *     | /api/${securableResourceDomainType}/${securableResourceId}/permissions                                                                                                           | Action: permissions
 
-Controller: referenceFiles
+Controller: referenceFile
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles                                                                                                                | Action: save
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles                                                                                                                | Action: index
  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}                                                                                                          | Action: delete

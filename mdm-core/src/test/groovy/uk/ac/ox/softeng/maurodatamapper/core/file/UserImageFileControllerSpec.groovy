@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.file
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileController
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
@@ -110,7 +110,6 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
       "domainType": "UserImageFile",
       "fileSize": 1395,
       "id": "\${json-unit.matches:id}",
-      "fileContents": ${defaultProfilePic.fileContents},
       "userId": "${randomId2}",
       "fileType": "image/jpeg"
     }
@@ -161,7 +160,6 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
       "domainType": "UserImageFile",
       "fileSize": 1395,
       "id": "\${json-unit.matches:id}",
-      "fileContents": ${defaultProfilePic.fileContents},
       "userId": "${randomId1}",
       "fileType": "image/jpeg"
     }"""
@@ -192,7 +190,6 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
       "domainType": "UserImageFile",
       "fileSize": 243,
       "id": "\${json-unit.matches:id}",
-      "fileContents": ${resizedImage},
       "userId": "${randomId2}",
       "fileType": "image/png"
     }"""

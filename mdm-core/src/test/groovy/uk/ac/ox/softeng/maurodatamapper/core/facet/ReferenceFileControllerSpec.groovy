@@ -85,7 +85,6 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
       "domainType": "ReferenceFile",
       "fileSize": "${json-unit.any-number}",
       "id": "${json-unit.matches:id}",
-      "fileContents": "${json-unit.matches:fileContents}",
       "fileType": "Unknown"
     },
     {
@@ -94,7 +93,6 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
       "domainType": "ReferenceFile",
       "fileSize": 4,
       "id": "${json-unit.matches:id}",
-      "fileContents": "${json-unit.matches:fileContents}",
       "fileType": "text"
     },
     {
@@ -103,7 +101,6 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
       "domainType": "ReferenceFile",
       "fileSize": 35,
       "id": "${json-unit.matches:id}",
-      "fileContents": "${json-unit.matches:fileContents}",
       "fileType": "text/plain"
     }
   ]
@@ -154,7 +151,6 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
       "domainType": "ReferenceFile",
       "fileSize": 5,
       "id": "${json-unit.matches:id}",
-      "fileContents": "${json-unit.matches:fileContents}",
       "fileType": "text"
     }'''
     }
@@ -184,7 +180,6 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
       "domainType": "ReferenceFile",
       "fileSize": 7,
       "id": "${json-unit.matches:id}",
-      "fileContents": "${json-unit.matches:fileContents}",
       "fileType": "text/plain"
     }'''
     }
@@ -217,5 +212,25 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
         super.givenParameters()
         params.catalogueItemDomainType = BasicModel.simpleName
         params.catalogueItemId = basicModel.id
+    }
+
+    @Override
+    String getTemplate() {
+        '''import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+
+model {
+    ReferenceFile referenceFile
+}
+
+json {
+    id referenceFile.id
+    domainType referenceFile.domainType
+    lastUpdated referenceFile.lastUpdated
+    fileSize referenceFile.fileSize
+    fileType referenceFile.fileType
+    fileName referenceFile.fileName
+    fileContents referenceFile.fileContents
+}
+'''
     }
 }
