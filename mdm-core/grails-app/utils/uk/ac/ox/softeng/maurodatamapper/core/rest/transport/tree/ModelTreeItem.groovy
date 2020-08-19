@@ -32,6 +32,8 @@ class ModelTreeItem extends TreeItem {
     Version documentationVersion
     String modelType
     UUID containerId
+    Version modelVersion
+    String branchName
 
     ModelTreeItem(Model model, String containerPropertyName) {
         this(model, containerPropertyName, model.hasChildren(), model.versionLinks.any {
@@ -52,6 +54,8 @@ class ModelTreeItem extends TreeItem {
         superseded = isSuperseded
         documentationVersion = model.documentationVersion
         modelType = model.modelType
+        modelVersion = model.modelVersion
+        branchName = model.branchName
     }
 
     @Override

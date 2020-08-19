@@ -112,7 +112,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName":"main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -124,7 +125,8 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName":"main"
       }
     ]
   }
@@ -211,13 +213,15 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Functional Test Model model superseded",
+        "modelVersion": "1.0.0",
         "hasChildren": false,
         "deleted": false,
         "finalised": true,
         "superseded": true,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName":"main"
       }
     ]
   }
@@ -261,13 +265,15 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Functional Test Model doc superseded",
+        "modelVersion": "1.0.0",
         "hasChildren": false,
         "deleted": false,
         "finalised": true,
         "superseded": true,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName":"main"
       }
     ]
   }
@@ -315,13 +321,15 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Functional Test Model deleted",
+        "modelVersion": "1.0.0",
         "hasChildren": false,
         "deleted": true,
         "finalised": true,
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName":"main"
       }
     ]
   }

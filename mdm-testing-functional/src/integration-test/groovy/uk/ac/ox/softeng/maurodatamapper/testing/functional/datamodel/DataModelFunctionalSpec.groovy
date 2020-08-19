@@ -117,21 +117,21 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     @Override
     Map getValidJson() {
         [
-            label: 'Functional Test DataModel'
+                label: 'Functional Test DataModel'
         ]
     }
 
     @Override
     Map getInvalidJson() {
         [
-            label: 'Complex Test DataModel'
+                label: 'Complex Test DataModel'
         ]
     }
 
     @Override
     Map getValidUpdateJson() {
         [
-            description: 'This is a new testing DataModel'
+                description: 'This is a new testing DataModel'
         ]
     }
 
@@ -305,7 +305,8 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "show",
     "comment",
     "editDescription"
-  ]
+  ],
+  "branchName":"main"
 }'''
     }
 
@@ -362,6 +363,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "show",
     "comment"
   ],
+  "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
@@ -433,6 +435,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         "comment",
         "editDescription"
       ],
+      "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
@@ -508,6 +511,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "softDelete",
     "delete"
   ],
+  "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
@@ -988,10 +992,10 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         response.body().finalised == true
         response.body().dateFinalised
         response.body().availableActions == [
-            "show",
-            "comment",
-            "softDelete",
-            "delete"
+                "show",
+                "comment",
+                "softDelete",
+                "delete"
         ]
 
         when: 'log out and log back in again in as editor available actions are correct'
@@ -1002,10 +1006,10 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         then:
         verifyResponse OK, response
         response.body().availableActions == [
-            "show",
-            "comment",
-            "softDelete",
-            "delete"
+                "show",
+                "comment",
+                "softDelete",
+                "delete"
         ]
 
         when: 'log out and log back in again in as admin available actions are correct'
@@ -1016,10 +1020,10 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         then:
         verifyResponse OK, response
         response.body().availableActions == [
-            "show",
-            "comment",
-            "softDelete",
-            "delete"
+                "show",
+                "comment",
+                "softDelete",
+                "delete"
         ]
 
         cleanup:
@@ -1720,15 +1724,15 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            modelName                      : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                modelName                      : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -1753,15 +1757,15 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         when:
         loginAuthenticated()
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            modelName                      : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                modelName                      : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -1786,15 +1790,15 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         when:
         loginReader()
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            modelName                      : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                modelName                      : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -1819,15 +1823,15 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         when:
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            modelName                      : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                modelName                      : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -1859,14 +1863,14 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         when:
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: true,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: true,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -1981,9 +1985,9 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         when: 'logged in as reader user'
         loginReader()
         POST("${getComplexDataModelId()}/search", [
-            searchTerm : term,
-            sort       : 'label',
-            domainTypes: ['DataClass'],
+                searchTerm : term,
+                sort       : 'label',
+                domainTypes: ['DataClass'],
         ])
 
         then:

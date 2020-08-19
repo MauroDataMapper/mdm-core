@@ -17,10 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.tree
 
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.tree.TreeItemFunctionalSpec
-
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.tree.TreeItemFunctionalSpec
 
 /**
  * <pre>
@@ -59,7 +58,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -71,7 +71,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
+        "type": "Terminology",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -83,7 +84,9 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "CodeSet"
+        "type": "CodeSet",
+        "branchName": "main",
+        "modelVersion": "1.0.0"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -95,7 +98,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -107,7 +111,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
+        "type": "Terminology",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -119,7 +124,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -131,7 +137,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       }
     ]
   }
@@ -163,7 +170,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -175,7 +183,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
+        "type": "Terminology",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -187,7 +196,9 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "CodeSet"
+        "type": "CodeSet",
+        "branchName": "main",
+        "modelVersion": "1.0.0"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -199,7 +210,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -211,7 +223,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
+        "type": "Terminology",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -223,7 +236,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -235,7 +249,8 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       }
     ]
   },

@@ -103,22 +103,22 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
     @Override
     Map getValidJson() {
         [
-            label: 'Functional Test CodeSet'
+                label: 'Functional Test CodeSet'
         ]
     }
 
     @Override
     Map getInvalidJson() {
         [
-            label    : 'Functional Test CodeSet',
-            finalised: true
+                label    : 'Functional Test CodeSet',
+                finalised: true
         ]
     }
 
     @Override
     Map getValidUpdateJson() {
         [
-            description: 'This is a new testing CodeSet'
+                description: 'This is a new testing CodeSet'
         ]
     }
 
@@ -252,6 +252,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
     "comment",
     "editDescription"
   ],
+  "branchName":"main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
@@ -292,10 +293,10 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         response.body().finalised == true
         response.body().dateFinalised
         response.body().availableActions == [
-            "show",
-            "comment",
-            "softDelete",
-            "delete"
+                "show",
+                "comment",
+                "softDelete",
+                "delete"
         ]
 
         cleanup:
@@ -882,15 +883,15 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.codeSet.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            codeSetName                    : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                codeSetName                    : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -916,15 +917,15 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         when:
         loginAuthenticated()
         POST('import/uk.ac.ox.softeng.maurodatamapper.codeSet.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            codeSetName                    : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                codeSetName                    : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -950,15 +951,15 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         when:
         loginReader()
         POST('import/uk.ac.ox.softeng.maurodatamapper.codeSet.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            codeSetName                    : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                codeSetName                    : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -984,15 +985,15 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         when:
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.codeSet.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            codeSetName                    : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                codeSetName                    : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -1025,14 +1026,14 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         when:
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.codeSet.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: true,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: true,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:

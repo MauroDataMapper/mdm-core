@@ -109,21 +109,21 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
     @Override
     Map getValidJson() {
         [
-            label: 'Functional Test Terminology'
+                label: 'Functional Test Terminology'
         ]
     }
 
     @Override
     Map getInvalidJson() {
         [
-            label: 'Complex Test Terminology'
+                label: 'Complex Test Terminology'
         ]
     }
 
     @Override
     Map getValidUpdateJson() {
         [
-            description: 'This is a new testing Terminology'
+                description: 'This is a new testing Terminology'
         ]
     }
 
@@ -281,6 +281,7 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
     "comment",
     "editDescription"
   ],
+  "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
@@ -321,10 +322,10 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         response.body().finalised == true
         response.body().dateFinalised
         response.body().availableActions == [
-            "show",
-            "comment",
-            "softDelete",
-            "delete"
+                "show",
+                "comment",
+                "softDelete",
+                "delete"
         ]
 
         cleanup:
@@ -906,15 +907,15 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            terminologyName                : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                terminologyName                : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -940,15 +941,15 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         when:
         loginAuthenticated()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            terminologyName                : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                terminologyName                : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -974,15 +975,15 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         when:
         loginReader()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            terminologyName                : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                terminologyName                : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -1008,15 +1009,15 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         when:
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            terminologyName                : 'Functional Test Import',
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                terminologyName                : 'Functional Test Import',
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:
@@ -1049,14 +1050,14 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         when:
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : testFolderId.toString(),
-            importAsNewDocumentationVersion: true,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                folderId                       : testFolderId.toString(),
+                importAsNewDocumentationVersion: true,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ])
 
         then:

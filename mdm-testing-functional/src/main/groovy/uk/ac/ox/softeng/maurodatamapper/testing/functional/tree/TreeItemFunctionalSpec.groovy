@@ -338,7 +338,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -350,7 +351,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -362,7 +364,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -374,7 +377,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       }
     ]
   }
@@ -406,7 +410,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -418,7 +423,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -430,7 +436,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -442,7 +449,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       }
     ]
   }
@@ -474,7 +482,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -486,7 +495,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
+        "type": "Data Standard",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -498,7 +508,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -510,7 +521,8 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
+        "type": "Data Asset",
+        "branchName": "main"
       }
     ]
   }
@@ -564,6 +576,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
+        "branchName": "main",
         "children": [
           {
             "id": "${json-unit.matches:id}",
@@ -604,6 +617,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
+        "branchName": "main",
         "children": [
           {
             "id": "${json-unit.matches:id}",
@@ -644,6 +658,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
+        "branchName": "main",
         "children": [
           {
             "id": "${json-unit.matches:id}",
