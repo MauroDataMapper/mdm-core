@@ -124,7 +124,7 @@ class CodeSetService extends ModelService<CodeSet> {
         List<CodeSet> updated = []
         idsToDelete.each {
             CodeSet t = get(it)
-            delete(t, permanent)
+            delete(t, permanent, false)
             if (!permanent) updated << t
         }
         updated

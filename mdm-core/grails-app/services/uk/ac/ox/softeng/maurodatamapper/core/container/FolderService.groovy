@@ -105,15 +105,15 @@ class FolderService implements ContainerService<Folder> {
         folder.save()
     }
 
-    void delete(Folder folder, boolean permanent) {
+    void delete(Folder folder, boolean permanent, boolean flush = true) {
         if (!folder) {
             log.warn('Attempted to delete Folder which doesnt exist')
             return
         }
         if (permanent) {
-            folder.childFolders.each {delete(it, permanent)}
+            folder.childFolders.each {delete(it, permanent, false)}
             modelServices.each {it.deleteAllInContainer(folder)}
-            folder.delete(flush: true)
+            folder.delete(flush: flush)
         } else {
             folder.childFolders.each {delete(it)}
             delete(folder)

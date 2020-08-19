@@ -126,7 +126,7 @@ class TerminologyService extends ModelService<Terminology> {
         List<Terminology> updated = []
         idsToDelete.each {
             Terminology t = get(it)
-            delete(t, permanent)
+            delete(t, permanent, false)
             if (!permanent) updated << t
         }
         updated

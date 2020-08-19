@@ -139,7 +139,7 @@ class DataModelService extends ModelService<DataModel> {
         List<DataModel> updated = []
         idsToDelete.each {
             DataModel dm = get(it)
-            delete(dm, permanent)
+            delete(dm, permanent, false)
             if (!permanent) updated << dm
         }
         updated

@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Rollback
-import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
@@ -171,6 +170,35 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         then: 'The response is correct'
         response.status == HttpStatus.NOT_FOUND
+
+        when: 'When the delete action is executed on an existing instance'
+        DELETE("${id}?permanent=true")
+
+        then: 'The response is correct'
+        response.status == HttpStatus.NO_CONTENT
+
+        when: 'Trying to get the folder'
+        GET(id)
+
+        then:
+        response.status() == HttpStatus.NOT_FOUND
+    }
+
+    void 'Test the permanent delete action correctly deletes an instance with folder inside'() {
+        when: 'The save action is executed with valid data'
+        POST('', validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'The save action is executed with valid data'
+        String id = responseBody().id
+        POST("$id/folders", validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
 
         when: 'When the delete action is executed on an existing instance'
         DELETE("${id}?permanent=true")

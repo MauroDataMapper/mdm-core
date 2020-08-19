@@ -26,6 +26,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 
 import java.util.regex.Pattern
 
@@ -479,5 +480,65 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     }
   ]
 }'''
+    }
+
+
+    void 'Test the permanent delete action correctly deletes an instance with folder inside'() {
+        when: 'Creating a top folder'
+        String id = getValidId()
+
+        loginEditor()
+        POST("$id/folders", validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'When the delete action is executed on an existing instance'
+        String subFolderId = responseBody().id
+        DELETE("${id}?permanent=true")
+
+        then: 'The response is correct'
+        response.status == HttpStatus.NO_CONTENT
+
+        when: 'Trying to get the folder'
+        GET(id)
+
+        then:
+        response.status() == HttpStatus.NOT_FOUND
+    }
+
+    void 'Test the permanent delete action correctly deletes an instance with folder and datamodel inside'() {
+        when: 'Creating a top folder'
+        String id = getValidId()
+
+        loginEditor()
+        POST("$id/folders", validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'The save action is executed with valid data for a datamodel'
+        String subFolderId = responseBody().id
+        POST("$id/dataModels", [
+            label: 'Functional Test DataModel'
+        ])
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'When the delete action is executed on an existing instance'
+        DELETE("${id}?permanent=true")
+
+        then: 'The response is correct'
+        response.status == HttpStatus.NO_CONTENT
+
+        when: 'Trying to get the folder'
+        GET(id)
+
+        then:
+        response.status() == HttpStatus.NOT_FOUND
     }
 }
