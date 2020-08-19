@@ -338,6 +338,41 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
         then:
         verifyJsonResponse OK, showJson
 
+        when: 'listing edits for the group, expect to see 2 edits. One create and one PUT.'
+        GET("$id/edits", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "[UserGroup:testers] created"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "${json-unit.any-string}"
+    }
+  ]
+}'''
+
+        when: 'listing edits for the user who was added to the group'
+        GET("${baseUrl}catalogueUsers/${authenticatedId}/edits", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+     {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "${json-unit.any-string}"
+    }
+  ]
+}'''
+
         when: 'logged in as user in group'
         loginAuthenticated()
         PUT("${id}/catalogueUsers/${reviewerId}", [:])
@@ -409,6 +444,55 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
 
         then:
         verifyJsonResponse OK, showJson
+
+        when: 'listing edits for the group expect to see 4 edits. One create, two PUTs and a DELETE'
+        GET("$id/edits", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 4,
+  "items": [
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "[UserGroup:testers] created"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "${json-unit.any-string}"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "${json-unit.any-string}"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "${json-unit.any-string}"
+    }
+  ]
+}'''
+        when: 'listing edits for the user who was removed from the group'
+        GET("${baseUrl}catalogueUsers/${reviewerId}/edits", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 2,
+  "items": [
+     {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "${json-unit.any-string}"
+    },
+    {
+      "dateCreated": "${json-unit.matches:offsetDateTime}",
+      "createdBy": "editor@test.com",
+      "description": "${json-unit.any-string}"
+    }
+  ]
+}'''
 
         when: 'logged in as user in group'
         loginEditor()

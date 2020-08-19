@@ -48,6 +48,8 @@ class UserGroupController extends EditLoggingController<UserGroup> {
 
         if (!instance) return notFound(params.userGroupId)
 
+        int preEditCount = instance.groupMembers.size()
+
         CatalogueUser catalogueUser = catalogueUserService.get(params.catalogueUserId)
 
         if (!catalogueUser) return notFound(CatalogueUser, params.catalogueUserId)
@@ -55,7 +57,22 @@ class UserGroupController extends EditLoggingController<UserGroup> {
         if (request.method == 'PUT' || params.method == 'PUT') instance.addToGroupMembers(catalogueUser)
         else instance.removeFromGroupMembers(catalogueUser)
 
+        int postEditCount = instance.groupMembers.size()
+
         updateResource instance
+
+        /*
+         * The edit is an insert or delete on a joining entity.
+         * If and only if the number of group members has changed, so record both IDs
+         * against an edit record for both the UserGroup and the CatalogueUser.
+         * This avoids logging an edit when an already deleted user is DELETEd again,
+         * or an existing member is PUT.
+         */
+        if (postEditCount != preEditCount) {
+            List<String> editedPropertyNames = [request.method ?: params.method, "userGroupID: ${params.userGroupId}, catalogueUserId: ${params.catalogueUserId}"]
+            instance.addUpdatedEdit(getCurrentUser(), editedPropertyNames)
+            catalogueUser.addUpdatedEdit(getCurrentUser(), editedPropertyNames)
+        }
 
         groupBasedSecurityPolicyManagerService.refreshUserSecurityPolicyManager(catalogueUser)
 

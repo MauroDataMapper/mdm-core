@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareCon
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecureRandomStringGenerator
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
@@ -33,7 +34,7 @@ import java.security.Principal
 import java.time.OffsetDateTime
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class CatalogueUser implements Principal, CreatorAware, User {
+class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
 
     UUID id
     String emailAddress
@@ -116,6 +117,11 @@ class CatalogueUser implements Principal, CreatorAware, User {
 
     String toString() {
         "${getClass().getName()} (${emailAddress})[${id ?: '(unsaved)'}]"
+    }
+
+    @Override
+    String getEditLabel() {
+        "CatalogueUser:${id}"
     }
 
     @Override
