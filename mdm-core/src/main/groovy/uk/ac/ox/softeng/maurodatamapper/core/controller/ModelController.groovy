@@ -17,12 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.controller
 
-import grails.artefact.Artefact
-import grails.gorm.transactions.Transactional
-import grails.web.mime.MimeType
-import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
@@ -42,7 +36,16 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import static org.springframework.http.HttpStatus.*
+import grails.artefact.Artefact
+import grails.gorm.transactions.Transactional
+import grails.web.mime.MimeType
+import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
+
+import static org.springframework.http.HttpStatus.CREATED
+import static org.springframework.http.HttpStatus.NO_CONTENT
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
 @Artefact('Controller')
@@ -135,7 +138,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUserSecurityPolicyManager = securityPolicyManagerService.removeSecurityForSecurableResource(instance, currentUser)
             }
             request.withFormat {
-                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
+                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
             }
             return
         }
@@ -456,12 +459,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
-        result.each {m ->
+        result.each { m ->
             m.folder = folder
             getModelService().validate(m)
         }
 
-        if (result.any {it.hasErrors()}) {
+        if (result.any { it.hasErrors() }) {
             log.debug('Errors found in imported models')
             transactionStatus.setRollbackOnly()
             respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)

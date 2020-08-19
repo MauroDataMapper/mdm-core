@@ -30,7 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -84,7 +83,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     @Override
     void deleteAll(Collection<DataElement> dataElements) {
-        dataElements.each {delete(it)}
+        dataElements.each { delete(it) }
     }
 
     void delete(UUID id) {
@@ -142,7 +141,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     @Override
     List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataElement.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+        DataElement.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override
@@ -199,7 +198,7 @@ class DataElementService extends ModelItemService<DataElement> {
             List batch = []
             int count = 0
 
-            notSaved.each {de ->
+            notSaved.each { de ->
 
                 batch += de
                 count++
@@ -218,7 +217,7 @@ class DataElementService extends ModelItemService<DataElement> {
         log.trace('Performing batch save of {} DataElements', dataElements.size())
 
         DataElement.saveAll(dataElements)
-        dataElements.each {updateFacetsAfterInsertingCatalogueItem(it)}
+        dataElements.each { updateFacetsAfterInsertingCatalogueItem(it) }
 
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
@@ -230,13 +229,13 @@ class DataElementService extends ModelItemService<DataElement> {
         if (dataModel.dataTypes == null) dataModel.dataTypes = [] as HashSet
         if (dataElements) {
             log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
-            def grouped = dataElements.groupBy {it.dataType.label}.sort {a, b ->
+            def grouped = dataElements.groupBy { it.dataType.label }.sort { a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
                 res
             }
             log.debug('Grouped {} DataElements by DataType label', grouped.size())
-            grouped.each {label, elements ->
+            grouped.each { label, elements ->
                 log.trace('Matching {} elements to DataType label {}', elements.size(), label)
                 DataType dataType = dataModel.findDataTypeByLabel(label)
 
@@ -245,7 +244,7 @@ class DataElementService extends ModelItemService<DataElement> {
                     dataType = elements.first().dataType
                     dataModel.addToDataTypes(dataType)
                 }
-                elements.each {dataType.addToDataElements(it)}
+                elements.each { dataType.addToDataElements(it) }
             }
         }
     }
@@ -334,9 +333,7 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     DataElement copyDataElement(DataModel copiedDataModel, DataClass copiedDataClass, DataModel originalDataModel = copiedDataModel,
-                                DataElement original, User
-                                        copier,
-                                UserSecurityPolicyManager userSecurityPolicyManager) {
+                                DataElement original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
@@ -368,7 +365,7 @@ class DataElementService extends ModelItemService<DataElement> {
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager = null,
-                                             boolean copySummaryMetadata = false){
+                                             boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByCatalogueItemId(original.id).each {
@@ -436,10 +433,10 @@ class DataElementService extends ModelItemService<DataElement> {
         if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to create links')
         List<SemanticLink> alreadyExistingLinks = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
             dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each {de ->
-            fromDataElements.each {fde ->
+        dataElements.each { de ->
+            fromDataElements.each { fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any {it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id}) {
+                if (!alreadyExistingLinks.any { it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id }) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }

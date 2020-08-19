@@ -17,13 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.test.functional
 
-import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemFacetFunctionalSpec
 
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 
 /**
  * <pre>
@@ -89,19 +89,19 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends CatalogueItemF
             summaryMetadataReports: [
                 [
                     reportDate : '2020-01-29T07:31:57.519Z',
-                    reportValue : '{\"Female\":20562,\"Male\":17407,\"Unknown\":604}'
+                    reportValue: '{\"Female\":20562,\"Male\":17407,\"Unknown\":604}'
                 ],
                 [
                     reportDate : '2020-02-29T07:31:57.519Z',
-                    reportValue : '{\"Female\":19562,\"Male\":18407,\"Unknown\":704}'
+                    reportValue: '{\"Female\":19562,\"Male\":18407,\"Unknown\":704}'
                 ],
                 [
                     reportDate : '2020-03-29T07:31:57.519Z',
-                    reportValue : '{\"Female\":18562,\"Male\":19407,\"Unknown\":804}'
+                    reportValue: '{\"Female\":18562,\"Male\":19407,\"Unknown\":804}'
                 ],
                 [
                     reportDate : '2020-04-29T07:31:57.519Z',
-                    reportValue : '{\"Female\":17562,\"Male\":20407,\"Unknown\":904}'
+                    reportValue: '{\"Female\":17562,\"Male\":20407,\"Unknown\":904}'
                 ]
             ]
         ]

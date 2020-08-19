@@ -183,7 +183,7 @@ class DataModelService extends ModelService<DataModel> {
             dataTypes.addAll dataModel.dataTypes.findAll {
                 !it.instanceOf(ReferenceType)
             }
-            referenceTypes.addAll dataModel.dataTypes.findAll {it.instanceOf(ReferenceType)}
+            referenceTypes.addAll dataModel.dataTypes.findAll { it.instanceOf(ReferenceType) }
             dataModel.dataTypes.clear()
         }
 
@@ -281,14 +281,14 @@ class DataModelService extends ModelService<DataModel> {
 
     void deleteAllUnusedDataTypes(DataModel dataModel) {
         log.debug('Cleaning DataModel {} of DataTypes', dataModel.label)
-        dataModel.dataTypes.findAll {!it.dataElements}.each {
+        dataModel.dataTypes.findAll { !it.dataElements }.each {
             dataTypeService.delete(it)
         }
     }
 
     void deleteAllUnusedDataClasses(DataModel dataModel) {
         log.debug('Cleaning DataModel {} of DataClasses', dataModel.label)
-        dataModel.dataClasses.findAll {dataClassService.isUnusedDataClass(it)}.each {
+        dataModel.dataClasses.findAll { dataClassService.isUnusedDataClass(it) }.each {
             dataClassService.delete(it)
         }
     }
@@ -299,31 +299,31 @@ class DataModelService extends ModelService<DataModel> {
         checkFacetsAfterImportingCatalogueItem(dataModel)
 
         if (dataModel.dataTypes) {
-            dataModel.dataTypes.each {dt ->
+            dataModel.dataTypes.each { dt ->
                 dataTypeService.checkImportedDataTypeAssociations(importingUser, dataModel, dt)
             }
         }
 
         if (dataModel.dataClasses) {
             Collection<DataClass> dataClasses = dataModel.childDataClasses
-            dataClasses.each {dc ->
+            dataClasses.each { dc ->
                 dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
             }
         }
 
         if (bindingMap && dataModel.dataTypes) {
-            Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll {it.instanceOf(ReferenceType)} as Set<ReferenceType>
+            Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll { it.instanceOf(ReferenceType) } as Set<ReferenceType>
             if (referenceTypes) {
                 log.debug('Matching {} ReferenceType referenceClasses', referenceTypes.size())
                 dataTypeService.matchReferenceClasses(dataModel, referenceTypes,
-                                                      bindingMap.dataTypes.findAll {it.domainType == DataType.REFERENCE_DOMAIN_TYPE})
+                                                      bindingMap.dataTypes.findAll { it.domainType == DataType.REFERENCE_DOMAIN_TYPE })
             }
         }
         log.debug('DataModel associations checked')
     }
 
     DataModel ensureAllEnumerationTypesHaveValues(DataModel dataModel) {
-        dataModel.dataTypes.findAll {it.instanceOf(EnumerationType) && !(it as EnumerationType).getEnumerationValues()}.each {EnumerationType et ->
+        dataModel.dataTypes.findAll { it.instanceOf(EnumerationType) && !(it as EnumerationType).getEnumerationValues() }.each { EnumerationType et ->
             et.addToEnumerationValues(key: '-', value: '-')
         }
         dataModel
@@ -331,7 +331,7 @@ class DataModelService extends ModelService<DataModel> {
 
     List<DataElement> getAllDataElementsOfDataModel(DataModel dataModel) {
         List<DataElement> allElements = []
-        dataModel.dataClasses.each {allElements += it.dataElements ?: []}
+        dataModel.dataClasses.each { allElements += it.dataElements ?: [] }
         allElements
     }
 
@@ -339,16 +339,16 @@ class DataModelService extends ModelService<DataModel> {
         if (!dataElementNames) return []
         getAllDataElementsOfDataModel(dataModel).findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in dataElementNames.collect {it.toLowerCase()} :
+            it.label.toLowerCase() in dataElementNames.collect { it.toLowerCase() } :
             it.label in dataElementNames
         }
     }
 
     Set<EnumerationType> findAllEnumerationTypeByNames(DataModel dataModel, Set<String> enumerationTypeNames, boolean caseInsensitive) {
         if (!enumerationTypeNames) return []
-        dataModel.dataTypes.findAll {it.instanceOf(EnumerationType)}.findAll {
+        dataModel.dataTypes.findAll { it.instanceOf(EnumerationType) }.findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in enumerationTypeNames.collect {it.toLowerCase()} :
+            it.label.toLowerCase() in enumerationTypeNames.collect { it.toLowerCase() } :
             it.label in enumerationTypeNames
         } as Set<EnumerationType>
     }
@@ -439,7 +439,7 @@ class DataModelService extends ModelService<DataModel> {
 
     DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label,
                             Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean
-                                    copySummaryMetadata = false) {
+                                copySummaryMetadata = false) {
 
         DataModel copy = new DataModel(author: original.author,
                                        organisation: original.organisation, modelType: original.modelType,
@@ -473,20 +473,20 @@ class DataModelService extends ModelService<DataModel> {
 
         if (original.dataTypes) {
             // Copy all the datatypes
-            original.dataTypes.each {dt ->
+            original.dataTypes.each { dt ->
                 dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
 
         if (original.childDataClasses) {
             // Copy all the dataclasses (this will also match up the reference types)
-            original.childDataClasses.each {dc ->
+            original.childDataClasses.each { dc ->
                 dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager)
             }
         }
 
         if (original.semanticLinks) {
-            original.semanticLinks.each {link ->
+            original.semanticLinks.each { link ->
                 copy.addToSemanticLinks(createdBy: copier.emailAddress,
                                         linkType: link.linkType,
                                         targetCatalogueItemId: link.targetCatalogueItemId,
@@ -495,7 +495,7 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         if (original.versionLinks) {
-            original.versionLinks.each {link ->
+            original.versionLinks.each { link ->
                 copy.addToVersionLinks(createdBy: copier.emailAddress,
                                        linkType: link.linkType,
                                        targetModelId: link.targetModelId,
@@ -511,7 +511,7 @@ class DataModelService extends ModelService<DataModel> {
                                            DataModel copy,
                                            User copier,
                                            UserSecurityPolicyManager userSecurityPolicyManager = null,
-                                           boolean copySummaryMetadata = false){
+                                           boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByCatalogueItemId(original.id).each {
@@ -538,7 +538,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(DataModel dataModel, DataModel otherDataModel, int maxResults) {
-        dataModel.getAllDataElements().collect {de ->
+        dataModel.getAllDataElements().collect { de ->
             dataElementService.findAllSimilarDataElementsInDataModel(otherDataModel, de, maxResults)
         }
     }
@@ -553,7 +553,7 @@ class DataModelService extends ModelService<DataModel> {
                 groupProperty('dataModel.id')
                 count()
             }.order('dataModel')
-        criteria.list().collectEntries {[it[0], it[1]]}
+        criteria.list().collectEntries { [it[0], it[1]] }
     }
 
     @Override
@@ -600,7 +600,7 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataModel.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id)}
+        DataModel.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) }
     }
 
     @Override
@@ -756,12 +756,12 @@ class DataModelService extends ModelService<DataModel> {
 
             if (countByLabel(dataModel.label)) {
                 List<DataModel> existingModels = findAllByLabel(dataModel.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting DataModel as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser)
                     setDataModelIsNewDocumentationVersionOfDataModel(dataModel, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 dataModel.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing DataModels with label [{}]', dataModel.label)

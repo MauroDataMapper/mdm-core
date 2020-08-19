@@ -33,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -478,13 +477,13 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier, UserSecurityPolicyManager
-            userSecurityPolicyManager,
+        userSecurityPolicyManager,
                             Serializable parentDataClassId = null, boolean copySummaryMetadata = false) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 
         DataClass copy = new DataClass(
-                minMultiplicity: original.minMultiplicity,
-                maxMultiplicity: original.maxMultiplicity
+            minMultiplicity: original.minMultiplicity,
+            maxMultiplicity: original.maxMultiplicity
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
@@ -529,7 +528,7 @@ class DataClassService extends ModelItemService<DataClass> {
                                            DataClass copy,
                                            User copier,
                                            UserSecurityPolicyManager userSecurityPolicyManager = null,
-                                           boolean copySummaryMetadata = false){
+                                           boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByCatalogueItemId(original.id).each {

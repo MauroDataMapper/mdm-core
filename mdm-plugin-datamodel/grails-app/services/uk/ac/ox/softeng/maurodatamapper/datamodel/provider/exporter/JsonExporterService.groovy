@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.plugin.json.view.JsonViewTemplateEngine

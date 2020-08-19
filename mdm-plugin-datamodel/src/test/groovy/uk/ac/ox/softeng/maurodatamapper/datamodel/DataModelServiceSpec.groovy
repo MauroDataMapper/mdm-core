@@ -62,9 +62,12 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
 
-        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
-        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
-        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder, authority: testAuthority)
+        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                             authority: testAuthority)
+        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                             authority: testAuthority)
+        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder,
+                                             authority: testAuthority)
 
         checkAndSave(dataModel1)
         checkAndSave(dataModel2)
@@ -139,7 +142,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void "test save"() {
 
         when:
-        DataModel dataModel = new DataModel(createdByUser: reader2, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder, authority: testAuthority)
+        DataModel dataModel = new DataModel(createdByUser: reader2, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder,
+                                            authority: testAuthority)
         service.save(dataModel)
 
         then:
@@ -197,7 +201,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.not.finalised.message' }
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -242,17 +246,17 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any {it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
+        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -308,17 +312,17 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any {it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
+        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -353,7 +357,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
     @PendingFeature(reason = 'DataModel permission copying')
@@ -378,7 +382,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
     void 'DMSC06 : test creating a new model version on draft model'() {
@@ -393,7 +397,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.not.finalised.message' }
     }
 
     void 'DMSC07 : test creating a new model version on finalised model'() {
@@ -441,17 +445,17 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any {it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -510,17 +514,17 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any {it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -554,7 +558,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
     void 'DMSV01 : test validation on valid model'() {
@@ -585,7 +589,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         check.addToDataTypes(new PrimitiveType(createdByUser: admin))
 
         when:
@@ -604,7 +609,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV04 : test validation on invalid dataclass model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         check.addToDataClasses(new DataClass(createdByUser: admin))
 
         when:
@@ -623,7 +629,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV05 : test validation on invalid dataclass dataelement model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataElements(createdByUser: admin)
         check.addToDataClasses(parent)
@@ -644,7 +651,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV06 : test validation on invalid reference datatype model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin, label: 'ref')
         check.addToDataClasses(dc)
         check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref'))
@@ -665,7 +673,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV07 : test validation on invalid nested reference datatype model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin)
         check.addToDataClasses(dc)
         check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref', referenceClass: dc))
@@ -678,8 +687,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 2
-        invalid.errors.fieldErrors.any {it.field == 'dataTypes[0].referenceClass.label'}
-        invalid.errors.fieldErrors.any {it.field == 'childDataClasses[0].label'}
+        invalid.errors.fieldErrors.any { it.field == 'dataTypes[0].referenceClass.label' }
+        invalid.errors.fieldErrors.any { it.field == 'childDataClasses[0].label' }
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -687,7 +696,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV08 : test validation on invalid nested dataclass model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataClasses(new DataClass(createdByUser: admin))
         check.addToDataClasses(parent)
@@ -709,7 +719,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV09 : test validation on invalid nested dataclass dataelement model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         DataClass child = new DataClass(createdByUser: admin, label: 'child')
         child.addToDataElements(createdByUser: admin, label: 'el')
@@ -733,7 +744,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV10 : test validation on invalid double nested dataclass model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         grandparent.addToDataClasses(parent)
@@ -757,7 +769,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV11 : test validation on invalid double nested dataclass dataelement model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                        authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         grandparent.addToDataClasses(parent)

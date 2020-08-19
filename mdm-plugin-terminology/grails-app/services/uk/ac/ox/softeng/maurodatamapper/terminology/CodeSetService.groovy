@@ -308,12 +308,12 @@ class CodeSetService extends ModelService<CodeSet> {
         copy.trackChanges()
 
         // Copy all the terms
-        original.terms?.each {term ->
+        original.terms?.each { term ->
             copy.addToTerms(term)
         }
 
         if (original.semanticLinks) {
-            original.semanticLinks.each {link ->
+            original.semanticLinks.each { link ->
                 copy.addToSemanticLinks(createdBy: copier.emailAddress,
                                         linkType: link.linkType,
                                         targetCatalogueItemId: link.targetCatalogueItemId,
@@ -322,7 +322,7 @@ class CodeSetService extends ModelService<CodeSet> {
         }
 
         if (original.versionLinks) {
-            original.versionLinks.each {link ->
+            original.versionLinks.each { link ->
                 copy.addToVersionLinks(createdBy: copier.emailAddress,
                                        linkType: link.linkType,
                                        targetModelId: link.targetModelId,
@@ -393,7 +393,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        CodeSet.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
+        CodeSet.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
     }
 
     @Override
@@ -550,12 +550,12 @@ class CodeSetService extends ModelService<CodeSet> {
 
             if (countByLabel(codeSet.label)) {
                 List<CodeSet> existingModels = findAllByLabel(codeSet.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting CodeSet as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser)
                     setCodeSetIsNewDocumentationVersionOfCodeSet(codeSet, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 codeSet.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing CodeSets with label [{}]', codeSet.label)

@@ -17,11 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 
-import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 
 /**
  * Where facet owner is a DataClass

@@ -107,7 +107,7 @@ class TermService extends ModelItemService<Term> {
         long start = System.currentTimeMillis()
         List batch = []
         int count = 0
-        terms.each {term ->
+        terms.each { term ->
             term.sourceTermRelationships?.clear()
             term.targetTermRelationships?.clear()
             batch += term
@@ -206,7 +206,7 @@ class TermService extends ModelItemService<Term> {
             .join('sourceTerm')
             .join('targetTerm')
             .list()
-            .collect {tr ->
+            .collect { tr ->
                 if (tr.relationshipType.parentalRelationship) tr.sourceTerm
                 else if (tr.relationshipType.childRelationship) tr.targetTerm
                 else null
@@ -227,7 +227,7 @@ class TermService extends ModelItemService<Term> {
 
     @Override
     List<Term> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        Term.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
+        Term.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
     }
 
     @Override
@@ -269,10 +269,10 @@ class TermService extends ModelItemService<Term> {
         if (term.isDirty('depth')) return term.depth
         if (isRootTerm(term, inMemory)) return 1
 
-        TermRelationship relationship = term.targetTermRelationships.find {it.sourceIsParentToTarget()}
+        TermRelationship relationship = term.targetTermRelationships.find { it.sourceIsParentToTarget() }
         if (relationship) return 1 + calculateTermDepth(relationship.sourceTerm, inMemory)
 
-        relationship = term.sourceTermRelationships.find {it.sourceIsChildOfTarget()}
+        relationship = term.sourceTermRelationships.find { it.sourceIsChildOfTarget() }
         if (relationship) return 1 + calculateTermDepth(relationship.targetTerm, inMemory)
 
         Integer.MAX_VALUE
@@ -284,22 +284,22 @@ class TermService extends ModelItemService<Term> {
 
     Boolean isParentTerm(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.any {it.relationshipType.childRelationship} ||
-        term.sourceTermRelationships.any {it.relationshipType.parentalRelationship} :
+        term.targetTermRelationships.any { it.relationshipType.childRelationship } ||
+        term.sourceTermRelationships.any { it.relationshipType.parentalRelationship } :
         termRelationshipService.countByTermIdIsParent(term.id)
     }
 
     Boolean isChildTerm(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.any {it.relationshipType.parentalRelationship} ||
-        term.sourceTermRelationships.any {it.relationshipType.childRelationship} :
+        term.targetTermRelationships.any { it.relationshipType.parentalRelationship } ||
+        term.sourceTermRelationships.any { it.relationshipType.childRelationship } :
         termRelationshipService.countByTermIdIsChild(term.id)
     }
 
     Boolean hasNoHierarchy(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.every {!it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship} &&
-        term.sourceTermRelationships.every {!it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship} :
+        term.targetTermRelationships.every { !it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship } &&
+        term.sourceTermRelationships.every { !it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship } :
         termRelationshipService.countByTermIdHasHierarchy(term.id) == 0
     }
 
@@ -315,14 +315,14 @@ class TermService extends ModelItemService<Term> {
             List<Term> terms = Term.findAllByTerminologyAndDepth(terminology, 1)
             List<TermRelationship> childKnowledge = obtainChildKnowledge(terms)
             Set<String> hasChildren = []
-            childKnowledge.each {relationship ->
+            childKnowledge.each { relationship ->
                 if (relationship.relationshipType.childRelationship) {
                     hasChildren += relationship.targetTerm.code
                 } else if (relationship.relationshipType.parentalRelationship) {
                     hasChildren += relationship.sourceTerm.code
                 }
             }
-            tree = terms.collect {root ->
+            tree = terms.collect { root ->
                 new ModelItemTreeItem(root, hasChildren.contains(root.code))
             }.toSet()
         } else {
@@ -333,18 +333,18 @@ class TermService extends ModelItemService<Term> {
             Set<Term> terms = TermRelationship.bySourceTermIdAndParental(term.id)
                 .join('targetTerm')
                 .list()
-                .collect {it.targetTerm}.toSet()
+                .collect { it.targetTerm }.toSet()
 
             List<TermRelationship> childKnowledge = obtainChildKnowledge(terms.asList())
             Set<String> hasChildren = []
-            childKnowledge.each {relationship ->
+            childKnowledge.each { relationship ->
                 if (relationship.relationshipType.childRelationship) {
                     hasChildren += relationship.targetTerm.code
                 } else if (relationship.relationshipType.parentalRelationship) {
                     hasChildren += relationship.sourceTerm.code
                 }
             }
-            tree = terms.collect {parent ->
+            tree = terms.collect { parent ->
                 new ModelItemTreeItem(parent, hasChildren.contains(parent.code))
             }.toSet()
 
@@ -352,10 +352,10 @@ class TermService extends ModelItemService<Term> {
             terms = TermRelationship.byTargetTermIdAndChild(term.id)
                 .join('sourceTerm')
                 .list()
-                .collect {it.sourceTerm}
+                .collect { it.sourceTerm }
             childKnowledge = obtainChildKnowledge(terms.asList())
 
-            terms.each {parent ->
+            terms.each { parent ->
                 if (!hasParentToRelationship(parent, term)) {
                     tree.add(new ModelItemTreeItem(parent, hasChild(parent, childKnowledge)))
                 }
@@ -368,7 +368,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     private Boolean hasParentToRelationship(Term parent, Term child) {
-        parent.sourceTermRelationships.any {it.sourceIsParentToTarget() && it.targetTerm == child}
+        parent.sourceTermRelationships.any { it.sourceIsParentToTarget() && it.targetTerm == child }
     }
 
     private List<TermRelationship> obtainChildKnowledge(List<Term> parents) {

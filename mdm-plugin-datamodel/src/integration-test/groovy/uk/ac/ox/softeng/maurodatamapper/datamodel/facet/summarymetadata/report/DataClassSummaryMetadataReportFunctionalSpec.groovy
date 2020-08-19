@@ -69,7 +69,7 @@ class DataClassSummaryMetadataReportFunctionalSpec extends CatalogueItemSummaryM
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   folder: folder, authority: testAuthority).save(flush: true)
         destinationDataModel = new DataModel(label: 'Destination Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                  folder: folder, authority: testAuthority).save(flush: true)
+                                             folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   dataModel: dataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,

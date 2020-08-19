@@ -64,7 +64,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
             GET('')
             assert response.status() == HttpStatus.OK
             def items = response.body().items
-            items.each {i ->
+            items.each { i ->
                 DELETE(getDeleteEndpoint(i.id))
                 assert response.status() in [HttpStatus.NO_CONTENT, HttpStatus.NOT_FOUND]
             }
@@ -206,7 +206,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         getResource().count() == nestedTest ? createdIds.size() : createdIds + 1
 
         cleanup:
-        createdIds.each {id ->
+        createdIds.each { id ->
             DELETE(getDeleteEndpoint(id))
             assert response.status() == HttpStatus.NO_CONTENT
         }

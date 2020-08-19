@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -27,10 +26,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
-import grails.core.GrailsApplication
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -225,9 +222,9 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.count == 3
-        result.results.any {it.label == 'ele1' && it.domainType == 'DataElement'}
-        result.results.any {it.label == 'element2' && it.domainType == 'DataElement'}
-        result.results.any {it.label == 'content' && it.domainType == 'DataClass' && it.description == 'A dataclass with elements'}
+        result.results.any { it.label == 'ele1' && it.domainType == 'DataElement' }
+        result.results.any { it.label == 'element2' && it.domainType == 'DataElement' }
+        result.results.any { it.label == 'content' && it.domainType == 'DataClass' && it.description == 'A dataclass with elements' }
 
         when:
         searchParams = new SearchParams(search: 'child')
@@ -235,9 +232,9 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.count == 3
-        result.results.any {it.label == 'child' && it.domainType == 'DataClass'}
-        result.results.any {it.label == 'child' && it.domainType == 'DataElement'}
-        result.results.any {it.label == 'child' && it.domainType == 'ReferenceType'}
+        result.results.any { it.label == 'child' && it.domainType == 'DataClass' }
+        result.results.any { it.label == 'child' && it.domainType == 'DataElement' }
+        result.results.any { it.label == 'child' && it.domainType == 'ReferenceType' }
 
         when:
         searchParams = new SearchParams(search: 'yes')
@@ -326,7 +323,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.count == 1
-        result.results.any {it.label == 'child' && it.domainType == 'DataElement'}
+        result.results.any { it.label == 'child' && it.domainType == 'DataElement' }
 
         when:
         searchParams.domainTypes = [DataElement.simpleName, DataClass.simpleName]
@@ -334,8 +331,8 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.count == 2
-        result.results.any {it.label == 'child' && it.domainType == 'DataClass'}
-        result.results.any {it.label == 'child' && it.domainType == 'DataElement'}
+        result.results.any { it.label == 'child' && it.domainType == 'DataClass' }
+        result.results.any { it.label == 'child' && it.domainType == 'DataElement' }
 
         when:
         searchParams.domainTypes = [ReferenceType.simpleName]
@@ -343,7 +340,7 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.count == 1
-        result.results.any {it.label == 'child' && it.domainType == 'ReferenceType'}
+        result.results.any { it.label == 'child' && it.domainType == 'ReferenceType' }
     }
 
     void 'test findAllByDataModelIdByLuceneSearch on complex DataModel label search only'() {

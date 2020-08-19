@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -111,7 +111,7 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
 
         then: 'dataclass should not be valid'
         thrown(InternalSpockError)
-        dataClass.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
+        dataClass.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
     }
 
     void 'test unique label naming across dataclasses'() {

@@ -88,7 +88,7 @@ class DataElementSummaryMetadataFunctionalSpec extends CatalogueItemSummaryMetad
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   dataModel: dataModel).save(flush: true)
         destinationDataClass = new DataClass(label: 'Destination Test DataClass', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                  dataModel: destinationDataModel).save(flush: true)
+                                             dataModel: destinationDataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                      dataModel: dataModel).save(flush: true)
         dataElement = new DataElement(label: 'Functional Test DataElement', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,

@@ -296,26 +296,26 @@ class TerminologyService extends ModelService<Terminology> {
         copy.trackChanges()
 
         // Copy all the TermRelationshipType
-        original.termRelationshipTypes?.each {trt ->
+        original.termRelationshipTypes?.each { trt ->
             termRelationshipTypeService.copyTermRelationshipType(copy, trt, copier)
         }
 
         // Copy all the terms
-        original.terms?.each {term ->
+        original.terms?.each { term ->
             termService.copyTerm(copy, term, copier)
         }
 
         // Copy all the term relationships
         // We need all the terms to exist so we can create the links
         // Only copy source relationships as this will propgate the target relationships
-        original.terms?.each {term ->
-            term.sourceTermRelationships.each {relationship ->
+        original.terms?.each { term ->
+            term.sourceTermRelationships.each { relationship ->
                 termRelationshipService.copyTermRelationship(copy, relationship, copier)
             }
         }
 
         if (original.semanticLinks) {
-            original.semanticLinks.each {link ->
+            original.semanticLinks.each { link ->
                 copy.addToSemanticLinks(createdBy: copier.emailAddress,
                                         linkType: link.linkType,
                                         targetCatalogueItemId: link.targetCatalogueItemId,
@@ -324,7 +324,7 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (original.versionLinks) {
-            original.versionLinks.each {link ->
+            original.versionLinks.each { link ->
                 copy.addToVersionLinks(createdBy: copier.emailAddress,
                                        linkType: link.linkType,
                                        targetModelId: link.targetModelId,
@@ -366,14 +366,14 @@ class TerminologyService extends ModelService<Terminology> {
         // No parental or child relationships then ensure all depths are 1
         if (hasNoValidRelationships) {
             log.debug('No parent/child relationships so all terms are depth 1')
-            terminology.terms.each {it.depth = 1}
+            terminology.terms.each { it.depth = 1 }
             return terminology
         }
 
         log.debug('Updating all term depths')
         // Reset all track changes, as this whole process needs to be done AFTER insert into database
         // the only changes here should be depths
-        terminology.terms.each {it.trackChanges()}
+        terminology.terms.each { it.trackChanges() }
         terminology.terms.each {
             termService.updateDepth(it, inMemory)
         }
@@ -432,7 +432,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        Terminology.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id)}
+        Terminology.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id) }
     }
 
     @Override
@@ -588,12 +588,12 @@ class TerminologyService extends ModelService<Terminology> {
 
             if (countByLabel(terminology.label)) {
                 List<Terminology> existingModels = findAllByLabel(terminology.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting Terminology as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser)
                     setTerminologyIsNewDocumentationVersionOfTerminology(terminology, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 terminology.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Terminologys with label [{}]', terminology.label)

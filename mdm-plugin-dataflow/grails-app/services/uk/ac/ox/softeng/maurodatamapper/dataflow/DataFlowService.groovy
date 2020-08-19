@@ -130,17 +130,17 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
         Set<DataFlow> dataFlows = [] as Set
 
-        dataFlows.addAll buildTargetChain(allReadableDataFlows, allReadableDataFlows.findAll {it.refersToDataModelId(dataModelId)})
-        dataFlows.addAll buildSourceChain(allReadableDataFlows, allReadableDataFlows.findAll {it.refersToDataModelId(dataModelId)})
+        dataFlows.addAll buildTargetChain(allReadableDataFlows, allReadableDataFlows.findAll { it.refersToDataModelId(dataModelId) })
+        dataFlows.addAll buildSourceChain(allReadableDataFlows, allReadableDataFlows.findAll { it.refersToDataModelId(dataModelId) })
 
         dataFlows.toList() as List<DataFlow>
     }
 
     def buildTargetChain(List<DataFlow> readableDataFlows, Collection<DataFlow> dataFlowChain) {
 
-        Set<DataModel> targets = dataFlowChain.collect {it.target}.toSet()
+        Set<DataModel> targets = dataFlowChain.collect { it.target }.toSet()
 
-        Set<DataFlow> targetDataFlows = readableDataFlows.findAll {it.source in targets}.toSet()
+        Set<DataFlow> targetDataFlows = readableDataFlows.findAll { it.source in targets }.toSet()
 
         if (targetDataFlows) {
             targetDataFlows = buildTargetChain(readableDataFlows - targetDataFlows, targetDataFlows)
@@ -151,9 +151,9 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
     def buildSourceChain(List<DataFlow> readableDataFlows, Collection<DataFlow> dataFlowChain) {
 
-        Set<DataModel> sources = dataFlowChain.collect {it.source}.toSet()
+        Set<DataModel> sources = dataFlowChain.collect { it.source }.toSet()
 
-        Set<DataFlow> sourceDataFlows = readableDataFlows.findAll {it.target in sources}.toSet()
+        Set<DataFlow> sourceDataFlows = readableDataFlows.findAll { it.target in sources }.toSet()
 
         if (sourceDataFlows) {
             sourceDataFlows = buildSourceChain(readableDataFlows - sourceDataFlows, sourceDataFlows)
@@ -263,7 +263,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
     @Override
     List<DataFlow> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataFlow.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+        DataFlow.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override

@@ -85,8 +85,8 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
         dataClassComponent.dataFlow.removeFromDataClassComponents(dataClassComponent)
         dataClassComponent.breadcrumbTree.removeFromParent()
 
-        dataClassComponent.sourceDataClasses.each {source ->
-            dataClassComponent.sourceDataClasses.each {target ->
+        dataClassComponent.sourceDataClasses.each { source ->
+            dataClassComponent.sourceDataClasses.each { target ->
                 semanticLinkService.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
             }
         }
@@ -144,7 +144,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     @Override
     List<DataClassComponent> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         DataClassComponent.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override

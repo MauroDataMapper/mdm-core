@@ -155,7 +155,7 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     @Override
     List<TermRelationshipType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         TermRelationshipType.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
     }
 
     @Override

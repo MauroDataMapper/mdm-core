@@ -64,6 +64,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
     abstract void delete(K catalogueItem)
 
     abstract K save(K catalogueItem)
+
     abstract K save(Map args, K catalogueItem)
 
     abstract K get(Serializable id)
@@ -124,10 +125,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
         copy.label = original.label
         copy.description = original.description
 
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
-        metadataService.findAllByCatalogueItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
+        metadataService.findAllByCatalogueItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
 
-        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each {link ->
+        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
                                     targetCatalogueItemDomainType: link.targetCatalogueItemDomainType)

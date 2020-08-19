@@ -74,8 +74,8 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         DataClassComponent dataClassComponent = proxyHandler.unwrapIfProxy(dataElementComponent.dataClassComponent) as DataClassComponent
         dataElementComponent.dataClassComponent = dataClassComponent
 
-        dataElementComponent.sourceDataElements.each {source ->
-            dataElementComponent.targetDataElements.each {target ->
+        dataElementComponent.sourceDataElements.each { source ->
+            dataElementComponent.targetDataElements.each { target ->
                 semanticLinkService.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
             }
         }
@@ -124,7 +124,7 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
     @Override
     List<DataElementComponent> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         DataElementComponent.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override

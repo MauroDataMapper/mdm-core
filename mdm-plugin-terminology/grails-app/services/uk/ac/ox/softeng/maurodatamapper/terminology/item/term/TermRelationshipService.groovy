@@ -77,7 +77,7 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         long start = System.currentTimeMillis()
         List batch = []
         int count = 0
-        relationships.each {relationship ->
+        relationships.each { relationship ->
             batch += relationship
             count++
             if (count % TermRelationship.BATCH_SIZE == 0) {
@@ -168,7 +168,7 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     @Override
     List<TermRelationship> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         TermRelationship.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
     }
 
     @Override

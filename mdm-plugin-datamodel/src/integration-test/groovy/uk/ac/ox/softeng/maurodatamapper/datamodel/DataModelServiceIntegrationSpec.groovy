@@ -204,7 +204,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.not.finalised.message' }
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -252,17 +252,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any {it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
+        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -321,17 +321,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any {it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
+        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -352,21 +352,21 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'creating new doc version'
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor)
-        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [moveDataFlows            : false,
-                                                                                                      throwErrors: true,
-                                                                                                      userSecurityPolicyManager:
-                                                                                                              userSecurityPolicyManager])
+        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false,
+                                                                           [moveDataFlows: false, throwErrors: true, userSecurityPolicyManager:
+                                                                               userSecurityPolicyManager])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [moveDataFlows            : false, throwErrors: true,
-                                                                                               userSecurityPolicyManager: userSecurityPolicyManager])
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false,
+                                                                    [moveDataFlows: false, throwErrors: true, userSecurityPolicyManager:
+                                                                        userSecurityPolicyManager])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
     @PendingFeature(reason = 'DataModel permission copying')
@@ -377,21 +377,21 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'creating new doc version'
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor)
-        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [moveDataFlows            : false, throwErrors:
-                true,
-                                                                                                     userSecurityPolicyManager:
-                                                                                                             userSecurityPolicyManager])
+        def newDocVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, true,
+                                                                           [moveDataFlows: false, throwErrors: true, userSecurityPolicyManager:
+                                                                               userSecurityPolicyManager])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, [moveDataFlows            : false, throwErrors: true,
-                                                                                              userSecurityPolicyManager: userSecurityPolicyManager])
+        def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true,
+                                                                    [moveDataFlows: false, throwErrors: true, userSecurityPolicyManager:
+                                                                        userSecurityPolicyManager])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
     void 'DMSC06 : test creating a new model version on draft model'() {
@@ -400,13 +400,15 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new version on draft model is not allowed'
         DataModel dataModel = dataModelService.get(id)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [copyDataFlows            : false, throwErrors: true,
-                                                                                                              userSecurityPolicyManager:
-                                                                                                                      userSecurityPolicyManager])
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true,
+                                                            [copyDataFlows: false, throwErrors: true, userSecurityPolicyManager:
+                                                                userSecurityPolicyManager])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.not.finalised.message'}
+        result.errors.allErrors.find {
+            it.code == 'invalid.datamodel.new.version.not.finalised.message'
+        }
     }
 
     void 'DMSC07 : test creating a new model version on finalised model'() {
@@ -418,9 +420,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
         def result =
-                dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, [copyDataFlows            : false, throwErrors: true,
-                                                                                                          userSecurityPolicyManager:
-                                                                                                                  userSecurityPolicyManager])
+            dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false,
+                                                   [copyDataFlows: false, throwErrors: true, userSecurityPolicyManager: userSecurityPolicyManager])
 
         then:
         result.instanceOf(DataModel)
@@ -456,17 +457,19 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any {it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+        newVersion.versionLinks.any {
+            it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF
+        }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -488,9 +491,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, [copyDataFlows            : false, throwErrors: true,
-                                                                                                              userSecurityPolicyManager:
-                                                                                                                      userSecurityPolicyManager])
+        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true,
+                                                            [copyDataFlows: false, throwErrors: true, userSecurityPolicyManager:
+                                                                userSecurityPolicyManager])
 
         then:
         result.instanceOf(DataModel)
@@ -526,17 +529,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any {it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -556,9 +559,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'creating new version'
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor)
-        def newVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false, [moveDataFlows            : false, throwErrors: true,
-                                                                                                   userSecurityPolicyManager:
-                                                                                                           userSecurityPolicyManager])
+        def newVersion = dataModelService.createNewDocumentationVersion(dataModel, editor, false,
+                                                                        [moveDataFlows: false, throwErrors: true, userSecurityPolicyManager:
+                                                                            userSecurityPolicyManager])
 
         then:
         checkAndSave(newVersion)
@@ -566,11 +569,11 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'trying to create a new version on the old datamodel'
         def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false,
                                                             [copyDataFlows: false, throwErrors: true, userSecurityPolicyManager:
-                                                                    userSecurityPolicyManager])
+                                                                userSecurityPolicyManager])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.datamodel.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
     void 'DMSV01 : test validation on valid model'() {
@@ -706,8 +709,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 2
-        invalid.errors.fieldErrors.any {it.field == 'dataTypes[0].referenceClass.label'}
-        invalid.errors.fieldErrors.any {it.field == 'childDataClasses[0].label'}
+        invalid.errors.fieldErrors.any { it.field == 'dataTypes[0].referenceClass.label' }
+        invalid.errors.fieldErrors.any { it.field == 'childDataClasses[0].label' }
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -829,9 +832,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         results.size() == 3
 
         when:
-        DataElementSimilarityResult childRes = results.find {it.source.label == 'child'}
-        DataElementSimilarityResult ele1Res = results.find {it.source.label == 'ele1'}
-        DataElementSimilarityResult ele2Res = results.find {it.source.label == 'element2'}
+        DataElementSimilarityResult childRes = results.find { it.source.label == 'child' }
+        DataElementSimilarityResult ele1Res = results.find { it.source.label == 'ele1' }
+        DataElementSimilarityResult ele2Res = results.find { it.source.label == 'element2' }
 
         then:
         ele1Res

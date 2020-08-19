@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.metadata
 
-import io.micronaut.http.HttpResponse
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -30,6 +29,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpResponse
 import spock.lang.Shared
 
 /**

@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -204,7 +204,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         copy.classifiers == original.classifiers
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test copying enumeration datatype'() {
@@ -231,7 +231,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         copy.enumerationValues.size() == original.enumerationValues.size()
 
         and:
-        original.enumerationValues.every {o -> copy.enumerationValues.any {c -> c.key == o.key && c.value == o.value}}
+        original.enumerationValues.every { o -> copy.enumerationValues.any { c -> c.key == o.key && c.value == o.value } }
 
         and:
         copy.createdBy == editor.emailAddress
@@ -239,7 +239,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         copy.classifiers == original.classifiers
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test copying reference datatype'() {
@@ -272,6 +272,6 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         !original.classifiers
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 }
