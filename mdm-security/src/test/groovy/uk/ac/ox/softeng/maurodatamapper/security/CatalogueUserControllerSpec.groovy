@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.security.basic.NoAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
@@ -74,25 +74,26 @@ class CatalogueUserControllerSpec extends ResourceControllerSpec<CatalogueUser> 
         domain.lastName = reader.lastName
         domain.tempPassword = reader.tempPassword
 
+        mockDomain(Edit)
         mockDomain(UserGroup)
         group = new UserGroup(name: 'testgroup', createdByUser: admin).addToGroupMembers(admin)
         checkAndSave(group)
 
 
         controller.catalogueUserService = Stub(CatalogueUserService) {
-            get(_) >> {UUID id -> CatalogueUser.get(id)}
+            get(_) >> { UUID id -> CatalogueUser.get(id) }
             findAllByUser(_, _) >> CatalogueUser.list()
-            delete(_) >> {CatalogueUser catalogueUser -> catalogueUser.disabled = true}
-            findAllByUserAndUserGroupId(_, _, _) >> {UserSecurityPolicyManager userSecurityPolicyManager, UUID userGroupId, Map pagination ->
+            delete(_) >> { CatalogueUser catalogueUser -> catalogueUser.disabled = true }
+            findAllByUserAndUserGroupId(_, _, _) >> { UserSecurityPolicyManager userSecurityPolicyManager, UUID userGroupId, Map pagination ->
                 if (userSecurityPolicyManager.isApplicationAdministrator()) {
                     return CatalogueUser.byUserGroupId(userGroupId).list(pagination)
                 }
                 CatalogueUser.byUserGroupIdAndNotDisabled(userGroupId).list(pagination)
             }
-            findOrCreateUserFromInterface(_) >> {User user ->
-                if (user instanceof CatalogueUser) return user
-                CatalogueUser catalogueUser = CatalogueUser.get(user.id) ?: CatalogueUser.findByEmailAddress(user.emailAddress)
-                catalogueUser ?: CatalogueUser.fromInterface(user)
+            findOrCreateUserFromInterface(_) >> { User u ->
+                if (u instanceof CatalogueUser) return u
+                CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
+                catalogueUser ?: CatalogueUser.fromInterface(u)
             }
         }
         controller.groupBasedSecurityPolicyManagerService = Stub(GroupBasedSecurityPolicyManagerService) {
@@ -724,6 +725,11 @@ json {
         given:
         controller.catalogueUserService = Mock(CatalogueUserService) {
             2 * get(_) >> reader
+            findOrCreateUserFromInterface(_) >> { User u ->
+                if (u instanceof CatalogueUser) return u
+                CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
+                catalogueUser ?: CatalogueUser.fromInterface(u)
+            }
         }
         params.catalogueUserId = reader.id
 
@@ -945,14 +951,19 @@ json {
                                 EMAIL_FORGOTTEN_PASSWORD_BODY, _, _)
         }
         controller.catalogueUserService = Mock(CatalogueUserService) {
-            get(_) >> {id -> CatalogueUser.get(id)}
-            findByEmailAddress(_) >> {String em -> CatalogueUser.findByEmailAddress(em)}
-            1 * generatePasswordResetLink(_, _) >> {u, b ->
+            get(_) >> { id -> CatalogueUser.get(id) }
+            findByEmailAddress(_) >> { String em -> CatalogueUser.findByEmailAddress(em) }
+            1 * generatePasswordResetLink(_, _) >> { u, b ->
                 u.resetToken = UUID.randomUUID()
                 u.save(validate: false)
                 "${b}/resetPasswordWebPage?token=${u.resetToken.toString()}"
             }
             0 * changeUserPassword(_, _, _)
+            findOrCreateUserFromInterface(_) >> { User u ->
+                if (u instanceof CatalogueUser) return u
+                CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
+                catalogueUser ?: CatalogueUser.fromInterface(u)
+            }
         }
 
         when: 'requesting a reset link'
@@ -992,10 +1003,15 @@ json {
                                 EMAIL_FORGOTTEN_PASSWORD_BODY, _, _)
         }
         controller.catalogueUserService = Mock(CatalogueUserService) {
-            get(_) >> {id -> CatalogueUser.get(id)}
-            findByEmailAddress(_) >> {String em -> CatalogueUser.findByEmailAddress(em)}
+            get(_) >> { id -> CatalogueUser.get(id) }
+            findByEmailAddress(_) >> { String em -> CatalogueUser.findByEmailAddress(em) }
             0 * generatePasswordResetLink(_, _)
             0 * changeUserPassword(_, _, _)
+            findOrCreateUserFromInterface(_) >> { User u ->
+                if (u instanceof CatalogueUser) return u
+                CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
+                catalogueUser ?: CatalogueUser.fromInterface(u)
+            }
         }
 
         when: 'user then tries to use reset token'
@@ -1032,7 +1048,7 @@ json {
                 "${b}/resetPasswordWebPage?token=${u.resetToken.toString()}"
             }
 
-            1 * changeUserPassword(_, _, _) >> {u, t, n ->
+            1 * changeUserPassword(_, _, _) >> { u, t, n ->
                 if (u.resetToken && u.resetToken == t) {
                     u.encryptAndSetPassword(n)
                     u.validate()
@@ -1041,6 +1057,11 @@ json {
                                     'Cannot change password for user [{0}] as old password is not valid')
                 }
                 u
+            }
+            findOrCreateUserFromInterface(_) >> { User u ->
+                if (u instanceof CatalogueUser) return u
+                CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
+                catalogueUser ?: CatalogueUser.fromInterface(u)
             }
         }
 
@@ -1093,7 +1114,7 @@ json {
                 user.resetToken = null
                 user.save(validate: false)
             }
-            1 * changeUserPassword(_, _, _) >> {u, t, n ->
+            1 * changeUserPassword(_, _, _) >> { u, t, n ->
                 if (u.resetToken && u.resetToken == t) {
                     u.encryptAndSetPassword(n)
                     u.validate()
@@ -1102,6 +1123,11 @@ json {
                                     'Cannot change password for user [{0}] as old password is not valid')
                 }
                 u
+            }
+            findOrCreateUserFromInterface(_) >> { User u ->
+                if (u instanceof CatalogueUser) return u
+                CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
+                catalogueUser ?: CatalogueUser.fromInterface(u)
             }
         }
 
@@ -1142,8 +1168,13 @@ json {
             0 * sendEmailToUser(_, EMAIL_PASSWORD_RESET_SUBJECT, EMAIL_PASSWORD_RESET_BODY, _)
         }
         controller.catalogueUserService = Mock(CatalogueUserService) {
-            get(_) >> {id -> CatalogueUser.get(id)}
+            get(_) >> { id -> CatalogueUser.get(id) }
             0 * administratorPasswordReset(_, _)
+            findOrCreateUserFromInterface(_) >> { User u ->
+                if (u instanceof CatalogueUser) return u
+                CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
+                catalogueUser ?: CatalogueUser.fromInterface(u)
+            }
         }
 
         when:
@@ -1164,11 +1195,16 @@ json {
             1 * sendEmailToUser(_, EMAIL_PASSWORD_RESET_SUBJECT, EMAIL_PASSWORD_RESET_BODY, _)
         }
         controller.catalogueUserService = Mock(CatalogueUserService) {
-            get(_) >> {id -> CatalogueUser.get(id)}
-            1 * administratorPasswordReset(_, _) >> {actor, user ->
+            get(_) >> { id -> CatalogueUser.get(id) }
+            1 * administratorPasswordReset(_, _) >> { actor, user ->
                 user.password = null
                 user.tempPassword = SecurityUtils.generateRandomPassword()
                 user
+            }
+            findOrCreateUserFromInterface(_) >> { User u ->
+                if (u instanceof CatalogueUser) return u
+                CatalogueUser catalogueUser = CatalogueUser.get(u.id) ?: CatalogueUser.findByEmailAddress(u.emailAddress)
+                catalogueUser ?: CatalogueUser.fromInterface(u)
             }
         }
 
