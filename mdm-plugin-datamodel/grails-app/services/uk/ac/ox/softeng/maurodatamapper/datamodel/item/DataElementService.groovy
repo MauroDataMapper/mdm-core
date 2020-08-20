@@ -354,7 +354,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
         dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier, userSecurityPolicyManager)
 
-        if (copy.validate()) save(validate: false, copy)
+        if (copy.validate()) save(copy, validate: false)
         else throw new ApiInvalidModelException('DES01', 'Copied DataElement is invalid', copy.errors)
 
         copy

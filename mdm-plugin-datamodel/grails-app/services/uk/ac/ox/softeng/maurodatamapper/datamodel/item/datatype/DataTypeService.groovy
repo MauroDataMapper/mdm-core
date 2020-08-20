@@ -373,7 +373,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier,
                                                                   userSecurityPolicyManager)
 
-        if (copy.validate()) save(validate: false, copy)
+        if (copy.validate()) save(copy, validate: false)
         else throw new ApiInvalidModelException('DTS01', 'Copied DataType is invalid', copy.errors)
 
         copy

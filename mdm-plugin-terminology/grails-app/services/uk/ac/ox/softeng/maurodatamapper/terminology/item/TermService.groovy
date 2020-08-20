@@ -183,7 +183,7 @@ class TermService extends ModelItemService<Term> {
 
         copiedTerminologyOrCodeSet.addToTerms(copy)
 
-        if (copy.validate()) save(validate: false, copy)
+        if (copy.validate()) save(copy, validate: false)
         else throw new ApiInvalidModelException('DC01', 'Copied Term is invalid', copy.errors, messageSource)
 
         copy.trackChanges()

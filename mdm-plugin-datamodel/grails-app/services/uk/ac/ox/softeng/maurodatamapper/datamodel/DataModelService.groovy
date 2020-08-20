@@ -149,7 +149,12 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel save(Map args = [failOnError: true, validate: false], DataModel dataModel) {
+    DataModel save(Map args, DataModel dataModel) {
+        save(dataModel, args)
+    }
+
+    @Override
+    DataModel save(DataModel dataModel, Map args = [failOnError: true, validate: false]) {
         log.debug('Saving {}({}) without batching', dataModel.label, dataModel.ident())
         dataModel.save(args)
         updateFacetsAfterInsertingCatalogueItem(dataModel)
@@ -462,7 +467,7 @@ class DataModelService extends ModelService<DataModel> {
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         if (copy.validate()) {
-            save(validate: false, copy)
+            save(copy, validate: false)
             editService.createAndSaveEdit(copy.id, copy.domainType,
                                           "DataModel ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier

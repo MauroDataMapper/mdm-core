@@ -73,7 +73,12 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     @Override
-    DataClass save(Map args = [flush: true], DataClass dataClass) {
+    DataClass save(Map args, DataClass dataClass) {
+        save(dataClass, args)
+    }
+
+    @Override
+    DataClass save(DataClass dataClass, Map args = [flush: true]) {
         dataClass.save(args)
         updateFacetsAfterInsertingCatalogueItem(dataClass)
     }
@@ -495,7 +500,7 @@ class DataClassService extends ModelItemService<DataClass> {
             get(parentDataClassId).addToDataClasses(copy)
         }
 
-        if (copy.validate()) save(validate: false, copy)
+        if (copy.validate()) save(copy, validate: false)
         else throw new ApiInvalidModelException('DCS01', 'Copied DataClass is invalid', copy.errors, messageSource)
 
         copy.trackChanges()

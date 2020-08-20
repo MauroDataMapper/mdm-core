@@ -286,7 +286,7 @@ class TerminologyService extends ModelService<Terminology> {
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         if (copy.validate()) {
-            save(validate: false, copy)
+            save(copy, validate: false)
             editService.createAndSaveEdit(copy.id, copy.domainType,
                                           "Terminology ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier

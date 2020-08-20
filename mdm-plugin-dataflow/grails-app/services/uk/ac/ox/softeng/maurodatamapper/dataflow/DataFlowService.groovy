@@ -58,7 +58,12 @@ class DataFlowService extends ModelItemService<DataFlow> {
     }
 
     @Override
-    DataFlow save(Map args = [flush: true], DataFlow dataFlow) {
+    DataFlow save(Map args, DataFlow dataFlow) {
+        save(dataFlow, args)
+    }
+
+    @Override
+    DataFlow save(DataFlow dataFlow, Map args = [flush: true]) {
         dataFlow.save(args)
         updateFacetsAfterInsertingCatalogueItem(dataFlow)
     }
