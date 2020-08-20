@@ -129,11 +129,6 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         dataClasses?.findAll { !it.parentDataClass }?.sort() ?: [] as List<DataClass>
     }
 
-    @Override
-    Boolean hasChildren() {
-        dataClasses == null ? false : !dataClasses.isEmpty()
-    }
-
     ObjectDiff<DataModel> diff(DataModel otherDataModel) {
         modelDiffBuilder(DataModel, this, otherDataModel)
             .appendList(DataType, 'dataTypes', this.dataTypes, otherDataModel.dataTypes)

@@ -110,11 +110,6 @@ class Terminology implements Model<Terminology> {
         "Terminology:${label}"
     }
 
-    @Override
-    Boolean hasChildren() {
-        terms == null ? false : !terms.isEmpty()
-    }
-
     ObjectDiff<Terminology> diff(Terminology otherTerminolgy) {
         modelDiffBuilder(Terminology, this, otherTerminolgy)
             .appendList(Term, 'terms', this.terms, otherTerminolgy.terms)

@@ -105,11 +105,6 @@ class CodeSet implements Model<CodeSet> {
         "CodeSet:${label}"
     }
 
-    @Override
-    Boolean hasChildren() {
-        terms == null ? false : !terms.isEmpty()
-    }
-
     ObjectDiff<CodeSet> diff(CodeSet otherCodeSet) {
         modelDiffBuilder(CodeSet, this, otherCodeSet)
             .appendList(Term, 'terms', this.terms, otherCodeSet.terms)

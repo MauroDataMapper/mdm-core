@@ -75,11 +75,6 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
     }
 
     @Override
-    Boolean hasChildren() {
-        modelItems == null ? false : !modelItems.isEmpty()
-    }
-
-    @Override
     String getEditLabel() {
         "${domainType}:${label}"
     }
