@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -25,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 
 import grails.testing.services.ServiceUnitTest
@@ -38,6 +38,8 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
 
     DataModel dataModel
     UUID id
+
+    UserSecurityPolicyManager userSecurityPolicyManager
 
     def setup() {
         log.debug('Setting up DataTypeServiceSpec Unit')
@@ -184,7 +186,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         checkAndSave(copyModel)
 
         when:
-        DataType copy = service.copyDataType(copyModel, original, editor)
+        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -216,7 +218,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         checkAndSave(copyModel)
 
         when:
-        DataType copy = service.copyDataType(copyModel, original, editor)
+        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -251,7 +253,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         checkAndSave(copyModel)
 
         when:
-        DataType copy = service.copyDataType(copyModel, original, editor)
+        DataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
         checkAndSave(copyModel)
 
         then:

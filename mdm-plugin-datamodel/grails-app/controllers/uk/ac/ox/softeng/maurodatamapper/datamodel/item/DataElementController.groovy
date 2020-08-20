@@ -49,8 +49,11 @@ class DataElementController extends CatalogueItemController<DataElement> {
         if (!original) return notFound(params.dataElementId)
         DataElement copy
         try {
-            copy = dataElementService.copyDataElement(dataModel, dataClass, originalDataModel, original, currentUser,
-                                                      currentUserSecurityPolicyManager)
+            copy = dataElementService.copyDataElement(dataModel, dataClass, original, currentUser,
+                                                      currentUserSecurityPolicyManager, originalDataModel)
+            dataClass.addToDataElements(copy)
+            dataClassService.matchUpAndAddMissingReferenceTypeClasses(dataModel, dataModelService.get(params.otherDataModelId), currentUser,
+                                                                      currentUserSecurityPolicyManager)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422

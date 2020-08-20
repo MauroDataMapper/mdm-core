@@ -172,6 +172,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when:
         DataElement copy = service.copyDataElement(dataModel, copyClass, original, editor, userSecurityPolicyManager)
+        copyClass.addToDataElements(copy)
 
         then:
         checkAndSave(dataModel)
@@ -209,6 +210,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when:
         DataElement copy = service.copyDataElement(dataModel, copyClass, original, editor, userSecurityPolicyManager)
+        copyClass.addToDataElements(copy)
 
         then:
         checkAndSave(copy)
@@ -249,6 +251,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when:
         DataElement copy = service.copyDataElement(copyModel, copyClass, original, editor, userSecurityPolicyManager)
+        copyClass.addToDataElements(copy)
 
         then:
         checkAndSave(copyModel)

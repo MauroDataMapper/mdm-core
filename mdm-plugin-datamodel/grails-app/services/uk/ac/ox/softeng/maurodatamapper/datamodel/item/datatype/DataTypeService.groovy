@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
@@ -339,8 +338,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
     }
 
-    DataType copyDataType(DataModel copiedDataModel, DataModel originalDataModel = copiedDataModel, DataType original, User copier,
-                          UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false) {
+    DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+                          DataModel originalDataModel = copiedDataModel, boolean copySummaryMetadata = false) {
 
         DataType copy
 
@@ -368,11 +367,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
         copiedDataModel.addToDataTypes(copy)
 
-        dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier,
-                                                                  userSecurityPolicyManager)
-
-        if (copy.validate()) save(copy, validate: false)
-        else throw new ApiInvalidModelException('DTS01', 'Copied DataType is invalid', copy.errors)
+        //        dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier,
+        //                                                                  userSecurityPolicyManager)
+        //
+        //        if (copy.validate()) save(copy, validate: false)
+        //        else throw new ApiInvalidModelException('DTS01', 'Copied DataType is invalid', copy.errors)
 
         copy
     }

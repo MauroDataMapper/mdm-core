@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
@@ -332,8 +331,8 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement
     }
 
-    DataElement copyDataElement(DataModel copiedDataModel, DataClass copiedDataClass, DataModel originalDataModel = copiedDataModel,
-                                DataElement original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
+    DataElement copyDataElement(DataModel copiedDataModel, DataClass copiedDataClass, DataElement original, User copier,
+                                UserSecurityPolicyManager userSecurityPolicyManager, DataModel originalDataModel = copiedDataModel) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
@@ -344,18 +343,19 @@ class DataElementService extends ModelItemService<DataElement> {
 
         // If theres no DataType then copy the original's DataType into the DataModel
         if (!dataType) {
-            dataType = dataTypeService.copyDataType(copiedDataModel, originalDataModel, original.dataType, copier,
-                                                    userSecurityPolicyManager)
+            dataType = dataTypeService.copyDataType(copiedDataModel, original.dataType, copier,
+                                                    userSecurityPolicyManager, originalDataModel)
         }
 
         copy.dataType = dataType
 
-        copiedDataClass.addToDataElements(copy)
-
-        dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier, userSecurityPolicyManager)
-
-        if (copy.validate()) save(copy, validate: false)
-        else throw new ApiInvalidModelException('DES01', 'Copied DataElement is invalid', copy.errors)
+        //                copiedDataClass.addToDataElements(copy)
+        //
+        //                dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier,
+        //                userSecurityPolicyManager)
+        //
+        //                if (copy.validate()) save(copy, validate: false)
+        //                else throw new ApiInvalidModelException('DES01', 'Copied DataElement is invalid', copy.errors)
 
         copy
     }

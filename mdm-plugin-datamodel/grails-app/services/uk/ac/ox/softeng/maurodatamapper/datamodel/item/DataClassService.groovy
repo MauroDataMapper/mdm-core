@@ -482,8 +482,7 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier, UserSecurityPolicyManager
-        userSecurityPolicyManager,
-                            Serializable parentDataClassId = null, boolean copySummaryMetadata = false) {
+        userSecurityPolicyManager, Serializable parentDataClassId = null, boolean copySummaryMetadata = false) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 
         DataClass copy = new DataClass(
@@ -521,7 +520,7 @@ class DataClassService extends ModelItemService<DataClass> {
         }
         copy.dataElements = []
         original.dataElements.each {element ->
-            dataElementService.copyDataElement(copiedDataModel, copy, original.dataModel, element, copier, userSecurityPolicyManager)
+            dataElementService.copyDataElement(copiedDataModel, copy, element, copier, userSecurityPolicyManager, original.dataModel)
         }
 
         copy
@@ -578,8 +577,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {
         dataModel.dataTypes.findAll {
-            it.instanceOf(ReferenceType) && !(it as uk.ac.ox
-                .softeng.maurodatamapper.datamodel.item.datatype.ReferenceType).referenceClass
+            it.instanceOf(ReferenceType) && !(it as ReferenceType).referenceClass
         } as Set<ReferenceType>
     }
 

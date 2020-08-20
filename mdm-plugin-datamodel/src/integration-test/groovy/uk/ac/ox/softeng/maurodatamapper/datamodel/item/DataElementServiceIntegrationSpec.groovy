@@ -254,6 +254,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataElement copy = dataElementService.copyDataElement(dataModel, copyClass, original, editor, userSecurityPolicyManager)
+        copyClass.addToDataElements(copy)
 
         then:
         checkAndSave(dataModel)
@@ -292,6 +293,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataElement copy = dataElementService.copyDataElement(dataModel, copyClass, original, admin, userSecurityPolicyManager)
+        copyClass.addToDataElements(copy)
 
         then:
         checkAndSave(copy)
@@ -332,6 +334,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataElement copy = dataElementService.copyDataElement(copyModel, copyClass, original, editor, userSecurityPolicyManager)
+        copyClass.addToDataElements(copy)
 
         then:
         checkAndSave(copyModel)
