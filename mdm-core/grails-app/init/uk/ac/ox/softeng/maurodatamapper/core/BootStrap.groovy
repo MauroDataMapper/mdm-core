@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import asset.pipeline.grails.AssetResourceLocator
 import grails.config.Config
 import grails.core.GrailsApplication
 import grails.util.Environment
@@ -49,10 +50,12 @@ class BootStrap {
     SessionService sessionService
     AuthorityService authorityService
 
+    AssetResourceLocator assetResourceLocator
+
     @Autowired
     MessageSource messageSource
 
-    def init = {servletContext ->
+    def init = { servletContext ->
         Utils.outputRuntimeArgs(BootStrap)
         log.debug('Grails Environment: {} (mdm.env property : {})', Environment.current.name, System.getProperty('mdm.env') ?: '')
         if (grailsApplication.config.maurodatamapper.security.public) {
@@ -76,17 +79,7 @@ class BootStrap {
         sessionService.initialiseToContext(servletContext)
         loadApiProperties(tmpDir)
         configureEmailers(grailsApplication.config)
-
-
-        Authority.withNewTransaction {
-            if (!authorityService.defaultAuthorityExists()) {
-                Authority authority = new Authority(label: grailsApplication.config.getProperty('maurodatamapper.authority.name'),
-                                                    url: grailsApplication.config.getProperty('maurodatamapper.authority.url'),
-                                                    createdBy: StandardEmailAddress.ADMIN,
-                                                    readableByEveryone: true)
-                checkAndSave(messageSource, authority)
-            }
-        }
+        loadDefaultAuthority()
 
         environments {
             development {
@@ -111,7 +104,7 @@ class BootStrap {
 
     void loadApiProperties(String path) {
 
-        User bootstrapUser = new BootStrapUser()
+        User bootstrapUser = BootStrapUser.instance
         apiPropertyService.loadDefaultPropertiesIntoDatabase(bootstrapUser)
         apiPropertyService.loadLegacyPropertiesFromDefaultsFileIntoDatabase(path, bootstrapUser)
 
@@ -133,7 +126,7 @@ class BootStrap {
             log.warn('Multiple email plugins found - we\'ll use the first one')
         }
 
-        emailers.every {emailer ->
+        emailers.every { emailer ->
             log.debug('Configuring emailer: {}/{}', emailer.namespace, emailer.name)
             try {
                 return emailer.configure(config)
@@ -144,6 +137,19 @@ class BootStrap {
         }
     }
 
+    void loadDefaultAuthority() {
+        Authority.withNewTransaction {
+            if (!authorityService.defaultAuthorityExists()) {
+                Authority authority = new Authority(label: grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY),
+                                                    url: grailsApplication.config.getProperty(Authority.DEFAULT_URL_CONFIG_PROPERTY),
+                                                    createdBy: StandardEmailAddress.ADMIN,
+                                                    readableByEveryone: true)
+                checkAndSave(messageSource, authority)
+            }
+        }
+    }
+
+    @Singleton
     static class BootStrapUser implements User {
         String firstName = 'Bootstrap'
         String lastName = 'User'

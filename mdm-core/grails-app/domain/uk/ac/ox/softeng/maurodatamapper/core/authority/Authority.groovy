@@ -26,6 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 class Authority implements InformationAware, CreatorAware, SecurableResource {
 
+    public static final String DEFAULT_NAME_CONFIG_PROPERTY = 'maurodatamapper.authority.name'
+    public static final String DEFAULT_URL_CONFIG_PROPERTY = 'maurodatamapper.authority.url'
+
     UUID id
     String url
     Boolean readableByEveryone

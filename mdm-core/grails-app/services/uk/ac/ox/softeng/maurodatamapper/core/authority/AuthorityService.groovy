@@ -47,10 +47,10 @@ class AuthorityService {
     }
 
     Authority getDefaultAuthority() {
-        Authority.findByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name'))
+        Authority.findByLabel(grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY))
     }
 
     boolean defaultAuthorityExists() {
-        Authority.countByLabel(grailsApplication.config.getProperty('maurodatamapper.authority.name')) > 0
+        Authority.countByLabel(grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY)) > 0
     }
 }
