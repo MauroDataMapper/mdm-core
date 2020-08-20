@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
@@ -747,9 +748,9 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     DataModel createAndSaveDataModel(User createdBy, Folder folder, DataModelType type, String label, String description,
-                                     String author, String organisation) {
+                                     String author, String organisation, Authority authority = authorityService.getDefaultAuthority()) {
         DataModel dataModel = new DataModel(createdBy: createdBy.emailAddress, label: label, description: description, author: author,
-                                            organisation: organisation, type: type, folder: folder)
+                                            organisation: organisation, type: type, folder: folder, authority: authority)
 
         // Have to save before adding an edit
         if (dataModel.validate()) {
