@@ -140,7 +140,7 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
     }
 
     SemanticLink createSemanticLink(User createdBy, CatalogueItem source, CatalogueItem target, SemanticLinkType linkType) {
-        new SemanticLink(createdBy: createdBy.emailAddress, linkType: linkType).with {
+        new SemanticLink(createdBy: createdBy.emailAddress, linkType: linkType, unconfirmed: true).with {
             setCatalogueItem(source)
             setTargetCatalogueItem(target)
             it

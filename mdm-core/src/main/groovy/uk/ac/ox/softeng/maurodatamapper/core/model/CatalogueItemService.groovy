@@ -156,7 +156,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
     }
 
     void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetCatalogueItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetCatalogueItem: target, unconfirmed: true)
     }
 
     K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {

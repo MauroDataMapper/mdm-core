@@ -36,7 +36,7 @@ abstract class FacetInterceptor implements MdmInterceptor {
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
 
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
     abstract Class getFacetClass()
 

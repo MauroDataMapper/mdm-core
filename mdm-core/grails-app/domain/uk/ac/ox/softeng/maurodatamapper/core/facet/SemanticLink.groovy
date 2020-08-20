@@ -66,6 +66,7 @@ class SemanticLink implements CatalogueItemAware, CreatorAware {
     static transients = ['targetCatalogueItem', 'catalogueItem']
 
     SemanticLink() {
+        unconfirmed = false
     }
 
     @Override

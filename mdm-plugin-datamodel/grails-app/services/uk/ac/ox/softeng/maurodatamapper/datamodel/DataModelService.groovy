@@ -564,7 +564,8 @@ class DataModelService extends ModelService<DataModel> {
                 copy.addToSemanticLinks(createdBy: copier.emailAddress,
                                         linkType: link.linkType,
                                         targetCatalogueItemId: link.targetCatalogueItemId,
-                                        targetCatalogueItemDomainType: link.targetCatalogueItemDomainType)
+                                        targetCatalogueItemDomainType: link.targetCatalogueItemDomainType,
+                                        unconfirmed: link.unconfirmed == null ? false : link.unconfirmed)
             }
         }
 
@@ -573,7 +574,8 @@ class DataModelService extends ModelService<DataModel> {
                 copy.addToVersionLinks(createdBy: copier.emailAddress,
                                        linkType: link.linkType,
                                        targetModelId: link.targetModelId,
-                                       targetModelDomainType: link.targetModelDomainType)
+                                       targetModelDomainType: link.targetModelDomainType,
+                                       unconfirmed: false)
             }
         }
 

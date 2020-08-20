@@ -375,7 +375,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         checkAndSave(domain)
 
         when:
-        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: target)
+        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: target, unconfirmed: true)
 
         then:
         checkAndSave(domain)
@@ -404,7 +404,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         checkAndSave(domain)
 
         when:
-        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: domain)
+        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: domain, unconfirmed: true)
         check(domain)
 
         then:

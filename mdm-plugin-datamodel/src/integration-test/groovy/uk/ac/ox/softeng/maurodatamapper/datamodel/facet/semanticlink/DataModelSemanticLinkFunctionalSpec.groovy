@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.semanticlink
 
+import io.micronaut.http.HttpStatus
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -71,9 +72,9 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
-                                  folder: folder).save(flush: true)
+                                  folder: folder, authority: testAuthority).save(flush: true)
         targetDataModel = new DataModel(label: 'Functional Test Target DataModel', createdBy: 'functionalTest@test.com',
-                folder: folder).save(flush: true)
+                folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
                                   dataModel: dataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
@@ -154,5 +155,46 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
     @Override
     void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
         // Semantic link only copied for new doc version
+    }
+
+    def 'test confirm semantic link'(){
+        given: 'Create New Data Model'
+        def id = dataModel.id
+
+        when: 'Create Semantic Link'
+        POST(   "dataModels/${id}/" + getFacetResourcePath(),
+                [
+                        targetCatalogueItemId: targetDataModel.id,
+                        targetCatalogueItemDomainType: 'DataModel',
+                        linkType: 'DOES_NOT_REFINE',
+                        unconfirmed: true
+                ],
+                MAP_ARG, true)
+
+        then: 'Check Successful Semantic Link Creation'
+        verifyResponse(HttpStatus.CREATED, response)
+
+
+        when:
+        PUT("dataModels/${id}/finalise", [ : ], MAP_ARG, true )
+        PUT("dataModels/${id}/newModelVersion", [ 'label':  'New DataModel Version'], MAP_ARG, true)
+
+        then:
+        verifyResponse(HttpStatus.CREATED, response)
+
+        when:
+        String id2 = responseBody().get("id")
+
+        GET("dataModels/${id2}/semanticLinks", MAP_ARG, true)
+
+        String semanticLinkId = response.body().items[0].id
+
+        PUT("dataModels/${id}/semanticLinks/${semanticLinkId}/confirm", [ : ], MAP_ARG, true)
+
+        then:
+        verifyResponse(HttpStatus.ACCEPTED, response)
+
+        cleanup:
+        cleanUpData(semanticLinkId)
     }
 }

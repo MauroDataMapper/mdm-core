@@ -124,8 +124,9 @@ class UrlMappings {
                 /*
                 Semantic Links
                  */
-                '/semanticLinks'(resources: 'semanticLink', excludes: DEFAULT_EXCLUDES)
-                '/semanticLinks/$id/confirm'(resources: 'semanticLink', action: 'confirm', excludes: DEFAULT_EXCLUDES)
+                '/semanticLinks'(resources: 'semanticLink', excludes: DEFAULT_EXCLUDES) {
+                    "/confirm"(controller: 'semanticLink', action: 'confirm')
+                }
 
                 /*
                 Reference Files
