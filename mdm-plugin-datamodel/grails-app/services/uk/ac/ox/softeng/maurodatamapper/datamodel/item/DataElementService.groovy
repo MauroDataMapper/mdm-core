@@ -337,7 +337,7 @@ class DataElementService extends ModelItemService<DataElement> {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         DataType dataType = copiedDataModel.findDataTypeByLabel(original.dataType.label)
@@ -364,7 +364,7 @@ class DataElementService extends ModelItemService<DataElement> {
     DataElement copyCatalogueItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
-                                             UserSecurityPolicyManager userSecurityPolicyManager = null,
+                                             UserSecurityPolicyManager userSecurityPolicyManager,
                                              boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {

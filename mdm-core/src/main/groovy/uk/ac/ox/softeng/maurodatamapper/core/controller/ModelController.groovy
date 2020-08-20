@@ -243,8 +243,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        T copy = getModelService().createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions,
-                                                                 [userSecurityPolicyManager: currentUserSecurityPolicyManager])
+        T copy = getModelService().
+            createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager)
 
         if (!validateResource(copy, 'create')) return
 
@@ -272,7 +272,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         try {
             T copy = getModelService().createNewModelVersion(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
-                                                             [userSecurityPolicyManager: currentUserSecurityPolicyManager])
+                                                             currentUserSecurityPolicyManager)
 
             if (!validateResource(copy, 'create')) return
 

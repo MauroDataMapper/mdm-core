@@ -120,7 +120,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
         get(catalogueItemId).removeFromReferenceFiles(referenceFile)
     }
 
-    K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager = null) {
+    K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy.createdBy = copier.emailAddress
         copy.label = original.label
         copy.description = original.description

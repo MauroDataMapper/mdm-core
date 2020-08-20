@@ -232,59 +232,49 @@ class CodeSetService extends ModelService<CodeSet> {
         true
     }
 
-    @Deprecated(forRemoval = true)
-    CodeSet createNewDocumentationVersion(CodeSet codeSet, User user, boolean copyPermissions,
-                                          boolean throwErrors = false) {
-        createNewDocumentationVersion(codeSet, user, copyPermissions, [throwErrors: throwErrors])
-    }
-
     @Override
-    CodeSet createNewDocumentationVersion(CodeSet codeSet, User user, boolean copyPermissions,
+    CodeSet createNewDocumentationVersion(CodeSet codeSet, User user, boolean copyPermissions, UserSecurityPolicyManager userSecurityPolicyManager,
                                           Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(codeSet)) return codeSet
 
         CodeSet newDocVersion = copyCodeSet(codeSet, user, copyPermissions, codeSet.label,
                                             Version.nextMajorVersion(codeSet.documentationVersion),
-                                            additionalArguments.throwErrors as boolean)
+                                            additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setCodeSetIsNewDocumentationVersionOfCodeSet(newDocVersion, codeSet, user)
 
         if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
         newDocVersion
     }
 
-    @Deprecated(forRemoval = true)
-    CodeSet createNewModelVersion(String label, CodeSet codeSet, User user, boolean copyPermissions,
-                                  boolean throwErrors = false) {
-        createNewModelVersion(label, codeSet, user, copyPermissions, [throwErrors: throwErrors])
-    }
-
     @Override
-    CodeSet createNewModelVersion(String label, CodeSet codeSet, User user, boolean copyPermissions,
-                                  Map<String, Object> additionalArguments) {
+    CodeSet createNewModelVersion(String label, CodeSet codeSet, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(codeSet)) return codeSet
 
-        CodeSet newModelVersion = copyCodeSet(codeSet, user, copyPermissions, label, additionalArguments.throwErrors as boolean)
+        CodeSet newModelVersion = copyCodeSet(codeSet, user, copyPermissions, label, additionalArguments.throwErrors as boolean,
+                                              userSecurityPolicyManager)
         setCodeSetIsNewModelVersionOfCodeSet(newModelVersion, codeSet, user)
 
         if (newModelVersion.validate()) save(newModelVersion)
         newModelVersion
     }
 
-    CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label, boolean throwErrors) {
-        copyCodeSet(original, copier, copyPermissions, label, Version.from('1'), throwErrors)
+    CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                        UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyCodeSet(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
     }
 
     CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label,
-                        Version copyVersion, boolean throwErrors) {
+                        Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
                                    finalised: false, deleted: false, documentationVersion: copyVersion,
                                    folder: original.folder, authority: original.authority
         )
 
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label
 
         if (copyPermissions) {

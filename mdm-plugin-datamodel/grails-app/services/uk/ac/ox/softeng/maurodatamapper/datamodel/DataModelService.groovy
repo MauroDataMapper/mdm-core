@@ -399,7 +399,8 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments) {
+    DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions,
+                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
 
         DataModel newDocVersion = copyDataModel(dataModel,
@@ -408,7 +409,7 @@ class DataModelService extends ModelService<DataModel> {
                                                 dataModel.label,
                                                 Version.nextMajorVersion(dataModel.documentationVersion),
                                                 additionalArguments.throwErrors as boolean,
-                                                additionalArguments.userSecurityPolicyManager as UserSecurityPolicyManager,
+                                                userSecurityPolicyManager,
                                                 true)
         setDataModelIsNewDocumentationVersionOfDataModel(newDocVersion, dataModel, user)
         if (additionalArguments.moveDataFlows) {
@@ -421,12 +422,13 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel createNewModelVersion(String label, DataModel dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments) {
+    DataModel createNewModelVersion(String label, DataModel dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
 
         DataModel newModelVersion = copyDataModel(dataModel, user, copyPermissions, label,
                                                   additionalArguments.throwErrors as boolean,
-                                                  additionalArguments.userSecurityPolicyManager as UserSecurityPolicyManager)
+                                                  userSecurityPolicyManager)
         setDataModelIsNewModelVersionOfDataModel(newModelVersion, dataModel, user)
         if (additionalArguments.copyDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel copying of DataFlows')
@@ -442,9 +444,8 @@ class DataModelService extends ModelService<DataModel> {
         copyDataModel(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
     }
 
-    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label,
-                            Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean
-                                copySummaryMetadata = false) {
+    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyVersion, boolean throwErrors,
+                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false) {
 
         DataModel copy = new DataModel(author: original.author,
                                        organisation: original.organisation, modelType: original.modelType,
@@ -515,7 +516,7 @@ class DataModelService extends ModelService<DataModel> {
     DataModel copyCatalogueItemInformation(DataModel original,
                                            DataModel copy,
                                            User copier,
-                                           UserSecurityPolicyManager userSecurityPolicyManager = null,
+                                           UserSecurityPolicyManager userSecurityPolicyManager,
                                            boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {

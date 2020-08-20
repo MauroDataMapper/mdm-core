@@ -235,13 +235,14 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology createNewDocumentationVersion(Terminology terminology, User user, boolean copyPermissions, Map<String, Object> additionalArguments) {
+    Terminology createNewDocumentationVersion(Terminology terminology, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(terminology)) return terminology
 
         Terminology newDocVersion = copyTerminology(terminology, user, copyPermissions, terminology.label,
                                                     Version.nextMajorVersion(terminology.documentationVersion),
-                                                    additionalArguments.throwErrors as boolean)
+                                                    additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setTerminologyIsNewDocumentationVersionOfTerminology(newDocVersion, terminology, user)
 
         if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
@@ -249,30 +250,32 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology createNewModelVersion(String label, Terminology terminology, User user, boolean copyPermissions,
-                                      Map<String, Object> additionalArguments) {
+    Terminology createNewModelVersion(String label, Terminology terminology, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(terminology)) return terminology
 
-        Terminology newModelVersion = copyTerminology(terminology, user, copyPermissions, label, additionalArguments.throwErrors as boolean)
+        Terminology newModelVersion =
+            copyTerminology(terminology, user, copyPermissions, label, additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setTerminologyIsNewModelVersionOfTerminology(newModelVersion, terminology, user)
 
         if (newModelVersion.validate()) newModelVersion.save(flush: true, validate: false)
         newModelVersion
     }
 
-    Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label, boolean throwErrors) {
-        copyTerminology(original, copier, copyPermissions, label, Version.from('1'), throwErrors)
+    Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                                UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTerminology(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
     }
 
     Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label,
-                                Version copyVersion, boolean throwErrors) {
+                                Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         Terminology copy = new Terminology(author: original.author,
                                            organisation: original.organisation,
                                            finalised: false, deleted: false, documentationVersion: copyVersion,
                                            folder: original.folder, authority: original.authority
         )
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label
 
         if (copyPermissions) {

@@ -340,9 +340,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     DataType copyDataType(DataModel copiedDataModel, DataModel originalDataModel = copiedDataModel, DataType original, User copier,
-                          UserSecurityPolicyManager
-                              userSecurityPolicyManager,
-                          boolean copySummaryMetadata = false) {
+                          UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false) {
 
         DataType copy
 
@@ -383,7 +381,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     DataType copyCatalogueItemInformation(DataType original,
                                           DataType copy,
                                           User copier,
-                                          UserSecurityPolicyManager userSecurityPolicyManager = null,
+                                          UserSecurityPolicyManager userSecurityPolicyManager,
                                           boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {

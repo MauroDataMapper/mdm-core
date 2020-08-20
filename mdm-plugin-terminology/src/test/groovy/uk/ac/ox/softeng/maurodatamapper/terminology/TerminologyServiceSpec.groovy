@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
@@ -45,6 +46,8 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
     UUID id
     Terminology complexTerminology
     Terminology simpleTerminology
+
+    UserSecurityPolicyManager userSecurityPolicyManager
 
     def setup() {
         log.debug('Setting up TerminologyServiceSpec unit')
@@ -168,11 +171,11 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new doc version on draft model is not allowed'
         Terminology terminology = service.get(id)
-        def result = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
+        def result = service.createNewDocumentationVersion(terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.terminology.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.not.finalised.message' }
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -180,7 +183,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         Terminology terminology = service.get(id)
         service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
-        def result = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
+        def result = service.createNewDocumentationVersion(terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         checkAndSave(result)
@@ -214,17 +217,17 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any {it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
+        newDocVersion.versionLinks.any { it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        terminology.terms.every {odt ->
+        terminology.terms.every { odt ->
             newDocVersion.terms.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        terminology.termRelationshipTypes.every {odc ->
+        terminology.termRelationshipTypes.every { odc ->
             newDocVersion.termRelationshipTypes.any {
                 it.label == odc.label &&
                 idcs == odcs &&
@@ -239,7 +242,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         Terminology terminology = service.get(id)
         service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
-        def result = service.createNewDocumentationVersion(terminology, editor, true, [throwErrors: true])
+        def result = service.createNewDocumentationVersion(terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         checkAndSave(result)
@@ -273,17 +276,17 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any {it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
+        newDocVersion.versionLinks.any { it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        terminology.terms.every {odt ->
+        terminology.terms.every { odt ->
             newDocVersion.terms.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        terminology.termRelationshipTypes.every {odc ->
+        terminology.termRelationshipTypes.every { odc ->
             newDocVersion.termRelationshipTypes.any {
                 it.label == odc.label &&
                 idcs == odcs &&
@@ -298,17 +301,17 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         when: 'creating new doc version'
         Terminology terminology = service.get(id)
         service.finaliseModel(terminology, editor)
-        def newDocVersion = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
+        def newDocVersion = service.createNewDocumentationVersion(terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old terminology'
-        def result = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
+        def result = service.createNewDocumentationVersion(terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.terminology.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.superseded.message' }
     }
 
     @PendingFeature(reason = 'Terminology permission copying')
@@ -317,17 +320,17 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         when: 'creating new doc version'
         Terminology terminology = service.get(id)
         service.finaliseModel(terminology, editor)
-        def newDocVersion = service.createNewDocumentationVersion(terminology, editor, true, [throwErrors: true])
+        def newDocVersion = service.createNewDocumentationVersion(terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old terminology'
-        def result = service.createNewDocumentationVersion(terminology, editor, true, [throwErrors: true])
+        def result = service.createNewDocumentationVersion(terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.terminology.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.superseded.message' }
     }
 
     void 'DMSC06 : test creating a new model version on draft model'() {
@@ -335,11 +338,12 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new version on draft model is not allowed'
         Terminology terminology = service.get(id)
-        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, [throwErrors: true])
+        def result =
+            service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.terminology.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.not.finalised.message' }
     }
 
     void 'DMSC07 : test creating a new model version on finalised model'() {
@@ -348,7 +352,8 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         Terminology terminology = service.get(id)
         service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
-        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, [throwErrors: true])
+        def result =
+            service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.instanceOf(Terminology)
@@ -384,17 +389,17 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any {it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+        newVersion.versionLinks.any { it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
 
         and:
-        terminology.terms.every {odt ->
+        terminology.terms.every { odt ->
             newVersion.terms.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        terminology.termRelationshipTypes.every {odc ->
+        terminology.termRelationshipTypes.every { odc ->
             newVersion.termRelationshipTypes.any {
                 it.label == odc.label &&
                 idcs == odcs &&
@@ -410,7 +415,8 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         Terminology terminology = service.get(id)
         service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
-        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, [throwErrors: true])
+        def result =
+            service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.instanceOf(Terminology)
@@ -445,17 +451,17 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         newVersion.edits.size() == 1
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any {it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+        newVersion.versionLinks.any { it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
 
         and:
-        terminology.terms.every {odt ->
+        terminology.terms.every { odt ->
             newDocVersion.terms.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        terminology.termRelationshipTypes.every {odc ->
+        terminology.termRelationshipTypes.every { odc ->
             newDocVersion.termRelationshipTypes.any {
                 it.label == odc.label &&
                 idcs == odcs &&
@@ -469,17 +475,18 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         when: 'creating new version'
         Terminology terminology = service.get(id)
         service.finaliseModel(terminology, editor)
-        def newVersion = service.createNewDocumentationVersion(terminology, editor, false, [throwErrors: true])
+        def newVersion = service.createNewDocumentationVersion(terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old terminology'
-        def result = service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, [throwErrors: true])
+        def result =
+            service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.terminology.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.superseded.message' }
     }
 
     void 'DMSV01 : test validation on valid model'() {

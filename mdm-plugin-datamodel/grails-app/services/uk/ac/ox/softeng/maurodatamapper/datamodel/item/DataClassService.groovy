@@ -517,7 +517,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
         copy.dataClasses = []
         original.dataClasses.each {child ->
-            copy.addToDataClasses(Class(copiedDataModel, child, copier, userSecurityPolicyManager))
+            copy.addToDataClasses(copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager))
         }
         copy.dataElements = []
         original.dataElements.each {element ->
@@ -532,7 +532,7 @@ class DataClassService extends ModelItemService<DataClass> {
     DataClass copyCatalogueItemInformation(DataClass original,
                                            DataClass copy,
                                            User copier,
-                                           UserSecurityPolicyManager userSecurityPolicyManager = null,
+                                           UserSecurityPolicyManager userSecurityPolicyManager,
                                            boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
