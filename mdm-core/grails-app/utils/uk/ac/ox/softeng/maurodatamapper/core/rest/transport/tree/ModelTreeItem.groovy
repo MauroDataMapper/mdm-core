@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.util.Version
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 
 /**
  * @since 07/01/2020
@@ -32,6 +32,8 @@ class ModelTreeItem extends TreeItem {
     Version documentationVersion
     String modelType
     UUID containerId
+    Version modelVersion
+    String branchName
 
     ModelTreeItem(Model model, String containerPropertyName) {
         this(model, containerPropertyName, model.hasChildren(), model.versionLinks.any {
@@ -52,6 +54,8 @@ class ModelTreeItem extends TreeItem {
         superseded = isSuperseded
         documentationVersion = model.documentationVersion
         modelType = model.modelType
+        modelVersion = model.modelVersion
+        branchName = model.branchName
     }
 
     @Override

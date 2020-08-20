@@ -252,6 +252,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
     "comment",
     "editDescription"
   ],
+  "branchName":"main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",

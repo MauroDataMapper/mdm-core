@@ -305,7 +305,8 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "show",
     "comment",
     "editDescription"
-  ]
+  ],
+  "branchName":"main"
 }'''
     }
 
@@ -362,6 +363,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "show",
     "comment"
   ],
+  "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
@@ -433,6 +435,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         "comment",
         "editDescription"
       ],
+      "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",
@@ -508,6 +511,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     "softDelete",
     "delete"
   ],
+  "branchName": "main",
   "authority": {
     "id": "${json-unit.matches:id}",
     "url": "http://localhost",

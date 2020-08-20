@@ -25,6 +25,8 @@ json {
         documentationVersion mti.documentationVersion.toString()
         folder mti.containerId
         type mti.modelType
+        if (mti.modelVersion) modelVersion mti.modelVersion.toString()
+        branchName mti.branchName
     } else if (treeItem instanceof ModelItemTreeItem) {
         ModelItemTreeItem miti = (ModelItemTreeItem) treeItem
         modelId miti.rootId

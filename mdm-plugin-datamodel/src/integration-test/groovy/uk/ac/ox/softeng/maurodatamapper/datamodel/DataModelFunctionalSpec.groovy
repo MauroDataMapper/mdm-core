@@ -128,6 +128,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         '''{
   "domainType": "DataModel",
   "availableActions": ['delete', 'show', 'update'],
+  "branchName":"main",
   "finalised": false,
   "label": "Functional Test Model",
   "type": "Data Standard",
@@ -782,7 +783,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each {n ->
+        (1..4).each { n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()
@@ -1018,6 +1019,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "domainType": "DataModel",
   "documentationVersion": "1.0.0",
   "availableActions": ["delete","show","update"],
+  "branchName":"main",
   "finalised": false,
   "authority": {
       "id": "${json-unit.matches:id}",
@@ -1073,6 +1075,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "show",
     "update"
   ],
+  "branchName":"main",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "classifiers": [
     {
