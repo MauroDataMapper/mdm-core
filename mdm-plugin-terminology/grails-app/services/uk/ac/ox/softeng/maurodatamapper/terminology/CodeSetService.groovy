@@ -453,7 +453,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<UUID> findAllModelIdsWithChildren(List<CodeSet> models) {
-        models.findAll {it.hasChildren()}.collect {it.id}
+        models.collect { it.id }.findAll { termService.countByCodeSetId(it) }
     }
 
     @Override

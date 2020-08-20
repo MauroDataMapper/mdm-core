@@ -68,8 +68,6 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
     static mapping = {
     }
 
-    abstract Boolean hasChildren()
-
     @Override
     int compareTo(D that) {
         int res = 0

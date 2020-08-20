@@ -194,50 +194,57 @@ class TreeItemService {
     def <K extends Container> List<ContainerTreeItem> buildContainerTreeWithAllDocumentationSupersededModelsByType(
         Class<K> containerClass, UserSecurityPolicyManager userSecurityPolicyManager, String modelDomainType) {
 
-        ModelService service = modelServices.find {it.handles(modelDomainType)}
+        ModelService service = modelServices.find { it.handles(modelDomainType) }
         if (!service) throw new ApiBadRequestException('AS01', "ModelService retrieval for model [${modelDomainType}] with no supporting service")
         List<Model> models = service.findAllDocumentationSupersededModels([:])
-        buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager, getSupersededModelTreeItemsForModels(containerClass, models),
+        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithChildren(models)
+        buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager,
+                                            getSupersededModelTreeItemsForModels(containerClass, models, modelIdsWithChildren),
                                             true)
     }
 
     def <K extends Container> List<ContainerTreeItem> buildContainerTreeWithAllModelSupersededModelsByType(
         Class<K> containerClass, UserSecurityPolicyManager userSecurityPolicyManager, String modelDomainType) {
-        ModelService service = modelServices.find {it.handles(modelDomainType)}
+        ModelService service = modelServices.find { it.handles(modelDomainType) }
         if (!service) throw new ApiBadRequestException('AS01', "ModelService retrieval for model [${modelDomainType}] with no supporting service")
         List<Model> models = service.findAllModelSupersededModels([:])
-        buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager, getSupersededModelTreeItemsForModels(containerClass, models),
+        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithChildren(models)
+        buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager,
+                                            getSupersededModelTreeItemsForModels(containerClass, models, modelIdsWithChildren),
                                             true)
     }
 
     def <K extends Container> List<ContainerTreeItem> buildContainerTreeWithAllDeletedModelsByType(
         Class<K> containerClass, UserSecurityPolicyManager userSecurityPolicyManager, String modelDomainType) {
-        ModelService service = modelServices.find {it.handles(modelDomainType)}
+        ModelService service = modelServices.find { it.handles(modelDomainType) }
         if (!service) throw new ApiBadRequestException('AS01', "ModelService retrieval for model [${modelDomainType}] with no supporting service")
         List<Model> models = service.findAllDeletedModels([:])
         List<UUID> supersededModels = service.findAllSupersededModelIds(models)
-        List<ModelTreeItem> modelTreeItems = getModelTreeItemsForModels(containerClass, models, supersededModels)
+        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithChildren(models)
+        List<ModelTreeItem> modelTreeItems = getModelTreeItemsForModels(containerClass, models, modelIdsWithChildren, supersededModels)
         buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager, modelTreeItems, true)
     }
 
     private <K extends Container> List<ModelTreeItem> getModelTreeItemsForModels(Class<K> containerClass, List<Model> models,
+                                                                                 List<UUID> modelIdsWithChildren,
                                                                                  List<UUID> supersededIds = []) {
-        ContainerService service = containerServices.find {it.handles(containerClass)}
+        ContainerService service = containerServices.find { it.handles(containerClass) }
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
-        models.collect {new ModelTreeItem(it, service.containerPropertyNameInModel, it.hasChildren(), supersededIds.contains(it.id))}
+        models.collect { new ModelTreeItem(it, service.containerPropertyNameInModel, it.id in modelIdsWithChildren, supersededIds.contains(it.id)) }
     }
 
-    private <K extends Container> List<ModelTreeItem> getSupersededModelTreeItemsForModels(Class<K> containerClass, List<Model> models) {
-        ContainerService service = containerServices.find {it.handles(containerClass)}
+    private <K extends Container> List<ModelTreeItem> getSupersededModelTreeItemsForModels(Class<K> containerClass, List<Model> models,
+                                                                                           List<UUID> modelIdsWithChildren) {
+        ContainerService service = containerServices.find { it.handles(containerClass) }
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
-        models.collect {new ModelTreeItem(it, service.containerPropertyNameInModel, it.hasChildren(), true)}
+        models.collect { new ModelTreeItem(it, service.containerPropertyNameInModel, it.id in modelIdsWithChildren, true) }
     }
 
     private <K extends Container> List<ContainerTreeItem> getAllReadableContainerTreeItems(Class<K> containerClass,
                                                                                            UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug("Getting all readable containers of type {}", containerClass.simpleName)
         List<UUID> readableContainerIds = userSecurityPolicyManager.listReadableSecuredResourceIds(containerClass)
-        ContainerService service = containerServices.find {it.handles(containerClass)}
+        ContainerService service = containerServices.find { it.handles(containerClass) }
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         List<K> readableContainers = service.getAll(readableContainerIds)
         readableContainers.findAll().collect {new ContainerTreeItem(it as Container)}

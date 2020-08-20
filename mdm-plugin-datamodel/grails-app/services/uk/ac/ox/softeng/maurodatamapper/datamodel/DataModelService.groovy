@@ -531,7 +531,7 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     boolean hasTreeTypeModelItems(DataModel dataModel) {
-        dataModel.hasChildren()
+       dataClassService.countByDataModelId(dataModel.id)
     }
 
     @Override
@@ -633,7 +633,7 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     List<UUID> findAllModelIdsWithChildren(List<DataModel> models) {
-        models.findAll {it.hasChildren()}.collect {it.id}
+        models.collect { it.id }.findAll { dataClassService.countByDataModelId(it) }
     }
 
     @Override

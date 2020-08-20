@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -125,6 +124,10 @@ class TermService extends ModelItemService<Term> {
         log.debug('{} terms batch saved, took {}', terms.size(), Utils.timeTaken(start))
     }
 
+    Long countByTerminologyId(UUID terminologyId) {
+        Term.byTerminologyId(terminologyId).count()
+    }
+
     List<Term> findAllByTerminologyId(UUID terminologyId, Map paginate = [:]) {
         Term.withFilter(Term.byTerminologyId(terminologyId), paginate).list(paginate)
     }
@@ -135,6 +138,10 @@ class TermService extends ModelItemService<Term> {
 
     Term findByTerminologyIdAndId(UUID terminologyId, Serializable id) {
         Term.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).find()
+    }
+
+    Long countByCodeSetId(UUID codeSetId) {
+        Term.byCodeSetId(codeSetId).count()
     }
 
     Term findByCodeSetIdAndId(UUID codeSetId, Serializable id) {

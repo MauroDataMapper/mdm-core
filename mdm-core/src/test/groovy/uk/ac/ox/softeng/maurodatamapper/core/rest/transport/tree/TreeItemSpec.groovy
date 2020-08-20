@@ -52,7 +52,7 @@ class TreeItemSpec extends BaseUnitSpec {
     void 'test no children BasicModel tree'() {
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder')
+        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', false, false)
 
         then:
         basicModel.id
@@ -71,7 +71,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder')
+        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false)
 
         then:
         basicModel.id
@@ -136,7 +136,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder')
+        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false)
 
         then:
         basicModel.id
@@ -244,7 +244,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder')
+        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false)
 
         then:
         basicModel.id

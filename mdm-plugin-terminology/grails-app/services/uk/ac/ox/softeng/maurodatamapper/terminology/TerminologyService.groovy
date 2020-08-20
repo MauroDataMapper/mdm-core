@@ -492,7 +492,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<UUID> findAllModelIdsWithChildren(List<Terminology> models) {
-        models.findAll {it.hasChildren()}.collect {it.id}
+        models.collect { it.id }.findAll { termService.countByTerminologyId(it) }
     }
 
     @Override

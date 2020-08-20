@@ -17,9 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+
+import org.grails.datastore.gorm.GormEntity
 
 /**
  * @since 07/01/2020
@@ -35,19 +36,12 @@ class ModelTreeItem extends TreeItem {
     Version modelVersion
     String branchName
 
-    ModelTreeItem(Model model, String containerPropertyName) {
-        this(model, containerPropertyName, model.hasChildren(), model.versionLinks.any {
-            it.linkType == VersionLinkType.SUPERSEDED_BY_DOCUMENTATION ||
-            it.linkType == VersionLinkType.SUPERSEDED_BY_MODEL
-        })
-    }
-
     ModelTreeItem(Model model, String containerPropertyName, Boolean childrenExist, Boolean isSuperseded) {
-        this(model, model."$containerPropertyName".id, childrenExist, isSuperseded)
+        this(model, model."$containerPropertyName".id as UUID, childrenExist, isSuperseded)
     }
 
     ModelTreeItem(Model model, UUID containerId, Boolean childrenExist, Boolean isSuperseded) {
-        super(model, model.id, model.label, model.domainType, childrenExist)
+        super(model as GormEntity, model.id, model.label, model.domainType, childrenExist)
         this.containerId = containerId
         deleted = model.deleted
         finalised = model.finalised

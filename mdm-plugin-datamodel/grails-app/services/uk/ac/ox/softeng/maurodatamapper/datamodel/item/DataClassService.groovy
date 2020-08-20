@@ -345,6 +345,10 @@ class DataClassService extends ModelItemService<DataClass> {
         content
     }
 
+    Long countByDataModelId(UUID dataModelId) {
+        DataClass.byDataModelId(dataModelId).count()
+    }
+
     def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
         DataClass.withFilter(DataClass.byDataModelId(dataModelId), paginate).list(paginate)
     }
