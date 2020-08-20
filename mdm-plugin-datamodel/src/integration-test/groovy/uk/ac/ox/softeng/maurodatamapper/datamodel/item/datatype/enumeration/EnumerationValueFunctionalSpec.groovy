@@ -158,7 +158,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
     }
 
     @Override
-    void verifyR2IndexResponse(String id) {
+    void verifyR3IndexResponse(String id) {
         verifyResponse(OK, response)
         assert response.body().count == 2
         assert response.body().items.size() == 2

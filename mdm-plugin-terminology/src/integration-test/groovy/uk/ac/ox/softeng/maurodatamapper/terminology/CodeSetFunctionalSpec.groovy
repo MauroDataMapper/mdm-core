@@ -147,6 +147,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "type": "CodeSet",
   "documentationVersion": "1.0.0",
+  "branchName": "main",
   "finalised": false,
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,

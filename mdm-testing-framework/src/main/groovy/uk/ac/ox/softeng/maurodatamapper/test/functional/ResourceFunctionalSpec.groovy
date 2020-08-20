@@ -134,7 +134,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         assert response.body() == [count: 0, items: []]
     }
 
-    void verifyR2IndexResponse(String expectedId) {
+    void verifyR3IndexResponse(String expectedId) {
         verifyResponse(HttpStatus.OK, response)
         assert response.body().count == 1
         assert response.body().items.size() == 1
@@ -227,7 +227,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         GET('')
 
         then: 'We now list 1 folder due to public access'
-        verifyR2IndexResponse(id)
+        verifyR3IndexResponse(id)
 
         cleanup:
         DELETE(getDeleteEndpoint(id))

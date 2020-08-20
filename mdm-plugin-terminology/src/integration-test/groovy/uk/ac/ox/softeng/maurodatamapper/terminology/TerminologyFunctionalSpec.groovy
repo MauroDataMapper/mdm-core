@@ -138,6 +138,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
   "label": "Functional Test Model",
   "availableActions": ["delete","show","update"],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "branchName": "main",
   "type": "Terminology",
   "documentationVersion": "1.0.0",
   "finalised": false,
