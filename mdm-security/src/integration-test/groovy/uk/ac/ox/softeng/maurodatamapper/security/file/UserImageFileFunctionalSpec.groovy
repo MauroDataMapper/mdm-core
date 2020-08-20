@@ -1,0 +1,212 @@
+package uk.ac.ox.softeng.maurodatamapper.security.file
+
+import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
+import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
+import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
+
+import grails.gorm.transactions.Rollback
+import grails.gorm.transactions.Transactional
+import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
+import grails.util.BuildSettings
+import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpStatus
+import org.spockframework.util.Assert
+import spock.lang.Shared
+
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+
+import static io.micronaut.http.HttpStatus.OK
+
+@Integration
+@Slf4j
+class UserImageFileFunctionalSpec extends BaseFunctionalSpec implements SecurityUsers {
+
+    @Shared
+    UUID userId
+
+    @Shared
+    Path resourcesPath
+
+    @Override
+    String getResourcePath() {
+        "catalogueUsers/${userId}/image"
+    }
+
+    @OnceBefore
+    void setupResourcesPath() {
+        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources').toAbsolutePath()
+        assert Files.exists(resourcesPath.resolve('image_data_file.txt'))
+    }
+
+    @Rollback
+    @OnceBefore
+    def checkResourceCount() {
+        log.debug('Check resource count is {}', getExpectedInitialResourceCount())
+        sessionFactory.currentSession.flush()
+        if (UserImageFile.count() != getExpectedInitialResourceCount()) {
+            log.error('{} {} resources left over from previous test', [UserImageFile.count(), UserImageFile.simpleName].toArray())
+            assert UserImageFile.count() == getExpectedInitialResourceCount()
+        }
+    }
+
+    @OnceBefore
+    @Transactional
+    def checkAndSetupData() {
+        log.debug('Check and setup test data')
+        sessionFactory.currentSession.flush()
+        assert CatalogueUser.count() == 2
+        assert UserGroup.count() == 1
+        implementSecurityUsers('functionalTest')
+        assert CatalogueUser.count() == 9
+        sessionFactory.currentSession.flush()
+        userId = CatalogueUser.findByEmailAddress(UnloggedUser.UNLOGGED_EMAIL_ADDRESS).id
+        assert userId
+    }
+
+    @Transactional
+    def cleanupSpec() {
+        cleanUpResources(UserGroup)
+        CatalogueUser.list().findAll { it.emailAddress != UnloggedUser.instance.emailAddress }.each { it.delete(flush: true) }
+        if (CatalogueUser.count() != 1) {
+            Assert.fail("Resource Class ${CatalogueUser.simpleName} has not been emptied")
+        }
+    }
+
+    void createNewItem(Map model) {
+        POST('', model)
+        verifyResponse(HttpStatus.CREATED, response)
+    }
+
+    Map getValidJson() {
+        [
+            image: Files.readString(resourcesPath.resolve('image_data_file.txt')),
+            type : 'image/png'
+        ]
+    }
+
+    Map getInvalidJson() {
+        [
+            image: null,
+            type : 'image/png'
+        ]
+    }
+
+    Map getValidUpdateJson() {
+        getValidJson()
+    }
+
+    int getExpectedInitialResourceCount() {
+        0
+    }
+
+    void 'R1 : Test the show action correctly returns the no profile image if none has been saved'() {
+
+        when: 'When the show action is called to retrieve a resource'
+        GET('')
+
+        then: 'The response is correct'
+        verifyResponse OK, response
+        response.contentLength == 4297
+        response.header('Content-Disposition') == 'attachment;filename="no_profile_image.png"'
+        response.header('Content-Type') == 'image/png;charset=utf-8'
+    }
+
+    @Transactional
+    void 'R2 : Test the save action correctly persists an instance'() {
+        when: 'The save action is executed with no content'
+        POST('', [:])
+
+        then: 'The response is correct'
+        verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
+        response.body().total >= 1
+        response.body().errors.size() == response.body().total
+
+        when: 'The save action is executed with invalid data'
+        POST('', invalidJson)
+
+        then: 'The response is correct'
+        verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
+        response.body().total >= 1
+        response.body().errors.size() == response.body().total
+
+        when: 'The save action is executed with valid data'
+        createNewItem(validJson)
+
+        then: 'The response is correct'
+        responseBody().id
+        responseBody().domainType == 'UserImageFile'
+        responseBody().lastUpdated
+        responseBody().fileSize == 17510
+        responseBody().fileType == 'image/png'
+        responseBody().fileName == "${userId}-profile".toString()
+        responseBody().userId == userId.toString()
+        !responseBody().fileContents
+
+        cleanup:
+        DELETE('')
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'R3 : Test the update action correctly updates an instance'() {
+        given: 'The save action is executed with valid data'
+        createNewItem(validJson)
+
+        when: 'The update action is called with invalid data'
+        PUT('', invalidJson)
+
+        then: 'The response is unprocessable entity'
+        verifyResponse(HttpStatus.UNPROCESSABLE_ENTITY, response)
+
+        when: 'The update action is called with valid data'
+        PUT('', validJson)
+
+        then: 'The response is correct'
+        responseBody().id
+        responseBody().domainType == 'UserImageFile'
+        responseBody().lastUpdated
+        responseBody().fileSize == 17510
+        responseBody().fileType == 'image/png'
+        responseBody().fileName == "${userId}-profile".toString()
+        responseBody().userId == userId.toString()
+        !responseBody().fileContents
+
+        cleanup:
+        DELETE('')
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'R4 : Test the show action correctly a saved image'() {
+        given: 'The save action is executed with valid data'
+        createNewItem(validJson)
+
+        when: 'When the show action is called to retrieve a resource'
+        GET('')
+
+        then: 'The response is correct'
+        verifyResponse OK, response
+        response.contentLength == 17510
+        response.header('Content-Disposition') == "attachment;filename=\"${userId}-profile\"".toString()
+        response.header('Content-Type') == 'image/png;charset=utf-8'
+
+        cleanup:
+        DELETE('')
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'R5 : Test the delete action correctly deletes an instance'() {
+        given: 'The save action is executed with valid data'
+        createNewItem(validJson)
+
+        when: 'When the delete action is executed on an existing instance'
+        DELETE('')
+
+        then: 'The response is correct'
+        response.status == HttpStatus.NO_CONTENT
+    }
+}

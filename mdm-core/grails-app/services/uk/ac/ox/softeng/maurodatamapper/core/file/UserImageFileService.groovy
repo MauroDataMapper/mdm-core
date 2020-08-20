@@ -21,9 +21,11 @@ package uk.ac.ox.softeng.maurodatamapper.core.file
 import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFileService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 
 import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.Resource
 
 import javax.transaction.Transactional
@@ -33,6 +35,9 @@ import javax.transaction.Transactional
 class UserImageFileService implements CatalogueFileService<UserImageFile> {
 
     AssetResourceLocator assetResourceLocator
+
+    @Autowired(required = false)
+    UserService userService
 
     UserImageFile get(Serializable id) {
         UserImageFile.get(id)
@@ -66,8 +71,8 @@ class UserImageFileService implements CatalogueFileService<UserImageFile> {
      * @return
      */
     List<UserImageFile> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
-        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(UserImageFile)
-        ids ? UserImageFile.findAllByIdInList(ids, pagination) : []
+        if (userSecurityPolicyManager.isApplicationAdministrator()) return UserImageFile.list(pagination)
+        [findByUserId(userSecurityPolicyManager.user.id)]
     }
 
     @Override
@@ -89,8 +94,23 @@ class UserImageFileService implements CatalogueFileService<UserImageFile> {
         Resource resource = assetResourceLocator.findAssetForURI(UserImageFile.NO_PROFILE_IMAGE_FILE_NAME)
 
         if (resource) {
-            return createNewFile(UserImageFile.NO_PROFILE_IMAGE_FILE_NAME, resource.inputStream.bytes, 'image/jpeg', user)
+            return createNewFile(UserImageFile.NO_PROFILE_IMAGE_FILE_NAME, resource.inputStream.bytes, 'image/png', user)
         }
         null
+    }
+
+    UserImageFile addCreatedEditToUser(User creator, UserImageFile domain, UUID userId) {
+        if (!userService) return domain
+        userService.addImageCreatedEditToUser creator, domain, userId
+    }
+
+    UserImageFile addUpdatedEditToUser(User editor, UserImageFile domain, UUID userId, List<String> dirtyPropertyNames) {
+        if (!userService) return domain
+        userService.addImageUpdatedEditToUser editor, domain, userId, dirtyPropertyNames
+    }
+
+    UserImageFile addDeletedEditToUser(User deleter, UserImageFile domain, UUID userId) {
+        if (!userService) return domain
+        userService.addImageDeletedEditToUser deleter, domain, userId
     }
 }

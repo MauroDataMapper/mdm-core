@@ -78,16 +78,8 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends CatalogueItemFac
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "fileSize": 6,
     "fileType": "text/plain",
-    "fileName": "test3.txt",
-    "fileContents": [
-        104,
-        101,
-        108,
-        108,
-        111,
-        10
-    ]
-}'''
+    "fileName": "test3.txt"
+    }'''
     }
 
     @Override

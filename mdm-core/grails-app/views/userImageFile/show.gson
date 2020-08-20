@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
+
+model {
+    UserImageFile userImageFile
+}
+
+json tmpl.userImageFile(userImageFile)

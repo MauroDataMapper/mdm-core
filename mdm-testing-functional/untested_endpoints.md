@@ -50,8 +50,6 @@ Controller: groupRole
  |   GET    | /api/admin/groupRoles/${id}  | Action: show
  |   GET    | /api/${securableResourceDomainType}/${securableResourceId}/groupRoles  | Action: listGroupRolesAvailableToSecurableResource
 
-
-
 Controller: securableResourceGroupRole
  |   POST   | /api/userGroups/${userGroupId}/securableResourceGroupRoles  | Action: save
  |   GET    | /api/userGroups/${userGroupId}/securableResourceGroupRoles  | Action: index
@@ -94,8 +92,4 @@ Controller: userGroup
 
 Controller: userImageFile
  |   GET    | /api/userImageFiles/${id}  | Action: show
- |  DELETE  | /api/catalogueUsers/${catalogueUserId}/image  | Action: delete
- |   PUT    | /api/catalogueUsers/${catalogueUserId}/image  | Action: update
- |   GET    | /api/catalogueUsers/${catalogueUserId}/image  | Action: show
- |   POST   | /api/catalogueUsers/${catalogueUserId}/image  | Action: save
 ```

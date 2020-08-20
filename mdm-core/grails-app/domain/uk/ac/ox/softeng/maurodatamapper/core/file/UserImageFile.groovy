@@ -32,7 +32,7 @@ import java.util.regex.Pattern
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class UserImageFile implements CatalogueFile {
 
-    public static final String NO_PROFILE_IMAGE_FILE_NAME = 'no_profile_image'
+    public static final String NO_PROFILE_IMAGE_FILE_NAME = 'no_profile_image.png'
     private static final Pattern PRECUSOR = ~/^data:image\/[^;]*;base64,?/
 
     UUID id
@@ -57,6 +57,10 @@ class UserImageFile implements CatalogueFile {
 
     void setImage(String image) {
         fileContents = image?.replaceFirst(PRECUSOR, '')?.decodeBase64()
+    }
+
+    void setImage(byte[] image) {
+        fileContents = image
     }
 
     void setType(String type) {

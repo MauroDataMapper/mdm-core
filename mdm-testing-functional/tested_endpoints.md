@@ -321,6 +321,12 @@ Controller: userGroup
  |  DELETE  | /api/${containerDomainType}/${containerId}/userGroups/${userGroupId}/catalogueUsers/${catalogueUserId}  | Action: alterMembers
  |   PUT    | /api/${containerDomainType}/${containerId}/userGroups/${userGroupId}/catalogueUsers/${catalogueUserId}  | Action: alterMembers
 
+Controller: userImageFile
+ |  DELETE  | /api/catalogueUsers/${catalogueUserId}/image  | Action: delete
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/image  | Action: update
+ |   GET    | /api/catalogueUsers/${catalogueUserId}/image  | Action: show
+ |   POST   | /api/catalogueUsers/${catalogueUserId}/image  | Action: save
+
 Controller: versionLink
  |   POST   | /api/${modelDomainType}/${modelId}/versionLinks  | Action: save
  |   GET    | /api/${modelDomainType}/${modelId}/versionLinks  | Action: index

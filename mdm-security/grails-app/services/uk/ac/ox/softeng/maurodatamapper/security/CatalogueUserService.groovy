@@ -17,8 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
+import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.UserProfilePicture
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
@@ -28,7 +29,7 @@ import java.security.NoSuchAlgorithmException
 import java.time.OffsetDateTime
 
 @Transactional
-class CatalogueUserService {
+class CatalogueUserService implements UserService {
 
     UserImageFileService userImageFileService
 
@@ -255,5 +256,28 @@ class CatalogueUserService {
             user.save(validate: false, flush: true)
         }
         user
+    }
+
+    @Override
+    UserImageFile addImageCreatedEditToUser(User creator, UserImageFile domain, UUID userId) {
+        CatalogueUser user = get(userId)
+        user.addToEditsTransactionally creator, "[$domain.editLabel] added to component [${user.editLabel}]"
+
+
+        domain
+    }
+
+    @Override
+    UserImageFile addImageUpdatedEditToUser(User editor, UserImageFile domain, UUID userId, List<String> dirtyPropertyNames) {
+        CatalogueUser user = get(userId)
+        user.addToEditsTransactionally editor, domain.editLabel, dirtyPropertyNames
+        domain
+    }
+
+    @Override
+    UserImageFile addImageDeletedEditToUser(User deleter, UserImageFile domain, UUID userId) {
+        CatalogueUser user = get(userId)
+        user.addToEditsTransactionally deleter, "[$domain.editLabel] removed from component [${user.editLabel}]"
+        domain
     }
 }

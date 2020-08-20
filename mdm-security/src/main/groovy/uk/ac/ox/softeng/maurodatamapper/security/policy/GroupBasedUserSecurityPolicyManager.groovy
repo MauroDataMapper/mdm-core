@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.policy
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -184,6 +185,11 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
             return userCanReadSecuredResourceId(resourceClass, id)
         }
+        // Allow users to read any user image files
+        if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass)) {
+            return true
+        }
         return userCanReadSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
     }
 
@@ -193,10 +199,18 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
             return userCanCreateSecuredResourceId(resourceClass, id)
         }
+        // Allow reviewers to create annotations on a model if they have reviewer status
         if (Utils.parentClassIsAssignableFromChild(Annotation, resourceClass) &&
             Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass)) {
             return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, REVIEWER_ROLE_NAME)
         }
+        // Allow users to create their own user image file
+        if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass) &&
+            owningSecureResourceId == getUser().id) {
+            return true
+        }
+
         return userCanCreateSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
     }
 
@@ -206,6 +220,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
             return userCanEditSecuredResourceId(resourceClass, id)
         }
+        // Allow users to edit their own user image file
+        if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass) &&
+            owningSecureResourceId == getUser().id) {
+            return true
+        }
         return userCanEditSecuredResourceId(owningSecureResourceClass, owningSecureResourceId)
     }
 
@@ -214,6 +234,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                                     Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
             return userCanDeleteSecuredResourceId(resourceClass, id, false)
+        }
+        // Allow users to create their own user image file
+        if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass) &&
+            owningSecureResourceId == getUser().id) {
+            return true
         }
         return userCanDeleteSecuredResourceId(owningSecureResourceClass, owningSecureResourceId, false)
     }

@@ -87,4 +87,23 @@ class UserImageFileController extends EditLoggingController<UserImageFile> {
         }
         userImageFile
     }
+
+    @Override
+    protected UserImageFile saveResource(UserImageFile resource) {
+        resource.save flush: true, validate: false
+        userImageFileService.addCreatedEditToUser(currentUser, resource, params.userId)
+    }
+
+    @Override
+    protected UserImageFile updateResource(UserImageFile resource) {
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
+        resource.save flush: true, validate: false
+        userImageFileService.addUpdatedEditToUser(currentUser, resource, params.userId, dirtyPropertyNames)
+    }
+
+    @Override
+    protected void deleteResource(UserImageFile resource) {
+        serviceDeleteResource(resource)
+        userImageFileService.addDeletedEditToUser(currentUser, resource, params.userId)
+    }
 }
