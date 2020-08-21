@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
@@ -41,7 +40,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -58,9 +56,6 @@ class CodeSetService extends ModelService<CodeSet> {
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
-    ClassifierService classifierService
-
-    SessionFactory sessionFactory
 
     @Override
     CodeSet get(Serializable id) {
@@ -131,10 +126,9 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet save(Map args = [failOnError: true, validate: false], CodeSet codeSet) {
+    CodeSet save(CodeSet codeSet) {
         log.debug('Saving {}({}) without batching', codeSet.label, codeSet.ident())
-        codeSet.save(args)
-        updateFacetsAfterInsertingCatalogueItem(codeSet)
+        save(failOnError: true, validate: false, flush: false, codeSet)
     }
 
     @Override

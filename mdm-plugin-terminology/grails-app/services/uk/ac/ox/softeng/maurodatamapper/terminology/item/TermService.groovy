@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
@@ -37,7 +36,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
-import org.hibernate.SessionFactory
 import org.springframework.context.MessageSource
 
 @Slf4j
@@ -46,7 +44,6 @@ class TermService extends ModelItemService<Term> {
 
     TermRelationshipService termRelationshipService
     MessageSource messageSource
-    SessionFactory sessionFactory
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -67,12 +64,6 @@ class TermService extends ModelItemService<Term> {
 
     Long count() {
         Term.count()
-    }
-
-    @Override
-    Term save(Map args = [flush: true], Term term) {
-        term.save(args)
-        updateFacetsAfterInsertingCatalogueItem(term)
     }
 
     void delete(Serializable id) {
@@ -164,21 +155,18 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
     }
 
-    Term copyTerm(Terminology copiedTerminology, Term original, User copier) {
-        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, copier)
+    Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, copier, userSecurityPolicyManager)
     }
 
-    Term copyTerm(CodeSet copiedCodeSet, Term original, User copier) {
-        copyTermIntoTerminologyOrCodeSet(copiedCodeSet, original, copier)
-    }
-
-    private Term copyTermIntoTerminologyOrCodeSet(copiedTerminologyOrCodeSet, Term original, User copier) {
+    private Term copyTermIntoTerminologyOrCodeSet(copiedTerminologyOrCodeSet, Term original, User copier,
+                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
 
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
 
         Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition)
 
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedTerminologyOrCodeSet.addToTerms(copy)

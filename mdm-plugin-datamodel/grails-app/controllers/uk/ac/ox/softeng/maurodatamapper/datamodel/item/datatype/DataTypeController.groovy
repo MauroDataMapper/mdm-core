@@ -69,7 +69,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
         if (!original) return notFound(params.dataTypeId)
         DataType copy
         try {
-            copy = dataTypeService.copyDataType(dataModel, original, currentUser, currentUserSecurityPolicyManager, originalDataModel)
+            copy = dataTypeService.copyDataType(dataModel, original, currentUser, currentUserSecurityPolicyManager)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422
@@ -137,7 +137,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
 
     @Override
     protected void serviceInsertResource(DataType resource) {
-        dataTypeService.save(resource)
+        dataTypeService.save(flush: true, resource)
     }
 
     @Override

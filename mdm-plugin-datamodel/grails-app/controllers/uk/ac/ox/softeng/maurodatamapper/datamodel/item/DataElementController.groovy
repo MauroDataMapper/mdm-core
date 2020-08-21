@@ -49,8 +49,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
         if (!original) return notFound(params.dataElementId)
         DataElement copy
         try {
-            copy = dataElementService.copyDataElement(dataModel, dataClass, original, currentUser,
-                                                      currentUserSecurityPolicyManager, originalDataModel)
+            copy = dataElementService.copyDataElement(dataModel, original, currentUser, currentUserSecurityPolicyManager)
             dataClass.addToDataElements(copy)
             dataClassService.matchUpAndAddMissingReferenceTypeClasses(dataModel, dataModelService.get(params.otherDataModelId), currentUser,
                                                                       currentUserSecurityPolicyManager)
@@ -114,7 +113,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Override
     protected void serviceInsertResource(DataElement resource) {
-        dataElementService.save(resource)
+        dataElementService.save(flush: true, resource)
     }
 
     @Override

@@ -20,11 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 
 import grails.testing.services.ServiceUnitTest
@@ -39,14 +39,13 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
     DataModel dataModel
     UUID id
 
-    UserSecurityPolicyManager userSecurityPolicyManager
-
     def setup() {
         log.debug('Setting up DataTypeServiceSpec Unit')
         mockArtefact(DataElementService)
         mockArtefact(ReferenceTypeService)
         mockArtefact(PrimitiveTypeService)
         mockArtefact(EnumerationTypeService)
+        mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
         dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)

@@ -144,7 +144,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     protected void serviceInsertResource(DataClass resource) {
-        dataClassService.save(resource)
+        dataClassService.save(flush: true, resource)
     }
 
     @Override

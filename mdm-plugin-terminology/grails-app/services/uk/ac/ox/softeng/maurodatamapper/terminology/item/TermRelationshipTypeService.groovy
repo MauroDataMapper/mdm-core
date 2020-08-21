@@ -60,12 +60,6 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
         TermRelationshipType.count()
     }
 
-    @Override
-    TermRelationshipType save(Map args = [flush: true], TermRelationshipType termRelationshipType) {
-        termRelationshipType.save(args)
-        updateFacetsAfterInsertingCatalogueItem(termRelationshipType)
-    }
-
     void delete(Serializable id) {
         TermRelationshipType termRelationshipType = get(id)
         if (termRelationshipType) delete(termRelationshipType)

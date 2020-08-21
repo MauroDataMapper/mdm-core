@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -40,7 +39,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 
 @SuppressWarnings("ClashingTraitMethods")
 @Slf4j
@@ -49,11 +47,9 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     DataElementService dataElementService
     DataClassService dataClassService
-    SessionFactory sessionFactory
     PrimitiveTypeService primitiveTypeService
     ReferenceTypeService referenceTypeService
     EnumerationTypeService enumerationTypeService
-    ClassifierService classifierService
     SummaryMetadataService summaryMetadataService
 
     @Override
@@ -98,12 +94,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             case DataType.REFERENCE_DOMAIN_TYPE:
                 referenceTypeService.delete(dataType as ReferenceType, flush)
         }
-    }
-
-    @Override
-    DataType save(Map args = [flush: true], DataType catalogueItem) {
-        catalogueItem.save(args)
-        updateFacetsAfterInsertingCatalogueItem(catalogueItem)
     }
 
     @Override
@@ -254,7 +244,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
         if (dataType.summaryMetadata) {
             dataType.summaryMetadata.each {
-                it.trackChanges()
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = dataType.getId()
             }
             SummaryMetadata.saveAll(dataType.summaryMetadata)
@@ -339,7 +329,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                          DataModel originalDataModel = copiedDataModel, boolean copySummaryMetadata = false) {
+                          boolean copySummaryMetadata = false) {
 
         DataType copy
 
@@ -366,12 +356,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataTypes(copy)
-
-        //        dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier,
-        //                                                                  userSecurityPolicyManager)
-        //
-        //        if (copy.validate()) save(copy, validate: false)
-        //        else throw new ApiInvalidModelException('DTS01', 'Copied DataType is invalid', copy.errors)
 
         copy
     }

@@ -17,16 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 
 import grails.testing.services.ServiceUnitTest
@@ -47,11 +46,10 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
 
     DataModel dataModel
 
-    UserSecurityPolicyManager userSecurityPolicyManager
-
     def setup() {
         log.debug('Setting up DataElementServiceSpec Unit')
         mockArtefact(DataTypeService)
+        mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
         dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
@@ -171,7 +169,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = service.copyDataElement(dataModel, copyClass, original, editor, userSecurityPolicyManager)
+        DataElement copy = service.copyDataElement(dataModel, original, editor, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:
@@ -209,7 +207,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = service.copyDataElement(dataModel, copyClass, original, editor, userSecurityPolicyManager)
+        DataElement copy = service.copyDataElement(dataModel, original, editor, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:
@@ -250,7 +248,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(copyModel)
 
         when:
-        DataElement copy = service.copyDataElement(copyModel, copyClass, original, editor, userSecurityPolicyManager)
+        DataElement copy = service.copyDataElement(copyModel, original, editor, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:

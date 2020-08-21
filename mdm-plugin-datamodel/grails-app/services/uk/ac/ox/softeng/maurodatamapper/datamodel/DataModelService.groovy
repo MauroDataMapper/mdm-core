@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -53,7 +52,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -70,11 +68,8 @@ class DataModelService extends ModelService<DataModel> {
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
-    ClassifierService classifierService
     AuthorityService authorityService
     SummaryMetadataService summaryMetadataService
-
-    SessionFactory sessionFactory
 
     @Override
     DataModel get(Serializable id) {
@@ -149,15 +144,9 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel save(Map args, DataModel dataModel) {
-        save(dataModel, args)
-    }
-
-    @Override
-    DataModel save(DataModel dataModel, Map args = [failOnError: true, validate: false]) {
+    DataModel save(DataModel dataModel) {
         log.debug('Saving {}({}) without batching', dataModel.label, dataModel.ident())
-        dataModel.save(args)
-        updateFacetsAfterInsertingCatalogueItem(dataModel)
+        save(failOnError: true, validate: false, flush: false, dataModel)
     }
 
     @Override
@@ -165,7 +154,7 @@ class DataModelService extends ModelService<DataModel> {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
             catalogueItem.summaryMetadata.each {
-                it.trackChanges()
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)

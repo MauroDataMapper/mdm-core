@@ -17,12 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
@@ -47,17 +43,12 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
     Terminology complexTerminology
     Terminology simpleTerminology
 
-    UserSecurityPolicyManager userSecurityPolicyManager
-
     def setup() {
         log.debug('Setting up TerminologyServiceSpec unit')
         mockArtefact(TermService)
         mockArtefact(TermRelationshipService)
         mockArtefact(TermRelationshipTypeService)
-        mockArtefact(VersionLinkService)
-        mockArtefact(SemanticLinkService)
-        mockArtefact(EditService)
-        mockDomains(Terminology, Term, TermRelationship, TermRelationshipType, Authority)
+        mockDomains(Terminology, Term, TermRelationship, TermRelationshipType)
 
         complexTerminology = BootstrapModels.buildAndSaveComplexTerminology(messageSource, testFolder, null, testAuthority)
         simpleTerminology = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, testFolder, testAuthority)

@@ -61,6 +61,6 @@ class TermRelationshipController extends CatalogueItemController<TermRelationshi
 
     @Override
     protected void serviceInsertResource(TermRelationship resource) {
-        termRelationshipService.save(resource)
+        termRelationshipService.save(flush: true, resource)
     }
 }

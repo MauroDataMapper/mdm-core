@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -37,7 +36,6 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
     DataElementComponentService dataElementComponentService
-    SemanticLinkService semanticLinkService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -58,17 +56,6 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
     Long count() {
         DataClassComponent.count()
-    }
-
-    @Override
-    DataClassComponent save(Map args, DataClassComponent dataClassComponent) {
-        save(dataClassComponent, args)
-    }
-
-    @Override
-    DataClassComponent save(DataClassComponent dataClassComponent, Map args = [flush: true]) {
-        dataClassComponent.save(args)
-        updateFacetsAfterInsertingCatalogueItem(dataClassComponent)
     }
 
     void delete(Serializable id) {

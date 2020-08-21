@@ -509,7 +509,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     @Override
     protected void serviceInsertResource(T resource) {
-        T model = getModelService().save(resource)
+        T model = getModelService().save(flush: true, resource)
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(model, currentUser, model.label)
         }

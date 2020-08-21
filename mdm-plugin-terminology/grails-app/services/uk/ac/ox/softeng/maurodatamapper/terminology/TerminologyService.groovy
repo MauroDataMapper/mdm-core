@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
@@ -43,7 +42,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -60,9 +58,6 @@ class TerminologyService extends ModelService<Terminology> {
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
-    ClassifierService classifierService
-
-    SessionFactory sessionFactory
 
     @Override
     Terminology get(Serializable id) {
@@ -133,10 +128,9 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology save(Map args = [failOnError: true, validate: false], Terminology terminology) {
+    Terminology save(Terminology terminology) {
         log.debug('Saving {}({}) without batching', terminology.label, terminology.ident())
-        terminology.save(args)
-        updateFacetsAfterInsertingCatalogueItem(terminology)
+        save(failOnError: true, validate: false, flush: false, terminology)
     }
 
     @Override
@@ -305,7 +299,7 @@ class TerminologyService extends ModelService<Terminology> {
 
         // Copy all the terms
         original.terms?.each { term ->
-            termService.copyTerm(copy, term, copier)
+            termService.copyTerm(copy, term, copier, userSecurityPolicyManager)
         }
 
         // Copy all the term relationships

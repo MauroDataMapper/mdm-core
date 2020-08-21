@@ -33,17 +33,19 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
+import org.grails.datastore.gorm.GormEntity
+import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 abstract class CatalogueItemService<K extends CatalogueItem> {
 
     @Autowired
     GrailsApplication grailsApplication
-    @Autowired
+
     ClassifierService classifierService
     MetadataService metadataService
-    @Autowired
     SemanticLinkService semanticLinkService
+    SessionFactory sessionFactory
 
     abstract Class<K> getCatalogueItemClass()
 
@@ -63,9 +65,24 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
 
     abstract void delete(K catalogueItem)
 
-    abstract K save(K catalogueItem)
+    K save(K catalogueItem) {
+        // Default behaviours for save in GormEntity
+        save(flush: false, validate: true, catalogueItem)
+    }
 
-    abstract K save(Map args, K catalogueItem)
+    K save(Map args, K catalogueItem) {
+        Map saveArgs = new HashMap(args)
+        if (args.flush) {
+            saveArgs.remove('flush')
+            (catalogueItem as GormEntity).save(saveArgs)
+            updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+            sessionFactory.currentSession.flush()
+        } else {
+            (catalogueItem as GormEntity).save(args)
+            updateFacetsAfterInsertingCatalogueItem(catalogueItem)
+        }
+        catalogueItem
+    }
 
     abstract K get(Serializable id)
 
@@ -144,28 +161,28 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
     K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
         if (catalogueItem.metadata) {
             catalogueItem.metadata.each {
-                it.trackChanges()
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
             Metadata.saveAll(catalogueItem.metadata)
         }
         if (catalogueItem.annotations) {
             catalogueItem.annotations.each {
-                it.trackChanges()
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
             Annotation.saveAll(catalogueItem.annotations)
         }
         if (catalogueItem.semanticLinks) {
             catalogueItem.semanticLinks.each {
-                it.trackChanges()
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
             SemanticLink.saveAll(catalogueItem.semanticLinks)
         }
         if (catalogueItem.referenceFiles) {
             catalogueItem.referenceFiles.each {
-                it.trackChanges()
+                if (!it.isDirty()) it.trackChanges()
                 it.beforeValidate()
             }
             ReferenceFile.saveAll(catalogueItem.referenceFiles)

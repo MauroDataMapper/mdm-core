@@ -31,13 +31,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 
 @Slf4j
 @Transactional
 class TermRelationshipService extends ModelItemService<TermRelationship> {
-
-    SessionFactory sessionFactory
 
     TermRelationship get(Serializable id) {
         TermRelationship.get(id)
@@ -185,12 +182,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     @Override
     TermRelationship updateIndexForModelItemInParent(TermRelationship modelItem, CatalogueItem parent, int newIndex) {
         throw new ApiNotYetImplementedException('TRSXX', 'TermRelationshipType Ordering')
-    }
-
-    @Override
-    TermRelationship save(Map args = [flush: true], TermRelationship catalogueItem) {
-        catalogueItem.save(args)
-        updateFacetsAfterInsertingCatalogueItem(catalogueItem)
     }
 
     @Override

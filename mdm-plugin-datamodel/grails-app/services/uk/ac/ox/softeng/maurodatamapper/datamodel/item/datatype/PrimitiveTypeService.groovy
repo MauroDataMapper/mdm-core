@@ -71,12 +71,6 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> {
     }
 
     @Override
-    PrimitiveType save(Map args = [flush: true], PrimitiveType catalogueItem) {
-        catalogueItem.save(args)
-    }
-
-
-    @Override
     boolean hasTreeTypeModelItems(PrimitiveType catalogueItem) {
         false
     }

@@ -20,9 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -41,7 +39,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.lucene.search.Query
-import org.hibernate.SessionFactory
 import org.hibernate.search.engine.ProjectionConstants
 import org.hibernate.search.jpa.FullTextEntityManager
 import org.hibernate.search.jpa.FullTextQuery
@@ -56,9 +53,6 @@ class DataElementService extends ModelItemService<DataElement> {
 
     DataClassService dataClassService
     DataTypeService dataTypeService
-    SessionFactory sessionFactory
-    ClassifierService classifierService
-    SemanticLinkService semanticLinkService
     SummaryMetadataService summaryMetadataService
 
     @Override
@@ -98,17 +92,11 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     @Override
-    DataElement save(Map args = [flush: true], DataElement catalogueItem) {
-        catalogueItem.save(args)
-        updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-    }
-
-    @Override
     DataElement updateFacetsAfterInsertingCatalogueItem(DataElement catalogueItem) {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
             catalogueItem.summaryMetadata.each {
-                it.trackChanges()
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
@@ -331,8 +319,8 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement
     }
 
-    DataElement copyDataElement(DataModel copiedDataModel, DataClass copiedDataClass, DataElement original, User copier,
-                                UserSecurityPolicyManager userSecurityPolicyManager, DataModel originalDataModel = copiedDataModel) {
+    DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
+                                UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
@@ -344,18 +332,10 @@ class DataElementService extends ModelItemService<DataElement> {
         // If theres no DataType then copy the original's DataType into the DataModel
         if (!dataType) {
             dataType = dataTypeService.copyDataType(copiedDataModel, original.dataType, copier,
-                                                    userSecurityPolicyManager, originalDataModel)
+                                                    userSecurityPolicyManager)
         }
 
         copy.dataType = dataType
-
-        //                copiedDataClass.addToDataElements(copy)
-        //
-        //                dataClassService.matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, originalDataModel, copier,
-        //                userSecurityPolicyManager)
-        //
-        //                if (copy.validate()) save(copy, validate: false)
-        //                else throw new ApiInvalidModelException('DES01', 'Copied DataElement is invalid', copy.errors)
 
         copy
     }
