@@ -180,6 +180,14 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyJsonResponse(OK, '''[]''')
     }
 
+    void 'test getting model superseded models when there are none'() {
+        when: 'finalised model has not yet been created'
+        GET('admin/tree/folders/dataModels/modelSuperseded', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''[]'''
+    }
+
     void 'test getting model superseded models'() {
         given: 'finalised model is created'
         POST("folders/${folder.id}/dataModels", [
@@ -230,6 +238,14 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanup:
         cleanUpData(firstId)
         cleanUpData(secondId)
+    }
+
+    void 'test getting documentation superseded models when there are none'() {
+        when: 'finalised model has not yet been created'
+        GET('admin/tree/folders/dataModels/documentationSuperseded', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''[]'''
     }
 
     void 'test getting documentation superseded models'() {

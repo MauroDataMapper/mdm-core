@@ -650,18 +650,23 @@ class DataModelService extends ModelService<DataModel> {
     @Override
     List<DataModel> findAllDocumentationSupersededModels(Map pagination) {
         List<UUID> ids = findAllDocumentSupersededIds(DataModel.by().id().list() as List<UUID>)
-        DataModel.byIdInList(ids).list(pagination)
+        findAllSupersededModels(ids, pagination)
     }
 
     @Override
     List<DataModel> findAllModelSupersededModels(Map pagination) {
         List<UUID> ids = findAllModelSupersededIds(DataModel.by().id().list() as List<UUID>)
-        DataModel.byIdInList(ids).list(pagination)
+        findAllSupersededModels(ids, pagination)
     }
 
     @Override
     List<DataModel> findAllDeletedModels(Map pagination) {
         DataModel.byDeleted().list(pagination)
+    }
+
+    List<DataModel> findAllSupersededModels(List ids, Map pagination) {
+        if (!ids) return []
+        DataModel.byIdInList(ids).list(pagination)
     }
 
     List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {

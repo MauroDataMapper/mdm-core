@@ -508,18 +508,23 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     List<Terminology> findAllDocumentationSupersededModels(Map pagination) {
         List<UUID> ids = findAllDocumentSupersededIds(Terminology.by().id().list() as List<UUID>)
-        Terminology.byIdInList(ids).list(pagination)
+        findAllSupersededModels(ids, pagination)
     }
 
     @Override
     List<Terminology> findAllModelSupersededModels(Map pagination) {
         List<UUID> ids = findAllModelSupersededIds(Terminology.by().id().list() as List<UUID>)
-        Terminology.byIdInList(ids).list(pagination)
+        findAllSupersededModels(ids, pagination)
     }
 
     @Override
     List<Terminology> findAllDeletedModels(Map pagination) {
         Terminology.byDeleted().list(pagination)
+    }
+
+    List<Terminology> findAllSupersededModels(List<UUID> ids, Map pagination) {
+        if (!ids) return []
+        Terminology.byIdInList(ids).list(pagination)
     }
 
     List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {

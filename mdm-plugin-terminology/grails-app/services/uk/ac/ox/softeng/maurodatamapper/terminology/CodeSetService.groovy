@@ -469,18 +469,24 @@ class CodeSetService extends ModelService<CodeSet> {
     @Override
     List<CodeSet> findAllDocumentationSupersededModels(Map pagination) {
         List<UUID> ids = findAllDocumentSupersededIds(CodeSet.by().id().list() as List<UUID>)
-        CodeSet.byIdInList(ids).list(pagination)
+        findAllSupersededModels(ids, pagination)
     }
 
     @Override
     List<CodeSet> findAllModelSupersededModels(Map pagination) {
         List<UUID> ids = findAllModelSupersededIds(CodeSet.by().id().list() as List<UUID>)
-        CodeSet.byIdInList(ids).list(pagination)
+        findAllSupersededModels(ids, pagination)
     }
 
     @Override
     List<CodeSet> findAllDeletedModels(Map pagination) {
         CodeSet.byDeleted().list(pagination)
+    }
+
+
+    List<CodeSet> findAllSupersededModels(List<UUID> ids, Map pagination) {
+        if (!ids) return []
+        CodeSet.byIdInList(ids).list(pagination)
     }
 
     List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {
