@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.CatalogueItemAwareServiceSpec
 
 import grails.testing.services.ServiceUnitTest
@@ -52,6 +53,7 @@ class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMe
         mockArtefact(SemanticLinkService)
         mockArtefact(EditService)
         mockArtefact(MetadataService)
+        mockArtefact(DataTypeService)
         mockDomains(Folder, DataModel, Edit, SummaryMetadata, SummaryMetadataReport, Authority, Metadata, VersionLink, SemanticLink, Classifier)
         mockArtefact(DataModelService)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
