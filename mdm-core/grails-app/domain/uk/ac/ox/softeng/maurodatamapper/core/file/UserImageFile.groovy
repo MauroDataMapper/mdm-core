@@ -59,10 +59,6 @@ class UserImageFile implements CatalogueFile {
         fileContents = image?.replaceFirst(PRECUSOR, '')?.decodeBase64()
     }
 
-    void setImage(byte[] image) {
-        fileContents = image
-    }
-
     void setType(String type) {
         fileType = type
     }

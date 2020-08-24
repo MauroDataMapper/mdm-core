@@ -98,12 +98,12 @@ class UserImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<U
 
     void 'test image resize'() {
         when:
-        UserImageFile userImageFile = service.createNewFile(Paths.get('grails-app/assets/images/NoProfile.jpg'), admin)
+        UserImageFile userImageFile = service.createNewFile(Paths.get('grails-app/assets/images/no_profile_image.png'), admin)
         checkAndSave(userImageFile)
 
         then:
         userImageFile.id
-        userImageFile.fileSize == 10405
+        userImageFile.fileSize == 4297
 
         when:
         UserImageFile resize = service.resizeImage(userImageFile, 20)
@@ -112,7 +112,7 @@ class UserImageFileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<U
         then:
         resize.id != userImageFile.id
         resize.fileSize < userImageFile.fileSize
-        resize.fileSize == 221
+        resize.fileSize == 229
 
     }
 }

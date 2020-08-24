@@ -212,9 +212,7 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
       "fileName": "${editor.id}-profile",
       "domainType": "UserImageFile",
       "fileSize": 5094,
-      "editable": false,
       "id": "\${json-unit.matches:id}",
-      "fileContents": ${newProfilePic.fileContents},
       "userId": "${editor.id}",
       "fileType": "image/png"
     }""".toString()
@@ -244,9 +242,7 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
       "fileName": "${editor.id}-profile",
       "domainType": "UserImageFile",
       "fileSize": 5094,
-      "editable": false,
       "id": "\${json-unit.matches:id}",
-      "fileContents": ${newProfilePic.fileContents},
       "userId": "${editor.id}",
       "fileType": "image/png"
     }""".toString()
