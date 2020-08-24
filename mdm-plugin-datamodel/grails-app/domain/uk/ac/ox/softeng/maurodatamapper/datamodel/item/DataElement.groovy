@@ -121,6 +121,10 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     @Override
     def beforeValidate() {
         beforeValidateModelItem()
+        summaryMetadata?.each {
+            if (!it.createdBy) it.createdBy = createdBy
+            it.catalogueItem = this
+        }
         if (dataType && !dataType.ident()) {
             dataType.dataModel = model
             dataType.createdBy = createdBy

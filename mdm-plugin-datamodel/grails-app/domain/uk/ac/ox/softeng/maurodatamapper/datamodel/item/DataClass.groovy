@@ -133,9 +133,13 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     def beforeValidate() {
         dataModel = dataModel ?: parentDataClass?.getModel()
         beforeValidateModelItem()
-        this.dataClasses.each {it.beforeValidate()}
-        dataElements.each {it.beforeValidate()}
-        referenceTypes.each {it.beforeValidate()}
+        this.dataClasses.each { it.beforeValidate() }
+        dataElements.each { it.beforeValidate() }
+        referenceTypes.each { it.beforeValidate() }
+        summaryMetadata?.each {
+            if (!it.createdBy) it.createdBy = createdBy
+            it.catalogueItem = this
+        }
     }
 
     @Override

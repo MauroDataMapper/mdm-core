@@ -105,6 +105,10 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     @Override
     def beforeValidate() {
         beforeValidateModelItem()
+        summaryMetadata?.each {
+            if (!it.createdBy) it.createdBy = createdBy
+            it.catalogueItem = this
+        }
     }
 
     @Override

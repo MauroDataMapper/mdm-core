@@ -138,8 +138,12 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
-        dataTypes?.each {it.beforeValidate()}
-        dataClasses?.each {it.beforeValidate()}
+        dataTypes?.each { it.beforeValidate() }
+        dataClasses?.each { it.beforeValidate() }
+        summaryMetadata?.each {
+            if (!it.createdBy) it.createdBy = createdBy
+            it.catalogueItem = this
+        }
     }
 
     DataType findDataTypeByLabel(String label) {

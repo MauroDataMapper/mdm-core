@@ -50,10 +50,10 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         if (aliases) {
             Collection<String> list
             if (aliases.first() instanceof Map) {
-                list = aliases.collect {(it as Map).alias as String}
+                list = aliases.collect { (it as Map).alias as String }
             } else list = aliases
 
-            aliasString = list.collect {(it as String).trim()}?.join('|')
+            aliasString = list.collect { (it as String).trim() }?.join('|')
         }
         aliasesString = aliasString ?: null
     }
@@ -63,9 +63,21 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     }
 
     void beforeValidateCatalogueItem() {
-        metadata?.each {it.beforeValidate()}
-        annotations?.each {it.beforeValidate()}
-        referenceFiles?.each {it.beforeValidate()}
+        metadata?.each {
+            it.catalogueItem = this
+            if (!it.createdBy) it.createdBy = createdBy
+            it.beforeValidate()
+        }
+        annotations?.each {
+            it.catalogueItem = this
+            if (!it.createdBy) it.createdBy = createdBy
+            it.beforeValidate()
+        }
+        referenceFiles?.each {
+            it.catalogueItem = this
+            if (!it.createdBy) it.createdBy = createdBy
+            it.beforeValidate()
+        }
     }
 
     @Override
