@@ -21,6 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.file
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -41,6 +42,15 @@ class UserImageFileController extends EditLoggingController<UserImageFile> {
             return render(file: resource.fileContents, fileName: resource.fileName, contentType: resource.contentType)
         }
         return notFound(params.id)
+    }
+
+    @Transactional
+    @Override
+    def update() {
+        // Allow the UI to use PUT to create the image
+        // This allows them to not have to have various additional computations to determine if they have an actual image
+        if (params.id) super.update()
+        super.save()
     }
 
     @Override
