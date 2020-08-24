@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -227,13 +228,66 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
+    CodeSet createNewBranchModelVersion(String branchName, CodeSet codeSet, User user, boolean copyPermissions,
+                                        UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
+        if (!newVersionCreationIsAllowed(codeSet)) return codeSet
+
+        boolean mainBranchExistsForLabel = codeSet.branchName == 'main' || findAllByLabelAndBranchName(codeSet.label, 'main')
+
+        if (mainBranchExistsForLabel && branchName == 'main') {
+            throw new ApiBadRequestException('DMS02', "The [branchName] 'main' already exists for the [label] '${codeSet.label}'")
+        }
+        CodeSet newMainBranchModelVersion
+        if (!mainBranchExistsForLabel) {
+            newMainBranchModelVersion = copyCodeSet(codeSet,
+                                                    user,
+                                                    copyPermissions,
+                                                    codeSet.label,
+                                                    'main',
+                                                    additionalArguments.throwErrors as boolean,
+                                                    userSecurityPolicyManager,
+                                                    true)
+            setCodeSetIsNewBranchModelVersionOfCodeSet(newMainBranchModelVersion, codeSet, user)
+
+            if (additionalArguments.moveDataFlows) {
+                throw new ApiNotYetImplementedException('DMSXX', 'CodeSet moving of DataFlows')
+                //            moveTargetDataFlows(codeSet, newMainBranchModelVersion)
+            }
+
+            if (newMainBranchModelVersion.validate()) newMainBranchModelVersion.save(flush: true, validate: false)
+        }
+        CodeSet newBranchModelVersion
+        if (branchName != 'main') {
+            newBranchModelVersion = copyCodeSet(codeSet,
+                                                user,
+                                                copyPermissions,
+                                                codeSet.label,
+                                                branchName,
+                                                additionalArguments.throwErrors as boolean,
+                                                userSecurityPolicyManager,
+                                                true)
+
+            setCodeSetIsNewBranchModelVersionOfCodeSet(newBranchModelVersion, codeSet, user)
+
+            if (additionalArguments.moveDataFlows) {
+                throw new ApiNotYetImplementedException('DMSXX', 'CodeSet moving of DataFlows')
+                //            moveTargetDataFlows(codeSet, newBranchModelVersion)
+            }
+
+            if (newBranchModelVersion.validate()) newBranchModelVersion.save(flush: true, validate: false)
+        }
+
+        newBranchModelVersion ? newBranchModelVersion : newMainBranchModelVersion
+    }
+
+    @Override
     CodeSet createNewDocumentationVersion(CodeSet codeSet, User user, boolean copyPermissions, UserSecurityPolicyManager userSecurityPolicyManager,
                                           Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(codeSet)) return codeSet
 
         CodeSet newDocVersion = copyCodeSet(codeSet, user, copyPermissions, codeSet.label,
-                                            Version.nextMajorVersion(codeSet.documentationVersion),
+                                            Version.nextMajorVersion(codeSet.documentationVersion), codeSet.branchName,
                                             additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setCodeSetIsNewDocumentationVersionOfCodeSet(newDocVersion, codeSet, user)
 
@@ -242,30 +296,35 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet createNewModelVersion(String label, CodeSet codeSet, User user, boolean copyPermissions, UserSecurityPolicyManager
+    CodeSet createNewForkModel(String label, CodeSet codeSet, User user, boolean copyPermissions, UserSecurityPolicyManager
         userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(codeSet)) return codeSet
 
-        CodeSet newModelVersion = copyCodeSet(codeSet, user, copyPermissions, label, additionalArguments.throwErrors as boolean,
-                                              userSecurityPolicyManager)
-        setCodeSetIsNewModelVersionOfCodeSet(newModelVersion, codeSet, user)
+        CodeSet newForkModel = copyCodeSet(codeSet, user, copyPermissions, label, additionalArguments.throwErrors as boolean,
+                                           userSecurityPolicyManager)
+        setCodeSetIsNewForkModelOfCodeSet(newForkModel, codeSet, user)
 
-        if (newModelVersion.validate()) save(newModelVersion)
-        newModelVersion
+        if (newForkModel.validate()) save(newForkModel)
+        newForkModel
     }
 
     CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                         UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyCodeSet(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
+        copyCodeSet(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
     }
 
-    CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label,
-                        Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+    CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
+                        UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+        copyCodeSet(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label, Version copyVersion, String branchName,
+                        boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
                                    finalised: false, deleted: false, documentationVersion: copyVersion,
-                                   folder: original.folder, authority: original.authority
+                                   folder: original.folder, authority: original.authority, branchName: branchName
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
@@ -317,9 +376,9 @@ class CodeSetService extends ModelService<CodeSet> {
         copy
     }
 
-    void setCodeSetIsNewModelVersionOfCodeSet(CodeSet newModel, CodeSet oldModel, User catalogueUser) {
+    void setCodeSetIsNewForkModelOfCodeSet(CodeSet newModel, CodeSet oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
-            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
+            linkType: VersionLinkType.NEW_FORK_OF,
             createdBy: catalogueUser.emailAddress,
             targetModel: oldModel
         )
@@ -328,6 +387,14 @@ class CodeSetService extends ModelService<CodeSet> {
     void setCodeSetIsNewDocumentationVersionOfCodeSet(CodeSet newModel, CodeSet oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
             linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setCodeSetIsNewBranchModelVersionOfCodeSet(CodeSet newModel, CodeSet oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
             targetModel: oldModel
         )

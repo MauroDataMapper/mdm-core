@@ -18,8 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -175,12 +173,12 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     VersionLink findLatestLinkSupersedingModelId(String modelType, UUID modelId) {
         VersionLink.by().or {
             and {
-                inList('linkType', VersionLinkType.SUPERSEDED_BY_MODEL, VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
+                inList('linkType', VersionLinkType.SUPERSEDED_BY_FORK, VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
                     .eq('catalogueItemDomainType', modelType)
                     .eq('catalogueItemId', modelId)
             }
             and {
-                inList('linkType', VersionLinkType.NEW_MODEL_VERSION_OF, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+                inList('linkType', VersionLinkType.NEW_FORK_OF, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
                     .eq('targetModelDomainType', modelType)
                     .eq('targetModelId', modelId)
             }
@@ -247,13 +245,13 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(String modelType, List<UUID> modelIds) {
         if (!modelIds) return []
         List<UUID> sourceForSupersededByIds = VersionLink.by()
-            .eq('linkType', VersionLinkType.SUPERSEDED_BY_MODEL)
+            .eq('linkType', VersionLinkType.SUPERSEDED_BY_FORK)
             .eq('catalogueItemDomainType', modelType)
             .inList('catalogueItemId', modelIds)
             .property('catalogueItemId').list() as List<UUID>
 
         List<UUID> targetOfNewVersionOf = VersionLink.by()
-            .eq('linkType', VersionLinkType.NEW_MODEL_VERSION_OF)
+            .eq('linkType', VersionLinkType.NEW_FORK_OF)
             .eq('targetModelDomainType', modelType)
             .inList('targetModelId', modelIds)
             .property('targetModelId').list() as List<UUID>
@@ -264,13 +262,13 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     List<UUID> filterModelIdsWhereModelIdIsSuperseded(String modelType, List<UUID> modelIds) {
         if (!modelIds) return []
         List<UUID> sourceForSupersededByIds = VersionLink.by()
-            .inList('linkType', VersionLinkType.SUPERSEDED_BY_MODEL, VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
+            .inList('linkType', VersionLinkType.SUPERSEDED_BY_FORK, VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
             .eq('catalogueItemDomainType', modelType)
             .inList('catalogueItemId', modelIds)
             .property('catalogueItemId').list() as List<UUID>
 
         List<UUID> targetOfNewVersionOf = VersionLink.by()
-            .inList('linkType', VersionLinkType.NEW_MODEL_VERSION_OF, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+            .inList('linkType', VersionLinkType.NEW_FORK_OF, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
             .eq('targetModelDomainType', modelType)
             .inList('targetModelId', modelIds)
             .property('targetModelId').list() as List<UUID>

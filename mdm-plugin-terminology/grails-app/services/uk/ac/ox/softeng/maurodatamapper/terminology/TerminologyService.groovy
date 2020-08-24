@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -229,13 +230,66 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
+    Terminology createNewBranchModelVersion(String branchName, Terminology terminology, User user, boolean copyPermissions,
+                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
+        if (!newVersionCreationIsAllowed(terminology)) return terminology
+
+        boolean mainBranchExistsForLabel = terminology.branchName == 'main' || findAllByLabelAndBranchName(terminology.label, 'main')
+
+        if (mainBranchExistsForLabel && branchName == 'main') {
+            throw new ApiBadRequestException('DMS02', "The [branchName] 'main' already exists for the [label] '${terminology.label}'")
+        }
+        Terminology newMainBranchModelVersion
+        if (!mainBranchExistsForLabel) {
+            newMainBranchModelVersion = copyTerminology(terminology,
+                                                        user,
+                                                        copyPermissions,
+                                                        terminology.label,
+                                                        'main',
+                                                        additionalArguments.throwErrors as boolean,
+                                                        userSecurityPolicyManager,
+                                                        true)
+            setTerminologyIsNewBranchModelVersionOfTerminology(newMainBranchModelVersion, terminology, user)
+
+            if (additionalArguments.moveDataFlows) {
+                throw new ApiNotYetImplementedException('DMSXX', 'Terminology moving of DataFlows')
+                //            moveTargetDataFlows(terminology, newMainBranchModelVersion)
+            }
+
+            if (newMainBranchModelVersion.validate()) newMainBranchModelVersion.save(flush: true, validate: false)
+        }
+        Terminology newBranchModelVersion
+        if (branchName != 'main') {
+            newBranchModelVersion = copyTerminology(terminology,
+                                                    user,
+                                                    copyPermissions,
+                                                    terminology.label,
+                                                    branchName,
+                                                    additionalArguments.throwErrors as boolean,
+                                                    userSecurityPolicyManager,
+                                                    true)
+
+            setTerminologyIsNewBranchModelVersionOfTerminology(newBranchModelVersion, terminology, user)
+
+            if (additionalArguments.moveDataFlows) {
+                throw new ApiNotYetImplementedException('DMSXX', 'Terminology moving of DataFlows')
+                //            moveTargetDataFlows(terminology, newBranchModelVersion)
+            }
+
+            if (newBranchModelVersion.validate()) newBranchModelVersion.save(flush: true, validate: false)
+        }
+
+        newBranchModelVersion ? newBranchModelVersion : newMainBranchModelVersion
+    }
+
+    @Override
     Terminology createNewDocumentationVersion(Terminology terminology, User user, boolean copyPermissions, UserSecurityPolicyManager
         userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(terminology)) return terminology
 
         Terminology newDocVersion = copyTerminology(terminology, user, copyPermissions, terminology.label,
-                                                    Version.nextMajorVersion(terminology.documentationVersion),
+                                                    Version.nextMajorVersion(terminology.documentationVersion), terminology.branchName,
                                                     additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setTerminologyIsNewDocumentationVersionOfTerminology(newDocVersion, terminology, user)
 
@@ -244,30 +298,35 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology createNewModelVersion(String label, Terminology terminology, User user, boolean copyPermissions, UserSecurityPolicyManager
+    Terminology createNewForkModel(String label, Terminology terminology, User user, boolean copyPermissions, UserSecurityPolicyManager
         userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(terminology)) return terminology
 
-        Terminology newModelVersion =
+        Terminology newForkModel =
             copyTerminology(terminology, user, copyPermissions, label, additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
-        setTerminologyIsNewModelVersionOfTerminology(newModelVersion, terminology, user)
+        setTerminologyIsNewForkModelOfTerminology(newForkModel, terminology, user)
 
-        if (newModelVersion.validate()) newModelVersion.save(flush: true, validate: false)
-        newModelVersion
+        if (newForkModel.validate()) newForkModel.save(flush: true, validate: false)
+        newForkModel
     }
 
     Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                                 UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTerminology(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
+        copyTerminology(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
     }
 
-    Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label,
-                                Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+    Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
+                                UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+        copyTerminology(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label, Version copyVersion, String branchName,
+                                boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         Terminology copy = new Terminology(author: original.author,
                                            organisation: original.organisation,
                                            finalised: false, deleted: false, documentationVersion: copyVersion,
-                                           folder: original.folder, authority: original.authority
+                                           folder: original.folder, authority: original.authority, branchName: branchName
         )
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label
@@ -332,9 +391,9 @@ class TerminologyService extends ModelService<Terminology> {
         copy
     }
 
-    void setTerminologyIsNewModelVersionOfTerminology(Terminology newModel, Terminology oldModel, User catalogueUser) {
+    void setTerminologyIsNewForkModelOfTerminology(Terminology newModel, Terminology oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
-            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
+            linkType: VersionLinkType.NEW_FORK_OF,
             createdBy: catalogueUser.emailAddress,
             targetModel: oldModel
         )
@@ -343,6 +402,14 @@ class TerminologyService extends ModelService<Terminology> {
     void setTerminologyIsNewDocumentationVersionOfTerminology(Terminology newModel, Terminology oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
             linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setTerminologyIsNewBranchModelVersionOfTerminology(Terminology newModel, Terminology oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
             targetModel: oldModel
         )

@@ -122,7 +122,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
 
     @Override
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[VersionLink:NEW_MODEL_VERSION_OF:.+?] added to component \[.+?]/
+        ~/\[VersionLink:NEW_FORK_OF:.+?] added to component \[.+?]/
     }
 
     @Override
@@ -133,7 +133,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     Map getValidJson() {
         [
-            linkType             : VersionLinkType.NEW_MODEL_VERSION_OF.label,
+            linkType             : VersionLinkType.NEW_FORK_OF.label,
             targetModelId        : getTargetModelId(),
             targetModelDomainType: getTargetModelDomainType()
         ]
@@ -142,7 +142,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     Map getInvalidJson() {
         [
-            linkType   : VersionLinkType.NEW_MODEL_VERSION_OF.label,
+            linkType   : VersionLinkType.NEW_FORK_OF.label,
             targetModel: getModelId().toString(),
 
         ]

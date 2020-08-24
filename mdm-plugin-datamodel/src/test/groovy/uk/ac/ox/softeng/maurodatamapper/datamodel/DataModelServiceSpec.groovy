@@ -386,7 +386,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new version on draft model is not allowed'
         DataModel dataModel = service.get(id)
-        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager, [
+        def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -402,7 +402,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         DataModel dataModel = service.get(id)
         service.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager, [
+        def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -441,7 +441,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
         dataModel.dataTypes.every { odt ->
@@ -471,7 +471,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         DataModel dataModel = service.get(id)
         service.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager, [
+        def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -510,7 +510,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
         dataModel.dataTypes.every { odt ->
@@ -547,7 +547,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
-        def result = service.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager, [
+        def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])

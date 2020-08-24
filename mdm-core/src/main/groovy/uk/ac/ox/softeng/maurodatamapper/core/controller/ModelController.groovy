@@ -230,6 +230,32 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     }
 
     @Transactional
+    def newBranchModelVersion(CreateNewVersionData createNewVersionData) {
+
+        createNewVersionData.label = 'newBranchModelVersion'
+
+        if (!createNewVersionData.validate()) {
+            respond createNewVersionData.errors
+            return
+        }
+
+        T instance = queryForResource params[alternateParamsIdKey]
+
+        if (!instance) return notFound(params[alternateParamsIdKey])
+
+        T copy = getModelService().
+            createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser, createNewVersionData.copyPermissions,
+                                        currentUserSecurityPolicyManager)
+
+        if (!validateResource(copy, 'create')) return
+
+        params.editable = true
+        saveResource copy
+
+        saveResponse copy
+    }
+
+    @Transactional
     def newDocumentationVersion(CreateNewVersionData createNewVersionData) {
 
         createNewVersionData.label = 'newDocumentationVersion'
@@ -255,7 +281,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     }
 
     @Transactional
-    def newModelVersion(CreateNewVersionData createNewVersionData) {
+    def newForkModel(CreateNewVersionData createNewVersionData) {
 
         if (createNewVersionData.hasErrors()) {
             respond createNewVersionData.errors
@@ -271,8 +297,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         try {
-            T copy = getModelService().createNewModelVersion(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
-                                                             currentUserSecurityPolicyManager)
+            T copy = getModelService().createNewForkModel(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
+                                                          currentUserSecurityPolicyManager)
 
             if (!validateResource(copy, 'create')) return
 
@@ -329,7 +355,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         log.info('Export complete')
 
         if (!outputStream) {
-            return errorResponse(UNPROCESSABLE_ENTITY, 'Modles could not be exported')
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Models could not be exported')
         }
 
         render(file: outputStream.toByteArray(), fileName: "${multipleModelsParamsIdKey}.${exporter.fileExtension}", contentType: exporter.fileType)

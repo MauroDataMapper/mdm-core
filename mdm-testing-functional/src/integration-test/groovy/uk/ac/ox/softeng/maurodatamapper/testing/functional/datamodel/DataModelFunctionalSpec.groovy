@@ -55,7 +55,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  GET     | /api/dataModels/${dataModelId}/hierarchy  | Action: hierarchy
  *  |  PUT     | /api/dataModels/${dataModelId}/finalise   | Action: finalise
  *
- *  |  PUT     | /api/dataModels/${dataModelId}/newModelVersion          | Action: newModelVersion
+ *  |  PUT     | /api/dataModels/${dataModelId}/newForkModel          | Action: newForkModel
  *  |  PUT     | /api/dataModels/${dataModelId}/newDocumentationVersion  | Action: newDocumentationVersion
  *
  *  |  PUT     | /api/folders/${folderId}/dataModels/${dataModelId}      | Action: changeFolder
@@ -1035,7 +1035,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         String id = getValidFinalisedId()
 
         when: 'not logged in'
-        PUT("$id/newModelVersion", [label: 'Functional Test DataModel v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test DataModel v2'])
 
         then:
         verifyNotFound response, id
@@ -1050,7 +1050,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
 
         when:
         loginAuthenticated()
-        PUT("$id/newModelVersion", [label: 'Functional Test DataModel v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test DataModel v2'])
 
         then:
         verifyNotFound response, id
@@ -1065,7 +1065,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
 
         when: 'logged in as reader'
         loginReader()
-        PUT("$id/newModelVersion", [label: 'Functional Test DataModel v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test DataModel v2'])
 
         then:
         verifyResponse CREATED, response
@@ -1080,7 +1080,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         verifyResponse OK, response
         response.body().count == 1
         response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
         response.body().items.first().sourceModel.id == newId
         response.body().items.first().targetModel.id == id
         response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
@@ -1098,7 +1098,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
 
         when: 'logged in as writer'
         loginEditor()
-        PUT("$id/newModelVersion", [label: 'Functional Test DataModel v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test DataModel v2'])
 
         then:
         verifyResponse CREATED, response
@@ -1113,7 +1113,7 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         verifyResponse OK, response
         response.body().count == 1
         response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
         response.body().items.first().sourceModel.id == newId
         response.body().items.first().targetModel.id == id
         response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType

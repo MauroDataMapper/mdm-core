@@ -396,8 +396,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new version on draft model is not allowed'
         DataModel dataModel = dataModelService.get(id)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
-                                                            [copyDataFlows: false, throwErrors: true])
+        def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
+                                                         [copyDataFlows: false, throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -414,8 +414,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
-                                                            [copyDataFlows: false, throwErrors: true])
+        def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
+                                                         [copyDataFlows: false, throwErrors: true])
 
         then:
         result.instanceOf(DataModel)
@@ -452,7 +452,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         and: 'link between old and new version'
         newVersion.versionLinks.any {
-            it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF
+            it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF
         }
 
         and:
@@ -485,8 +485,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, admin)
         checkAndSave(dataModel)
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
-                                                            [copyDataFlows: false, throwErrors: true])
+        def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
+                                                         [copyDataFlows: false, throwErrors: true])
 
         then:
         result.instanceOf(DataModel)
@@ -522,7 +522,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
         dataModel.dataTypes.every { odt ->
@@ -559,8 +559,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
-        def result = dataModelService.createNewModelVersion("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
-                                                            [copyDataFlows: false, throwErrors: true])
+        def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
+                                                         [copyDataFlows: false, throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1

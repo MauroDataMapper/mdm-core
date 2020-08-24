@@ -32,8 +32,9 @@ class UrlMappings {
             '/dataModels'(resources: 'dataModel', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
                 put '/finalise'(controller: 'dataModel', action: 'finalise')
+                put '/newBranchModelVersion'(controller: 'dataModel', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'dataModel', action: 'newDocumentationVersion')
-                put '/newModelVersion'(controller: 'dataModel', action: 'newModelVersion') // new URL
+                put '/newForkModel'(controller: 'dataModel', action: 'newForkModel') // new URL
 
                 get "/diff/$otherModelId"(controller: 'dataModel', action: 'diff')
                 get "/suggestLinks/$otherModelId"(controller: 'dataModel', action: 'suggestLinks')

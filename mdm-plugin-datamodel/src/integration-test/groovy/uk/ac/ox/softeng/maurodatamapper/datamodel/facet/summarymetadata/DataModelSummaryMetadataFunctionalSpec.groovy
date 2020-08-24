@@ -50,7 +50,7 @@ class DataModelSummaryMetadataFunctionalSpec extends CatalogueItemSummaryMetadat
     DataType dataType
 
     String getCatalogueItemCopyPath() {
-        "dataModels/${sourceDataModelId}/newModelVersion"
+        "dataModels/${sourceDataModelId}/newForkModel"
     }
 
     @Transactional
@@ -60,7 +60,7 @@ class DataModelSummaryMetadataFunctionalSpec extends CatalogueItemSummaryMetadat
 
     @Transactional
     String getDestinationDataModelId() {
-        // newModelVersion doesn't require a destination data model
+        // newForkModel doesn't require a destination data model
     }
 
     @OnceBefore

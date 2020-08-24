@@ -30,6 +30,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 import spock.lang.Shared
 
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -57,7 +58,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  |  DELETE  | /api/codeSets/${codeSetId}/readByEveryone       | Action: readByEveryone
  *  |   PUT    | /api/codeSets/${codeSetId}/readByEveryone       | Action: readByEveryone
  *
- *  |   PUT    | /api/codeSets/${codeSetId}/newModelVersion          | Action: newModelVersion
+ *  |   PUT    | /api/codeSets/${codeSetId}/newForkModel          | Action: newForkModel
  *  |   PUT    | /api/codeSets/${codeSetId}/newDocumentationVersion  | Action: newDocumentationVersion
  *  |   PUT    | /api/codeSets/${codeSetId}/finalise                 | Action: finalise
  *
@@ -144,6 +145,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     "show",
     "update"
   ],
+  "branchName": "main",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "type": "CodeSet",
   "documentationVersion": "1.0.0",
@@ -195,14 +197,14 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     }
 
     @PendingFeature(reason = 'Semantic links arent being copied properly')
-    void 'test creating a new model version of a CodeSet'() {
+    void 'test creating a new fork model of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [:])
         verifyResponse OK, response
 
         when: 'adding one new model'
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet reader'], STRING_ARG)
+        PUT("$id/newForkModel", [label: 'Functional Test CodeSet reader'], STRING_ARG)
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
@@ -243,7 +245,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "items": [
     {
       "domainType": "VersionLink",
-      "linkType": "New Model Version Of",
+      "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
         "domainType": "CodeSet",
@@ -260,7 +262,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 }'''
 
         when: 'adding another'
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet editor'], STRING_ARG)
+        PUT("$id/newForkModel", [label: 'Functional Test CodeSet editor'], STRING_ARG)
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
@@ -426,7 +428,90 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData()
     }
 
-    void 'test changing folder from CodeSet context'() {
+    void 'test creating a new branch model version of a CodeSet'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+
+        when:
+        PUT("$id/newBranchModelVersion", [branchName: 'testNewBranchModelVersion'], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, expectedShowJson
+            .replaceFirst(/"branchName": "main",/, '"branchName": "testNewBranchModelVersion",')
+
+        when:
+        GET("$id/semanticLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "domainType": "SemanticLink",
+      "linkType": "Refines",
+      "id": "${json-unit.matches:id}",
+      "sourceCatalogueItem": {
+        "domainType": "CodeSet",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      },
+      "targetCatalogueItem": {
+        "domainType": "CodeSet",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/versionLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "domainType": "VersionLink",
+      "linkType": "New Model Version Of",
+      "id": "${json-unit.matches:id}",
+      "sourceModel": {
+        "domainType": "CodeSet",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      },
+      "targetModel": {
+        "domainType": "CodeSet",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'test creating a main branch model version when one already exists'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+
+        when: 'create default main'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse BAD_REQUEST, response
+        response.body().message.contains('The [branchName] \'main\' already exists for the [label]')
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'cd  folder from CodeSet context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
 

@@ -53,7 +53,7 @@ import static io.micronaut.http.HttpStatus.OK
  *
  *  |  PUT     | /api/terminologies/${terminologyId}/finalise   | Action: finalise
  *
- *  |  PUT     | /api/terminologies/${terminologyId}/newModelVersion          | Action: newModelVersion
+ *  |  PUT     | /api/terminologies/${terminologyId}/newForkModel          | Action: newForkModel
  *  |  PUT     | /api/terminologies/${terminologyId}/newDocumentationVersion  | Action: newDocumentationVersion
  *
  *  |  PUT     | /api/folders/${folderId}/terminologies/${terminologyId}      | Action: changeFolder
@@ -337,7 +337,7 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         String id = getValidFinalisedId()
 
         when: 'not logged in'
-        PUT("$id/newModelVersion", [label: 'Functional Test Terminology v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test Terminology v2'])
 
         then:
         verifyNotFound response, id
@@ -352,7 +352,7 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
 
         when:
         loginAuthenticated()
-        PUT("$id/newModelVersion", [label: 'Functional Test Terminology v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test Terminology v2'])
 
         then:
         verifyNotFound response, id
@@ -367,7 +367,7 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
 
         when: 'logged in as reader'
         loginReader()
-        PUT("$id/newModelVersion", [label: 'Functional Test Terminology v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test Terminology v2'])
 
         then:
         verifyResponse CREATED, response
@@ -382,7 +382,7 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         verifyResponse OK, response
         response.body().count == 1
         response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
         response.body().items.first().sourceModel.id == newId
         response.body().items.first().targetModel.id == id
         response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
@@ -400,7 +400,7 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
 
         when: 'logged in as writer'
         loginEditor()
-        PUT("$id/newModelVersion", [label: 'Functional Test Terminology v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test Terminology v2'])
 
         then:
         verifyResponse CREATED, response
@@ -415,7 +415,7 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         verifyResponse OK, response
         response.body().count == 1
         response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
         response.body().items.first().sourceModel.id == newId
         response.body().items.first().targetModel.id == id
         response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType

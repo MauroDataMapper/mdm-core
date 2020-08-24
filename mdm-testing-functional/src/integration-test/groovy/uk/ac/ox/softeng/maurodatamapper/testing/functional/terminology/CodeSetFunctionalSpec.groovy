@@ -53,7 +53,7 @@ import static io.micronaut.http.HttpStatus.OK
  *
  *  |  PUT     | /api/codeSets/${codeSetId}/finalise   | Action: finalise
  *
- *  |  PUT     | /api/codeSets/${codeSetId}/newModelVersion          | Action: newModelVersion
+ *  |  PUT     | /api/codeSets/${codeSetId}/newForkModel          | Action: newForkModel
  *  |  PUT     | /api/codeSets/${codeSetId}/newDocumentationVersion  | Action: newDocumentationVersion
  *
  *  |  PUT     | /api/folders/${folderId}/codeSets/${codeSetId}      | Action: changeFolder
@@ -308,7 +308,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         String id = getValidFinalisedId()
 
         when: 'not logged in'
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test CodeSet v2'])
 
         then:
         verifyNotFound response, id
@@ -323,7 +323,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
 
         when:
         loginAuthenticated()
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test CodeSet v2'])
 
         then:
         verifyNotFound response, id
@@ -338,7 +338,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
 
         when: 'logged in as reader'
         loginReader()
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test CodeSet v2'])
 
         then:
         verifyResponse CREATED, response
@@ -353,7 +353,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         verifyResponse OK, response
         response.body().count == 1
         response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
         response.body().items.first().sourceModel.id == newId
         response.body().items.first().targetModel.id == id
         response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
@@ -371,7 +371,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
 
         when: 'logged in as writer'
         loginEditor()
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet v2'])
+        PUT("$id/newForkModel", [label: 'Functional Test CodeSet v2'])
 
         then:
         verifyResponse CREATED, response
@@ -386,7 +386,7 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         verifyResponse OK, response
         response.body().count == 1
         response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
         response.body().items.first().sourceModel.id == newId
         response.body().items.first().targetModel.id == id
         response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType

@@ -50,10 +50,10 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         checkAndSave(basicModel2)
         checkAndSave(basicModel3)
 
-        VersionLink sl1 = new VersionLink(createdBy: admin.emailAddress, linkType: VersionLinkType.SUPERSEDED_BY_MODEL)
+        VersionLink sl1 = new VersionLink(createdBy: admin.emailAddress, linkType: VersionLinkType.SUPERSEDED_BY_FORK)
         basicModel.addToVersionLinks(sl1)
         sl1.setTargetModel(basicModel2)
-        VersionLink sl2 = new VersionLink(createdBy: admin.emailAddress, linkType: VersionLinkType.NEW_MODEL_VERSION_OF)
+        VersionLink sl2 = new VersionLink(createdBy: admin.emailAddress, linkType: VersionLinkType.NEW_FORK_OF)
         basicModel.addToVersionLinks(sl2)
         sl2.setTargetModel(basicModel3)
 
@@ -85,7 +85,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
     @Override
     VersionLink getUpdatedAwareItem() {
         VersionLink sl = VersionLink.get(id)
-        sl.linkType = VersionLinkType.NEW_MODEL_VERSION_OF
+        sl.linkType = VersionLinkType.NEW_FORK_OF
         sl
     }
 
@@ -112,7 +112,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         versionLinkList.size() == 1
 
         and:
-        versionLinkList[0].linkType == VersionLinkType.NEW_MODEL_VERSION_OF
+        versionLinkList[0].linkType == VersionLinkType.NEW_FORK_OF
         versionLinkList[0].modelId == BasicModel.findByLabel('dm1').id
         versionLinkList[0].targetModelId == BasicModel.findByLabel('dm3').id
     }
@@ -203,7 +203,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         when:
         VersionLink sl = service.findBySourceModelAndTargetModelAndLinkType(BasicModel.findByLabel('dm1'),
                                                                             BasicModel.findByLabel('dm2'),
-                                                                            VersionLinkType.NEW_MODEL_VERSION_OF)
+                                                                            VersionLinkType.NEW_FORK_OF)
 
         then:
         !sl
@@ -211,7 +211,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         when:
         sl = service.findBySourceModelAndTargetModelAndLinkType(BasicModel.findByLabel('dm1'),
                                                                 BasicModel.findByLabel('dm2'),
-                                                                VersionLinkType.SUPERSEDED_BY_MODEL)
+                                                                VersionLinkType.SUPERSEDED_BY_FORK)
 
         then:
         sl
@@ -221,7 +221,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         when:
         service.deleteBySourceModelAndTargetModelAndLinkType(BasicModel.findByLabel('dm1'),
                                                              BasicModel.findByLabel('dm2'),
-                                                             VersionLinkType.NEW_MODEL_VERSION_OF)
+                                                             VersionLinkType.NEW_FORK_OF)
 
         then:
         service.count() == 2
@@ -229,7 +229,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         when:
         service.deleteBySourceModelAndTargetModelAndLinkType(BasicModel.findByLabel('dm1'),
                                                              BasicModel.findByLabel('dm2'),
-                                                             VersionLinkType.SUPERSEDED_BY_MODEL)
+                                                             VersionLinkType.SUPERSEDED_BY_FORK)
 
         then:
         service.count() == 1
@@ -239,7 +239,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         when:
         VersionLink sl = service.createVersionLink(editor, BasicModel.findByLabel('dm2'),
                                                    BasicModel.findByLabel('dm3'),
-                                                   VersionLinkType.NEW_MODEL_VERSION_OF)
+                                                   VersionLinkType.NEW_FORK_OF)
 
         then:
         sl
@@ -300,8 +300,8 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
                                                 authority: testAuthority)
         checkAndSave basicModel4
 
-        // bm1 SUPERSEDED_BY_MODEL bm2
-        // bm1 NEW_MODEL_VERSION_OF bm3
+        // bm1 SUPERSEDED_BY_FORK bm2
+        // bm1 NEW_FORK_OF bm3
         when:
         List<UUID> ids = service.filterModelIdsWhereModelIdIsDocumentSuperseded('BasicModel', BasicModel.list().id)
 
@@ -334,24 +334,24 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
                                                 authority: testAuthority)
         checkAndSave basicModel4
 
-        // bm1 SUPERSEDED_BY_MODEL bm2 -- bm1 superseded
-        // bm1 NEW_MODEL_VERSION_OF bm3 -- bm3 supersed
+        // bm1 SUPERSEDED_BY_FORK bm2 -- bm1 superseded
+        // bm1 NEW_FORK_OF bm3 -- bm3 supersed
         when:
         List<UUID> ids = service.filterModelIdsWhereModelIdIsModelSuperseded('BasicModel', BasicModel.list().id)
 
         then:
         ids.size() == 2
-        ids.any {it == basicModel.id}
-        ids.any {it == basicModel3.id}
+        ids.any { it == basicModel.id }
+        ids.any { it == basicModel3.id }
 
-        // bm3 NEW_MODEL_VERSION_OF bm2 -- bm2 is superseded
-        // bm4 SUPERSEDED_BY_MODEL bm3 -- bm4 is superseded
+        // bm3 NEW_FORK_OF bm2 -- bm2 is superseded
+        // bm4 SUPERSEDED_BY_FORK bm3 -- bm4 is superseded
         when:
         basicModel3.addToVersionLinks(new VersionLink(createdByUser: admin,
-                                                      linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
+                                                      linkType: VersionLinkType.NEW_FORK_OF,
                                                       targetModel: BasicModel.findByLabel('dm2')))
         basicModel4.addToVersionLinks(new VersionLink(createdByUser: admin,
-                                                      linkType: VersionLinkType.SUPERSEDED_BY_MODEL,
+                                                      linkType: VersionLinkType.SUPERSEDED_BY_FORK,
                                                       targetModel: BasicModel.findByLabel('dm3')))
         checkAndSave(basicModel3)
         checkAndSave(basicModel4)
@@ -391,15 +391,15 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
                                                 authority: testAuthority)
         checkAndSave basicModel4
 
-        // bm1 SUPERSEDED_BY_MODEL bm2 -- bm1 superseded
-        // bm1 NEW_MODEL_VERSION_OF bm3 -- bm3 superseded
+        // bm1 SUPERSEDED_BY_FORK bm2 -- bm1 superseded
+        // bm1 NEW_FORK_OF bm3 -- bm3 superseded
         when:
         List<UUID> ids = service.filterModelIdsWhereModelIdIsSuperseded('BasicModel', BasicModel.list().id)
 
         then:
         ids.size() == 2
-        ids.any {it == basicModel.id}
-        ids.any {it == basicModel3.id}
+        ids.any { it == basicModel.id }
+        ids.any { it == basicModel3.id }
 
         // bm3 NEW_DOCUMENTATION_VERSION_OF bm2 -- bm2 is superseded
         // bm4 SUPERSEDED_BY_DOCUMENTATION bm3 -- bm4 is superseded
@@ -429,14 +429,14 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
                                                 authority: testAuthority)
         checkAndSave basicModel4
 
-        // bm1 SUPERSEDED_BY_MODEL bm2 -- bm1 superseded
-        // bm1 NEW_MODEL_VERSION_OF bm3 -- bm3 superseded
+        // bm1 SUPERSEDED_BY_FORK bm2 -- bm1 superseded
+        // bm1 NEW_FORK_OF bm3 -- bm3 superseded
         when:
         VersionLink link = service.findLatestLinkSupersedingModelId('BasicModel', basicModel.id)
 
         then:
         link
-        link.linkType == VersionLinkType.SUPERSEDED_BY_MODEL
+        link.linkType == VersionLinkType.SUPERSEDED_BY_FORK
         link.targetModelId == basicModel2.id
         link.catalogueItemId == basicModel.id
 
@@ -445,7 +445,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
 
         then:
         link
-        link.linkType == VersionLinkType.NEW_MODEL_VERSION_OF
+        link.linkType == VersionLinkType.NEW_FORK_OF
         link.targetModelId == basicModel3.id
         link.catalogueItemId == basicModel.id
 

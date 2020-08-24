@@ -51,7 +51,7 @@ Controller: dataModel
  |   GET    | /api/dataModels/${dataModelId}/search                                                                                                | Action: search
  |   POST   | /api/dataModels/${dataModelId}/search                                                                                                | Action: search
  |   GET    | /api/dataModels/${dataModelId}/hierarchy                                                                                             | Action: hierarchy
- |   PUT    | /api/dataModels/${dataModelId}/newModelVersion                                                                                       | Action: newModelVersion
+ |   PUT    | /api/dataModels/${dataModelId}/newForkModel                                                                                       | Action: newForkModel
  |   PUT    | /api/dataModels/${dataModelId}/newDocumentationVersion                                                                               | Action: newDocumentationVersion
  |   PUT    | /api/dataModels/${dataModelId}/finalise                                                                                              | Action: finalise
  |   POST   | /api/folders/${folderId}/dataModels                                                                                                  | Action: save

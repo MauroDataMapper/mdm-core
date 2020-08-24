@@ -45,8 +45,9 @@ class UrlMappings {
             '/terminologies'(resources: 'terminology', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
                 put '/finalise'(controller: 'terminology', action: 'finalise')
+                put '/newBranchModelVersion'(controller: 'terminology', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'terminology', action: 'newDocumentationVersion')
-                put '/newModelVersion'(controller: 'terminology', action: 'newModelVersion')
+                put '/newForkModel'(controller: 'terminology', action: 'newForkModel')
 
                 get "/diff/$otherModelId"(controller: 'terminology', action: 'diff') // New URL
                 put "/folder/$folderId"(controller: 'terminology', action: 'changeFolder')
@@ -91,8 +92,9 @@ class UrlMappings {
             '/codeSets'(resources: 'codeSet', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
                 put '/finalise'(controller: 'codeSet', action: 'finalise')
+                put '/newBranchModelVersion'(controller: 'codeSet', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'codeSet', action: 'newDocumentationVersion')
-                put '/newModelVersion'(controller: 'codeSet', action: 'newModelVersion')
+                put '/newForkModel'(controller: 'codeSet', action: 'newForkModel')
 
                 get "/diff/$otherModelId"(controller: 'codeSet', action: 'diff') // New URL
                 put "/folder/$folderId"(controller: 'codeSet', action: 'changeFolder')

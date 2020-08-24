@@ -197,7 +197,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         String firstId = response.body().id
         PUT("dataModels/$firstId/finalise", [:], MAP_ARG, true)
         verifyResponse OK, response
-        PUT("dataModels/$firstId/newModelVersion", [label: 'Functional Test DataModel reader'], MAP_ARG, true)
+        PUT("dataModels/$firstId/newForkModel", [label: 'Functional Test DataModel reader'], MAP_ARG, true)
         verifyResponse CREATED, response
         String secondId = response.body().id
 

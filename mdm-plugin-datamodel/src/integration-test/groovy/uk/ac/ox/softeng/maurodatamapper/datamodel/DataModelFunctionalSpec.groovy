@@ -33,6 +33,7 @@ import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -49,6 +50,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  | GET    | /api/dataModels/types                                   | Action: types                   |
  *  | GET    | /api/dataModels/${dataModelId}/hierarchy                | Action: hierarchy               |
  *  | PUT    | /api/dataModels/${dataModelId}/newVersion               | Action: newVersion              |
+ *  | PUT    | /api/dataModels/${dataModelId}/newBranchModelVersion  | Action: newBranchModelVersion |
  *  | PUT    | /api/dataModels/${dataModelId}/newDocumentationVersion  | Action: newDocumentationVersion |
  *  | PUT    | /api/dataModels/${dataModelId}/finalise                  | Action: finalise                 |
  *  | GET    | /api/dataModels/${dataModelId}/diff/${otherDataModelId} | Action: diff                    |
@@ -127,7 +129,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         '''{
   "domainType": "DataModel",
   "availableActions": ['delete', 'show', 'update'],
-  "branchName":"main",
+  "branchName": "main",
   "finalised": false,
   "label": "Functional Test Model",
   "type": "Data Standard",
@@ -302,14 +304,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test creating a new model version of a DataModel'() {
+    void 'test creating a new fork model of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [:])
         verifyResponse OK, response
 
         when: 'adding one new model'
-        PUT("$id/newModelVersion", [label: 'Functional Test DataModel reader'], STRING_ARG)
+        PUT("$id/newForkModel", [label: 'Functional Test DataModel reader'], STRING_ARG)
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
@@ -350,7 +352,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "items": [
     {
       "domainType": "VersionLink",
-      "linkType": "New Model Version Of",
+      "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
         "domainType": "DataModel",
@@ -367,7 +369,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 }'''
 
         when: 'adding another'
-        PUT("$id/newModelVersion", [label: 'Functional Test DataModel editor'], STRING_ARG)
+        PUT("$id/newForkModel", [label: 'Functional Test DataModel editor'], STRING_ARG)
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
@@ -422,7 +424,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "items": [
     {
       "domainType": "VersionLink",
-      "linkType": "New Model Version Of",
+      "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
         "domainType": "DataModel",
@@ -437,7 +439,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     },
      {
       "domainType": "VersionLink",
-      "linkType": "New Model Version Of",
+      "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
         "domainType": "DataModel",
@@ -467,7 +469,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$id/newDocumentationVersion", [:], STRING_ARG)
 
         then:
-        verifyJsonResponse CREATED, getExpectedShowJson()
+        verifyJsonResponse CREATED, expectedShowJson
             .replaceFirst(/"documentationVersion": "1\.0\.0",/, '"documentationVersion": "2.0.0",')
 
         when:
@@ -528,6 +530,89 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         response.body().total == 1
         response.body().errors.size() == 1
         response.body().errors[0].message.contains('cannot have a new version as it has been superseded by [Functional Test Model')
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'test creating a new branch model version of a DataModel'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+
+        when:
+        PUT("$id/newBranchModelVersion", [branchName: 'testNewBranchModelVersion'], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, expectedShowJson
+            .replaceFirst(/"branchName": "main",/, '"branchName": "testNewBranchModelVersion",')
+
+        when:
+        GET("$id/semanticLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "domainType": "SemanticLink",
+      "linkType": "Refines",
+      "id": "${json-unit.matches:id}",
+      "sourceCatalogueItem": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      },
+      "targetCatalogueItem": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+
+        when:
+        GET("$id/versionLinks", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "domainType": "VersionLink",
+      "linkType": "New Model Version Of",
+      "id": "${json-unit.matches:id}",
+      "sourceModel": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      },
+      "targetModel": {
+        "domainType": "DataModel",
+        "id": "${json-unit.matches:id}",
+        "label": "Functional Test Model"
+      }
+    }
+  ]
+}'''
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'test creating a main branch model version when one already exists'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+
+        when: 'create default main'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse BAD_REQUEST, response
+        response.body().message.contains('The [branchName] \'main\' already exists for the [label]')
 
         cleanup:
         cleanUpData()

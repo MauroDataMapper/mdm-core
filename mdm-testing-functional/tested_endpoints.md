@@ -70,7 +70,7 @@ Controller: codeSet
  |   PUT    | /api/codeSets/${codeSetId}/readByAuthenticated  | Action: readByAuthenticated
  |  DELETE  | /api/codeSets/${codeSetId}/readByEveryone  | Action: readByEveryone
  |   PUT    | /api/codeSets/${codeSetId}/readByEveryone  | Action: readByEveryone
- |   PUT    | /api/codeSets/${codeSetId}/newModelVersion  | Action: newModelVersion
+ |   PUT    | /api/codeSets/${codeSetId}/newForkModel  | Action: newForkModel
  |   PUT    | /api/codeSets/${codeSetId}/newDocumentationVersion  | Action: newDocumentationVersion
  |   PUT    | /api/codeSets/${codeSetId}/finalise  | Action: finalise
  |   POST   | /api/folders/${folderId}/codeSets  | Action: save
@@ -145,7 +145,7 @@ Controller: dataModel
  |  DELETE  | /api/dataModels/${dataModelId}/readByEveryone  | Action: readByEveryone
  |   PUT    | /api/dataModels/${dataModelId}/readByEveryone  | Action: readByEveryone
  |   GET    | /api/dataModels/${dataModelId}/hierarchy  | Action: hierarchy
- |   PUT    | /api/dataModels/${dataModelId}/newModelVersion  | Action: newModelVersion
+ |   PUT    | /api/dataModels/${dataModelId}/newForkModel  | Action: newForkModel
  |   PUT    | /api/dataModels/${dataModelId}/newDocumentationVersion  | Action: newDocumentationVersion
  |   PUT    | /api/dataModels/${dataModelId}/finalise  | Action: finalise
  |   POST   | /api/folders/${folderId}/dataModels  | Action: save
@@ -289,7 +289,7 @@ Controller: terminology
  |   PUT    | /api/terminologies/${terminologyId}/readByAuthenticated  | Action: readByAuthenticated
  |  DELETE  | /api/terminologies/${terminologyId}/readByEveryone  | Action: readByEveryone
  |   PUT    | /api/terminologies/${terminologyId}/readByEveryone  | Action: readByEveryone
- |   PUT    | /api/terminologies/${terminologyId}/newModelVersion  | Action: newModelVersion
+ |   PUT    | /api/terminologies/${terminologyId}/newForkModel  | Action: newForkModel
  |   PUT    | /api/terminologies/${terminologyId}/newDocumentationVersion  | Action: newDocumentationVersion
  |   PUT    | /api/terminologies/${terminologyId}/finalise  | Action: finalise
  |   POST   | /api/folders/${folderId}/terminologies  | Action: save

@@ -28,4 +28,5 @@ class CreateNewVersionData implements Validateable {
     boolean moveDataFlows = false
     boolean copyDataFlows = false
     String label
+    String branchName = 'main'
 }

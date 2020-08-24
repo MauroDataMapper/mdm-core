@@ -73,10 +73,13 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     @Deprecated(forRemoval = true)
     abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds)
 
+    abstract K createNewBranchModelVersion(String branchName, K dataModel, User user, boolean copyPermissions,
+                                           UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
+
     abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
         userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
-    abstract K createNewModelVersion(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
+    abstract K createNewForkModel(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
         userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     ObjectDiff<K> diff(K thisModel, K otherModel) {
