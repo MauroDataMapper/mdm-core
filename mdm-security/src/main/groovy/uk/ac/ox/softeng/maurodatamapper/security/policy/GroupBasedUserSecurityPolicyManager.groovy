@@ -472,24 +472,26 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     private boolean hasAnyAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        if (id) {
-            return virtualSecurableResourceGroupRoles.any {
-                it.domainType == securableResourceClass.simpleName && it.domainId == id
+        if (!id) {
+            log.warn('Checking for any access to secured resource class {} without providing an ID', securableResourceClass.simpleName)
+
+            // No id means indexing endpoint
+            // Users and Groups can be indexed with show actions by the bottom layer of application roles
+            if (Utils.parentClassIsAssignableFromChild(UserGroup, securableResourceClass)) {
+                return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
             }
+
+            if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass)) {
+                return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
+            }
+            log.info("No id access for read rights for {}, default response is false", securableResourceClass)
+            //        return virtualSecurableResourceGroupRoles.any { it.domainType == securableResourceClass.simpleName }
+            return false
         }
 
-        // No id means indexing endpoint
-        // Users and Groups can be indexed with show actions by the bottom layer of application roles
-        if (Utils.parentClassIsAssignableFromChild(UserGroup, securableResourceClass)) {
-            return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
+        return virtualSecurableResourceGroupRoles.any {
+            it.domainType == securableResourceClass.simpleName && it.domainId == id
         }
-
-        if (Utils.parentClassIsAssignableFromChild(CatalogueUser, securableResourceClass)) {
-            return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
-        }
-
-        log.error("***** Second BOOOM not sure we should be here")
-        return virtualSecurableResourceGroupRoles.any { it.domainType == securableResourceClass.simpleName }
     }
 
     private VirtualSecurableResourceGroupRole getSpecificLevelAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass,

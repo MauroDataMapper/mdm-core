@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.file
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
-import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
@@ -77,8 +77,6 @@ class UserImageFileFunctionalSpec extends BaseFunctionalSpec implements Security
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 2
-        assert UserGroup.count() == 1
         implementSecurityUsers('functionalTest')
         assert CatalogueUser.count() == 9
         sessionFactory.currentSession.flush()
@@ -88,9 +86,10 @@ class UserImageFileFunctionalSpec extends BaseFunctionalSpec implements Security
 
     @Transactional
     def cleanupSpec() {
-        cleanUpResources(UserGroup)
-        CatalogueUser.list().findAll { it.emailAddress != UnloggedUser.instance.emailAddress }.each { it.delete(flush: true) }
-        if (CatalogueUser.count() != 1) {
+        CatalogueUser.list().findAll {
+            !(it.emailAddress in [UnloggedUser.UNLOGGED_EMAIL_ADDRESS, StandardEmailAddress.ADMIN])
+        }.each { it.delete(flush: true) }
+        if (CatalogueUser.count() != 2) {
             Assert.fail("Resource Class ${CatalogueUser.simpleName} has not been emptied")
         }
     }
