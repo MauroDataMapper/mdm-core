@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.semanticlink
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -30,6 +29,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpResponse
 import spock.lang.Shared
 
 /**
@@ -47,6 +47,20 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
     DataElement dataElement
     @Shared
     DataType dataType
+
+    String getCatalogueItemCopyPath() {
+        "dataModels/${sourceDataModelId}/newModelVersion"
+    }
+
+    @Transactional
+    String getSourceDataModelId() {
+        DataModel.findByLabel('Functional Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getDestinationDataModelId() {
+        // newModelVersion doesn't require a destination data model
+    }
 
     @OnceBefore
     @Transactional
@@ -119,5 +133,20 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
       }
     ]
   }'''
+    }
+
+    @Override
+    void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
+        // Semantic link only copied for new doc version
+    }
+
+    @Override
+    HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
+        // Semantic link only copied for new doc version
+    }
+
+    @Override
+    void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
+        // Semantic link only copied for new doc version
     }
 }

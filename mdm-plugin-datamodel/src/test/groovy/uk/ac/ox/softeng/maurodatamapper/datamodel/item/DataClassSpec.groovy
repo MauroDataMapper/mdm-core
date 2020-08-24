@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -177,7 +177,7 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
 
         then: 'datamodel should not be valid'
         thrown(InternalSpockError)
-        dataSet.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
+        dataSet.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
     }
 
     void 'test unique label naming for direct child dataclasses of 2 datamodels'() {
@@ -224,6 +224,6 @@ class DataClassSpec extends ModelItemSpec<DataClass> implements DomainUnitTest<D
 
         then:
         thrown(InternalSpockError)
-        domain.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
+        domain.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
     }
 }

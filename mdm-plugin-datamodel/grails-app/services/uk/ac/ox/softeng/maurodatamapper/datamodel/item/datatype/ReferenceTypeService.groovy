@@ -70,12 +70,6 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     }
 
     @Override
-    ReferenceType save(ReferenceType catalogueItem) {
-        catalogueItem.save(flush: true)
-    }
-
-
-    @Override
     boolean hasTreeTypeModelItems(ReferenceType catalogueItem) {
         false
     }

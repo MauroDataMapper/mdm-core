@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -33,8 +32,6 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 @Transactional
 class DataElementComponentService extends ModelItemService<DataElementComponent> {
-
-    SemanticLinkService semanticLinkService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -57,12 +54,6 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         DataElementComponent.count()
     }
 
-    @Override
-    DataElementComponent save(DataElementComponent dataElementComponent) {
-        dataElementComponent.save(flush: true)
-        updateFacetsAfterInsertingCatalogueItem(dataElementComponent)
-    }
-
     void delete(Serializable id) {
         DataElementComponent dataElementComponent = get(id)
         if (dataElementComponent) delete(dataElementComponent)
@@ -74,8 +65,8 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
         DataClassComponent dataClassComponent = proxyHandler.unwrapIfProxy(dataElementComponent.dataClassComponent) as DataClassComponent
         dataElementComponent.dataClassComponent = dataClassComponent
 
-        dataElementComponent.sourceDataElements.each {source ->
-            dataElementComponent.targetDataElements.each {target ->
+        dataElementComponent.sourceDataElements.each { source ->
+            dataElementComponent.targetDataElements.each { target ->
                 semanticLinkService.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
             }
         }
@@ -124,7 +115,7 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
     @Override
     List<DataElementComponent> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         DataElementComponent.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override

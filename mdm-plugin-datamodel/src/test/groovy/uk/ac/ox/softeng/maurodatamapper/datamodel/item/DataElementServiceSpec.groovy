@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
@@ -49,6 +49,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
     def setup() {
         log.debug('Setting up DataElementServiceSpec Unit')
         mockArtefact(DataTypeService)
+        mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
         dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
@@ -168,7 +169,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = service.copyDataElement(dataModel, original, editor)
+        DataElement copy = service.copyDataElement(dataModel, original, editor, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:
@@ -193,7 +194,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         copy.dataType.label == original.dataType.label
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test copying DataElement with metadata and classifiers'() {
@@ -206,7 +207,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = service.copyDataElement(dataModel, original, admin)
+        DataElement copy = service.copyDataElement(dataModel, original, editor, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:
@@ -223,8 +224,8 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         copy.maxMultiplicity == original.maxMultiplicity
 
         and:
-        copy.metadata.every {md ->
-            original.metadata.any {md.namespace == it.namespace && md.key == it.key && md.value == it.value}
+        copy.metadata.every { md ->
+            original.metadata.any { md.namespace == it.namespace && md.key == it.key && md.value == it.value }
         }
 
         and:
@@ -232,7 +233,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         !original.classifiers
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
 
     }
 
@@ -247,7 +248,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         checkAndSave(copyModel)
 
         when:
-        DataElement copy = service.copyDataElement(copyModel, original, editor)
+        DataElement copy = service.copyDataElement(copyModel, original, editor, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:
@@ -272,6 +273,6 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         copy.dataType.label == original.dataType.label
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 }

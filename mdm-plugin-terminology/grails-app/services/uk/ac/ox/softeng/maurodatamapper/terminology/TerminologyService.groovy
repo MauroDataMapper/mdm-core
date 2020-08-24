@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
@@ -43,7 +42,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -60,9 +58,6 @@ class TerminologyService extends ModelService<Terminology> {
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
-    ClassifierService classifierService
-
-    SessionFactory sessionFactory
 
     @Override
     Terminology get(Serializable id) {
@@ -135,8 +130,7 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     Terminology save(Terminology terminology) {
         log.debug('Saving {}({}) without batching', terminology.label, terminology.ident())
-        terminology.save(failOnError: true, validate: false)
-        updateFacetsAfterInsertingCatalogueItem(terminology)
+        save(failOnError: true, validate: false, flush: false, terminology)
     }
 
     @Override
@@ -235,13 +229,14 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology createNewDocumentationVersion(Terminology terminology, User user, boolean copyPermissions, Map<String, Object> additionalArguments) {
+    Terminology createNewDocumentationVersion(Terminology terminology, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(terminology)) return terminology
 
         Terminology newDocVersion = copyTerminology(terminology, user, copyPermissions, terminology.label,
                                                     Version.nextMajorVersion(terminology.documentationVersion),
-                                                    additionalArguments.throwErrors as boolean)
+                                                    additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setTerminologyIsNewDocumentationVersionOfTerminology(newDocVersion, terminology, user)
 
         if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
@@ -249,30 +244,32 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology createNewModelVersion(String label, Terminology terminology, User user, boolean copyPermissions,
-                                      Map<String, Object> additionalArguments) {
+    Terminology createNewModelVersion(String label, Terminology terminology, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(terminology)) return terminology
 
-        Terminology newModelVersion = copyTerminology(terminology, user, copyPermissions, label, additionalArguments.throwErrors as boolean)
+        Terminology newModelVersion =
+            copyTerminology(terminology, user, copyPermissions, label, additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setTerminologyIsNewModelVersionOfTerminology(newModelVersion, terminology, user)
 
         if (newModelVersion.validate()) newModelVersion.save(flush: true, validate: false)
         newModelVersion
     }
 
-    Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label, boolean throwErrors) {
-        copyTerminology(original, copier, copyPermissions, label, Version.from('1'), throwErrors)
+    Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                                UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTerminology(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
     }
 
     Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label,
-                                Version copyVersion, boolean throwErrors) {
+                                Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         Terminology copy = new Terminology(author: original.author,
                                            organisation: original.organisation,
                                            finalised: false, deleted: false, documentationVersion: copyVersion,
                                            folder: original.folder, authority: original.authority
         )
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label
 
         if (copyPermissions) {
@@ -286,7 +283,7 @@ class TerminologyService extends ModelService<Terminology> {
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         if (copy.validate()) {
-            copy.save(validate: false)
+            save(copy, validate: false)
             editService.createAndSaveEdit(copy.id, copy.domainType,
                                           "Terminology ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
@@ -296,26 +293,26 @@ class TerminologyService extends ModelService<Terminology> {
         copy.trackChanges()
 
         // Copy all the TermRelationshipType
-        original.termRelationshipTypes?.each {trt ->
+        original.termRelationshipTypes?.each { trt ->
             termRelationshipTypeService.copyTermRelationshipType(copy, trt, copier)
         }
 
         // Copy all the terms
-        original.terms?.each {term ->
-            termService.copyTerm(copy, term, copier)
+        original.terms?.each { term ->
+            termService.copyTerm(copy, term, copier, userSecurityPolicyManager)
         }
 
         // Copy all the term relationships
         // We need all the terms to exist so we can create the links
         // Only copy source relationships as this will propgate the target relationships
-        original.terms?.each {term ->
-            term.sourceTermRelationships.each {relationship ->
+        original.terms?.each { term ->
+            term.sourceTermRelationships.each { relationship ->
                 termRelationshipService.copyTermRelationship(copy, relationship, copier)
             }
         }
 
         if (original.semanticLinks) {
-            original.semanticLinks.each {link ->
+            original.semanticLinks.each { link ->
                 copy.addToSemanticLinks(createdBy: copier.emailAddress,
                                         linkType: link.linkType,
                                         targetCatalogueItemId: link.targetCatalogueItemId,
@@ -324,7 +321,7 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         if (original.versionLinks) {
-            original.versionLinks.each {link ->
+            original.versionLinks.each { link ->
                 copy.addToVersionLinks(createdBy: copier.emailAddress,
                                        linkType: link.linkType,
                                        targetModelId: link.targetModelId,
@@ -366,14 +363,14 @@ class TerminologyService extends ModelService<Terminology> {
         // No parental or child relationships then ensure all depths are 1
         if (hasNoValidRelationships) {
             log.debug('No parent/child relationships so all terms are depth 1')
-            terminology.terms.each {it.depth = 1}
+            terminology.terms.each { it.depth = 1 }
             return terminology
         }
 
         log.debug('Updating all term depths')
         // Reset all track changes, as this whole process needs to be done AFTER insert into database
         // the only changes here should be depths
-        terminology.terms.each {it.trackChanges()}
+        terminology.terms.each { it.trackChanges() }
         terminology.terms.each {
             termService.updateDepth(it, inMemory)
         }
@@ -432,7 +429,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     List<Terminology> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        Terminology.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id)}
+        Terminology.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.id) }
     }
 
     @Override
@@ -588,12 +585,12 @@ class TerminologyService extends ModelService<Terminology> {
 
             if (countByLabel(terminology.label)) {
                 List<Terminology> existingModels = findAllByLabel(terminology.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting Terminology as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser)
                     setTerminologyIsNewDocumentationVersionOfTerminology(terminology, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 terminology.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Terminologys with label [{}]', terminology.label)

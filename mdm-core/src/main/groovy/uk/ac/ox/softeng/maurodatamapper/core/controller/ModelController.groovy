@@ -138,7 +138,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUserSecurityPolicyManager = securityPolicyManagerService.removeSecurityForSecurableResource(instance, currentUser)
             }
             request.withFormat {
-                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
+                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
             }
             return
         }
@@ -243,7 +243,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        T copy = getModelService().createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions)
+        T copy = getModelService().
+            createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager)
 
         if (!validateResource(copy, 'create')) return
 
@@ -270,7 +271,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         try {
-            T copy = getModelService().createNewModelVersion(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions)
+            T copy = getModelService().createNewModelVersion(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
+                                                             currentUserSecurityPolicyManager)
 
             if (!validateResource(copy, 'create')) return
 
@@ -457,12 +459,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
-        result.each {m ->
+        result.each { m ->
             m.folder = folder
             getModelService().validate(m)
         }
 
-        if (result.any {it.hasErrors()}) {
+        if (result.any { it.hasErrors() }) {
             log.debug('Errors found in imported models')
             transactionStatus.setRollbackOnly()
             respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
@@ -507,7 +509,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     @Override
     protected void serviceInsertResource(T resource) {
-        T model = getModelService().save(resource)
+        T model = getModelService().save(flush: true, resource)
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(model, currentUser, model.label)
         }

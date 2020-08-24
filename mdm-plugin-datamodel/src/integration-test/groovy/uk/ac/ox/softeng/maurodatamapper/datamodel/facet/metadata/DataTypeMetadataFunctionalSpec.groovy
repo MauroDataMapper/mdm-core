@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.metadata
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -44,11 +43,23 @@ class DataTypeMetadataFunctionalSpec extends CatalogueItemMetadataFunctionalSpec
     @Shared
     DataModel dataModel
     @Shared
+    DataModel destinationDataModel
+    @Shared
     DataClass dataClass
     @Shared
     DataElement dataElement
     @Shared
     DataType dataType
+
+    @Transactional
+    String getSourceDataModelId() {
+        DataModel.findByLabel('Functional Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getDestinationDataModelId() {
+        DataModel.findByLabel('Destination Test DataModel').id.toString()
+    }
 
     @OnceBefore
     @Transactional
@@ -56,6 +67,8 @@ class DataTypeMetadataFunctionalSpec extends CatalogueItemMetadataFunctionalSpec
         log.debug('Check and setup test data')
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
+        destinationDataModel = new DataModel(label: 'Destination Test DataModel', createdBy: 'functionalTest@test.com',
+                                             folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
                                   dataModel: dataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',

@@ -71,12 +71,6 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> {
     }
 
     @Override
-    PrimitiveType save(PrimitiveType catalogueItem) {
-        catalogueItem.save(flush: true)
-    }
-
-
-    @Override
     boolean hasTreeTypeModelItems(PrimitiveType catalogueItem) {
         false
     }

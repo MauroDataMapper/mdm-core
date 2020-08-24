@@ -44,11 +44,40 @@ class DataElementSummaryMetadataReportFunctionalSpec extends CatalogueItemSummar
     @Shared
     DataModel dataModel
     @Shared
+    DataModel destinationDataModel
+    @Shared
     DataClass dataClass
+    @Shared
+    DataClass destinationDataClass
     @Shared
     DataElement dataElement
     @Shared
     DataType dataType
+
+    String getCatalogueItemCopyPath() {
+        """dataModels/${destinationDataModelId}/dataClasses/${destinationDataClassId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}\
+/${sourceDataClassId}/${catalogueItemId}"""
+    }
+
+    @Transactional
+    String getSourceDataModelId() {
+        DataModel.findByLabel('Functional Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getDestinationDataModelId() {
+        DataModel.findByLabel('Destination Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getSourceDataClassId() {
+        DataClass.findByLabel('Functional Test DataClass').id.toString()
+    }
+
+    @Transactional
+    String getDestinationDataClassId() {
+        DataClass.findByLabel('Destination Test DataClass').id.toString()
+    }
 
     @OnceBefore
     @Transactional
@@ -56,8 +85,12 @@ class DataElementSummaryMetadataReportFunctionalSpec extends CatalogueItemSummar
         log.debug('Check and setup test data')
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   folder: folder, authority: testAuthority).save(flush: true)
+        destinationDataModel = new DataModel(label: 'Destination Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+                                             folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                   dataModel: dataModel).save(flush: true)
+        destinationDataClass = new DataClass(label: 'Destination Test DataClass', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+                                             dataModel: destinationDataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                      dataModel: dataModel).save(flush: true)
         dataElement = new DataElement(label: 'Functional Test DataElement', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,

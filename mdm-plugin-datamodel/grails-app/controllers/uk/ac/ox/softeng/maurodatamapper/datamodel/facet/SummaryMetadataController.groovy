@@ -50,7 +50,7 @@ class SummaryMetadataController extends EditLoggingController<SummaryMetadata> {
         resource.catalogueItem = summaryMetadataService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
         if (resource.summaryMetadataReports) {
             for (def report : resource.summaryMetadataReports) {
-                if(!report.createdBy) report.createdBy = resource.createdBy
+                if (!report.createdBy) report.createdBy = resource.createdBy
             }
         }
         resource

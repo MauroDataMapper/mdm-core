@@ -95,7 +95,8 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
         DataClass copy
         try {
-            copy = dataClassService.copyDataClassMatchingAllReferenceTypes(dataModel, original, currentUser, params.dataClassId)
+            copy = dataClassService.copyDataClassMatchingAllReferenceTypes(dataModel, original, currentUser, currentUserSecurityPolicyManager,
+                                                                           params.dataClassId)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422
@@ -143,7 +144,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     protected void serviceInsertResource(DataClass resource) {
-        dataClassService.save(resource)
+        dataClassService.save(flush: true, resource)
     }
 
     @Override

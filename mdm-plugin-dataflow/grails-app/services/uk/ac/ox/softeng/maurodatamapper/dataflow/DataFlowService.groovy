@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -35,7 +34,6 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 class DataFlowService extends ModelItemService<DataFlow> {
 
     DataClassComponentService dataClassComponentService
-    SemanticLinkService semanticLinkService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
@@ -55,12 +53,6 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
     Long count() {
         DataFlow.count()
-    }
-
-    @Override
-    DataFlow save(DataFlow dataFlow) {
-        dataFlow.save(flush: true)
-        updateFacetsAfterInsertingCatalogueItem(dataFlow)
     }
 
     void delete(Serializable id) {
@@ -130,17 +122,17 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
         Set<DataFlow> dataFlows = [] as Set
 
-        dataFlows.addAll buildTargetChain(allReadableDataFlows, allReadableDataFlows.findAll {it.refersToDataModelId(dataModelId)})
-        dataFlows.addAll buildSourceChain(allReadableDataFlows, allReadableDataFlows.findAll {it.refersToDataModelId(dataModelId)})
+        dataFlows.addAll buildTargetChain(allReadableDataFlows, allReadableDataFlows.findAll { it.refersToDataModelId(dataModelId) })
+        dataFlows.addAll buildSourceChain(allReadableDataFlows, allReadableDataFlows.findAll { it.refersToDataModelId(dataModelId) })
 
         dataFlows.toList() as List<DataFlow>
     }
 
     def buildTargetChain(List<DataFlow> readableDataFlows, Collection<DataFlow> dataFlowChain) {
 
-        Set<DataModel> targets = dataFlowChain.collect {it.target}.toSet()
+        Set<DataModel> targets = dataFlowChain.collect { it.target }.toSet()
 
-        Set<DataFlow> targetDataFlows = readableDataFlows.findAll {it.source in targets}.toSet()
+        Set<DataFlow> targetDataFlows = readableDataFlows.findAll { it.source in targets }.toSet()
 
         if (targetDataFlows) {
             targetDataFlows = buildTargetChain(readableDataFlows - targetDataFlows, targetDataFlows)
@@ -151,9 +143,9 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
     def buildSourceChain(List<DataFlow> readableDataFlows, Collection<DataFlow> dataFlowChain) {
 
-        Set<DataModel> sources = dataFlowChain.collect {it.source}.toSet()
+        Set<DataModel> sources = dataFlowChain.collect { it.source }.toSet()
 
-        Set<DataFlow> sourceDataFlows = readableDataFlows.findAll {it.target in sources}.toSet()
+        Set<DataFlow> sourceDataFlows = readableDataFlows.findAll { it.target in sources }.toSet()
 
         if (sourceDataFlows) {
             sourceDataFlows = buildSourceChain(readableDataFlows - sourceDataFlows, sourceDataFlows)
@@ -263,7 +255,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
 
     @Override
     List<DataFlow> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataFlow.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+        DataFlow.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -25,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
@@ -47,6 +47,8 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     Boolean buildComplex = false
 
     DataModel complexDataModel
+
+    UserSecurityPolicyManager userSecurityPolicyManager
 
     void setupDomainData() {
         log.debug('Setting up DataElementServiceSpec')
@@ -132,7 +134,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         expect:
         dataElementService.count() == 5
-        BreadcrumbTree.findByDomainType('DataElement').any {it.domainId == id}
+        BreadcrumbTree.findByDomainType('DataElement').any { it.domainId == id }
 
         when:
         dataElementService.delete(id)
@@ -140,7 +142,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         dataElementService.count() == 4
-        BreadcrumbTree.findByDomainType('DataElement').every {it.domainId != id}
+        BreadcrumbTree.findByDomainType('DataElement').every { it.domainId != id }
     }
 
     void 'test findByDataClassIdAndId'() {
@@ -251,7 +253,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = dataElementService.copyDataElement(dataModel, original, editor)
+        DataElement copy = dataElementService.copyDataElement(dataModel, original, editor, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:
@@ -276,7 +278,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.dataType.label == original.dataType.label
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test copying DataElement with metadata and classifiers'() {
@@ -290,7 +292,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel)
 
         when:
-        DataElement copy = dataElementService.copyDataElement(dataModel, original, admin)
+        DataElement copy = dataElementService.copyDataElement(dataModel, original, admin, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:
@@ -307,15 +309,15 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.maxMultiplicity == original.maxMultiplicity
 
         and:
-        copy.metadata.every {md ->
-            original.metadata.any {md.namespace == it.namespace && md.key == it.key && md.value == it.value}
+        copy.metadata.every { md ->
+            original.metadata.any { md.namespace == it.namespace && md.key == it.key && md.value == it.value }
         }
 
         and:
         copy.classifiers == original.classifiers
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
 
     }
 
@@ -331,7 +333,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(copyModel)
 
         when:
-        DataElement copy = dataElementService.copyDataElement(copyModel, original, editor)
+        DataElement copy = dataElementService.copyDataElement(copyModel, original, editor, userSecurityPolicyManager)
         copyClass.addToDataElements(copy)
 
         then:
@@ -356,7 +358,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.dataType.label == original.dataType.label
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test finding all similar DataElements in another model'() {

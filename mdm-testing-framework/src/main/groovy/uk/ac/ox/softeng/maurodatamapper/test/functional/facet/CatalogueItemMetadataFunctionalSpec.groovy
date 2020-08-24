@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 
 import groovy.util.logging.Slf4j
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 
 /**
  * Where facet owner is a DataClass
@@ -33,6 +35,10 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 abstract class CatalogueItemMetadataFunctionalSpec extends CatalogueItemFacetFunctionalSpec<Metadata> {
+
+    abstract String getSourceDataModelId()
+
+    abstract String getDestinationDataModelId()
 
     @Override
     String getFacetResourcePath() {
@@ -79,5 +85,40 @@ abstract class CatalogueItemMetadataFunctionalSpec extends CatalogueItemFacetFun
     void verifyR4UpdateResponse() {
         super.verifyR4UpdateResponse()
         response.body().value == 'ftv.update'
+    }
+
+    void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
+        verifyResponse(HttpStatus.CREATED, response)
+    }
+
+    HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
+        String copyId = response.body().id
+        GET(getCopyResourcePath(copyId), MAP_ARG, true)
+    }
+
+    void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
+        verifyResponse(HttpStatus.OK, response)
+        assert response.body().count == 1
+        assert response.body().items.size() == 1
+    }
+
+    void 'CIF01 : Test facet copied with catalogue item'() {
+        given: 'Create new facet on catalogue item'
+        def id = createNewItem(validJson)
+
+        when: 'Copy catalogue item'
+        POST(catalogueItemCopyPath, [:], MAP_ARG, true)
+
+        then: 'Check successful copy'
+        verifyCIF01SuccessfulCatalogueItemCopy(response)
+
+        when: 'Retrieve the facets on the newly copied catalogue item'
+        requestCIF01CopiedCatalogueItemFacet(response)
+
+        then: 'Check our recent new facet was copied with the catalogue item'
+        verifyCIF01CopiedFacetSuccessfully(response)
+
+        cleanup: 'Remove facet from source catalogue item'
+        cleanUpData(id)
     }
 }

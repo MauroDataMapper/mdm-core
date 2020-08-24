@@ -89,7 +89,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec EnumerationValueFunctionalSpec')
-        cleanUpResources(DataType, DataModel, Folder)
+        cleanUpResources(EnumerationType, DataType, DataModel, Folder)
         Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
@@ -99,7 +99,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
             GET('')
             assert response.status() == OK
             def items = response.body().items
-            items.each {i ->
+            items.each { i ->
                 if (i.key != 'A') {
                     DELETE(getDeleteEndpoint(i.id))
                     assert response.status() == HttpStatus.NO_CONTENT

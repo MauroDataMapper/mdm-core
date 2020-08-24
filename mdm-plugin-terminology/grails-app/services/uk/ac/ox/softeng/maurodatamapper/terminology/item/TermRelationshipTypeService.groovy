@@ -60,12 +60,6 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
         TermRelationshipType.count()
     }
 
-    @Override
-    TermRelationshipType save(TermRelationshipType termRelationshipType) {
-        termRelationshipType.save(flush: true)
-        updateFacetsAfterInsertingCatalogueItem(termRelationshipType)
-    }
-
     void delete(Serializable id) {
         TermRelationshipType termRelationshipType = get(id)
         if (termRelationshipType) delete(termRelationshipType)
@@ -155,7 +149,7 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     @Override
     List<TermRelationshipType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         TermRelationshipType.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
     }
 
     @Override

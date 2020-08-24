@@ -17,13 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
@@ -35,6 +35,7 @@ import groovy.util.logging.Slf4j
 class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     DataClassService dataClassService
+    UserSecurityPolicyManager userSecurityPolicyManager
 
     @Override
     void setupDomainData() {
@@ -110,14 +111,14 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         and:
         dataClassList[0].label == 'Integration grandparent'
         dataClassList[0].dataClasses.size() == 1
-        dataClassList[0].dataClasses.find {it.label == 'Integration parent'}
+        dataClassList[0].dataClasses.find { it.label == 'Integration parent' }
 
         and:
         dataClassList[1].label == 'Integration parent'
         dataClassList[1].minMultiplicity == 0
         dataClassList[1].maxMultiplicity == 1
         dataClassList[1].dataClasses.size() == 1
-        dataClassList[1].dataClasses.find {it.label == 'Integration child'}
+        dataClassList[1].dataClasses.find { it.label == 'Integration child' }
     }
 
     void "test count"() {
@@ -268,7 +269,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataClass original = dataClassService.get(vsimple.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -293,7 +294,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.referenceTypes
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test copying simple DataClass with simple data elements'() {
@@ -320,7 +321,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataClass original = dataClassService.get(content.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -346,24 +347,24 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.dataElements.size() == original.dataElements.size()
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test copying complex dataclass'() {
         given:
         setupData()
-        DataClass complex = dataModel.dataClasses.find {it.label == 'Integration grandparent'}
+        DataClass complex = dataModel.dataClasses.find { it.label == 'Integration grandparent' }
         DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
         //copyModel.addToDataTypes(new ReferenceType(createdByUser:editor, label: 'dataclass'))
-        dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor)
+        dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find { it.label == 'dc1' }, editor, userSecurityPolicyManager)
 
         expect:
         checkAndSave(copyModel)
 
         when:
         DataClass original = dataClassService.get(complex.id)
-        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor)
+        DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -389,7 +390,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.referenceTypes
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
 
         when:
         DataClass copiedParent = copy.dataClasses.first()
@@ -398,20 +399,20 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copiedParent
         copiedParent.label == 'Integration parent'
         copiedParent.dataClasses.size() == 1
-        copiedParent.dataClasses.find {it.label == 'Integration child'}
+        copiedParent.dataClasses.find { it.label == 'Integration child' }
         copiedParent.dataElements.size() == 1
         copiedParent.referenceTypes.size() == 1
-        copiedParent.referenceTypes.find {it.label == 'Integration parent'}
+        copiedParent.referenceTypes.find { it.label == 'Integration parent' }
 
         when:
-        ReferenceType referenceType = copyModel.dataTypes.find {it.label == 'Integration parent'} as ReferenceType
+        ReferenceType referenceType = copyModel.dataTypes.find { it.label == 'Integration parent' } as ReferenceType
 
         then:
         referenceType
         referenceType.referenceClass == copiedParent
 
         when:
-        DataElement copiedElement = copiedParent.dataElements.find {it.label == 'parentel'}
+        DataElement copiedElement = copiedParent.dataElements.find { it.label == 'parentel' }
 
         then:
         copiedElement

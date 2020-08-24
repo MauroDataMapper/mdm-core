@@ -31,13 +31,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 
 @Slf4j
 @Transactional
 class TermRelationshipService extends ModelItemService<TermRelationship> {
-
-    SessionFactory sessionFactory
 
     TermRelationship get(Serializable id) {
         TermRelationship.get(id)
@@ -77,7 +74,7 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         long start = System.currentTimeMillis()
         List batch = []
         int count = 0
-        relationships.each {relationship ->
+        relationships.each { relationship ->
             batch += relationship
             count++
             if (count % TermRelationship.BATCH_SIZE == 0) {
@@ -168,7 +165,7 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     @Override
     List<TermRelationship> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         TermRelationship.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
     }
 
     @Override
@@ -185,12 +182,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     @Override
     TermRelationship updateIndexForModelItemInParent(TermRelationship modelItem, CatalogueItem parent, int newIndex) {
         throw new ApiNotYetImplementedException('TRSXX', 'TermRelationshipType Ordering')
-    }
-
-    @Override
-    TermRelationship save(TermRelationship catalogueItem) {
-        catalogueItem.save(flush: true)
-        updateFacetsAfterInsertingCatalogueItem(catalogueItem)
     }
 
     @Override

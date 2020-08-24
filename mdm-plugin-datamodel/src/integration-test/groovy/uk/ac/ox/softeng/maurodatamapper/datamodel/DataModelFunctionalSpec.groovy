@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -1807,8 +1806,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         ])
 
         verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        def term = 'emptyclass'
+        String id = response.body().items[0].id
+        String term = 'emptyclass'
 
         expect:
         id
@@ -1837,6 +1836,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                         }
                       ]
                     }'''
+        cleanup:
+        cleanUpData(id)
     }
 
     void 'test searching for label "emptyclass" in simple model'() {
@@ -1853,8 +1854,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         ])
 
         verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        def term = 'emptyclass'
+        String id = response.body().items[0].id
+        String term = 'emptyclass'
 
         expect:
         id
@@ -1866,6 +1867,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         response.body().count == 0
         response.body().items.size() == 0
+
+        cleanup:
+        cleanUpData(id)
     }
 
     @Transactional
@@ -1943,6 +1947,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse OK, expectedLinkSuggestions(['', '', ''])
+
+        cleanup:
+        cleanUpData(complexDataModelId)
+        cleanUpData(simpleDataModelId)
     }
 
     void 'test get link suggestions for a model'() {
@@ -1984,6 +1992,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse OK, expectedLinkSuggestions(expectedLinkSuggestionResults())
+
+        cleanup:
+        cleanUpData(complexDataModelId)
+        cleanUpData(simpleDataModelId)
     }
 
 

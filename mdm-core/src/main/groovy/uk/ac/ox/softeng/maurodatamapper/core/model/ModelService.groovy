@@ -73,9 +73,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     @Deprecated(forRemoval = true)
     abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds)
 
-    abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments = [:])
+    abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
-    abstract K createNewModelVersion(String label, K dataModel, User user, boolean copyPermissions, Map<String, Object> additionalArguments = [:])
+    abstract K createNewModelVersion(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     ObjectDiff<K> diff(K thisModel, K otherModel) {
         thisModel.diff(otherModel)
@@ -98,7 +100,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.versionLinks) {
             catalogueItem.versionLinks.each {
-                it.trackChanges()
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
             VersionLink.saveAll(catalogueItem.versionLinks)

@@ -72,11 +72,6 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
     }
 
     @Override
-    EnumerationType save(EnumerationType catalogueItem) {
-        catalogueItem.save(flush: true)
-    }
-
-    @Override
     boolean hasTreeTypeModelItems(EnumerationType catalogueItem) {
         false
     }

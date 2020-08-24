@@ -119,7 +119,7 @@ class TermController extends CatalogueItemController<Term> {
 
     @Override
     protected void serviceInsertResource(Term resource) {
-        termService.save(resource)
+        termService.save(flush: true, resource)
     }
 
     @Override

@@ -17,11 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
@@ -43,9 +42,9 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     def setup() {
         log.debug('Setting up DataClassServiceSpec Unit')
-        mockArtefact(SemanticLinkService)
         mockArtefact(DataTypeService)
         mockArtefact(DataElementService)
+        mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 
         dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
@@ -119,12 +118,12 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         dataClassList[0].minMultiplicity == 0
         dataClassList[0].maxMultiplicity == 1
         dataClassList[0].dataClasses.size() == 1
-        dataClassList[0].dataClasses.find {it.label == 'Unit child'}
+        dataClassList[0].dataClasses.find { it.label == 'Unit child' }
 
         and:
         dataClassList[1].label == 'Unit grandparent'
         dataClassList[1].dataClasses.size() == 1
-        dataClassList[1].dataClasses.find {it.label == 'Unit parent'}
+        dataClassList[1].dataClasses.find { it.label == 'Unit parent' }
     }
 
 
@@ -183,7 +182,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when:
         DataClass original = service.get(vsimple.id)
-        DataClass copy = service.copyDataClass(copyModel, original, editor)
+        DataClass copy = service.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -210,7 +209,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         !copy.referenceTypes
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test copying simple DataClass with simple data elements'() {
@@ -235,7 +234,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when:
         DataClass original = service.get(content.id)
-        DataClass copy = service.copyDataClass(copyModel, original, editor)
+        DataClass copy = service.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -263,12 +262,12 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         copy.dataElements.size() == original.dataElements.size()
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
     void 'test copying complex dataclass'() {
         given:
-        DataClass complex = dataModel.dataClasses.find {it.label == 'Unit grandparent'}
+        DataClass complex = dataModel.dataClasses.find { it.label == 'Unit grandparent' }
 
         DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
@@ -276,14 +275,14 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         checkAndSave(copyModel)
 
         when:
-        service.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor)
+        service.copyDataClass(copyModel, dataModel.childDataClasses.find { it.label == 'dc1' }, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
 
         when:
         DataClass original = service.get(complex.id)
-        DataClass copy = service.copyDataClassMatchingAllReferenceTypes(copyModel, original, editor, null)
+        DataClass copy = service.copyDataClassMatchingAllReferenceTypes(copyModel, original, editor, null, null)
 
         then:
         checkAndSave(copyModel)
@@ -311,7 +310,7 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         !copy.referenceTypes
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
 
         when:
         DataClass copiedParent = copy.dataClasses.first()
@@ -320,20 +319,20 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         copiedParent
         copiedParent.label == 'Unit parent'
         copiedParent.dataClasses.size() == 1
-        copiedParent.dataClasses.find {it.label == 'Unit child'}
+        copiedParent.dataClasses.find { it.label == 'Unit child' }
         copiedParent.dataElements.size() == 1
         copiedParent.referenceTypes.size() == 1
-        copiedParent.referenceTypes.find {it.label == 'Unit parent'}
+        copiedParent.referenceTypes.find { it.label == 'Unit parent' }
 
         when:
-        ReferenceType referenceType = copyModel.dataTypes.find {it.label == 'Unit parent'} as ReferenceType
+        ReferenceType referenceType = copyModel.dataTypes.find { it.label == 'Unit parent' } as ReferenceType
 
         then:
         referenceType
         referenceType.referenceClass == copiedParent
 
         when:
-        DataElement copiedElement = copiedParent.dataElements.find {it.label == 'parentel'}
+        DataElement copiedElement = copiedParent.dataElements.find { it.label == 'parentel' }
 
         then:
         copiedElement

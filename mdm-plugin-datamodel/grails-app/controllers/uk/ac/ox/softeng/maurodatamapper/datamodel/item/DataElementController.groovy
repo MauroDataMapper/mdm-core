@@ -44,13 +44,15 @@ class DataElementController extends CatalogueItemController<DataElement> {
         DataModel dataModel = dataModelService.get(params.dataModelId)
         DataClass dataClass = dataClassService.get(params.dataClassId)
         DataElement original = dataElementService.findByDataClassIdAndId(params.otherDataClassId, params.dataElementId)
+        DataModel originalDataModel = dataModelService.get(params.otherDataModelId)
 
         if (!original) return notFound(params.dataElementId)
         DataElement copy
         try {
-            copy = dataElementService.copyDataElement(dataModel, original, currentUser)
+            copy = dataElementService.copyDataElement(dataModel, original, currentUser, currentUserSecurityPolicyManager)
             dataClass.addToDataElements(copy)
-            dataClassService.matchUpAndAddMissingReferenceTypeClasses(dataModel, dataModelService.get(params.otherDataModelId), currentUser)
+            dataClassService.matchUpAndAddMissingReferenceTypeClasses(dataModel, dataModelService.get(params.otherDataModelId), currentUser,
+                                                                      currentUserSecurityPolicyManager)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422
@@ -111,7 +113,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Override
     protected void serviceInsertResource(DataElement resource) {
-        dataElementService.save(resource)
+        dataElementService.save(flush: true, resource)
     }
 
     @Override

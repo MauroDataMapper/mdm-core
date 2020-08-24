@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.semanticlink
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -42,11 +41,40 @@ class DataElementSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFun
     @Shared
     DataModel dataModel
     @Shared
+    DataModel destinationDataModel
+    @Shared
     DataClass dataClass
+    @Shared
+    DataClass destinationDataClass
     @Shared
     DataElement dataElement
     @Shared
     DataType dataType
+
+    String getCatalogueItemCopyPath() {
+        """dataModels/${destinationDataModelId}/dataClasses/${destinationDataClassId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}\
+/${sourceDataClassId}/${catalogueItemId}"""
+    }
+
+    @Transactional
+    String getSourceDataModelId() {
+        DataModel.findByLabel('Functional Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getDestinationDataModelId() {
+        DataModel.findByLabel('Destination Test DataModel').id.toString()
+    }
+
+    @Transactional
+    String getSourceDataClassId() {
+        DataClass.findByLabel('Functional Test DataClass').id.toString()
+    }
+
+    @Transactional
+    String getDestinationDataClassId() {
+        DataClass.findByLabel('Destination Test DataClass').id.toString()
+    }
 
     @OnceBefore
     @Transactional
@@ -54,8 +82,12 @@ class DataElementSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFun
         log.debug('Check and setup test data')
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
+        destinationDataModel = new DataModel(label: 'Destination Test DataModel', createdBy: 'functionalTest@test.com',
+                                             folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
                                   dataModel: dataModel).save(flush: true)
+        destinationDataClass = new DataClass(label: 'Destination Test DataClass', createdBy: 'functionalTest@test.com',
+                                             dataModel: destinationDataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
                                      dataModel: dataModel).save(flush: true)
         dataElement = new DataElement(label: 'Functional Test DataElement', createdBy: 'functionalTest@test.com',

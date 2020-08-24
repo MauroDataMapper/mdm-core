@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
@@ -41,7 +40,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -58,9 +56,6 @@ class CodeSetService extends ModelService<CodeSet> {
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
-    ClassifierService classifierService
-
-    SessionFactory sessionFactory
 
     @Override
     CodeSet get(Serializable id) {
@@ -133,8 +128,7 @@ class CodeSetService extends ModelService<CodeSet> {
     @Override
     CodeSet save(CodeSet codeSet) {
         log.debug('Saving {}({}) without batching', codeSet.label, codeSet.ident())
-        codeSet.save(failOnError: true, validate: false)
-        updateFacetsAfterInsertingCatalogueItem(codeSet)
+        save(failOnError: true, validate: false, flush: false, codeSet)
     }
 
     @Override
@@ -232,59 +226,49 @@ class CodeSetService extends ModelService<CodeSet> {
         true
     }
 
-    @Deprecated(forRemoval = true)
-    CodeSet createNewDocumentationVersion(CodeSet codeSet, User user, boolean copyPermissions,
-                                          boolean throwErrors = false) {
-        createNewDocumentationVersion(codeSet, user, copyPermissions, [throwErrors: throwErrors])
-    }
-
     @Override
-    CodeSet createNewDocumentationVersion(CodeSet codeSet, User user, boolean copyPermissions,
+    CodeSet createNewDocumentationVersion(CodeSet codeSet, User user, boolean copyPermissions, UserSecurityPolicyManager userSecurityPolicyManager,
                                           Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(codeSet)) return codeSet
 
         CodeSet newDocVersion = copyCodeSet(codeSet, user, copyPermissions, codeSet.label,
                                             Version.nextMajorVersion(codeSet.documentationVersion),
-                                            additionalArguments.throwErrors as boolean)
+                                            additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setCodeSetIsNewDocumentationVersionOfCodeSet(newDocVersion, codeSet, user)
 
         if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
         newDocVersion
     }
 
-    @Deprecated(forRemoval = true)
-    CodeSet createNewModelVersion(String label, CodeSet codeSet, User user, boolean copyPermissions,
-                                  boolean throwErrors = false) {
-        createNewModelVersion(label, codeSet, user, copyPermissions, [throwErrors: throwErrors])
-    }
-
     @Override
-    CodeSet createNewModelVersion(String label, CodeSet codeSet, User user, boolean copyPermissions,
-                                  Map<String, Object> additionalArguments) {
+    CodeSet createNewModelVersion(String label, CodeSet codeSet, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
 
         if (!newVersionCreationIsAllowed(codeSet)) return codeSet
 
-        CodeSet newModelVersion = copyCodeSet(codeSet, user, copyPermissions, label, additionalArguments.throwErrors as boolean)
+        CodeSet newModelVersion = copyCodeSet(codeSet, user, copyPermissions, label, additionalArguments.throwErrors as boolean,
+                                              userSecurityPolicyManager)
         setCodeSetIsNewModelVersionOfCodeSet(newModelVersion, codeSet, user)
 
         if (newModelVersion.validate()) save(newModelVersion)
         newModelVersion
     }
 
-    CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label, boolean throwErrors) {
-        copyCodeSet(original, copier, copyPermissions, label, Version.from('1'), throwErrors)
+    CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                        UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyCodeSet(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
     }
 
     CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label,
-                        Version copyVersion, boolean throwErrors) {
+                        Version copyVersion, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
                                    finalised: false, deleted: false, documentationVersion: copyVersion,
                                    folder: original.folder, authority: original.authority
         )
 
-        copy = copyCatalogueItemInformation(original, copy, copier)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label
 
         if (copyPermissions) {
@@ -298,7 +282,7 @@ class CodeSetService extends ModelService<CodeSet> {
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         if (copy.validate()) {
-            copy.save(validate: false)
+            save(copy, validate: false)
             editService.createAndSaveEdit(copy.id, copy.domainType,
                                           "CodeSet ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
@@ -308,12 +292,12 @@ class CodeSetService extends ModelService<CodeSet> {
         copy.trackChanges()
 
         // Copy all the terms
-        original.terms?.each {term ->
+        original.terms?.each { term ->
             copy.addToTerms(term)
         }
 
         if (original.semanticLinks) {
-            original.semanticLinks.each {link ->
+            original.semanticLinks.each { link ->
                 copy.addToSemanticLinks(createdBy: copier.emailAddress,
                                         linkType: link.linkType,
                                         targetCatalogueItemId: link.targetCatalogueItemId,
@@ -322,7 +306,7 @@ class CodeSetService extends ModelService<CodeSet> {
         }
 
         if (original.versionLinks) {
-            original.versionLinks.each {link ->
+            original.versionLinks.each { link ->
                 copy.addToVersionLinks(createdBy: copier.emailAddress,
                                        linkType: link.linkType,
                                        targetModelId: link.targetModelId,
@@ -393,7 +377,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        CodeSet.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
+        CodeSet.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
     }
 
     @Override
@@ -550,12 +534,12 @@ class CodeSetService extends ModelService<CodeSet> {
 
             if (countByLabel(codeSet.label)) {
                 List<CodeSet> existingModels = findAllByLabel(codeSet.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting CodeSet as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser)
                     setCodeSetIsNewDocumentationVersionOfCodeSet(codeSet, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 codeSet.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing CodeSets with label [{}]', codeSet.label)
