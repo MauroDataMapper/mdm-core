@@ -43,6 +43,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -52,6 +53,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -70,6 +72,9 @@ class DataModelService extends ModelService<DataModel> {
     EditService editService
     AuthorityService authorityService
     SummaryMetadataService summaryMetadataService
+
+    @Autowired
+    Set<DefaultDataTypeProvider> defaultDataTypeProviders
 
     @Override
     DataModel get(Serializable id) {
@@ -272,6 +277,16 @@ class DataModelService extends ModelService<DataModel> {
         latest
     }
 
+    DataModel checkForAndAddDefaultDataTypes(DataModel resource, String defaultDataTypeProvider) {
+        if (defaultDataTypeProvider) {
+            DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.displayName == defaultDataTypeProvider }
+            if (provider) {
+                log.debug("Adding ${provider.displayName} default DataTypes")
+                return dataTypeService.addDefaultListOfDataTypesToDataModel(resource, provider.defaultListOfDataTypes)
+            }
+        }
+        resource
+    }
 
     void deleteAllUnusedDataTypes(DataModel dataModel) {
         log.debug('Cleaning DataModel {} of DataTypes', dataModel.label)

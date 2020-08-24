@@ -375,6 +375,27 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         copy
     }
 
+    DataModel addDefaultListOfDataTypesToDataModel(DataModel dataModel, List<DefaultDataType> defaultDataTypes) {
+        defaultListOfDataTypes.each {
+            DataType dataType
+            switch (it.domainType) {
+                case PrimitiveType.simpleName:
+                    dataType = new PrimitiveType(units: it.units)
+                    break
+                case EnumerationType.simpleName:
+                    dataType = new EnumerationType(enumerationValues: it.enumerationValues)
+                    break
+                default:
+                    throw new ApiInternalException('DTSXX', "Unknown DataType [${it.domainType}] used for default datatype")
+            }
+            dataType.createdBy = dataModel.createdBy
+            dataType.label = it.label
+            dataType.description = it.description
+            dataModel.addToDataTypes(dataType)
+        }
+        dataModel
+    }
+
     private def <T extends DataType> T mergeDataTypes(List<T> dataTypes) {
         mergeDataTypes(dataTypes.first(), dataTypes)
     }

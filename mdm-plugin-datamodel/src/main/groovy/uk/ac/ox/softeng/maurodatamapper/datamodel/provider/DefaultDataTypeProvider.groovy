@@ -18,10 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider
 
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DefaultDataType
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperProvider
 
@@ -33,25 +29,6 @@ trait DefaultDataTypeProvider implements MauroDataMapperProvider {
     abstract List<DefaultDataType> getDefaultListOfDataTypes()
 
     abstract String getDisplayName()
-
-    DataModel addDefaultListOfDataTypesToDataModel(DataModel dataModel) {
-        defaultListOfDataTypes.each {
-            DataType dataType
-            switch (it.domainType) {
-                case PrimitiveType.simpleName:
-                    dataType = new PrimitiveType(units: it.units)
-                    break
-                case EnumerationType.simpleName:
-                    dataType = new EnumerationType(enumerationValues: it.enumerationValues)
-                    break
-            }
-            dataType.createdBy = dataModel.createdBy
-            dataType.label = it.label
-            dataType.description = it.description
-            dataModel.addToDataTypes(dataType)
-        }
-        dataModel
-    }
 
     @Override
     String getName() {

@@ -17,12 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DeleteAllParams
@@ -50,9 +48,6 @@ class DataModelController extends ModelController<DataModel> {
 
     @Autowired
     SearchService mdmPluginDataModelSearchService
-
-    @Autowired
-    Set<DefaultDataTypeProvider> defaultDataTypeProviders
 
     @Autowired(required = false)
     Set<DataModelExporterProviderService> exporterProviderServices
@@ -101,7 +96,7 @@ class DataModelController extends ModelController<DataModel> {
 
         instance.properties = getObjectToBind()
 
-        instance = checkForAndAddDefaultDataTypes instance
+        instance = dataModelService.checkForAndAddDefaultDataTypes instance, params.defaultDataTypeProvider
 
         if (!validateResource(instance, 'update')) return
 
@@ -194,17 +189,6 @@ class DataModelController extends ModelController<DataModel> {
         int maxResults = params.max ?: 5
 
         respond dataModelService.suggestLinksBetweenModels(dataModel, otherDataModel, maxResults)
-    }
-
-    protected DataModel checkForAndAddDefaultDataTypes(DataModel resource) {
-        if (params.defaultDataTypeProvider) {
-            DefaultDataTypeProvider provider = defaultDataTypeProviders.find {it.displayName == params.defaultDataTypeProvider}
-            if (provider) {
-                log.debug("Adding ${provider.displayName} default DataTypes")
-                return provider.addDefaultListOfDataTypesToDataModel(resource)
-            }
-        }
-        resource
     }
 
     /*
