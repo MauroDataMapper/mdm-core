@@ -49,7 +49,7 @@ class UserImageFileController extends EditLoggingController<UserImageFile> {
     def update() {
         // Allow the UI to use PUT to create the image
         // This allows them to not have to have various additional computations to determine if they have an actual image
-        if (params.id) super.update()
+        if (params.userId && userImageFileService.userHasImage(Utils.toUuid(params.userId))) super.update()
         super.save()
     }
 

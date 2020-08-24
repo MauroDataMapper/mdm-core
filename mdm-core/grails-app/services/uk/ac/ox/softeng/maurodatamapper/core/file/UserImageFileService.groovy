@@ -17,11 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.file
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFileService
+import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 
 import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
@@ -61,6 +60,10 @@ class UserImageFileService implements CatalogueFileService<UserImageFile> {
 
     UserImageFile findByUserId(UUID userId) {
         UserImageFile.findByUserId(userId)
+    }
+
+    boolean userHasImage(UUID userId) {
+        UserImageFile.countByUserId(userId)
     }
 
     /**
