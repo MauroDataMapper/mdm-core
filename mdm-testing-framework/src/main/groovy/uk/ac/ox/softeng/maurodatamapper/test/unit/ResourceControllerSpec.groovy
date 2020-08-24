@@ -192,6 +192,7 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
 
         when:
         request.method = 'PUT'
+        params.id = UUID.randomUUID()
         controller.update()
 
         then:
@@ -333,6 +334,5 @@ abstract class ResourceControllerSpec<D> extends BaseUnitSpec implements JsonWeb
 
     void givenParameters() {
         params.currentUserSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
-        params.editable = true //TODO remove
     }
 }

@@ -156,11 +156,11 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
     String getExpectedValidSavedJson() {
         """{
       "lastUpdated": "\${json-unit.matches:offsetDateTime}",
-      "fileName": "${randomId1}-profile",
+      "fileName": "${randomId2}-profile",
       "domainType": "UserImageFile",
       "fileSize": 1395,
       "id": "\${json-unit.matches:id}",
-      "userId": "${randomId1}",
+      "userId": "${randomId2}",
       "fileType": "image/jpeg"
     }"""
     }
@@ -216,7 +216,7 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
     @Override
     UserImageFile getValidUnsavedInstance() {
         UserImageFile userImageFile = userImageFileService.createNewFile(defaultImagePath, UnloggedUser.instance)
-        userImageFile.userId = randomId1
+        userImageFile.userId = randomId2
         userImageFile
     }
 

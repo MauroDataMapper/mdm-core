@@ -35,8 +35,8 @@ import groovy.util.logging.Slf4j
 import java.nio.file.Path
 import java.nio.file.Paths
 
-import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
 class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> implements ControllerUnitTest<UserImageFileController>,
@@ -72,20 +72,22 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
         implementSecurityUsers('unitTest')
 
         params.currentUserSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
-        params.editable = true
 
         controller.userImageFileService = Mock(UserImageFileService) {
-            findByUserId(_) >> {UUID id ->
+            findByUserId(_) >> { UUID id ->
                 UserImageFile.findByUserId(id)
             }
-            getDefaultNoProfileImageForUser(_) >> {User user ->
+            userHasImage(_) >> { UUID id ->
+                UserImageFile.countByUserId(id)
+            }
+            getDefaultNoProfileImageForUser(_) >> { User user ->
                 userImageFileService.createNewFile(defaultImagePath, user)
             }
-            resizeImage(_, _) >> {UserImageFile catalogueFile, int size ->
+            resizeImage(_, _) >> { UserImageFile catalogueFile, int size ->
                 userImageFileService.resizeImage(catalogueFile, size)
             }
             findAllByUser(_, _) >> []
-            delete(_) >> {UserImageFile r ->
+            delete(_) >> { UserImageFile r ->
                 userImageFileService.delete(r)
             }
         }
@@ -108,6 +110,12 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
     }
 
     @Override
+    void givenParameters() {
+        super.givenParameters()
+        params.userId = editor.id
+    }
+
+    @Override
     void verifyR32ShowInvalidIdResponse() {
         verifyResponse OK
 
@@ -115,8 +123,22 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
         assert response.contentAsByteArray == defaultProfilePic.fileContents
     }
 
+    void verifyR31ShowNullIdResponse() {
+        verifyResponse OK
+
+        assert response.contentType == 'image/jpeg;charset=utf-8'
+        assert response.contentAsByteArray == defaultProfilePic.fileContents
+    }
+
     void verifyR42UpdateInvalidInstanceResponse() {
-        verifyJsonResponse NOT_FOUND, getNotFoundIdJson()
+        verifyJsonResponse UNPROCESSABLE_ENTITY, '''{
+  "total": 1,
+  "errors": [
+    {
+      "message": "Property [fileType] of class [class uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile] cannot be null"
+    }
+  ]
+}'''
     }
 
     void 'test getting user image when no image set for unknown user'() {
@@ -167,16 +189,13 @@ class UserImageFileControllerSpec extends ResourceControllerSpec<UserImageFile> 
     @Override
     String getExpectedNullSavedJson() {
         '''{
-  "total": 4,
+  "total": 3,
   "errors": [
     {
       "message": "Property [fileSize] of class [class uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile] cannot be null"
     },
     {
       "message": "Property [fileType] of class [class uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile] cannot be null"
-    },
-    {
-      "message": "Property [userId] of class [class uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile] cannot be null"
     },
     {
       "message": "Property [fileContents] of class [class uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile] cannot be null"

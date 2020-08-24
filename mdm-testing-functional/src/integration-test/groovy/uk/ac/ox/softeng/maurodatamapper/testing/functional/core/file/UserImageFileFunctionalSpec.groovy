@@ -261,7 +261,7 @@ class UserImageFileFunctionalSpec extends FunctionalSpec {
    * Logged in as editor testing
    */
 
-    void 'E03 : Test the save action correctly persists an instance (as editor)'() {
+    void 'E03a : Test the save action correctly persists an instance (as editor)'() {
         given:
         loginEditor()
 
@@ -279,6 +279,41 @@ class UserImageFileFunctionalSpec extends FunctionalSpec {
 
         when: 'The save action is executed with valid data'
         POST('', validJson)
+
+        then: 'The response is correct'
+        verifyResponse CREATED, response
+        responseBody().id
+        responseBody().domainType == 'UserImageFile'
+        responseBody().lastUpdated
+        responseBody().fileSize == 17510
+        responseBody().fileType == 'image/png'
+        responseBody().fileName == "${userId}-profile".toString()
+        responseBody().userId == userId.toString()
+        !responseBody().fileContents
+
+        cleanup:
+        removeValidIdObject()
+
+    }
+
+    void 'E03b : Test the save action correctly persists an instance when using PUT/update (as editor)'() {
+        given:
+        loginEditor()
+
+        when: 'The save action is executed with no content'
+        PUT('', [:])
+
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+
+        when: 'The save action is executed with invalid data'
+        PUT('', invalidJson)
+
+        then: 'The response is correct'
+        verifyResponse UNPROCESSABLE_ENTITY, response
+
+        when: 'The save action is executed with valid data'
+        PUT('', validJson)
 
         then: 'The response is correct'
         verifyResponse CREATED, response
