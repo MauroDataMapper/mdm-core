@@ -64,19 +64,19 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
     }
 
-    void verifyE02Response(HttpResponse<Map> response) {
+    void verifyE02Response(HttpResponse<Map> response, String id) {
         verifyResponse OK, response
         response.body().id == id
     }
 
-    void verifyR02Response(HttpResponse<Map> response) {
+    void verifyR02Response(HttpResponse<Map> response, String id) {
         verifyResponse OK, response
         response.body().id == id
         response.body().availableActions = ['show']
     }
 
-    void verifyA02Response(HttpResponse<Map> response) {
-        verifyE02Response(response)
+    void verifyA02Response(HttpResponse<Map> response, String id) {
+        verifyE02Response(response, id)
     }
 
     /*
@@ -110,7 +110,7 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
             GET("$id")
 
             then:
-            verifyE02Response response
+            verifyE02Response response, id
         }
 
         cleanup:
@@ -199,7 +199,7 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
         then: 'The response is correct'
         if (!readerCanSeeEditorCreatedItems) verifyNotFound response, id
         else {
-            verifyR02Response response
+            verifyR02Response response, id
         }
 
         cleanup:
@@ -238,7 +238,7 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
             GET("$id")
 
             then: 'The response is correct'
-            verifyA02Response(response)
+            verifyA02Response(response, id)
         }
 
         cleanup:

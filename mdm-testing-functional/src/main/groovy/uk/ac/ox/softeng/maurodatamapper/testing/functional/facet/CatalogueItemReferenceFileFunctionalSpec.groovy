@@ -102,7 +102,7 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
     }
 
     @Override
-    void verifyE02Response(HttpResponse<Map> response) {
+    void verifyE02Response(HttpResponse<Map> response, String id) {
         verifyResponse OK, response
         assert response.contentLength == 6
         assert response.header('Content-Disposition') == 'attachment;filename="functional test file.txt"'
@@ -118,8 +118,8 @@ abstract class CatalogueItemReferenceFileFunctionalSpec extends UserAccessFuncti
     }
 
     @Override
-    void verifyR02Response(HttpResponse<Map> response) {
-        verifyE02Response(response)
+    void verifyR02Response(HttpResponse<Map> response, String id) {
+        verifyE02Response(response, id)
     }
 
     @Override
