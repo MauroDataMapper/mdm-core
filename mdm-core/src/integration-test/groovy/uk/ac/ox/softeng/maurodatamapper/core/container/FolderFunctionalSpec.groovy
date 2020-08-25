@@ -176,12 +176,6 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
-
-        when: 'Trying to get the folder'
-        GET(id)
-
-        then:
-        response.status() == HttpStatus.NOT_FOUND
     }
 
     void 'Test the permanent delete action correctly deletes an instance with folder inside'() {
@@ -205,12 +199,6 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
-
-        when: 'Trying to get the folder'
-        GET(id)
-
-        then:
-        response.status() == HttpStatus.NOT_FOUND
     }
 
     void 'test searching for label "test" in empty folder'() {
