@@ -78,6 +78,19 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
     }
 
     @Override
+    protected boolean validateResource(CatalogueUser instance, String view) {
+        // Need to make sure groups are properly setup, many-to-many relationships don't get set properly during binding
+        // This will correctly mark up the groups value if it is actually dirty
+        instance.markDirty('groups', instance.groups, instance.getOriginalValue('groups'))
+        // This will then make sure the groups actually have a record of the user inside them
+        // Which will allow the save to persist the membership
+        if (instance.hasChanged('groups')) {
+            instance.groups.each { group -> group.addToGroupMembers(instance) }
+        }
+        return super.validateResource(instance, view)
+    }
+
+    @Override
     protected CatalogueUser createResource() {
         CatalogueUser instance = super.createResource() as CatalogueUser
         instance.createdBy = instance.emailAddress
