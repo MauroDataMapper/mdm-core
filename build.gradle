@@ -5,8 +5,8 @@ import java.util.concurrent.TimeUnit
 buildscript {
     repositories {
         mavenLocal()
-        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot'}
-        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release'}
+        maven { url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot' }
+        maven { url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release' }
         jcenter()
 
     }
@@ -67,7 +67,7 @@ check {
 task('sysProps') {
     group 'help'
     doLast {
-        logger.quiet('{}', System.properties.collect {"${it.key}:${it.value}"}.sort().join('\n'))
+        logger.quiet('{}', System.properties.collect { "${it.key}:${it.value}" }.sort().join('\n'))
     }
 }
 
@@ -91,7 +91,7 @@ subprojects {
         doLast {
             if (project.hasProperty('dependencyManagement')) {
                 Map imported = dependencyManagement.importedProperties
-                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect {k, v -> "$k:$v"}.sort().join('\n  ')
+                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect { k, v -> "$k:$v" }.sort().join('\n  ')
             }
         }
     }
@@ -119,16 +119,16 @@ task reportsArchive(type: Tar) {
     }
 }
 
-task rootTestReport(type: TestReport){
+task rootTestReport(type: TestReport) {
     group = 'reporting'
     destinationDir = file("${buildDir}/reports/tests")
     testResultDirs = files("${buildDir}/test-results")
-    FileCollection testResultContentDir =  files("${buildDir}/test-results")
+    FileCollection testResultContentDir = files("${buildDir}/test-results")
     outputs.upToDateWhen { false }
 
-    doFirst{
+    doFirst {
         (testResultContentDir.getAsFileTree().visit { FileVisitDetails details ->
-            if(details.directory && details.name == 'binary' ){
+            if (details.directory && details.name == 'binary') {
                 logger.info("Reporting on ${details.path}")
                 reportOn files(details.file)
             }
@@ -165,18 +165,22 @@ subprojects {
         }
     }
 
-    afterEvaluate{
-        project.tasks.withType(Test){ testTask ->
-            doLast{
+    afterEvaluate {
+        project.tasks.withType(Test) { testTask ->
+            doLast {
                 copy {
                     from project.file("${project.buildDir}/test-results")
                     into rootProject.file("${rootProject.buildDir}/test-results/${project.name}")
                 }
             }
         }
+
+        Set<Project> dependencyProjects = collectProjectDependencies(project)
+       if(dependencyProjects){
+           project.tasks.findByName('install').dependsOn dependencyProjects.collect {it.tasks.findByName('install')}
+       }
     }
 }
-
 
 // Custom publishing to allow us to push the reports up to artifactory from travis
 if (project.hasProperty('artifactory_user') && project.hasProperty('artifactory_apiKey')) {
@@ -199,4 +203,26 @@ if (project.hasProperty('artifactory_user') && project.hasProperty('artifactory_
             }
         }
     }
+}
+
+Set<Project> collectProjectDependencies(Project project) {
+    Set<Project> dependencyProjects = new HashSet<>()
+    ConfigurationContainer configurations = project.configurations
+    Configuration configuration = configurations.findByName('compile')
+    if(configuration) {
+        DomainObjectSet<ProjectDependency> projectDependencies = configuration.dependencies.withType ProjectDependency
+        projectDependencies.forEach {
+            dependencyProjects.add(it.dependencyProject)
+            dependencyProjects.addAll(collectProjectDependencies(it.dependencyProject))
+        }
+    }
+    configuration = configurations.findByName('implementation')
+    if(configuration) {
+        DomainObjectSet<ProjectDependency> projectDependencies = configuration.dependencies.withType ProjectDependency
+        projectDependencies.forEach {
+            dependencyProjects.add(it.dependencyProject)
+            dependencyProjects.addAll(collectProjectDependencies(it.dependencyProject))
+        }
+    }
+    dependencyProjects
 }
