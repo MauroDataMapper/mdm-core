@@ -17,13 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 
 import java.util.regex.Pattern
 
@@ -47,6 +51,16 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 @Slf4j
 class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+    
+    @Transactional
+    String getTestClassifierId() {
+        Classifier.findByLabel('Functional Test Classifier').id.toString()
+    }
+
+    @Transactional
+    String getSimpleTerminologyId() {
+        Terminology.findByLabel(BootstrapModels.SIMPLE_TERMINOLOGY_NAME).id.toString()
+    }
 
     String getResourcePath() {
         'classifiers'
@@ -54,20 +68,20 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
 
     Map getValidJson() {
         [
-            label: 'Functional Test Classifier 2',
+                label: 'Functional Test Classifier 2',
         ]
     }
 
     Map getInvalidJson() {
         [
-            label: 'Functional Test Classifier'
+                label: 'Functional Test Classifier'
         ]
     }
 
     @Override
     Map getValidUpdateJson() {
         [
-            description: 'Just something for testing'
+                description: 'Just something for testing'
         ]
     }
 
@@ -156,6 +170,107 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["show","update","save","softDelete","delete"]
+}'''
+    }
+
+    /*void "Test the catalogueItems action for classifier"() {
+
+        when: "The catalogueItems action is requested unlogged in"
+        GET("${getTestClassifierId()}/catalogueItems")
+
+        then: "The response is not found"
+        response.status == HttpStatus.NOT_FOUND
+
+        when: "The catalogueItems action is requested logged in as editor"
+        loginEditor()
+        GET("classifiers/${getTestClassifierId()}/catalogueItems", STRING_ARG, true)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": []
+}'''
+
+        when: "The catalogueItems action is requested logged in as admin when there are no catalogue items for the classifier"
+        loginAdmin()
+        GET("${getTestClassifierId()}/catalogueItems", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": []
+}'''
+    }*/
+
+
+    void "Test the catalogueItems action for classifier"() {
+        when: "The catalogueItems action on a known classifier ID is requested unlogged in"
+        GET("${getTestClassifierId()}/catalogueItems")
+
+        then: "The response is not found"
+        response.status == HttpStatus.NOT_FOUND
+
+        when: "The catalogueItems action is requested on a known classifier ID (with no catalogueItems) logged in as editor"
+        loginEditor()
+        GET("classifiers/${getTestClassifierId()}/catalogueItems", STRING_ARG, true)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": []
+}'''
+
+        when: "The catalogueItems action is requested on a known classifier ID (with no catalogueItems) logged in as admin"
+        loginAdmin()
+        GET("${getTestClassifierId()}/catalogueItems", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": []
+}'''
+
+        when: "A classifier is added to a terminology"
+        loginAdmin()
+        POST("terminologies/${getSimpleTerminologyId()}/classifiers", [
+                label: 'A test classifier for a terminology'
+        ], MAP_ARG, true)
+
+        then: "Resource is created"
+        response.status == HttpStatus.CREATED
+        def newId = response.body().id
+
+        when: "The catalogueItems action is requested on the new classifier ID (which is associated with a terminology) logged in as admin"
+        loginAdmin()
+        GET("${newId}/catalogueItems", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Terminology",
+      "label": "Simple Test Terminology"
+    }
+  ]
+}'''
+
+        when: "The classifier is deleted from the terminology"
+        loginAdmin()
+        DELETE("terminologies/${getSimpleTerminologyId()}/classifiers/${newId}", MAP_ARG, true)
+
+        then: "Resource is deleted"
+        response.status == HttpStatus.NO_CONTENT
+
+        when: "The catalogueItems action is requested on the new classifier ID (which has been deleted from the terminology) logged in as admin"
+        loginAdmin()
+        GET("${newId}/catalogueItems", STRING_ARG)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, '''{
+  "count": 0,
+  "items": []
 }'''
     }
 }

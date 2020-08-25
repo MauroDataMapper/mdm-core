@@ -38,7 +38,7 @@ class ClassifierController extends EditLoggingController<Classifier> {
     }
 
     def catalogueItems() {
-        respond classifierService.findAllReadableCatalogueItemsByClassifierId(currentUserSecurityPolicyManager, Utils.toUuid(params.classifierId), params)
+        respond catalogueItemList: classifierService.findAllReadableCatalogueItemsByClassifierId(currentUserSecurityPolicyManager, Utils.toUuid(params.classifierId), params)
     }
 
     @Transactional
