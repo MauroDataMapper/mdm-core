@@ -85,7 +85,9 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
         // This will then make sure the groups actually have a record of the user inside them
         // Which will allow the save to persist the membership
         if (instance.hasChanged('groups')) {
-            instance.groups.each { group -> group.addToGroupMembers(instance) }
+            instance.groups.each { group ->
+                if (!group.hasMember(instance)) group.addToGroupMembers(instance)
+            }
         }
         return super.validateResource(instance, view)
     }
