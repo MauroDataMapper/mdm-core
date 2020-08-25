@@ -51,7 +51,7 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 @Slf4j
 class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
-    
+
     @Transactional
     String getTestClassifierId() {
         Classifier.findByLabel('Functional Test Classifier').id.toString()
@@ -172,37 +172,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   "availableActions": ["show","update","save","softDelete","delete"]
 }'''
     }
-
-    /*void "Test the catalogueItems action for classifier"() {
-
-        when: "The catalogueItems action is requested unlogged in"
-        GET("${getTestClassifierId()}/catalogueItems")
-
-        then: "The response is not found"
-        response.status == HttpStatus.NOT_FOUND
-
-        when: "The catalogueItems action is requested logged in as editor"
-        loginEditor()
-        GET("classifiers/${getTestClassifierId()}/catalogueItems", STRING_ARG, true)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, '''{
-  "count": 0,
-  "items": []
-}'''
-
-        when: "The catalogueItems action is requested logged in as admin when there are no catalogue items for the classifier"
-        loginAdmin()
-        GET("${getTestClassifierId()}/catalogueItems", STRING_ARG)
-
-        then: "The response is OK"
-        verifyJsonResponse OK, '''{
-  "count": 0,
-  "items": []
-}'''
-    }*/
-
-
+    
     void "Test the catalogueItems action for classifier"() {
         when: "The catalogueItems action on a known classifier ID is requested unlogged in"
         GET("${getTestClassifierId()}/catalogueItems")
