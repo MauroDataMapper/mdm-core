@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessAndPermissionChangingFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -33,7 +33,6 @@ import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -77,7 +76,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFunctionalSpec {
 
     @Transactional
     String getTestFolderId() {
@@ -133,16 +132,6 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
         [
             description: 'This is a new testing DataModel'
         ]
-    }
-
-
-    String getValidFinalisedId() {
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/finalise", [:])
-        verifyResponse OK, response
-        logout()
-        id
     }
 
     @Override
@@ -219,11 +208,8 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
     }
 
     @Override
-    void removeValidIdObjectUsingTransaction(String id) {
-        log.info('Removing valid id {} using permanent API call', id)
-        loginAdmin()
-        DELETE("${id}?permanent=true")
-        response.status() in [NO_CONTENT, NOT_FOUND]
+    String getModelType() {
+        'DataModel'
     }
 
     @Override
@@ -1028,178 +1014,6 @@ class DataModelFunctionalSpec extends UserAccessAndPermissionChangingFunctionalS
 
         cleanup:
         removeValidIdObject(id)
-    }
-
-    void 'L17 : test creating a new model version of a DataModel (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newForkModel", [label: 'Functional Test DataModel v2'])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N17 : test creating a new model version of a DataModel (as authenticated/no access)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginAuthenticated()
-        PUT("$id/newForkModel", [label: 'Functional Test DataModel v2'])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R17 : test creating a new model version of a DataModel (as reader)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as reader'
-        loginReader()
-        PUT("$id/newForkModel", [label: 'Functional Test DataModel v2'])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test DataModel v2'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(newId, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
-    }
-
-    void 'E17 : test creating a new model version of a DataModel (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as writer'
-        loginEditor()
-        PUT("$id/newForkModel", [label: 'Functional Test DataModel v2'])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test DataModel v2'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(newId, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
-    }
-
-    void 'L18 : test creating a new documentation version of a DataModel (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N18 : test creating a new documentation version of a DataModel (as authenticated/no access)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginAuthenticated()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R18 : test creating a new documentation version of a DataModel (as reader)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginReader()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E18 : test creating a new documentation version of a DataModel (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as editor'
-        loginEditor()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test DataModel'
-        response.body().documentationVersion == '2.0.0'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObject(id)
-        removeValidIdObject(newId)
     }
 
     void 'L19 : test changing folder from DataModel context (as not logged in)'() {
