@@ -42,12 +42,6 @@ class SemanticLinkInterceptor extends FacetInterceptor {
     boolean before() {
         facetResourceChecks()
         if (actionName == 'confirm') {
-            println("Get facet classes method " + getFacetClass())
-            println("Get id method " + getId())
-            println("Get owning classes method " + getOwningClass())
-            println("Get owning id " + getOwningId())
-
-
 
             if (Utils.parentClassIsAssignableFromChild(SecurableResource, getOwningClass())) {
                 boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(getFacetClass(), getId(), getOwningClass(), getOwningId())

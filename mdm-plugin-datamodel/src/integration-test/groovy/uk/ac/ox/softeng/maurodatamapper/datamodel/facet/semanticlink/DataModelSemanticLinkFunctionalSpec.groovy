@@ -192,7 +192,7 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
         PUT("dataModels/${id}/semanticLinks/${semanticLinkId}/confirm", [ : ], MAP_ARG, true)
 
         then:
-        verifyResponse(HttpStatus.ACCEPTED, response)
+        verifyResponse(HttpStatus.OK, response)
 
         cleanup:
         cleanUpData(semanticLinkId)
