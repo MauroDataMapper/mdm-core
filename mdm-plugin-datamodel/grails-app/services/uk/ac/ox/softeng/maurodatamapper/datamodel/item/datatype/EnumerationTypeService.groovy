@@ -167,7 +167,7 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
         new EnumerationType(label: label, description: description, createdBy: createdBy.emailAddress)
     }
 
-    private EnumerationType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy) {
+    EnumerationType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy) {
         String cleanLabel = label.trim()
         EnumerationType enumerationType = dataModel.findDataTypeByLabelAndType(cleanLabel, DataType.ENUMERATION_DOMAIN_TYPE) as EnumerationType
         if (!enumerationType) {
