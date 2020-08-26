@@ -226,13 +226,13 @@ class ClassifierService implements ContainerService<Classifier> {
         classifier
     }
 
-    def <C extends CatalogueItem> Classifier addClassifierToCatalogueItem(String catalogueItemClass, UUID catalogueItemId, Classifier classifier) {
+    def <C extends CatalogueItem> Classifier addClassifierToCatalogueItem(Class<C> catalogueItemClass, UUID catalogueItemId, Classifier classifier) {
         CatalogueItemService service = catalogueItemServices.find { it.handles(catalogueItemClass) }
         service.addClassifierToCatalogueItem(catalogueItemId, classifier)
         classifier
     }
 
-    def <C extends CatalogueItem> void removeClassifierFromCatalogueItem(String catalogueItemClass, UUID catalogueItemId, Classifier classifier) {
+    def <C extends CatalogueItem> void removeClassifierFromCatalogueItem(Class<C> catalogueItemClass, UUID catalogueItemId, Classifier classifier) {
         CatalogueItemService service = catalogueItemServices.find { it.handles(catalogueItemClass) }
         service.removeClassifierFromCatalogueItem(catalogueItemId, classifier)
         classifier

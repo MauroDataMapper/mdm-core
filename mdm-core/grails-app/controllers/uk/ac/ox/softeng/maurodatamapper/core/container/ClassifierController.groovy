@@ -99,7 +99,7 @@ class ClassifierController extends EditLoggingController<Classifier> {
         Classifier classifier = super.saveResource(resource) as Classifier
 
         if (params.catalogueItemId) {
-            classifierService.addClassifierToCatalogueItem(params.catalogueItemDomainType, params.catalogueItemId, classifier)
+            classifierService.addClassifierToCatalogueItem(params.catalogueItemClass, params.catalogueItemId, classifier)
         }
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(classifier, currentUser, classifier.label)
@@ -110,7 +110,7 @@ class ClassifierController extends EditLoggingController<Classifier> {
     @Override
     protected void deleteResource(Classifier resource) {
         if (params.catalogueItemId) {
-            classifierService.removeClassifierFromCatalogueItem(params.catalogueItemDomainType, params.catalogueItemId, resource)
+            classifierService.removeClassifierFromCatalogueItem(params.catalogueItemClass, params.catalogueItemId, resource)
         } else {
             super.deleteResource(resource)
         }
