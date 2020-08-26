@@ -191,40 +191,4 @@ class DataModelController extends ModelController<DataModel> {
         respond dataModelService.suggestLinksBetweenModels(dataModel, otherDataModel, maxResults)
     }
 
-    /*
-        def getProfile() {
-            DataModel dataModel = queryForResource params.dataModelId
-            System.err.println("Getting dataModel profile: " + dataModel.label)
-            Profile p
-            if(params.profileName == "dcat") {
-                p = new DcatProfile()
-            }
-            else {
-                return errorResponse(UNPROCESSABLE_ENTITY, 'No profile matching that name')
-            }
-            Object t = p.getProfile(dataModel)
-            render contentType: p.getContentType(), text: p.renderProfile(t)
-        }
-
-        def setProfile() {
-            DataModel dataModel = queryForResource params.dataModelId
-            System.err.println("Setting dataModel profile: " + dataModel.label)
-            Profile p
-            if(params.profileName == "dcat") {
-                p = new DcatProfile()
-            }
-            else {
-                return errorResponse(UNPROCESSABLE_ENTITY, 'No profile matching that name')
-            }
-            System.err.println(request.getJSON())
-
-            def t = p.readProfileFromBody(request.getJSON())
-
-            dataModelService.setProfile((Dcat) t, (DcatProfile) p, dataModel, currentUser)
-
-            render contentType: p.getContentType(), text: p.renderProfile(t)
-
-        }*/
-
-
 }
