@@ -56,7 +56,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         Set<Class<K>> allDomains = getDomainsToSearch()
         if (!searchParams.domainTypes) return allDomains
 
-        allDomains.findAll {domainClass ->
+        allDomains.findAll { domainClass ->
             domainClass.simpleName in searchParams.domainTypes
         }
     }
@@ -64,12 +64,13 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     PaginatedLuceneResult<K> findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch(List<UUID> owningIds,
                                                                                   SearchParams searchParams,
                                                                                   boolean removeOwningIds,
-                                                                                  Map pagination = [:]) {
+                                                                                  Map pagination = [:],
+                                                                                  @DelegatesTo(HibernateSearchApi) Closure customSearch = null) {
         Closure additional = null
 
         Set<Class<SearchParamFilter>> searchParamFilters = getSearchParamFilters()
 
-        searchParamFilters.each {f ->
+        searchParamFilters.each { f ->
             SearchParamFilter filter = f.getDeclaredConstructor().newInstance()
             if (filter.doesApply(searchParams)) {
                 if (additional) {
@@ -88,8 +89,9 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         long start = System.currentTimeMillis()
 
         List<K> items
-
-        if (searchParams.labelOnly) {
+        if (customSearch) {
+            performCustomSearch(domainsToSearch, owningIds, additional, customSearch)
+        } else if (searchParams.labelOnly) {
             log.debug('Performing lucene label search')
             items = performLabelSearch(domainsToSearch, owningIds, searchParams.searchTerm, additional)
         } else {
@@ -99,7 +101,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
 
         if (removeOwningIds) {
             // Remove null entries and any which have an owning id, as we only want those inside the owners
-            items = items.findAll {!(it.id in owningIds)}
+            items = items.findAll { !(it.id in owningIds) }
         }
 
         PaginatedLuceneResult<K> results = PaginatedLuceneResult.paginateFullResultSet(items, pagination)
@@ -111,7 +113,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     @CompileDynamic
     protected List<K> performLabelSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                          @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-        domainsToSearch.collect {domain ->
+        domainsToSearch.collect { domain ->
             domain.luceneLabelSearch(domain, searchTerm, owningIds, [:], additional).results
         }.flatten().findAll() as List<K>
 
@@ -120,8 +122,17 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     @CompileDynamic
     protected List<K> performStandardSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                             @DelegatesTo(HibernateSearchApi) Closure additional = null) {
-        domainsToSearch.collect {domain ->
+        domainsToSearch.collect { domain ->
             domain.luceneStandardSearch(domain, searchTerm, owningIds, [:], additional).results
+        }.flatten().findAll() as List<K>
+    }
+
+    @CompileDynamic
+    protected List<K> performCustomSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds,
+                                          @DelegatesTo(HibernateSearchApi) Closure additional,
+                                          @DelegatesTo(HibernateSearchApi) Closure customSearch) {
+        domainsToSearch.collect { domain ->
+            domain.luceneCustomSearch(domain, owningIds, [:], additional, customSearch).results
         }.flatten().findAll() as List<K>
     }
 }
