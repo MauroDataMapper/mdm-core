@@ -109,7 +109,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             return checkExportModelAction()
         }
 
-        checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId())
+        checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId(), true)
     }
 
 
