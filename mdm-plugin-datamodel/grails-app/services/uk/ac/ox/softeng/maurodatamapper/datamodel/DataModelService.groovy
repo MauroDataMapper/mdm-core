@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -265,6 +266,10 @@ class DataModelService extends ModelService<DataModel> {
         DataModel.byDeleted().list(pagination)
     }
 
+    List<DataModel> findAllByLabelAndBranchName(String label, String branchName) {
+        DataModel.findAllByLabelAndBranchName(label, branchName)
+    }
+
     DataModel findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {
         // If we get all the models with the DL metadata then sort by documentation version we should end up with the latest doc version.
         // We should do this rather than using the value of the metadata as its possible someone creates a new documentation version of the model
@@ -403,6 +408,59 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
+    DataModel createNewBranchModelVersion(String branchName, DataModel dataModel, User user, boolean copyPermissions,
+                                          UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
+        if (!newVersionCreationIsAllowed(dataModel)) return dataModel
+
+        boolean mainBranchExistsForLabel = dataModel.branchName == 'main' || findAllByLabelAndBranchName(dataModel.label, 'main')
+
+        if (mainBranchExistsForLabel && branchName == 'main') {
+            throw new ApiBadRequestException('DMS02', "The [branchName] 'main' already exists for the [label] '${dataModel.label}'")
+        }
+        DataModel newMainBranchModelVersion
+        if (!mainBranchExistsForLabel) {
+            newMainBranchModelVersion = copyDataModel(dataModel,
+                                                      user,
+                                                      copyPermissions,
+                                                      dataModel.label,
+                                                      'main',
+                                                      additionalArguments.throwErrors as boolean,
+                                                      userSecurityPolicyManager,
+                                                      true)
+            setDataModelIsNewBranchModelVersionOfDataModel(newMainBranchModelVersion, dataModel, user)
+
+            if (additionalArguments.moveDataFlows) {
+                throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
+                //            moveTargetDataFlows(dataModel, newMainBranchModelVersion)
+            }
+
+            if (newMainBranchModelVersion.validate()) newMainBranchModelVersion.save(flush: true, validate: false)
+        }
+        DataModel newBranchModelVersion
+        if (branchName != 'main') {
+            newBranchModelVersion = copyDataModel(dataModel,
+                                                  user,
+                                                  copyPermissions,
+                                                  dataModel.label,
+                                                  branchName,
+                                                  additionalArguments.throwErrors as boolean,
+                                                  userSecurityPolicyManager,
+                                                  true)
+
+            setDataModelIsNewBranchModelVersionOfDataModel(newBranchModelVersion, dataModel, user)
+
+            if (additionalArguments.moveDataFlows) {
+                throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
+                //            moveTargetDataFlows(dataModel, newBranchModelVersion)
+            }
+
+            if (newBranchModelVersion.validate()) newBranchModelVersion.save(flush: true, validate: false)
+        }
+
+        newBranchModelVersion ? newBranchModelVersion : newMainBranchModelVersion
+    }
+
+    @Override
     DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions,
                                             UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
@@ -412,6 +470,7 @@ class DataModelService extends ModelService<DataModel> {
                                                 copyPermissions,
                                                 dataModel.label,
                                                 Version.nextMajorVersion(dataModel.documentationVersion),
+                                                dataModel.branchName,
                                                 additionalArguments.throwErrors as boolean,
                                                 userSecurityPolicyManager,
                                                 true)
@@ -426,36 +485,41 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel createNewModelVersion(String label, DataModel dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
+    DataModel createNewForkModel(String label, DataModel dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
         userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
 
-        DataModel newModelVersion = copyDataModel(dataModel, user, copyPermissions, label,
-                                                  additionalArguments.throwErrors as boolean,
-                                                  userSecurityPolicyManager)
-        setDataModelIsNewModelVersionOfDataModel(newModelVersion, dataModel, user)
+        DataModel newForkModel = copyDataModel(dataModel, user, copyPermissions, label,
+                                               additionalArguments.throwErrors as boolean,
+                                               userSecurityPolicyManager, false)
+        setDataModelIsNewForkModelOfDataModel(newForkModel, dataModel, user)
         if (additionalArguments.copyDataFlows) {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel copying of DataFlows')
-            //copyTargetDataFlows(dataModel, newModelVersion, user)
+            //copyTargetDataFlows(dataModel, newForkModel, user)
         }
 
-        if (newModelVersion.validate()) newModelVersion.save(flush: true, validate: false)
-        newModelVersion
+        if (newForkModel.validate()) newForkModel.save(flush: true, validate: false)
+        newForkModel
     }
 
     DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
-                            UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyDataModel(original, copier, copyPermissions, label, Version.from('1'), throwErrors, userSecurityPolicyManager)
+                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+        copyDataModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager,
+                      copySummaryMetadata)
     }
 
-    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyVersion, boolean throwErrors,
-                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata = false) {
+    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
+                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+        copyDataModel(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager,
+                      copySummaryMetadata)
+    }
 
-        DataModel copy = new DataModel(author: original.author,
-                                       organisation: original.organisation, modelType: original.modelType,
-                                       finalised: false, deleted: false, documentationVersion: copyVersion,
-                                       folder: original.folder,
-                                       authority: original.authority
+    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
+                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+
+        DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
+                                       deleted: false, documentationVersion: copyDocVersion, folder: original.folder, authority: original.authority,
+                                       branchName: branchName
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
@@ -531,9 +595,9 @@ class DataModelService extends ModelService<DataModel> {
         copy
     }
 
-    void setDataModelIsNewModelVersionOfDataModel(DataModel newModel, DataModel oldModel, User catalogueUser) {
+    void setDataModelIsNewForkModelOfDataModel(DataModel newModel, DataModel oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
-            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
+            linkType: VersionLinkType.NEW_FORK_OF,
             createdBy: catalogueUser.emailAddress,
             targetModel: oldModel
         )
@@ -542,6 +606,14 @@ class DataModelService extends ModelService<DataModel> {
     void setDataModelIsNewDocumentationVersionOfDataModel(DataModel newModel, DataModel oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
             linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setDataModelIsNewBranchModelVersionOfDataModel(DataModel newModel, DataModel oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
             targetModel: oldModel
         )
@@ -568,7 +640,7 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     boolean hasTreeTypeModelItems(DataModel dataModel) {
-       dataClassService.countByDataModelId(dataModel.id)
+        dataClassService.countByDataModelId(dataModel.id)
     }
 
     @Override

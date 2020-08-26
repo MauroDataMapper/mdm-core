@@ -49,7 +49,7 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
     DataType dataType
 
     String getCatalogueItemCopyPath() {
-        "dataModels/${sourceDataModelId}/newModelVersion"
+        "dataModels/${sourceDataModelId}/newForkModel"
     }
 
     @Transactional
@@ -59,7 +59,7 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
 
     @Transactional
     String getDestinationDataModelId() {
-        // newModelVersion doesn't require a destination data model
+        // newForkModel doesn't require a destination data model
     }
 
     @OnceBefore

@@ -57,7 +57,7 @@ abstract class ModelVersionLinkFunctionalSpec extends CatalogueItemFacetFunction
     @Override
     Map getValidJson() {
         [
-            linkType             : VersionLinkType.NEW_MODEL_VERSION_OF.label,
+            linkType             : VersionLinkType.NEW_FORK_OF.label,
             targetModelId        : getTargetModelId(),
             targetModelDomainType: getTargetModelDomainType()
         ]
@@ -66,7 +66,7 @@ abstract class ModelVersionLinkFunctionalSpec extends CatalogueItemFacetFunction
     @Override
     Map getInvalidJson() {
         [
-            linkType   : VersionLinkType.NEW_MODEL_VERSION_OF.label,
+            linkType   : VersionLinkType.NEW_FORK_OF.label,
             targetModel: getModelId(),
 
         ]
@@ -83,7 +83,7 @@ abstract class ModelVersionLinkFunctionalSpec extends CatalogueItemFacetFunction
     String getExpectedShowJson() {
         '''{
   "id": "${json-unit.matches:id}",
-  "linkType": "''' + VersionLinkType.NEW_MODEL_VERSION_OF.label + '''",
+  "linkType": "''' + VersionLinkType.NEW_FORK_OF.label + '''",
   "domainType": "VersionLink",
   "sourceModel": ''' + getSourceModelJsonString() + ''',
   "targetModel": ''' + getTargetModelJsonString() + '''

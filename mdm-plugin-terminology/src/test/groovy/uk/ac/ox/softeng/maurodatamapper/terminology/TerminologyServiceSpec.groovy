@@ -330,7 +330,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         when: 'creating new version on draft model is not allowed'
         Terminology terminology = service.get(id)
         def result =
-            service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
+            service.createNewForkModel("${terminology.label}-1", terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -344,7 +344,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
         def result =
-            service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
+            service.createNewForkModel("${terminology.label}-1", terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.instanceOf(Terminology)
@@ -380,7 +380,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+        newVersion.versionLinks.any { it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
         terminology.terms.every { odt ->
@@ -407,7 +407,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         service.finaliseModel(terminology, admin)
         checkAndSave(terminology)
         def result =
-            service.createNewModelVersion("${terminology.label}-1", terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
+            service.createNewForkModel("${terminology.label}-1", terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.instanceOf(Terminology)
@@ -442,7 +442,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         newVersion.edits.size() == 1
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+        newVersion.versionLinks.any { it.targetModel.id == terminology.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
         terminology.terms.every { odt ->
@@ -473,7 +473,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'trying to create a new version on the old terminology'
         def result =
-            service.createNewModelVersion("${terminology.label}-1", terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
+            service.createNewForkModel("${terminology.label}-1", terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1

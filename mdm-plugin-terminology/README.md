@@ -11,7 +11,7 @@ Controller: codeSet
  |   PUT    | /api/codeSets/${codeSetId}/readByAuthenticated                                                             | Action: readByAuthenticated                     |
  |  DELETE  | /api/codeSets/${codeSetId}/readByEveryone                                                                  | Action: readByEveryone                          |
  |   PUT    | /api/codeSets/${codeSetId}/readByEveryone                                                                  | Action: readByEveryone                          |
- |   PUT    | /api/codeSets/${codeSetId}/newModelVersion                                                                 | Action: newModelVersion                         |
+ |   PUT    | /api/codeSets/${codeSetId}/newForkModel                                                                 | Action: newForkModel                         |
  |   PUT    | /api/codeSets/${codeSetId}/newDocumentationVersion                                                         | Action: newDocumentationVersion                 |
  |   PUT    | /api/codeSets/${codeSetId}/finalise                                                                        | Action: finalise                                |
  |   POST   | /api/folders/${folderId}/codeSets                                                                          | Action: save                                    |
@@ -64,7 +64,7 @@ Controller: terminology
  |   PUT    | /api/terminologies/${terminologyId}/readByAuthenticated                                                    | Action: readByAuthenticated                     |
  |  DELETE  | /api/terminologies/${terminologyId}/readByEveryone                                                         | Action: readByEveryone                          |
  |   PUT    | /api/terminologies/${terminologyId}/readByEveryone                                                         | Action: readByEveryone                          |
- |   PUT    | /api/terminologies/${terminologyId}/newModelVersion                                                        | Action: newModelVersion                         |
+ |   PUT    | /api/terminologies/${terminologyId}/newForkModel                                                        | Action: newForkModel                         |
  |   PUT    | /api/terminologies/${terminologyId}/newDocumentationVersion                                                | Action: newDocumentationVersion                 |
  |   PUT    | /api/terminologies/${terminologyId}/finalise                                                               | Action: finalise                                |
  |   GET    | /api/terminologies/${terminologyId}/tree                                                                   | Action: tree                                    |

@@ -44,7 +44,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     @Override
     List<String> getReadAccessMethods() {
-        ['exportModel', 'newModelVersion']
+        ['exportModel', 'newForkModel']
     }
 
     @Override
@@ -64,7 +64,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
         if (params.containsKey('folderId')) {
             boolean canReadFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.folderId)
 
-            // We control addition of Terminologys into containers by using container permissions
+            // We control addition of Terminologies into containers by using container permissions
             if (isSave()) {
                 return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(Folder, params.folderId) ?:
                        forbiddenOrNotFound(canReadFolder, Folder, params.folderId)
@@ -96,14 +96,13 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             return true
         }
 
-        if (actionName == 'newDocumentationVersion') {
+        if (actionName in ['newDocumentationVersion', 'newBranchModelVersion']) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
                 return notFound(getSecuredClass(), getId())
             }
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), 'newDocumentationVersion') ?:
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName) ?:
                    forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
         }
-
 
         if (actionName == 'exportModels') {
             return checkExportModelAction()

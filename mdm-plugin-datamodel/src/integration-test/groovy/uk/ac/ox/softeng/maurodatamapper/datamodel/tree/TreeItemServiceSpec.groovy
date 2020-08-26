@@ -86,7 +86,7 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
         checkAndSave(dataModel1)
 
-        dataModel1.addToVersionLinks(createdByUser: admin, targetModel: dataModel2, linkType: VersionLinkType.SUPERSEDED_BY_MODEL)
+        dataModel1.addToVersionLinks(createdByUser: admin, targetModel: dataModel2, linkType: VersionLinkType.SUPERSEDED_BY_FORK)
         dataModel2.addToVersionLinks(createdByUser: admin, targetModel: dataModel3, linkType: VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
 
         checkAndSave(dataModel1)

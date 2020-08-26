@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessAndPermissionChangingFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -33,7 +33,6 @@ import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -53,7 +52,7 @@ import static io.micronaut.http.HttpStatus.OK
  *
  *  |  PUT     | /api/terminologies/${terminologyId}/finalise   | Action: finalise
  *
- *  |  PUT     | /api/terminologies/${terminologyId}/newModelVersion          | Action: newModelVersion
+ *  |  PUT     | /api/terminologies/${terminologyId}/newForkModel          | Action: newForkModel
  *  |  PUT     | /api/terminologies/${terminologyId}/newDocumentationVersion  | Action: newDocumentationVersion
  *
  *  |  PUT     | /api/folders/${folderId}/terminologies/${terminologyId}      | Action: changeFolder
@@ -68,7 +67,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunctionalSpec {
 
 
     @Transactional
@@ -125,16 +124,6 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
         [
             description: 'This is a new testing Terminology'
         ]
-    }
-
-
-    String getValidFinalisedId() {
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/finalise", [:])
-        verifyResponse OK, response
-        logout()
-        id
     }
 
     @Override
@@ -201,11 +190,8 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
     }
 
     @Override
-    void removeValidIdObjectUsingTransaction(String id) {
-        log.info('Removing valid id {} using permanent API call', id)
-        loginAdmin()
-        DELETE("${id}?permanent=true")
-        response.status() in [NO_CONTENT, NOT_FOUND]
+    String getModelType() {
+        'Terminology'
     }
 
     @Override
@@ -330,178 +316,6 @@ class TerminologyFunctionalSpec extends UserAccessAndPermissionChangingFunctiona
 
         cleanup:
         removeValidIdObject(id)
-    }
-
-    void 'L17 : test creating a new model version of a Terminology (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newModelVersion", [label: 'Functional Test Terminology v2'])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N17 : test creating a new model version of a Terminology (as authenticated/no access)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginAuthenticated()
-        PUT("$id/newModelVersion", [label: 'Functional Test Terminology v2'])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R17 : test creating a new model version of a Terminology (as reader)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as reader'
-        loginReader()
-        PUT("$id/newModelVersion", [label: 'Functional Test Terminology v2'])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test Terminology v2'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(newId, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
-    }
-
-    void 'E17 : test creating a new model version of a Terminology (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as writer'
-        loginEditor()
-        PUT("$id/newModelVersion", [label: 'Functional Test Terminology v2'])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test Terminology v2'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(newId, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
-    }
-
-    void 'L18 : test creating a new documentation version of a Terminology (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N18 : test creating a new documentation version of a Terminology (as authenticated/no access)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginAuthenticated()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R18 : test creating a new documentation version of a Terminology (as reader)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginReader()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E18 : test creating a new documentation version of a Terminology (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as editor'
-        loginEditor()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test Terminology'
-        response.body().documentationVersion == '2.0.0'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObject(id)
-        removeValidIdObject(newId)
     }
 
     void 'L19 : test changing folder from Terminology context (as not logged in)'() {

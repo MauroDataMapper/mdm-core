@@ -29,7 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ContainerTreeIt
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
-import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModelItem
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -437,7 +436,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
                                                 documentationVersion: Version.from('2.1.0'),
                                                 authority: testAuthority)
-        basicModel2.addToVersionLinks(new VersionLink(linkType: VersionLinkType.SUPERSEDED_BY_MODEL, targetModel: basicModel))
+        basicModel2.addToVersionLinks(new VersionLink(linkType: VersionLinkType.SUPERSEDED_BY_FORK, targetModel: basicModel))
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
@@ -1461,7 +1460,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
                                      documentationVersion: Version.from('2.1.0'),
                                      authority: testAuthority)
-        basicModel2.addToVersionLinks(new VersionLink(linkType: VersionLinkType.SUPERSEDED_BY_MODEL, targetModel: basicModel))
+        basicModel2.addToVersionLinks(new VersionLink(linkType: VersionLinkType.SUPERSEDED_BY_FORK, targetModel: basicModel))
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
 

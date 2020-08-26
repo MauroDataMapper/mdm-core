@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessAndPermissionChangingFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -33,7 +33,6 @@ import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -53,7 +52,7 @@ import static io.micronaut.http.HttpStatus.OK
  *
  *  |  PUT     | /api/codeSets/${codeSetId}/finalise   | Action: finalise
  *
- *  |  PUT     | /api/codeSets/${codeSetId}/newModelVersion          | Action: newModelVersion
+ *  |  PUT     | /api/codeSets/${codeSetId}/newForkModel          | Action: newForkModel
  *  |  PUT     | /api/codeSets/${codeSetId}/newDocumentationVersion  | Action: newDocumentationVersion
  *
  *  |  PUT     | /api/folders/${folderId}/codeSets/${codeSetId}      | Action: changeFolder
@@ -68,7 +67,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunctionalSpec {
 
     @Transactional
     String getTestFolderId() {
@@ -122,14 +121,9 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
         ]
     }
 
-
-    String getValidFinalisedId() {
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/finalise", [:])
-        verifyResponse OK, response
-        logout()
-        id
+    @Override
+    String getModelType() {
+        'CodeSet'
     }
 
     @Override
@@ -193,14 +187,6 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
     @Override
     Boolean readerPermissionIsInherited() {
         true
-    }
-
-    @Override
-    void removeValidIdObjectUsingTransaction(String id) {
-        log.info('Removing valid id {} using permanent API call', id)
-        loginAdmin()
-        DELETE("${id}?permanent=true")
-        response.status() in [NO_CONTENT, NOT_FOUND]
     }
 
     @Override
@@ -301,178 +287,6 @@ class CodeSetFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpe
 
         cleanup:
         removeValidIdObject(id)
-    }
-
-    void 'L17 : test creating a new model version of a CodeSet (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet v2'])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N17 : test creating a new model version of a CodeSet (as authenticated/no access)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginAuthenticated()
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet v2'])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R17 : test creating a new model version of a CodeSet (as reader)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as reader'
-        loginReader()
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet v2'])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test CodeSet v2'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(newId, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
-    }
-
-    void 'E17 : test creating a new model version of a CodeSet (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as writer'
-        loginEditor()
-        PUT("$id/newModelVersion", [label: 'Functional Test CodeSet v2'])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test CodeSet v2'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(newId, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
-    }
-
-    void 'L18 : test creating a new documentation version of a CodeSet (as not logged in)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'not logged in'
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N18 : test creating a new documentation version of a CodeSet (as authenticated/no access)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginAuthenticated()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R18 : test creating a new documentation version of a CodeSet (as reader)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when:
-        loginReader()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E18 : test creating a new documentation version of a CodeSet (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as editor'
-        loginEditor()
-        PUT("$id/newDocumentationVersion", [:])
-
-        then:
-        verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == 'Functional Test CodeSet'
-        response.body().documentationVersion == '2.0.0'
-
-        when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObject(id)
-        removeValidIdObject(newId)
     }
 
     void 'L19 : test changing folder from CodeSet context (as not logged in)'() {

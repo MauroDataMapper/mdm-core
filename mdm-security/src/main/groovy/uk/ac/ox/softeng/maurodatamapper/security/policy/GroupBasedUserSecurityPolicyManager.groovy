@@ -53,6 +53,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.M
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_EDITOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_REVIEWER_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_DOCUMENTATION_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_MODEL_VERSION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.READ_ONLY_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SOFT_DELETE_ACTION
@@ -302,6 +303,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
         if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
             switch (action) {
+                case NEW_MODEL_VERSION_ACTION:
                 case NEW_DOCUMENTATION_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? role.isFinalisedModel() : false

@@ -18,11 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkController
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
@@ -32,8 +28,8 @@ import grails.testing.web.controllers.ControllerUnitTest
 import groovy.util.logging.Slf4j
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
-import static uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType.NEW_MODEL_VERSION_OF
-import static uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType.SUPERSEDED_BY_MODEL
+import static uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType.NEW_FORK_OF
+import static uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType.SUPERSEDED_BY_FORK
 
 @Slf4j
 class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> implements
@@ -63,17 +59,17 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
         checkAndSave(basicModel3)
         checkAndSave(basicModel4)
 
-        VersionLink sl1 = new VersionLink(createdBy: admin.emailAddress, linkType: SUPERSEDED_BY_MODEL)
+        VersionLink sl1 = new VersionLink(createdBy: admin.emailAddress, linkType: SUPERSEDED_BY_FORK)
         basicModel.addToVersionLinks(sl1)
         sl1.setTargetModel(basicModel2)
-        VersionLink sl2 = new VersionLink(createdBy: admin.emailAddress, linkType: NEW_MODEL_VERSION_OF)
+        VersionLink sl2 = new VersionLink(createdBy: admin.emailAddress, linkType: NEW_FORK_OF)
         basicModel.addToVersionLinks(sl2)
         sl2.setTargetModel(basicModel3)
 
         checkAndSave(basicModel)
 
         domain.createdBy = admin.emailAddress
-        domain.linkType = SUPERSEDED_BY_MODEL
+        domain.linkType = SUPERSEDED_BY_FORK
         domain.setTargetModel(basicModel4)
         basicModel3.addToVersionLinks(domain)
         checkAndSave(domain)
@@ -237,18 +233,18 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
 
     @Override
     VersionLink validUpdate(VersionLink instance) {
-        instance.linkType = NEW_MODEL_VERSION_OF
+        instance.linkType = NEW_FORK_OF
         instance
     }
 
     @Override
     VersionLink getInvalidUnsavedInstance() {
-        new VersionLink(linkType: NEW_MODEL_VERSION_OF)
+        new VersionLink(linkType: NEW_FORK_OF)
     }
 
     @Override
     VersionLink getValidUnsavedInstance() {
-        new VersionLink(linkType: SUPERSEDED_BY_MODEL, targetModel: basicModel3)
+        new VersionLink(linkType: SUPERSEDED_BY_FORK, targetModel: basicModel3)
     }
 
     @Override

@@ -19,8 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 
@@ -58,7 +56,7 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
 
         when:
         domain.createdBy = admin.emailAddress
-        domain.linkType = VersionLinkType.SUPERSEDED_BY_MODEL
+        domain.linkType = VersionLinkType.SUPERSEDED_BY_FORK
         db.addToVersionLinks(domain)
         domain.setTargetModel(db2)
 
@@ -88,7 +86,7 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
 
         when:
         domain.createdBy = admin.emailAddress
-        domain.linkType = VersionLinkType.SUPERSEDED_BY_MODEL
+        domain.linkType = VersionLinkType.SUPERSEDED_BY_FORK
         db.addToVersionLinks(domain)
         domain.setTargetModel(db2)
 
@@ -120,7 +118,7 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
     void 'test invalid term link between the same model'() {
         when:
         domain.createdBy = admin.emailAddress
-        domain.linkType = VersionLinkType.SUPERSEDED_BY_MODEL
+        domain.linkType = VersionLinkType.SUPERSEDED_BY_FORK
         db.addToVersionLinks(domain)
         domain.setTargetModel(db)
         checkAndSave(domain)
@@ -141,13 +139,13 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
 
     @Override
     void setValidDomainOtherValues() {
-        domain.linkType = VersionLinkType.SUPERSEDED_BY_MODEL
+        domain.linkType = VersionLinkType.SUPERSEDED_BY_FORK
         db.addToVersionLinks(domain)
         domain.setTargetModel(db2)
     }
 
     @Override
     void verifyDomainOtherConstraints(VersionLink domain) {
-        assert domain.linkType == VersionLinkType.SUPERSEDED_BY_MODEL
+        assert domain.linkType == VersionLinkType.SUPERSEDED_BY_FORK
     }
 }
