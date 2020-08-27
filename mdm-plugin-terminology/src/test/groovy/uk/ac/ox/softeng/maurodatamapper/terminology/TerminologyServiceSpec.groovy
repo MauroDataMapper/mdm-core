@@ -480,6 +480,105 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.superseded.message' }
     }
 
+    void 'DMSCA01 : test finding common ancestor of two terminologies'() {
+        when:
+        Terminology terminology = service.get(id)
+        service.finaliseModel(terminology, admin)
+        checkAndSave(terminology)
+
+        then:
+        terminology.branchName == 'main'
+
+        when:
+        def left = service.createNewBranchModelVersion('left', terminology, admin, false, userSecurityPolicyManager)
+        def right = service.createNewBranchModelVersion('right', terminology, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(left)
+        checkAndSave(right)
+        left.modelVersion == null
+        left.branchName == 'left'
+        right.modelVersion == null
+        right.branchName == 'right'
+
+        when:
+        def commonAncestor = service.commonAncestor(left, right)
+
+        then:
+        commonAncestor.branchName == 'main'
+        commonAncestor.modelVersion == Version.from('1')
+    }
+
+    void 'DMSLV01 : test finding latest version of a terminology'() {
+        when:
+        Terminology terminology = service.get(id)
+        service.finaliseModel(terminology, admin)
+        checkAndSave(terminology)
+
+        then:
+        terminology.branchName == 'main'
+
+        when:
+        def first = service.createNewBranchModelVersion('test', terminology, admin, false, userSecurityPolicyManager)
+        def second = service.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+        service.finaliseModel(second, admin, Version.from('2'))
+        def third = service.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(first)
+        checkAndSave(second)
+        checkAndSave(third)
+        first.modelVersion == null
+        first.branchName == 'test'
+        second.modelVersion == Version.from('2')
+        second.branchName == 'main'
+        third.modelVersion == null
+        third.branchName == 'main'
+
+        when:
+        def latestVersion = service.latestVersion(first.label)
+
+        then:
+        latestVersion.branchName == 'main'
+        latestVersion.modelVersion == Version.from('2')
+
+        when:
+        latestVersion = service.latestVersion(third.label)
+
+        then:
+        latestVersion.branchName == 'main'
+        latestVersion.modelVersion == Version.from('2')
+    }
+
+    void 'DMSMD01 : test finding merge difference between two terminologies'() {
+        when:
+        Terminology terminology = service.get(id)
+        service.finaliseModel(terminology, admin)
+        checkAndSave(terminology)
+
+        then:
+        terminology.branchName == 'main'
+
+        when:
+        def left = service.createNewBranchModelVersion('left', terminology, admin, false, userSecurityPolicyManager)
+        def right = service.createNewBranchModelVersion('right', terminology, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(left)
+        checkAndSave(right)
+        left.modelVersion == null
+        left.branchName == 'left'
+        right.modelVersion == null
+        right.branchName == 'right'
+
+        when:
+        def mergeDiff = service.mergeDiff(left, right)
+
+        then:
+        mergeDiff == [left: terminology.diff(left), right: terminology.diff(right)]
+
+    }
+
     void 'DMSV01 : test validation on valid model'() {
         given:
         Terminology check = complexTerminology

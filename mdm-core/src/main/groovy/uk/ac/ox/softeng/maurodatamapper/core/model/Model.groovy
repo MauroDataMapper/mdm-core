@@ -81,7 +81,7 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         res
     }
 
-    static def <T extends Model> ObjectDiff modelDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
+    static <T extends Model> ObjectDiff modelDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
         catalogueItemDiffBuilder(diffClass, lhs, rhs)
             .appendBoolean('deleted', lhs.deleted, rhs.deleted)
             .appendBoolean('finalised', lhs.finalised, rhs.finalised)

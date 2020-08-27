@@ -432,7 +432,7 @@ class DataModelService extends ModelService<DataModel> {
         boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, 'main') > 0
 
         DataModel newMainBranchModelVersion
-        if (!mainBranchExistsForLabel) {
+        if (!draftModelOnMainBranch) {
             newMainBranchModelVersion = copyDataModel(dataModel,
                                                       user,
                                                       copyPermissions,
@@ -450,6 +450,7 @@ class DataModelService extends ModelService<DataModel> {
 
             if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
         }
+
         DataModel newBranchModelVersion
         if (branchName != 'main') {
             newBranchModelVersion = copyDataModel(dataModel,

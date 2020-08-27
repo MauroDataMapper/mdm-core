@@ -368,6 +368,10 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         by().inList('id', ids.toList())
     }
 
+    static DetachedCriteria<DataModel> byLabelAndFinalisedAndLatestModelVersion(String label) {
+        by().eq('label', label).eq('finalised', true).order('modelVersion', 'desc')
+    }
+
     static DetachedCriteria<DataModel> withFilter(DetachedCriteria<DataModel> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
     }

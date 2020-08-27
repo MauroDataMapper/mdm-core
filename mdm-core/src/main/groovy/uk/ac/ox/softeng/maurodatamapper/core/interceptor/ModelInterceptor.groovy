@@ -44,7 +44,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     @Override
     List<String> getReadAccessMethods() {
-        ['exportModel', 'newForkModel']
+        ['exportModel', 'newForkModel', 'latestVersion']
     }
 
     @Override
@@ -86,7 +86,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             }
         }
 
-        if (actionName in ['diff']) {
+        if (actionName in ['diff', 'commonAncestor', 'mergeDiff']) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
                 return notFound(getSecuredClass(), getId())
             }

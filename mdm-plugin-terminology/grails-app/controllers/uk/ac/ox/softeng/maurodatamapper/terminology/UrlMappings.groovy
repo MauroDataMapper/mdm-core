@@ -49,6 +49,13 @@ class UrlMappings {
                 put '/newDocumentationVersion'(controller: 'terminology', action: 'newDocumentationVersion')
                 put '/newForkModel'(controller: 'terminology', action: 'newForkModel')
 
+                /*
+                Version Control
+                 */
+                get "/commonAncestor/$otherModelId"(controller: 'terminology', action: 'commonAncestor')
+                get '/latestVersion'(controller: 'terminology', action: 'latestVersion')
+                get "/mergeDiff/$otherModelId"(controller: 'terminology', action: 'mergeDiff')
+
                 get "/diff/$otherModelId"(controller: 'terminology', action: 'diff') // New URL
                 put "/folder/$folderId"(controller: 'terminology', action: 'changeFolder')
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'terminology', action: 'exportModel') // New URL
@@ -95,6 +102,13 @@ class UrlMappings {
                 put '/newBranchModelVersion'(controller: 'codeSet', action: 'newBranchModelVersion')
                 put '/newDocumentationVersion'(controller: 'codeSet', action: 'newDocumentationVersion')
                 put '/newForkModel'(controller: 'codeSet', action: 'newForkModel')
+
+                /*
+                Version Control
+                 */
+                get "/commonAncestor/$otherModelId"(controller: 'codeSet', action: 'commonAncestor')
+                get '/latestVersion'(controller: 'codeSet', action: 'latestVersion')
+                get "/mergeDiff/$otherModelId"(controller: 'codeSet', action: 'mergeDiff')
 
                 get "/diff/$otherModelId"(controller: 'codeSet', action: 'diff') // New URL
                 put "/folder/$folderId"(controller: 'codeSet', action: 'changeFolder')

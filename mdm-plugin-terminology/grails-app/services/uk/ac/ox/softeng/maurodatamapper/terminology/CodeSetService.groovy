@@ -252,7 +252,7 @@ class CodeSetService extends ModelService<CodeSet> {
         boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(codeSet.label, 'main') > 0
 
         CodeSet newMainBranchModelVersion
-        if (!mainBranchExistsForLabel) {
+        if (!draftModelOnMainBranch) {
             newMainBranchModelVersion = copyCodeSet(codeSet,
                                                     user,
                                                     copyPermissions,
@@ -535,6 +535,10 @@ class CodeSetService extends ModelService<CodeSet> {
     List<CodeSet> findAllSupersededModels(List<UUID> ids, Map pagination) {
         if (!ids) return []
         CodeSet.byIdInList(ids).list(pagination)
+    }
+
+    List<CodeSet> findAllByLabelAndBranchName(String label, String branchName) {
+        CodeSet.findAllByLabelAndBranchName(label, branchName)
     }
 
     List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {

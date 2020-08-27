@@ -131,6 +131,11 @@ class VersionLink implements CatalogueItemAware, CreatorAware {
         }
     }
 
+    static DetachedCriteria<VersionLink> bySourceModelAndLinkType(Model source, VersionLinkType linkType) {
+        by().eq('catalogueItemId', Utils.toUuid(source.id))
+            .eq('linkType', linkType)
+    }
+
     static DetachedCriteria<VersionLink> bySourceModelAndTargetModelAndLinkType(Model source, Model target,
                                                                                 VersionLinkType linkType) {
         by().eq('catalogueItemId', Utils.toUuid(source.id))

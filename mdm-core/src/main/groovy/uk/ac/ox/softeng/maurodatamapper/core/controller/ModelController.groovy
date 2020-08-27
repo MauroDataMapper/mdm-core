@@ -208,6 +208,34 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         respond getModelService().diff(thisModel, otherModel)
     }
 
+    def commonAncestor() {
+        T left = queryForResource params[alternateParamsIdKey]
+        if (!left) return notFound(params[alternateParamsIdKey])
+
+        T right = queryForResource params.otherModelId
+        if (!right) return notFound(params.otherModelId)
+
+        respond modelService.commonAncestor(left, right)
+    }
+
+    def latestVersion() {
+        T source = queryForResource(params[alternateParamsIdKey])
+        if (!source) return notFound(params[alternateParamsIdKey])
+
+        respond modelService.latestVersion(source.label)
+    }
+
+    def mergeDiff() {
+
+        T left = queryForResource params[alternateParamsIdKey]
+        if (!left) return notFound(params[alternateParamsIdKey])
+
+        T right = queryForResource params.otherModelId
+        if (!right) return notFound(params.otherModelId)
+
+        respond modelService.mergeDiff(left, right)
+    }
+
     @Transactional
     def finalise(FinaliseData finaliseData) {
 

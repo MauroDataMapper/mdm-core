@@ -36,10 +36,25 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
     }
 
     @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
+
+        ObjectDiff<T> objectDiff = (ObjectDiff<T>) o
+
+        if (leftIdentifier != objectDiff.leftIdentifier) return false
+        if (rightIdentifier != objectDiff.rightIdentifier) return false
+        if (diffs != objectDiff.diffs) return false
+
+        return true
+    }
+
+    @Override
     String toString() {
         int numberOfDiffs = getNumberOfDiffs()
         if (!numberOfDiffs) return "${leftIdentifier} == ${rightIdentifier}"
-        "${leftIdentifier} <> ${rightIdentifier} :: ${numberOfDiffs} differences\n  ${diffs.collect {it.toString()}.join('\n  ')}"
+        "${leftIdentifier} <> ${rightIdentifier} :: ${numberOfDiffs} differences\n  ${diffs.collect { it.toString() }.join('\n  ')}"
     }
 
     @Override

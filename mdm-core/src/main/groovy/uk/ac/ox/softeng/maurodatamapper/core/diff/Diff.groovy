@@ -22,6 +22,19 @@ abstract class Diff<T> {
     T left
     T right
 
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        Diff<T> diff = (Diff<T>) o
+
+        if (left != diff.left) return false
+        if (right != diff.right) return false
+
+        return true
+    }
+
     Diff<T> leftHandSide(T lhs) {
         this.left = lhs
         this

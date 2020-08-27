@@ -255,7 +255,7 @@ class TerminologyService extends ModelService<Terminology> {
         boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(terminology.label, 'main') > 0
 
         Terminology newMainBranchModelVersion
-        if (!mainBranchExistsForLabel) {
+        if (!draftModelOnMainBranch) {
             newMainBranchModelVersion = copyTerminology(terminology,
                                                         user,
                                                         copyPermissions,
@@ -587,6 +587,10 @@ class TerminologyService extends ModelService<Terminology> {
     List<Terminology> findAllSupersededModels(List<UUID> ids, Map pagination) {
         if (!ids) return []
         Terminology.byIdInList(ids).list(pagination)
+    }
+
+    List<Terminology> findAllByLabelAndBranchName(String label, String branchName) {
+        Terminology.findAllByLabelAndBranchName(label, branchName)
     }
 
     List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {
