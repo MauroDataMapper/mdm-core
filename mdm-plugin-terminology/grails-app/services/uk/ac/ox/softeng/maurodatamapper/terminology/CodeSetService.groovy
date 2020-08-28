@@ -78,6 +78,11 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.list(pagination)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "cs"
+    }
+
     Long count() {
         CodeSet.count()
     }

@@ -132,12 +132,22 @@ class UrlMappings {
                 Reference Files
                  */
                 '/referenceFiles'(resources: 'referenceFile', excludes: DEFAULT_EXCLUDES)
+
+                /*
+                Get Catalogue Item by path where is ID of top Catalogue Item is provided
+                 */
+                get "/path/$path"(controller: 'path', action: 'show')
             }
 
             /*
             Edits
              */
             get "/$resourceDomainType/$resourceId/edits"(controller: 'edit', action: 'index')
+
+            /*
+            Get Catalogue Item by path where is ID of top Catalogue Item is not provided
+            */
+            get "/$catalogueItemDomainType/path/$path"(controller: 'path', action: 'show')
 
             /*
             Tree

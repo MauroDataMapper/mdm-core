@@ -61,6 +61,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
         handles(grailsClass.clazz)
     }
 
+    boolean handlesPathPrefix(String pathPrefix) {
+        false
+    }
+
     abstract void deleteAll(Collection<K> catalogueItems)
 
     abstract void delete(K catalogueItem)

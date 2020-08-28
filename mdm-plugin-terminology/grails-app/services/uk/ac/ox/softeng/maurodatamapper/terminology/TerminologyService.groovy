@@ -80,6 +80,11 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.list(pagination)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "te"
+    }
+
     Long count() {
         Terminology.count()
     }
