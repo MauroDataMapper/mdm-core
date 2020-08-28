@@ -61,8 +61,8 @@ class PathService {
                 if (params.catalogueItemId) {
                     catalogueItem = service.get(params.catalogueItemId)
                 } else {
-                    if (service.handlesPathPrefix(it.typePrefix) && it.label) {
-                        catalogueItem = service.findByLabel(it.label)
+                    if (service.handlesPathPrefix(node.typePrefix) && node.label) {
+                        catalogueItem = service.findByLabel(node.label)
                     }
                 }
 
@@ -70,10 +70,10 @@ class PathService {
             } else {
                 if (catalogueItem) {
                     //Try to find the child of this catalogue item by prefix and label
-                    service = catalogueItemServices.find { node.typePrefix }
+                    service = catalogueItemServices.find { it.handlesPathPrefix(node.typePrefix) }
 
                     //Use the service to find a child CatalogueItem whose parent is catalogueItem and which has the specified label
-                    //catalogueItem = service.findByParentAndLabel(catalogueItem, node.label)
+                    catalogueItem = service.findByParentAndLabel(catalogueItem, node.label)
                 }
             }
         }

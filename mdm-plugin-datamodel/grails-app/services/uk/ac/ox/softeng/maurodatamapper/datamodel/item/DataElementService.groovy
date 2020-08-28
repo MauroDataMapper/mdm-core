@@ -446,4 +446,23 @@ class DataElementService extends ModelItemService<DataElement> {
     void setDataElementIsFromDataElement(DataElement source, DataElement target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
+
+    DataElement findDataElement(DataModel dataModel, String label) {
+        dataModel.dataClasses.find { !it.parentDataClass && it.label == label.trim() }
+    }
+
+    DataElement findDataElemet(DataClass dataClass, String label) {
+        dataClass.dataClasses.find { it.label == label.trim() }
+    }
+
+    /*
+     * Find a DataElement which is labeled with label and whose parent is parentCatalogueItem. The parentCatalogueItem
+     * can be a DataModel or DataClass.
+     * @param parentCatalogueItem The DataModel or DataClass which is the parent of the DataClass being sought
+     * @param label The label of the DataElement being sought
+     */
+    @Override
+    DataElement findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
+        findDataElement(parentCatalogueItem, label)
+    }
 }
