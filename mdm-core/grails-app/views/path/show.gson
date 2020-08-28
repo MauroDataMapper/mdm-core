@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+
+model {
+    CatalogueItem catalogueItem
+}
+
+json tmpl.'/catalogueItem/catalogueItem'(catalogueItem: catalogueItem)

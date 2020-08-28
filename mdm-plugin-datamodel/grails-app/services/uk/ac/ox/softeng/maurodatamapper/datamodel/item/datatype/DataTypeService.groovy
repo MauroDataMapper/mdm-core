@@ -57,6 +57,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.get(id)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "dt"
+    }
+
     Long count() {
         DataType.count()
     }

@@ -96,6 +96,11 @@ class DataModelService extends ModelService<DataModel> {
         DataModel.list(pagination)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "dm"
+    }
+
     Long count() {
         DataModel.count()
     }
@@ -881,5 +886,10 @@ class DataModelService extends ModelService<DataModel> {
 
     void setDataModelIsFromDataModel(DataModel source, DataModel target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+    }
+
+    DataModel findByLabel(String label) {
+        log.debug("DataModeService.findByLabel ${label}")
+        DataModel.findByLabel(label)
     }
 }

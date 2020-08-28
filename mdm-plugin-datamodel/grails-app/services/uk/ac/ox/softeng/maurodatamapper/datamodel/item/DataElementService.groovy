@@ -75,6 +75,11 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "de"
+    }
+
+    @Override
     void deleteAll(Collection<DataElement> dataElements) {
         dataElements.each { delete(it) }
     }

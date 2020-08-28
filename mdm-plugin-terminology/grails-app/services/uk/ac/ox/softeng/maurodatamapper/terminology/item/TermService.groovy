@@ -59,6 +59,10 @@ class TermService extends ModelItemService<Term> {
         Term.getAll(ids).findAll()
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "tm"
+    }
 
     List<Term> list(Map args) {
         Term.list(args)

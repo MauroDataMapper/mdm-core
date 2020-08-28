@@ -71,6 +71,11 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.getAll(ids).findAll()
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "dc"
+    }
+
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = proxyHandler.unwrapIfProxy(dataClass.dataModel)
