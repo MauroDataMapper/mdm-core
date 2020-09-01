@@ -448,11 +448,11 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     DataElement findDataElement(DataModel dataModel, String label) {
-        dataModel.dataClasses.find { !it.parentDataClass && it.label == label.trim() }
+        dataModel.dataElements.find { !it.parentDataClass && it.label == label.trim() }
     }
 
-    DataElement findDataElemet(DataClass dataClass, String label) {
-        dataClass.dataClasses.find { it.label == label.trim() }
+    DataElement findDataElement(DataClass dataClass, String label) {
+        dataClass.dataElements.find { it.label == label.trim() }
     }
 
     /*

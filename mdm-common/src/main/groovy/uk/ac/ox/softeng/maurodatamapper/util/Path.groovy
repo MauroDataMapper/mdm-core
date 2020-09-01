@@ -39,10 +39,12 @@ class Path {
     Path (String path) {
         pathNodes = []
 
-        String[] splits = path.split(PATH_DELIMITER, MAX_NODES)
+        if (path) {
+            String[] splits = path.split(PATH_DELIMITER, MAX_NODES)
 
-        for (String s: splits) {
-            pathNodes << new PathNode(s)
+            for (String s : splits) {
+                pathNodes << new PathNode(s)
+            }
         }
     }
 
