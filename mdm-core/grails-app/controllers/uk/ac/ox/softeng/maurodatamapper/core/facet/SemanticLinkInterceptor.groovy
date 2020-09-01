@@ -18,6 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 class SemanticLinkInterceptor extends FacetInterceptor {
 
@@ -26,8 +29,36 @@ class SemanticLinkInterceptor extends FacetInterceptor {
         SemanticLink
     }
 
+
+    UUID getId() {
+        params.semanticLinkId ?: params.id
+    }
+
+    @Override
+    void checkAdditionalIds() {
+        Utils.toUuid(params,"semanticLinkId")
+    }
+
     boolean before() {
         facetResourceChecks()
+        if (actionName == 'confirm') {
+
+            if (Utils.parentClassIsAssignableFromChild(SecurableResource, getOwningClass())) {
+                boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(getFacetClass(), getId(), getOwningClass(), getOwningId())
+                return currentUserSecurityPolicyManager.userCanEditResourceId(getFacetClass(), getId(),
+                        getOwningClass(),getOwningId()) ?:
+                        forbiddenOrNotFound(canRead, getId() ? getFacetClass() : getOwningClass(), getId() ?: getOwningId())
+
+            }
+
+            Model model = proxyHandler.unwrapIfProxy(getOwningModel())
+            boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(getFacetClass(), getId(), getOwningClass(), getOwningId())
+            return currentUserSecurityPolicyManager.userCanEditResourceId(getFacetClass(), getId(),
+                    model.class,getOwningId()) ?:
+                    forbiddenOrNotFound(canRead, getId() ? getFacetClass() : model.class, getId() ?: getOwningId())
+        }
+
         checkActionAllowedOnFacet()
+
     }
 }

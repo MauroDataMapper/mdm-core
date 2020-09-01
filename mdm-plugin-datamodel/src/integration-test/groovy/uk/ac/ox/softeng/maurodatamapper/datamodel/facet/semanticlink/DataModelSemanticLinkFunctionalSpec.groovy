@@ -30,6 +30,7 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 /**
@@ -47,6 +48,8 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
     DataElement dataElement
     @Shared
     DataType dataType
+    @Shared
+    DataModel targetDataModel
 
     String getCatalogueItemCopyPath() {
         "dataModels/${sourceDataModelId}/newForkModel"
@@ -68,6 +71,8 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
         log.debug('Check and setup test data')
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
+        targetDataModel = new DataModel(label: 'Functional Test Target DataModel', createdBy: 'functionalTest@test.com',
+                folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
                                   dataModel: dataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
@@ -148,5 +153,45 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
     @Override
     void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
         // Semantic link only copied for new doc version
+    }
+
+    def 'test confirm semantic link'(){
+        given: 'Create New Data Model'
+        def id = dataModel.id
+
+        when: 'Create Semantic Link'
+        POST(   "dataModels/${id}/" + getFacetResourcePath(),
+                [
+                    targetCatalogueItemId: targetDataModel.id,
+                    targetCatalogueItemDomainType: 'DataModel',
+                    linkType: 'DOES_NOT_REFINE'
+                ],
+                MAP_ARG, true)
+
+        then: 'Check Successful Semantic Link Creation'
+        verifyResponse(HttpStatus.CREATED, response)
+
+
+        when:
+        PUT("dataModels/${id}/finalise", [ : ], MAP_ARG, true )
+        PUT("dataModels/${id}/newModelVersion", [ 'label':  'New DataModel Version'], MAP_ARG, true)
+
+        then:
+        verifyResponse(HttpStatus.CREATED, response)
+
+        when:
+        String id2 = responseBody().get("id")
+
+        GET("dataModels/${id2}/semanticLinks", MAP_ARG, true)
+
+        String semanticLinkId = response.body().items[0].id
+
+        PUT("dataModels/${id}/semanticLinks/${semanticLinkId}/confirm", [ : ], MAP_ARG, true)
+
+        then:
+        verifyResponse(HttpStatus.OK, response)
+
+        cleanup:
+        cleanUpData(semanticLinkId)
     }
 }

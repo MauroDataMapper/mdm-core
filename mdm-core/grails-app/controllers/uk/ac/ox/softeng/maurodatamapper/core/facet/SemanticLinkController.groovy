@@ -104,4 +104,15 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
         }
         true
     }
+
+    @Transactional
+    def confirm() {
+        SemanticLink instance = queryForResource(params.semanticLinkId)
+
+        if (!instance) return notFound(params.semanticLinkId)
+
+        instance.unconfirmed = false
+
+        updateResponse(instance)
+    }
 }

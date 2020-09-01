@@ -52,6 +52,15 @@ class TerminologyInterceptorSpec extends TieredAccessCheckResourceInterceptorUni
         HttpStatus.FORBIDDEN
     }
 
+    boolean getNoAccessIndexAllowedState() {
+        true
+    }
+
+    HttpStatus getNoAccessIndexAllowedCode() {
+        HttpStatus.OK
+    }
+
+
     @Unroll
     void 'test access to changeFolder using folder: #folderIdStr terminology: #terminologyIdStr is #allowedStr'() {
 

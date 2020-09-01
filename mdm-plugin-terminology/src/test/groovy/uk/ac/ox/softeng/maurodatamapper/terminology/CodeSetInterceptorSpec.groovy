@@ -52,6 +52,15 @@ class CodeSetInterceptorSpec extends TieredAccessCheckResourceInterceptorUnitSpe
         HttpStatus.FORBIDDEN
     }
 
+    boolean getNoAccessIndexAllowedState() {
+        true
+    }
+
+    HttpStatus getNoAccessIndexAllowedCode() {
+        HttpStatus.OK
+    }
+
+
     @Unroll
     void 'test access to changeFolder using folder: #folderIdStr codeSet: #codeSetIdStr is #allowedStr'() {
 

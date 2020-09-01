@@ -39,6 +39,7 @@ class SemanticLink implements CatalogueItemAware, CreatorAware {
     CatalogueItem targetCatalogueItem
     UUID targetCatalogueItemId
     String targetCatalogueItemDomainType
+    Boolean unconfirmed
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
@@ -65,6 +66,7 @@ class SemanticLink implements CatalogueItemAware, CreatorAware {
     static transients = ['targetCatalogueItem', 'catalogueItem']
 
     SemanticLink() {
+        unconfirmed = false
     }
 
     @Override

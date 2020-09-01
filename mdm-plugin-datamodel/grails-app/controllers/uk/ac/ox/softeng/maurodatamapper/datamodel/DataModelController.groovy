@@ -64,7 +64,7 @@ class DataModelController extends ModelController<DataModel> {
     }
 
     def defaultDataTypeProviders() {
-        respond providers: defaultDataTypeProviders
+        respond providers: dataModelService.defaultDataTypeProviders
     }
 
     def hierarchy() {

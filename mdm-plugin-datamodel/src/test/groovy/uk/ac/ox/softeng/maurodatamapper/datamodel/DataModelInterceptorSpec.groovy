@@ -57,6 +57,14 @@ class DataModelInterceptorSpec extends TieredAccessCheckResourceInterceptorUnitS
         HttpStatus.FORBIDDEN
     }
 
+    boolean getNoAccessIndexAllowedState() {
+        true
+    }
+
+    HttpStatus getNoAccessIndexAllowedCode() {
+        HttpStatus.OK
+    }
+
     @Unroll
     void 'test access to changeFolder using folder: #folderIdStr datamodel: #dataModelIdStr is #allowedStr'() {
 

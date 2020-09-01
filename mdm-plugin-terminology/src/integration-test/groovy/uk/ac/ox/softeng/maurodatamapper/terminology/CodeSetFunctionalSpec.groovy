@@ -149,7 +149,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "type": "CodeSet",
   "documentationVersion": "1.0.0",
-  "branchName": "main",
   "finalised": false,
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
@@ -222,6 +221,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "CodeSet",
         "id": "${json-unit.matches:id}",
@@ -279,6 +279,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "CodeSet",
         "id": "${json-unit.matches:id}",
@@ -294,6 +295,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "CodeSet",
         "id": "${json-unit.matches:id}",
@@ -376,6 +378,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "CodeSet",
         "id": "${json-unit.matches:id}",
@@ -438,8 +441,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         PUT("$id/newBranchModelVersion", [branchName: 'testNewBranchModelVersion'], STRING_ARG)
 
         then:
-        verifyJsonResponse CREATED, expectedShowJson
-            .replaceFirst(/"branchName": "main",/, '"branchName": "testNewBranchModelVersion",')
+        verifyJsonResponse CREATED, expectedShowJson.replaceFirst(/"main"/, '"testNewBranchModelVersion"')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -452,6 +454,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "CodeSet",
         "id": "${json-unit.matches:id}",
