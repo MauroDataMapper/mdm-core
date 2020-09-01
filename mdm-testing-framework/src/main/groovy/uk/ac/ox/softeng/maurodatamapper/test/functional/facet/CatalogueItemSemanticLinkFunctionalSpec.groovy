@@ -61,8 +61,7 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends CatalogueItemFace
         [
             linkType                     : SemanticLinkType.REFINES.label,
             targetCatalogueItemId        : getTargetCatalogueItemId(),
-            targetCatalogueItemDomainType: getTargetCatalogueItemDomainType(),
-            unconfirmed: true
+            targetCatalogueItemDomainType: getTargetCatalogueItemDomainType()
         ]
     }
 

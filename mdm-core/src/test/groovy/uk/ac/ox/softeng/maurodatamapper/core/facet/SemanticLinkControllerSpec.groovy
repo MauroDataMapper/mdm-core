@@ -18,10 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkController
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -117,6 +117,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
         "label": "dm2"
       },
       "domainType": "SemanticLink",
+      "unconfirmed": false,
       "sourceCatalogueItem": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
@@ -132,6 +133,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
         "label": "dm3"
       },
       "domainType": "SemanticLink",
+      "unconfirmed": false,
       "sourceCatalogueItem": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
@@ -181,6 +183,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     String getExpectedValidSavedJson() {
         '''{
     "domainType": "SemanticLink",
+    "unconfirmed": false,
     "linkType": "Abstracts",
     "id": "${json-unit.matches:id}",
     "sourceCatalogueItem": {
@@ -214,6 +217,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     ]
   },
   "domainType": "SemanticLink",
+  "unconfirmed": false,
   "sourceCatalogueItem": {
     "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
@@ -248,6 +252,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     ]
   },
   "domainType": "SemanticLink",
+  "unconfirmed": false,
   "sourceCatalogueItem": {
     "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",

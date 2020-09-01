@@ -134,7 +134,7 @@ class BootstrapModels {
         checkAndSave(messageSource, dataModel)
 
         SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: DEVELOPMENT,
-                                             targetCatalogueItem: DataClass.findByLabel('parent'), unconfirmed: false)
+                                             targetCatalogueItem: DataClass.findByLabel('parent'))
         DataClass.findByLabel('content').addToSemanticLinks(link)
 
         checkAndSave(messageSource, dataModel)

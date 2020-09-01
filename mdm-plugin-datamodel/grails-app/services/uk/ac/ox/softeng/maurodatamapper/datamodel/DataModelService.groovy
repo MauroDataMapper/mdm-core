@@ -559,23 +559,12 @@ class DataModelService extends ModelService<DataModel> {
             }
         }
 
-        if (original.semanticLinks) {
-            original.semanticLinks.each { link ->
-                copy.addToSemanticLinks(createdBy: copier.emailAddress,
-                                        linkType: link.linkType,
-                                        targetCatalogueItemId: link.targetCatalogueItemId,
-                                        targetCatalogueItemDomainType: link.targetCatalogueItemDomainType,
-                                        unconfirmed: link.unconfirmed == null ? false : link.unconfirmed)
-            }
-        }
-
         if (original.versionLinks) {
             original.versionLinks.each { link ->
                 copy.addToVersionLinks(createdBy: copier.emailAddress,
                                        linkType: link.linkType,
                                        targetModelId: link.targetModelId,
-                                       targetModelDomainType: link.targetModelDomainType,
-                                       unconfirmed: false)
+                                       targetModelDomainType: link.targetModelDomainType)
             }
         }
 

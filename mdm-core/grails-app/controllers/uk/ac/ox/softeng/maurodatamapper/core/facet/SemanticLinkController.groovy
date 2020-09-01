@@ -62,7 +62,6 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
     protected SemanticLink createResource() {
         SemanticLink resource = super.createResource() as SemanticLink
         resource.catalogueItem = semanticLinkService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        resource.unconfirmed = false
         resource
     }
 
@@ -112,7 +111,7 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
 
         if (!instance) return notFound(params.semanticLinkId)
 
-        instance.unconfirmed = !(request.method == 'PUT')
+        instance.unconfirmed = false
 
         updateResponse(instance)
     }

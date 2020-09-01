@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.test.unit.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ArrayDiff
@@ -375,7 +374,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         checkAndSave(domain)
 
         when:
-        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: target, unconfirmed: true)
+        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: target)
 
         then:
         checkAndSave(domain)
@@ -404,7 +403,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         checkAndSave(domain)
 
         when:
-        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: domain, unconfirmed: true)
+        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: domain)
         check(domain)
 
         then:
