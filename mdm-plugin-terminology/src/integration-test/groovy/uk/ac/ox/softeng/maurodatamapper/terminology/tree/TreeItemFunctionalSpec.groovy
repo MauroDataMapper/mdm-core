@@ -19,14 +19,15 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
+import spock.lang.Ignore
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -48,6 +49,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
+@Ignore('Need to examine the underlying response handling')
 class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared

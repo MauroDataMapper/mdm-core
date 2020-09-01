@@ -329,6 +329,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "DataModel",
         "id": "${json-unit.matches:id}",
@@ -386,6 +387,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "DataModel",
         "id": "${json-unit.matches:id}",
@@ -401,6 +403,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "DataModel",
         "id": "${json-unit.matches:id}",
@@ -483,6 +486,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "DataModel",
         "id": "${json-unit.matches:id}",
@@ -559,6 +563,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "DataModel",
         "id": "${json-unit.matches:id}",

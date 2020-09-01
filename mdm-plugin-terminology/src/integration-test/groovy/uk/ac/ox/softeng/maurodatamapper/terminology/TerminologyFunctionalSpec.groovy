@@ -140,7 +140,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
   "availableActions": ["delete","show","update"],
   "branchName": "main",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "branchName": "main",
   "type": "Terminology",
   "documentationVersion": "1.0.0",
   "finalised": false,
@@ -214,6 +213,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
@@ -271,6 +271,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
@@ -286,6 +287,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
@@ -368,6 +370,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
@@ -430,8 +433,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         PUT("$id/newBranchModelVersion", [branchName: 'testNewBranchModelVersion'], STRING_ARG)
 
         then:
-        verifyJsonResponse CREATED, expectedShowJson
-            .replaceFirst(/"branchName": "main",/, '"branchName": "testNewBranchModelVersion",')
+        verifyJsonResponse CREATED, expectedShowJson.replaceFirst(/"main"/, '"testNewBranchModelVersion"')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -444,6 +446,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "domainType": "SemanticLink",
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
+      "unconfirmed":false,
       "sourceCatalogueItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",

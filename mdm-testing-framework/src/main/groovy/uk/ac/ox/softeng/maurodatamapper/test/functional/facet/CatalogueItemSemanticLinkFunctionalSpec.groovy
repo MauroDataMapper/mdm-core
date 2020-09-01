@@ -86,6 +86,7 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends CatalogueItemFace
         '''{
   "id": "${json-unit.matches:id}",
   "linkType": "Refines",
+  "unconfirmed":false,
   "domainType": "SemanticLink",
   "sourceCatalogueItem": ''' + getSourceCatalogueItemJsonString() + ''',
   "targetCatalogueItem": ''' + getTargetCatalogueItemJsonString() + '''
