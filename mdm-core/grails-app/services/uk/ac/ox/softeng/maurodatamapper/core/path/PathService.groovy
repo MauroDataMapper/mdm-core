@@ -52,11 +52,11 @@ class PathService {
         Iterate over nodes in the path
          */
         boolean first = true
-        path.pathNodes.each {node ->
+        path.pathNodes.each { PathNode node ->
             /*
             On first iteration, if params.catalogueItemId is provided then use this to get the top CatalogueItem by ID.
             Else if the service handles the typePrefix then use this service to find the top CatalogueItem by label.
-             */
+            */
             if (first) {
                 if (params.catalogueItemId) {
                     catalogueItem = service.get(params.catalogueItemId)
