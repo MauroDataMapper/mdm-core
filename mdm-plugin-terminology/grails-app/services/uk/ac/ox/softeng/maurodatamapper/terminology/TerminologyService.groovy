@@ -680,4 +680,13 @@ class TerminologyService extends ModelService<Terminology> {
             terminology.dateFinalised = terminology.finalised ? OffsetDateTime.now() : null
         }
     }
+
+    /**
+     * Find a Terminology by label.
+     * @param label
+     * @return The found Terminology
+     */
+    Terminology findByLabel(String label) {
+        Terminology.findByLabel(label)
+    }
 }
