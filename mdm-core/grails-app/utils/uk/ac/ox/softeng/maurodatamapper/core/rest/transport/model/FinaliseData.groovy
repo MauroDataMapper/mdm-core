@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
 
 import grails.validation.Validateable
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 /**
  * @since 02/02/2018
@@ -25,8 +26,23 @@ import grails.validation.Validateable
 class FinaliseData implements Validateable {
 
     List<String> supersededBy = []
+    VersionChangeType versionChangeType
+    String version
+
 
     static constraints = {
         supersededBy nullable: true
+        versionChangeType nullable: true
+        version nullable: true
+        versionChangeType validator: { FinaliseData obj ->
+            if (!obj.versionChangeType && !obj.version) {
+                return ['mustGiveVersionOrVersionChangeType']
+            }
+        }
+        version validator: { FinaliseData obj ->
+            if (!obj.versionChangeType && !obj.version) {
+                return ['mustGiveVersionOrVersionChangeType']
+            }
+        }
     }
 }
