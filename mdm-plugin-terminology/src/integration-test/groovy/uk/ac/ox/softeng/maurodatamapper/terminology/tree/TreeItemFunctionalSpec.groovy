@@ -49,7 +49,6 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-@Ignore('Need to examine the underlying response handling')
 class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared
