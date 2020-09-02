@@ -30,6 +30,7 @@ class ResourceActions {
     public static final String SOFT_DELETE_ACTION = 'softDelete'
     public static final String NEW_DOCUMENTATION_ACTION = 'newDocumentationVersion'
     public static final String NEW_MODEL_VERSION_ACTION = 'newBranchModelVersion'
+    public static final String CAN_BE_FINALISED_ACTION = 'finalise'
 
     public static final List<String> READ_ONLY_ACTIONS = [SHOW_ACTION]
     public static final List<String> STANDARD_EDIT_ACTIONS = [SHOW_ACTION, UPDATE_ACTION, DELETE_ACTION]

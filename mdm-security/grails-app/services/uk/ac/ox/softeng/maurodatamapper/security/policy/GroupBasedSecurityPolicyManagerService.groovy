@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.policy
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -765,6 +766,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                             .definedByGroup(userGroup)
                             .definedByAccessLevel(appliedGroupRole)
                             .asFinalisedModel(m.finalised)
+                            .withModelCanBeFinalised(m.branchName == ModelConstraints.DEFAULT_BRANCH_NAME)
                     }
                 )
             }

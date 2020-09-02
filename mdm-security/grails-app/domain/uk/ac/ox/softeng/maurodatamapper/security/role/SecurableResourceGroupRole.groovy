@@ -33,6 +33,7 @@ class SecurableResourceGroupRole implements EditHistoryAware {
     String securableResourceDomainType
     UUID securableResourceId
     Boolean finalisedModel
+    Boolean canFinaliseModel
 
     static belongsTo = [
         groupRole: GroupRole,
@@ -46,6 +47,7 @@ class SecurableResourceGroupRole implements EditHistoryAware {
             if (val && obj.ident() && obj.isDirty('userGroup')) ['invalid.grouprole.cannot.change.usergroup.message']
         }
         finalisedModel nullable: true
+        canFinalise nullable: true
     }
 
     static mapping = {
@@ -61,6 +63,10 @@ class SecurableResourceGroupRole implements EditHistoryAware {
     @Override
     String getDomainType() {
         SecurableResourceGroupRole.simpleName
+    }
+
+    boolean canFinalise(){
+        securableResource.branchName == "main"
     }
 
     void setSecurableResource(SecurableResource securableResource) {

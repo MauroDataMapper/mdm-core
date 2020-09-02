@@ -42,6 +42,7 @@ import groovy.util.logging.Slf4j
 
 import java.util.function.Predicate
 
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CAN_BE_FINALISED_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_CONTAINER_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_EDITOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.DELETE_ACTION
@@ -447,7 +448,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
             VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
             if (role) {
-                return MODEL_CONTAINER_ADMIN_ACTIONS - getFinalisedActionsToRemove(role)
+                return (MODEL_CONTAINER_ADMIN_ACTIONS + getCanBeFinalisedAction(securableResourceClass, id)) - getFinalisedActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             if (role) {
@@ -471,6 +472,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private List<String> getFinalisedActionsToRemove(VirtualSecurableResourceGroupRole role) {
         role.isFinalisedModel() ? MODEL_DISALLOWED_FINALISED_ACTIONS : []
+    }
+
+    private List<String> getCanBeFinalisedAction(VirtualSecurableResourceGroupRole role) {
+        //If resource can be finalised return CAN_BE_FINALISED_ACTION
+        role.canFinaliseModel() ? [CAN_BE_FINALISED_ACTION] : []
+
     }
 
     private boolean hasAnyAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
