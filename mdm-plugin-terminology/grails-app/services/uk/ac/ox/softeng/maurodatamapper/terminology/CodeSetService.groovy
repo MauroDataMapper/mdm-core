@@ -627,4 +627,13 @@ class CodeSetService extends ModelService<CodeSet> {
             codeSet.dateFinalised = codeSet.finalised ? OffsetDateTime.now() : null
         }
     }
+
+    /**
+     * Find a CodeSet by label.
+     * @param label
+     * @return The found CodeSet
+     */
+    CodeSet findByLabel(String label) {
+        CodeSet.findByLabel(label)
+    }
 }

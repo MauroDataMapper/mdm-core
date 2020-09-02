@@ -28,7 +28,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeIt
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+<<<<<<< HEAD
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
+=======
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+>>>>>>> 6eb750c... mc-9165 Work in progress. Handle and unit test retrieval by path for Term, Terminology and CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
@@ -366,5 +370,34 @@ class TermService extends ModelItemService<Term> {
         sessionFactory.currentSession.clear()
 
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
+    }
+
+    /*
+     * Find a Term belonging to terminology and whose label is label
+     * @param terminology The Terminology to which the sought Term belongs
+     * @param label The label of the sought Term
+     */
+    private Term findTerm(Terminology terminology, String label) {
+        terminology.terms.find { it.label == label.trim() }
+    }
+
+    /*
+     * Find a Term belonging to codeSet and whose label is label
+     * @param codeSet The CodeSet to which the sought Term belongs
+     * @param label The label of the sought Term
+     */
+    private Term findTerm(CodeSet codeSet, String label) {
+        codeSet.terms.find { it.label == label.trim() }
+    }
+
+    /*
+     * Find a Term belonging to parentCatalogueItem and whose label is label.
+     * The parentCatalogueItem can be a Terminology or CodeSet.
+     * @param parentCatalogueItem The Terminology or CodeSet which is the parent of the Term being sought
+     * @param label The label of the Term being sought
+     */
+    @Override
+    Term findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
+        findTerm(parentCatalogueItem, label)
     }
 }
