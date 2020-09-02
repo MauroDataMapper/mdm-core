@@ -37,7 +37,7 @@ import spock.lang.Stepwise
 
 @Slf4j
 @Stepwise
-class PathServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<PathService> {
+class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<PathService> {
 
     DataModel dataModel1
     DataClass dataClass1_1
