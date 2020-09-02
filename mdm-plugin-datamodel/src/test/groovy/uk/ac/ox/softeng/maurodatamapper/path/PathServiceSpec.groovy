@@ -360,4 +360,32 @@ class PathServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTes
         catalogueItem.domainType == "DataElement"
         catalogueItem.model.id.equals(dataModel2.id)
     }
+
+    /*
+    Get the data type in data model 2
+    */
+    void "test get of data type"() {
+        Map params
+        CatalogueItem catalogueItem
+
+        //When the data model ID is provided
+        when:
+        params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel2.id.toString(), 'path': "dm:|dt: path service test data type"]
+        catalogueItem = service.findCatalogueItemByPath(params)
+
+        then:
+        catalogueItem.label == "path service test data type"
+        catalogueItem.domainType == "PrimitiveType"
+        catalogueItem.model.id.equals(dataModel2.id)
+
+        //When the data model label is provided
+        when:
+        params = ['catalogueItemDomainType': 'dataModels', 'path': "dm:data model 2|dt: path service test data type"]
+        catalogueItem = service.findCatalogueItemByPath(params)
+
+        then:
+        catalogueItem.label == "path service test data type"
+        catalogueItem.domainType == "PrimitiveType"
+        catalogueItem.model.id.equals(dataModel2.id)
+    }
 }
