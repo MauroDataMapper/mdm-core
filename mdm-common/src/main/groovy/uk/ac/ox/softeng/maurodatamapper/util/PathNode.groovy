@@ -24,22 +24,30 @@ class PathNode {
 
     static String NODE_DELIMITER = ":"
 
-    //Ignore any unexpected delimiters
-    static int MAX_PIECES =  2
-
     String typePrefix
     String label
 
+    /*
+    Parse a string into a type prefix and label.
+    The string is imagined to be of the format tp:label
+    Label can contain a : character, so some real examples are
+    dm:my-data-model (type prefix = dm, label = my-data-model)
+    te:my-code:my-definition (type prefix = te, label = my-code:my-definition)
+     */
     PathNode (String node) {
-        String[] splits = node.split(NODE_DELIMITER, MAX_PIECES)
+        //Look for the first :
+        int index = node.indexOf(NODE_DELIMITER)
 
-        if (splits.length >= 1) {
-            typePrefix = splits[0]
+        //If there is a : not in the zero index then extract the type prefix
+        if (index > 0) {
+            typePrefix = node.substring(0, index)
         }
 
-        if (splits.length >= 2) {
-            label = splits[1]
+        //If there are characters after the : then extract these as the label
+        if (index < node.length() -1) {
+            label = node.substring(index + 1)
         }
+
     }
 
 }
