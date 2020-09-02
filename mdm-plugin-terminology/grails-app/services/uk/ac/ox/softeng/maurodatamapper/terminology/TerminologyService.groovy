@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -177,6 +177,10 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.byDeleted().list(pagination)
     }
 
+    Number countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        Terminology.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    }
+
     Terminology findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {
         // If we get all the models with the DL metadata then sort by documentation version we should end up with the latest doc version.
         // We should do this rather than using the value of the metadata as its possible someone creates a new documentation version of the model
@@ -209,7 +213,14 @@ class TerminologyService extends ModelService<Terminology> {
     @Deprecated(forRemoval = true)
     @Override
     Terminology finaliseModel(Terminology model, User user, List<Serializable> supersedeModelIds) {
-        finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+
+        if (!versionLink)
+            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
+
+        Terminology parent = get(versionLink.targetModelId)
+
+        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
     }
 
     boolean newVersionCreationIsAllowed(Terminology terminology) {
@@ -234,11 +245,18 @@ class TerminologyService extends ModelService<Terminology> {
                                             UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(terminology)) return terminology
 
-        boolean mainBranchExistsForLabel = terminology.branchName == 'main' || findAllByLabelAndBranchName(terminology.label, 'main')
 
-        if (mainBranchExistsForLabel && branchName == 'main') {
-            throw new ApiBadRequestException('DMS02', "The [branchName] 'main' already exists for the [label] '${terminology.label}'")
+        // Check if the branch name is already being used
+        if (countAllByLabelAndBranchNameAndNotFinalised(terminology.label, branchName) > 0) {
+            terminology.errors.reject('model.label.branch.name.already.exists',
+                                      ['branchName', Terminology, branchName, terminology.label] as Object[],
+                                      'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
+            return terminology
         }
+
+        // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
+        boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(terminology.label, 'main') > 0
+
         Terminology newMainBranchModelVersion
         if (!mainBranchExistsForLabel) {
             newMainBranchModelVersion = copyTerminology(terminology,
@@ -256,7 +274,7 @@ class TerminologyService extends ModelService<Terminology> {
                 //            moveTargetDataFlows(terminology, newMainBranchModelVersion)
             }
 
-            if (newMainBranchModelVersion.validate()) newMainBranchModelVersion.save(flush: true, validate: false)
+            if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
         }
         Terminology newBranchModelVersion
         if (branchName != 'main') {
@@ -276,10 +294,10 @@ class TerminologyService extends ModelService<Terminology> {
                 //            moveTargetDataFlows(terminology, newBranchModelVersion)
             }
 
-            if (newBranchModelVersion.validate()) newBranchModelVersion.save(flush: true, validate: false)
+            if (newBranchModelVersion.validate()) save(newBranchModelVersion, flush: true, validate: false)
         }
 
-        newBranchModelVersion ? newBranchModelVersion : newMainBranchModelVersion
+        newBranchModelVersion ?: newMainBranchModelVersion
     }
 
     @Override
@@ -367,24 +385,6 @@ class TerminologyService extends ModelService<Terminology> {
         original.terms?.each { term ->
             term.sourceTermRelationships.each { relationship ->
                 termRelationshipService.copyTermRelationship(copy, relationship, copier)
-            }
-        }
-
-        if (original.semanticLinks) {
-            original.semanticLinks.each { link ->
-                copy.addToSemanticLinks(createdBy: copier.emailAddress,
-                                        linkType: link.linkType,
-                                        targetCatalogueItemId: link.targetCatalogueItemId,
-                                        targetCatalogueItemDomainType: link.targetCatalogueItemDomainType)
-            }
-        }
-
-        if (original.versionLinks) {
-            original.versionLinks.each { link ->
-                copy.addToVersionLinks(createdBy: copier.emailAddress,
-                                       linkType: link.linkType,
-                                       targetModelId: link.targetModelId,
-                                       targetModelDomainType: link.targetModelDomainType)
             }
         }
 
@@ -604,7 +604,7 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     List<UUID> findAllSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsSuperseded(Terminology.simpleName, readableIds)
+        (findAllDocumentSupersededIds(readableIds) + findAllModelSupersededIds(readableIds)).toSet().toList()
     }
 
     List<UUID> findAllDocumentSupersededIds(List<UUID> readableIds) {
@@ -612,7 +612,14 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsModelSuperseded(Terminology.simpleName, readableIds)
+        // All versionLinks which are targets of model version links
+        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(readableIds)
+
+        // However they are only superseded if the source of this link is finalised
+        modelVersionLinks.findAll {
+            Terminology sourceModel = get(it.catalogueItemId)
+            sourceModel.finalised
+        }.collect { it.targetModelId }
     }
 
     List<Terminology> findAllDocumentSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
