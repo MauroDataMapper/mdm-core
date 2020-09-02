@@ -57,6 +57,7 @@ import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -379,11 +380,28 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = []) {
+    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [], VersionChangeType versionChangeType = null, String version = null) {
+
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         dataModel.modelVersion = modelVersion
         dataModel.breadcrumbTree.finalise()
+
+        if (version == null && dataModel.modelVersion == null) dataModel.setModelVersion(new Version('1.0.0'))
+        else if (version != null) dataModel.setModelVersion(new Version(version))
+        else if (versionChangeType != null) {
+            switch(versionChangeType){
+                case VersionChangeType.MAJOR:
+                    dataModel.modelVersion.nextMajorVersion()
+                    break
+                case VersionChangeType.MINOR:
+                    dataModel.modelVersion.nextMinorVersion()
+                    break
+                case VersionChangeType.PATCH:
+                    dataModel.modelVersion.nextPatchVersion()
+            }
+        }
+
         dataModel.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                    description: "DataModel finalised by ${user.firstName} ${user.lastName} on " +
                                                 "${OffsetDateTimeConverter.toString(dataModel.dateFinalised)}")
