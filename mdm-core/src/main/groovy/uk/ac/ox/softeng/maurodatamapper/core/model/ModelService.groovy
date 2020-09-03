@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
@@ -66,12 +67,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
-    abstract K finaliseModel(K model, User user, Version modelVersion, List<Serializable> supersedeModelIds)
+    abstract K finaliseModel(K model, User user, Version modelVersion, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType)
 
-    abstract K finaliseModel(K model, User user, Version modelVersion)
+    abstract K finaliseModel(K model, User user, Version modelVersion, Version version, VersionChangeType versionChangeType)
 
     @Deprecated(forRemoval = true)
-    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds)
+    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType)
 
     abstract K createNewBranchModelVersion(String branchName, K dataModel, User user, boolean copyPermissions,
                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])

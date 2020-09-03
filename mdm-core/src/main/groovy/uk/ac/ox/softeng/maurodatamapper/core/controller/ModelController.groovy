@@ -219,7 +219,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (instance.branchName != 'main') return METHOD_NOT_ALLOWED
 
-        instance = getModelService().finaliseModel(instance, currentUser, finaliseData.supersededBy ?: [], FinaliseData.version, FinaliseData.versionChangeType)
+        instance = getModelService().finaliseModel(instance, currentUser, finaliseData.supersededBy ?: [], finaliseData.version, finaliseData.versionChangeType)
 
         if (!validateResource(instance, 'update')) return
 
