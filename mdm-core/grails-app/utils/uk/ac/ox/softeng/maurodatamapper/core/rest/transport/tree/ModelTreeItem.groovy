@@ -53,9 +53,34 @@ class ModelTreeItem extends TreeItem {
     }
 
     @Override
+    boolean equals(Object o) {
+        if (!super.equals(o)) return false
+
+        ModelTreeItem treeItem = (ModelTreeItem) o
+        if (documentationVersion != treeItem.documentationVersion) return false
+        if (modelVersion != treeItem.modelVersion) return false
+        if (branchName != treeItem.branchName) return false
+
+        true
+    }
+
+    @Override
+    int hashCode() {
+        int result = super.hashCode()
+        result = 31 * result + (documentationVersion != null ? documentationVersion.hashCode() : 0)
+        result = 31 * result + (modelVersion != null ? modelVersion.hashCode() : 0)
+        result = 31 * result + (branchName != null ? branchName.hashCode() : 0)
+        result
+    }
+
+    @Override
     int compareTo(TreeItem that) {
         def res = super.compareTo(that)
-        if (res == 0 && that instanceof ModelTreeItem) res = this.documentationVersion <=> that.documentationVersion
+        if (that instanceof ModelTreeItem) {
+            if (res == 0) res = this.documentationVersion <=> that.documentationVersion
+            if (res == 0) res = this.modelVersion <=> that.modelVersion
+            if (res == 0) res = this.branchName <=> that.branchName
+        }
         res
     }
 }
