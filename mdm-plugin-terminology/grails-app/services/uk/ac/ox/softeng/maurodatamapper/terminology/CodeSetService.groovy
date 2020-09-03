@@ -202,7 +202,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [],
-                            VersionChangeType versionChangeType = null, String version = null) {
+                            Version version, VersionChangeType versionChangeType) {
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         codeSet.modelVersion = modelVersion
@@ -234,7 +234,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Deprecated(forRemoval = true)
     @Override
-    CodeSet finaliseModel(CodeSet model, User user, List<Serializable> supersedeModelIds) {
+    CodeSet finaliseModel(CodeSet model, User user, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType) {
         VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
 
         if (!versionLink)
@@ -242,7 +242,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
         CodeSet parent = get(versionLink.targetModelId)
 
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
+        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds, version, versionChangeType)
     }
 
 

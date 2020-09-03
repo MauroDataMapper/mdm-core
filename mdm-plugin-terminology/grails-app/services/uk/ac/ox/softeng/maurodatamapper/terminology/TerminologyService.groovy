@@ -204,7 +204,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     Terminology finaliseModel(Terminology terminology, User user, Version modelVersion = Version.from('1.0.0'),
-                              List<Serializable> supersedeModelIds = [], VersionChangeType versionChangeType = null, String version = null) {
+                              List<Serializable> supersedeModelIds = [], Version version, VersionChangeType versionChangeType) {
         terminology.finalised = true
         terminology.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         terminology.modelVersion = modelVersion
@@ -237,7 +237,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Deprecated(forRemoval = true)
     @Override
-    Terminology finaliseModel(Terminology model, User user, List<Serializable> supersedeModelIds) {
+    Terminology finaliseModel(Terminology model, User user, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType) {
         VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
 
         if (!versionLink)
@@ -245,7 +245,7 @@ class TerminologyService extends ModelService<Terminology> {
 
         Terminology parent = get(versionLink.targetModelId)
 
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
+        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds, version, versionChangeType)
     }
 
     boolean newVersionCreationIsAllowed(Terminology terminology) {
