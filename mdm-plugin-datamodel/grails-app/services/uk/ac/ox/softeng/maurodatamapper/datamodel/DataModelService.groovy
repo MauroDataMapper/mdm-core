@@ -380,7 +380,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [], VersionChangeType versionChangeType = null, String version = null) {
+    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [], Version version, VersionChangeType versionChangeType) {
 
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -414,7 +414,7 @@ class DataModelService extends ModelService<DataModel> {
 
     @Deprecated(forRemoval = true)
     @Override
-    DataModel finaliseModel(DataModel model, User user, List<Serializable> supersedeModelIds) {
+    DataModel finaliseModel(DataModel model, User user, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType) {
 
         VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
 
@@ -423,7 +423,7 @@ class DataModelService extends ModelService<DataModel> {
 
         DataModel parent = get(versionLink.targetModelId)
 
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
+        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds, version, versionChangeType)
     }
 
     boolean newVersionCreationIsAllowed(DataModel dataModel) {
