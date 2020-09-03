@@ -141,11 +141,13 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
 
     @Override
     void verifyL01Response(HttpResponse<Map> response) {
-        verifyForbidden response
+        verifyResponse OK, response
+        response.body().count == 0
     }
 
     void verifyN01Response(HttpResponse<Map> response) {
-        verifyForbidden response
+        verifyResponse OK, response
+        response.body().count == 0
     }
 
     @Override
