@@ -182,7 +182,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete', 'finalise']
     }
 
     List<String> getReaderAvailableActions() {
@@ -292,7 +292,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     "save",
     "show",
     "comment",
-    "editDescription"
+    "editDescription",
+    "finalise"
   ],
   "branchName":"main"
 }'''
@@ -421,7 +422,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "save",
         "show",
         "comment",
-        "editDescription"
+        "editDescription",
+        "finalise"
       ],
       "branchName": "main",
   "authority": {
@@ -465,7 +467,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "save",
         "show",
         "comment",
-        "editDescription"
+        "editDescription",
+        "finalise"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dataClasses": [
@@ -497,7 +500,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     "update",
     "save",
     "softDelete",
-    "delete"
+    "delete",
+    "finalise"
   ],
   "branchName": "main",
   "authority": {
@@ -545,7 +549,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "editDescription",
         "update",
         "save",
-        "delete"
+        "delete",
+        "finalise"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "enumerationValues": [
@@ -591,7 +596,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "editDescription",
         "update",
         "save",
-        "delete"
+        "delete",
+        "finalise"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
@@ -614,7 +620,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "editDescription",
         "update",
         "save",
-        "delete"
+        "delete",
+        "finalise"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}"
     },
@@ -637,7 +644,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "editDescription",
         "update",
         "save",
-        "delete"
+        "delete",
+        "finalise"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "referenceClass": {
@@ -683,7 +691,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "editDescription",
         "update",
         "save",
-        "delete"
+        "delete",
+        "finalise"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "maxMultiplicity": 1,
@@ -716,7 +725,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
             "editDescription",
             "update",
             "save",
-            "delete"
+            "delete",
+            "finalise"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "dataClass": "${json-unit.matches:id}",
@@ -761,7 +771,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
             "editDescription",
             "update",
             "save",
-            "delete"
+            "delete",
+            "finalise"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "dataClass": "${json-unit.matches:id}",
@@ -804,7 +815,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "editDescription",
         "update",
         "save",
-        "delete"
+        "delete",
+        "finalise"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "dataClasses": [
@@ -833,7 +845,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "editDescription",
         "update",
         "save",
-        "delete"
+        "delete",
+        "finalise"
       ],
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "maxMultiplicity": -1,
@@ -863,7 +876,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
             "editDescription",
             "update",
             "save",
-            "delete"
+            "delete",
+            "finalise"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "parentDataClass": "${json-unit.matches:id}",
@@ -901,7 +915,8 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
             "editDescription",
             "update",
             "save",
-            "delete"
+            "delete",
+            "finalise"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "dataClass": "${json-unit.matches:id}",
