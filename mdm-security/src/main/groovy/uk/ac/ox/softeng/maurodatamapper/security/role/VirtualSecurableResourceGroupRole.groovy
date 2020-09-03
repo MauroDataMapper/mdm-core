@@ -45,7 +45,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
             .asFinalisedModel(securableResourceGroupRole.finalisedModel ?: false)
             .definedByGroup(securableResourceGroupRole.userGroup)
             .definedByAccessLevel(securableResourceGroupRole.groupRole)
-            .asFinalisableModel(securableResourceGroupRole.canFinalise)
+            .withModelCanBeFinalised(securableResourceGroupRole.canFinaliseModel ?: false)
     }
 
     VirtualSecurableResourceGroupRole forSecurableResource(String domainType, UUID domainId) {

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
@@ -47,7 +48,7 @@ class SecurableResourceGroupRole implements EditHistoryAware {
             if (val && obj.ident() && obj.isDirty('userGroup')) ['invalid.grouprole.cannot.change.usergroup.message']
         }
         finalisedModel nullable: true
-        canFinalise nullable: true
+        canFinaliseModel nullable: true
     }
 
     static mapping = {
@@ -65,8 +66,8 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         SecurableResourceGroupRole.simpleName
     }
 
-    boolean canFinalise(){
-        securableResource.branchName == "main"
+    boolean canFinalise(SecurableResource securableResource){
+        securableResource.branchName == ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     void setSecurableResource(SecurableResource securableResource) {
@@ -74,6 +75,7 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         securableResourceId = securableResource.resourceId
         if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
             finalisedModel = securableResource.finalised
+            canFinaliseModel = !securableResource.finalised && securableResource.branchName == ModelConstraints.DEFAULT_BRANCH_NAME
         }
     }
 
