@@ -45,10 +45,12 @@ class BootStrap {
                         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
                     }
                     if (DataModel.countByAuthorityIsNull() != 0) {
-                        DataModel.saveAll(DataModel.findAllByAuthorityIsNull().collect {
+                        DataModel.findAllByAuthorityIsNull().collect {
                             it.authority = authority
                             it
-                        })
+                        }.each {
+                            it.save(validate: false)
+                        }
                     }
                 }
             }
