@@ -255,18 +255,15 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         Utils.mergeLists(sourceForSupersededByIds, targetOfNewVersionOf)
     }
 
-    //
-    //    List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(String modelType, List<UUID> modelIds) {
-    //        if (!modelIds) return []
-    //
-    //        VersionLink.by()
-    //            .eq('linkType', VersionLinkType.NEW_MODEL_VERSION_OF)
-    //            .eq('targetModelDomainType', modelType)
-    //            .inList('targetModelId', modelIds)
-    //            .property('targetModelId').list() as List<UUID>
-    //    }
+
+    List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(String modelType, List<UUID> modelIds) {
+        if (!modelIds) return []
+        findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(modelIds).collect { it.targetModelId }
+    }
 
     List<VersionLink> findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(List<UUID> modelIds) {
+        if (!modelIds) return []
+
         VersionLink.by()
             .eq('linkType', VersionLinkType.NEW_MODEL_VERSION_OF)
             .inList('targetModelId', modelIds).list()
