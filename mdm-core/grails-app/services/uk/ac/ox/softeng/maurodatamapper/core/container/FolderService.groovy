@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -34,6 +35,9 @@ class FolderService implements ContainerService<Folder> {
 
     @Autowired(required = false)
     List<ModelService> modelServices
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     @Override
     boolean handles(Class clazz) {
@@ -64,7 +68,7 @@ class FolderService implements ContainerService<Folder> {
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
+        Folder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
     }
 
     @Override
@@ -111,11 +115,14 @@ class FolderService implements ContainerService<Folder> {
             return
         }
         if (permanent) {
-            folder.childFolders.each {delete(it, permanent, false)}
-            modelServices.each {it.deleteAllInContainer(folder)}
+            folder.childFolders.each { delete(it, permanent, false) }
+            modelServices.each { it.deleteAllInContainer(folder) }
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
+            }
             folder.delete(flush: flush)
         } else {
-            folder.childFolders.each {delete(it)}
+            folder.childFolders.each { delete(it) }
             delete(folder)
         }
     }
@@ -125,7 +132,7 @@ class FolderService implements ContainerService<Folder> {
     }
 
     Folder findFolder(Folder parentFolder, String label) {
-        parentFolder.childFolders.find {it.label == label.trim()}
+        parentFolder.childFolders.find { it.label == label.trim() }
     }
 
     Folder findByFolderPath(String folderPath) {
@@ -161,7 +168,7 @@ class FolderService implements ContainerService<Folder> {
     }
 
     List<Folder> getFullPathFolders(Folder folder) {
-        List<UUID> ids = folder.path.split('/').findAll().collect {Utils.toUuid(it)}
+        List<UUID> ids = folder.path.split('/').findAll().collect { Utils.toUuid(it) }
         List<Folder> folders = []
         if (ids) folders += Folder.getAll(ids)
         folders.add(folder)

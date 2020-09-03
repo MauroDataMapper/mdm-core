@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
@@ -43,6 +44,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -59,6 +61,9 @@ class TerminologyService extends ModelService<Terminology> {
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     @Override
     Terminology get(Serializable id) {
@@ -103,6 +108,9 @@ class TerminologyService extends ModelService<Terminology> {
         if (!terminology) return
         if (permanent) {
             terminology.folder = null
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(terminology, null)
+            }
             terminology.delete(flush: flush)
         } else delete(terminology)
     }

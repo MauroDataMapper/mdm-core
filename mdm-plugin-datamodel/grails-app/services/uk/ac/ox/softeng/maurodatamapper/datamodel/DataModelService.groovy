@@ -46,6 +46,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -76,6 +77,9 @@ class DataModelService extends ModelService<DataModel> {
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     @Override
     DataModel get(Serializable id) {
@@ -124,6 +128,9 @@ class DataModelService extends ModelService<DataModel> {
         if (!dm) return
         if (permanent) {
             dm.folder = null
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
+            }
             dm.delete(flush: flush)
         } else delete(dm)
     }

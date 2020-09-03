@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
@@ -41,6 +42,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -57,6 +59,9 @@ class CodeSetService extends ModelService<CodeSet> {
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     @Override
     CodeSet get(Serializable id) {
@@ -101,6 +106,9 @@ class CodeSetService extends ModelService<CodeSet> {
         if (!codeSet) return
         if (permanent) {
             codeSet.folder = null
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
+            }
             codeSet.delete(flush: flush)
         } else delete(codeSet)
     }
