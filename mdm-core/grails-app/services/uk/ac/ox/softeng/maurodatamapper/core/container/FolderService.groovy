@@ -120,6 +120,7 @@ class FolderService implements ContainerService<Folder> {
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
+            folder.trackChanges()
             folder.delete(flush: flush)
         } else {
             folder.childFolders.each { delete(it) }
