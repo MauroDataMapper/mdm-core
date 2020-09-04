@@ -278,18 +278,21 @@ class TreeItemService {
             log.debug('Listing tree items took: {}', Utils.timeTaken(start4))
 
             // Group by label to determine if branch name should be shown
-            treeItems.groupBy { it.label }.each { label, grouped ->
+            Map labelGrouping = treeItems.groupBy { it.label }
+            labelGrouping.each { label, grouped ->
+                int numberOfBranchNames = grouped.collect { it.branchName }.unique().size()
+                log.trace('Label {} : Group count: {} : Branchname count: {}', label, grouped.size(), numberOfBranchNames)
                 // If only model with that label then don't display branch name
                 if (grouped.size() == 1) {
                     grouped.first().branchName = null
-                } else if (grouped.unique { it.branchName }.size() == 1) {
+                } else if (numberOfBranchNames == 1) {
                     // If all the models have the same branch name then don't display it
                     grouped.each { it.branchName = null }
                 }
             }
             log.debug('Branch name determination took: {}', Utils.timeTaken(start4))
 
-            readableTreeItems.addAll(treeItems)
+            readableTreeItems.addAll(labelGrouping.collectMany { it.value })
             log.debug('Complete listing of {} took: {}', service.modelClass.simpleName, Utils.timeTaken(start1))
 
         }
