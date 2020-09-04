@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.path
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -130,7 +131,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass1_1.id.toString(), 'path': "dc:data class 1"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 1"
@@ -140,7 +141,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
         //This one (data class 1_1) is nested inside data class 1
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass1_1_1.id.toString(), 'path': "dc:data class 1_1"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 1_1"
@@ -149,7 +150,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass1_2.id.toString(), 'path': "dc:data class 2"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 2"
@@ -158,7 +159,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass1_3.id.toString(), 'path': "dc:data class 3"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 3"
@@ -175,7 +176,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass2_1.id.toString(), 'path': "dc:data class 1"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 1"
@@ -184,7 +185,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass2_2.id.toString(), 'path': "dc:data class 2"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 2"
@@ -193,7 +194,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass2_3.id.toString(), 'path': "dc:data class 3"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 3"
@@ -202,7 +203,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass2_4.id.toString(), 'path': "dc:data class 4"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 4"
@@ -217,7 +218,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
     void "test get of data model 1"() {
         when:
         Map params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel1.id.toString(), 'path': "dm:data model 1"]
-        CatalogueItem catalogueItem = service.findCatalogueItemByPath(params)
+        CatalogueItem catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data model 1"
@@ -230,7 +231,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
     void "test get of data model 2"() {
         when:
         Map params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel2.id.toString(), 'path': "dm:data model 2"]
-        CatalogueItem catalogueItem = service.findCatalogueItemByPath(params)
+        CatalogueItem catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data model 2"
@@ -246,7 +247,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel1.id.toString(), 'path': "dm:|dc:data class 1"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 1"
@@ -256,7 +257,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
         //This is the nested data class
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel1.id.toString(), 'path': "dm:|dc:data class 1|dc:data class 1_1"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 1_1"
@@ -265,7 +266,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel1.id.toString(), 'path': "dm:|dc:data class 2"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 2"
@@ -274,7 +275,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel1.id.toString(), 'path': "dm:|dc:data class 3"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 3"
@@ -283,7 +284,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel1.id.toString(), 'path': "dm:|dc:data class 4"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem == null
@@ -298,7 +299,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel2.id.toString(), 'path': "dm:|dc:data class 1"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 1"
@@ -307,7 +308,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel2.id.toString(), 'path': "dm:|dc:data class 2"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 2"
@@ -316,7 +317,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel2.id.toString(), 'path': "dm:|dc:data class 3"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 3"
@@ -325,7 +326,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
 
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel2.id.toString(), 'path': "dm:|dc:data class 4"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data class 4"
@@ -343,7 +344,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
         //When the data class is root
         when:
         params = ['catalogueItemDomainType': 'dataClasses', 'catalogueItemId': dataClass2_1.id.toString(), 'path': "dc:|de:data element 1"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data element 1"
@@ -353,7 +354,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
         //When the data model is root
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel2.id.toString(), 'path': "dm:|dc:data class 1|de:data element 1"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "data element 1"
@@ -371,7 +372,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
         //When the data model ID is provided
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'catalogueItemId': dataModel2.id.toString(), 'path': "dm:|dt: path service test data type"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "path service test data type"
@@ -381,7 +382,7 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
         //When the data model label is provided
         when:
         params = ['catalogueItemDomainType': 'dataModels', 'path': "dm:data model 2|dt: path service test data type"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == "path service test data type"

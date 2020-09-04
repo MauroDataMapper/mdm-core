@@ -39,7 +39,9 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
     }
 
     def show() {
-        respond catalogueItem: pathService.findCatalogueItemByPath(params)
+        CatalogueItem catalogueItem = pathService.findCatalogueItemByPath(currentUserSecurityPolicyManager, params)
+        if (!catalogueItem) return notFound(CatalogueItem, params.path)
+        respond catalogueItem: catalogueItem
     }
 
 }

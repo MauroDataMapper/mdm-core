@@ -17,19 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.path
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-//import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
-import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.PathNode
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
@@ -39,13 +38,11 @@ class PathService {
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
 
-    //SessionFactory sessionFactory
+    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
-    CatalogueItem findCatalogueItemByPath(Map params) {
-        log.debug("PathService.findCatalogueItemByPath: ${params.path} ${params.catalogueItemDomainType} ${params.catalogueItemId}")
+    CatalogueItem findCatalogueItemByPath(UserSecurityPolicyManager userSecurityPolicyManager, Map params) {
         Path path = new Path(params.path)
         CatalogueItemService service = catalogueItemServices.find { it.handles(params.catalogueItemDomainType) }
-
         CatalogueItem catalogueItem
 
         /*
@@ -66,6 +63,22 @@ class PathService {
                     }
                 }
 
+                /*
+                Only return anything if the first item retrieved is a model which is securable and readable, or it belongs to a model which is securable and readable
+                 */
+                boolean readable = false
+                if (catalogueItem instanceof Model) {
+                    readable = userSecurityPolicyManager.userCanReadSecuredResourceId(catalogueItem.getClass(), catalogueItem.id)
+                } else if (catalogueItem instanceof ModelItem) {
+                    CatalogueItem model = proxyHandler.unwrapIfProxy(catalogueItem.getModel())
+                    readable = userSecurityPolicyManager.userCanReadResourceId(catalogueItem.getClass(), catalogueItem.id, model.getClass(), model.id)
+                }
+
+                if (!readable) {
+                    catalogueItem = null
+                }
+
+
                 first = false
             } else {
                 if (catalogueItem) {
@@ -73,7 +86,13 @@ class PathService {
                     service = catalogueItemServices.find { it.handlesPathPrefix(node.typePrefix) }
 
                     //Use the service to find a child CatalogueItem whose parent is catalogueItem and which has the specified label
-                    catalogueItem = service.findByParentAndLabel(catalogueItem, node.label)
+                    //Missing method exception means the path tried to retrieve a type of parent that is not expected
+                    try {
+                        catalogueItem = service.findByParentAndLabel(catalogueItem, node.label)
+                    } catch (groovy.lang.MissingMethodException ex) {
+                        catalogueItem = null
+                    }
+
                 }
             }
         }
