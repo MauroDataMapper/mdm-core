@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.path
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
@@ -34,7 +35,7 @@ import spock.lang.Stepwise
 @Slf4j
 @Stepwise
 class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<PathService> {
-
+    
     Terminology terminology1
     Term terminology1_term1
     Term terminology1_term2
@@ -125,7 +126,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology1.label
@@ -137,7 +138,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology2.label
@@ -149,7 +150,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:${terminology1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology1.label
@@ -161,7 +162,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:${terminology2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology2.label
@@ -173,7 +174,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:${terminology2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology1.label
@@ -185,7 +186,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:${terminology1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology2.label
@@ -197,7 +198,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'path': "te:${terminology1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology1.label
@@ -209,7 +210,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'path': "te:${terminology2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology2.label
@@ -226,7 +227,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:|tm:${terminology1_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology1_term1.label
@@ -238,7 +239,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:|tm:${terminology1_term2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology1_term2.label
@@ -250,7 +251,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:|tm:${terminology2_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology2_term1.label
@@ -262,7 +263,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:|tm:${terminology2_term2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology2_term2.label
@@ -274,7 +275,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology1.id.toString(), 'path': "te:|tm:${terminology2_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem == null
@@ -284,7 +285,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'terminologies', 'catalogueItemId': terminology2.id.toString(), 'path': "te:|tm:${terminology1_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem == null
@@ -299,7 +300,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == codeSet1.label
@@ -311,7 +312,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == codeSet2.label
@@ -323,7 +324,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:${codeSet1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == codeSet1.label
@@ -335,7 +336,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:${codeSet2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == codeSet2.label
@@ -347,7 +348,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:${codeSet2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == codeSet1.label
@@ -359,7 +360,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:${codeSet1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == codeSet2.label
@@ -371,7 +372,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'path': "cs:${codeSet1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == codeSet1.label
@@ -383,7 +384,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'path': "cs:${codeSet2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == codeSet2.label
@@ -400,7 +401,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
          */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:|tm:${terminology1_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology1_term1.label
@@ -412,7 +413,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:|tm:${terminology1_term2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology1_term2.label
@@ -424,7 +425,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:|tm:${terminology2_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology2_term1.label
@@ -436,7 +437,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:|tm:${terminology2_term2.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem.label == terminology2_term2.label
@@ -448,7 +449,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet1.id.toString(), 'path': "cs:|tm:${terminology2_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem == null
@@ -458,7 +459,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         */
         when:
         params = ['catalogueItemDomainType': 'codeSets', 'catalogueItemId': codeSet2.id.toString(), 'path': "cs:|tm:${terminology1_term1.label}"]
-        catalogueItem = service.findCatalogueItemByPath(params)
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
 
         then:
         catalogueItem == null

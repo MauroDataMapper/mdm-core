@@ -888,8 +888,12 @@ class DataModelService extends ModelService<DataModel> {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
 
+    /**
+     * Find a DataModel by label.
+     * @param label
+     * @return The found DataModel
+     */
     DataModel findByLabel(String label) {
-        log.debug("DataModeService.findByLabel ${label}")
         DataModel.findByLabel(label)
     }
 }

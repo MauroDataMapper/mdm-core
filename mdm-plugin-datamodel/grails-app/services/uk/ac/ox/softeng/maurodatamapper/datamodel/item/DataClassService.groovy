@@ -676,7 +676,7 @@ class DataClassService extends ModelItemService<DataClass> {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
 
-    /*
+    /**
      * Find a DataClass which is labeled with label and whose parent is parentCatalogueItem. The parentCatalogueItem
      * can be a DataModel or DataClass.
      * @param parentCatalogueItem The DataModel or DataClass which is the parent of the DataClass being sought
@@ -685,5 +685,14 @@ class DataClassService extends ModelItemService<DataClass> {
     @Override
     DataClass findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findDataClass(parentCatalogueItem, label)
+    }
+
+    /**
+     * Find a DataClass by label.
+     * @param label
+     * @return The found DataClass
+     */
+    DataClass findByLabel(String label) {
+        DataClass.findByLabel(label)
     }
 }
