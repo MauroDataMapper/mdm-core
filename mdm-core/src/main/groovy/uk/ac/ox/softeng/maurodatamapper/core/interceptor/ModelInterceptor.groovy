@@ -110,8 +110,8 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
         }
 
         if (actionName == 'finalise') {
-            return currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(),getId()) ?:
-                    methodNotAllowed(getSecuredClass(), getId())
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(),getId(), 'finalise') ?:
+                    forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
         }
 
         checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId())

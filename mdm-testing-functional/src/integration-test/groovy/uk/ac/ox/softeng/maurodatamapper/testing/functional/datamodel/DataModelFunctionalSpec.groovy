@@ -182,7 +182,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete', 'finalise']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
     }
 
     List<String> getReaderAvailableActions() {
@@ -981,7 +981,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
 
         when: 'logged in as reader'
         loginReader()
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", ["version":"3.9.0"])
 
         then:
         verifyForbidden response

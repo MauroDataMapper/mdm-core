@@ -448,15 +448,15 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
             VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
             if (role) {
-                return ((MODEL_CONTAINER_ADMIN_ACTIONS + getCanBeFinalisedAction(role)) - getFinalisedActionsToRemove(role)).toSet().toList()
+                return MODEL_CONTAINER_ADMIN_ACTIONS - getFinalisedActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             if (role) {
-                return MODEL_EDITOR_ACTIONS - getFinalisedActionsToRemove(role)
+                return (MODEL_EDITOR_ACTIONS + getCanBeFinalisedAction(role)) - getFinalisedActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
             if (role) {
-                return MODEL_AUTHOR_ACTIONS - getFinalisedActionsToRemove(role)
+                return (MODEL_AUTHOR_ACTIONS + getCanBeFinalisedAction(role))  - getFinalisedActionsToRemove(role)
             }
             if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, REVIEWER_ROLE_NAME)) {
                 return MODEL_REVIEWER_ACTIONS
