@@ -46,7 +46,7 @@ class SessionService implements HttpSessionListener {
 
     HttpSession setUserOrganisation(HttpSession session, String organisation) {
         if (isInvalidatedSession(session)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
-        session.setAttribute('organisation', organisation)
+        session.setAttribute('userOrganisation', organisation)
         storeSession(session)
     }
 
