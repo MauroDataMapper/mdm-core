@@ -68,6 +68,8 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
         initialiseContext()
         service.storeSession(session)
         service.setUserEmailAddress(session, 'test@test.com')
+        service.setUserName(session,'test','login')
+        service.setUserOrganisation('Test Organisation')
 
         when:
         service.setLastAccessedUrl(session, '/test/url')
@@ -80,6 +82,8 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
 
         and:
         httpSession.getAttribute('emailAddress') == 'test@test.com'
+        httpSession.getAttribute('userName') == 'test login'
+        httpSession.getAttribute('userOrganisation') == 'Test Organisation'
         httpSession.getAttribute('lastUrl') == '/test/url'
 
         and:
@@ -91,6 +95,8 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
         initialiseContext()
         service.storeSession(session)
         service.setUserEmailAddress(session, 'test@test.com')
+        service.setUserName(session,'test','login')
+        service.setUserOrganisation(session, 'Test Organisation')
         service.setLastAccessedUrl(session, '/test/url')
 
         when:
