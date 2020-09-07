@@ -33,9 +33,11 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     private UserGroup userGroup
     private int order
     private boolean finalisedModel
+    private boolean finalisableModel
 
     VirtualSecurableResourceGroupRole() {
         finalisedModel = false
+        finalisableModel = false
     }
 
     VirtualSecurableResourceGroupRole fromSecurableResourceGroupRole(SecurableResourceGroupRole securableResourceGroupRole) {
@@ -43,6 +45,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
             .asFinalisedModel(securableResourceGroupRole.finalisedModel ?: false)
             .definedByGroup(securableResourceGroupRole.userGroup)
             .definedByAccessLevel(securableResourceGroupRole.groupRole)
+            .withModelCanBeFinalised(securableResourceGroupRole.canFinaliseModel ?: false)
     }
 
     VirtualSecurableResourceGroupRole forSecurableResource(String domainType, UUID domainId) {
@@ -74,8 +77,16 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     VirtualSecurableResourceGroupRole asFinalisedModel(boolean finalised) {
         this.finalisedModel = finalised
+        if (finalised) this.finalisableModel = false
         this
     }
+
+    VirtualSecurableResourceGroupRole withModelCanBeFinalised(boolean canFinalise){
+        this.finalisableModel = this.finalisedModel ? false : canFinalise
+        this
+    }
+
+
 
     @Override
     String toString() {
@@ -134,6 +145,10 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     boolean isFinalisedModel() {
         finalisedModel
+    }
+
+    boolean canFinaliseModel() {
+        finalisableModel
     }
 
     int getOrder() {

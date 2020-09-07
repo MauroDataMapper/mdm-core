@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -39,6 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -200,10 +200,12 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = []) {
+    CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds = []) {
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        codeSet.modelVersion = modelVersion
+
+        codeSet.modelVersion = getNextModelVersion(codeSet, modelVersion, versionChangeType)
+
         codeSet.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised CodeSet',
                                  description: "CodeSet finalised by ${user.firstName} ${user.lastName} on " +
                                               "${OffsetDateTimeConverter.toString(codeSet.dateFinalised)}")
@@ -213,20 +215,6 @@ class CodeSetService extends ModelService<CodeSet> {
                                       user)
         codeSet
     }
-
-    @Deprecated(forRemoval = true)
-    @Override
-    CodeSet finaliseModel(CodeSet model, User user, List<Serializable> supersedeModelIds) {
-        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-
-        if (!versionLink)
-            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
-
-        CodeSet parent = get(versionLink.targetModelId)
-
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
-    }
-
 
     boolean newVersionCreationIsAllowed(CodeSet codeSet) {
         if (!codeSet.finalised) {

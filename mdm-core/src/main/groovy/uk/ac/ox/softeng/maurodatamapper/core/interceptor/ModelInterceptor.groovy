@@ -64,7 +64,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
         if (params.containsKey('folderId')) {
             boolean canReadFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.folderId)
 
-            // We control addition of Terminologies into containers by using container permissions
+            // We control addition of Terminologys into containers by using container permissions
             if (isSave()) {
                 return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(Folder, params.folderId) ?:
                        forbiddenOrNotFound(canReadFolder, Folder, params.folderId)
@@ -104,11 +104,20 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
                    forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
         }
 
+
         if (actionName == 'exportModels') {
             return checkExportModelAction()
         }
 
-        checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId(), true)
+        if (actionName == 'finalise') {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())){
+                return notFound(getSecuredClass(), getId())
+            }
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(),getId(), 'finalise') ?:
+                    forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
+        }
+
+        checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId())
     }
 
 

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -41,6 +40,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -202,12 +202,14 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology finaliseModel(Terminology terminology, User user, Version modelVersion = Version.from('1.0.0'),
+    Terminology finaliseModel(Terminology terminology, User user, Version modelVersion, VersionChangeType versionChangeType,
                               List<Serializable> supersedeModelIds = []) {
         terminology.finalised = true
         terminology.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        terminology.modelVersion = modelVersion
         terminology.breadcrumbTree.finalise()
+
+        terminology.modelVersion = getNextModelVersion(terminology, modelVersion, versionChangeType)
+
         terminology.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Terminology',
                                      description: "Terminology finalised by ${user.firstName} ${user.lastName} on " +
                                                   "${OffsetDateTimeConverter.toString(terminology.dateFinalised)}")
@@ -216,19 +218,6 @@ class TerminologyService extends ModelService<Terminology> {
                                       "${OffsetDateTimeConverter.toString(terminology.dateFinalised)}",
                                       user)
         terminology
-    }
-
-    @Deprecated(forRemoval = true)
-    @Override
-    Terminology finaliseModel(Terminology model, User user, List<Serializable> supersedeModelIds) {
-        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-
-        if (!versionLink)
-            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
-
-        Terminology parent = get(versionLink.targetModelId)
-
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
     }
 
     boolean newVersionCreationIsAllowed(Terminology terminology) {

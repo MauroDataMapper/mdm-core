@@ -19,10 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
@@ -30,6 +33,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     Class<K> getCatalogueItemClass() {
         return getModelClass()
     }
+
+    abstract VersionLinkService getVersionLinkService()
 
     abstract Class<K> getModelClass()
 
@@ -66,12 +71,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
-    abstract K finaliseModel(K model, User user, Version modelVersion, List<Serializable> supersedeModelIds)
+    abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds)
 
-    abstract K finaliseModel(K model, User user, Version modelVersion)
-
-    @Deprecated(forRemoval = true)
-    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds)
+    abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType)
 
     abstract K createNewBranchModelVersion(String branchName, K dataModel, User user, boolean copyPermissions,
                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
@@ -109,5 +111,46 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             VersionLink.saveAll(catalogueItem.versionLinks)
         }
         catalogueItem
+    }
+
+    Version getParentModelVersion(K currentModel) {
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(currentModel.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+        if (!versionLink) return null
+        Model parent = get(versionLink.targetModelId)
+        parent.modelVersion
+    }
+
+    Version getNextModelVersion(K model, Version requestedModelVersion, VersionChangeType requestedVersionChangeType) {
+        if (!requestedModelVersion && !model.modelVersion && !requestedVersionChangeType) {
+            // No supplied version
+            return Version.from('1.0.0')
+        } else if (requestedModelVersion) {
+            // Prefer requested model version
+            return requestedModelVersion
+        }
+        // We need to get the parent model version first so we can work out what to increment
+        Version parentModelVersion = getParentModelVersion(model)
+
+        if (!parentModelVersion) {
+            // No parent model then next version is always 1.0.0
+            return Version.from('1.0.0')
+        }
+
+        if (requestedVersionChangeType) {
+            // Someone requests a type change
+            // Increment the parent version by that amount
+            switch (requestedVersionChangeType) {
+                case VersionChangeType.MAJOR:
+                    return parentModelVersion.nextMajorVersion()
+                    break
+                case VersionChangeType.MINOR:
+                    return parentModelVersion.nextMinorVersion()
+                    break
+                case VersionChangeType.PATCH:
+                    return parentModelVersion.nextPatchVersion()
+                    break
+            }
+        }
+        Version.from('1.0.0')
     }
 }

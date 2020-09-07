@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -51,6 +50,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
@@ -379,11 +379,14 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = []) {
+    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds = []) {
+
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        dataModel.modelVersion = modelVersion
         dataModel.breadcrumbTree.finalise()
+
+        dataModel.modelVersion = getNextModelVersion(dataModel, modelVersion, versionChangeType)
+
         dataModel.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                    description: "DataModel finalised by ${user.firstName} ${user.lastName} on " +
                                                 "${OffsetDateTimeConverter.toString(dataModel.dateFinalised)}")
@@ -392,20 +395,6 @@ class DataModelService extends ModelService<DataModel> {
                                       "${OffsetDateTimeConverter.toString(dataModel.dateFinalised)}",
                                       user)
         dataModel
-    }
-
-    @Deprecated(forRemoval = true)
-    @Override
-    DataModel finaliseModel(DataModel model, User user, List<Serializable> supersedeModelIds) {
-
-        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-
-        if (!versionLink)
-            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
-
-        DataModel parent = get(versionLink.targetModelId)
-
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
     }
 
     boolean newVersionCreationIsAllowed(DataModel dataModel) {
