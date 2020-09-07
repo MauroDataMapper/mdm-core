@@ -380,15 +380,14 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [], Version version, VersionChangeType versionChangeType) {
+    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [], VersionChangeType versionChangeType) {
 
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        dataModel.modelVersion = modelVersion
         dataModel.breadcrumbTree.finalise()
 
-        if (version == null && dataModel.modelVersion == null) dataModel.setModelVersion(new Version('1.0.0'))
-        else if (version != null) dataModel.setModelVersion(new Version(version))
+        if (modelVersion == null && dataModel.modelVersion == null) dataModel.setModelVersion(new Version('1.0.0'))
+        else if (modelVersion != null) dataModel.setModelVersion(new Version(modelVersion))
         else if (versionChangeType != null) {
             switch(versionChangeType){
                 case VersionChangeType.MAJOR:
@@ -414,16 +413,8 @@ class DataModelService extends ModelService<DataModel> {
 
     @Deprecated(forRemoval = true)
     @Override
-    DataModel finaliseModel(DataModel model, User user, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType) {
-
-        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-
-        if (!versionLink)
-            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
-
-        DataModel parent = get(versionLink.targetModelId)
-
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds, version, versionChangeType)
+    DataModel finaliseModel(DataModel model, User user, List<Serializable> supersedeModelIds, Version modelVersion, VersionChangeType versionChangeType) {
+        finaliseModel(model, user, modelVersion, supersedeModelIds, versionChangeType)
     }
 
     boolean newVersionCreationIsAllowed(DataModel dataModel) {

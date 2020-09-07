@@ -44,7 +44,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     @Override
     List<String> getReadAccessMethods() {
-        ['exportModel', 'newModelVersion']
+        ['exportModel', 'newForkModel']
     }
 
     @Override
@@ -96,11 +96,11 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             return true
         }
 
-        if (actionName == 'newDocumentationVersion') {
+        if (actionName in ['newDocumentationVersion', 'newBranchModelVersion']) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
                 return notFound(getSecuredClass(), getId())
             }
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), 'newDocumentationVersion') ?:
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName) ?:
                    forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
         }
 
@@ -110,6 +110,9 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
         }
 
         if (actionName == 'finalise') {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())){
+                return notFound(getSecuredClass(), getId())
+            }
             return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(),getId(), 'finalise') ?:
                     forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
         }

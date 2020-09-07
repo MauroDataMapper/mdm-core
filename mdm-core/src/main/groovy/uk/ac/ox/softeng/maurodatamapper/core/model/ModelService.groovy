@@ -67,12 +67,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
-    abstract K finaliseModel(K model, User user, Version modelVersion, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType)
+    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds, Version modelVersion, VersionChangeType versionChangeType)
 
-    abstract K finaliseModel(K model, User user, Version modelVersion, Version version, VersionChangeType versionChangeType)
-
-    @Deprecated(forRemoval = true)
-    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType)
+    abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType)
 
     abstract K createNewBranchModelVersion(String branchName, K dataModel, User user, boolean copyPermissions,
                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])

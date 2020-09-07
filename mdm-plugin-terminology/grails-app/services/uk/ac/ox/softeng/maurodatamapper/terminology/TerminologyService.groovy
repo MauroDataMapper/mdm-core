@@ -204,14 +204,13 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Override
     Terminology finaliseModel(Terminology terminology, User user, Version modelVersion = Version.from('1.0.0'),
-                              List<Serializable> supersedeModelIds = [], Version version, VersionChangeType versionChangeType) {
+                              List<Serializable> supersedeModelIds = [], VersionChangeType versionChangeType) {
         terminology.finalised = true
         terminology.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        terminology.modelVersion = modelVersion
         terminology.breadcrumbTree.finalise()
 
-        if (version == null && terminology.modelVersion == null) terminology.setModelVersion(new Version('1.0.0'))
-        else if (version != null) terminology.setModelVersion(new Version(version))
+        if (modelVersion == null && terminology.modelVersion == null) terminology.setModelVersion(new Version('1.0.0'))
+        else if (modelVersion != null) terminology.setModelVersion(new Version(modelVersion))
         else if (versionChangeType) {
             switch(versionChangeType != null){
                 case VersionChangeType.MAJOR:
@@ -237,15 +236,8 @@ class TerminologyService extends ModelService<Terminology> {
 
     @Deprecated(forRemoval = true)
     @Override
-    Terminology finaliseModel(Terminology model, User user, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType) {
-        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-
-        if (!versionLink)
-            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
-
-        Terminology parent = get(versionLink.targetModelId)
-
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds, version, versionChangeType)
+    Terminology finaliseModel(Terminology model, User user, List<Serializable> supersedeModelIds, Version modelVersion, VersionChangeType versionChangeType) {
+        finaliseModel(model, user, modelVersion, supersedeModelIds, versionChangeType)
     }
 
     boolean newVersionCreationIsAllowed(Terminology terminology) {

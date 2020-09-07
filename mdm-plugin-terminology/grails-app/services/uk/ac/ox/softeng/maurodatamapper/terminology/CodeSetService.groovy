@@ -202,13 +202,12 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [],
-                            Version version, VersionChangeType versionChangeType) {
+                          VersionChangeType versionChangeType) {
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        codeSet.modelVersion = modelVersion
 
-        if (version == null && codeSet.modelVersion == null) codeSet.setModelVersion(new Version('1.0.0'))
-        else if (version != null) codeSet.setModelVersion(new Version(version))
+        if (modelVersion == null && codeSet.modelVersion == null) codeSet.setModelVersion(new Version('1.0.0'))
+        else if (modelVersion != null) codeSet.setModelVersion(new Version(modelVersion))
         else if (versionChangeType != null) {
             switch(versionChangeType){
                 case VersionChangeType.MAJOR:
@@ -234,15 +233,8 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Deprecated(forRemoval = true)
     @Override
-    CodeSet finaliseModel(CodeSet model, User user, List<Serializable> supersedeModelIds, Version version, VersionChangeType versionChangeType) {
-        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
-
-        if (!versionLink)
-            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
-
-        CodeSet parent = get(versionLink.targetModelId)
-
-        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds, version, versionChangeType)
+    CodeSet finaliseModel(CodeSet model, User user, List<Serializable> supersedeModelIds, Version modelVersion, VersionChangeType versionChangeType) {
+        finaliseModel(model, user, modelVersion, supersedeModelIds, versionChangeType)
     }
 
 
