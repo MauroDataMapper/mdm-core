@@ -14,5 +14,7 @@ json {
     lastAccessedDateTime OffsetDateTime.ofInstant(Instant.ofEpochMilli(httpSession.lastAccessedTime), ZoneId.systemDefault())
     creationDateTime OffsetDateTime.ofInstant(Instant.ofEpochMilli(httpSession.creationTime), ZoneId.systemDefault())
     userEmailAddress httpSession.getAttribute('emailAddress') ?: UnloggedUser.UNLOGGED_EMAIL_ADDRESS
+    userName httpSession.getAttribute('userName')
+    userOrganisation httpSession.getAttribute('userOrganisation')
     lastAccessedUrl httpSession.getAttribute('lastUrl')
 }

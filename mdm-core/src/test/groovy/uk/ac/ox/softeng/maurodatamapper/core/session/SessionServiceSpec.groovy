@@ -48,6 +48,8 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
 
         when:
         service.setUserEmailAddress(session, 'test@test.com')
+        service.setUserName(session,'first','last')
+        service.setUserOrganisation(session,'Test Organisation')
         HttpSession httpSession = service.retrieveSession(servletContext, session.id)
 
         then:
