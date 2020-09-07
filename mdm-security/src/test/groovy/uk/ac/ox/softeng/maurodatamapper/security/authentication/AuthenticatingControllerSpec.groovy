@@ -119,7 +119,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
             1 * isAuthenticatedSession(_) >> false
             1 * authenticateAndObtainUser(admin.emailAddress, 'password', null) >> admin
             1 * registerUserAsLoggedIn(_, _) >> {u, s -> sessionService.setUserEmailAddress(s, u.emailAddress)
-                                                         sessionService.setUserName(s, u.firstName, u.lasName)
+                                                         sessionService.setUserName(s, u.firstName, u.lastName)
                                                          sessionService.setUserOrganisation(s,u.organisation)}
             1 * buildUserSecurityPolicyManager(_)
         }

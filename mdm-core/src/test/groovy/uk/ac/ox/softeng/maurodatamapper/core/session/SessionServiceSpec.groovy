@@ -69,7 +69,7 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
         service.storeSession(session)
         service.setUserEmailAddress(session, 'test@test.com')
         service.setUserName(session,'test','login')
-        service.setUserOrganisation('Test Organisation')
+        service.setUserOrganisation(session,'Test Organisation')
 
         when:
         service.setLastAccessedUrl(session, '/test/url')
