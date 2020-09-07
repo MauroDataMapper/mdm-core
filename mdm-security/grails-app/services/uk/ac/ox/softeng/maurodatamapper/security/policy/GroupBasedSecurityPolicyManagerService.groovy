@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.security.policy
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -42,12 +41,9 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualGroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.compiler.GrailsCompileStatic
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import grails.plugin.cache.GrailsCache
-import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.grails.plugin.cache.GrailsCacheManager
 import org.springframework.beans.factory.annotation.Autowired
@@ -115,7 +111,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
         securableResourceGroupRoleService.deleteAllForSecurableResource(securableResource)
 
-        cache.get(actor.emailAddress, GroupBasedUserSecurityPolicyManager)
+        actor ? cache.get(actor.emailAddress, GroupBasedUserSecurityPolicyManager) : null
     }
 
     @Override

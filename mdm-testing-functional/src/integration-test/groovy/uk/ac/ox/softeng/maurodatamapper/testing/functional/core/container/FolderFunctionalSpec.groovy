@@ -506,6 +506,9 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
         then:
         response.status() == HttpStatus.NOT_FOUND
+
+        cleanup:
+        cleanupUserGroups()
     }
 
     void 'Test the permanent delete action correctly deletes an instance with folder and datamodel inside'() {
@@ -540,5 +543,8 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
         then:
         response.status() == HttpStatus.NOT_FOUND
+
+        cleanup:
+        cleanupUserGroups()
     }
 }

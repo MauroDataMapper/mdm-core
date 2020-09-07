@@ -17,10 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
-import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -208,7 +208,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
 
         then: "Resource is created"
         response.status == HttpStatus.CREATED
-        def newId = response.body().id
+        String newId = response.body().id
 
         when: "The catalogueItems action is requested on the new classifier ID (which is associated with a terminology) logged in as admin"
         loginAdmin()
@@ -242,5 +242,8 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   "count": 0,
   "items": []
 }'''
+
+        cleanup:
+        removeValidIdObject(newId)
     }
 }

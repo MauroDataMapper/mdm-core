@@ -27,7 +27,9 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import spock.lang.Ignore
+import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -49,7 +51,6 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-@Ignore('Need to examine the underlying response handling')
 class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared
@@ -105,7 +106,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         'tree'
     }
 
-    void 'test folder tree for terminology and codeset'() {
+    void 'T01 : test folder tree for terminology and codeset'() {
         when:
         GET('folders', STRING_ARG)
 
@@ -128,8 +129,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "CodeSet",
-        "branchName": "main"
+        "type": "CodeSet"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -141,8 +141,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "CodeSet",
-        "branchName": "main"
+        "type": "CodeSet"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -154,8 +153,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Terminology",
-        "branchName": "main"
+        "type": "Terminology"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -167,32 +165,379 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Terminology",
-        "branchName": "main"
+        "type": "Terminology"
       }
     ]
   }
 ]'''
     }
 
-    void 'test getting terminology superseded model when there are none'() {
+    void 'T02 : test classifiers tree'() {
+        when:
+        GET('classifiers', STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[]''')
+    }
+
+    void 'T03 : test tree for terminology with no content'() {
+        when:
+        GET("folders/terminologies/${terminologyId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[]''')
+    }
+
+    void 'T04 : test terminology documentation superseded models arent shown in the tree'() {
+        given: 'document superseded models created'
+        // Create new model
+        POST("folders/${folder.id}/terminologies", [
+            label: 'Functional Test Model doc superseded'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String firstId = response.body().id
+        // Finalise model
+        PUT("terminologies/$firstId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        // Create a new documentation version
+        PUT("terminologies/$firstId/newDocumentationVersion", [:], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String secondId = response.body().id
+
+        expect:
+        firstId
+        secondId
+        firstId != secondId
+
+        when:
+        HttpResponse<List> localResponse = GET('folders', Argument.of(List, Map))
+
+        then:
+        localResponse.body().size() == 1
+        localResponse.body().first().children.size() == 5
+
+        when:
+        List<Map> children = localResponse.body().first().children
+
+        then:
+        children.any {
+            it.label == 'Functional Test Model doc superseded' &&
+            it.documentationVersion == '2.0.0' &&
+            !it.branchName &&
+            !it.modelVersion &&
+            !it.finalised
+        }
+        // Superseded model is not in the tree
+        !children.any {
+            it.label == 'Functional Test Model doc superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            !it.branchName &&
+            it.modelVersion == '1.0.0'
+        }
+
+        cleanup:
+        cleanUpData(secondId, 'terminologies')
+        cleanUpData(firstId, 'terminologies')
+    }
+
+    void 'T05 : terminology test model version superseded models arent shown in the tree'() {
+        given: 'model version superseded is created'
+        // Create model
+        POST("folders/${folder.id}/terminologies", [
+            label: 'Functional Test Model model superseded'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String firstId = response.body().id
+        // Finalise first model
+        PUT("terminologies/$firstId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        // Create a new branch
+        PUT("terminologies/$firstId/newBranchModelVersion", [:], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String secondId = response.body().id
+
+        expect:
+        firstId
+        secondId
+
+        when: 'Getting tree'
+        HttpResponse<List> localResponse = GET('folders', Argument.of(List, Map))
+
+        then: 'We should have the finalised version and the new branch'
+        localResponse.body().size() == 1
+        localResponse.body().first().children.size() == 6
+
+        when:
+        List<Map> children = localResponse.body().first().children
+
+        then:
+        // New branch is in tree
+        children.any {
+            it.label == 'Functional Test Model model superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            !it.modelVersion &&
+            !it.branchName &&
+            !it.finalised
+        }
+        // Finalised model version is in the tree
+        children.any {
+            it.label == 'Functional Test Model model superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            it.modelVersion == '1.0.0' &&
+            !it.branchName &&
+            it.finalised
+        }
+
+        when: 'Finalise the branch'
+        PUT("terminologies/$secondId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+
+        // 'Getting tree after finalisation'
+        localResponse = GET('folders', Argument.of(List, Map))
+
+        then: 'We should have the second finalised version only'
+        localResponse.body().size() == 1
+        localResponse.body().first().children.size() == 5
+
+        when:
+        children = localResponse.body().first().children
+
+        then:
+        // Finalised model version is in the tree
+        children.any {
+            it.label == 'Functional Test Model model superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            it.modelVersion == '2.0.0' &&
+            !it.branchName
+        }
+        // Superseded model is not in the tree
+        !children.any {
+            it.label == 'Functional Test Model model superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            it.modelVersion == '1.0.0' &&
+            !it.branchName
+        }
+
+        cleanup:
+        cleanUpData(firstId, 'terminologies')
+        cleanUpData(secondId, 'terminologies')
+    }
+
+    void 'T06 : test tree for codesets with no content'() {
+        when:
+        GET("folders/codeSets/${codeSetId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[]''')
+    }
+
+    void 'T07 : test codeset documentation superseded models arent shown in the tree'() {
+        given: 'document superseded models created'
+        // Create new model
+        POST("folders/${folder.id}/codeSets", [
+            label: 'Functional Test Model doc superseded'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String firstId = response.body().id
+        // Finalise model
+        PUT("codeSets/$firstId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        // Create a new documentation version
+        PUT("codeSets/$firstId/newDocumentationVersion", [:], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String secondId = response.body().id
+
+        expect:
+        firstId
+        secondId
+        firstId != secondId
+
+        when:
+        HttpResponse<List> localResponse = GET('folders', Argument.of(List, Map))
+
+        then:
+        localResponse.body().size() == 1
+        localResponse.body().first().children.size() == 5
+
+        when:
+        List<Map> children = localResponse.body().first().children
+
+        then:
+        children.any {
+            it.label == 'Functional Test Model doc superseded' &&
+            it.documentationVersion == '2.0.0' &&
+            !it.branchName &&
+            !it.modelVersion &&
+            !it.finalised
+        }
+        // Superseded model is not in the tree
+        !children.any {
+            it.label == 'Functional Test Model doc superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            !it.branchName &&
+            it.modelVersion == '1.0.0'
+        }
+
+        cleanup:
+        cleanUpData(secondId, 'codeSets')
+        cleanUpData(firstId, 'codeSets')
+    }
+
+    void 'T08 : test codeset model version superseded models arent shown in the tree'() {
+        given: 'model version superseded is created'
+        // Create model
+        POST("folders/${folder.id}/codeSets", [
+            label: 'Functional Test Model model superseded'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String firstId = response.body().id
+        // Finalise first model
+        PUT("codeSets/$firstId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        // Create a new branch
+        PUT("codeSets/$firstId/newBranchModelVersion", [:], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String secondId = response.body().id
+
+        expect:
+        firstId
+        secondId
+
+        when: 'Getting tree'
+        HttpResponse<List> localResponse = GET('folders', Argument.of(List, Map))
+
+        then: 'We should have the finalised version and the new branch'
+        localResponse.body().size() == 1
+        localResponse.body().first().children.size() == 6
+
+        when:
+        List<Map> children = localResponse.body().first().children
+
+        then:
+        // New branch is in tree
+        children.any {
+            it.label == 'Functional Test Model model superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            !it.modelVersion &&
+            !it.branchName &&
+            !it.finalised
+        }
+        // Finalised model version is in the tree
+        children.any {
+            it.label == 'Functional Test Model model superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            it.modelVersion == '1.0.0' &&
+            !it.branchName &&
+            it.finalised
+        }
+
+        when: 'Finalise the branch'
+        PUT("codeSets/$secondId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+
+        // 'Getting tree after finalisation'
+        localResponse = GET('folders', Argument.of(List, Map))
+
+        then: 'We should have the second finalised version only'
+        localResponse.body().size() == 1
+        localResponse.body().first().children.size() == 5
+
+        when:
+        children = localResponse.body().first().children
+
+        then:
+        // Finalised model version is in the tree
+        children.any {
+            it.label == 'Functional Test Model model superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            it.modelVersion == '2.0.0' &&
+            !it.branchName
+        }
+        // Superseded model is not in the tree
+        !children.any {
+            it.label == 'Functional Test Model model superseded' &&
+            it.documentationVersion == '1.0.0' &&
+            it.modelVersion == '1.0.0' &&
+            !it.branchName
+        }
+
+        cleanup:
+        cleanUpData(firstId, 'codeSets')
+        cleanUpData(secondId, 'codeSets')
+    }
+
+    void 'TA01 : test getting deleted terminologies'() {
+        given: 'finalised model is created'
+        POST("folders/${folder.id}/terminologies", [
+            label: 'Functional Test Model deleted'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String firstId = response.body().id
+        PUT("terminologies/$firstId/finalise", [:], MAP_ARG, true)
+
+        expect:
+        firstId
+
+        when:
+        DELETE("terminologies/$firstId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        response.body().id == firstId
+        response.body().deleted
+
+        when:
+        GET('admin/tree/folders/terminologies/deleted', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Functional Test Model deleted",
+        "modelVersion": "1.0.0",
+        "hasChildren": false,
+        "deleted": true,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
+      }
+    ]
+  }
+]
+'''
+        cleanup:
+        cleanUpData(firstId, 'terminologies')
+    }
+
+
+    void 'TA02 : test getting terminology superseded documentation when there are none'() {
         when: 'finalised terminology has not yet been created'
-        GET('admin/tree/folders/terminologies/modelSuperseded', STRING_ARG, true)
+        GET('admin/tree/folders/terminologies/documentationSuperseded', STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''[]'''
     }
 
-    void 'test getting terminology superseded models'() {
+    void 'TA03 : test getting terminology superseded documentation'() {
         given: 'finalised terminology is created'
         POST("folders/${folder.id}/terminologies", [
-                label: 'Functional Test Model terminology superseded'
+            label: 'Functional Test Model documentation superseded'
         ], MAP_ARG, true)
         verifyResponse(CREATED, response)
         String firstId = response.body().id
         PUT("terminologies/$firstId/finalise", [:], MAP_ARG, true)
         verifyResponse OK, response
-        PUT("terminologies/$firstId/newModelVersion", [label: 'Functional Test Terminology reader'], MAP_ARG, true)
+        PUT("terminologies/$firstId/newDocumentationVersion", [:], MAP_ARG, true)
         verifyResponse CREATED, response
         String secondId = response.body().id
 
@@ -201,6 +546,70 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         secondId
 
         when:
+        GET('admin/tree/folders/terminologies/documentationSuperseded', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Functional Test Model documentation superseded",
+        "modelVersion": "1.0.0",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": true,
+        "superseded": true,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
+      }
+    ]
+  }
+]
+'''
+        cleanup:
+        cleanUpData(firstId, 'terminologies')
+        cleanUpData(secondId, 'terminologies')
+    }
+
+    void 'TA04 : test getting terminology superseded model when there are none'() {
+        when: 'finalised terminology has not yet been created'
+        GET('admin/tree/folders/terminologies/modelSuperseded', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''[]'''
+    }
+
+    void 'TA05 : test getting terminology superseded models'() {
+        given: 'model version superseded is created'
+        // Create model
+        POST("folders/${folder.id}/terminologies", [
+            label: 'Functional Test Model model superseded'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String firstId = response.body().id
+        // Finalise first model
+        PUT("terminologies/$firstId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        // Create a new branch
+        PUT("terminologies/$firstId/newBranchModelVersion", [:], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String secondId = response.body().id
+        PUT("terminologies/$secondId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+
+        expect:
+        firstId
+        secondId
+
+        when: 'getting the admin modelSuperseded endpoint'
         GET('admin/tree/folders/terminologies/modelSuperseded', STRING_ARG, true)
 
         then:
@@ -215,7 +624,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
       {
         "id": "${json-unit.matches:id}",
         "domainType": "Terminology",
-        "label": "Functional Test Model terminology superseded",
+        "label": "Functional Test Model model superseded",
         "modelVersion": "1.0.0",
         "hasChildren": false,
         "deleted": false,
@@ -223,156 +632,89 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": true,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "Terminology",
-        "branchName":"main"
+        "type": "Terminology"
       }
     ]
   }
 ]
 '''
         cleanup:
-        cleanUpData(firstId)
-        cleanUpData(secondId)
+        cleanUpData(firstId, 'terminologies')
+        cleanUpData(secondId, 'terminologies')
     }
 
-    void 'test getting terminology superseded documentation when there are none'() {
+    void 'TA06 : test getting deleted codesets'() {
+        given: 'finalised model is created'
+        POST("folders/${folder.id}/codeSets", [
+            label: 'Functional Test Model deleted'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String firstId = response.body().id
+        PUT("codeSets/$firstId/finalise", [:], MAP_ARG, true)
+
+        expect:
+        firstId
+
+        when:
+        DELETE("codeSets/$firstId", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        response.body().id == firstId
+        response.body().deleted
+
+        when:
+        GET('admin/tree/folders/codeSets/deleted', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Functional Test Model deleted",
+        "modelVersion": "1.0.0",
+        "hasChildren": false,
+        "deleted": true,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet"
+      }
+    ]
+  }
+]
+'''
+        cleanup:
+        cleanUpData(firstId, 'codeSets')
+    }
+
+
+    void 'TA07 : test getting codeSets superseded documentation when there are none'() {
         when: 'finalised terminology has not yet been created'
-        GET('admin/tree/folders/terminologies/documentationSuperseded', STRING_ARG, true)
-
-        then:
-        verifyJsonResponse OK, '''[]'''
-    }
-
-    void 'test getting terminology superseded documentation'() {
-        given: 'finalised terminology is created'
-        POST("folders/${folder.id}/terminologies", [
-                label: 'Functional Test Model terminology documentation superseded'
-        ], MAP_ARG, true)
-        verifyResponse(CREATED, response)
-        String firstId = response.body().id
-        PUT("terminologies/$firstId/finalise", [:], MAP_ARG, true)
-        verifyResponse OK, response
-        PUT("terminologies/$firstId/newDocumentationVersion", [label: 'Functional Test Terminology reader'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String secondId = response.body().id
-
-        expect:
-        firstId
-        secondId
-
-        when:
-        GET('admin/tree/folders/terminologies/documentationSuperseded', STRING_ARG, true)
-
-        then:
-        verifyJsonResponse OK, '''[
-  {
-    "id": "${json-unit.matches:id}",
-    "domainType": "Folder",
-    "label": "Functional Test Folder",
-    "hasChildren": true,
-    "deleted": false,
-    "children": [
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Terminology",
-        "label": "Functional Test Model terminology documentation superseded",
-        "modelVersion": "1.0.0",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": true,
-        "superseded": true,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Terminology",
-        "branchName":"main"
-      }
-    ]
-  }
-]
-'''
-        cleanup:
-        cleanUpData(firstId)
-        cleanUpData(secondId)
-    }
-
-    void 'test getting codeset superseded model when there are none'() {
-        when: 'finalised codeset has not yet been created'
-        GET('admin/tree/folders/codeSets/modelSuperseded', STRING_ARG, true)
-
-        then:
-        verifyJsonResponse OK, '''[]'''
-    }
-
-    void 'test getting codeset superseded models'() {
-        given: 'finalised codeset is created'
-        POST("folders/${folder.id}/codeSets", [
-                label: 'Functional Test Model codeset superseded'
-        ], MAP_ARG, true)
-        verifyResponse(CREATED, response)
-        String firstId = response.body().id
-        PUT("codeSets/$firstId/finalise", [:], MAP_ARG, true)
-        verifyResponse OK, response
-        PUT("codeSets/$firstId/newModelVersion", [label: 'Functional Test CodeSet reader'], MAP_ARG, true)
-        verifyResponse CREATED, response
-        String secondId = response.body().id
-
-        expect:
-        firstId
-        secondId
-
-        when:
-        GET('admin/tree/folders/codeSets/modelSuperseded', STRING_ARG, true)
-
-        then:
-        verifyJsonResponse OK, '''[
-  {
-    "id": "${json-unit.matches:id}",
-    "domainType": "Folder",
-    "label": "Functional Test Folder",
-    "hasChildren": true,
-    "deleted": false,
-    "children": [
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "CodeSet",
-        "label": "Functional Test Model codeset superseded",
-        "modelVersion": "1.0.0",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": true,
-        "superseded": true,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "CodeSet",
-        "branchName":"main"
-      }
-    ]
-  }
-]
-'''
-        cleanup:
-        cleanUpData(firstId)
-        cleanUpData(secondId)
-    }
-
-    void 'test getting codeset superseded documentation when there are none'() {
-        when: 'finalised codeset has not yet been created'
         GET('admin/tree/folders/codeSets/documentationSuperseded', STRING_ARG, true)
 
         then:
         verifyJsonResponse OK, '''[]'''
     }
 
-    void 'test getting codeset superseded documentation'() {
-        given: 'finalised codeset is created'
+    void 'TA08 : test getting codeSets superseded documentation'() {
+        given: 'finalised codeSets is created'
         POST("folders/${folder.id}/codeSets", [
-                label: 'Functional Test Model codeset documentation superseded'
+            label: 'Functional Test Model documentation superseded'
         ], MAP_ARG, true)
         verifyResponse(CREATED, response)
         String firstId = response.body().id
         PUT("codeSets/$firstId/finalise", [:], MAP_ARG, true)
         verifyResponse OK, response
-        PUT("codeSets/$firstId/newDocumentationVersion", [label: 'Functional Test CodeSet reader'], MAP_ARG, true)
+        PUT("codeSets/$firstId/newDocumentationVersion", [:], MAP_ARG, true)
         verifyResponse CREATED, response
         String secondId = response.body().id
 
@@ -395,7 +737,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
       {
         "id": "${json-unit.matches:id}",
         "domainType": "CodeSet",
-        "label": "Functional Test Model codeset documentation superseded",
+        "label": "Functional Test Model documentation superseded",
         "modelVersion": "1.0.0",
         "hasChildren": false,
         "deleted": false,
@@ -403,15 +745,84 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "superseded": true,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
-        "type": "CodeSet",
-        "branchName":"main"
+        "type": "CodeSet"
       }
     ]
   }
 ]
 '''
         cleanup:
-        cleanUpData(firstId)
-        cleanUpData(secondId)
+        cleanUpData(firstId, 'codeSets')
+        cleanUpData(secondId, 'codeSets')
+    }
+
+    void 'TA09 : test getting codeSets superseded model when there are none'() {
+        when: 'finalised terminology has not yet been created'
+        GET('admin/tree/folders/codeSets/modelSuperseded', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''[]'''
+    }
+
+    void 'TA10 : test getting codeSets superseded models'() {
+        given: 'model version superseded is created'
+        // Create model
+        POST("folders/${folder.id}/codeSets", [
+            label: 'Functional Test Model model superseded'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String firstId = response.body().id
+        // Finalise first model
+        PUT("codeSets/$firstId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+        // Create a new branch
+        PUT("codeSets/$firstId/newBranchModelVersion", [:], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String secondId = response.body().id
+        PUT("codeSets/$secondId/finalise", [:], MAP_ARG, true)
+        verifyResponse OK, response
+
+        expect:
+        firstId
+        secondId
+
+        when: 'getting the admin modelSuperseded endpoint'
+        GET('admin/tree/folders/codeSets/modelSuperseded', STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Functional Test Model model superseded",
+        "modelVersion": "1.0.0",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": true,
+        "superseded": true,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet"
+      }
+    ]
+  }
+]
+'''
+        cleanup:
+        cleanUpData(firstId, 'codeSets')
+        cleanUpData(secondId, 'codeSets')
+    }
+
+    void cleanUpData(String id, String endpoint) {
+        if (!id) return
+        DELETE("$endpoint/$id?permanent=true", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
     }
 }

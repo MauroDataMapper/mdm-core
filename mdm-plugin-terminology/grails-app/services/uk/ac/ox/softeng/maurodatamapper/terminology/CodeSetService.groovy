@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
@@ -41,6 +42,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
@@ -57,6 +59,9 @@ class CodeSetService extends ModelService<CodeSet> {
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     @Override
     CodeSet get(Serializable id) {
@@ -101,6 +106,9 @@ class CodeSetService extends ModelService<CodeSet> {
         if (!codeSet) return
         if (permanent) {
             codeSet.folder = null
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
+            }
             codeSet.delete(flush: flush)
         } else delete(codeSet)
     }
@@ -175,6 +183,10 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.byDeleted().list(pagination)
     }
 
+    Number countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        CodeSet.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    }
+
     CodeSet findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {
         // If we get all the models with the DL metadata then sort by documentation version we should end up with the latest doc version.
         // We should do this rather than using the value of the metadata as its possible someone creates a new documentation version of the model
@@ -205,7 +217,14 @@ class CodeSetService extends ModelService<CodeSet> {
     @Deprecated(forRemoval = true)
     @Override
     CodeSet finaliseModel(CodeSet model, User user, List<Serializable> supersedeModelIds) {
-        finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+
+        if (!versionLink)
+            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
+
+        CodeSet parent = get(versionLink.targetModelId)
+
+        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
     }
 
 
@@ -232,11 +251,17 @@ class CodeSetService extends ModelService<CodeSet> {
                                         UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(codeSet)) return codeSet
 
-        boolean mainBranchExistsForLabel = codeSet.branchName == 'main' || findAllByLabelAndBranchName(codeSet.label, 'main')
-
-        if (mainBranchExistsForLabel && branchName == 'main') {
-            throw new ApiBadRequestException('DMS02', "The [branchName] 'main' already exists for the [label] '${codeSet.label}'")
+        // Check if the branch name is already being used
+        if (countAllByLabelAndBranchNameAndNotFinalised(codeSet.label, branchName) > 0) {
+            codeSet.errors.reject('model.label.branch.name.already.exists',
+                                  ['branchName', CodeSet, branchName, codeSet.label] as Object[],
+                                  'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
+            return codeSet
         }
+
+        // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
+        boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(codeSet.label, 'main') > 0
+
         CodeSet newMainBranchModelVersion
         if (!mainBranchExistsForLabel) {
             newMainBranchModelVersion = copyCodeSet(codeSet,
@@ -254,7 +279,7 @@ class CodeSetService extends ModelService<CodeSet> {
                 //            moveTargetDataFlows(codeSet, newMainBranchModelVersion)
             }
 
-            if (newMainBranchModelVersion.validate()) newMainBranchModelVersion.save(flush: true, validate: false)
+            if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
         }
         CodeSet newBranchModelVersion
         if (branchName != 'main') {
@@ -274,10 +299,10 @@ class CodeSetService extends ModelService<CodeSet> {
                 //            moveTargetDataFlows(codeSet, newBranchModelVersion)
             }
 
-            if (newBranchModelVersion.validate()) newBranchModelVersion.save(flush: true, validate: false)
+            if (newBranchModelVersion.validate()) save(newBranchModelVersion, flush: true, validate: false)
         }
 
-        newBranchModelVersion ? newBranchModelVersion : newMainBranchModelVersion
+        newBranchModelVersion ?: newMainBranchModelVersion
     }
 
     @Override
@@ -353,24 +378,6 @@ class CodeSetService extends ModelService<CodeSet> {
         // Copy all the terms
         original.terms?.each { term ->
             copy.addToTerms(term)
-        }
-
-        if (original.semanticLinks) {
-            original.semanticLinks.each { link ->
-                copy.addToSemanticLinks(createdBy: copier.emailAddress,
-                                        linkType: link.linkType,
-                                        targetCatalogueItemId: link.targetCatalogueItemId,
-                                        targetCatalogueItemDomainType: link.targetCatalogueItemDomainType)
-            }
-        }
-
-        if (original.versionLinks) {
-            original.versionLinks.each { link ->
-                copy.addToVersionLinks(createdBy: copier.emailAddress,
-                                       linkType: link.linkType,
-                                       targetModelId: link.targetModelId,
-                                       targetModelDomainType: link.targetModelDomainType)
-            }
         }
 
         copy
@@ -553,7 +560,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     List<UUID> findAllSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsSuperseded(CodeSet.simpleName, readableIds)
+        (findAllDocumentSupersededIds(readableIds) + findAllModelSupersededIds(readableIds)).toSet().toList()
     }
 
     List<UUID> findAllDocumentSupersededIds(List<UUID> readableIds) {
@@ -561,7 +568,14 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsModelSuperseded(CodeSet.simpleName, readableIds)
+        // All versionLinks which are targets of model version links
+        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(readableIds)
+
+        // However they are only superseded if the source of this link is finalised
+        modelVersionLinks.findAll {
+            CodeSet sourceModel = get(it.catalogueItemId)
+            sourceModel.finalised
+        }.collect { it.targetModelId }
     }
 
     List<CodeSet> findAllDocumentSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {

@@ -114,6 +114,9 @@ class ClassifierController extends EditLoggingController<Classifier> {
         } else {
             super.deleteResource(resource)
         }
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.removeSecurityForSecurableResource(resource, currentUser)
+        }
     }
 
     @Override

@@ -107,7 +107,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
         "id": "${json-unit.matches:id}",
         "label": "dm1"
       },
-      "linkType": "Superseded By Model",
+      "linkType": "Superseded By Fork",
       "id": "${json-unit.matches:id}"
     },
     {
@@ -122,7 +122,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
         "id": "${json-unit.matches:id}",
         "label": "dm1"
       },
-      "linkType": "New Model Version Of",
+      "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}"
     }
   ]
@@ -166,7 +166,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
     String getExpectedValidSavedJson() {
         '''{
     "domainType": "VersionLink",
-    "linkType": "Superseded By Model",
+    "linkType": "Superseded By Fork",
     "id": "${json-unit.matches:id}",
     "sourceModel": {
         "domainType": "BasicModel",
@@ -195,7 +195,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
     "id": "${json-unit.matches:id}",
     "label": "dm3"
   },
-  "linkType": "Superseded By Model",
+  "linkType": "Superseded By Fork",
   "id": "${json-unit.matches:id}"
 }'''
     }
@@ -220,7 +220,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
     "id": "${json-unit.matches:id}",
     "label": "dm3"
   },
-  "linkType": "New Model Version Of",
+  "linkType": "New Fork Of",
   "id": "${json-unit.matches:id}"
 }'''
     }

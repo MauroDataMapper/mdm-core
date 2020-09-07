@@ -135,7 +135,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (params.boolean('permanent')) {
             getModelService().permanentDeleteModel(instance)
             if (securityPolicyManagerService) {
-                currentUserSecurityPolicyManager = securityPolicyManagerService.removeSecurityForSecurableResource(instance, currentUser)
+                currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
             }
             request.withFormat {
                 '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE

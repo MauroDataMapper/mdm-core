@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.semanticlink
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -72,7 +73,7 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
         dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
         targetDataModel = new DataModel(label: 'Functional Test Target DataModel', createdBy: 'functionalTest@test.com',
-                folder: folder, authority: testAuthority).save(flush: true)
+                                        folder: folder, authority: testAuthority).save(flush: true)
         dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
                                   dataModel: dataModel).save(flush: true)
         dataType = new PrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
@@ -155,43 +156,49 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
         // Semantic link only copied for new doc version
     }
 
-    def 'test confirm semantic link'(){
-        given: 'Create New Data Model'
-        def id = dataModel.id
+    def 'test confirm semantic link'() {
+        given: 'Create Semantic Link'
+        String id = createNewItem(validJson)
 
-        when: 'Create Semantic Link'
-        POST(   "dataModels/${id}/" + getFacetResourcePath(),
-                [
-                    targetCatalogueItemId: targetDataModel.id,
-                    targetCatalogueItemDomainType: 'DataModel',
-                    linkType: 'DOES_NOT_REFINE'
-                ],
-                MAP_ARG, true)
-
-        then: 'Check Successful Semantic Link Creation'
-        verifyResponse(HttpStatus.CREATED, response)
-
-
-        when:
-        PUT("dataModels/${id}/finalise", [ : ], MAP_ARG, true )
-        PUT("dataModels/${id}/newModelVersion", [ 'label':  'New DataModel Version'], MAP_ARG, true)
+        when: 'finalise and create a new copy of the finalised model'
+        PUT("dataModels/${dataModel.id}/finalise", [:], MAP_ARG, true)
+        PUT("dataModels/${dataModel.id}/newForkModel", ['label': 'Functional Test Fork'], MAP_ARG, true)
 
         then:
         verifyResponse(HttpStatus.CREATED, response)
 
+        when: 'Get the forked models SLs'
+        String forkId = responseBody().get("id")
+        GET("dataModels/${forkId}/semanticLinks", MAP_ARG, true)
+
+        then:
+        verifyResponse(HttpStatus.OK, response)
+        responseBody().count == 2
+        responseBody().items.any { Map m ->
+            m.linkType == SemanticLinkType.REFINES.label &&
+            m.targetCatalogueItem.id == targetCatalogueItemId &&
+            m.unconfirmed
+        }
+        responseBody().items.any { Map m ->
+            m.linkType == SemanticLinkType.REFINES.label &&
+            m.targetCatalogueItem.id == dataModel.id.toString() &&
+            !m.unconfirmed
+        }
+
         when:
-        String id2 = responseBody().get("id")
-
-        GET("dataModels/${id2}/semanticLinks", MAP_ARG, true)
-
-        String semanticLinkId = response.body().items[0].id
-
-        PUT("dataModels/${id}/semanticLinks/${semanticLinkId}/confirm", [ : ], MAP_ARG, true)
+        String semanticLinkId = responseBody().items.find { Map m ->
+            m.linkType == SemanticLinkType.REFINES.label &&
+            m.targetCatalogueItem.id == targetCatalogueItemId &&
+            m.unconfirmed
+        }.id
+        PUT("dataModels/${forkId}/semanticLinks/${semanticLinkId}/confirm", [:], MAP_ARG, true)
 
         then:
         verifyResponse(HttpStatus.OK, response)
 
         cleanup:
-        cleanUpData(semanticLinkId)
+        DELETE("dataModels/$forkId?permanent=true", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+        cleanUpData(id)
     }
 }

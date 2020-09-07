@@ -92,6 +92,13 @@ class TermController extends CatalogueItemController<Term> {
     }
 
     @Override
+    protected List<Term> listAllResources(Map params) {
+        log.trace('List all resources')
+        // We do not want to allow unpaginated access to terms as there will be too many of them
+        listAllReadableResources(params)
+    }
+
+    @Override
     protected Term queryForResource(Serializable resourceId) {
         if (params.codeSetId) {
             return termService.findByCodeSetIdAndId(params.codeSetId, resourceId)

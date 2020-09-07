@@ -50,16 +50,20 @@ class BootStrap {
                     }
 
                     if (Terminology.countByAuthorityIsNull() != 0) {
-                        Terminology.saveAll(Terminology.findAllByAuthorityIsNull().collect {
+                        Terminology.findAllByAuthorityIsNull().collect {
                             it.authority = authority
                             it
-                        })
+                        }.each {
+                            it.save(validate: false)
+                        }
                     }
                     if (CodeSet.countByAuthorityIsNull() != 0) {
-                        CodeSet.saveAll(CodeSet.findAllByAuthorityIsNull().collect {
+                        CodeSet.findAllByAuthorityIsNull().collect {
                             it.authority = authority
                             it
-                        })
+                        }.each {
+                            it.save(validate: false)
+                        }
                     }
                 }
             }

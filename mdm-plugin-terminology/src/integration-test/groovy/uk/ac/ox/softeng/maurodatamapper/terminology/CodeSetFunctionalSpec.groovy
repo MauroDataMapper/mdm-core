@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -30,7 +32,6 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 import spock.lang.Shared
 
-import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -195,8 +196,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = 'Semantic links arent being copied properly')
-    void 'test creating a new fork model of a CodeSet'() {
+    void 'VF01 : test creating a new fork model of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [:])
@@ -319,7 +319,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
   "items": [
     {
       "domainType": "VersionLink",
-      "linkType": "New Model Version Of",
+      "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
         "domainType": "CodeSet",
@@ -334,7 +334,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     },
      {
       "domainType": "VersionLink",
-      "linkType": "New Model Version Of",
+      "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}",
       "sourceModel": {
         "domainType": "CodeSet",
@@ -354,7 +354,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData()
     }
 
-    void 'test creating a new documentation version of a CodeSet'() {
+    void 'VD01 : test creating a new documentation version of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [:])
@@ -431,17 +431,17 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData()
     }
 
-    void 'test creating a new branch model version of a CodeSet'() {
+    void 'VB01 : test creating a new main branch model version of a CodeSet'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [:])
         verifyResponse OK, response
 
         when:
-        PUT("$id/newBranchModelVersion", [branchName: 'testNewBranchModelVersion'], STRING_ARG)
+        PUT("$id/newBranchModelVersion", [:], STRING_ARG)
 
         then:
-        verifyJsonResponse CREATED, expectedShowJson.replaceFirst(/"main"/, '"testNewBranchModelVersion"')
+        verifyJsonResponse CREATED, expectedShowJson
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -497,7 +497,103 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData()
     }
 
-    void 'test creating a main branch model version when one already exists'() {
+    void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a CodeSet'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+
+        when: 'create second model'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+
+        when: 'finalising second model'
+        String secondId = responseBody().id
+        PUT("$secondId/finalise", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'create new branch from second model'
+        PUT("$secondId/newBranchModelVersion", [:])
+
+        then:
+        String thirdId = responseBody().id
+        verifyResponse CREATED, response
+
+        when: 'get first model SLs'
+        GET("$id/semanticLinks")
+
+        then: 'first model is the target of refines for both second and third model'
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.any {
+            it.linkType == SemanticLinkType.REFINES.label &&
+            it.targetCatalogueItem.id == id &&
+            it.sourceCatalogueItem.id == secondId
+        }
+        // This is unconfirmed as its copied
+        responseBody().items.any {
+            it.linkType == SemanticLinkType.REFINES.label &&
+            it.targetCatalogueItem.id == id &&
+            it.sourceCatalogueItem.id == thirdId &&
+            it.unconfirmed
+        }
+
+        when: 'getting the first model VLs'
+        GET("$id/versionLinks")
+
+        then: 'first model is the target of new model version of for second model only'
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.any {
+            it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label &&
+            it.targetModel.id == id &&
+            it.sourceModel.id == secondId
+        }
+
+        when: 'get second model SLs'
+        GET("$secondId/semanticLinks")
+
+        then: 'second model is the target of refines for third model and source for first model'
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.any {
+            it.linkType == SemanticLinkType.REFINES.label &&
+            it.targetCatalogueItem.id == id &&
+            it.sourceCatalogueItem.id == secondId
+        }
+        responseBody().items.any {
+            it.linkType == SemanticLinkType.REFINES.label &&
+            it.targetCatalogueItem.id == secondId &&
+            it.sourceCatalogueItem.id == thirdId
+        }
+
+        when: 'getting the second model VLs'
+        GET("$secondId/versionLinks")
+
+        then: 'second model is the target of new model version of for third model and source for first model'
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.any {
+            it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+            it.targetModel.id == secondId &&
+            it.sourceModel.id == thirdId
+        }
+        responseBody().items.any {
+            it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+            it.targetModel.id == id &&
+            it.sourceModel.id == secondId
+        }
+
+        cleanup:
+        cleanUpData()
+    }
+
+
+    void 'VB03 : test creating a main branch model version when one already exists'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [:])
@@ -507,8 +603,42 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         PUT("$id/newBranchModelVersion", [:])
 
         then:
-        verifyResponse BAD_REQUEST, response
-        response.body().message.contains('The [branchName] \'main\' already exists for the [label]')
+        verifyResponse CREATED, response
+
+        when: 'another main branch created'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == 'Property [branchName] of class [class uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet] ' +
+        'with value [main] already exists for label [Functional Test Model]'
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB04 : test creating a non-main branch model version without main existing'() {
+        given: 'finalised model is created'
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+
+        when: 'create default main'
+        PUT("$id/newBranchModelVersion", [branchName: 'functionalTest'])
+
+        then:
+        verifyResponse CREATED, response
+
+        when:
+        GET("$id/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.every {
+            it.linkType == 'New Model Version Of'
+            it.targetModel.id == id
+        }
 
         cleanup:
         cleanUpData()

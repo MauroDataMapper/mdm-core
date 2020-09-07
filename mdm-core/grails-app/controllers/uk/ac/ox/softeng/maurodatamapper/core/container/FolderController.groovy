@@ -77,8 +77,13 @@ class FolderController extends EditLoggingController<Folder> {
 
         if (params.boolean('permanent')) {
             folderService.delete(instance, true)
+
+            if (securityPolicyManagerService) {
+                currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
+            }
+
             request.withFormat {
-                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
+                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
             }
             return
         }

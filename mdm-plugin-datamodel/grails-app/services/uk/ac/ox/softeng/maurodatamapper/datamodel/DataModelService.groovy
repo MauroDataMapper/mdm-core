@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -46,6 +46,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -76,6 +77,9 @@ class DataModelService extends ModelService<DataModel> {
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
 
     @Override
     DataModel get(Serializable id) {
@@ -124,6 +128,9 @@ class DataModelService extends ModelService<DataModel> {
         if (!dm) return
         if (permanent) {
             dm.folder = null
+            if (securityPolicyManagerService) {
+                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
+            }
             dm.delete(flush: flush)
         } else delete(dm)
     }
@@ -270,6 +277,10 @@ class DataModelService extends ModelService<DataModel> {
         DataModel.findAllByLabelAndBranchName(label, branchName)
     }
 
+    Number countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        DataModel.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    }
+
     DataModel findLatestByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService) {
         // If we get all the models with the DL metadata then sort by documentation version we should end up with the latest doc version.
         // We should do this rather than using the value of the metadata as its possible someone creates a new documentation version of the model
@@ -386,7 +397,15 @@ class DataModelService extends ModelService<DataModel> {
     @Deprecated(forRemoval = true)
     @Override
     DataModel finaliseModel(DataModel model, User user, List<Serializable> supersedeModelIds) {
-        finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
+
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+
+        if (!versionLink)
+            return finaliseModel(model, user, Version.from('1.0.0'), supersedeModelIds)
+
+        DataModel parent = get(versionLink.targetModelId)
+
+        finaliseModel(model, user, Version.nextMajorVersion(parent.modelVersion), supersedeModelIds)
     }
 
     boolean newVersionCreationIsAllowed(DataModel dataModel) {
@@ -412,11 +431,17 @@ class DataModelService extends ModelService<DataModel> {
                                           UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(dataModel)) return dataModel
 
-        boolean mainBranchExistsForLabel = dataModel.branchName == 'main' || findAllByLabelAndBranchName(dataModel.label, 'main')
-
-        if (mainBranchExistsForLabel && branchName == 'main') {
-            throw new ApiBadRequestException('DMS02', "The [branchName] 'main' already exists for the [label] '${dataModel.label}'")
+        // Check if the branch name is already being used
+        if (countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, branchName) > 0) {
+            dataModel.errors.reject('model.label.branch.name.already.exists',
+                                    ['branchName', DataModel, branchName, dataModel.label] as Object[],
+                                    'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
+            return dataModel
         }
+
+        // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
+        boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, 'main') > 0
+
         DataModel newMainBranchModelVersion
         if (!mainBranchExistsForLabel) {
             newMainBranchModelVersion = copyDataModel(dataModel,
@@ -434,7 +459,7 @@ class DataModelService extends ModelService<DataModel> {
                 //            moveTargetDataFlows(dataModel, newMainBranchModelVersion)
             }
 
-            if (newMainBranchModelVersion.validate()) newMainBranchModelVersion.save(flush: true, validate: false)
+            if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
         }
         DataModel newBranchModelVersion
         if (branchName != 'main') {
@@ -454,10 +479,10 @@ class DataModelService extends ModelService<DataModel> {
                 //            moveTargetDataFlows(dataModel, newBranchModelVersion)
             }
 
-            if (newBranchModelVersion.validate()) newBranchModelVersion.save(flush: true, validate: false)
+            if (newBranchModelVersion.validate()) save(newBranchModelVersion, flush: true, validate: false)
         }
 
-        newBranchModelVersion ? newBranchModelVersion : newMainBranchModelVersion
+        newBranchModelVersion ?: newMainBranchModelVersion
     }
 
     @Override
@@ -556,15 +581,6 @@ class DataModelService extends ModelService<DataModel> {
             // Copy all the dataclasses (this will also match up the reference types)
             original.childDataClasses.each { dc ->
                 dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager)
-            }
-        }
-
-        if (original.versionLinks) {
-            original.versionLinks.each { link ->
-                copy.addToVersionLinks(createdBy: copier.emailAddress,
-                                       linkType: link.linkType,
-                                       targetModelId: link.targetModelId,
-                                       targetModelDomainType: link.targetModelDomainType)
             }
         }
 
@@ -781,7 +797,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     List<UUID> findAllSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsSuperseded(DataModel.simpleName, readableIds)
+        (findAllDocumentSupersededIds(readableIds) + findAllModelSupersededIds(readableIds)).toSet().toList()
     }
 
     List<UUID> findAllDocumentSupersededIds(List<UUID> readableIds) {
@@ -789,7 +805,14 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsModelSuperseded(DataModel.simpleName, readableIds)
+        // All versionLinks which are targets of model version links
+        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(readableIds)
+
+        // However they are only superseded if the source of this link is finalised
+        modelVersionLinks.findAll {
+            DataModel sourceModel = get(it.catalogueItemId)
+            sourceModel.finalised
+        }.collect { it.targetModelId }
     }
 
     List<DataModel> findAllDocumentSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
