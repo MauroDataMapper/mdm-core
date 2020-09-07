@@ -82,11 +82,21 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         } else {
             role = groupRoleService.getFromCache(GroupRole.EDITOR_ROLE_NAME).groupRole
         }
-        log.debug('Creating group {} and assigning role {}', "${resourceName} Group", role.name)
-        UserGroup controlGroup = userGroupService.generateAndSaveNewGroup(catalogueUser,
-                                                                          "${resourceName} Group",
-                                                                          "Control group for ${resourceName}").save(flush: true)
 
+        /*
+        Assign the resource to a group based on the user's name, creating that group if it does not already exist
+        */
+        String controlGroupName = "${creator.getEmailAddress()} Group"
+        UserGroup controlGroup
+        log.debug("Looking for group ${controlGroupName}")
+        controlGroup = userGroupService.findByName(controlGroupName)
+        if (!controlGroup) {
+            log.debug('Creating group {} and assigning role {}', "${controlGroupName}", role.name)
+            controlGroup = userGroupService.generateAndSaveNewGroup(catalogueUser,
+                                                                    controlGroupName,
+                                                                    "Control group for ${creator.getEmailAddress()}").save(flush: true)
+
+        }
         securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
         refreshUserSecurityPolicyManager(catalogueUser)
     }

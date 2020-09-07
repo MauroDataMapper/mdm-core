@@ -56,6 +56,10 @@ class UserGroupService {
         group.delete(flush: true)
     }
 
+    UserGroup findByName(String name) {
+        UserGroup.findByName(name)
+    }
+
     UserGroup createNewGroup(CatalogueUser createdBy, String name, String description = null, List<CatalogueUser> members = []) {
         UserGroup group = new UserGroup(createdBy: createdBy.emailAddress, name: name, description: description)
         members.each {group.addToGroupMembers(it)}
