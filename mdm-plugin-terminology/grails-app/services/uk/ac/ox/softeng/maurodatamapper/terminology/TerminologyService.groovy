@@ -203,8 +203,8 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology finaliseModel(Terminology terminology, User user, Version modelVersion = Version.from('1.0.0'),
-                              List<Serializable> supersedeModelIds = [], VersionChangeType versionChangeType) {
+    Terminology finaliseModel(Terminology terminology, User user, Version modelVersion, VersionChangeType versionChangeType,
+                              List<Serializable> supersedeModelIds = []) {
         terminology.finalised = true
         terminology.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         terminology.breadcrumbTree.finalise()
@@ -232,12 +232,6 @@ class TerminologyService extends ModelService<Terminology> {
                                       "${OffsetDateTimeConverter.toString(terminology.dateFinalised)}",
                                       user)
         terminology
-    }
-
-    @Deprecated(forRemoval = true)
-    @Override
-    Terminology finaliseModel(Terminology model, User user, List<Serializable> supersedeModelIds, Version modelVersion, VersionChangeType versionChangeType) {
-        finaliseModel(model, user, modelVersion, supersedeModelIds, versionChangeType)
     }
 
     boolean newVersionCreationIsAllowed(Terminology terminology) {

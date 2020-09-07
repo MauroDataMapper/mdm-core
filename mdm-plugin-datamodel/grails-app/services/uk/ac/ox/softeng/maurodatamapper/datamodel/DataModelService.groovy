@@ -380,7 +380,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [], VersionChangeType versionChangeType) {
+    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds = []) {
 
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -409,12 +409,6 @@ class DataModelService extends ModelService<DataModel> {
                                       "${OffsetDateTimeConverter.toString(dataModel.dateFinalised)}",
                                       user)
         dataModel
-    }
-
-    @Deprecated(forRemoval = true)
-    @Override
-    DataModel finaliseModel(DataModel model, User user, List<Serializable> supersedeModelIds, Version modelVersion, VersionChangeType versionChangeType) {
-        finaliseModel(model, user, modelVersion, supersedeModelIds, versionChangeType)
     }
 
     boolean newVersionCreationIsAllowed(DataModel dataModel) {

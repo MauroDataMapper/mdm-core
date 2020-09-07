@@ -67,7 +67,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
-    abstract K finaliseModel(K model, User user, List<Serializable> supersedeModelIds, Version modelVersion, VersionChangeType versionChangeType)
+    abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds)
 
     abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType)
 

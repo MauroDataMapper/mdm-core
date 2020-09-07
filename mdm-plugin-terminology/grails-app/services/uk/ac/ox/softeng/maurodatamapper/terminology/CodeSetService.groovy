@@ -201,8 +201,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion = Version.from('1.0.0'), List<Serializable> supersedeModelIds = [],
-                          VersionChangeType versionChangeType) {
+    CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds = []) {
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
 
@@ -230,13 +229,6 @@ class CodeSetService extends ModelService<CodeSet> {
                                       user)
         codeSet
     }
-
-    @Deprecated(forRemoval = true)
-    @Override
-    CodeSet finaliseModel(CodeSet model, User user, List<Serializable> supersedeModelIds, Version modelVersion, VersionChangeType versionChangeType) {
-        finaliseModel(model, user, modelVersion, supersedeModelIds, versionChangeType)
-    }
-
 
     boolean newVersionCreationIsAllowed(CodeSet codeSet) {
         if (!codeSet.finalised) {
