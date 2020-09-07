@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -39,12 +38,12 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -205,20 +204,7 @@ class CodeSetService extends ModelService<CodeSet> {
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
 
-        if (modelVersion == null && codeSet.modelVersion == null) codeSet.setModelVersion(new Version('1.0.0'))
-        else if (modelVersion != null) codeSet.setModelVersion(new Version(modelVersion))
-        else if (versionChangeType != null) {
-            switch(versionChangeType){
-                case VersionChangeType.MAJOR:
-                    codeSet.modelVersion.nextMajorVersion()
-                    break
-                case VersionChangeType.MINOR:
-                    codeSet.modelVersion.nextMinorVersion()
-                    break
-                case VersionChangeType.PATCH:
-                    codeSet.modelVersion.nextPatchVersion()
-            }
-        }
+        codeSet.modelVersion = getNextModelVersion(codeSet, modelVersion, versionChangeType)
 
         codeSet.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised CodeSet',
                                  description: "CodeSet finalised by ${user.firstName} ${user.lastName} on " +

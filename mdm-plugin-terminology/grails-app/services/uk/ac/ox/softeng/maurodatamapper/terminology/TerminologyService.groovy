@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -41,12 +40,12 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -209,20 +208,7 @@ class TerminologyService extends ModelService<Terminology> {
         terminology.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         terminology.breadcrumbTree.finalise()
 
-        if (modelVersion == null && terminology.modelVersion == null) terminology.setModelVersion(new Version('1.0.0'))
-        else if (modelVersion != null) terminology.setModelVersion(new Version(modelVersion))
-        else if (versionChangeType) {
-            switch(versionChangeType != null){
-                case VersionChangeType.MAJOR:
-                    terminology.modelVersion.nextMajorVersion()
-                    break
-                case VersionChangeType.MINOR:
-                    terminology.modelVersion.nextMinorVersion()
-                    break
-                case VersionChangeType.PATCH:
-                    terminology.modelVersion.nextPatchVersion()
-            }
-        }
+        terminology.modelVersion = getNextModelVersion(terminology, modelVersion, versionChangeType)
 
         terminology.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Terminology',
                                      description: "Terminology finalised by ${user.firstName} ${user.lastName} on " +

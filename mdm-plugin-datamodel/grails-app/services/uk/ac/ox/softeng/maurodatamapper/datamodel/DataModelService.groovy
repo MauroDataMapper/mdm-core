@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -51,13 +50,13 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -386,20 +385,7 @@ class DataModelService extends ModelService<DataModel> {
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         dataModel.breadcrumbTree.finalise()
 
-        if (modelVersion == null && dataModel.modelVersion == null) dataModel.setModelVersion(new Version('1.0.0'))
-        else if (modelVersion != null) dataModel.setModelVersion(new Version(modelVersion))
-        else if (versionChangeType != null) {
-            switch(versionChangeType){
-                case VersionChangeType.MAJOR:
-                    dataModel.modelVersion.nextMajorVersion()
-                    break
-                case VersionChangeType.MINOR:
-                    dataModel.modelVersion.nextMinorVersion()
-                    break
-                case VersionChangeType.PATCH:
-                    dataModel.modelVersion.nextPatchVersion()
-            }
-        }
+        dataModel.modelVersion = getNextModelVersion(dataModel, modelVersion, versionChangeType)
 
         dataModel.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                    description: "DataModel finalised by ${user.firstName} ${user.lastName} on " +
