@@ -176,7 +176,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.documentationVersion == Version.from('1')
 
         when:
-        dataModelService.finaliseModel(dataModel, admin, Version.from('1'))
+        dataModelService.finaliseModel(dataModel, admin, Version.from('1'), null)
 
         then:
         checkAndSave(dataModel)
@@ -213,7 +213,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'finalising model and then creating a new doc version is allowed'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -282,7 +282,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'finalising model and then creating a new doc version is allowed'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -351,7 +351,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new doc version'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, editor)
+        dataModelService.finaliseModel(dataModel, editor, null, null)
         def newDocVersion = dataModelService.
             createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
@@ -374,7 +374,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new doc version'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, editor)
+        dataModelService.finaliseModel(dataModel, editor, null, null)
         def newDocVersion = dataModelService.
             createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
@@ -412,7 +412,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'finalising model and then creating a new version is allowed'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
                                                          [copyDataFlows: false, throwErrors: true])
@@ -483,7 +483,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'finalising model and then creating a new version is allowed'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
                                                          [copyDataFlows: false, throwErrors: true])
@@ -551,7 +551,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'creating new version'
         DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, editor)
+        dataModelService.finaliseModel(dataModel, editor, null, null)
         def newVersion = dataModelService.
             createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 

@@ -107,7 +107,7 @@ class CodeSetService extends ModelService<CodeSet> {
         if (permanent) {
             codeSet.folder = null
             if (securityPolicyManagerService) {
-                securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
+                securityPolicyManagerService.removeSecurityForSecurableResource(codeSet, null)
             }
             codeSet.delete(flush: flush)
         } else delete(codeSet)
@@ -200,7 +200,8 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds = []) {
+    CodeSet finaliseModel(CodeSet codeSet, User user, Version modelVersion, VersionChangeType versionChangeType,
+                          List<Serializable> supersedeModelIds = []) {
         codeSet.finalised = true
         codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
 
@@ -605,7 +606,7 @@ class CodeSetService extends ModelService<CodeSet> {
                 List<CodeSet> existingModels = findAllByLabel(codeSet.label)
                 existingModels.each { existing ->
                     log.debug('Setting CodeSet as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
                     setCodeSetIsNewDocumentationVersionOfCodeSet(codeSet, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion

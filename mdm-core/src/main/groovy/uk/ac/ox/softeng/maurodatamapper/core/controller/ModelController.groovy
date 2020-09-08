@@ -42,8 +42,6 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
-import uk.ac.ox.softeng.maurodatamapper.util.Version
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
@@ -219,7 +217,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (instance.branchName != 'main') return METHOD_NOT_ALLOWED
 
-        instance = getModelService().finaliseModel(instance, currentUser, finaliseData.supersededBy ?: [], finaliseData.version, finaliseData.versionChangeType)
+        instance = modelService.finaliseModel(instance, currentUser,
+                                              finaliseData.version, finaliseData.versionChangeType,
+                                              finaliseData.supersededBy ?: []) as T
 
         if (!validateResource(instance, 'update')) return
 

@@ -843,7 +843,7 @@ class DataModelService extends ModelService<DataModel> {
                 List<DataModel> existingModels = findAllByLabel(dataModel.label)
                 existingModels.each { existing ->
                     log.debug('Setting DataModel as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
                     setDataModelIsNewDocumentationVersionOfDataModel(dataModel, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion

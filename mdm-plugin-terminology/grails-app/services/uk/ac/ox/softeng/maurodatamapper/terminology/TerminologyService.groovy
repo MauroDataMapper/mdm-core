@@ -658,7 +658,7 @@ class TerminologyService extends ModelService<Terminology> {
                 List<Terminology> existingModels = findAllByLabel(terminology.label)
                 existingModels.each { existing ->
                     log.debug('Setting Terminology as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
                     setTerminologyIsNewDocumentationVersionOfTerminology(terminology, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion

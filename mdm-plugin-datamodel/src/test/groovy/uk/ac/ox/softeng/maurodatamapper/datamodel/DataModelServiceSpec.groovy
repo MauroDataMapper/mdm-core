@@ -172,7 +172,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         dataModel.documentationVersion == Version.from('1')
 
         when:
-        service.finaliseModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin, null, null)
 
         then:
         checkAndSave(dataModel)
@@ -203,7 +203,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
         when: 'finalising model and then creating a new doc version is allowed'
         DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = service.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -269,7 +269,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'DMSC03 : test creating a new documentation version on finalised model with permission copying'() {
         when: 'finalising model and then creating a new doc version is allowed'
         DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = service.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -336,7 +336,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new doc version'
         DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, editor)
+        service.finaliseModel(dataModel, editor, null, null)
         def newDocVersion = service.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
@@ -361,7 +361,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new doc version'
         DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, editor)
+        service.finaliseModel(dataModel, editor, null, null)
         def newDocVersion = service.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
@@ -400,7 +400,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'finalising model and then creating a new version is allowed'
         DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -469,7 +469,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'finalising model and then creating a new version is allowed'
         DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin)
+        service.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -537,7 +537,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         when: 'creating new version'
         DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, editor)
+        service.finaliseModel(dataModel, editor, null, null)
         def newVersion = service.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true

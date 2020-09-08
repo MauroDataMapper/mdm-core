@@ -1236,7 +1236,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "dataTypes": [],
   "domainType": "DataModel",
   "documentationVersion": "1.0.0",
-  "availableActions": ["delete","show","update","finalise"],
+  "availableActions": ["delete","show","update"],
   "branchName":"main",
   "finalised": false,
   "authority": {
