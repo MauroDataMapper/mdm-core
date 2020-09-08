@@ -117,7 +117,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
                     forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
         }
 
-        checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId())
+        checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId(), true)
     }
 
 

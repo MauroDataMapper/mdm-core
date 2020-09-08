@@ -318,6 +318,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                 case SAVE_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? !role.isFinalisedModel() : false
+                case CAN_BE_FINALISED_ACTION:
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? role.canFinaliseModel() : false
                 default:
                     log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
                     return false
