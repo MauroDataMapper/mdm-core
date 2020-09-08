@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -54,11 +54,11 @@ class EditService {
         Edit.findAllByResource(resourceDomainType, resourceId, pagination)
     }
 
-    void createAndSaveEdit(UUID resourceId, String resourceDomainType, String description, User createdBy) {
+    void createAndSaveEdit(UUID resourceId, String resourceDomainType, String description, User createdBy, boolean flush = false) {
         Edit edit = new Edit(resourceId: resourceId, resourceDomainType: resourceDomainType,
                              description: description, createdBy: createdBy.emailAddress)
         if (edit.validate()) {
-            edit.save(flush: true, validate: false)
+            edit.save(flush: flush, validate: false)
         } else {
             throw new ApiInvalidModelException('ES01', 'Created Edit is invalid', edit.errors, messageSource)
         }
