@@ -252,10 +252,10 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(terminology.label, 'main') > 0
+        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(terminology.label, 'main') > 0
 
         Terminology newMainBranchModelVersion
-        if (!draftModelOnMainBranch) {
+        if (!draftModelOnMainBranchForLabel) {
             newMainBranchModelVersion = copyTerminology(terminology,
                                                         user,
                                                         copyPermissions,
@@ -587,10 +587,6 @@ class TerminologyService extends ModelService<Terminology> {
     List<Terminology> findAllSupersededModels(List<UUID> ids, Map pagination) {
         if (!ids) return []
         Terminology.byIdInList(ids).list(pagination)
-    }
-
-    List<Terminology> findAllByLabelAndBranchName(String label, String branchName) {
-        Terminology.findAllByLabelAndBranchName(label, branchName)
     }
 
     List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {

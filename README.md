@@ -28,7 +28,6 @@ psql -U postgres
 postgres=# CREATE USER maurodatamapper WITH SUPERUSER PASSWORD 'MauroDataMapper1234';
 -- Create the database
 postgres=# CREATE DATABASE maurodatamapper OWNER maurodatamapper;
--- Add the schemas for the sub-projects
 ```
 
 ### Standalone for backend testing

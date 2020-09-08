@@ -278,7 +278,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         T copy = getModelService().
             createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser, createNewVersionData.copyPermissions,
-                                        currentUserSecurityPolicyManager)
+                                        currentUserSecurityPolicyManager) as T
 
         if (!validateResource(copy, 'create')) return
 
@@ -303,7 +303,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!instance) return notFound(params[alternateParamsIdKey])
 
         T copy = getModelService().
-            createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager)
+            createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager) as T
 
         if (!validateResource(copy, 'create')) return
 
@@ -331,7 +331,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         try {
             T copy = getModelService().createNewForkModel(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
-                                                          currentUserSecurityPolicyManager)
+                                                          currentUserSecurityPolicyManager) as T
 
             if (!validateResource(copy, 'create')) return
 
@@ -547,7 +547,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     @Override
     protected List<T> listAllReadableResources(Map params) {
         if (params.folderId) {
-            return getModelService().findAllByFolderId(Utils.toUuid(params.folderId))
+            return getModelService().findAllByFolderId(Utils.toUuid(params.folderId as String))
         }
         getModelService().findAllByUser(currentUserSecurityPolicyManager, params)
     }
@@ -568,7 +568,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     @Override
     protected void serviceInsertResource(T resource) {
-        T model = getModelService().save(flush: true, resource)
+        T model = getModelService().save(flush: true, resource) as T
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(model, currentUser, model.label)
         }

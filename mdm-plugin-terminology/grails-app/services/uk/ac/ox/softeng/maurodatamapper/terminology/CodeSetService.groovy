@@ -249,10 +249,10 @@ class CodeSetService extends ModelService<CodeSet> {
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(codeSet.label, 'main') > 0
+        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(codeSet.label, 'main') > 0
 
         CodeSet newMainBranchModelVersion
-        if (!draftModelOnMainBranch) {
+        if (!draftModelOnMainBranchForLabel) {
             newMainBranchModelVersion = copyCodeSet(codeSet,
                                                     user,
                                                     copyPermissions,
@@ -531,14 +531,9 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.byDeleted().list(pagination)
     }
 
-
     List<CodeSet> findAllSupersededModels(List<UUID> ids, Map pagination) {
         if (!ids) return []
         CodeSet.byIdInList(ids).list(pagination)
-    }
-
-    List<CodeSet> findAllByLabelAndBranchName(String label, String branchName) {
-        CodeSet.findAllByLabelAndBranchName(label, branchName)
     }
 
     List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {

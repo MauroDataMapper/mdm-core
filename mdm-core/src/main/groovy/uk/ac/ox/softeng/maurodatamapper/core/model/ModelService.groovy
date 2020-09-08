@@ -144,7 +144,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     Version getNextModelVersion(K model, Version requestedModelVersion, VersionChangeType requestedVersionChangeType) {
-
         if (requestedModelVersion) {
             // Prefer requested model version
             return requestedModelVersion

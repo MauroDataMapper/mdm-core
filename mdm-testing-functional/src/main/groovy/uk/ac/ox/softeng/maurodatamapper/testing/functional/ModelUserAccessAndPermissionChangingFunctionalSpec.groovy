@@ -582,4 +582,129 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(branchId)
         cleanUpRoles(mainBranchId)
     }
+
+    void 'E25a : test creating a new branch model version on main of a Model<T> (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().id != id
+        response.body().label.contains('Functional Test ')
+        response.body().documentationVersion == '1.0.0'
+        response.body().branchName == 'main'
+        response.body().modelVersion == null
+
+        when:
+        String newId = response.body().id
+        GET("$newId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        response.body().count == 1
+        response.body().items.first().domainType == 'VersionLink'
+        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        response.body().items.first().sourceModel.id == newId
+        response.body().items.first().targetModel.id == id
+        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
+
+        when:
+        PUT("$newId/finalise", [:])
+        verifyResponse OK, response
+        PUT("$newId/newBranchModelVersion", [branchName: 'main'])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().id != newId
+        response.body().label.contains('Functional Test ')
+        response.body().branchName == 'main'
+        response.body().modelVersion == null
+        String finalId = response.body().id
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(newId)
+        removeValidIdObjectUsingTransaction(finalId)
+        removeValidIdObject(id)
+        removeValidIdObject(newId)
+    }
+
+    void 'E26 : test finding common ancestor of two Model<T> (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = response.body().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = response.body().id
+
+        when: 'logged in as editor'
+        GET("$leftId/commonAncestor/$rightId")
+
+        then:
+        verifyResponse OK, response
+        response.body().id == id
+        response.body().label.contains('Functional Test ')
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(leftId)
+        removeValidIdObjectUsingTransaction(rightId)
+        removeValidIdObject(id)
+        removeValidIdObject(leftId)
+        removeValidIdObject(rightId)
+    }
+
+    void 'E27 : test finding latest version of a Model<T> (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String expectedId = response.body().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = response.body().id
+        PUT("$expectedId/finalise", [:])
+        verifyResponse OK, response
+        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String latestDraftId = response.body().id
+
+        when: 'logged in as editor'
+        GET("$newBranchId/latestVersion")
+
+        then:
+        verifyResponse OK, response
+        response.body().id == expectedId
+        response.body().label.contains('Functional Test ')
+
+        when:
+        GET("$latestDraftId/latestVersion")
+
+        then:
+        verifyResponse OK, response
+        response.body().id == expectedId
+        response.body().label.contains('Functional Test ')
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(expectedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        removeValidIdObject(id)
+        removeValidIdObject(newBranchId)
+        removeValidIdObject(expectedId)
+        removeValidIdObject(latestDraftId)
+    }
+
+    void 'E28 : test finding merge difference of a Model<T> (as editor)'() {
+        when:
+        false
+        then:
+        false
+    }
 }

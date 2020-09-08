@@ -644,6 +644,104 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData()
     }
 
+    void 'VB05 : test finding common ancestor of two Model<T> (as editor)'() {
+        given:
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when:
+        GET("$leftId/commonAncestor/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().label == 'Functional Test Model'
+
+        cleanup:
+        cleanUpData(leftId)
+        cleanUpData(rightId)
+        cleanUpData(id)
+    }
+
+    void 'VB06 : test finding latest (finalised) version of a Model<T> (as editor)'() {
+        /*
+        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String expectedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$expectedId/finalise", [:])
+        verifyResponse OK, response
+        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when:
+        GET("$newBranchId/latestVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == expectedId
+        responseBody().label == 'Functional Test Model'
+
+        when:
+        GET("$latestDraftId/latestVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == expectedId
+        responseBody().label == 'Functional Test Model'
+
+        cleanup:
+        cleanUpData(newBranchId)
+        cleanUpData(expectedId)
+        cleanUpData(latestDraftId)
+        cleanUpData(id)
+    }
+
+    void 'VB07 : test finding merge difference of two Model<T> (as editor)'() {
+        given:
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when:
+        GET("$leftId/mergeDiff/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().left.leftIdentifier == id
+        responseBody().left.rightIdentifier == leftId
+        responseBody().right.leftIdentifier == id
+        responseBody().right.rightIdentifier == rightId
+
+        cleanup:
+        cleanUpData(leftId)
+        cleanUpData(rightId)
+        cleanUpData(id)
+    }
+
     void 'cd  folder from CodeSet context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
