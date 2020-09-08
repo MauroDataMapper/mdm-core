@@ -91,6 +91,102 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         response.status() in [NO_CONTENT, NOT_FOUND]
     }
 
+
+    void 'L16 : Test finalising Model (as not logged in)'() {
+        given:
+        String id = getValidId()
+
+        when: 'not logged in'
+        PUT("$id/finalise", [:])
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'N16 : Test finalising Model (as authenticated/no access)'() {
+        given:
+        String id = getValidId()
+
+        when: 'authenticated user'
+        PUT("$id/finalise", [:])
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'R16 : Test finalising Model (as reader)'() {
+        given:
+        String id = getValidId()
+
+        when: 'logged in as reader'
+        loginReader()
+        PUT("$id/finalise", ["version": "3.9.0"])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E16 : Test finalising Model (as editor)'() {
+        given:
+        String id = getValidId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/finalise", [:])
+
+        then:
+        verifyResponse OK, response
+        responseBody().finalised == true
+        responseBody().dateFinalised
+        responseBody().availableActions == [
+            "show",
+            "comment",
+            "softDelete",
+            "delete"
+        ]
+        responseBody().modelVersion == '1.0.0'
+
+        when: 'log out and log back in again in as editor available actions are correct'
+        logout()
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == [
+            "show",
+            "comment",
+            "softDelete",
+            "delete"
+        ]
+
+        when: 'log out and log back in again in as admin available actions are correct'
+        logout()
+        loginAdmin()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == [
+            "show",
+            "comment",
+            "softDelete",
+            "delete"
+        ]
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
     void 'L17 : test creating a new fork model of a Model<T> (as not logged in)'() {
         given:
         String id = getValidFinalisedId()
@@ -130,27 +226,27 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == "Functional Test ${modelType} v2"
+        responseBody().id != id
+        responseBody().label == "Functional Test ${modelType} v2"
 
         when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
+        String forkId = responseBody().id
+        GET("$forkId/versionLinks")
 
         then:
         verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
+        responseBody().items.first().sourceModel.id == forkId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
 
         cleanup:
-        removeValidIdObjectUsingTransaction(newId)
+        removeValidIdObjectUsingTransaction(forkId)
         removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(newId, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
+        cleanUpRoles(forkId)
+        cleanUpRoles(id)
     }
 
     void 'E17 : test creating a new fork model of a Model<T> (as editor)'() {
@@ -163,27 +259,27 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == "Functional Test ${modelType} v2"
+        responseBody().id != id
+        responseBody().label == "Functional Test ${modelType} v2"
 
         when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
+        String forkId = responseBody().id
+        GET("$forkId/versionLinks")
 
         then:
         verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
+        responseBody().items.first().sourceModel.id == forkId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
 
         cleanup:
-        removeValidIdObjectUsingTransaction(newId)
+        removeValidIdObjectUsingTransaction(forkId)
         removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(newId, NOT_FOUND)
-        removeValidIdObject(id, NOT_FOUND)
+        cleanUpRoles(forkId)
+        cleanUpRoles(id)
     }
 
     void 'L18 : test creating a new documentation version of a Model<T> (as not logged in)'() {
@@ -240,30 +336,31 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label == "Functional Test ${modelType}"
-        response.body().documentationVersion == '2.0.0'
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '2.0.0'
 
         when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
+        String docId = responseBody().id
+        GET("$docId/versionLinks")
 
         then:
         verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == docId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
 
         cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObject(id)
-        removeValidIdObject(newId)
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(docId)
+        cleanUpRoles(id)
+        cleanUpRoles(docId)
     }
 
-    void 'L25 : test creating a new branch model version of a Model<T> (as not logged in)'() {
+    void 'L19 : test creating a new branch model version of a Model<T> (as not logged in)'() {
         given:
         String id = getValidFinalisedId()
 
@@ -277,7 +374,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObject(id)
     }
 
-    void 'N25 : test creating a new branch model version of a Model<T> (as authenticated/no access)'() {
+    void 'N19 : test creating a new branch model version of a Model<T> (as authenticated/no access)'() {
         given:
         String id = getValidFinalisedId()
 
@@ -292,7 +389,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObject(id)
     }
 
-    void 'R25 : test creating a new branch model version of a Model<T> (as reader)'() {
+    void 'R19 : test creating a new branch model version of a Model<T> (as reader)'() {
         given:
         String id = getValidFinalisedId()
 
@@ -307,7 +404,43 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObject(id)
     }
 
-    void 'E25 : test creating a new branch model version of a Model<T> (as editor)'() {
+    void 'E19a : test creating a new model version of a Model<T> (no branch name) (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'main'
+        !responseBody().modelVersion
+
+        when:
+        String branchId = responseBody().id
+        GET("$branchId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == branchId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(branchId)
+        cleanUpRoles(id)
+        cleanUpRoles(branchId)
+    }
+
+    void 'E19b : test creating a new branch model version of a Model<T> (as editor)'() {
         given:
         String id = getValidFinalisedId()
 
@@ -317,27 +450,137 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label.contains('Functional Test ')
-        response.body().documentationVersion == '1.0.0'
-        response.body().branchName == 'newBranchModelVersion'
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'newBranchModelVersion'
+        !responseBody().modelVersion
 
         when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
+        String branchId = responseBody().id
+        GET("$branchId/versionLinks")
 
         then:
         verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == branchId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 3
+
+        when:
+        String mainBranchId = responseBody().items.find {
+            it.label == validJson.label &&
+            !(it.id in [branchId, id])
+        }?.id
+
+        then:
+        mainBranchId
+
+        when:
+        GET(mainBranchId)
+
+        then:
+        verifyResponse OK, response
+        responseBody().branchName == 'main'
+        !responseBody().modelVersion
 
         cleanup:
-        removeValidIdObjectUsingTransaction(newId)
-        removeValidIdObject(id)
-        removeValidIdObject(newId)
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(branchId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id)
+        cleanUpRoles(branchId)
+        cleanUpRoles(mainBranchId)
+    }
+
+    void 'E19c : test creating a new model version of a Model<T> and finalising (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+
+        when:
+        String branchId = responseBody().id
+        PUT("$branchId/finalise", [:])
+
+        then:
+        verifyResponse OK, response
+        responseBody().finalised == true
+        responseBody().dateFinalised
+        responseBody().availableActions == [
+            "show",
+            "comment",
+            "softDelete",
+            "delete"
+        ]
+        responseBody().modelVersion == '2.0.0'
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(branchId)
+        cleanUpRoles(id)
+        cleanUpRoles(branchId)
+    }
+
+    void 'E19d : test creating a new branch model version of a Model<T> and trying to finalise(as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion'])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'newBranchModelVersion'
+        !responseBody().modelVersion
+
+        when:
+        String branchId = responseBody().id
+        PUT("$branchId/finalise", [:])
+
+        then:
+        verifyForbidden response
+
+        when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 3
+
+        when:
+        String mainBranchId = responseBody().items.find {
+            it.label == validJson.label &&
+            !(it.id in [branchId, id])
+        }?.id
+
+        then:
+        mainBranchId
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(branchId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id)
+        cleanUpRoles(branchId)
+        cleanUpRoles(mainBranchId)
     }
 }

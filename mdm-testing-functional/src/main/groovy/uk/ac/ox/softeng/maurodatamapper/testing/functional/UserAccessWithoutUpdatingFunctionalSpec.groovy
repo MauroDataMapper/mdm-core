@@ -233,8 +233,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
     @Transactional
     void cleanUpRoles(String id) {
-        log.info('Cleaning up roles and groups, {} user groups still remain. Ignoring groups {},',
-                 UserGroup.byNameNotInList(getPermanentGroupNames()).size(), getPermanentGroupNames())
+        log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles', SecurableResourceGroupRole.count())
         SecurableResourceGroupRole.bySecurableResourceId(Utils.toUuid(id)).deleteAll()
         sessionFactory.currentSession.flush()
@@ -243,7 +242,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
     @Transactional
     void cleanupUserGroups() {
-        log.info('Cleaning up roles and groups, {} user groups still remain. Ignoring groups {},',
+        log.info('Cleaning up groups, {} user groups still remain. Ignoring groups {},',
                  UserGroup.byNameNotInList(getPermanentGroupNames()).size(), getPermanentGroupNames())
         UserGroup.byNameNotInList(getPermanentGroupNames()).deleteAll()
         sessionFactory.currentSession.flush()
