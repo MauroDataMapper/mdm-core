@@ -499,8 +499,9 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    List<UUID> findAllModelIdsWithChildren(List<CodeSet> models) {
-        models.collect { it.id }.findAll { termService.countByCodeSetId(it) }
+    List<UUID> findAllModelIdsWithTreeChildren(List<CodeSet> models) {
+        // CodeSets should never return a tree structure
+        []
     }
 
     @Override

@@ -197,7 +197,7 @@ class TreeItemService {
         ModelService service = modelServices.find { it.handles(modelDomainType) }
         if (!service) throw new ApiBadRequestException('AS01', "ModelService retrieval for model [${modelDomainType}] with no supporting service")
         List<Model> models = service.findAllDocumentationSupersededModels([:])
-        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithChildren(models)
+        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithTreeChildren(models)
         buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager,
                                             getSupersededModelTreeItemsForModels(containerClass, models, modelIdsWithChildren),
                                             true)
@@ -208,7 +208,7 @@ class TreeItemService {
         ModelService service = modelServices.find { it.handles(modelDomainType) }
         if (!service) throw new ApiBadRequestException('AS01', "ModelService retrieval for model [${modelDomainType}] with no supporting service")
         List<Model> models = service.findAllModelSupersededModels([:])
-        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithChildren(models)
+        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithTreeChildren(models)
         buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager,
                                             getSupersededModelTreeItemsForModels(containerClass, models, modelIdsWithChildren),
                                             true)
@@ -220,7 +220,7 @@ class TreeItemService {
         if (!service) throw new ApiBadRequestException('AS01', "ModelService retrieval for model [${modelDomainType}] with no supporting service")
         List<Model> models = service.findAllDeletedModels([:])
         List<UUID> supersededModels = service.findAllSupersededModelIds(models)
-        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithChildren(models)
+        List<UUID> modelIdsWithChildren = service.findAllModelIdsWithTreeChildren(models)
         List<ModelTreeItem> modelTreeItems = getModelTreeItemsForModels(containerClass, models, modelIdsWithChildren, supersededModels)
         buildContainerTreeForModelTreeItems(containerClass, userSecurityPolicyManager, modelTreeItems, true)
     }
@@ -264,7 +264,7 @@ class TreeItemService {
             log.debug('Readable models took: {}', Utils.timeTaken(start1))
 
             long start2 = System.currentTimeMillis()
-            List<UUID> modelsWithChildren = service.findAllModelIdsWithChildren(readableModels)
+            List<UUID> modelsWithChildren = service.findAllModelIdsWithTreeChildren(readableModels)
             log.debug('Identifying models with children took: {}', Utils.timeTaken(start2))
 
             long start3 = System.currentTimeMillis()

@@ -49,7 +49,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract List<K> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:])
 
-    abstract List<UUID> findAllModelIdsWithChildren(List<K> models)
+    abstract List<UUID> findAllModelIdsWithTreeChildren(List<K> models)
 
     abstract void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink)
 

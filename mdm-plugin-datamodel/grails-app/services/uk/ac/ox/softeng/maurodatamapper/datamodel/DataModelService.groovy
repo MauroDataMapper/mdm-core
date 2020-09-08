@@ -737,7 +737,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    List<UUID> findAllModelIdsWithChildren(List<DataModel> models) {
+    List<UUID> findAllModelIdsWithTreeChildren(List<DataModel> models) {
         models.collect { it.id }.findAll { dataClassService.countByDataModelId(it) }
     }
 
