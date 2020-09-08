@@ -121,10 +121,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     Version getNextModelVersion(K model, Version requestedModelVersion, VersionChangeType requestedVersionChangeType) {
-        if (!requestedModelVersion && !model.modelVersion && !requestedVersionChangeType) {
-            // No supplied version
-            return Version.from('1.0.0')
-        } else if (requestedModelVersion) {
+
+        if (requestedModelVersion) {
             // Prefer requested model version
             return requestedModelVersion
         }
@@ -141,16 +139,17 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             // Increment the parent version by that amount
             switch (requestedVersionChangeType) {
                 case VersionChangeType.MAJOR:
-                    return parentModelVersion.nextMajorVersion()
+                    return Version.nextMajorVersion(parentModelVersion)
                     break
                 case VersionChangeType.MINOR:
-                    return parentModelVersion.nextMinorVersion()
+                    return Version.nextMinorVersion(parentModelVersion)
                     break
                 case VersionChangeType.PATCH:
-                    return parentModelVersion.nextPatchVersion()
+                    return Version.nextPatchVersion(parentModelVersion)
                     break
             }
         }
-        Version.from('1.0.0')
+        // If no requested version change type then just increment by the next major version
+        Version.nextMajorVersion(parentModelVersion)
     }
 }
