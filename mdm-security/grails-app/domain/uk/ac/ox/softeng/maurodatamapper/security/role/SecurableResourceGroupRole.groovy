@@ -102,6 +102,10 @@ class SecurableResourceGroupRole implements EditHistoryAware {
             .eq('securableResourceId', securableResourceId)
     }
 
+    static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceDomainType(String securableResourceDomainType) {
+        by().eq('securableResourceDomainType', securableResourceDomainType)
+    }
+
     static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceId(UUID securableResourceId) {
         by().eq('securableResourceId', securableResourceId)
     }

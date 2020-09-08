@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPo
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
+import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRoleService
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
 
 import grails.core.GrailsApplication
@@ -45,6 +46,7 @@ class BootStrap implements SecurityDefinition {
 
     GroupRoleService groupRoleService
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
+    SecurableResourceGroupRoleService securableResourceGroupRoleService
 
     GrailsApplication grailsApplication
 
@@ -81,6 +83,8 @@ class BootStrap implements SecurityDefinition {
                 checkAndSave(messageSource, admins)
             }
         }
+
+        performPostMigrationChecks()
 
         environments {
             development {
@@ -141,5 +145,12 @@ class BootStrap implements SecurityDefinition {
         }
     }
     def destroy = {
+    }
+
+    void performPostMigrationChecks() {
+        // Update roles after migration for adding can finalise model, SQL already handled finalised models so we just need to worry about branches
+        if (SecurableResourceGroupRole.countByCanFinaliseModelIsNullAndFinalisedModelIsNotNull()) {
+            securableResourceGroupRoleService.updateModelFinalisationCapabilities()
+        }
     }
 }
