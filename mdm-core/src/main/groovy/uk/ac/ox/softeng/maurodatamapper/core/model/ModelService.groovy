@@ -88,6 +88,29 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         thisModel.diff(otherModel)
     }
 
+    K commonAncestor(K leftModel, K rightModel) {
+        if (leftModel.finalised && leftModel.id == rightModel.id) return leftModel
+
+        if (!leftModel.finalised && leftModel.branchName != 'main') {
+            leftModel = get(VersionLinkService.findBySourceModelAndLinkType(leftModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
+        }
+
+        if (!rightModel.finalised && rightModel.branchName != 'main') {
+            rightModel = get(VersionLinkService.findBySourceModelAndLinkType(rightModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
+        }
+
+        return leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
+    }
+
+    K latestVersion(String label) {
+        modelClass.byLabelAndFinalisedAndLatestModelVersion(label).get()
+    }
+
+    Map<String, ObjectDiff<K>> mergeDiff(K leftModel, K rightModel) {
+        def commonAncestor = commonAncestor(leftModel, rightModel)
+        [left: commonAncestor.diff(leftModel), right: commonAncestor.diff(rightModel)]
+    }
+
     @Override
     K checkFacetsAfterImportingCatalogueItem(K catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
@@ -121,7 +144,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     Version getNextModelVersion(K model, Version requestedModelVersion, VersionChangeType requestedVersionChangeType) {
-
         if (requestedModelVersion) {
             // Prefer requested model version
             return requestedModelVersion

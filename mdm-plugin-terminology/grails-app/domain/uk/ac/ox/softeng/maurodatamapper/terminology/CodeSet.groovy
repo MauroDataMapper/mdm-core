@@ -175,6 +175,10 @@ class CodeSet implements Model<CodeSet> {
         }
     }
 
+    static DetachedCriteria<CodeSet> byLabelAndFinalisedAndLatestModelVersion(String label) {
+        by().eq('label', label).eq('finalised', true).order('modelVersion', 'desc')
+    }
+
     static DetachedCriteria<CodeSet> withFilter(DetachedCriteria<CodeSet> criteria, Map filters) {
         if (filters.label) criteria = criteria.ilike('code', "%${filters.code}%")
         if (filters.code) criteria = criteria.ilike('code', "%${filters.code}%")

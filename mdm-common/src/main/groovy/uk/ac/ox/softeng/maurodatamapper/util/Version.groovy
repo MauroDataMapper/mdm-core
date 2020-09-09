@@ -114,10 +114,10 @@ class Version implements Comparable<Version> {
     }
 
     static boolean isVersionable(Path possibleVersionedPath) {
-        possibleVersionedPath.toString().split('/').any {it.toString() ==~ VERSION_PATTERN}
+        possibleVersionedPath.toString().split('/').any { it.toString() ==~ VERSION_PATTERN }
     }
 
     static boolean isVersionable(AssetFile possibleVersionedAssetFile) {
-        possibleVersionedAssetFile.path.split('/').any {it.toString() ==~ VERSION_PATTERN}
+        possibleVersionedAssetFile.path.split('/').any { it.toString() ==~ VERSION_PATTERN }
     }
 }

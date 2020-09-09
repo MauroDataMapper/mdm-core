@@ -273,10 +273,6 @@ class DataModelService extends ModelService<DataModel> {
         DataModel.byDeleted().list(pagination)
     }
 
-    List<DataModel> findAllByLabelAndBranchName(String label, String branchName) {
-        DataModel.findAllByLabelAndBranchName(label, branchName)
-    }
-
     Number countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
         DataModel.countByLabelAndBranchNameAndFinalised(label, branchName, false)
     }
@@ -429,10 +425,10 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, 'main') > 0
+        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, 'main') > 0
 
         DataModel newMainBranchModelVersion
-        if (!mainBranchExistsForLabel) {
+        if (!draftModelOnMainBranchForLabel) {
             newMainBranchModelVersion = copyDataModel(dataModel,
                                                       user,
                                                       copyPermissions,

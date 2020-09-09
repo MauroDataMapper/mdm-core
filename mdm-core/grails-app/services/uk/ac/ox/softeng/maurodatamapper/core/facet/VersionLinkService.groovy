@@ -153,6 +153,7 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         VersionLink.byModelIdAndId(modelId, id).get()
     }
 
+
     VersionLink findBySourceModelAndTargetModelAndLinkType(Model sourceModel, Model targetModel,
                                                            VersionLinkType linkType) {
         VersionLink.bySourceModelAndTargetModelAndLinkType(sourceModel, targetModel, linkType).get()
@@ -235,6 +236,10 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         Model model = service.get(modelId)
         if (!model) throw new ApiBadRequestException('VLS04', "Model of type [${domainType}] id [${modelId}] cannot be found")
         model
+    }
+
+    static VersionLink findBySourceModelAndLinkType(Model sourceModel, VersionLinkType linkType) {
+        VersionLink.bySourceModelAndLinkType(sourceModel, linkType).get()
     }
 
     List<UUID> filterModelIdsWhereModelIdIsDocumentSuperseded(String modelType, List<UUID> modelIds) {

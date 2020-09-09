@@ -567,6 +567,114 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
+    void 'DMSICA01 : test finding common ancestor of two datamodels'() {
+        given:
+        setupData()
+
+        when:
+        DataModel dataModel = dataModelService.get(id)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
+        checkAndSave(dataModel)
+
+        then:
+        dataModel.branchName == 'main'
+
+        when:
+        def left = dataModelService.createNewBranchModelVersion('left', dataModel, admin, false, userSecurityPolicyManager)
+        def right = dataModelService.createNewBranchModelVersion('right', dataModel, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(left)
+        checkAndSave(right)
+        left.modelVersion == null
+        left.branchName == 'left'
+        right.modelVersion == null
+        right.branchName == 'right'
+
+        when:
+        def commonAncestor = dataModelService.commonAncestor(left, right)
+
+        then:
+        commonAncestor.branchName == 'main'
+        commonAncestor.modelVersion == Version.from('1')
+    }
+
+    void 'DMSILV01 : test finding latest version of a datamodel'() {
+        given:
+        setupData()
+
+        when:
+        DataModel dataModel = dataModelService.get(id)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
+        checkAndSave(dataModel)
+
+        then:
+        dataModel.branchName == 'main'
+
+        when:
+        def expectedModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+        def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
+        dataModelService.finaliseModel(expectedModel, admin, null, null)
+        checkAndSave(
+            expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
+        def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(testModel)
+        checkAndSave(draftModel)
+        testModel.modelVersion == null
+        testModel.branchName == 'test'
+        expectedModel.modelVersion == Version.from('2')
+        expectedModel.branchName == 'main'
+        draftModel.modelVersion == null
+        draftModel.branchName == 'main'
+
+        when:
+        def latestVersion = dataModelService.latestVersion(testModel.label)
+
+        then:
+        latestVersion.branchName == 'main'
+        latestVersion.modelVersion == Version.from('2')
+
+        when:
+        latestVersion = dataModelService.latestVersion(draftModel.label)
+
+        then:
+        latestVersion.branchName == 'main'
+        latestVersion.modelVersion == Version.from('2')
+    }
+
+    void 'DMSIMD01 : test finding merge difference between two datamodels'() {
+        given:
+        setupData()
+
+        when:
+        DataModel dataModel = dataModelService.get(id)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
+        checkAndSave(dataModel)
+
+        then:
+        dataModel.branchName == 'main'
+
+        when:
+        def left = dataModelService.createNewBranchModelVersion('left', dataModel, admin, false, userSecurityPolicyManager)
+        def right = dataModelService.createNewBranchModelVersion('right', dataModel, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(left)
+        checkAndSave(right)
+        left.modelVersion == null
+        left.branchName == 'left'
+        right.modelVersion == null
+        right.branchName == 'right'
+
+        when:
+        def mergeDiff = dataModelService.mergeDiff(left, right)
+
+        then:
+        mergeDiff == [left: dataModel.diff(left), right: dataModel.diff(right)]
+    }
+
     void 'DMSV01 : test validation on valid model'() {
         given:
         setupData()

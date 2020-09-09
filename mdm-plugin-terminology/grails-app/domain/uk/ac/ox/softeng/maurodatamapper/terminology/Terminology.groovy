@@ -209,6 +209,10 @@ class Terminology implements Model<Terminology> {
         by().inList('id', ids.toList())
     }
 
+    static DetachedCriteria<Terminology> byLabelAndFinalisedAndLatestModelVersion(String label) {
+        by().eq('label', label).eq('finalised', true).order('modelVersion', 'desc')
+    }
+
     static DetachedCriteria<Terminology> withFilter(DetachedCriteria<Terminology> criteria, Map filters) {
         if (filters.label) criteria = criteria.ilike('label', "%${filters.code}%")
         if (filters.code) criteria = criteria.ilike('code', "%${filters.code}%")

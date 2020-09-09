@@ -252,10 +252,10 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean mainBranchExistsForLabel = countAllByLabelAndBranchNameAndNotFinalised(terminology.label, 'main') > 0
+        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(terminology.label, 'main') > 0
 
         Terminology newMainBranchModelVersion
-        if (!mainBranchExistsForLabel) {
+        if (!draftModelOnMainBranchForLabel) {
             newMainBranchModelVersion = copyTerminology(terminology,
                                                         user,
                                                         copyPermissions,

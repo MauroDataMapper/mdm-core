@@ -36,6 +36,13 @@ class UrlMappings {
                 put '/newDocumentationVersion'(controller: 'dataModel', action: 'newDocumentationVersion')
                 put '/newForkModel'(controller: 'dataModel', action: 'newForkModel') // new URL
 
+                /*
+                Version Control
+                 */
+                get "/commonAncestor/$otherModelId"(controller: 'dataModel', action: 'commonAncestor')
+                get '/latestVersion'(controller: 'dataModel', action: 'latestVersion')
+                get "/mergeDiff/$otherModelId"(controller: 'dataModel', action: 'mergeDiff')
+
                 get "/diff/$otherModelId"(controller: 'dataModel', action: 'diff')
                 get "/suggestLinks/$otherModelId"(controller: 'dataModel', action: 'suggestLinks')
                 put "/folder/$folderId"(controller: 'dataModel', action: 'changeFolder')

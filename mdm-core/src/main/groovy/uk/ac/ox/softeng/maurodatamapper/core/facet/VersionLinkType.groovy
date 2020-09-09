@@ -25,7 +25,7 @@ enum VersionLinkType {
     NEW_FORK_OF('New Fork Of'),
     SUPERSEDED_BY_DOCUMENTATION('Superseded By Documentation'),
     NEW_DOCUMENTATION_VERSION_OF('New Documentation Version Of'),
-//    SUPERSEDED_BY_MODEL('Superseded By Model'),
+//    SUPERSEDED_BY_MODEL('Superseded By Model'), created in MC-9141 with no intent to use
     NEW_MODEL_VERSION_OF('New Model Version Of')
 
     String label

@@ -30,6 +30,19 @@ class FieldDiff<T> extends Diff<T> {
     }
 
     @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
+
+        FieldDiff<T> fieldDiff = (FieldDiff<T>) o
+
+        if (fieldName != fieldDiff.fieldName) return false
+
+        return true
+    }
+
+    @Override
     Integer getNumberOfDiffs() {
         1
     }

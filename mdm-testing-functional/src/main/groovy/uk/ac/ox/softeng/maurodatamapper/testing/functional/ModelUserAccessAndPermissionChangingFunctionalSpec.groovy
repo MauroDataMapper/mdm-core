@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
@@ -582,5 +581,110 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(id)
         cleanUpRoles(branchId)
         cleanUpRoles(mainBranchId)
+    }
+
+    void 'E26 : test finding common ancestor of two Model<T> (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when: 'logged in as editor'
+        GET("$leftId/commonAncestor/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().label == validJson.label
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(leftId)
+        removeValidIdObjectUsingTransaction(rightId)
+        removeValidIdObject(id)
+        removeValidIdObject(leftId)
+        removeValidIdObject(rightId)
+    }
+
+    void 'E27 : test finding latest version of a Model<T> (as editor)'() {
+        /*
+        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String expectedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$expectedId/finalise", [:])
+        verifyResponse OK, response
+        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        GET("$newBranchId/latestVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == expectedId
+        responseBody().label.contains('Functional Test ')
+
+        when:
+        GET("$latestDraftId/latestVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == expectedId
+        responseBody().label.contains('Functional Test ')
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(expectedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        removeValidIdObject(id)
+        removeValidIdObject(newBranchId)
+        removeValidIdObject(expectedId)
+        removeValidIdObject(latestDraftId)
+    }
+
+    void 'E28 : test finding merge difference of two Model<T> (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when:
+        GET("$leftId/mergeDiff/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().left.leftId == id
+        responseBody().left.rightId == leftId
+        responseBody().right.leftId == id
+        responseBody().right.rightId == rightId
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(leftId)
+        removeValidIdObjectUsingTransaction(rightId)
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObject(leftId)
+        removeValidIdObject(rightId)
+        removeValidIdObject(id)
     }
 }
