@@ -1,9 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
+
 import javax.servlet.http.HttpSession
 
 model {
     Collection<HttpSession> httpSessionCollection
+    SessionService sessionService
 }
 json {
-    count httpSessionCollection?.size() ?: 0
+    countAuthorised httpSessionCollection.findAll( { ((it.servletContext.getAttribute('activeSessionMap') as HashMap<String, HttpSession>).get(it.id)).getAttribute('emailAddress') }).size() ?: 0
+    countUnauthorised httpSessionCollection.findAll( { !((it.servletContext.getAttribute('activeSessionMap') as HashMap<String, HttpSession>).get(it.id)).getAttribute('emailAddress') }).size() ?: 0
     items g.render(httpSessionCollection ?: [])
 }
