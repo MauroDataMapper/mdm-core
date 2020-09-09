@@ -88,7 +88,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
         thrown(InternalSpockError)
         domain.hasErrors()
         domain.errors.errorCount == 1
-        domain.errors.getFieldError('modelType').code == 'blank'
+        domain.errors.getFieldError('modelType').code == 'nullable'
     }
 
     void 'M02 : test creating model with same label is not allowed'() {

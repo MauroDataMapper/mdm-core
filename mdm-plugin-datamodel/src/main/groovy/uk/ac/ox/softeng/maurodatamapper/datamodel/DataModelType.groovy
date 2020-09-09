@@ -35,7 +35,11 @@ enum DataModelType {
     }
 
     static DataModelType findForLabel(String label) {
-        values().find {it.label.equalsIgnoreCase(label)}
+        values().find { it.label.equalsIgnoreCase(label) }
+    }
+
+    static DataModelType findFor(String value) {
+        value ? findForLabel(value) ?: valueOf(value) : null
     }
 
     @Deprecated(forRemoval = true)
@@ -45,7 +49,7 @@ enum DataModelType {
     }
 
     static List<String> labels() {
-        values().collect {it.label}.sort()
+        values().collect { it.label }.sort()
     }
 
     static DataModelType findFromMap(def map) {
