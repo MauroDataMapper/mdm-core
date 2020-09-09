@@ -121,7 +121,7 @@ class AuthenticatingFunctionalSpec extends FunctionalSpec {
         verifyResponse OK, response
 
         and:
-        response.body().count > 0
+        response.body().countAuthorised + response.body().countUnauthorised > 0
 
         when:
         String sessionId = currentCookie.getValue()

@@ -52,7 +52,7 @@ class SessionFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse OK, response
 
         and:
-        response.body().count > 0
+        response.body().countAuthorised + response.body().countUnauthorised > 0
 
         when:
         Map info = response.body().items.find {it.id == sessionId}
