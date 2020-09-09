@@ -583,57 +583,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(mainBranchId)
     }
 
-    void 'E19f : test creating and finalising a chain of new branch model versions on main branch of Model<T> (as editor)'() {
-        given:
-        String id = getValidFinalisedId()
-
-        when: 'logged in as editor'
-        loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
-
-        then:
-        verifyResponse CREATED, response
-        responseBody().id != id
-        responseBody().label == validJson.label
-        responseBody().documentationVersion == '1.0.0'
-        responseBody().branchName == 'main'
-        !responseBody().modelVersion
-
-        when:
-        String draftId = responseBody().id
-        GET("$draftId/versionLinks")
-
-        then:
-        verifyResponse OK, response
-        responseBody().count == 1
-        responseBody().items.first().domainType == 'VersionLink'
-        responseBody().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
-        responseBody().items.first().sourceModel.id == draftId
-        responseBody().items.first().targetModel.id == id
-        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
-
-        when:
-        PUT("$draftId/finalise", [:])
-        verifyResponse OK, response
-        PUT("$draftId/newBranchModelVersion", [branchName: 'main'])
-
-        then:
-        verifyResponse CREATED, response
-        responseBody().id != draftId
-        responseBody().label.contains('Functional Test ')
-        responseBody().branchName == 'main'
-        responseBody().modelVersion == null
-        String finalId = responseBody().id
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(draftId)
-        removeValidIdObjectUsingTransaction(finalId)
-        removeValidIdObject(id)
-        removeValidIdObject(draftId)
-        removeValidIdObject(finalId)
-    }
-
     void 'E26 : test finding common ancestor of two Model<T> (as editor)'() {
         given:
         String id = getValidFinalisedId()

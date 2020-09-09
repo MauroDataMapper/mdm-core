@@ -731,10 +731,10 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         then:
         verifyResponse OK, response
-        responseBody().left.leftIdentifier == id
-        responseBody().left.rightIdentifier == leftId
-        responseBody().right.leftIdentifier == id
-        responseBody().right.rightIdentifier == rightId
+        responseBody().left.leftId == id
+        responseBody().left.rightId == leftId
+        responseBody().right.leftId == id
+        responseBody().right.rightId == rightId
 
         cleanup:
         cleanUpData(leftId)
