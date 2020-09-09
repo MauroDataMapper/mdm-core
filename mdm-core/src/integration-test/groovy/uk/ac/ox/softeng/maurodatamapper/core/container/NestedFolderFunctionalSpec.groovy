@@ -220,11 +220,5 @@ class NestedFolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
-
-        when:
-        GET(id)
-
-        then:
-        verifyResponse HttpStatus.NOT_FOUND, response
     }
 }
