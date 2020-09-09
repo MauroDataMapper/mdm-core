@@ -18,9 +18,13 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
+import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -30,6 +34,7 @@ import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -60,6 +65,12 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     UUID otherTerminologyId
 
     @Shared
+    UUID simpleTerminologyId
+
+    @Shared
+    UUID complexTerminologyId
+
+    @Shared
     UUID codeSetId
 
     @Shared
@@ -67,6 +78,9 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
     @Shared
     Folder folder
+
+    @Autowired
+    TerminologyService terminologyService
 
     @OnceBefore
     @Transactional
@@ -83,13 +97,16 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
                                             folder: folder, authority: testAuthority).save(flush: true)
         terminologyId = terminology.id
         otherTerminologyId = new Terminology(label: 'Functional Test Terminology 2', createdBy: FUNCTIONAL_TEST,
-                                         folder: folder, authority: testAuthority).save(flush: true).id
+                                             folder: folder, authority: testAuthority).save(flush: true).id
 
         CodeSet codeSet = new CodeSet(label: 'Functional Test CodeSet', createdBy: FUNCTIONAL_TEST,
-                folder: folder, authority: testAuthority).save(flush: true)
+                                      folder: folder, authority: testAuthority).save(flush: true)
         codeSetId = codeSet.id
         otherCodeSetId = new CodeSet(label: 'Functional Test CodeSet 2', createdBy: FUNCTIONAL_TEST,
-                folder: folder, authority: testAuthority).save(flush: true).id
+                                     folder: folder, authority: testAuthority).save(flush: true).id
+
+        complexTerminologyId = BootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, testAuthority).id
+        simpleTerminologyId = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, testAuthority).id
 
         sessionFactory.currentSession.flush()
     }
@@ -97,8 +114,13 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec')
-        cleanUpResources(Terminology, CodeSet, Folder)
+        cleanUpResources(Terminology, CodeSet, Folder, Classifier)
         Authority.findByLabel('Test Authority').delete(flush: true)
+    }
+
+    @Transactional
+    String getTermIdByCode(UUID terminologyId, String code) {
+        Term.byTerminologyIdAndCode(terminologyId, code).get().id
     }
 
     @Override
@@ -119,7 +141,19 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "hasChildren": true,
     "deleted": false,
     "children": [
-            {
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Complex Test Terminology",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
+      },
+      {
         "id": "${json-unit.matches:id}",
         "domainType": "CodeSet",
         "label": "Functional Test CodeSet",
@@ -166,6 +200,18 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Terminology"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Simple Test Terminology",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
       }
     ]
   }
@@ -177,7 +223,29 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET('classifiers', STRING_ARG)
 
         then:
-        verifyJsonResponse(OK, '''[]''')
+        verifyJsonResponse(OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Classifier",
+    "label": "test classifier",
+    "hasChildren": false,
+    "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Classifier",
+    "label": "test classifier simple",
+    "hasChildren": false,
+    "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Classifier",
+    "label": "test classifier2",
+    "hasChildren": false,
+    "deleted": false
+  }
+]''')
     }
 
     void 'T03 : test tree for terminology with no content'() {
@@ -188,7 +256,71 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyJsonResponse(OK, '''[]''')
     }
 
-    void 'T04 : test terminology documentation superseded models arent shown in the tree'() {
+    void 'T04a : test tree for terminology with content'() {
+        when:
+        GET("folders/terminologies/${complexTerminologyId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, getCttTree())
+    }
+
+    void 'T04b : test term tree for terminology with content'() {
+        when:
+        GET("terminologies/${complexTerminologyId}/terms/tree", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse(OK, getCttTree())
+    }
+
+    void 'T05a : test tree for term CTT00'() {
+        given:
+        String termId = getTermIdByCode(complexTerminologyId, 'CTT00')
+
+
+        when:
+        GET("folders/terms/${termId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, getCtt00Tree())
+    }
+
+    void 'T05b : test term tree endpoint for term CTT00'() {
+        given:
+        String termId = getTermIdByCode(complexTerminologyId, 'CTT00')
+
+
+        when:
+        GET("terminologies/${complexTerminologyId}/terms/tree/${termId}", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse(OK, getCtt00Tree())
+    }
+
+    void 'T06a : test tree for term CTT20'() {
+        given:
+        String termId = getTermIdByCode(complexTerminologyId, 'CTT20')
+
+
+        when:
+        GET("folders/terms/${termId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, getCtt20Tree())
+    }
+
+    void 'T06b : test term tree endpoint for term CTT20'() {
+        given:
+        String termId = getTermIdByCode(complexTerminologyId, 'CTT20')
+
+
+        when:
+        GET("terminologies/${complexTerminologyId}/terms/tree/${termId}", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse(OK, getCtt20Tree())
+    }
+
+    void 'T07 : test terminology documentation superseded models arent shown in the tree'() {
         given: 'document superseded models created'
         // Create new model
         POST("folders/${folder.id}/terminologies", [
@@ -214,7 +346,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 5
+        localResponse.body().first().children.size() == 7
 
         when:
         List<Map> children = localResponse.body().first().children
@@ -240,7 +372,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanUpData(firstId, 'terminologies')
     }
 
-    void 'T05 : terminology test model version superseded models arent shown in the tree'() {
+    void 'T08 : terminology test model version superseded models arent shown in the tree'() {
         given: 'model version superseded is created'
         // Create model
         POST("folders/${folder.id}/terminologies", [
@@ -265,7 +397,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'We should have the finalised version and the new branch'
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 6
+        localResponse.body().first().children.size() == 8
 
         when:
         List<Map> children = localResponse.body().first().children
@@ -297,7 +429,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'We should have the second finalised version only'
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 5
+        localResponse.body().first().children.size() == 7
 
         when:
         children = localResponse.body().first().children
@@ -323,7 +455,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanUpData(secondId, 'terminologies')
     }
 
-    void 'T06 : test tree for codesets with no content'() {
+    void 'T09 : test tree for codesets with no content'() {
         when:
         GET("folders/codeSets/${codeSetId}", STRING_ARG)
 
@@ -331,7 +463,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyJsonResponse(OK, '''[]''')
     }
 
-    void 'T07 : test codeset documentation superseded models arent shown in the tree'() {
+    void 'T10 : test codeset documentation superseded models arent shown in the tree'() {
         given: 'document superseded models created'
         // Create new model
         POST("folders/${folder.id}/codeSets", [
@@ -357,7 +489,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 5
+        localResponse.body().first().children.size() == 7
 
         when:
         List<Map> children = localResponse.body().first().children
@@ -383,7 +515,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanUpData(firstId, 'codeSets')
     }
 
-    void 'T08 : test codeset model version superseded models arent shown in the tree'() {
+    void 'T11 : test codeset model version superseded models arent shown in the tree'() {
         given: 'model version superseded is created'
         // Create model
         POST("folders/${folder.id}/codeSets", [
@@ -408,7 +540,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'We should have the finalised version and the new branch'
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 6
+        localResponse.body().first().children.size() == 8
 
         when:
         List<Map> children = localResponse.body().first().children
@@ -440,7 +572,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'We should have the second finalised version only'
         localResponse.body().size() == 1
-        localResponse.body().first().children.size() == 5
+        localResponse.body().first().children.size() == 7
 
         when:
         children = localResponse.body().first().children
@@ -824,5 +956,223 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         if (!id) return
         DELETE("$endpoint/$id?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    String getCttTree() {
+        '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT100: Complex Test Term 100",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT00: Complex Test Term 00",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  }
+]'''
+    }
+
+    String getCtt00Tree() {
+        '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT1: Complex Test Term 1",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT2: Complex Test Term 2",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT3: Complex Test Term 3",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT4: Complex Test Term 4",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT5: Complex Test Term 5",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT6: Complex Test Term 6",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT7: Complex Test Term 7",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT8: Complex Test Term 8",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT9: Complex Test Term 9",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT10: Complex Test Term 10",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT20: Complex Test Term 20",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT30: Complex Test Term 30",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT40: Complex Test Term 40",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT50: Complex Test Term 50",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT60: Complex Test Term 60",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT70: Complex Test Term 70",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT80: Complex Test Term 80",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT90: Complex Test Term 90",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  }
+]'''
+    }
+
+    String getCtt20Tree() {
+        '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT21: Complex Test Term 21",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT22: Complex Test Term 22",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT23: Complex Test Term 23",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT24: Complex Test Term 24",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT25: Complex Test Term 25",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT26: Complex Test Term 26",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT27: Complex Test Term 27",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT28: Complex Test Term 28",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT29: Complex Test Term 29",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  }
+]'''
     }
 }

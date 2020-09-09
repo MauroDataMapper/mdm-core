@@ -455,8 +455,9 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(Terminology catalogueItem) {
-        termService.findAllWhereRootTermOfTerminologyId(catalogueItem.id)
+    List<ModelItem> findAllTreeTypeModelItemsIn(Terminology terminology) {
+        List<Term> terms = termService.findAllByTerminologyIdAndDepth(terminology.id, 1)
+        termService.updateChildKnowledge(terms)
     }
 
     @Override

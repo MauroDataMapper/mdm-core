@@ -240,6 +240,10 @@ class Term implements ModelItem<Term, Terminology> {
         byTerminologyId(terminologyId).eq('code', code)
     }
 
+    static DetachedCriteria<Term> byTerminologyIdAndDepth(UUID terminologyId, Integer depth) {
+        byTerminologyId(terminologyId).eq('depth', depth)
+    }
+
     static DetachedCriteria<Term> byTerminologyIdAndId(UUID terminologyId, UUID id) {
         byTerminologyId(terminologyId).idEq(id)
     }

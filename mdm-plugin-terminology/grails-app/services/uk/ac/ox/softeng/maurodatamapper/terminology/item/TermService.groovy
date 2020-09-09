@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeIt
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
@@ -44,6 +45,7 @@ class TermService extends ModelItemService<Term> {
 
     TermRelationshipService termRelationshipService
     MessageSource messageSource
+    TerminologyService terminologyService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -189,19 +191,6 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(Term term) {
-        TermRelationship.byTermIdIsParent(term.id)
-            .join('sourceTerm')
-            .join('targetTerm')
-            .list()
-            .collect { tr ->
-                if (tr.relationshipType.parentalRelationship) tr.sourceTerm
-                else if (tr.relationshipType.childRelationship) tr.targetTerm
-                else null
-            }.findAll()
-    }
-
-    @Override
     Term findByIdJoinClassifiers(UUID id) {
         Term.findById(id, [fetch: [classifiers: 'join']])
     }
@@ -300,54 +289,13 @@ class TermService extends ModelItemService<Term> {
         if (!term) {
             log.debug('No term provided so providing top level tree')
 
-            List<Term> terms = Term.findAllByTerminologyAndDepth(terminology, 1)
-            List<TermRelationship> childKnowledge = obtainChildKnowledge(terms)
-            Set<String> hasChildren = []
-            childKnowledge.each { relationship ->
-                if (relationship.relationshipType.childRelationship) {
-                    hasChildren += relationship.targetTerm.code
-                } else if (relationship.relationshipType.parentalRelationship) {
-                    hasChildren += relationship.sourceTerm.code
-                }
-            }
-            tree = terms.collect { root ->
-                new ModelItemTreeItem(root, hasChildren.contains(root.code))
-            }.toSet()
+            List<Term> terms = terminologyService.findAllTreeTypeModelItemsIn(terminology) as List<Term>
+            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren()) }.toSet()
         } else {
             int depth = term.depth
             log.debug('Term provided, building tree at depth {}', depth)
-
-            log.debug('Building source as parent relationships')
-            Set<Term> terms = TermRelationship.bySourceTermIdAndParental(term.id)
-                .join('targetTerm')
-                .list()
-                .collect { it.targetTerm }.toSet()
-
-            List<TermRelationship> childKnowledge = obtainChildKnowledge(terms.asList())
-            Set<String> hasChildren = []
-            childKnowledge.each { relationship ->
-                if (relationship.relationshipType.childRelationship) {
-                    hasChildren += relationship.targetTerm.code
-                } else if (relationship.relationshipType.parentalRelationship) {
-                    hasChildren += relationship.sourceTerm.code
-                }
-            }
-            tree = terms.collect { parent ->
-                new ModelItemTreeItem(parent, hasChildren.contains(parent.code))
-            }.toSet()
-
-            log.debug('Building source as child relationships')
-            terms = TermRelationship.byTargetTermIdAndChild(term.id)
-                .join('sourceTerm')
-                .list()
-                .collect { it.sourceTerm }
-            childKnowledge = obtainChildKnowledge(terms.asList())
-
-            terms.each { parent ->
-                if (!hasParentToRelationship(parent, term)) {
-                    tree.add(new ModelItemTreeItem(parent, hasChild(parent, childKnowledge)))
-                }
-            }
+            List<Term> terms = findAllTreeTypeModelItemsIn(term) as List<Term>
+            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren()) }.toSet()
         }
 
         List<ModelItemTreeItem> sortedTree = tree.sort()
@@ -355,13 +303,43 @@ class TermService extends ModelItemService<Term> {
         sortedTree
     }
 
-    private Boolean hasParentToRelationship(Term parent, Term child) {
-        parent.sourceTermRelationships.any { it.sourceIsParentToTarget() && it.targetTerm == child }
+    @Override
+    List<ModelItem> findAllTreeTypeModelItemsIn(Term term) {
+        log.debug('Building source as parent relationships')
+        Set<Term> sourceAsParentTerms = TermRelationship.bySourceTermIdAndParental(term.id)
+            .join('targetTerm')
+            .list()
+            .collect { it.targetTerm }.toSet()
+
+        Set<Term> treeTerms = updateChildKnowledge(sourceAsParentTerms)
+
+        log.debug('Building source as child relationships')
+        Set<Term> sourceAsChildTerms = TermRelationship.byTargetTermIdAndChild(term.id)
+            .join('sourceTerm')
+            .list()
+            .collect { it.sourceTerm }.toSet()
+
+        treeTerms.addAll(updateChildKnowledge(sourceAsChildTerms))
+        treeTerms.toList() as List<ModelItem>
     }
 
-    private List<TermRelationship> obtainChildKnowledge(List<Term> parents) {
+    List<TermRelationship> obtainChildKnowledge(Collection<Term> parents) {
         if (!parents) return []
-        TermRelationship.byTermsAreParents(parents).list()
+        TermRelationship.byTermsAreParents(parents.toList()).list()
+    }
+
+    Collection<Term> updateChildKnowledge(Collection<Term> terms) {
+        List<TermRelationship> childKnowledge = obtainChildKnowledge(terms)
+        terms.each { it.isParent = hasChild(it, childKnowledge) }
+        terms
+    }
+
+    List<Term> findAllByTerminologyIdAndDepth(UUID terminologyId, Integer depth) {
+        Term.byTerminologyIdAndDepth(terminologyId, depth).list()
+    }
+
+    private Boolean hasParentToRelationship(Term parent, Term child) {
+        parent.sourceTermRelationships.any { it.sourceIsParentToTarget() && it.targetTerm == child }
     }
 
     private boolean hasChild(Term parent, List<TermRelationship> knowledge) {
