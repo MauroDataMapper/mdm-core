@@ -118,7 +118,9 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         controller.authenticatingService = Mock(AuthenticatingService) {
             1 * isAuthenticatedSession(_) >> false
             1 * authenticateAndObtainUser(admin.emailAddress, 'password', null) >> admin
-            1 * registerUserAsLoggedIn(_, _) >> {u, s -> sessionService.setUserEmailAddress(s, u.emailAddress)}
+            1 * registerUserAsLoggedIn(_, _) >> {u, s -> sessionService.setUserEmailAddress(s, u.emailAddress)
+                                                         sessionService.setUserName(s, u.firstName, u.lastName)
+                                                         sessionService.setUserOrganisation(s,u.organisation)}
             1 * buildUserSecurityPolicyManager(_)
         }
 
@@ -184,6 +186,8 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         when:
         sessionService.setUserEmailAddress(session, reader.emailAddress)
+        sessionService.setUserName(session, reader.firstName, reader.lastName)
+        sessionService.setUserOrganisation(session, reader.organisation)
         request.method = 'GET'
         controller.logout()
 

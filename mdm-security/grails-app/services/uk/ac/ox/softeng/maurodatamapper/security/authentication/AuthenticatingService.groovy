@@ -75,6 +75,8 @@ class AuthenticatingService {
     void registerUserAsLoggedIn(CatalogueUser catalogueUser, HttpSession httpSession) {
         catalogueUserService.setUserLastLoggedIn(catalogueUser)
         sessionService.setUserEmailAddress(httpSession, catalogueUser.emailAddress)
+        sessionService.setUserName(httpSession,catalogueUser.firstName, catalogueUser.lastName)
+        sessionService.setUserOrganisation(httpSession,catalogueUser.organisation)
         log.debug("${httpSession.id}:${catalogueUser.emailAddress} logged in")
     }
 

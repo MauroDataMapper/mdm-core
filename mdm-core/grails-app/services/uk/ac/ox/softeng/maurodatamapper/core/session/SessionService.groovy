@@ -38,6 +38,18 @@ class SessionService implements HttpSessionListener {
         storeSession(session)
     }
 
+    HttpSession setUserName(HttpSession session, String firstName, String lastName) {
+        if (isInvalidatedSession(session)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
+        session.setAttribute('userName', firstName + ' ' + lastName)
+        storeSession(session)
+    }
+
+    HttpSession setUserOrganisation(HttpSession session, String organisation) {
+        if (isInvalidatedSession(session)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
+        session.setAttribute('userOrganisation', organisation)
+        storeSession(session)
+    }
+
     HttpSession setLastAccessedUrl(HttpSession session, String lastAccessedUrl) {
         if (isInvalidatedSession(session)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
         session.setAttribute('lastUrl', lastAccessedUrl)
