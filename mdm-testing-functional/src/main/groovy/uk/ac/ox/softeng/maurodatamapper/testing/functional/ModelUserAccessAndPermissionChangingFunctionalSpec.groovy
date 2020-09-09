@@ -583,7 +583,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(mainBranchId)
     }
 
-    void 'E25a : test creating a new branch model version on main of a Model<T> (as editor)'() {
+    void 'E19f : test creating and finalising a chain of new branch model versions on main branch of Model<T> (as editor)'() {
         given:
         String id = getValidFinalisedId()
 
@@ -593,43 +593,45 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse CREATED, response
-        response.body().id != id
-        response.body().label.contains('Functional Test ')
-        response.body().documentationVersion == '1.0.0'
-        response.body().branchName == 'main'
-        response.body().modelVersion == null
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'main'
+        !responseBody().modelVersion
 
         when:
-        String newId = response.body().id
-        GET("$newId/versionLinks")
+        String draftId = responseBody().id
+        GET("$draftId/versionLinks")
 
         then:
         verifyResponse OK, response
-        response.body().count == 1
-        response.body().items.first().domainType == 'VersionLink'
-        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
-        response.body().items.first().sourceModel.id == newId
-        response.body().items.first().targetModel.id == id
-        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == draftId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
 
         when:
-        PUT("$newId/finalise", [:])
+        PUT("$draftId/finalise", [:])
         verifyResponse OK, response
-        PUT("$newId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$draftId/newBranchModelVersion", [branchName: 'main'])
 
         then:
         verifyResponse CREATED, response
-        response.body().id != newId
-        response.body().label.contains('Functional Test ')
-        response.body().branchName == 'main'
-        response.body().modelVersion == null
-        String finalId = response.body().id
+        responseBody().id != draftId
+        responseBody().label.contains('Functional Test ')
+        responseBody().branchName == 'main'
+        responseBody().modelVersion == null
+        String finalId = responseBody().id
 
         cleanup:
-        removeValidIdObjectUsingTransaction(newId)
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(draftId)
         removeValidIdObjectUsingTransaction(finalId)
         removeValidIdObject(id)
-        removeValidIdObject(newId)
+        removeValidIdObject(draftId)
+        removeValidIdObject(finalId)
     }
 
     void 'E26 : test finding common ancestor of two Model<T> (as editor)'() {
@@ -638,20 +640,21 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         loginEditor()
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
-        String leftId = response.body().id
+        String leftId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'right'])
         verifyResponse CREATED, response
-        String rightId = response.body().id
+        String rightId = responseBody().id
 
         when: 'logged in as editor'
         GET("$leftId/commonAncestor/$rightId")
 
         then:
         verifyResponse OK, response
-        response.body().id == id
-        response.body().label.contains('Functional Test ')
+        responseBody().id == id
+        responseBody().label == validJson.label
 
         cleanup:
+        removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
         removeValidIdObject(id)
@@ -660,38 +663,43 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     }
 
     void 'E27 : test finding latest version of a Model<T> (as editor)'() {
+        /*
+        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
         given:
         String id = getValidFinalisedId()
         loginEditor()
         PUT("$id/newBranchModelVersion", [branchName: 'main'])
         verifyResponse CREATED, response
-        String expectedId = response.body().id
+        String expectedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
-        String newBranchId = response.body().id
+        String newBranchId = responseBody().id
         PUT("$expectedId/finalise", [:])
         verifyResponse OK, response
         PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
         verifyResponse CREATED, response
-        String latestDraftId = response.body().id
+        String latestDraftId = responseBody().id
 
         when: 'logged in as editor'
         GET("$newBranchId/latestVersion")
 
         then:
         verifyResponse OK, response
-        response.body().id == expectedId
-        response.body().label.contains('Functional Test ')
+        responseBody().id == expectedId
+        responseBody().label.contains('Functional Test ')
 
         when:
         GET("$latestDraftId/latestVersion")
 
         then:
         verifyResponse OK, response
-        response.body().id == expectedId
-        response.body().label.contains('Functional Test ')
+        responseBody().id == expectedId
+        responseBody().label.contains('Functional Test ')
 
         cleanup:
+        removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(newBranchId)
         removeValidIdObjectUsingTransaction(expectedId)
         removeValidIdObjectUsingTransaction(latestDraftId)
@@ -701,10 +709,33 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObject(latestDraftId)
     }
 
-    void 'E28 : test finding merge difference of a Model<T> (as editor)'() {
+    void 'E28 : test finding merge difference of two Model<T> (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
         when:
-        false
+        GET("$leftId/mergeDiff/$rightId")
+
         then:
-        false
+        verifyResponse OK, response
+        responseBody().left.leftId == id
+        responseBody().left.rightId == leftId
+        responseBody().right.leftId == id
+        responseBody().right.rightId == rightId
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(leftId)
+        removeValidIdObjectUsingTransaction(rightId)
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObject(leftId)
+        removeValidIdObject(rightId)
+        removeValidIdObject(id)
     }
 }
