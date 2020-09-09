@@ -98,6 +98,22 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
         }
         securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
+
+        if (securableResource.hasProperty('groups') && securableResource.groups && securableResource.groups.size() > 0) {
+            log.debug("addSecurityForSecurableResource resource has ${securableResource.groups.size().toString()} groups")
+            securableResource.groups.each {
+                log.debug("${it.toMapString()}")
+                String groupRoleId = it.groupRoleId
+                
+                //controlGroup = userGroupService.get(it.groupId)
+                //role = groupRoleService.get(it.groupRoleId)
+
+                log.debug("create and save for ${it.groupId} ${it.groupRoleId}")
+                //securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
+            }
+
+        }
+        
         refreshUserSecurityPolicyManager(catalogueUser)
     }
 

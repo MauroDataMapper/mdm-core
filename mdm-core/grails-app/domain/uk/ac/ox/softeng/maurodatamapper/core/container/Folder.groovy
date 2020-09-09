@@ -40,6 +40,8 @@ class Folder implements Container {
     Boolean deleted
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers
+    List<Map> groups
+    static transients = ['groups']
 
     Folder parentFolder
 
