@@ -89,17 +89,18 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K commonAncestor(K leftModel, K rightModel) {
-        if (leftModel.finalised && leftModel.id == rightModel.id) return leftModel
-
-        if (!leftModel.finalised && leftModel.branchName != 'main') {
+        // If left isnt finalised then get it's finalised parent
+        if (!leftModel.finalised) {
             leftModel = get(VersionLinkService.findBySourceModelAndLinkType(leftModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
         }
 
-        if (!rightModel.finalised && rightModel.branchName != 'main') {
+        // If right isnt finalised then get it's finalised parent
+        if (!rightModel.finalised) {
             rightModel = get(VersionLinkService.findBySourceModelAndLinkType(rightModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
         }
 
-        return leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
+        // Choose the finalised parent with the lowest model version
+        leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
     }
 
     K latestVersion(String label) {

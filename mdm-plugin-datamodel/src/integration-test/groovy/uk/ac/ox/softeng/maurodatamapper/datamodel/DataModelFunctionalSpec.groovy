@@ -765,7 +765,58 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String rightId = responseBody().id
 
         when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        String mainId = responseBody().items.find {
+            it.label == 'Functional Test Model' &&
+            !(it.id in [id, leftId, rightId])
+        }?.id
+        mainId
+
+        when: 'check CA between L and R'
         GET("$leftId/commonAncestor/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().label == 'Functional Test Model'
+
+        when: 'check CA between R and L'
+        GET("$rightId/commonAncestor/$leftId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().label == 'Functional Test Model'
+
+        when: 'check CA between L and M'
+        GET("$leftId/commonAncestor/$mainId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().label == 'Functional Test Model'
+
+        when: 'check CA between M and L'
+        GET("$mainId/commonAncestor/$leftId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().label == 'Functional Test Model'
+
+        when: 'check CA between M and R'
+        GET("$mainId/commonAncestor/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().label == 'Functional Test Model'
+
+        when: 'check CA between R and M'
+        GET("$rightId/commonAncestor/$mainId")
 
         then:
         verifyResponse OK, response
@@ -775,6 +826,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData(leftId)
         cleanUpData(rightId)
+        cleanUpData(mainId)
         cleanUpData(id)
     }
 
@@ -835,6 +887,17 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String rightId = responseBody().id
 
         when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        String mainId = responseBody().items.find {
+            it.label == 'Functional Test Model' &&
+            !(it.id in [id, leftId, rightId])
+        }?.id
+        mainId
+
+        when:
         GET("$leftId/mergeDiff/$rightId")
 
         then:
@@ -844,7 +907,28 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().right.leftId == id
         responseBody().right.rightId == rightId
 
+        when:
+        GET("$leftId/mergeDiff/$mainId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().left.leftId == id
+        responseBody().left.rightId == leftId
+        responseBody().right.leftId == id
+        responseBody().right.rightId == mainId
+
+        when:
+        GET("$rightId/mergeDiff/$mainId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().left.leftId == id
+        responseBody().left.rightId == rightId
+        responseBody().right.leftId == id
+        responseBody().right.rightId == mainId
+
         cleanup:
+        cleanUpData(mainId)
         cleanUpData(leftId)
         cleanUpData(rightId)
         cleanUpData(id)
