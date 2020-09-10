@@ -49,7 +49,10 @@ class BootStrap implements SecurityDefinition {
 
     AuthorityService authorityService
 
-    def init = {servletContext ->
+    def init = { servletContext ->
+
+        log.debug('Main bootstrap complete')
+
         environments {
             test {
                 Folder folder
@@ -115,6 +118,7 @@ class BootStrap implements SecurityDefinition {
                     DataFlowBootstrapModels.buildAndSaveSampleDataFlow(messageSource)
                 }
             }
+            log.debug('Test environment bootstrap complete')
         }
     }
 

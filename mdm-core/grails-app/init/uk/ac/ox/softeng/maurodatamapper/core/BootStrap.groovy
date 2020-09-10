@@ -81,6 +81,8 @@ class BootStrap {
         configureEmailers(grailsApplication.config)
         loadDefaultAuthority()
 
+        log.debug('Main bootstrap complete')
+
         environments {
             development {
                 Folder.withNewTransaction {
@@ -95,9 +97,9 @@ class BootStrap {
                         checkAndSave(messageSource, classifier)
                     }
                 }
+                log.debug('Development environment bootstrap complete')
             }
         }
-
     }
     def destroy = {
     }

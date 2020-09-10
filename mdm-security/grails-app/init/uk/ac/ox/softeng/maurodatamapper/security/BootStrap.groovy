@@ -86,6 +86,8 @@ class BootStrap implements SecurityDefinition {
 
         performPostMigrationChecks()
 
+        log.debug('Main bootstrap complete')
+
         environments {
             development {
                 CatalogueUser.withNewTransaction {
@@ -141,6 +143,7 @@ class BootStrap implements SecurityDefinition {
                         )
                     }
                 }
+                log.debug('Development environment bootstrap complete')
             }
         }
     }

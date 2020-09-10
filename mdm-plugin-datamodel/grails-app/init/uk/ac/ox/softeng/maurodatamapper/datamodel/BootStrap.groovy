@@ -22,9 +22,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 
+import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
+@Slf4j
 class BootStrap {
 
     @Autowired
@@ -32,7 +34,10 @@ class BootStrap {
 
     AuthorityService authorityService
 
-    def init = {servletContext ->
+    def init = { servletContext ->
+
+        log.debug('Main bootstrap complete')
+
         environments {
             development {
                 Folder.withNewTransaction {
@@ -45,14 +50,15 @@ class BootStrap {
                         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
                     }
                     if (DataModel.countByAuthorityIsNull() != 0) {
-                        DataModel.findAllByAuthorityIsNull().collect {
+                        log.warn('DataModels missing authority, updating with default authority')
+                        DataModel.findAllByAuthorityIsNull().each {
                             it.authority = authority
-                            it
-                        }.each {
-                            it.save(validate: false)
+                            log.debug('Saving {}', it.label)
+                            it.save(validate: false, flush: true)
                         }
                     }
                 }
+                log.debug('Development environment bootstrap complete')
             }
         }
     }

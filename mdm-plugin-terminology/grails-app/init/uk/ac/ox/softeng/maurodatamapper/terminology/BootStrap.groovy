@@ -22,9 +22,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 
+import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
+@Slf4j
 class BootStrap {
     @Autowired
     MessageSource messageSource
@@ -33,7 +35,10 @@ class BootStrap {
 
     AuthorityService authorityService
 
-    def init = {servletContext ->
+    def init = { servletContext ->
+
+        log.debug('Main bootstrap complete')
+
         environments {
             development {
                 Folder.withNewTransaction {
@@ -50,22 +55,23 @@ class BootStrap {
                     }
 
                     if (Terminology.countByAuthorityIsNull() != 0) {
-                        Terminology.findAllByAuthorityIsNull().collect {
+                        log.warn('Terminologies missing authority, updating with default authority')
+                        Terminology.findAllByAuthorityIsNull().each {
                             it.authority = authority
-                            it
-                        }.each {
-                            it.save(validate: false)
+                            log.debug('Saving {}', it.label)
+                            it.save(validate: false, flush: true)
                         }
                     }
                     if (CodeSet.countByAuthorityIsNull() != 0) {
-                        CodeSet.findAllByAuthorityIsNull().collect {
+                        log.warn('CodeSets missing authority, updating with default authority')
+                        CodeSet.findAllByAuthorityIsNull().each {
                             it.authority = authority
-                            it
-                        }.each {
-                            it.save(validate: false)
+                            log.debug('Saving {}', it.label)
+                            it.save(validate: false, flush: true)
                         }
                     }
                 }
+                log.debug('Development environment bootstrap complete')
             }
         }
     }

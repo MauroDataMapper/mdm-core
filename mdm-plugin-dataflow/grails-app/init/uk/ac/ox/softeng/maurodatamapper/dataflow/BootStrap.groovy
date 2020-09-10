@@ -23,14 +23,18 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 
+import groovy.util.logging.Slf4j
 import org.springframework.context.MessageSource
 
+@Slf4j
 class BootStrap {
 
     MessageSource messageSource
     AuthorityService authorityService
 
-    def init = {servletContext ->
+    def init = { servletContext ->
+
+        log.debug('Main bootstrap complete')
 
         environments {
             development {
@@ -47,9 +51,9 @@ class BootStrap {
                         BootstrapModels.buildAndSaveSampleDataFlow(messageSource)
                     }
                 }
+                log.debug('Development environment bootstrap complete')
             }
         }
-
     }
     def destroy = {
     }
