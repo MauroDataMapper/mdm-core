@@ -175,8 +175,20 @@ class CodeSet implements Model<CodeSet> {
         }
     }
 
+    static DetachedCriteria<CodeSet> byLabel(String label) {
+        by().eq('label', label)
+    }
+
     static DetachedCriteria<CodeSet> byLabelAndFinalisedAndLatestModelVersion(String label) {
-        by().eq('label', label).eq('finalised', true).order('modelVersion', 'desc')
+        byLabel(label).eq('finalised', true).order('modelVersion', 'desc')
+    }
+
+    static DetachedCriteria<CodeSet> byLabelAndNotFinalised(String label) {
+        byLabel(label).eq('finalised', false)
+    }
+
+    static DetachedCriteria<CodeSet> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        byLabelAndNotFinalised(label).eq('branchName', branchName)
     }
 
     static DetachedCriteria<CodeSet> withFilter(DetachedCriteria<CodeSet> criteria, Map filters) {

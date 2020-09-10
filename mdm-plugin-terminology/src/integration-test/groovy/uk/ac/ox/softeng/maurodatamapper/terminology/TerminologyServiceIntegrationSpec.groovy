@@ -158,7 +158,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
     }
 
 
-    void 'DMSICA01 : test finding common ancestor of two terminologies'() {
+    void 'TSICA01 : test finding common ancestor of two terminologies'() {
         given:
         setupData()
 
@@ -190,7 +190,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         commonAncestor.modelVersion == Version.from('1')
     }
 
-    void 'DMSILV01 : test finding latest version of a terminology'() {
+    void 'TSILV01 : test finding latest version of a terminology'() {
         given:
         setupData()
 
@@ -235,7 +235,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         latestVersion.modelVersion == Version.from('2')
     }
 
-    void 'DMSIMD01 : test finding merge difference between two terminologies'() {
+    void 'TSIMD01 : test finding merge difference between two terminologies'() {
         given:
         setupData()
 
@@ -264,6 +264,93 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         mergeDiff == [left: terminology.diff(left), right: terminology.diff(right)]
+    }
+
+    void 'TSICMB01 : test getting current draft model on main branch from side branch'() {
+        /*
+        terminology (finalised) -- expectedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
+        given:
+        setupData()
+
+        when:
+        Terminology terminology = terminologyService.get(id)
+        terminologyService.finaliseModel(terminology, admin, null, null)
+        checkAndSave(terminology)
+
+        then:
+        terminology.branchName == 'main'
+
+        when:
+        def expectedModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+        def testModel = terminologyService.createNewBranchModelVersion('test', terminology, admin, false, userSecurityPolicyManager)
+        terminologyService.finaliseModel(expectedModel, admin, null, null)
+        checkAndSave(
+            expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
+        def draftModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(testModel)
+        checkAndSave(draftModel)
+        testModel.modelVersion == null
+        testModel.branchName == 'test'
+        expectedModel.modelVersion == Version.from('2')
+        expectedModel.branchName == 'main'
+        draftModel.modelVersion == null
+        draftModel.branchName == 'main'
+
+        when:
+        def currentMainBranch = terminologyService.currentMainBranch(testModel)
+
+        then:
+        currentMainBranch.id == draftModel.id
+        currentMainBranch.label == testModel.label
+        currentMainBranch.modelVersion == null
+        currentMainBranch.branchName == 'main'
+    }
+
+    void 'TSIAB01 : test getting all draft models'() {
+        /*
+        terminology (finalised) -- expectedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
+        given:
+        setupData()
+
+        when:
+        Terminology terminology = terminologyService.get(id)
+        terminologyService.finaliseModel(terminology, admin, null, null)
+        checkAndSave(terminology)
+
+        then:
+        terminology.branchName == 'main'
+
+        when:
+        def expectedModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+        def testModel = terminologyService.createNewBranchModelVersion('test', terminology, admin, false, userSecurityPolicyManager)
+        terminologyService.finaliseModel(expectedModel, admin, null, null)
+        checkAndSave(
+            expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
+        def draftModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(testModel)
+        checkAndSave(draftModel)
+        testModel.modelVersion == null
+        testModel.branchName == 'test'
+        expectedModel.modelVersion == Version.from('2')
+        expectedModel.branchName == 'main'
+        draftModel.modelVersion == null
+        draftModel.branchName == 'main'
+
+        when:
+        def availableBranches = terminologyService.availableBranches(terminology.label)
+
+        then:
+        availableBranches.size() == 2
+        availableBranches.each { it.id in [draftModel.id, testModel.id] }
+        availableBranches.each { it.label == terminology.label }
     }
 }
 
