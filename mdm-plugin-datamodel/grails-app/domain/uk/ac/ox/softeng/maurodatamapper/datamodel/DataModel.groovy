@@ -78,8 +78,8 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
 
     static constraints = {
         CallableConstraints.call(ModelConstraints, delegate)
-        dataTypes validator: {val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataTypes').isValid(val)}
-        dataClasses validator: {val, obj -> new DataModelDataClassCollectionValidator(obj).isValid(val)}
+        dataTypes validator: { val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataTypes').isValid(val) }
+        dataClasses validator: { val, obj -> new DataModelDataClassCollectionValidator(obj).isValid(val) }
     }
 
     static mapping = {
@@ -137,6 +137,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
     }
 
     def beforeValidate() {
+        modelType = DataModelType.findFor(modelType)?.label
         beforeValidateCatalogueItem()
         dataTypes?.each { it.beforeValidate() }
         dataClasses?.each { it.beforeValidate() }
@@ -147,11 +148,11 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
     }
 
     DataType findDataTypeByLabel(String label) {
-        dataTypes?.find {it.label == label}
+        dataTypes?.find { it.label == label }
     }
 
     DataType findDataTypeByLabelAndType(String label, String type) {
-        dataTypes?.find {it.domainType == type && it.label == label}
+        dataTypes?.find { it.domainType == type && it.label == label }
     }
 
     int countDataTypesByLabel(String label) {
@@ -254,7 +255,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         def dataTypeErrors = new org.grails.datastore.mapping.validation.ValidationErrors(this)
         if (!dataTypes) return dataTypeErrors
 
-        dataTypes.eachWithIndex {DataType dataType, int index ->
+        dataTypes.eachWithIndex { DataType dataType, int index ->
             if (!dataType.validate()) {
                 for (FieldError error : dataType.getErrors().getFieldErrors()) {
                     String path = "dataTypes[$index].${error.getField()}"
@@ -271,7 +272,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
                 }
             }
         }
-        List<String> duplicates = dataTypes.groupBy {it.label}.findAll {it.value.size() > 1}.collect {it.key}
+        List<String> duplicates = dataTypes.groupBy { it.label }.findAll { it.value.size() > 1 }.collect { it.key }
         if (duplicates) {
             Object[] args = new Object[5]
             args[0] = 'dataTypes'
@@ -296,7 +297,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         def dataClassErrors = new ValidationErrors(this)
         if (!childDataClasses) return dataClassErrors
 
-        childDataClasses.eachWithIndex {DataClass dataClass, int index ->
+        childDataClasses.eachWithIndex { DataClass dataClass, int index ->
             if (!dataClass.validate()) {
                 for (FieldError error : dataClass.getErrors().getFieldErrors()) {
                     String path = "childDataClasses[$index].${error.getField()}"
@@ -314,10 +315,10 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
             }
         }
         List<String> duplicates = childDataClasses
-            .findAll {!it.parentDataClass}
-            .groupBy {it.label}
-            .findAll {it.value.size() > 1}
-            .collect {it.key}
+            .findAll { !it.parentDataClass }
+            .groupBy { it.label }
+            .findAll { it.value.size() > 1 }
+            .collect { it.key }
 
         if (duplicates) {
             Object[] args = new Object[5]
