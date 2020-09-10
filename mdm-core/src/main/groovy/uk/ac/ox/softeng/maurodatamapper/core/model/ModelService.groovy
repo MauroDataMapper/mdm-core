@@ -111,6 +111,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         [left: commonAncestor.diff(leftModel), right: commonAncestor.diff(rightModel)]
     }
 
+    K currentMainBranch(K model) {
+        modelClass.byLabelAndBranchNameAndNotFinalised(model.label, 'main').get()
+    }
+
+    List<K> availableBranches(String label) {
+        modelClass.byLabelAndNotFinalised(label).list()
+    }
+
     @Override
     K checkFacetsAfterImportingCatalogueItem(K catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)

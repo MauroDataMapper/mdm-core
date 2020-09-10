@@ -606,9 +606,9 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
-        removeValidIdObject(id)
-        removeValidIdObject(leftId)
-        removeValidIdObject(rightId)
+        cleanUpRoles(id)
+        cleanUpRoles(leftId)
+        cleanUpRoles(rightId)
     }
 
     void 'E27 : test finding latest version of a Model<T> (as editor)'() {
@@ -637,7 +637,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
-        responseBody().label.contains('Functional Test ')
+        responseBody().label == validJson.label
 
         when:
         GET("$latestDraftId/latestVersion")
@@ -645,17 +645,17 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
-        responseBody().label.contains('Functional Test ')
+        responseBody().label == validJson.label
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(newBranchId)
         removeValidIdObjectUsingTransaction(expectedId)
         removeValidIdObjectUsingTransaction(latestDraftId)
-        removeValidIdObject(id)
-        removeValidIdObject(newBranchId)
-        removeValidIdObject(expectedId)
-        removeValidIdObject(latestDraftId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(expectedId)
+        cleanUpRoles(latestDraftId)
     }
 
     void 'E28 : test finding merge difference of two Model<T> (as editor)'() {
@@ -683,8 +683,87 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
         removeValidIdObjectUsingTransaction(id)
-        removeValidIdObject(leftId)
-        removeValidIdObject(rightId)
-        removeValidIdObject(id)
+        cleanUpRoles(leftId)
+        cleanUpRoles(rightId)
+        cleanUpRoles(id)
+    }
+
+    void 'E29 : test getting current draft model on main branch from side branch (as editor)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [:])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        GET("$newBranchId/currentMainBranch")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == latestDraftId
+        responseBody().label == validJson.label
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(finalisedId)
+        cleanUpRoles(latestDraftId)
+    }
+
+    void 'E30 : test getting all draft models (as editor)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [:])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        GET("$id/availableBranches")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.each { it.id in [newBranchId, latestDraftId] }
+        responseBody().items.each { it.label == validJson.label }
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(finalisedId)
+        cleanUpRoles(latestDraftId)
     }
 }

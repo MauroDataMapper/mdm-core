@@ -56,6 +56,9 @@ class UrlMappings {
                 get '/latestVersion'(controller: 'terminology', action: 'latestVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'terminology', action: 'mergeDiff')
 
+                get '/currentMainBranch'(controller: 'terminology', action: 'currentMainBranch')
+                get '/availableBranches'(controller: 'terminology', action: 'availableBranches')
+
                 get "/diff/$otherModelId"(controller: 'terminology', action: 'diff') // New URL
                 put "/folder/$folderId"(controller: 'terminology', action: 'changeFolder')
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'terminology', action: 'exportModel') // New URL
@@ -109,6 +112,9 @@ class UrlMappings {
                 get "/commonAncestor/$otherModelId"(controller: 'codeSet', action: 'commonAncestor')
                 get '/latestVersion'(controller: 'codeSet', action: 'latestVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'codeSet', action: 'mergeDiff')
+
+                get '/currentMainBranch'(controller: 'codeSet', action: 'currentMainBranch')
+                get '/availableBranches'(controller: 'codeSet', action: 'availableBranches')
 
                 get "/diff/$otherModelId"(controller: 'codeSet', action: 'diff') // New URL
                 put "/folder/$folderId"(controller: 'codeSet', action: 'changeFolder')

@@ -43,6 +43,9 @@ class UrlMappings {
                 get '/latestVersion'(controller: 'dataModel', action: 'latestVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'dataModel', action: 'mergeDiff')
 
+                get '/currentMainBranch'(controller: 'dataModel', action: 'currentMainBranch')
+                get '/availableBranches'(controller: 'dataModel', action: 'availableBranches')
+
                 get "/diff/$otherModelId"(controller: 'dataModel', action: 'diff')
                 get "/suggestLinks/$otherModelId"(controller: 'dataModel', action: 'suggestLinks')
                 put "/folder/$folderId"(controller: 'dataModel', action: 'changeFolder')

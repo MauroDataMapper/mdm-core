@@ -595,11 +595,16 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def commonAncestor = dataModelService.commonAncestor(left, right)
 
         then:
+        commonAncestor.id == id
         commonAncestor.branchName == 'main'
         commonAncestor.modelVersion == Version.from('1')
     }
 
     void 'DMSILV01 : test finding latest version of a datamodel'() {
+        /*
+        dataModel (finalised) -- expectedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
         given:
         setupData()
 
@@ -633,6 +638,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def latestVersion = dataModelService.latestVersion(testModel.label)
 
         then:
+        latestVersion.id == expectedModel.id
         latestVersion.branchName == 'main'
         latestVersion.modelVersion == Version.from('2')
 
@@ -640,6 +646,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         latestVersion = dataModelService.latestVersion(draftModel.label)
 
         then:
+        latestVersion.id == expectedModel.id
         latestVersion.branchName == 'main'
         latestVersion.modelVersion == Version.from('2')
     }
@@ -673,6 +680,93 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         mergeDiff == [left: dataModel.diff(left), right: dataModel.diff(right)]
+    }
+
+    void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
+        /*
+        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
+        given:
+        setupData()
+
+        when:
+        DataModel dataModel = dataModelService.get(id)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
+        checkAndSave(dataModel)
+
+        then:
+        dataModel.branchName == 'main'
+
+        when:
+        def finalisedModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+        def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
+        dataModelService.finaliseModel(finalisedModel, admin, null, null)
+        checkAndSave(
+            finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
+        def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(testModel)
+        checkAndSave(draftModel)
+        testModel.modelVersion == null
+        testModel.branchName == 'test'
+        finalisedModel.modelVersion == Version.from('2')
+        finalisedModel.branchName == 'main'
+        draftModel.modelVersion == null
+        draftModel.branchName == 'main'
+
+        when:
+        def currentMainBranch = dataModelService.currentMainBranch(testModel)
+
+        then:
+        currentMainBranch.id == draftModel.id
+        currentMainBranch.label == testModel.label
+        currentMainBranch.modelVersion == null
+        currentMainBranch.branchName == 'main'
+    }
+
+    void 'DMSIAB01 : test getting all draft models'() {
+        /*
+        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
+        given:
+        setupData()
+
+        when:
+        DataModel dataModel = dataModelService.get(id)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
+        checkAndSave(dataModel)
+
+        then:
+        dataModel.branchName == 'main'
+
+        when:
+        def finalisedModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+        def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
+        dataModelService.finaliseModel(finalisedModel, admin, null, null)
+        checkAndSave(
+            finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
+        def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+
+        then:
+        checkAndSave(testModel)
+        checkAndSave(draftModel)
+        testModel.modelVersion == null
+        testModel.branchName == 'test'
+        finalisedModel.modelVersion == Version.from('2')
+        finalisedModel.branchName == 'main'
+        draftModel.modelVersion == null
+        draftModel.branchName == 'main'
+
+        when:
+        def availableBranches = dataModelService.availableBranches(dataModel.label)
+
+        then:
+        availableBranches.size() == 2
+        availableBranches.each { it.id in [draftModel.id, testModel.id] }
+        availableBranches.each { it.label == dataModel.label }
     }
 
     void 'DMSV01 : test validation on valid model'() {

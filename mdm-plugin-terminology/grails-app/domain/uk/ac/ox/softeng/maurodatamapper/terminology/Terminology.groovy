@@ -209,8 +209,20 @@ class Terminology implements Model<Terminology> {
         by().inList('id', ids.toList())
     }
 
+    static DetachedCriteria<Terminology> byLabel(String label) {
+        by().eq('label', label)
+    }
+
     static DetachedCriteria<Terminology> byLabelAndFinalisedAndLatestModelVersion(String label) {
-        by().eq('label', label).eq('finalised', true).order('modelVersion', 'desc')
+        byLabel(label).eq('finalised', true).order('modelVersion', 'desc')
+    }
+
+    static DetachedCriteria<Terminology> byLabelAndNotFinalised(String label) {
+        byLabel(label).eq('finalised', false)
+    }
+
+    static DetachedCriteria<Terminology> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        byLabelAndNotFinalised(label).eq('branchName', branchName)
     }
 
     static DetachedCriteria<Terminology> withFilter(DetachedCriteria<Terminology> criteria, Map filters) {

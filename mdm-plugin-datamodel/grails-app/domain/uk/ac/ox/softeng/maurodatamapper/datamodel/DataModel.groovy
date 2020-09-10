@@ -369,8 +369,20 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         by().inList('id', ids.toList())
     }
 
+    static DetachedCriteria<DataModel> byLabel(String label) {
+        by().eq('label', label)
+    }
+
     static DetachedCriteria<DataModel> byLabelAndFinalisedAndLatestModelVersion(String label) {
-        by().eq('label', label).eq('finalised', true).order('modelVersion', 'desc')
+        byLabel(label).eq('finalised', true).order('modelVersion', 'desc')
+    }
+
+    static DetachedCriteria<DataModel> byLabelAndNotFinalised(String label) {
+        byLabel(label).eq('finalised', false)
+    }
+
+    static DetachedCriteria<DataModel> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        byLabelAndNotFinalised(label).eq('branchName', branchName)
     }
 
     static DetachedCriteria<DataModel> withFilter(DetachedCriteria<DataModel> criteria, Map filters) {

@@ -236,6 +236,20 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         respond modelService.mergeDiff(left, right)
     }
 
+    def currentMainBranch() {
+        T source = queryForResource(params[alternateParamsIdKey])
+        if (!source) return notFound(params[alternateParamsIdKey])
+
+        respond modelService.currentMainBranch(source)
+    }
+
+    def availableBranches() {
+        T source = queryForResource(params[alternateParamsIdKey])
+        if (!source) return notFound(params[alternateParamsIdKey])
+
+        respond modelService.availableBranches(source.label)
+    }
+
     @Transactional
     def finalise(FinaliseData finaliseData) {
 
