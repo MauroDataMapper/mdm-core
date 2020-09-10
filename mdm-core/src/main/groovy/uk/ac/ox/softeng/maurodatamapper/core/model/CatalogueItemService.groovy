@@ -228,8 +228,8 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
 
     /*
      * Find a CatalogueItem which is labeled with label and whose parent is parentCatalogueItem.
-     * @param parentCatalogueItem The DataModel or DataClass which is the parent of the DataClass being sought
-     * @param label The label of the DataClass being sought
+     * @param parentCatalogueItem The CatalogueItem which is the parent of the CatalogueItem being sought
+     * @param label The label of the CatalogueItem being sought
      */
     K findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         CatalogueItem catalogueItem
