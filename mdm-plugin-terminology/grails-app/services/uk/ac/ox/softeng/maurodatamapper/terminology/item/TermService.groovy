@@ -28,11 +28,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeIt
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
-<<<<<<< HEAD
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
-=======
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
->>>>>>> 6eb750c... mc-9165 Work in progress. Handle and unit test retrieval by path for Term, Terminology and CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
