@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
@@ -31,6 +33,7 @@ import io.micronaut.http.HttpStatus
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.CREATED
 
 /**
  * <pre>
@@ -82,6 +85,51 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         ]
     }
 
+    @Transactional
+    String getEditorGroupRoleId() {
+        GroupRole editorGroupRole = GroupRole.findByName('editor')        
+        editorGroupRole.id
+    }
+   
+    @Transactional
+    Map getValidJsonWithOneGroup() {
+        UserGroup editorsUserGroup = UserGroup.findByName('editors')
+        [
+            label: 'Functional Test Folder 4',
+            description: 'Description of Functional Test Folder 4',
+            groups: [
+                [groupId: editorsUserGroup.id, groupRoleId: getEditorGroupRoleId()]
+            ]
+        ]
+    }
+
+    @Transactional
+    Map getValidJsonWithTwoGroups() {
+        UserGroup editorsUserGroup = UserGroup.findByName('editors')
+        UserGroup readersUserGroup = UserGroup.findByName('readers')
+        [
+            label: 'Functional Test Folder 5',
+            description: 'Description of Functional Test Folder 5',
+            groups: [
+                [groupId: editorsUserGroup.id, groupRoleId: getEditorGroupRoleId()],
+                [groupId: readersUserGroup.id, groupRoleId: getEditorGroupRoleId()]
+            ]
+        ]
+    }  
+
+    //With an error in the attribute names
+    @Transactional
+    Map getInvalidJsonWithOneGroup() {
+        UserGroup editorsUserGroup = UserGroup.findByName('editors')
+        [
+            label: 'Functional Test Folder 6',
+            description: 'Description of Functional Test Folder 6',
+            groups: [
+                [groupI: editorsUserGroup.id, groupRoleI: getEditorGroupRoleId()]
+            ]
+        ]
+    }    
+  
     @Override
     Pattern getExpectedCreatedEditRegex() {
         ~/\[Folder:Functional Test Folder 3] created/
@@ -546,5 +594,134 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
         cleanup:
         cleanupUserGroups()
+    }
+    
+    void 'Test create folder with one user group specified'() {
+        when: 'logged in as reader user'
+        loginReader()
+        POST("", getValidJsonWithOneGroup())
+
+        then:
+        response.status == HttpStatus.CREATED
+        response.body().id
+        String folderId = response.body().id
+
+        when:
+        GET("folders/${folderId}/groupRoles/${getEditorGroupRoleId()}", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''{
+            "count": 1,
+            "items": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "availableActions": [
+                        "show",
+                        "update",
+                        "save",
+                        "softDelete",
+                        "delete"
+                    ],
+                    "createdBy": "reader@test.com",
+                    "securableResourceDomainType": "Folder",
+                    "securableResourceId": "${json-unit.matches:id}",
+                    "userGroup": {
+                        "id": "${json-unit.matches:id}",
+                        "name": "editors"
+                    },
+                    "groupRole": {
+                        "id": "${json-unit.matches:id}",
+                        "name": "editor",
+                        "displayName": "Editor"
+                    }
+                }
+            ]
+        }'''
+    }
+
+    void 'Test create folder with two user groups specified'() {
+        when: 'logged in as reader user'
+        loginReader()
+        POST("", getValidJsonWithTwoGroups())
+
+        then:
+        response.status == HttpStatus.CREATED
+        response.body().id
+        String folderId = response.body().id
+
+        when:
+        GET("folders/${folderId}/groupRoles/${getEditorGroupRoleId()}", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''{
+            "count": 2,
+            "items": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "availableActions": [
+                        "show",
+                        "update",
+                        "save",
+                        "softDelete",
+                        "delete"
+                    ],
+                    "createdBy": "reader@test.com",
+                    "securableResourceDomainType": "Folder",
+                    "securableResourceId": "${json-unit.matches:id}",
+                    "userGroup": {
+                        "id": "${json-unit.matches:id}",
+                        "name": "editors"
+                    },
+                    "groupRole": {
+                        "id": "${json-unit.matches:id}",
+                        "name": "editor",
+                        "displayName": "Editor"
+                    }
+                },
+                {
+                    "id": "${json-unit.matches:id}",
+                    "availableActions": [
+                        "show",
+                        "update",
+                        "save",
+                        "softDelete",
+                        "delete"
+                    ],
+                    "createdBy": "reader@test.com",
+                    "securableResourceDomainType": "Folder",
+                    "securableResourceId": "${json-unit.matches:id}",
+                    "userGroup": {
+                        "id": "${json-unit.matches:id}",
+                        "name": "readers"
+                    },
+                    "groupRole": {
+                        "id": "${json-unit.matches:id}",
+                        "name": "editor",
+                        "displayName": "Editor"
+                    }
+                }
+            ]
+        }'''
+    }
+
+    void 'Test create folder with one user group invalidly specified'() {
+        when: 'logged in as reader user'
+        loginReader()
+        POST("", getInvalidJsonWithOneGroup())
+
+        then:
+        response.status == HttpStatus.CREATED
+        response.body().id
+        String folderId = response.body().id
+
+        when:
+        GET("folders/${folderId}/groupRoles/${getEditorGroupRoleId()}", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''{
+            "count": 0,
+            "items": [                
+            ]
+        }'''
     }
 }
