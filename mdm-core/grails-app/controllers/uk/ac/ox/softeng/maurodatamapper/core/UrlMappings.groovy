@@ -125,7 +125,7 @@ class UrlMappings {
                 Semantic Links
                  */
                 '/semanticLinks'(resources: 'semanticLink', excludes: DEFAULT_EXCLUDES) {
-                    "/confirm"(controller: 'semanticLink', action: 'confirm')
+                    get "/confirm"(controller: 'semanticLink', action: 'confirm')
                 }
 
                 /*

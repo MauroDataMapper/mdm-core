@@ -70,13 +70,19 @@ Controller: codeSet
  |   PUT    | /api/codeSets/${codeSetId}/readByAuthenticated  | Action: readByAuthenticated
  |  DELETE  | /api/codeSets/${codeSetId}/readByEveryone  | Action: readByEveryone
  |   PUT    | /api/codeSets/${codeSetId}/readByEveryone  | Action: readByEveryone
+ |   GET    | /api/codeSets/${codeSetId}/availableBranches  | Action: availableBranches
+ |   GET    | /api/codeSets/${codeSetId}/currentMainBranch  | Action: currentMainBranch
+ |   GET    | /api/codeSets/${codeSetId}/latestVersion  | Action: latestVersion
  |   PUT    | /api/codeSets/${codeSetId}/newForkModel  | Action: newForkModel
  |   PUT    | /api/codeSets/${codeSetId}/newDocumentationVersion  | Action: newDocumentationVersion
+  |   PUT    | /api/codeSets/${codeSetId}/newBranchModelVersion  | Action: newBranchModelVersion
  |   PUT    | /api/codeSets/${codeSetId}/finalise  | Action: finalise
  |   POST   | /api/folders/${folderId}/codeSets  | Action: save
  |   GET    | /api/folders/${folderId}/codeSets  | Action: index
  |   PUT    | /api/codeSets/${codeSetId}/folder/${folderId}  | Action: changeFolder
  |   GET    | /api/codeSets/${codeSetId}/diff/${otherModelId}  | Action: diff
+ |   GET    | /api/codeSets/${codeSetId}/mergeDiff/${otherModelId}  | Action: mergeDiff
+ |   GET    | /api/codeSets/${codeSetId}/commonAncestor/${otherModelId}  | Action: commonAncestor
  |   PUT    | /api/folders/${folderId}/codeSets/${codeSetId}  | Action: changeFolder
  |   GET    | /api/codeSets  | Action: index
  |  DELETE  | /api/codeSets/${id}  | Action: delete
@@ -86,6 +92,8 @@ Controller: codeSet
 Controller: dataClass
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses  | Action: save
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses  | Action: index
+ |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
+ |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
  |  DELETE  | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses/${id}  | Action: delete
  |   PUT    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses/${id}  | Action: update
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataClasses/${id}  | Action: show
@@ -96,8 +104,7 @@ Controller: dataClass
  |   PUT    | /api/dataModels/${dataModelId}/dataClasses/${id}  | Action: update
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${id}  | Action: show
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${otherDataModelId}/${otherDataClassId}  | Action: copyDataClass
- |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
- |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/search  | Action: search
+
 
  Controller: dataClassComponent
  |   POST   | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents  | Action: save
@@ -144,21 +151,27 @@ Controller: dataModel
  |   PUT    | /api/dataModels/${dataModelId}/readByAuthenticated  | Action: readByAuthenticated
  |  DELETE  | /api/dataModels/${dataModelId}/readByEveryone  | Action: readByEveryone
  |   PUT    | /api/dataModels/${dataModelId}/readByEveryone  | Action: readByEveryone
+ |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
+ |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
  |   GET    | /api/dataModels/${dataModelId}/hierarchy  | Action: hierarchy
+ |   GET    | /api/dataModels/${dataModelId}/availableBranches  | Action: availableBranches
+ |   GET    | /api/dataModels/${dataModelId}/currentMainBranch  | Action: currentMainBranch
+ |   GET    | /api/dataModels/${dataModelId}/latestVersion  | Action: latestVersion
  |   PUT    | /api/dataModels/${dataModelId}/newForkModel  | Action: newForkModel
  |   PUT    | /api/dataModels/${dataModelId}/newDocumentationVersion  | Action: newDocumentationVersion
+ |   PUT    | /api/dataModels/${dataModelId}/newBranchModelVersion  | Action: newBranchModelVersion
  |   PUT    | /api/dataModels/${dataModelId}/finalise  | Action: finalise
  |   POST   | /api/folders/${folderId}/dataModels  | Action: save
  |   PUT    | /api/folders/${folderId}/dataModels/${dataModelId}  | Action: changeFolder
  |   PUT    | /api/dataModels/${dataModelId}/folder/${folderId}  | Action: changeFolder
  |   GET    | /api/dataModels/${dataModelId}/diff/${otherDataModelId}  | Action: diff
+ |   GET    | /api/dataModels/${dataModelId}/mergeDiff/${otherModelId}  | Action: mergeDiff
+ |   GET    | /api/dataModels/${dataModelId}/commonAncestor/${otherModelId}  | Action: commonAncestor
  |   GET    | /api/dataModels/${dataModelId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportDataModel
  |   GET    | /api/dataModels  | Action: index
  |  DELETE  | /api/dataModels/${id}  | Action: delete
  |   PUT    | /api/dataModels/${id}  | Action: update
  |   GET    | /api/dataModels/${id}  | Action: show
- |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
- |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
 
 Controller: dataType
  |   POST   | /api/dataModels/${dataModelId}/dataTypes  | Action: save
@@ -267,13 +280,13 @@ Controller: term
  |   GET    | /api/terminologies/${terminologyId}/terms/${id}  | Action: show
 
 Controller: termRelationship
- |   POST   | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships  | Action: save
- |   GET    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships  | Action: index
- |  DELETE  | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: delete
- |   PUT    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: update
- |   GET    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: show
- |   GET    | /api/terminologies/${terminologyId}/termRelationshipTypes/${termRelationshipTypeId}/termRelationships  | Action: index
- |   GET    | /api/terminologies/${terminologyId}/termRelationshipTypes/${termRelationshipTypeId}/termRelationships/${id}  | Action: show
+|   GET    | /api/terminologies/${terminologyId}/termRelationshipTypes/${termRelationshipTypeId}/termRelationships  | Action: index
+|   POST   | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships  | Action: save
+|   GET    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships  | Action: index
+|   GET    | /api/terminologies/${terminologyId}/termRelationshipTypes/${termRelationshipTypeId}/termRelationships/${id}  | Action: show
+|  DELETE  | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: delete
+|   PUT    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: update
+|   GET    | /api/terminologies/${terminologyId}/terms/${termId}/termRelationships/${id}  | Action: show
 
 Controller: termRelationshipType
  |   POST   | /api/terminologies/${terminologyId}/termRelationshipTypes  | Action: save
@@ -289,12 +302,18 @@ Controller: terminology
  |   PUT    | /api/terminologies/${terminologyId}/readByAuthenticated  | Action: readByAuthenticated
  |  DELETE  | /api/terminologies/${terminologyId}/readByEveryone  | Action: readByEveryone
  |   PUT    | /api/terminologies/${terminologyId}/readByEveryone  | Action: readByEveryone
+ |   GET    | /api/terminologies/${terminologyId}/availableBranches  | Action: availableBranches
+ |   GET    | /api/terminologies/${terminologyId}/currentMainBranch  | Action: currentMainBranch
+ |   GET    | /api/terminologies/${terminologyId}/latestVersion  | Action: latestVersion
  |   PUT    | /api/terminologies/${terminologyId}/newForkModel  | Action: newForkModel
  |   PUT    | /api/terminologies/${terminologyId}/newDocumentationVersion  | Action: newDocumentationVersion
+ |   PUT    | /api/terminologies/${terminologyId}/newBranchModelVersion  | Action: newBranchModelVersion
  |   PUT    | /api/terminologies/${terminologyId}/finalise  | Action: finalise
  |   POST   | /api/folders/${folderId}/terminologies  | Action: save
  |   PUT    | /api/terminologies/${terminologyId}/folder/${folderId}  | Action: changeFolder
  |   GET    | /api/terminologies/${terminologyId}/diff/${otherModelId}  | Action: diff
+ |   GET    | /api/terminologies/${terminologyId}/mergeDiff/${otherModelId}  | Action: mergeDiff
+ |   GET    | /api/terminologies/${terminologyId}/commonAncestor/${otherModelId}  | Action: commonAncestor
  |   PUT    | /api/folders/${folderId}/terminologies/${terminologyId}  | Action: changeFolder
  |   GET    | /api/terminologies  | Action: index
  |  DELETE  | /api/terminologies/${id}  | Action: delete
@@ -302,9 +321,12 @@ Controller: terminology
  |   GET    | /api/terminologies/${id}  | Action: show
 
 Controller: treeItem
- |   GET    | /api/tree/${containerDomainType}/search/${searchTerm}  | Action: search
- |   GET    | /api/tree/${containerDomainType}  | Action: index
- |   GET    | /api/tree/${containerDomainType}/${catalogueItemDomainType}/${catalogueItemId}  | Action: show
+|   GET    | /api/admin/tree/${containerDomainType}/${modelDomainType}/deleted  | Action: deletedModels
+|   GET    | /api/admin/tree/${containerDomainType}/${modelDomainType}/modelSuperseded  | Action: modelSupersededModels
+|   GET    | /api/admin/tree/${containerDomainType}/${modelDomainType}/documentationSuperseded  | Action: documentationSupersededModels
+|   GET    | /api/tree/${containerDomainType}/search/${searchTerm}  | Action: search
+|   GET    | /api/tree/${containerDomainType}  | Action: index
+|   GET    | /api/tree/${containerDomainType}/${catalogueItemDomainType}/${catalogueItemId}  | Action: show
 
 Controller: userGroup
  |   GET    | /api/admin/applicationGroupRoles/${applicationGroupRoleId}/userGroups  | Action: index

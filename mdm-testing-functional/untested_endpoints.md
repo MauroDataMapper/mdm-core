@@ -4,8 +4,11 @@ The current API endpoints have no functional test present in this testing plugin
 and therefore there is no guarantee they will work as expected.
 
 ```
+Controller: authority
+ |   GET    | /api/authorities  | Action: index
+ |   GET    | /api/authorities/${id}  | Action: show
+
 Controller: classifier
- |   GET    | /api/classifiers/${classifierId}/catalogueItems  | Action: catalogueItems
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers  | Action: save
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers  | Action: index
  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/classifiers/${id}  | Action: delete
@@ -17,6 +20,7 @@ Controller: codeSet
  |  DELETE  | /api/codeSets/${codeSetId}/terms/${termId}  | Action: alterTerms
  |   PUT    | /api/codeSets/${codeSetId}/terms/${termId}  | Action: alterTerms
  |   GET    | /api/codeSets/${codeSetId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportModel
+ |  DELETE  | /api/codeSets  | Action: deleteAll
 
 Controller: dataClass
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/content  | Action: content
@@ -38,17 +42,39 @@ Controller: dataModel
  |  DELETE  | /api/dataModels/${dataModelId}/dataClasses/clean  | Action: deleteAllUnusedDataClasses
  |  DELETE  | /api/dataModels/${dataModelId}/dataTypes/clean  | Action: deleteAllUnusedDataTypes
  |   GET    | /api/folders/${folderId}/dataModels  | Action: index
- |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherDataModelId}  | Action: suggestLinks
+ |  DELETE  | /api/dataModels/${dataModelId}/readByAuthenticated  | Action: readByAuthenticated
+ |   PUT    | /api/dataModels/${dataModelId}/readByAuthenticated  | Action: readByAuthenticated
+ |  DELETE  | /api/dataModels/${dataModelId}/readByEveryone  | Action: readByEveryone
+ |   PUT    | /api/dataModels/${dataModelId}/readByEveryone  | Action: readByEveryone
+ |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
+ |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
+ |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherModelId}  | Action: suggestLinks
  |  DELETE  | /api/dataModels  | Action: deleteAll
+
+Controller: folder
+ |   GET    | /api/folders/${folderId}/search  | Action: search
+ |   POST   | /api/folders/${folderId}/search  | Action: search
 
 Controller: groupRole
  |   POST   | /api/admin/groupRoles  | Action: save
  |   GET    | /api/admin/groupRoles  | Action: index
+ |   GET    | /api/admin/availableApplicationAccess  | Action: listApplicationAccess
  |   GET    | /api/admin/applicationGroupRoles  | Action: listApplicationGroupRoles
  |  DELETE  | /api/admin/groupRoles/${id}  | Action: delete
  |   PUT    | /api/admin/groupRoles/${id}  | Action: update
  |   GET    | /api/admin/groupRoles/${id}  | Action: show
  |   GET    | /api/${securableResourceDomainType}/${securableResourceId}/groupRoles  | Action: listGroupRolesAvailableToSecurableResource
+
+Controller: path
+ |   GET    | /api/${catalogueItemDomainType}/path/${path}  | Action: show
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/path/${path}  | Action: show
+
+Controller: permissions
+ |   GET    | /api/${securableResourceDomainType}/${securableResourceId}/permissions  | Action: permissions
+
+Controller: search
+ |   GET    | /api/catalogueItems/search  | Action: search
+ |   POST   | /api/catalogueItems/search  | Action: search
 
 Controller: securableResourceGroupRole
  |   POST   | /api/userGroups/${userGroupId}/securableResourceGroupRoles  | Action: save
@@ -63,6 +89,9 @@ Controller: securableResourceGroupRole
  |   GET    | /api/${securableResourceDomainType}/${securableResourceId}/securableResourceGroupRoles/${id}  | Action: show
  |   GET    | /api/${securableResourceDomainType}/${securableResourceId}/groupRoles/${groupRoleId}  | Action: index
 
+Controller: semanticLink
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks/${semanticLinkId}/confirm  | Action: confirm
+
 Controller: session
  |   GET    | /api/session/keepAlive  | Action: keepAlive
 
@@ -70,6 +99,7 @@ Controller: term
  |   GET    | /api/terminologies/${terminologyId}/terms/search  | Action: search
  |   POST   | /api/terminologies/${terminologyId}/terms/search  | Action: search
  |   GET    | /api/terminologies/${terminologyId}/terms/tree/${termId}?  | Action: tree
+ |   GET    | /api/codeSets/${codeSetId}/terms  | Action: index
 
 Controller: terminology
  |   POST   | /api/terminologies/import/${importerNamespace}/${importerName}/${importerVersion}  | Action: importModels
@@ -78,18 +108,10 @@ Controller: terminology
  |   GET    | /api/terminologies/${terminologyId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportModel
  |  DELETE  | /api/terminologies  | Action: deleteAll
 
-Controller: treeItem
- |   GET    | /api/admin/tree/${containerDomainType}/${modelDomainType}/deleted  | Action: deletedModels
- |   GET    | /api/admin/tree/${containerDomainType}/${modelDomainType}/modelSuperseded  | Action: modelSupersededModels
- |   GET    | /api/admin/tree/${containerDomainType}/${modelDomainType}/documentationSuperseded  | Action: documentationSupersededModels
-
 Controller: userGroup
  |   POST   | /api/${containerDomainType}/${containerId}/userGroups  | Action: save
  |   GET    | /api/${containerDomainType}/${containerId}/userGroups  | Action: index
  |  DELETE  | /api/${containerDomainType}/${containerId}/userGroups/${id}  | Action: delete
  |   PUT    | /api/${containerDomainType}/${containerId}/userGroups/${id}  | Action: update
  |   GET    | /api/${containerDomainType}/${containerId}/userGroups/${id}  | Action: show
-
-Controller: userImageFile
- |   GET    | /api/userImageFiles/${id}  | Action: show
 ```
