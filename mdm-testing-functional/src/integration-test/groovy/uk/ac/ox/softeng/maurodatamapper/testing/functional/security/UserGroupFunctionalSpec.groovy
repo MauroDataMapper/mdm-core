@@ -32,6 +32,7 @@ import groovy.util.logging.Slf4j
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 
 /**
  * <pre>
@@ -90,6 +91,12 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
         // Remove all installed required domains here
         UserGroup.findByName('groupAdmins').delete(flush: true)
         UserGroup.findByName('containerGroupAdmins').delete(flush: true)
+    }
+
+    @Transactional
+    String getUserGroupId(String userGroupName) {
+        UserGroup userGroup = UserGroup.findByName(userGroupName)
+        userGroup.id
     }
 
     @Override
@@ -632,5 +639,17 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
+    }
+
+    void 'A04 : Test when logged in as admin the delete action does not delete a user group marked as undeleteable'() {
+        given:
+        String id = getUserGroupId('administrators')
+        loginAdmin()
+
+        when: 'When the delete action is executed on the administrators user group, which is undeleteable'
+        DELETE(id)
+
+        then: 'The response is forbidden'
+        verifyResponse FORBIDDEN, response
     }
 }

@@ -36,7 +36,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 /**
  * @see UserGroupController* Controller: userGroup
@@ -104,6 +106,13 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
         ]
     }
 
+    Map getValidUndeleteableJson(Boolean undeleteable = false) {
+        [
+            name: 'testers',
+            undeleteable: undeleteable
+        ]
+    }
+
     @Override
     Map getInvalidJson() {
         [
@@ -135,6 +144,21 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
 
     @Override
     void cleanUpData(String id = null) {
+        //UserGroup can be marked as undeleteable which causes cleanup to fail.
+        //Update any items to be cleaned as deleteable before cleaning.
+        if (id) {
+            PUT(id, getValidUndeleteableJson(false))
+            assert response.status() == OK
+        } else {
+            GET('')
+            assert response.status() == OK
+            def items = response.body().items
+            items.each { i ->
+                PUT(i.id, getValidUndeleteableJson(false))
+                assert response.status() == OK
+            }
+        }
+
         super.cleanUpData(id)
         reconfigureDefaultUserPrivileges(false)
     }
@@ -366,5 +390,44 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     }
   ]
 }'''
+    }
+
+    void 'test the delete action does not delete a UserGroup which is marked as undeleteable'() {
+        when: 'The save action is executed with valid data in which the undeleteable property is set to true'
+        createNewItem(getValidUndeleteableJson(true))
+
+        then: 'The response is created'
+        response.status == CREATED
+        String id = response.body().id
+
+        when: 'When the delete action is executed on the undeleteable resource'
+        DELETE(getDeleteEndpoint(id))
+
+        then: 'The response is forbidden'
+        response.status == FORBIDDEN
+
+        when: 'The update action is executed with valid data to change the description but not the undeleteable property'
+        PUT(id, getValidUpdateJson())
+
+        then: 'The response is correct'
+        verifyR4UpdateResponse()
+
+        when: 'When the delete action is executed on the undeleteable instance'
+        DELETE(getDeleteEndpoint(id))
+
+        then: 'The response is forbidden'
+        response.status == FORBIDDEN
+
+        when: 'The update action is executed with valid data to set undeleteable to false'
+        PUT(id, getValidUndeleteableJson(false))
+
+        then: 'The response is correct'
+        verifyR4UpdateResponse()
+
+        when: 'When the delete action is executed on the now deleteable instance'
+        DELETE(getDeleteEndpoint(id))
+
+        then: 'The response is correct'
+        response.status == NO_CONTENT
     }
 }

@@ -35,6 +35,7 @@ class UserGroup implements EditHistoryAware, SecurableResource, Principal {
     UUID id
     String name
     String description
+    Boolean undeleteable
 
     static hasMany = [
         groupMembers               : CatalogueUser,
@@ -52,6 +53,7 @@ class UserGroup implements EditHistoryAware, SecurableResource, Principal {
             if (val && !val.applicationLevelRole) ['invalid.grouprole.must.be.application.level.message']
         }
         securableResourceGroupRoles nullable: false, minSize: 0
+        undeleteable nullable: false
     }
 
     static mapping = {
@@ -62,6 +64,7 @@ class UserGroup implements EditHistoryAware, SecurableResource, Principal {
     UserGroup() {
         groupMembers = []
         securableResourceGroupRoles = []
+        undeleteable = false
     }
 
     @Override

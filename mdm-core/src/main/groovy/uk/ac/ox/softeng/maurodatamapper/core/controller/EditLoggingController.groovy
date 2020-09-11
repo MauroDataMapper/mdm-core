@@ -29,6 +29,7 @@ import grails.web.http.HttpHeaders
 import groovy.util.logging.Slf4j
 
 import static org.springframework.http.HttpStatus.CREATED
+import static org.springframework.http.HttpStatus.FORBIDDEN
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.OK
 
@@ -117,9 +118,13 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
             return
         }
 
-        deleteResource instance
+        if (instance.hasProperty('undeleteable') && instance.undeleteable) {
+            undeleteableResponse instance
+        } else {
+            deleteResource instance
 
-        deleteResponse instance
+            deleteResponse instance
+        }
     }
 
     @Override
@@ -198,6 +203,14 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         request.withFormat {
             '*' {
                 render status: NO_CONTENT
+            }
+        }
+    }
+
+    protected void undeleteableResponse(T instance) {
+        request.withFormat {
+            '*' {
+                render status: FORBIDDEN
             }
         }
     }
