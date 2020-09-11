@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
