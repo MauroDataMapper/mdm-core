@@ -57,6 +57,11 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.get(id)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "dt"
+    }
+
     Long count() {
         DataType.count()
     }
@@ -418,5 +423,20 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             replace.removeFromMetadata(md)
             keep.addToMetadata(md.namespace, md.key, md.value, md.createdBy)
         }
+    }
+
+    DataType findDataType(DataModel dataModel, String label) {
+        dataModel.dataTypes.find { it.label == label.trim() }
+    }
+
+    /*
+     * Find a DataType which is labeled with label and whose parent is parentCatalogueItem. The parentCatalogueItem
+     * can be a DataModel.
+     * @param parentCatalogueItem The DataModel which is the parent of the DataType being sought
+     * @param label The label of the DataType being sought
+     */
+    @Override
+    DataType findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
+        findDataType(parentCatalogueItem, label)
     }
 }

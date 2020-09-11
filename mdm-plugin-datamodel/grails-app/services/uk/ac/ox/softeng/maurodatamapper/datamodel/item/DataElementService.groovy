@@ -75,6 +75,11 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "de"
+    }
+
+    @Override
     void deleteAll(Collection<DataElement> dataElements) {
         dataElements.each { delete(it) }
     }
@@ -440,5 +445,25 @@ class DataElementService extends ModelItemService<DataElement> {
 
     void setDataElementIsFromDataElement(DataElement source, DataElement target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+    }
+
+    /**
+     * Find a DataElement which is labeled with label and which belongs to dataClass.
+     * @param dataClass The DataClass which is the parent of the DataElement being sought
+     * @param label The label of the DataElement being sought
+     */
+    DataElement findDataElement(DataClass dataClass, String label) {
+        dataClass.dataElements.find { it.label == label.trim() }
+    }
+
+    /**
+     * Find a DataElement which is labeled with label and whose parent is parentCatalogueItem. The parentCatalogueItem
+     * can be a DataClass.
+     * @param parentCatalogueItem The DataClass which is the parent of the DataElement being sought
+     * @param label The label of the DataElement being sought
+     */
+    @Override
+    DataElement findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
+        findDataElement(parentCatalogueItem, label)
     }
 }

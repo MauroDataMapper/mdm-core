@@ -201,4 +201,8 @@ class CodeSet implements Model<CodeSet> {
         }
         criteria
     }
+
+    CodeSet findByLabel(String label) {
+        CodeSet.findByLabel(label)
+    }
 }

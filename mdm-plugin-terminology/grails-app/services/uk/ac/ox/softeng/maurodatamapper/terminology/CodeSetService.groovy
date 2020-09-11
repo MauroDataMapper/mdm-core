@@ -78,6 +78,11 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.list(pagination)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "cs"
+    }
+
     Long count() {
         CodeSet.count()
     }
@@ -621,5 +626,14 @@ class CodeSetService extends ModelService<CodeSet> {
             codeSet.finalised = finalised
             codeSet.dateFinalised = codeSet.finalised ? OffsetDateTime.now() : null
         }
+    }
+
+    /**
+     * Find a CodeSet by label.
+     * @param label
+     * @return The found CodeSet
+     */
+    CodeSet findByLabel(String label) {
+        CodeSet.findByLabel(label)
     }
 }

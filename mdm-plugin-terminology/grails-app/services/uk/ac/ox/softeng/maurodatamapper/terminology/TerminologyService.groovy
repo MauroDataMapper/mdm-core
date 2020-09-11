@@ -80,6 +80,11 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.list(pagination)
     }
 
+    @Override
+    boolean handlesPathPrefix(String pathPrefix) {
+        pathPrefix == "te"
+    }
+
     Long count() {
         Terminology.count()
     }
@@ -674,5 +679,14 @@ class TerminologyService extends ModelService<Terminology> {
             terminology.finalised = finalised
             terminology.dateFinalised = terminology.finalised ? OffsetDateTime.now() : null
         }
+    }
+
+    /**
+     * Find a Terminology by label.
+     * @param label
+     * @return The found Terminology
+     */
+    Terminology findByLabel(String label) {
+        Terminology.findByLabel(label)
     }
 }

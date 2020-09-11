@@ -61,6 +61,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
         handles(grailsClass.clazz)
     }
 
+    boolean handlesPathPrefix(String pathPrefix) {
+        false
+    }
+
     abstract void deleteAll(Collection<K> catalogueItems)
 
     abstract void delete(K catalogueItem)
@@ -219,6 +223,16 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
                 it.createdBy = it.createdBy ?: catalogueItem.createdBy
             }
         }
+        catalogueItem
+    }
+
+    /*
+     * Find a CatalogueItem which is labeled with label and whose parent is parentCatalogueItem.
+     * @param parentCatalogueItem The CatalogueItem which is the parent of the CatalogueItem being sought
+     * @param label The label of the CatalogueItem being sought
+     */
+    K findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
+        CatalogueItem catalogueItem
         catalogueItem
     }
 }
