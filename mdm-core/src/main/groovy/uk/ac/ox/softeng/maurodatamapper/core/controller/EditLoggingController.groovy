@@ -137,9 +137,9 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
 
     @SuppressWarnings("GrDeprecatedAPIUsage")
     @Override
-    protected T createResource() {
+    protected T createResource(Map includesExcludes = Collections.EMPTY_MAP) {
         T instance = resource.newInstance()
-        bindData instance, getObjectToBind()
+        bindData instance, getObjectToBind(), includesExcludes
         User creator = getCurrentUser()
         if (instance.hasProperty('createdBy') && creator) {
             instance.createdBy = creator.emailAddress

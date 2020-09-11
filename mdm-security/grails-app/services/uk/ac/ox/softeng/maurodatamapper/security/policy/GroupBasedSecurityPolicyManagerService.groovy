@@ -98,6 +98,28 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
         }
         securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
+
+        /*
+        If any groups (UserGroups) have been specified then for each check that both UserGroup and GroupRole can be found from the 
+        groupId and groupRoleId provided. If yes then create a SecurableResourceGroupRole
+        */
+        if (securableResource.hasProperty('groups') && securableResource.groups && securableResource.groups.size() > 0) {
+            securableResource.groups.each {
+                controlGroup = userGroupService.get(it.groupId)
+
+                //groupRoleService throws a null pointer exception if groupRoleId is not valid
+                try {
+                    role = groupRoleService.get(it.groupRoleId)
+                } catch (ex) {
+                    role = null;
+                }
+
+                if (controlGroup && role) {
+                    securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
+                }
+            }
+        }
+        
         refreshUserSecurityPolicyManager(catalogueUser)
     }
 
