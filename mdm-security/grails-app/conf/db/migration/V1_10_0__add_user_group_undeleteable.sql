@@ -18,3 +18,6 @@
 
 ALTER TABLE security.user_group
 ADD undeleteable boolean DEFAULT false;
+
+UPDATE security.user_group
+SET undeleteable = true WHERE name = 'administrators';
