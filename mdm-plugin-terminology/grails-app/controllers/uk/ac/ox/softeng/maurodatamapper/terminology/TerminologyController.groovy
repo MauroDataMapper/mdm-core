@@ -19,8 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyImporterProviderService
 
 class TerminologyController extends ModelController<Terminology> {
 
@@ -28,11 +28,11 @@ class TerminologyController extends ModelController<Terminology> {
 
     TerminologyService terminologyService
 
-    //    @Autowired(required = false)
-    //    Set<TerminologyExporterProviderService> terminologyExporterProviderServices
-    //
-    //    @Autowired(required = false)
-    //    Set<TerminologyImporterProviderService> terminologyImporterProviderServices
+    @Autowired(required = false)
+    Set<TerminologyExporterProviderService> exporterProviderServices
+    
+    @Autowired(required = false)
+    Set<TerminologyImporterProviderService> importerProviderServices
 
     TerminologyController() {
         super(Terminology, 'terminologyId')
@@ -43,18 +43,4 @@ class TerminologyController extends ModelController<Terminology> {
         terminologyService
     }
 
-    @Override
-    Set<ExporterProviderService> getExporterProviderServices() {
-        [] as Set
-    }
-
-    @Override
-    Set<ImporterProviderService> getImporterProviderServices() {
-        [] as Set
-    }
-
-    @Override
-    String getMultipleModelsParamsIdKey() {
-        'terminologies'
-    }
 }
