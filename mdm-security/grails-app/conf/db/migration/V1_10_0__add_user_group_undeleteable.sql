@@ -17,4 +17,4 @@
 --
 
 ALTER TABLE security.user_group
-ADD undeletable boolean DEFAULT false;
+ADD undeleteable boolean DEFAULT false;
