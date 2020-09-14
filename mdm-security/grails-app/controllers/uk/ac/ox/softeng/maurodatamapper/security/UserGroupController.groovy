@@ -136,7 +136,7 @@ class UserGroupController extends EditLoggingController<UserGroup> {
         }
 
         if (instance.undeleteable) {
-            undeleteableResponse()
+            forbidden "UserGroup is undeleteable"
         } else {
             deleteResource instance
 
@@ -151,14 +151,6 @@ class UserGroupController extends EditLoggingController<UserGroup> {
             resource
         )
         userGroupService.delete(resource)
-    }
-
-    private void undeleteableResponse() {
-        request.withFormat {
-            '*' {
-                render status: FORBIDDEN
-            }
-        }
     }
 
     @Override
