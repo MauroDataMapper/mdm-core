@@ -26,6 +26,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 
 import grails.gorm.transactions.Transactional
 
+import static org.springframework.http.HttpStatus.FORBIDDEN
+
 class UserGroupController extends EditLoggingController<UserGroup> {
 
     static allowedMethods = [alterMembers: ["DELETE", "PUT"]]
@@ -117,6 +119,29 @@ class UserGroupController extends EditLoggingController<UserGroup> {
                                                                              params)
         }
         userGroupService.findAllByUser(currentUserSecurityPolicyManager, params)
+    }
+
+    @Transactional
+    @Override
+    def delete() {
+        if (handleReadOnly()) {
+            return
+        }
+
+        def instance = queryForResource(params.id)
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        if (instance.undeleteable) {
+            forbidden "UserGroup is undeleteable"
+        } else {
+            deleteResource instance
+
+            deleteResponse instance
+        }
     }
 
     @Override
