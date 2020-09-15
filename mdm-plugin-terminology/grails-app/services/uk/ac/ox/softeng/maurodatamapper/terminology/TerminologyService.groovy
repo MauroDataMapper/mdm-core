@@ -674,13 +674,6 @@ class TerminologyService extends ModelService<Terminology> {
         }
     }
 
-    void checkfinaliseModel(Terminology terminology, boolean finalised) {
-        if (finalised && !terminology.finalised) {
-            terminology.finalised = finalised
-            terminology.dateFinalised = terminology.finalised ? OffsetDateTime.now() : null
-        }
-    }
-
     /**
      * Find a Terminology by label.
      * @param label
