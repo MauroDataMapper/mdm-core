@@ -73,32 +73,18 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
         terminology
     }
 
-    //mc-9091 TODO
     Terminology bindMapToTerminology(User currentUser, Map terminologyMap) {
         if (!terminologyMap) throw new ApiBadRequestException('FBIP03', 'No TerminologyMap supplied to import')
 
-        /*log.debug('Setting map dataClasses')
-        dataModelMap.dataClasses = dataModelMap.remove('childDataClasses')
-
-        DataModel dataModel = new DataModel()
-        log.debug('Binding map to new DataModel instance')
-        DataBindingUtils.bindObjectToInstance(dataModel, dataModelMap, null, ['id', 'domainType', 'lastUpdated'], null)
-
-        log.debug('Fixing bound DataModel')
-        dataModelService.checkImportedDataModelAssociations(currentUser, dataModel, dataModelMap)
 
         log.info('Import complete')
-        dataModel*/
         Terminology terminology = new Terminology()
         log.debug('Binding map to new Terminology instance')
         DataBindingUtils.bindObjectToInstance(terminology, terminologyMap)
 
         bindTermRelationships(terminology, terminologyMap.termRelationships)
 
-        //log.debug('Fixing bound Terminology')
-        //terminologyService.setCreatedBy(currentUser, terminology)
-        //TODO check? for DataMolde there is a check imporrted associations in data model service
-        terminology.createdBy = currentUser.emailAddress
+        terminologyService.checkImportedTerminologyAssociations(currentUser, terminology, terminologyMap)
 
         log.info('Import complete')
         terminology

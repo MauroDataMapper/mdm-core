@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -57,6 +58,7 @@ class TerminologyService extends ModelService<Terminology> {
     TermRelationshipTypeService termRelationshipTypeService
     TermService termService
     TermRelationshipService termRelationshipService
+    AuthorityService authorityService
 
     MessageSource messageSource
     VersionLinkService versionLinkService
@@ -682,4 +684,36 @@ class TerminologyService extends ModelService<Terminology> {
     Terminology findByLabel(String label) {
         Terminology.findByLabel(label)
     }
+
+    void checkImportedTerminologyAssociations(User importingUser, Terminology terminology, Map bindingMap = [:]) {
+        terminology.createdBy = importingUser.emailAddress
+
+        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the import.
+        terminology.authority = authorityService.getDefaultAuthority()
+        
+        checkFacetsAfterImportingCatalogueItem(terminology)
+
+        //if (dataModel.dataTypes) {
+        //    dataModel.dataTypes.each { dt ->
+        //        dataTypeService.checkImportedDataTypeAssociations(importingUser, dataModel, dt)
+        //    }
+       // }
+
+        //if (dataModel.dataClasses) {
+        //    Collection<DataClass> dataClasses = dataModel.childDataClasses
+        //    dataClasses.each { dc ->
+        //        dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
+        //    }
+       // }
+
+        //if (bindingMap && dataModel.dataTypes) {
+        //    Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll { it.instanceOf(ReferenceType) } as Set<ReferenceType>
+        //    if (referenceTypes) {
+        //        log.debug('Matching {} ReferenceType referenceClasses', referenceTypes.size())
+        //        dataTypeService.matchReferenceClasses(dataModel, referenceTypes,
+        //                                              bindingMap.dataTypes.findAll { it.domainType == DataType.REFERENCE_DOMAIN_TYPE })
+        //    }
+       // }
+        log.debug("Terminology associations checked")
+    }    
 }
