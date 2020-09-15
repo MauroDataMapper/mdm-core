@@ -695,16 +695,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String rightId = responseBody().id
 
         when:
-        GET("$leftId/mergeDiff/$rightId")
-
-        then:
-        verifyResponse OK, response
-        responseBody().left.leftId == id
-        responseBody().left.rightId == leftId
-        responseBody().right.leftId == id
-        responseBody().right.rightId == rightId
-
-        when:
         GET('')
 
         then:
@@ -720,15 +710,51 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         mainBranchId
 
+        when:
+        GET("$leftId/mergeDiff/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().twoWayDiff.leftId == leftId
+        responseBody().twoWayDiff.rightId == rightId
+        responseBody().threeWayDiff.left.leftId == id
+        responseBody().threeWayDiff.left.rightId == leftId
+        responseBody().threeWayDiff.right.leftId == id
+        responseBody().threeWayDiff.right.rightId == rightId
+
+        when:
+        GET("$leftId/mergeDiff/$mainBranchId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().twoWayDiff.leftId == leftId
+        responseBody().twoWayDiff.rightId == mainBranchId
+        responseBody().threeWayDiff.left.leftId == id
+        responseBody().threeWayDiff.left.rightId == leftId
+        responseBody().threeWayDiff.right.leftId == id
+        responseBody().threeWayDiff.right.rightId == mainBranchId
+
+        when:
+        GET("$rightId/mergeDiff/$mainBranchId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().twoWayDiff.leftId == rightId
+        responseBody().twoWayDiff.rightId == mainBranchId
+        responseBody().threeWayDiff.left.leftId == id
+        responseBody().threeWayDiff.left.rightId == rightId
+        responseBody().threeWayDiff.right.leftId == id
+        responseBody().threeWayDiff.right.rightId == mainBranchId
+
         cleanup:
+        removeValidIdObjectUsingTransaction(mainBranchId)
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
         removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(mainBranchId)
         cleanUpRoles(leftId)
         cleanUpRoles(rightId)
         cleanUpRoles(id)
-        cleanUpRoles(mainBranchId)
     }
 
     void 'E23 : test getting current draft model on main branch from side branch (as editor)'() {

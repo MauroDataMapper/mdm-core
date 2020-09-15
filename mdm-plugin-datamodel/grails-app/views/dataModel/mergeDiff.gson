@@ -2,12 +2,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 
 model {
-    ObjectDiff<DataModel> left
-    ObjectDiff<DataModel> right
+    ObjectDiff<DataModel> twoWayDiff
+    Map<String, ObjectDiff<DataModel>> threeWayDiff
+
 }
 
 json {
-    left tmpl.'/objectDiff/objectDiff'(left)
-    right tmpl.'/objectDiff/objectDiff'(right)
+    twoWayDiff tmpl.'/objectDiff/objectDiff'(twoWayDiff)
+    threeWayDiff {
+        left tmpl.'/objectDiff/objectDiff'(threeWayDiff.left)
+        right tmpl.'/objectDiff/objectDiff'(threeWayDiff.right)
+    }
 }
-

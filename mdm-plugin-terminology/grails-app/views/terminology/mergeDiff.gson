@@ -2,12 +2,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 
 model {
-    ObjectDiff<Terminology> left
-    ObjectDiff<Terminology> right
+    ObjectDiff<Terminology> twoWayDiff
+    Map<String, ObjectDiff<Terminology>> threeWayDiff
+
 }
 
 json {
-    left tmpl.'/objectDiff/objectDiff'(left)
-    right tmpl.'/objectDiff/objectDiff'(right)
+    twoWayDiff tmpl.'/objectDiff/objectDiff'(twoWayDiff)
+    threeWayDiff {
+        left tmpl.'/objectDiff/objectDiff'(threeWayDiff.left)
+        right tmpl.'/objectDiff/objectDiff'(threeWayDiff.right)
+    }
 }
-
