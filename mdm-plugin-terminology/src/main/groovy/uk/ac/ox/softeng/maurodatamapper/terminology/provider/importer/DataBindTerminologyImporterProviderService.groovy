@@ -76,15 +76,13 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
     Terminology bindMapToTerminology(User currentUser, Map terminologyMap) {
         if (!terminologyMap) throw new ApiBadRequestException('FBIP03', 'No TerminologyMap supplied to import')
 
-
-        log.info('Import complete')
         Terminology terminology = new Terminology()
         log.debug('Binding map to new Terminology instance')
         DataBindingUtils.bindObjectToInstance(terminology, terminologyMap)
 
         bindTermRelationships(terminology, terminologyMap.termRelationships)
 
-        terminologyService.checkImportedTerminologyAssociations(currentUser, terminology, terminologyMap)
+        terminologyService.checkImportedTerminologyAssociations(currentUser, terminology)
 
         log.info('Import complete')
         terminology

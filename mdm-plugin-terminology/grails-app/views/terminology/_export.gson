@@ -17,4 +17,12 @@ json {
     finalised export.finalised
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
     authority tmpl.'/authority/authority'(export.authority)
+
+    if (export.termRelationshipTypes) termRelationshipTypes tmpl.'/termRelationshipType/export'(export.termRelationshipTypes)
+    if (export.terms) {
+        terms tmpl.'/term/export'(export.terms)
+        if (export.getAllTermRelationships()) {
+            termRelationships tmpl.'/termRelationship/export'(export.getAllTermRelationships())
+        }
+    }
 }

@@ -685,7 +685,19 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.findByLabel(label)
     }
 
-    void checkImportedTerminologyAssociations(User importingUser, Terminology terminology, Map bindingMap = [:]) {
+    /**
+    * When importing a terminology, do checks and setting of required values as follows:
+    * (1) Set the createdBy of the terminology to be the importing user
+    * (2) Always set authority to the default authority, overriding any authority that is set in the import data
+    * (3) Check facets
+    * (4) For each terminologyRelationshipType, set the terminology and if not provided the createdBy
+    * (5) For each term, if not provided set the createdBy
+    * (6) For each termRelationship, if not provided set the createdBy
+    *
+    * @param importingUser The importing user, who will be used to set createdBy
+    * @param terminology   The terminology to be imported
+    */
+    void checkImportedTerminologyAssociations(User importingUser, Terminology terminology) {
         terminology.createdBy = importingUser.emailAddress
 
         //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the import.
@@ -693,27 +705,23 @@ class TerminologyService extends ModelService<Terminology> {
         
         checkFacetsAfterImportingCatalogueItem(terminology)
 
-        //if (dataModel.dataTypes) {
-        //    dataModel.dataTypes.each { dt ->
-        //        dataTypeService.checkImportedDataTypeAssociations(importingUser, dataModel, dt)
-        //    }
-       // }
+        if (terminology.termRelationshipTypes) {
+            terminology.termRelationshipTypes.each {
+                it.terminology = terminology
+                it.createdBy = it.createdBy ?: terminology.createdBy
+            }
+        }
 
-        //if (dataModel.dataClasses) {
-        //    Collection<DataClass> dataClasses = dataModel.childDataClasses
-        //    dataClasses.each { dc ->
-        //        dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
-        //    }
-       // }
+        if (terminology.terms) {
+            terminology.terms.each { term ->
+                term.createdBy = term.createdBy ?: terminology.createdBy
+            }
+        }
 
-        //if (bindingMap && dataModel.dataTypes) {
-        //    Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll { it.instanceOf(ReferenceType) } as Set<ReferenceType>
-        //    if (referenceTypes) {
-        //        log.debug('Matching {} ReferenceType referenceClasses', referenceTypes.size())
-        //        dataTypeService.matchReferenceClasses(dataModel, referenceTypes,
-        //                                              bindingMap.dataTypes.findAll { it.domainType == DataType.REFERENCE_DOMAIN_TYPE })
-        //    }
-       // }
+        terminology.getAllTermRelationships().each { tr ->
+            tr.createdBy = tr.createdBy ?: terminology.createdBy
+        } 
+
         log.debug("Terminology associations checked")
     }    
 }

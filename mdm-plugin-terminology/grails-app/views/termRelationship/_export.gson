@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
+
+model {
+    TermRelationship export
+}
+
+json {
+    relationshipType export.relationshipType.label
+    sourceTerm export.sourceTerm.getCode()
+    targetTerm export.targetTerm.getCode()
+}

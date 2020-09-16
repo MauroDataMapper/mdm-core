@@ -62,21 +62,10 @@ abstract class TerminologyImporterProviderService<T extends TerminologyImporterP
         "Terminology${ProviderType.IMPORTER.name}"
     }
 
-    //mc-9091 TODO
     private Terminology checkImport(User currentUser, Terminology terminology, boolean finalised, boolean importAsNewDocumentationVersion) {
         terminologyService.checkfinaliseModel(terminology, finalised)
         terminologyService.checkDocumentationVersion(terminology, importAsNewDocumentationVersion, currentUser)
         classifierService.checkClassifiers(currentUser, terminology)
-
-        /*dataModel.dataClasses.each { dc ->
-            classifierService.checkClassifiers(currentUser, dc)
-            dc.dataElements.each { de ->
-                classifierService.checkClassifiers(currentUser, de)
-            }
-        }*/
-        /*dataModel.dataTypes.each { dt ->
-            classifierService.checkClassifiers(currentUser, dt)
-        }*/
 
         terminology
     }
