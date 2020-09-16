@@ -49,7 +49,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     @Override
     List<String> getEditAccessMethods() {
-        ['finalise']
+        ['finalise', 'newDocumentationVersion', 'newBranchModelVersion', 'newModelVersion']
     }
 
     @Override

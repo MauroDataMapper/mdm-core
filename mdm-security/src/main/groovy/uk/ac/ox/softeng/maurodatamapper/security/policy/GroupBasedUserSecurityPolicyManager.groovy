@@ -50,9 +50,14 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.F
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODELITEM_DISALLOWED_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_AUTHOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_CONTAINER_ADMIN_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_DISALLOWED_EDITOR_VERSIONING_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_DISALLOWED_FINALISED_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_EDITOR_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_EDITOR_VERSIONING_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_READER_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_READER_VERSIONING_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_REVIEWER_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_BRANCH_MODEL_VERSION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_DOCUMENTATION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_MODEL_VERSION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.READ_ONLY_ACTIONS
@@ -305,6 +310,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
             switch (action) {
                 case NEW_MODEL_VERSION_ACTION:
+                case NEW_BRANCH_MODEL_VERSION_ACTION:
                 case NEW_DOCUMENTATION_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? role.isFinalisedModel() : false
@@ -451,21 +457,23 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
             VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
             if (role) {
-                return MODEL_CONTAINER_ADMIN_ACTIONS - getFinalisedActionsToRemove(role)
+                return MODEL_CONTAINER_ADMIN_ACTIONS - getFinalisedActionsToRemove(role) - getEditorVersioningActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             if (role) {
-                return (MODEL_EDITOR_ACTIONS + getCanBeFinalisedAction(role)) - getFinalisedActionsToRemove(role)
+                return (MODEL_EDITOR_ACTIONS + getCanBeFinalisedAction(role)) - getFinalisedActionsToRemove(role) - getEditorVersioningActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
             if (role) {
-                return (MODEL_AUTHOR_ACTIONS + getCanBeFinalisedAction(role))  - getFinalisedActionsToRemove(role)
+                return (MODEL_AUTHOR_ACTIONS + getCanBeFinalisedAction(role))  - getFinalisedActionsToRemove(role) - getEditorVersioningActionsToRemove(role)
             }
-            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, REVIEWER_ROLE_NAME)) {
-                return MODEL_REVIEWER_ACTIONS
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, REVIEWER_ROLE_NAME)
+            if (role) {
+                return MODEL_REVIEWER_ACTIONS - getReaderVersioningActionsToRemove(role)
             }
-            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, READER_ROLE_NAME)) {
-                return READ_ONLY_ACTIONS
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, READER_ROLE_NAME)
+            if (role) {
+                return MODEL_READER_ACTIONS - getReaderVersioningActionsToRemove(role)
             }
             return []
         }
@@ -481,6 +489,14 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         //If resource can be finalised return CAN_BE_FINALISED_ACTION
         role.canFinaliseModel() ? [FINALISE_ACTION] : []
 
+    }
+
+    private List<String> getEditorVersioningActionsToRemove(VirtualSecurableResourceGroupRole role){
+        !role.isFinalisedModel() ? MODEL_DISALLOWED_EDITOR_VERSIONING_ACTIONS : []
+    }
+
+    private List<String> getReaderVersioningActionsToRemove(VirtualSecurableResourceGroupRole role){
+        !role.isFinalisedModel() ? MODEL_READER_VERSIONING_ACTIONS : []
     }
 
     private boolean hasAnyAccessToSecuredResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
