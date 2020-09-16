@@ -679,7 +679,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def mergeDiff = dataModelService.mergeDiff(left, right)
 
         then:
-        mergeDiff == [left: dataModel.diff(left), right: dataModel.diff(right)]
+        mergeDiff == [twoWayDiff: left.diff(right), threeWayDiff: [left: dataModel.diff(left), right: dataModel.diff(right)]]
     }
 
     void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {

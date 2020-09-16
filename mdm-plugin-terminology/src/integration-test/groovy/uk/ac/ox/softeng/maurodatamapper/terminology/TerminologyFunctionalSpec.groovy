@@ -720,16 +720,54 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String rightId = responseBody().id
 
         when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        String mainId = responseBody().items.find {
+            it.label == 'Functional Test Model' &&
+            !(it.id in [id, leftId, rightId])
+        }?.id
+        mainId
+
+        when:
         GET("$leftId/mergeDiff/$rightId")
 
         then:
         verifyResponse OK, response
-        responseBody().left.leftId == id
-        responseBody().left.rightId == leftId
-        responseBody().right.leftId == id
-        responseBody().right.rightId == rightId
+        responseBody().twoWayDiff.leftId == leftId
+        responseBody().twoWayDiff.rightId == rightId
+        responseBody().threeWayDiff.left.leftId == id
+        responseBody().threeWayDiff.left.rightId == leftId
+        responseBody().threeWayDiff.right.leftId == id
+        responseBody().threeWayDiff.right.rightId == rightId
+
+        when:
+        GET("$leftId/mergeDiff/$mainId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().twoWayDiff.leftId == leftId
+        responseBody().twoWayDiff.rightId == mainId
+        responseBody().threeWayDiff.left.leftId == id
+        responseBody().threeWayDiff.left.rightId == leftId
+        responseBody().threeWayDiff.right.leftId == id
+        responseBody().threeWayDiff.right.rightId == mainId
+
+        when:
+        GET("$rightId/mergeDiff/$mainId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().twoWayDiff.leftId == rightId
+        responseBody().twoWayDiff.rightId == mainId
+        responseBody().threeWayDiff.left.leftId == id
+        responseBody().threeWayDiff.left.rightId == rightId
+        responseBody().threeWayDiff.right.leftId == id
+        responseBody().threeWayDiff.right.rightId == mainId
 
         cleanup:
+        cleanUpData(mainId)
         cleanUpData(leftId)
         cleanUpData(rightId)
         cleanUpData(id)

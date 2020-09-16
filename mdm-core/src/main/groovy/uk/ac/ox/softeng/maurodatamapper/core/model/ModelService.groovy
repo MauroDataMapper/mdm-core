@@ -107,9 +107,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         modelClass.byLabelAndFinalisedAndLatestModelVersion(label).get()
     }
 
-    Map<String, ObjectDiff<K>> mergeDiff(K leftModel, K rightModel) {
+    Map<String, Object> mergeDiff(K leftModel, K rightModel) {
         def commonAncestor = commonAncestor(leftModel, rightModel)
-        [left: commonAncestor.diff(leftModel), right: commonAncestor.diff(rightModel)]
+        [twoWayDiff: leftModel.diff(rightModel), threeWayDiff: [left: commonAncestor.diff(leftModel), right: commonAncestor.diff(rightModel)]]
     }
 
     K currentMainBranch(K model) {
