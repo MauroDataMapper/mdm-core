@@ -194,11 +194,11 @@ class Terminology implements Model<Terminology> {
     }
 
     static DetachedCriteria<Terminology> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
-        by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItem'))
+        by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItemId'))
     }
 
     static DetachedCriteria<Terminology> byMetadataNamespace(String metadataNamespace) {
-        by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItem'))
+        by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItemId'))
     }
 
     static DetachedCriteria<Terminology> byDeleted() {
