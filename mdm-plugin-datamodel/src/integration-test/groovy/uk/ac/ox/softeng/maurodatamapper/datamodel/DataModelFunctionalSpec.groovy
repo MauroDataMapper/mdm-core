@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -1020,6 +1021,39 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         cleanup:
         cleanUpData(id)
+    }
+
+    void 'test diffing branches'() {
+        given:
+        // Create base model and finalise
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [:])
+        verifyResponse OK, response
+
+        // Create a new branch main
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
+
+        // Create a new branch test
+        PUT("$id/newBranchModelVersion", [branchName: 'test'])
+        verifyResponse CREATED, response
+        String testId = responseBody().id
+
+        // Add dataclass test2 to main branch
+        POST("$mainId/dataClasses", [label: 'test2'])
+        verifyResponse CREATED, response
+
+        // Add dataclass test2 to test branch
+        POST("$testId/dataClasses", [label: 'test2'])
+        verifyResponse CREATED, response
+
+        when: 'performing diff'
+        GET("$testId/diff/$mainId")
+
+        then:
+        verifyResponse OK, response
+        responseBody()
     }
 
     void 'test export a single DataModel'() {
