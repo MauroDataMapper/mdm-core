@@ -298,7 +298,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
 
         and:
-        response.body().availableActions == ['delete', 'show', 'update'] //TODO can this be restricted by the core plugin?
+        response.body().availableActions == ['delete', 'show', 'update', "createNewVersions", "newForkModel", "newModelVersion", "newDocumentationVersion", "newBranchModelVersion"] //TODO can this be restricted by the core plugin?
         response.body().finalised
         response.body().dateFinalised
 
