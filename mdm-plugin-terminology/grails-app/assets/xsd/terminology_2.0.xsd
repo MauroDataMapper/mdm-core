@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mct="http://metadatacatalogue.com/terminology/1.1" elementFormDefault="qualified"
+           targetNamespace="http://metadatacatalogue.com/terminology/1.1">
+  <xs:element name="terminology" type="mct:terminologyCT" />
+  <xs:complexType name="terminologyCT">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mct:uuid" />
+      <xs:element name="label" type="mct:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="aliases" type="mct:aliasesType" />
+      <xs:element minOccurs="0" name="classifiers" type="mct:classifiersType" />
+      <xs:element minOccurs="0" name="metadata" type="mct:metadataCollectionType" />
+      <xs:element minOccurs="0" name="annotations" type="mct:annotationsType" />
+      <xs:element minOccurs="0" name="author" type="xs:string" />
+      <xs:element minOccurs="0" name="organisation" type="xs:string" />
+      <xs:element name="documentationVersion" type="mct:mandatoryString">
+        <xs:annotation>
+          <xs:documentation>If adding a Terminology which already exists in the Metadata Catalogue then this must be provided and be a later version to the one in the Catalogue. 
+Otherwise you will get an import error due to non-unique labels</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="finalised" type="xs:boolean" />
+      <xs:element minOccurs="0" name="dateFinalised" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>If finalised is true then this element is NOT optional</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="termRelationshipTypes" type="mct:termRelationshipTypeCollectionCT" minOccurs="0" />
+      <xs:element name="terms" type="mct:termCollectionCT" minOccurs="0" />
+      <xs:element name="termRelationships" type="mct:termRelationshipCollectionCT" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="termCT">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mct:uuid" />
+      <xs:element name="code" type="mct:mandatoryString" />
+      <xs:element name="definition" type="mct:mandatoryString" />
+      <xs:element minOccurs="0" name="depth" type="xs:integer" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="aliases" type="mct:aliasesType" />
+      <xs:element minOccurs="0" name="classifiers" type="mct:classifiersType" />
+      <xs:element minOccurs="0" name="metadata" type="mct:metadataCollectionType" />
+      <xs:element minOccurs="0" name="annotations" type="mct:annotationsType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="termRelationshipCT">
+    <xs:sequence>
+      <xs:element name="relationshipType" type="mct:mandatoryString">
+        <xs:annotation>
+          <xs:documentation>The 'label' matching a predefined term relationship type</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="sourceTerm" type="mct:mandatoryString">
+        <xs:annotation>
+          <xs:documentation>The 'code' for a predefined term</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="targetTerm" type="mct:mandatoryString">
+        <xs:annotation>
+          <xs:documentation>The 'code' for a predefined term</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="termRelationshipTypeCT">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mct:uuid" />
+      <xs:element name="label" type="mct:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="displayLabel" type="mct:mandatoryString" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+      <xs:element minOccurs="1" name="parentalRelationship" type="xs:boolean" />
+      <xs:element minOccurs="1" name="childRelationship" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="termCollectionCT">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="term" type="mct:termCT" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="termRelationshipCollectionCT">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="termRelationship" type="mct:termRelationshipCT" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="termRelationshipTypeCollectionCT">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="termRelationshipType" type="mct:termRelationshipTypeCT" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="aliasesType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="alias" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="classifiersType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="classifier" type="mct:classifierType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="classifierType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mct:uuid" />
+      <xs:element name="label" type="mct:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="annotationsType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="annotation" type="mct:annotationType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="annotationType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mct:uuid" />
+      <xs:element minOccurs="0" name="label" type="mct:mandatoryString">
+        <xs:annotation>
+          <xs:documentation>Only optional if is a child annotation, the top level annotation must have a label</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="childAnnotations" type="mct:annotationsType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="metadataCollectionType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="metadata" type="mct:metadataType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="metadataType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mct:uuid" />
+      <xs:element name="namespace" type="xs:string" />
+      <xs:element name="key" type="xs:string" />
+      <xs:element minOccurs="1" name="value" type="xs:string" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="mandatoryString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="multiplicity">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="-1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="uuid">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-fF0-9]{4}-[a-f0-9]{12}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
