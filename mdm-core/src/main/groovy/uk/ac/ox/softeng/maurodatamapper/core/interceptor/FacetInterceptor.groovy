@@ -19,10 +19,10 @@ package uk.ac.ox.softeng.maurodatamapper.core.interceptor
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
@@ -75,7 +75,7 @@ abstract class FacetInterceptor implements MdmInterceptor {
 
     Model getOwningModel() {
         ModelItem modelItem = findModelItemByDomainTypeAndId(getOwningClass(), getOwningId())
-        Model model = modelItem.getModel()
+        modelItem.getModel()
     }
 
     ModelItem findModelItemByDomainTypeAndId(Class domainType, UUID catalogueItemId) {
