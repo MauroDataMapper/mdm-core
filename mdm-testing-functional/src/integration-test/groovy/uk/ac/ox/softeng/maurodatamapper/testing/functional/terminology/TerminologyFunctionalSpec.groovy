@@ -299,7 +299,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
 
     }
 
-    void 'L20 : test changing folder from Terminology context (as not logged in)'() {
+    void 'L30 : test changing folder from Terminology context (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -313,7 +313,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'N20 : test changing folder from Terminology context (as authenticated/no access)'() {
+    void 'N30 : test changing folder from Terminology context (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -328,7 +328,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'R20 : test changing folder from Terminology context (as reader)'() {
+    void 'R30 : test changing folder from Terminology context (as reader)'() {
         given:
         String id = getValidId()
 
@@ -343,7 +343,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'E20 : test changing folder from Terminology context (as editor)'() {
+    void 'E30 : test changing folder from Terminology context (as editor)'() {
         given:
         String id = getValidId()
 
@@ -358,7 +358,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'A20 : test changing folder from Terminology context (as admin)'() {
+    void 'A30 : test changing folder from Terminology context (as admin)'() {
         given:
         String id = getValidId()
 
@@ -376,7 +376,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'L21 : test changing folder from Folder context (as not logged in)'() {
+    void 'L31 : test changing folder from Folder context (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -390,7 +390,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'N21 : test changing folder from Folder context (as authenticated/no access)'() {
+    void 'N31 : test changing folder from Folder context (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -405,7 +405,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'R21 : test changing folder from Folder context (as reader)'() {
+    void 'R31 : test changing folder from Folder context (as reader)'() {
         given:
         String id = getValidId()
 
@@ -420,7 +420,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'E21 : test changing folder from Folder context (as editor)'() {
+    void 'E31 : test changing folder from Folder context (as editor)'() {
         given:
         String id = getValidId()
 
@@ -435,7 +435,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'A21 : test changing folder from Folder context (as admin)'() {
+    void 'A31 : test changing folder from Folder context (as admin)'() {
         given:
         String id = getValidId()
 
@@ -468,7 +468,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
 
-    void 'L22 : test diffing 2 Terminologys (as not logged in)'() {
+    void 'L32 : test diffing 2 Terminologys (as not logged in)'() {
 
         when: 'not logged in'
         GET("${getComplexTerminologyId()}/diff/${getSimpleTerminologyId()}")
@@ -477,7 +477,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         verifyNotFound response, getComplexTerminologyId()
     }
 
-    void 'N22 : test diffing 2 Terminologys (as authenticated/no access)'() {
+    void 'N32 : test diffing 2 Terminologys (as authenticated/no access)'() {
         when:
         loginAuthenticated()
         GET("${getComplexTerminologyId()}/diff/${getSimpleTerminologyId()}")
@@ -486,7 +486,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         verifyNotFound response, getComplexTerminologyId()
     }
 
-    void 'R22A : test diffing 2 Terminologys (as reader of LH model)'() {
+    void 'R32A : test diffing 2 Terminologys (as reader of LH model)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -504,7 +504,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'R22B : test diffing 2 Terminologys (as reader of RH model)'() {
+    void 'R32B : test diffing 2 Terminologys (as reader of RH model)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -522,7 +522,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'R22C : test diffing 2 Terminologys (as reader of both models)'() {
+    void 'R32C : test diffing 2 Terminologys (as reader of both models)'() {
         when:
         loginReader()
         GET("${getComplexTerminologyId()}/diff/${getSimpleTerminologyId()}", STRING_ARG)
@@ -531,7 +531,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         verifyJsonResponse OK, getExpectedDiffJson()
     }
 
-    void 'L23 : test export a single Terminology (as not logged in)'() {
+    void 'L33 : test export a single Terminology (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -545,7 +545,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'N23 : test export a single Terminology (as authenticated/no access)'() {
+    void 'N33 : test export a single Terminology (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -561,7 +561,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'R23 : test export a single Terminology (as reader)'() {
+    void 'R33 : test export a single Terminology (as reader)'() {
         given:
         String id = getValidId()
 
@@ -594,7 +594,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'L24 : test export multiple Terminologys (json only exports first id) (as not logged in)'() {
+    void 'L34 : test export multiple Terminologys (json only exports first id) (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -610,7 +610,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         removeValidIdObject(id)
     }
 
-    void 'N24 : test export multiple Terminologys (json only exports first id) (as authenticated/no access)'() {
+    void 'N34 : test export multiple Terminologys (json only exports first id) (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -627,7 +627,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'R24 : test export multiple Terminologys (json only exports first id) (as reader)'() {
+    void 'R34 : test export multiple Terminologys (json only exports first id) (as reader)'() {
         given:
         String id = getValidId()
 
@@ -663,7 +663,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'L25 : test import basic Terminology (as not logged in)'() {
+    void 'L35 : test import basic Terminology (as not logged in)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -696,7 +696,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'N25 : test import basic Terminology (as authenticated/no access)'() {
+    void 'N35 : test import basic Terminology (as authenticated/no access)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -730,7 +730,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'R25 : test import basic Terminology (as reader)'() {
+    void 'R35 : test import basic Terminology (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -764,7 +764,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'E25A : test import basic Terminology (as editor)'() {
+    void 'E35A : test import basic Terminology (as editor)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -805,7 +805,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'E25B : test import basic Terminology as new documentation version (as editor)'() {
+    void 'E35B : test import basic Terminology as new documentation version (as editor)'() {
         given:
         String id = getValidId()
         loginReader()

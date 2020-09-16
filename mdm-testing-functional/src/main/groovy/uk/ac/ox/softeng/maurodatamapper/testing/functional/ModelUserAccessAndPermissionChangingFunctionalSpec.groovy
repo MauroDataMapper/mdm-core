@@ -583,7 +583,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(mainBranchId)
     }
 
-    void 'E26 : test finding common ancestor of two Model<T> (as editor)'() {
+    void 'E20 : test finding common ancestor of two Model<T> (as editor)'() {
         given:
         String id = getValidFinalisedId()
         loginEditor()
@@ -602,16 +602,34 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().id == id
         responseBody().label == validJson.label
 
+        when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 3
+
+        when:
+        String mainBranchId = responseBody().items.find {
+            it.label == validJson.label &&
+            !(it.id in [leftId, rightId, id])
+        }?.id
+
+        then:
+        mainBranchId
+
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
         cleanUpRoles(id)
         cleanUpRoles(leftId)
         cleanUpRoles(rightId)
+        cleanUpRoles(mainBranchId)
     }
 
-    void 'E27 : test finding latest version of a Model<T> (as editor)'() {
+    void 'E21 : test finding latest version of a Model<T> (as editor)'() {
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -647,6 +665,13 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().id == expectedId
         responseBody().label == validJson.label
 
+        when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 4
+
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(newBranchId)
@@ -658,7 +683,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(latestDraftId)
     }
 
-    void 'E28 : test finding merge difference of two Model<T> (as editor)'() {
+    void 'E22 : test finding merge difference of two Model<T> (as editor)'() {
         given:
         String id = getValidFinalisedId()
         loginEditor()
@@ -679,16 +704,34 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().right.leftId == id
         responseBody().right.rightId == rightId
 
+        when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 3
+
+        when:
+        String mainBranchId = responseBody().items.find {
+            it.label == validJson.label &&
+            !(it.id in [leftId, rightId, id])
+        }?.id
+
+        then:
+        mainBranchId
+
         cleanup:
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
         removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(mainBranchId)
         cleanUpRoles(leftId)
         cleanUpRoles(rightId)
         cleanUpRoles(id)
+        cleanUpRoles(mainBranchId)
     }
 
-    void 'E29 : test getting current draft model on main branch from side branch (as editor)'() {
+    void 'E23 : test getting current draft model on main branch from side branch (as editor)'() {
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -727,7 +770,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(latestDraftId)
     }
 
-    void 'E30 : test getting all draft models (as editor)'() {
+    void 'E24 : test getting all draft models (as editor)'() {
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)

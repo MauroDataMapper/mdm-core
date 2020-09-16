@@ -455,7 +455,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
 
     }
 
-    void 'L20 : test getting DataModel hierarchy (as not logged in)'() {
+    void 'L30 : test getting DataModel hierarchy (as not logged in)'() {
         given:
         String id = getSimpleDataModelId()
 
@@ -466,7 +466,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         verifyNotFound response, id
     }
 
-    void 'N20 : test getting DataModel hierarchy (as authenticated/no access)'() {
+    void 'N30 : test getting DataModel hierarchy (as authenticated/no access)'() {
         when: 'authenticated user'
         String id = getSimpleDataModelId()
         loginAuthenticated()
@@ -476,7 +476,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         verifyNotFound response, id
     }
 
-    void 'R20 : test getting DataModel hierarchy (as reader)'() {
+    void 'R30 : test getting DataModel hierarchy (as reader)'() {
         when: 'logged in as reader'
         String id = getSimpleDataModelId()
         loginReader()
@@ -543,7 +543,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
 }'''
     }
 
-    void 'E20a : test getting DataModel hierarchy (as editor)'() {
+    void 'E30a : test getting DataModel hierarchy (as editor)'() {
         when: 'logged in as editor'
         String id = getSimpleDataModelId()
         loginEditor()
@@ -620,7 +620,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
 }'''
     }
 
-    void 'E20b : test getting complex DataModel hierarchy (as editor)'() {
+    void 'E30b : test getting complex DataModel hierarchy (as editor)'() {
         when: 'logged in as editor'
         String id = getComplexDataModelId()
         loginEditor()
@@ -1090,7 +1090,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
 }'''
     }
 
-    void 'L21 : test changing folder from DataModel context (as not logged in)'() {
+    void 'L31 : test changing folder from DataModel context (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -1104,7 +1104,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'N21 : test changing folder from DataModel context (as authenticated/no access)'() {
+    void 'N31 : test changing folder from DataModel context (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -1119,7 +1119,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'R21 : test changing folder from DataModel context (as reader)'() {
+    void 'R31 : test changing folder from DataModel context (as reader)'() {
         given:
         String id = getValidId()
 
@@ -1134,7 +1134,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'E21 : test changing folder from DataModel context (as editor)'() {
+    void 'E31 : test changing folder from DataModel context (as editor)'() {
         given:
         String id = getValidId()
 
@@ -1149,7 +1149,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'A21 : test changing folder from DataModel context (as admin)'() {
+    void 'A31 : test changing folder from DataModel context (as admin)'() {
         given:
         String id = getValidId()
 
@@ -1167,7 +1167,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'L22 : test changing folder from Folder context (as not logged in)'() {
+    void 'L32 : test changing folder from Folder context (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -1181,7 +1181,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'N22 : test changing folder from Folder context (as authenticated/no access)'() {
+    void 'N32 : test changing folder from Folder context (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -1196,7 +1196,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'R22 : test changing folder from Folder context (as reader)'() {
+    void 'R32 : test changing folder from Folder context (as reader)'() {
         given:
         String id = getValidId()
 
@@ -1211,7 +1211,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'E22 : test changing folder from Folder context (as editor)'() {
+    void 'E32 : test changing folder from Folder context (as editor)'() {
         given:
         String id = getValidId()
 
@@ -1226,7 +1226,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'A22 : test changing folder from Folder context (as admin)'() {
+    void 'A32 : test changing folder from Folder context (as admin)'() {
         given:
         String id = getValidId()
 
@@ -1259,7 +1259,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     }
 
 
-    void 'L23 : test diffing 2 DataModels (as not logged in)'() {
+    void 'L33 : test diffing 2 DataModels (as not logged in)'() {
 
         when: 'not logged in'
         GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}")
@@ -1268,7 +1268,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         verifyNotFound response, getComplexDataModelId()
     }
 
-    void 'N23 : test diffing 2 DataModels (as authenticated/no access)'() {
+    void 'N33 : test diffing 2 DataModels (as authenticated/no access)'() {
         when:
         loginAuthenticated()
         GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}")
@@ -1277,7 +1277,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         verifyNotFound response, getComplexDataModelId()
     }
 
-    void 'R23A : test diffing 2 DataModels (as reader of LH model)'() {
+    void 'R33A : test diffing 2 DataModels (as reader of LH model)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -1295,7 +1295,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'R23B : test diffing 2 DataModels (as reader of RH model)'() {
+    void 'R33B : test diffing 2 DataModels (as reader of RH model)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -1313,7 +1313,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'R23C : test diffing 2 DataModels (as reader of both models)'() {
+    void 'R33C : test diffing 2 DataModels (as reader of both models)'() {
         when:
         loginReader()
         GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}", STRING_ARG)
@@ -1322,7 +1322,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         verifyJsonResponse OK, getExpectedDiffJson()
     }
 
-    void 'L24 : test export a single DataModel (as not logged in)'() {
+    void 'L34 : test export a single DataModel (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -1336,7 +1336,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'N24 : test export a single DataModel (as authenticated/no access)'() {
+    void 'N34 : test export a single DataModel (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -1351,7 +1351,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'R24 : test export a single DataModel (as reader)'() {
+    void 'R34 : test export a single DataModel (as reader)'() {
         given:
         String id = getValidId()
 
@@ -1389,7 +1389,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'L25 : test export multiple DataModels (json only exports first id) (as not logged in)'() {
+    void 'L35 : test export multiple DataModels (json only exports first id) (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -1405,7 +1405,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'N25 : test export multiple DataModels (json only exports first id) (as authenticated/no access)'() {
+    void 'N35 : test export multiple DataModels (json only exports first id) (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -1421,7 +1421,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'R25 : test export multiple DataModels (json only exports first id) (as reader)'() {
+    void 'R35 : test export multiple DataModels (json only exports first id) (as reader)'() {
         given:
         String id = getValidId()
 
@@ -1461,7 +1461,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'L26 : test import basic DataModel (as not logged in)'() {
+    void 'L36 : test import basic DataModel (as not logged in)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -1493,7 +1493,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'N26 : test import basic DataModel (as authenticated/no access)'() {
+    void 'N36 : test import basic DataModel (as authenticated/no access)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -1526,7 +1526,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'R26 : test import basic DataModel (as reader)'() {
+    void 'R36 : test import basic DataModel (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -1559,7 +1559,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id)
     }
 
-    void 'E26A : test import basic DataModel (as editor)'() {
+    void 'E36A : test import basic DataModel (as editor)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -1599,7 +1599,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id, NOT_FOUND)
     }
 
-    void 'E26B : test import basic DataModel as new documentation version (as editor)'() {
+    void 'E36B : test import basic DataModel as new documentation version (as editor)'() {
         given:
         String id = getValidId()
         loginReader()

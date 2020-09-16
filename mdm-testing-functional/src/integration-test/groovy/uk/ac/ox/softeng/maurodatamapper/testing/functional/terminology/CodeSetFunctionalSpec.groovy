@@ -270,7 +270,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
 
     }
 
-    void 'L20 : test changing folder from CodeSet context (as not logged in)'() {
+    void 'L30 : test changing folder from CodeSet context (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -284,7 +284,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'N20 : test changing folder from CodeSet context (as authenticated/no access)'() {
+    void 'N30 : test changing folder from CodeSet context (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -299,7 +299,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'R20 : test changing folder from CodeSet context (as reader)'() {
+    void 'R30 : test changing folder from CodeSet context (as reader)'() {
         given:
         String id = getValidId()
 
@@ -314,7 +314,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'E20 : test changing folder from CodeSet context (as editor)'() {
+    void 'E30 : test changing folder from CodeSet context (as editor)'() {
         given:
         String id = getValidId()
 
@@ -329,7 +329,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'A20 : test changing folder from CodeSet context (as admin)'() {
+    void 'A30 : test changing folder from CodeSet context (as admin)'() {
         given:
         String id = getValidId()
 
@@ -347,7 +347,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'L21 : test changing folder from Folder context (as not logged in)'() {
+    void 'L31 : test changing folder from Folder context (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -361,7 +361,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'N21 : test changing folder from Folder context (as authenticated/no access)'() {
+    void 'N31 : test changing folder from Folder context (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -376,7 +376,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'R21 : test changing folder from Folder context (as reader)'() {
+    void 'R31 : test changing folder from Folder context (as reader)'() {
         given:
         String id = getValidId()
 
@@ -391,7 +391,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'E21 : test changing folder from Folder context (as editor)'() {
+    void 'E31 : test changing folder from Folder context (as editor)'() {
         given:
         String id = getValidId()
 
@@ -406,7 +406,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'A21 : test changing folder from Folder context (as admin)'() {
+    void 'A31 : test changing folder from Folder context (as admin)'() {
         given:
         String id = getValidId()
 
@@ -439,7 +439,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = 'no 2nd model to diff against')
-    void 'L22 : test diffing 2 CodeSets (as not logged in)'() {
+    void 'L32 : test diffing 2 CodeSets (as not logged in)'() {
 
         when: 'not logged in'
         GET("${getComplexCodeSetId()}/diff/${getSimpleCodeSetId()}")
@@ -449,7 +449,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = 'no 2nd model to diff against')
-    void 'N22 : test diffing 2 CodeSets (as authenticated/no access)'() {
+    void 'N32 : test diffing 2 CodeSets (as authenticated/no access)'() {
         when:
         loginAuthenticated()
         GET("${getComplexCodeSetId()}/diff/${getSimpleCodeSetId()}")
@@ -459,7 +459,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = 'no 2nd model to diff against')
-    void 'R22A : test diffing 2 CodeSets (as reader of LH model)'() {
+    void 'R32A : test diffing 2 CodeSets (as reader of LH model)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -478,7 +478,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = 'no 2nd model to diff against')
-    void 'R22B : test diffing 2 CodeSets (as reader of RH model)'() {
+    void 'R32B : test diffing 2 CodeSets (as reader of RH model)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -497,7 +497,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = 'no 2nd model to diff against')
-    void 'R22C : test diffing 2 CodeSets (as reader of both models)'() {
+    void 'R32C : test diffing 2 CodeSets (as reader of both models)'() {
         when:
         loginReader()
         GET("${getComplexCodeSetId()}/diff/${getSimpleCodeSetId()}", STRING_ARG)
@@ -506,7 +506,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         verifyJsonResponse OK, getExpectedDiffJson()
     }
 
-    void 'L23 : test export a single CodeSet (as not logged in)'() {
+    void 'L33 : test export a single CodeSet (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -520,7 +520,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'N23 : test export a single CodeSet (as authenticated/no access)'() {
+    void 'N33 : test export a single CodeSet (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -536,7 +536,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'R23 : test export a single CodeSet (as reader)'() {
+    void 'R33 : test export a single CodeSet (as reader)'() {
         given:
         String id = getValidId()
 
@@ -569,7 +569,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'L24 : test export multiple CodeSets (json only exports first id) (as not logged in)'() {
+    void 'L34 : test export multiple CodeSets (json only exports first id) (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -585,7 +585,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         removeValidIdObject(id)
     }
 
-    void 'N24 : test export multiple CodeSets (json only exports first id) (as authenticated/no access)'() {
+    void 'N34 : test export multiple CodeSets (json only exports first id) (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
@@ -602,7 +602,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'R24 : test export multiple CodeSets (json only exports first id) (as reader)'() {
+    void 'R34 : test export multiple CodeSets (json only exports first id) (as reader)'() {
         given:
         String id = getValidId()
 
@@ -638,7 +638,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'L25 : test import basic CodeSet (as not logged in)'() {
+    void 'L35 : test import basic CodeSet (as not logged in)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -671,7 +671,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'N25 : test import basic CodeSet (as authenticated/no access)'() {
+    void 'N35 : test import basic CodeSet (as authenticated/no access)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -705,7 +705,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'R25 : test import basic CodeSet (as reader)'() {
+    void 'R35 : test import basic CodeSet (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -739,7 +739,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'E25A : test import basic CodeSet (as editor)'() {
+    void 'E35A : test import basic CodeSet (as editor)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -780,7 +780,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'E25B : test import basic CodeSet as new documentation version (as editor)'() {
+    void 'E35B : test import basic CodeSet as new documentation version (as editor)'() {
         given:
         String id = getValidId()
         loginReader()
