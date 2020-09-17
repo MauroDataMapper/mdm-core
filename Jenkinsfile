@@ -84,6 +84,20 @@ pipeline {
 
         stage('Parallel Unit Test') {
             parallel {
+                stage('mdm-common') {
+                    steps {
+                        dir('mdm-core') {
+                            sh "./gradlew test"
+                        }
+                    }
+                    post {
+                        always {
+                            dir('mdm-common') {
+                                junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+                            }
+                        }
+                    }
+                }
                 stage('mdm-core') {
                     steps {
                         dir('mdm-core') {

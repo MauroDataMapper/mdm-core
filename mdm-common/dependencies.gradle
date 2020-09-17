@@ -24,9 +24,11 @@ dependencies {
     api group: 'org.hibernate', name: 'hibernate-search-orm', version: hibernateSearchOrmVersion
     api 'org.apache.lucene:lucene-analyzers-common'
 
-    constraints{
-        api("org.apache.lucene:lucene-analyzers-common:$luceneVersion"){
+    constraints {
+        api("org.apache.lucene:lucene-analyzers-common:$luceneVersion") {
             because 'hibernate-search-orm requires the older version, it has not been updated beyong'
         }
     }
+
+    testImplementation 'org.spockframework:spock-core'
 }
