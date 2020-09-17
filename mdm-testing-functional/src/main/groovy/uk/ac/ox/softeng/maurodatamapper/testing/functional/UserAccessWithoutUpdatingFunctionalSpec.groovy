@@ -29,6 +29,7 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.apache.commons.lang3.NotImplementedException
+import org.junit.Assert
 import spock.lang.Stepwise
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
@@ -242,9 +243,26 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
     @Transactional
     void cleanupUserGroups() {
-        log.info('Cleaning up groups, {} user groups still remain. Ignoring groups {},',
-                 UserGroup.byNameNotInList(getPermanentGroupNames()).size(), getPermanentGroupNames())
-        UserGroup.byNameNotInList(getPermanentGroupNames()).deleteAll()
+        Number groupsLeftOver = UserGroup.byNameNotInList(getPermanentGroupNames()).count()
+        if (groupsLeftOver) {
+            log.info('Cleaning up groups, {} user groups still remain. Ignoring groups {},', groupsLeftOver, getPermanentGroupNames())
+            List<UserGroup> groupsToDelete = UserGroup.byNameNotInList(getPermanentGroupNames()).list()
+
+            // This is purely here to provide info about roles and resources which havent been cleaned up
+            // It should not be used to perform cleanp of these roles and resources
+            Number rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).count()
+            if (rolesLeftOver) {
+                log.warn('Roles not cleaned up : {}', rolesLeftOver)
+                List<SecurableResourceGroupRole> leftOverRoles = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
+                leftOverRoles.each { role ->
+                    log.warn('Left over role resource {}:{}', role.securableResourceDomainType, role.securableResourceId)
+                }
+                Assert.fail('Roles remaining these need to be cleaned up from another test.' +
+                            '\nSee logs to find out what roles and resources havent been cleaned')
+            }
+            UserGroup.byNameNotInList(getPermanentGroupNames()).deleteAll()
+        }
+
         sessionFactory.currentSession.flush()
         assert UserGroup.count() == getPermanentGroupNames().size()
     }

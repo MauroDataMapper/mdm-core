@@ -17,10 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
-import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
@@ -32,8 +31,8 @@ import io.micronaut.http.HttpStatus
 
 import java.util.regex.Pattern
 
-import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * <pre>
@@ -637,6 +636,9 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
                 }
             ]
         }'''
+
+        cleanup:
+        removeValidIdObject(folderId)
     }
 
     void 'Test create folder with two user groups specified'() {
@@ -702,6 +704,9 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
                 }
             ]
         }'''
+
+        cleanup:
+        removeValidIdObject(folderId)
     }
 
     void 'Test create folder with one user group invalidly specified'() {
@@ -710,7 +715,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         POST("", getInvalidJsonWithOneGroup())
 
         then:
-        response.status == HttpStatus.CREATED
+        response.status == CREATED
         response.body().id
         String folderId = response.body().id
 
@@ -723,5 +728,8 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
             "items": [                
             ]
         }'''
+
+        cleanup:
+        removeValidIdObject(folderId)
     }
 }
