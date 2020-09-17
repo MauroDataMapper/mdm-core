@@ -253,6 +253,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     @Transactional
     def finalise(FinaliseData finaliseData) {
 
+        if (!finaliseData.validate()) {
+            respond finaliseData.errors
+            return
+        }
+
         T instance = queryForResource params[alternateParamsIdKey]
 
         if (!instance) return notFound(params[alternateParamsIdKey])

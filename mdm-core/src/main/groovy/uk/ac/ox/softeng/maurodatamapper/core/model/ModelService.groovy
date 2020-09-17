@@ -161,8 +161,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         Version parentModelVersion = getParentModelVersion(model)
 
         if (!parentModelVersion) {
-            // No parent model then next version is always 1.0.0
-            return Version.from('1.0.0')
+            // No parent model then set the current version to 0 to allow the first finalisation to be defined using the versionChangeType
+            parentModelVersion = Version.from('0.0.0')
         }
 
         if (requestedVersionChangeType) {

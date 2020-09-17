@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
@@ -55,8 +56,14 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     }
 
     VirtualSecurableResourceGroupRole forSecurableResource(SecurableResource securableResource) {
-        boolean isFinalised = Utils.parentClassIsAssignableFromChild(Model, securableResource.class) ? (securableResource as Model).finalised : false
-        this.forSecurableResource(securableResource.domainType, securableResource.resourceId).asFinalisedModel(isFinalised)
+
+        if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
+            Model model = (securableResource as Model)
+            return this.forSecurableResource(securableResource.domainType, securableResource.resourceId)
+                .asFinalisedModel(model.finalised)
+                .withModelCanBeFinalised(model.branchName == ModelConstraints.DEFAULT_BRANCH_NAME)
+        }
+        this.forSecurableResource(securableResource.domainType, securableResource.resourceId)
     }
 
     VirtualSecurableResourceGroupRole withAccessLevel(GroupRole groupRole) {
@@ -81,11 +88,10 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
         this
     }
 
-    VirtualSecurableResourceGroupRole withModelCanBeFinalised(boolean canFinalise){
+    VirtualSecurableResourceGroupRole withModelCanBeFinalised(boolean canFinalise) {
         this.finalisableModel = this.finalisedModel ? false : canFinalise
         this
     }
-
 
 
     @Override

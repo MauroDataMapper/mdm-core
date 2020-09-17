@@ -17,10 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
 
-import grails.databinding.BindUsing
-import grails.validation.Validateable
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+
+import grails.databinding.BindUsing
+import grails.validation.Validateable
 
 /**
  * @since 02/02/2018
@@ -28,25 +29,23 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 class FinaliseData implements Validateable {
 
     List<String> supersededBy = []
+
+    @BindUsing({ obj, source ->
+        VersionChangeType.findFromDataBindingSource(source)
+    })
     VersionChangeType versionChangeType
 
-    @BindUsing({obj, source -> Version.from(source['version'] as String)})
+    @BindUsing({ obj, source -> Version.from(source['version'] as String) })
     Version version
 
 
     static constraints = {
         supersededBy nullable: true
-        versionChangeType nullable: true
-        version nullable: true
-        versionChangeType validator: { VersionChangeType value, FinaliseData obj ->
+        versionChangeType nullable: true, validator: { VersionChangeType value, FinaliseData obj ->
             if (!value && !obj.version) {
-                return ['mustGiveVersionOrVersionChangeType']
+                ['model.finalise.must.provide.version.or.versionchangetype']
             }
         }
-        version validator: { Version value, FinaliseData obj ->
-            if (!obj.versionChangeType && !value) {
-                return ['mustGiveVersionOrVersionChangeType']
-            }
-        }
+        version nullable: true
     }
 }

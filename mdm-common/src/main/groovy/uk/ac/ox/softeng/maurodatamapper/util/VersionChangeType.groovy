@@ -15,7 +15,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.util;
+package uk.ac.ox.softeng.maurodatamapper.util
+
+import grails.databinding.DataBindingSource;
 
 enum VersionChangeType {
     MAJOR('Major'),
@@ -36,7 +38,13 @@ enum VersionChangeType {
         null
     }
 
-    static VersionChangeType findFromMap(def map) {
-        map['versionUpgradeType'] instanceof VersionChangeType ? map['versionUpgradeType'] as VersionChangeType : findForLabel(map['versionUpgradeType'] as String)
+    static VersionChangeType findFromDataBindingSource(DataBindingSource source) {
+        VersionChangeType type = findForLabel(source['versionChangeType'])
+        if (type) return type
+        try {
+            valueOf(source['versionChangeType'])
+        } catch (Exception ignored) {
+            null
+        }
     }
 }

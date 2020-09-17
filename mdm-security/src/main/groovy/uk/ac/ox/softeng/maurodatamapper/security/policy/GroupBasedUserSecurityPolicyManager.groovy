@@ -42,10 +42,10 @@ import groovy.util.logging.Slf4j
 
 import java.util.function.Predicate
 
-import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CAN_BE_FINALISED_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_CONTAINER_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_EDITOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.DELETE_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FULL_DELETE_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODELITEM_DISALLOWED_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_AUTHOR_ACTIONS
@@ -318,7 +318,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                 case SAVE_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? !role.isFinalisedModel() : false
-                case CAN_BE_FINALISED_ACTION:
+                case FINALISE_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? role.canFinaliseModel() : false
                 default:
@@ -479,7 +479,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private List<String> getCanBeFinalisedAction(VirtualSecurableResourceGroupRole role) {
         //If resource can be finalised return CAN_BE_FINALISED_ACTION
-        role.canFinaliseModel() ? [CAN_BE_FINALISED_ACTION] : []
+        role.canFinaliseModel() ? [FINALISE_ACTION] : []
 
     }
 
