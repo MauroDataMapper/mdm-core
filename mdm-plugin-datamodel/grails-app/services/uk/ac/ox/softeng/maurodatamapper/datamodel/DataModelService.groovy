@@ -865,8 +865,8 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     DataModel createAndSaveDataModel(User createdBy, Folder folder, DataModelType type, String label, String description,
-                                     String author, String organisation, boolean saveDataModel = true,
-                                     Authority authority = authorityService.getDefaultAuthority()) {
+                                     String author, String organisation, Authority authority = authorityService.getDefaultAuthority(),
+                                     boolean saveDataModel = true) {
         DataModel dataModel = new DataModel(createdBy: createdBy.emailAddress, label: label, description: description, author: author,
                                             organisation: organisation, type: type, folder: folder, authority: authority)
         if (saveDataModel) {
