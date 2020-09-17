@@ -1166,7 +1166,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                       "domainType": "DataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Import",
-                      "type": "Data Standard"
+                      "type": "Data Standard",
+                      "branchName": "main",
+                      "documentationVersion": "1.0.0"
                     }
                   ]
                 }'''
@@ -1211,7 +1213,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                       "domainType": "DataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Model",
-                      "type": "Data Standard"
+                      "type": "Data Standard",
+                      "branchName": "main",
+                      "documentationVersion": "2.0.0",
+                      "modelVersion": "1.0.0"
                     }
                   ]
                 }'''
@@ -1238,38 +1243,46 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse OK, '''{
-                  "count": 4,
-                  "items": [
-                    {
-                      "deleted": true,
-                      "domainType": "DataModel",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "DataModel",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "DataModel",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    },
-                    {
-                      "deleted": true,
-                      "domainType": "DataModel",
-                      "id": "${json-unit.matches:id}",
-                      "label": "${json-unit.matches:id}",
-                      "type": "Data Standard"
-                    }
-                  ]
-                }'''
+  "count": 4,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "${json-unit.matches:id}",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "${json-unit.matches:id}",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "${json-unit.matches:id}",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "${json-unit.matches:id}",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "deleted": true
+    }
+  ]
+}'''
 
         when:
         DELETE('', [

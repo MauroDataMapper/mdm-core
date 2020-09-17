@@ -223,27 +223,10 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
-      "label": "Simple Test DataModel",
-      "type": "Data Standard",
-      "classifiers": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "test classifier simple",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
-        }
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "SourceFlowDataModel",
-      "type": "Data Asset"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
       "label": "Complex Test DataModel",
       "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
@@ -262,8 +245,33 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
+      "label": "Simple Test DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier simple",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "SourceFlowDataModel",
+      "type": "Data Asset",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
       "label": "TargetFlowDataModel",
-      "type": "Data Asset"
+      "type": "Data Asset",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
     }
   ]
 }'''

@@ -78,7 +78,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         when:
         domain.folder = Folder.findByLabel('catalogue')
-        domain.modelType = ''
+        domain.modelType = null
         domain.deleted = false
         domain.finalised = false
         domain.documentationVersion = Version.from('1')

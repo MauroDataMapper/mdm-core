@@ -205,11 +205,18 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     {
       "id": "${json-unit.matches:id}",
       "domainType": "Terminology",
-      "label": "Simple Test Terminology",
+      "label": "Complex Test Terminology",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "test classifier simple",
+          "label": "test classifier",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier2",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ],
@@ -224,16 +231,13 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     {
       "id": "${json-unit.matches:id}",
       "domainType": "Terminology",
-      "label": "Complex Test Terminology",
+      "label": "Simple Test Terminology",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "test classifier",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "test classifier2",
+          "label": "test classifier simple",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ],

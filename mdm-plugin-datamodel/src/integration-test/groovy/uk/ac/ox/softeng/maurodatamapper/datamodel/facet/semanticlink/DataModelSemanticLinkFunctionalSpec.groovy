@@ -184,13 +184,14 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
             m.targetCatalogueItem.id == dataModel.id.toString() &&
             !m.unconfirmed
         }
-
-        when:
         String semanticLinkId = responseBody().items.find { Map m ->
             m.linkType == SemanticLinkType.REFINES.label &&
             m.targetCatalogueItem.id == targetCatalogueItemId &&
             m.unconfirmed
         }.id
+        assert semanticLinkId
+
+        when:
         PUT("dataModels/${forkId}/semanticLinks/${semanticLinkId}/confirm", [:], MAP_ARG, true)
 
         then:

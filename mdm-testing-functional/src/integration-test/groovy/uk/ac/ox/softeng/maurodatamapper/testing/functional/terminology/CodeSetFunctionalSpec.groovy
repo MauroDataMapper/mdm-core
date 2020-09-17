@@ -201,6 +201,9 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
       "id": "${json-unit.matches:id}",
       "domainType": "CodeSet",
       "label": "Simple Test CodeSet",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "modelVersion": "1.0.0",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",

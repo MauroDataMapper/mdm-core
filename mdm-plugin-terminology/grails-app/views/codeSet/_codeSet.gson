@@ -7,6 +7,10 @@ model {
 }
 
 json {
+    branchName codeSet.branchName
+    documentationVersion codeSet.documentationVersion.toString()
+    if (codeSet.modelVersion) modelVersion codeSet.modelVersion.toString()
+
     if (codeSet.classifiers) classifiers g.render(codeSet.classifiers)
     if (codeSet.deleted) deleted codeSet.deleted
     if (codeSet.author) author codeSet.author
