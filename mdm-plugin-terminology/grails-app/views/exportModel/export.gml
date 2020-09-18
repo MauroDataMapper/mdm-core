@@ -4,4 +4,5 @@ xmlDeclaration()
 
 'exp:exportModel'(exportModel.getXmlNamespaces()) {
     layout '/terminology/export.gml', terminology: exportModel.modelExportMap.terminology
+    layout '/exportMetadata/export.gml', exportMetadata: exportModel.exportMetadata
 }
