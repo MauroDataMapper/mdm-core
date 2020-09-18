@@ -103,8 +103,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
     }
 
-    K latestVersion(String label) {
+    K latestFinalisedModel(String label) {
         modelClass.byLabelAndFinalisedAndLatestModelVersion(label).get()
+    }
+
+    Version latestModelVersion(String label) {
+        latestFinalisedModel(label)?.modelVersion ?: Version.from('0.0.0')
     }
 
     Map<String, Object> mergeDiff(K leftModel, K rightModel) {

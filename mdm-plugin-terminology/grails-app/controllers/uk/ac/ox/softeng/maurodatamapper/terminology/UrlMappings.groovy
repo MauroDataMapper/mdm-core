@@ -53,7 +53,8 @@ class UrlMappings {
                 Version Control
                  */
                 get "/commonAncestor/$otherModelId"(controller: 'terminology', action: 'commonAncestor')
-                get '/latestVersion'(controller: 'terminology', action: 'latestVersion')
+                get '/latestFinalisedModel'(controller: 'terminology', action: 'latestFinalisedModel')
+                get '/latestModelVersion'(controller: 'terminology', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'terminology', action: 'mergeDiff')
 
                 get '/currentMainBranch'(controller: 'terminology', action: 'currentMainBranch')
@@ -110,7 +111,8 @@ class UrlMappings {
                 Version Control
                  */
                 get "/commonAncestor/$otherModelId"(controller: 'codeSet', action: 'commonAncestor')
-                get '/latestVersion'(controller: 'codeSet', action: 'latestVersion')
+                get '/latestFinalisedModel'(controller: 'codeSet', action: 'latestFinalisedModel')
+                get '/latestModelVersion'(controller: 'codeSet', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'codeSet', action: 'mergeDiff')
 
                 get '/currentMainBranch'(controller: 'codeSet', action: 'currentMainBranch')

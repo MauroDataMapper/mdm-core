@@ -218,11 +218,18 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         respond modelService.commonAncestor(left, right)
     }
 
-    def latestVersion() {
+    def latestFinalisedModel() {
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
 
-        respond modelService.latestVersion(source.label)
+        respond modelService.latestFinalisedModel(source.label)
+    }
+
+    def latestModelVersion() {
+        T source = queryForResource(params[alternateParamsIdKey])
+        if (!source) return notFound(params[alternateParamsIdKey])
+
+        respond modelService.latestModelVersion(source.label)
     }
 
     def mergeDiff() {
