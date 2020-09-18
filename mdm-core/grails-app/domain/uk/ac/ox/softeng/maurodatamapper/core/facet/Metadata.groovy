@@ -142,6 +142,10 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
         byNamespaceAndKey(namespace, key).eq('value', value)
     }
 
+    static DetachedCriteria<Metadata> byCatalogueItemIdAndNamespace(Serializable catalogueItemId, String namespace) {
+        byCatalogueItemId(catalogueItemId).eq('namespace', namespace)
+    }
+
     static DetachedCriteria<Metadata> withFilter(DetachedCriteria<Metadata> criteria, Map filters) {
         if (filters.ns) criteria = criteria.ilike('namespace', "%${filters.ns}%")
         if (filters.key) criteria = criteria.ilike('key', "%${filters.key}%")

@@ -86,9 +86,7 @@ pipeline {
             parallel {
                 stage('mdm-common') {
                     steps {
-                        dir('mdm-core') {
-                            sh "./gradlew test"
-                        }
+                        sh "./gradlew :mdm-common:test"
                     }
                     post {
                         always {
@@ -387,108 +385,108 @@ pipeline {
             }
         }
 
-//        stage('E2E Parallel Functional Test') {
-//            parallel {
-                stage('Core Functional Test') {
-                    steps {
-                        dir('mdm-testing-functional') {
-                            sh "./grailsw -Dgrails.test.package=core test-app"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mdm-testing-functional') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/**/*.xml'
-                            }
-                        }
+        //        stage('E2E Parallel Functional Test') {
+        //            parallel {
+        stage('Core Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=core test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/**/*.xml'
                     }
                 }
-                stage('Security Functional Test') {
-                    steps {
-                        dir('mdm-testing-functional') {
-                            sh "./grailsw -Dgrails.test.package=security test-app"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mdm-testing-functional') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/core/*.xml'
-                            }
-                        }
+            }
+        }
+        stage('Security Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=security test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/core/*.xml'
                     }
                 }
-                stage('Authentication Functional Test') {
-                    steps {
-                        dir('mdm-testing-functional') {
-                            sh "./grailsw -Dgrails.test.package=authentication test-app"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mdm-testing-functional') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/authentication/*.xml'
-                            }
-                        }
+            }
+        }
+        stage('Authentication Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=authentication test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/authentication/*.xml'
                     }
                 }
-                stage('DataModel Functional Test') {
-                    steps {
-                        dir('mdm-testing-functional') {
-                            sh "./grailsw -Dgrails.test.package=datamodel test-app"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mdm-testing-functional') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/datamodel/*.xml'
-                            }
-                        }
+            }
+        }
+        stage('DataModel Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=datamodel test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/datamodel/*.xml'
                     }
                 }
-                stage('Terminology Functional Test') {
-                    steps {
-                        dir('mdm-testing-functional') {
-                            sh "./grailsw -Dgrails.test.package=terminology test-app"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mdm-testing-functional') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/terminology/*.xml'
-                            }
-                        }
+            }
+        }
+        stage('Terminology Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=terminology test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/terminology/*.xml'
                     }
                 }
-                stage('DataFlow Functional Test') {
-                    steps {
-                        dir('mdm-testing-functional') {
-                            sh "./grailsw -Dgrails.test.package=dataflow test-app"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mdm-testing-functional') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/dataflow/*.xml'
-                            }
-                        }
+            }
+        }
+        stage('DataFlow Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=dataflow test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/dataflow/*.xml'
                     }
                 }
-                stage('Trouble Functional Test') {
-                    steps {
-                        dir('mdm-testing-functional') {
-                            sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
-                        }
-                    }
-                    post {
-                        always {
-                            dir('mc-testing-functional') {
-                                junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
-                            }
-                        }
+            }
+        }
+        stage('Trouble Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mc-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
                     }
                 }
-//            }
-//        }
+            }
+        }
+        //            }
+        //        }
 
         stage('Deploy to Artifactory') {
             when {
@@ -508,7 +506,7 @@ pipeline {
     }
 
     post {
-        unstable{
+        unstable {
             script {
                 sh "./gradlew rootTestReport"
             }

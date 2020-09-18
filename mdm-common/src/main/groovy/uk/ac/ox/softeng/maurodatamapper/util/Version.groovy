@@ -30,17 +30,18 @@ class Version implements Comparable<Version> {
     int major
     int minor
     int patch
+    boolean snapshot
 
-    static final Pattern VERSION_PATTERN = ~/(\d+)(\.(\d+)(\.(\d+))?)?/
+    static final Pattern VERSION_PATTERN = ~/(\d+)(\.(\d+)(\.(\d+))?)?(-SNAPSHOT)?/
 
     @Override
     int compareTo(Version that) {
 
         def result = this.major <=> that.major
-        if (result != 0) return result
-        result = this.minor <=> that.minor
-        if (result != 0) return result
-        this.patch <=> that.patch
+        if (result == 0) result = this.minor <=> that.minor
+        if (result == 0) result = this.patch <=> that.patch
+        if (result == 0) result = this.snapshot <=> that.snapshot
+        result
     }
 
     @Override
@@ -53,6 +54,7 @@ class Version implements Comparable<Version> {
         if (major != version.major) return false
         if (minor != version.minor) return false
         if (patch != version.patch) return false
+        if (snapshot != version.snapshot) return false
 
         return true
     }
@@ -63,12 +65,13 @@ class Version implements Comparable<Version> {
         result = major
         result = 31 * result + minor
         result = 31 * result + patch
+        result = 31 * result + (snapshot ? 1 : 0)
         return result
     }
 
     @Override
     String toString() {
-        "${major}.${minor}.${patch}"
+        snapshot ? "${major}.${minor}.${patch}-SNAPSHOT" : "${major}.${minor}.${patch}"
     }
 
     static Version nextMajorVersion(Version version) {
@@ -95,17 +98,18 @@ class Version implements Comparable<Version> {
 
         new Version(major: m.group(1).toInteger(),
                     minor: m.group(3)?.toInteger() ?: 0,
-                    patch: m.group(5)?.toInteger() ?: 0
+                    patch: m.group(5)?.toInteger() ?: 0,
+                    snapshot: m.group(6) ? true : false
         )
     }
 
     static Version from(Path versionablePath) {
-        String versionStr = versionablePath.toString().split('/').find {it.toString() ==~ VERSION_PATTERN}
+        String versionStr = versionablePath.toString().split('/').find { it.toString() ==~ VERSION_PATTERN }
         from(versionStr)
     }
 
     static Version from(AssetFile versionableAssetFile) {
-        String versionStr = versionableAssetFile.path.toString().split('/').find {it.toString() ==~ VERSION_PATTERN}
+        String versionStr = versionableAssetFile.path.toString().split('/').find { it.toString() ==~ VERSION_PATTERN }
         from(versionStr)
     }
 

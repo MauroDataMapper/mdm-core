@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.search
 
-
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.FromString
 import groovy.util.logging.Slf4j
 
 /**
@@ -32,6 +33,14 @@ class PaginatedLuceneResult<K> {
     PaginatedLuceneResult(List<K> results, int count) {
         this.count = count
         this.results = results
+    }
+
+    boolean isEmpty() {
+        results.isEmpty()
+    }
+
+    void each(@ClosureParams(value = FromString, options = ['K']) Closure closure) {
+        results.each closure
     }
 
     static <D> PaginatedLuceneResult<D> paginateFullResultSet(List<D> fullResultSet, Map pagination) {

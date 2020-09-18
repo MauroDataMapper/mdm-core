@@ -80,24 +80,16 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                 }
             }
         }
-        Set<Class<K>> domainsToSearch = getFilteredDomainsToSearch(searchParams)
+        Set<Class<K>> filteredDomainsToSearch = getFilteredDomainsToSearch(searchParams)
 
-        if (!domainsToSearch) {
+        if (!filteredDomainsToSearch) {
             return new PaginatedLuceneResult<K>(new ArrayList<K>(), 0)
         }
 
         long start = System.currentTimeMillis()
 
-        List<K> items
-        if (customSearch) {
-            performCustomSearch(domainsToSearch, owningIds, additional, customSearch)
-        } else if (searchParams.labelOnly) {
-            log.debug('Performing lucene label search')
-            items = performLabelSearch(domainsToSearch, owningIds, searchParams.searchTerm, additional)
-        } else {
-            log.debug('Performing lucene standard search')
-            items = performStandardSearch(domainsToSearch, owningIds, searchParams.searchTerm, additional)
-        }
+        List<K> items = performSearch(owningIds, searchParams.searchTerm, searchParams.labelOnly,
+                                      filteredDomainsToSearch, additional, customSearch)
 
         if (removeOwningIds) {
             // Remove null entries and any which have an owning id, as we only want those inside the owners
@@ -110,10 +102,29 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
         results
     }
 
+    protected List<K> performSearch(List<UUID> owningIds,
+                                    String searchTerm,
+                                    Boolean labelOnly,
+                                    Set<Class<K>> filteredDomainsToSearch,
+                                    @DelegatesTo(HibernateSearchApi) Closure additional,
+                                    @DelegatesTo(HibernateSearchApi) Closure customSearch) {
+        if (customSearch) {
+            log.debug('Performing lucene custom search')
+            return performCustomSearch(filteredDomainsToSearch, owningIds, additional, customSearch)
+        } else if (labelOnly) {
+            log.debug('Performing lucene label search')
+            return performLabelSearch(filteredDomainsToSearch, owningIds, searchTerm, additional)
+        }
+
+        log.debug('Performing lucene standard search')
+        return performStandardSearch(filteredDomainsToSearch, owningIds, searchTerm, additional)
+    }
+
     @CompileDynamic
     protected List<K> performLabelSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                          @DelegatesTo(HibernateSearchApi) Closure additional = null) {
         domainsToSearch.collect { domain ->
+            log.debug('Domain searching {}', domain)
             domain.luceneLabelSearch(domain, searchTerm, owningIds, [:], additional).results
         }.flatten().findAll() as List<K>
 
@@ -123,6 +134,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
     protected List<K> performStandardSearch(Set<Class<K>> domainsToSearch, List<UUID> owningIds, String searchTerm,
                                             @DelegatesTo(HibernateSearchApi) Closure additional = null) {
         domainsToSearch.collect { domain ->
+            log.debug('Domain searching {}', domain)
             domain.luceneStandardSearch(domain, searchTerm, owningIds, [:], additional).results
         }.flatten().findAll() as List<K>
     }
@@ -132,6 +144,7 @@ abstract class AbstractCatalogueItemSearchService<K extends CatalogueItem> {
                                           @DelegatesTo(HibernateSearchApi) Closure additional,
                                           @DelegatesTo(HibernateSearchApi) Closure customSearch) {
         domainsToSearch.collect { domain ->
+            log.debug('Domain searching {}', domain)
             domain.luceneCustomSearch(domain, owningIds, [:], additional, customSearch).results
         }.flatten().findAll() as List<K>
     }

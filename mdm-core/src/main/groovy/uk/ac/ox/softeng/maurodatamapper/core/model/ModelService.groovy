@@ -84,6 +84,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract K createNewForkModel(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
         userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
+    abstract List<K> findAllByMetadataNamespace(String namespace)
+
     ObjectDiff<K> diff(K thisModel, K otherModel) {
         thisModel.diff(otherModel)
     }

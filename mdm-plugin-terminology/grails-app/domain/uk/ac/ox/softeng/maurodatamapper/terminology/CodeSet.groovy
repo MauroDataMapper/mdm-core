@@ -152,11 +152,11 @@ class CodeSet implements Model<CodeSet> {
     }
 
     static DetachedCriteria<CodeSet> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
-        by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('terminology'))
+        by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('terminologyId'))
     }
 
     static DetachedCriteria<CodeSet> byMetadataNamespace(String metadataNamespace) {
-        by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItem'))
+        by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItemId'))
     }
 
     static DetachedCriteria<CodeSet> byDeleted() {

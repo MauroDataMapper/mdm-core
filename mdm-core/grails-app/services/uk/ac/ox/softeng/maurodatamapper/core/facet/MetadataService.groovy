@@ -61,7 +61,7 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
 
     void delete(Metadata metadata, boolean flush = false) {
         if (!metadata) return
-        CatalogueItemService service = catalogueItemServices.find {it.handles(metadata.catalogueItemDomainType)}
+        CatalogueItemService service = catalogueItemServices.find { it.handles(metadata.catalogueItemDomainType) }
         if (!service) throw new ApiBadRequestException('MS01', 'Metadata removal for catalogue item with no supporting service')
         service.removeMetadataFromCatalogueItem(metadata.catalogueItemId, metadata)
         metadata.delete(flush: flush)
@@ -72,7 +72,7 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         long start = System.currentTimeMillis()
         List batch = []
         int count = 0
-        metadata.each {relationship ->
+        metadata.each { relationship ->
             batch += relationship
             count++
             if (count % Metadata.BATCH_SIZE == 0) {
@@ -93,7 +93,7 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         CatalogueItem catalogueItem = metadata.catalogueItem ?: findCatalogueItemByDomainTypeAndId(metadata.catalogueItemDomainType,
                                                                                                    metadata.catalogueItemId)
 
-        if (catalogueItem.metadata.any {md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key}) {
+        if (catalogueItem.metadata.any { md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key }) {
             metadata.errors.rejectValue('key', 'default.not.unique.message', ['key', Metadata.name, metadata.value].toArray(),
                                         'Property [{0}] of class [{1}] with value [{2}] must be unique')
             return false
@@ -109,6 +109,10 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
     @Override
     List<Metadata> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination = [:]) {
         Metadata.withFilter(Metadata.byCatalogueItemId(catalogueItemId), pagination).list(pagination)
+    }
+
+    List<Metadata> findAllByCatalogueItemIdAndNamespace(UUID catalogueItemId, String namespace, Map pagination = [:]) {
+        Metadata.byCatalogueItemIdAndNamespace(catalogueItemId, namespace).list(pagination)
     }
 
     List<NamespaceKeys> findNamespaceKeysIlikeNamespace(String namespacePrefix) {
@@ -137,7 +141,7 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
 
         Collection<String> namespaces = Metadata.findAllDistinctNamespaces()
         for (MauroDataMapperService service : services) {
-            if (!(listOfNamespaceKeys.any {it.namespace == service.namespace})) {
+            if (!(listOfNamespaceKeys.any { it.namespace == service.namespace })) {
                 listOfNamespaceKeys.add(findNamespaceKeysByServiceOrNamespace(service, service.getNamespace()))
                 namespaces.remove(service.getNamespace()) // Remove plugin namespaces from list
             }

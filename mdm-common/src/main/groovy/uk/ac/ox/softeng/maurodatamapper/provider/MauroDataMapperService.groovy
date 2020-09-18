@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.provider
 
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -54,5 +55,9 @@ trait MauroDataMapperService implements MauroDataMapperProvider {
     @Override
     String toString() {
         "${namespace} : ${name} : ${version}"
+    }
+
+    Version sortableVersion() {
+        Version.from(version)
     }
 }
