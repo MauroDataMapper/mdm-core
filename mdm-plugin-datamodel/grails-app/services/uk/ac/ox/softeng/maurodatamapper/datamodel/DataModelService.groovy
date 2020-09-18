@@ -865,18 +865,16 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     DataModel createAndSaveDataModel(User createdBy, Folder folder, DataModelType type, String label, String description,
-                                     String author, String organisation, Authority authority = authorityService.getDefaultAuthority()) {
+                                     String author, String organisation, Authority authority = authorityService.getDefaultAuthority(),
+                                     boolean saveDataModel = true) {
         DataModel dataModel = new DataModel(createdBy: createdBy.emailAddress, label: label, description: description, author: author,
                                             organisation: organisation, type: type, folder: folder, authority: authority)
-
-        // Have to save before adding an edit
-        if (dataModel.validate()) {
-            dataModel.save(flush: true)
-            dataModel.addCreatedEdit(createdBy)
-        } else {
-            throw new ApiInvalidModelException('DMSXX', 'Could not create new DataModel', dataModel.errors)
+        if (saveDataModel) {
+            if (validate(dataModel)) {
+                save(dataModel, flush: true) // Have to save before adding an edit
+                dataModel.addCreatedEdit(createdBy)
+            } else throw new ApiInvalidModelException('DMSXX', 'Could not create new DataModel', dataModel.errors)
         }
-
         dataModel
     }
 

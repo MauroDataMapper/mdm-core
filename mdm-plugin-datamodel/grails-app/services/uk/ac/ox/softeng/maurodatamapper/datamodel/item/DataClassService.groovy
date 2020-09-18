@@ -404,7 +404,7 @@ class DataClassService extends ModelItemService<DataClass> {
         dataClass
     }
 
-    private DataClass findOrCreateDataClassByPath(DataModel dataModel, List<String> pathLabels, String description, User createdBy,
+    DataClass findOrCreateDataClassByPath(DataModel dataModel, List<String> pathLabels, String description, User createdBy,
                                                   Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
         if (pathLabels.size() == 1) {
             return findOrCreateDataClass(dataModel, pathLabels[0], description, createdBy, minMultiplicity, maxMultiplicity)
@@ -416,7 +416,7 @@ class DataClassService extends ModelItemService<DataClass> {
         findOrCreateDataClassByPath(parent, pathLabels, description, createdBy, minMultiplicity, maxMultiplicity)
     }
 
-    private DataClass findOrCreateDataClassByPath(DataClass parentDataClass, List<String> pathLabels, String description, User createdBy,
+    DataClass findOrCreateDataClassByPath(DataClass parentDataClass, List<String> pathLabels, String description, User createdBy,
                                                   Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
         if (pathLabels.size() == 1) {
             return findOrCreateDataClass(parentDataClass, pathLabels[0], description, createdBy, minMultiplicity, maxMultiplicity)

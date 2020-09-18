@@ -62,7 +62,7 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         "DataModel${ProviderType.IMPORTER.name}"
     }
 
-    private DataModel checkImport(User currentUser, DataModel dataModel, boolean finalised, boolean importAsNewDocumentationVersion) {
+    DataModel checkImport(User currentUser, DataModel dataModel, boolean finalised, boolean importAsNewDocumentationVersion) {
         dataModelService.checkfinaliseModel(dataModel, finalised)
         dataModelService.checkDocumentationVersion(dataModel, importAsNewDocumentationVersion, currentUser)
         classifierService.checkClassifiers(currentUser, dataModel)
