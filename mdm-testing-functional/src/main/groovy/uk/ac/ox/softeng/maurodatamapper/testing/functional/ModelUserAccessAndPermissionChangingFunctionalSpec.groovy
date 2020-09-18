@@ -74,7 +74,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     String getValidFinalisedId() {
         String id = getValidId()
         loginEditor()
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         logout()
         id
@@ -96,7 +96,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String id = getValidId()
 
         when: 'not logged in'
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyNotFound response, id
@@ -110,7 +110,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String id = getValidId()
 
         when: 'authenticated user'
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyNotFound response, id
@@ -140,7 +140,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         when: 'logged in as editor'
         loginEditor()
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -514,7 +514,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         when:
         String branchId = responseBody().id
-        PUT("$branchId/finalise", [:])
+        PUT("$branchId/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -553,7 +553,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         when:
         String branchId = responseBody().id
-        PUT("$branchId/finalise", [:])
+        PUT("$branchId/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyForbidden response
@@ -643,27 +643,43 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$expectedId/finalise", [:])
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
         when: 'logged in as editor'
-        GET("$newBranchId/latestVersion")
+        GET("$newBranchId/latestFinalisedModel")
 
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
         responseBody().label == validJson.label
+        responseBody().modelVersion == '2.0.0'
 
         when:
-        GET("$latestDraftId/latestVersion")
+        GET("$latestDraftId/latestFinalisedModel")
 
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
         responseBody().label == validJson.label
+        responseBody().modelVersion == '2.0.0'
+
+        when: 'logged in as editor'
+        GET("$newBranchId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '2.0.0'
+
+        when:
+        GET("$latestDraftId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '2.0.0'
 
         when:
         GET('')
@@ -771,7 +787,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$finalisedId/finalise", [:])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$finalisedId/newBranchModelVersion", [branchName: 'main'])
         verifyResponse CREATED, response
@@ -810,7 +826,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$finalisedId/finalise", [:])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$finalisedId/newBranchModelVersion", [branchName: 'main'])
         verifyResponse CREATED, response

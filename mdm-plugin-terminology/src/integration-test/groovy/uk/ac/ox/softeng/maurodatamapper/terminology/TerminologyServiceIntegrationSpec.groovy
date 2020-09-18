@@ -221,18 +221,30 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         draftModel.branchName == 'main'
 
         when:
-        def latestVersion = terminologyService.latestVersion(testModel.label)
+        def latestVersion = terminologyService.latestFinalisedModel(testModel.label)
 
         then:
         latestVersion.branchName == 'main'
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = terminologyService.latestVersion(draftModel.label)
+        latestVersion = terminologyService.latestFinalisedModel(draftModel.label)
 
         then:
         latestVersion.branchName == 'main'
         latestVersion.modelVersion == Version.from('2')
+
+        when:
+        latestVersion = terminologyService.latestModelVersion(testModel.label)
+
+        then:
+        latestVersion == Version.from('2')
+
+        when:
+        latestVersion = terminologyService.latestModelVersion(draftModel.label)
+
+        then:
+        latestVersion == Version.from('2')
     }
 
     void 'TSIMD01 : test finding merge difference between two terminologies'() {

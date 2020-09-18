@@ -600,7 +600,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         commonAncestor.modelVersion == Version.from('1')
     }
 
-    void 'DMSILV01 : test finding latest version of a datamodel'() {
+    void 'DMSILV01 : test finding latest finalised model version of a datamodel'() {
         /*
         dataModel (finalised) -- expectedModel (finalised) -- draftModel (draft)
           \_ testModel (draft)
@@ -635,7 +635,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         draftModel.branchName == 'main'
 
         when:
-        def latestVersion = dataModelService.latestVersion(testModel.label)
+        def latestVersion = dataModelService.latestFinalisedModel(testModel.label)
 
         then:
         latestVersion.id == expectedModel.id
@@ -643,12 +643,24 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = dataModelService.latestVersion(draftModel.label)
+        latestVersion = dataModelService.latestFinalisedModel(draftModel.label)
 
         then:
         latestVersion.id == expectedModel.id
         latestVersion.branchName == 'main'
         latestVersion.modelVersion == Version.from('2')
+
+        when:
+        latestVersion = dataModelService.latestModelVersion(testModel.label)
+
+        then:
+        latestVersion == Version.from('2')
+
+        when:
+        latestVersion = dataModelService.latestModelVersion(draftModel.label)
+
+        then:
+        latestVersion == Version.from('2')
     }
 
     void 'DMSIMD01 : test finding merge difference between two datamodels'() {

@@ -292,7 +292,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String id = createNewItem(validJson)
 
         when:
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -309,7 +309,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'VF01 : test creating a new fork model of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'adding one new model'
@@ -467,7 +467,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'VD01 : test creating a new documentation version of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when:
@@ -544,7 +544,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'VB01 : test creating a new main branch model version of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when:
@@ -610,7 +610,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create second model'
@@ -621,7 +621,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when: 'finalising second model'
         String secondId = responseBody().id
-        PUT("$secondId/finalise", [:])
+        PUT("$secondId/finalise", [versionChangeType: 'Major'])
 
         then:
         verifyResponse OK, response
@@ -705,7 +705,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'VB03 : test creating a main branch model version when one already exists'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create default main'
@@ -729,7 +729,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'VB04 : test creating a non-main branch model version without main existing'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         when: 'create default main'
@@ -756,7 +756,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'VB05 : test finding common ancestor of two Model<T> (as editor)'() {
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
@@ -831,14 +831,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'VB06 : test finding latest (finalised) version of a Model<T> (as editor)'() {
+    void 'VB06 : test finding latest finalised model of a Model<T> (as editor)'() {
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
         */
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: 'main'])
         verifyResponse CREATED, response
@@ -846,27 +846,29 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$expectedId/finalise", [:])
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
         when:
-        GET("$newBranchId/latestVersion")
+        GET("$newBranchId/latestFinalisedModel")
 
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
         responseBody().label == 'Functional Test Model'
+        responseBody().modelVersion == '2.0.0'
 
         when:
-        GET("$latestDraftId/latestVersion")
+        GET("$latestDraftId/latestFinalisedModel")
 
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
         responseBody().label == 'Functional Test Model'
+        responseBody().modelVersion == '2.0.0'
 
         cleanup:
         cleanUpData(newBranchId)
@@ -875,10 +877,52 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'VB07 : test finding merge difference of two Model<T> (as editor)'() {
+    void 'VB07 : test finding latest model version of a Model<T> (as editor)'() {
+        /*
+        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
         given:
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String expectedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when:
+        GET("$newBranchId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '2.0.0'
+
+        when:
+        GET("$latestDraftId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '2.0.0'
+
+        cleanup:
+        cleanUpData(newBranchId)
+        cleanUpData(expectedId)
+        cleanUpData(latestDraftId)
+        cleanUpData(id)
+    }
+
+    void 'VB08 : test finding merge difference of two Model<T> (as editor)'() {
+        given:
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
@@ -1027,7 +1071,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         given:
         // Create base model and finalise
         String id = createNewItem(validJson)
-        PUT("$id/finalise", [:])
+        PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
 
         // Create a new branch main

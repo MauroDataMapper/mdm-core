@@ -161,7 +161,7 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
         String id = createNewItem(validJson)
 
         when: 'finalise and create a new copy of the finalised model'
-        PUT("dataModels/${dataModel.id}/finalise", [:], MAP_ARG, true)
+        PUT("dataModels/${dataModel.id}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
         PUT("dataModels/${dataModel.id}/newForkModel", ['label': 'Functional Test Fork'], MAP_ARG, true)
 
         then:
