@@ -101,15 +101,15 @@ class XmlImporterService extends DataBindTerminologyImporterProviderService<Term
         imported*/
     }
 
-    //mc-9091 TODO
     Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {
-        /*switch (result.name()) {
+        log.debug("backwardsCompatibleExtractTerminologyMap")
+        switch (result.name()) {
             case 'exportModel':
-                return map.dataModel as Map
-            case 'dataModel':
+                return map.terminology as Map
+            case 'terminology':
                 return map
         }
-        throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel is not present')*/
+        throw new ApiBadRequestException('XIS03', 'Cannot import XML as terminology is not present')
     }
 
     Map<String, Object> convertToMap(NodeChild nodes) {
@@ -141,7 +141,7 @@ class XmlImporterService extends DataBindTerminologyImporterProviderService<Term
 
     String validateXml(String xml) {
 
-        Resource xsdResource = assetResourceLocator.findAssetForURI("dataModel_${version}.xsd")
+        Resource xsdResource = assetResourceLocator.findAssetForURI("terminology_${version}.xsd")
 
         def factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
         def schema = factory.newSchema(new StreamSource(xsdResource.inputStream))
