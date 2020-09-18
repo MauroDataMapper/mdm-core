@@ -966,7 +966,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
             },
             {
                 "name": "XmlExporterService",
-                "version": "3.1",
+                "version": "3.0",
                 "displayName": "XML Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -1296,5 +1296,5 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         cleanup:
         cleanUpData(id)
-    }    
+    }
 }
