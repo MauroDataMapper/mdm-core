@@ -1,12 +1,12 @@
 {
   "terminology": {
     "id": "${json-unit.matches:id}",
-    "label": "Simple Test Terminology",
+    "label": "Simple Test Terminology Import",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "classifiers": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "test classifier simple",
+        "label": "test classifier simple import",
         "lastUpdated": "${json-unit.matches:offsetDateTime}"
       }
     ],

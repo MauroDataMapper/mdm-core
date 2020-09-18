@@ -1,17 +1,17 @@
 {
   "terminology": {
     "id": "${json-unit.matches:id}",
-    "label": "Complex Test Terminology",
+    "label": "Complex Test Terminology Import",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "classifiers": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "test classifier 1",
+        "label": "test classifier complex 1",
         "lastUpdated": "${json-unit.matches:offsetDateTime}"
       },
       {
         "id": "${json-unit.matches:id}",
-        "label": "test classifier 2",
+        "label": "test classifier complex 2",
         "lastUpdated": "${json-unit.matches:offsetDateTime}"
       }
     ],
