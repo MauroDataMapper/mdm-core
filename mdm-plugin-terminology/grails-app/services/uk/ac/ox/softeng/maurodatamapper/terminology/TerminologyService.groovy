@@ -150,8 +150,24 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology saveWithBatching(Terminology model) {
-        save(model)
+    Terminology saveWithBatching(Terminology terminology) {
+        log.debug('Saving {} using batching', terminology.label)
+
+        if (terminology.classifiers) {
+            //mc-9091 TODO find out where this happens for DataModel
+            terminology.classifiers.each { it ->
+                it.createdBy = it.createdBy ?: terminology.createdBy
+            }
+
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(terminology.classifiers)
+        }
+
+        save(terminology)
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        terminology
     }
 
     @Override
