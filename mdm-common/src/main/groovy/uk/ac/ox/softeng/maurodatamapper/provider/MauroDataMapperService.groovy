@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-trait MauroDataMapperService implements MauroDataMapperProvider {
+trait MauroDataMapperService implements MauroDataMapperProvider, Comparable<MauroDataMapperService> {
 
     MauroDataMapperPlugin plugin
 
@@ -59,5 +59,38 @@ trait MauroDataMapperService implements MauroDataMapperProvider {
 
     Version sortableVersion() {
         Version.from(version)
+    }
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        MauroDataMapperService that = (MauroDataMapperService) o
+
+        if (this.providerType != that.providerType) return false
+        if (this.namespace != that.namespace) return false
+        if (this.name != that.name) return false
+        if (this.version != that.version) return false
+        true
+    }
+
+    @Override
+    int hashCode() {
+        int result
+        result = providerType.hashCode()
+        result = 31 * result + namespace.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + version.hashCode()
+        result
+    }
+
+    @Override
+    int compareTo(MauroDataMapperService that) {
+        int result = this.providerType <=> that.providerType
+        if (result == 0) result = this.namespace <=> that.namespace
+        if (result == 0) result = this.name <=> that.name
+        if (result == 0) result = this.sortableVersion() <=> that.sortableVersion()
+        result
     }
 }
