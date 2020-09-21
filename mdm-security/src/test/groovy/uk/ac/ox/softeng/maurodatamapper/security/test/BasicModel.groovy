@@ -28,7 +28,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.annotation.Entity
@@ -57,12 +56,10 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
     }
 
     BasicModel() {
+        initialiseVersioning()
         modelType = BasicModel.simpleName
         deleted = false
-        finalised = false
-        documentationVersion = Version.from('1.0.0')
         breadcrumbTree = new BreadcrumbTree(this)
-        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override
@@ -71,7 +68,7 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
     }
 
     Set<BasicModelItem> getAllModelItems() {
-        (modelItems ?: []) + modelItems.collect {it.getAllModelItems()}.flatten()
+        (modelItems ?: []) + modelItems.collect { it.getAllModelItems() }.flatten()
     }
 
     @Override

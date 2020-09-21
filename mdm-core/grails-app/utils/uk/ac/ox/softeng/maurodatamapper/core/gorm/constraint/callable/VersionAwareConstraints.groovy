@@ -17,27 +17,21 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 
-
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.ModelLabelValidator
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.DocumentationVersionValidator
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.ModelVersionValidator
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
-/**
- * @since 17/02/2020
- */
-class ModelConstraints extends CatalogueItemConstraints {
+class VersionAwareConstraints {
+
+    public static final String DEFAULT_BRANCH_NAME = 'main'
 
     static constraints = {
-        CallableConstraints.call(VersionAware, delegate)
-        folder nullable: false
-        deleted nullable: false
+        finalised nullable: false
+        dateFinalised nullable: true
 
-        modelType nullable: false, blank: false
-
-        author nullable: true, blank: false
-        organisation nullable: true, blank: false
-
-        label validator: {String val, Model obj -> new ModelLabelValidator(obj).isValid(val)}
+        documentationVersion nullable: false, validator: { Version val, Model obj -> new DocumentationVersionValidator(obj).isValid(val) }
+        modelVersion nullable: true, validator: { Version val, Model obj -> new ModelVersionValidator(obj).isValid(val) }
+        branchName nullable: false
     }
 }

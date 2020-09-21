@@ -89,16 +89,14 @@ class Terminology implements Model<Terminology> {
     }
 
     Terminology() {
+        initialiseVersioning()
         modelType = Terminology.simpleName
-        documentationVersion = Version.from('1')
-        finalised = false
         deleted = false
         readableByAuthenticatedUsers = false
         readableByEveryone = false
         breadcrumbTree = new BreadcrumbTree(this)
         termRelationshipTypes = []
         terms = []
-        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override
