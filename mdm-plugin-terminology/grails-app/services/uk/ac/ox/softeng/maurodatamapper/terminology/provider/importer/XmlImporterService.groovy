@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import asset.pipeline.grails.AssetResourceLocator
+//import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
 import groovy.util.slurpersupport.NodeChild
@@ -39,7 +39,7 @@ import javax.xml.validation.SchemaFactory
 @Slf4j
 class XmlImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> {
 
-    AssetResourceLocator assetResourceLocator
+    //AssetResourceLocator assetResourceLocator
 
     @Override
     String getDisplayName() {
@@ -53,13 +53,13 @@ class XmlImporterService extends DataBindTerminologyImporterProviderService<Term
 
     @Override
     Boolean canImportMultipleDomains() {
-        true
+        false
     }
 
     @Override
     Terminology importTerminology(User currentUser, byte[] content) {
-        if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
-        if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
+        if (!currentUser) throw new ApiUnauthorizedException('XTIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('XTIS02', 'Cannot import empty content')
 
         String xml = new String(content, Charset.defaultCharset())
 
@@ -71,34 +71,6 @@ class XmlImporterService extends DataBindTerminologyImporterProviderService<Term
 
         log.debug('Importing Terminology map')
         bindMapToTerminology currentUser, backwardsCompatibleExtractTerminologyMap(result, map)
-    }
-
-    //mc-9091 TODO
-    @Override
-    List<Terminology> importTerminologies(User currentUser, byte[] content) {
-        /*if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
-        if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
-
-        String xml = new String(content, Charset.defaultCharset())
-
-        log.debug('Parsing in file content using XmlSlurper')
-        GPathResult result = new XmlSlurper().parseText(xml)
-
-        List<DataModel> imported = []
-        if (result.name() == 'dataModels') {
-            log.debug('Importing DataModel list')
-            List list = convertToList(result as NodeChild)
-            list.each {
-                imported += bindMapToDataModel(currentUser, it as Map)
-            }
-        } else {
-            // Handle single DM map or exportModel being passed to this method
-            Map map = convertToMap(result)
-            log.debug('Importing DataModel map')
-            imported += bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
-        }
-
-        imported*/
     }
 
     Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {
@@ -139,7 +111,7 @@ class XmlImporterService extends DataBindTerminologyImporterProviderService<Term
         nodeChild.children().collect {convertToMap(it)}
     }
 
-    String validateXml(String xml) {
+    /*String validateXml(String xml) {
 
         Resource xsdResource = assetResourceLocator.findAssetForURI("terminology_${version}.xsd")
 
@@ -152,5 +124,5 @@ class XmlImporterService extends DataBindTerminologyImporterProviderService<Term
             return ex.getMessage()
         }
         null
-    }
+    }*/
 }

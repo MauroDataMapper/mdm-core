@@ -996,7 +996,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 ],
                 "providerType": "TerminologyImporter",
                 "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
-                "canImportMultipleDomains": true
+                "canImportMultipleDomains": false
             },
             {
                 "name": "JsonImporterService",
@@ -1027,7 +1027,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                "type": "Terminology",
                 "documentationVersion": "1.0.0",
                 "finalised": false,
                 "authority": {
@@ -1113,7 +1112,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
-                "type": "Terminology",
                 "documentationVersion": "1.0.0",
                 "finalised": false,
                 "authority": {
