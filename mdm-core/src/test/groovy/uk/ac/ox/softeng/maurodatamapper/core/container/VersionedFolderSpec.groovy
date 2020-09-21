@@ -17,21 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-import grails.testing.gorm.DomainUnitTest
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
+import grails.testing.gorm.DomainUnitTest
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class ModelCollectionSpec extends ContainerSpec<ModelCollection> implements DomainUnitTest<ModelCollection> {
+class VersionedFolderSpec extends ContainerSpec<VersionedFolder> implements DomainUnitTest<VersionedFolder> {
 
     @Override
-    ModelCollection newContainerClass(Map<String, Object> args) {
-        new ModelCollection(args)
+    VersionedFolder newContainerClass(Map<String, Object> args) {
+        new VersionedFolder(args)
     }
 
     @Override
-    Class<ModelCollection> getContainerClass() {
-        ModelCollection
+    Class<VersionedFolder> getContainerClass() {
+        VersionedFolder
     }
 
     @Override
@@ -57,7 +58,7 @@ class ModelCollectionSpec extends ContainerSpec<ModelCollection> implements Doma
     }
 
     @Override
-    void verifyDomainOtherConstraints(ModelCollection subDomain) {
+    void verifyDomainOtherConstraints(VersionedFolder subDomain) {
         super.verifyDomainOtherConstraints(subDomain)
         assert subDomain.authority == testAuthority
     }
@@ -66,5 +67,5 @@ class ModelCollectionSpec extends ContainerSpec<ModelCollection> implements Doma
         Authority.findByLabel('Test Authority')
     }
 
-//    void "MC01 : test "
+    //    void "MC01 : test "
 }

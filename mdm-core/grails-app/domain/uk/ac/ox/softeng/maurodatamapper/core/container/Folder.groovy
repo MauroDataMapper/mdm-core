@@ -119,7 +119,7 @@ class Folder implements Container {
 
     @Override
     String getEditLabel() {
-        "Folder:${label}"
+        "${domainType}:${label}"
     }
 
     @Override

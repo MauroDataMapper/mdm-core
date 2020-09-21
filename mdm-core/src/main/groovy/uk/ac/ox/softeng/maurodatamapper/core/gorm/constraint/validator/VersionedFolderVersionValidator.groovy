@@ -17,15 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.ModelCollection
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.Validator
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
-class ModelCollectionVersionValidator implements Validator<Version> {
+class VersionedFolderVersionValidator implements Validator<Version> {
 
-    final ModelCollection collection
+    final VersionedFolder collection
 
-    ModelCollectionVersionValidator(ModelCollection collection) {
+    VersionedFolderVersionValidator(VersionedFolder collection) {
         this.collection = collection
     }
 
