@@ -68,7 +68,7 @@ class JsonImporterExporterServiceSpec extends BaseImporterExporterSpec implement
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
 
-        String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath))
+        String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath)).replace(/Test Authority/, 'Mauro Data Mapper')
         verifyJson(expectedJson, exportedModel)
     }
 

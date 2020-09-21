@@ -67,7 +67,7 @@ class XmlImporterExporterServiceSpec extends BaseImporterExporterSpec implements
             Files.writeString(expectedPath, (prettyPrint(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-        validateAndCompareXml(Files.readString(expectedPath), exportedModel, 'export', exporterService.version)
+        validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export', exporterService.version)
     }
 
 

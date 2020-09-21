@@ -1,0 +1,50 @@
+<?xml version='1.0'?>
+<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.0' xmlns:mdm='http://maurodatamapper.com/terminology/3.0'>
+    <mdm:terminology>
+        <mdm:id>9bde38fe-d4b6-4dbd-a5b9-061b606a7e23</mdm:id>
+        <mdm:label>Simple Test Terminology Import</mdm:label>
+        <mdm:lastUpdated>2020-08-20T15:37:21.8Z</mdm:lastUpdated>
+        <mdm:metadata>
+            <mdm:metadata>
+                <mdm:id>e6686f60-2714-475a-ad6e-c292ccf92f68</mdm:id>
+                <mdm:namespace>terminology.test.com</mdm:namespace>
+                <mdm:key>mdk2</mdm:key>
+                <mdm:value>mdv2</mdm:value>
+                <mdm:lastUpdated>2020-08-20T15:37:20.986Z</mdm:lastUpdated>
+            </mdm:metadata>
+            <mdm:metadata>
+                <mdm:id>2dd584f1-e9fa-4458-b570-18eec48bef79</mdm:id>
+                <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+                <mdm:key>mdk2</mdm:key>
+                <mdm:value>mdv2</mdm:value>
+                <mdm:lastUpdated>2020-08-20T15:37:20.987Z</mdm:lastUpdated>
+            </mdm:metadata>
+            <mdm:metadata>
+                <mdm:id>a2bcb907-ea47-4904-9ce4-f15117aeec4d</mdm:id>
+                <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+                <mdm:key>mdk1</mdm:key>
+                <mdm:value>mdv1</mdm:value>
+                <mdm:lastUpdated>2020-08-20T15:37:20.985Z</mdm:lastUpdated>
+            </mdm:metadata>
+        </mdm:metadata>        
+        <mdm:author>Test Author</mdm:author>
+        <mdm:organisation>Test Organisation</mdm:organisation>
+        <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+        <mdm:finalised>false</mdm:finalised>
+        <mdm:authority>
+            <mdm:id>107adf2e-7051-4ffc-b785-1122f598f13a</mdm:id>
+            <mdm:label>Test Authority</mdm:label>
+            <mdm:url>http://localhost</mdm:url>
+            <mdm:lastUpdated>2020-07-21T12:24:44.612Z</mdm:lastUpdated>
+        </mdm:authority>
+    </mdm:terminology>
+    <exp:exportMetadata>
+      <exp:exportedBy>Admin User</exp:exportedBy>
+      <exp:exportedOn>2017-11-21T13:17:00.559Z</exp:exportedOn>
+      <exp:exporter>
+        <exp:namespace>uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter</exp:namespace>
+        <exp:name>XmlExporterService</exp:name>
+        <exp:version>3.0</exp:version>
+      </exp:exporter>
+    </exp:exportMetadata>
+</exp:exportModel>

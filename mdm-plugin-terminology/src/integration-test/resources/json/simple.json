@@ -33,7 +33,6 @@
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ],
-      "type": "Terminology",
       "author": "Test Bootstrap",
       "organisation": "Oxford BRC",
       "documentationVersion": "1.0.0",

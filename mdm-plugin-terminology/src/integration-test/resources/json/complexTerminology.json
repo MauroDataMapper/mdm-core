@@ -53,7 +53,6 @@
           "description": "with description"
       }
   ],
-    "type": "Terminology",
     "author": "Complex Terminology Author",
     "organisation": "Complex Terminology Organisation",
     "documentationVersion": "1.0.0",

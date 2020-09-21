@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
@@ -85,7 +87,7 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
     }
 
     Terminology importAndConfirm(byte[] bytes) {
-        def imported = importerService.importTerminology(admin, bytes)
+        Terminology imported = importerService.importTerminology(admin, bytes)
 
         assert imported
         imported.folder = testFolder
@@ -96,26 +98,21 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
         sessionFactory.currentSession.flush()
         assert terminologyService.count() == 3
 
-        Terminology t = Terminology.listOrderByDateCreated().last()
+        Terminology terminology = terminologyService.get(imported.id)
 
         log.info('Confirming imported model')
 
-        confirmTerminology(t)
-        t
+        confirmTerminology(terminology)
+        terminology
     }
 
+
     void confirmTerminology(terminology) {
-        //assert dataModel
-        //assert dataModel.label == 'National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery'
-        //assert dataModel.modelType == DataModelType.DATA_STANDARD.label
-        //assert dataModel.createdBy == admin.emailAddress
-        //assert !dataModel.description
-        //assert !dataModel.author
-        //assert !dataModel.organisation
-        //assert dataModel.breadcrumbTree
-        //assert dataModel.breadcrumbTree.domainId == dataModel.id
-        //assert dataModel.breadcrumbTree.label == dataModel.label
-        assert true
+        assert terminology
+        assert terminology.createdBy == admin.emailAddress
+        assert terminology.breadcrumbTree
+        assert terminology.breadcrumbTree.domainId == terminology.id
+        assert terminology.breadcrumbTree.label == terminology.label
     }
 
     void 'test that trying to export when specifying a null terminologyId fails with an exception'() {
@@ -139,10 +136,9 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
 
         when:
         String exported = exportModel(simpleTerminologyId)
-        //log.debug(exported)
 
         then:
-        validateExportedModel('simple', exported)
+        validateExportedModel('simple', exported.replace(/Test Authority/, 'Mauro Data Mapper'))
 
         //note: importing does not actually save
         when:
@@ -173,10 +169,9 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
 
         when:
         String exported = exportModel(complexTerminologyId)
-        log.debug(exported)
 
         then:
-        validateExportedModel('complex', exported)
+        validateExportedModel('complex', exported.replace(/Test Authority/, 'Mauro Data Mapper'))
 
         //note: importing does not actually save
         when:
@@ -197,4 +192,201 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
         diff.objectsAreIdentical()
     }
 
+    void 'test empty data import'() {
+        given:
+        setupData()
+
+        when:
+        String data = ''
+        importerService.importTerminology(admin, data.bytes)
+
+        then:
+        thrown(ApiBadRequestException)
+    }
+
+    void 'test simple data import'() {
+        given:
+        setupData()
+
+        expect:
+        Terminology.count() == 2
+
+        when:
+        String data = new String(loadTestFile('terminologySimple'))
+        log.debug("importing ${data}")
+        and:
+        Terminology tm = importAndConfirm(data.bytes)
+
+        then:
+        tm.label == 'Simple Test Terminology Import'
+        tm.author == 'Test Author'
+        tm.organisation == 'Test Organisation'
+        tm.documentationVersion.toString() == '1.0.0'
+        tm.finalised == false
+        tm.authority.label == 'Mauro Data Mapper'
+        tm.authority.url == 'http://localhost'
+        !tm.annotations
+        !tm.metadata
+        !tm.classifiers
+        !tm.terms
+        !tm.termRelationshipTypes
+
+        when:
+        String exported = exportModel(tm.id)
+
+        then:
+        validateExportedModel('terminologySimple', exported)
+
+    }
+
+    void 'test simple data with aliases'() {
+        given:
+        setupData()
+        def testName = 'terminologyWithAliases'
+
+        expect:
+        Terminology.count() == 2
+
+        when:
+        String data = new String(loadTestFile(testName))
+        log.debug("importing ${data}")
+        and:
+        Terminology tm = importAndConfirm(data.bytes)
+
+        then:
+        tm.label == 'Simple Test Terminology Import'
+        tm.author == 'Test Author'
+        tm.organisation == 'Test Organisation'
+        tm.documentationVersion.toString() == '1.0.0'
+        tm.finalised == false
+        tm.authority.label == 'Mauro Data Mapper'
+        tm.authority.url == 'http://localhost'
+        tm.aliases.size() == 2
+        'Alias 1' in tm.aliases
+        'Alias 2' in tm.aliases
+        !tm.annotations
+        !tm.metadata
+        !tm.classifiers
+        !tm.terms
+        !tm.termRelationshipTypes
+
+        when:
+        String exported = exportModel(tm.id)
+
+        then:
+        validateExportedModel(testName, exported)
+    }
+
+    void 'test simple data with annotations'() {
+        given:
+        setupData()
+        def testName = 'terminologyWithAnnotations'
+
+        expect:
+        Terminology.count() == 2
+
+        when:
+        String data = new String(loadTestFile(testName))
+        log.debug("importing ${data}")
+        and:
+        Terminology tm = importAndConfirm(data.bytes)
+
+        then:
+        tm.label == 'Simple Test Terminology Import'
+        tm.author == 'Test Author'
+        tm.organisation == 'Test Organisation'
+        tm.documentationVersion.toString() == '1.0.0'
+        tm.finalised == false
+        tm.authority.label == 'Mauro Data Mapper'
+        tm.authority.url == 'http://localhost'
+        tm.annotations.size() == 1
+        !tm.metadata
+        !tm.classifiers
+        !tm.terms
+        !tm.termRelationshipTypes
+
+        when:
+        Annotation ann = tm.annotations[0]
+
+        then:
+        ann.description == 'test annotation 1 description'
+        ann.label == 'test annotation 1 label'        
+
+        when:
+        String exported = exportModel(tm.id)
+
+        then:
+        validateExportedModel(testName, exported)
+    }
+
+    void 'test simple data with metadata'() {
+        given:
+        setupData()
+        def testName = 'terminologyWithMetadata'
+
+        expect:
+        Terminology.count() == 2
+
+        when:
+        String data = new String(loadTestFile(testName))
+        log.debug("importing ${data}")
+        and:
+        Terminology tm = importAndConfirm(data.bytes)
+
+        then:
+        tm.label == 'Simple Test Terminology Import'
+        tm.author == 'Test Author'
+        tm.organisation == 'Test Organisation'
+        tm.documentationVersion.toString() == '1.0.0'
+        tm.finalised == false
+        tm.authority.label == 'Mauro Data Mapper'
+        tm.authority.url == 'http://localhost'
+        !tm.annotations
+        tm.metadata.size() == 3
+        !tm.classifiers
+        !tm.terms
+        !tm.termRelationshipTypes      
+
+        when:
+        String exported = exportModel(tm.id)
+
+        then:
+        validateExportedModel(testName, exported)
+    }
+
+    void 'test complex'() {
+        given:
+        setupData()
+        def testName = 'terminologyComplex'
+
+        expect:
+        Terminology.count() == 2
+
+        when:
+        String data = new String(loadTestFile(testName))
+        log.debug("importing ${data}")
+        and:
+        Terminology tm = importAndConfirm(data.bytes)
+
+        then:
+        tm.label == 'Complex Test Terminology Import'
+        tm.author == 'Test Author'
+        tm.organisation == 'Test Organisation'
+        tm.documentationVersion.toString() == '1.0.0'
+        tm.finalised == false
+        tm.authority.label == 'Mauro Data Mapper'
+        tm.authority.url == 'http://localhost'     
+        tm.annotations.size() == 2
+        tm.metadata.size() == 3
+        tm.classifiers.size() == 2
+        tm.termRelationshipTypes.size() == 4
+        tm.terms.size() == 101
+
+        and:
+        def i = 0
+        for (i = 0; i <= 100; i++) {
+            tm.terms.any {it.code == "CTT${i}" && it.definition == "Complex Test Term ${i}"}
+        }
+
+    }     
 }
