@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -113,9 +114,24 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         latestFinalisedModel(label)?.modelVersion ?: Version.from('0.0.0')
     }
 
-    Map<String, Object> mergeDiff(K leftModel, K rightModel) {
+    ObjectDiff<K> mergeDiff(K leftModel, K rightModel) {
         def commonAncestor = commonAncestor(leftModel, rightModel)
-        [twoWayDiff: leftModel.diff(rightModel), threeWayDiff: [left: commonAncestor.diff(leftModel), right: commonAncestor.diff(rightModel)]]
+
+        def left = commonAncestor.diff(leftModel)
+        if (!left.diffs) return ObjectDiff
+                .builder(modelClass)
+                .leftHandSide(leftModel.id as String, leftModel)
+                .rightHandSide(rightModel.id as String, rightModel)
+                .appendString('label', leftModel.label, rightModel.label)
+
+        def top = rightModel.diff(leftModel)
+        if (!top.diffs) return top
+
+        def right = commonAncestor.diff(rightModel)
+        if (!right.diffs) return top
+
+
+        top
     }
 
     K currentMainBranch(K model) {

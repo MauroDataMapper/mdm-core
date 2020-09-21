@@ -17,7 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
+import grails.gorm.transactions.Transactional
+import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
+import grails.web.mime.MimeType
+import groovy.util.logging.Slf4j
+import spock.lang.Shared
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -27,19 +32,8 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
-import grails.gorm.transactions.Transactional
-import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
-import grails.web.mime.MimeType
-import groovy.util.logging.Slf4j
-import spock.lang.Shared
-
+import static io.micronaut.http.HttpStatus.*
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
-
-import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static io.micronaut.http.HttpStatus.OK
-import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * @see DataModelController* Controller: dataModel
@@ -938,7 +932,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         String mainId = responseBody().items.find {
             it.label == 'Functional Test Model' &&
-            !(it.id in [id, leftId, rightId])
+                    !(it.id in [id, leftId, rightId])
         }?.id
         mainId
 
@@ -947,36 +941,24 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == rightId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == rightId
+        responseBody().leftId == rightId
+        responseBody().rightId == leftId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == mainId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainId
+        responseBody().leftId == mainId
+        responseBody().rightId == leftId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == rightId
-        responseBody().twoWayDiff.rightId == mainId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == rightId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainId
+        responseBody().leftId == mainId
+        responseBody().rightId == rightId
 
         cleanup:
         cleanUpData(mainId)

@@ -17,13 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Version
-
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 @Slf4j
 @Integration
@@ -275,7 +274,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         def mergeDiff = terminologyService.mergeDiff(left, right)
 
         then:
-        mergeDiff == [twoWayDiff: left.diff(right), threeWayDiff: [left: terminology.diff(left), right: terminology.diff(right)]]
+        mergeDiff == [diffs: left.diff(right), conflicts: [left: terminology.diff(left), right: terminology.diff(right)]]
     }
 
     void 'TSICMB01 : test getting current draft model on main branch from side branch'() {

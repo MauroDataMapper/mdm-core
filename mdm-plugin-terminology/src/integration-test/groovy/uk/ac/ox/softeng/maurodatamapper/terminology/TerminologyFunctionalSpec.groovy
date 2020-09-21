@@ -755,7 +755,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         String mainId = responseBody().items.find {
             it.label == 'Functional Test Model' &&
-            !(it.id in [id, leftId, rightId])
+                    !(it.id in [id, leftId, rightId])
         }?.id
         mainId
 
@@ -764,36 +764,36 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == rightId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == rightId
+        responseBody().diffs.leftId == rightId
+        responseBody().diffs.rightId == leftId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == leftId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == rightId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == mainId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainId
+        responseBody().diffs.leftId == mainId
+        responseBody().diffs.rightId == leftId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == leftId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == mainId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == rightId
-        responseBody().twoWayDiff.rightId == mainId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == rightId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainId
+        responseBody().diffs.leftId == mainId
+        responseBody().diffs.rightId == rightId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == rightId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == mainId
 
         cleanup:
         cleanUpData(mainId)
@@ -1187,7 +1187,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         cleanup:
         cleanUpData(id)
-    }    
+    }
 
 
     void 'EX04: test export simple Terminology'() {
@@ -1244,7 +1244,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         cleanup:
         cleanUpData(id)
-    }    
+    }
 
     void 'EX05: test export complex Terminology'() {
         given:

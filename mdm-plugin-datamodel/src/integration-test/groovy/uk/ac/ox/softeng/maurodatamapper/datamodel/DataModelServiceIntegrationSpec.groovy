@@ -17,6 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -28,11 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationS
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
-
-import grails.gorm.transactions.Rollback
-import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
 
 @Slf4j
 @Integration
@@ -691,7 +690,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def mergeDiff = dataModelService.mergeDiff(left, right)
 
         then:
-        mergeDiff == [twoWayDiff: left.diff(right), threeWayDiff: [left: dataModel.diff(left), right: dataModel.diff(right)]]
+        mergeDiff == [diffs: left.diff(right), conflicts: [left: dataModel.diff(left), right: dataModel.diff(right)]]
     }
 
     void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {

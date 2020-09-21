@@ -17,13 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
-
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
@@ -31,11 +24,14 @@ import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 import spock.lang.Shared
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
-import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static io.micronaut.http.HttpStatus.OK
-import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
+import static io.micronaut.http.HttpStatus.*
 
 /**
  * <pre>
@@ -778,7 +774,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyResponse OK, response
         String mainId = responseBody().items.find {
             it.label == 'Functional Test Model' &&
-            !(it.id in [id, leftId, rightId])
+                    !(it.id in [id, leftId, rightId])
         }?.id
         mainId
 
@@ -787,36 +783,36 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == rightId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == rightId
+        responseBody().diffs.leftId == rightId
+        responseBody().diffs.rightId == leftId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == leftId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == rightId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == mainId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainId
+        responseBody().diffs.leftId == mainId
+        responseBody().diffs.rightId == leftId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == leftId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == mainId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == rightId
-        responseBody().twoWayDiff.rightId == mainId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == rightId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainId
+        responseBody().diffs.leftId == mainId
+        responseBody().diffs.rightId == rightId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == rightId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == mainId
 
         cleanup:
         cleanUpData(mainId)

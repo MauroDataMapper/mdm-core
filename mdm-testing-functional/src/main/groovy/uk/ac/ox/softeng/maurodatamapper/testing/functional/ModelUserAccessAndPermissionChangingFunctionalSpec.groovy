@@ -17,16 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
-import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
-
-import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.*
 
 /**
  * <pre>
@@ -751,36 +747,36 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == rightId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == rightId
+        responseBody().diffs.leftId == rightId
+        responseBody().diffs.rightId == leftId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == leftId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == rightId
 
         when:
         GET("$leftId/mergeDiff/$mainBranchId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == mainBranchId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainBranchId
+        responseBody().diffs.leftId == mainBranchId
+        responseBody().diffs.rightId == leftId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == leftId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == mainBranchId
 
         when:
         GET("$rightId/mergeDiff/$mainBranchId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == rightId
-        responseBody().twoWayDiff.rightId == mainBranchId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == rightId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainBranchId
+        responseBody().diffs.leftId == mainBranchId
+        responseBody().diffs.rightId == rightId
+        responseBody().conflicts.left.leftId == id
+        responseBody().conflicts.left.rightId == rightId
+        responseBody().conflicts.right.leftId == id
+        responseBody().conflicts.right.rightId == mainBranchId
 
         cleanup:
         removeValidIdObjectUsingTransaction(mainBranchId)
