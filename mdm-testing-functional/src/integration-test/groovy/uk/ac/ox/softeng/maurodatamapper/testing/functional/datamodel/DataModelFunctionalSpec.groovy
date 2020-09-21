@@ -2254,7 +2254,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Complex Test DataModel",
-  "count": 21,
+  "count": 20,
   "diffs": [
     {
       "label": {
@@ -2325,19 +2325,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "deleted": [
           {
             "id": "${json-unit.matches:id}",
-            "label": "yesnounknown",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "integer",
+            "label": "child",
             "breadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
@@ -2361,7 +2349,19 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
           },
           {
             "id": "${json-unit.matches:id}",
-            "label": "child",
+            "label": "integer",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ]
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "yesnounknown",
             "breadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
@@ -2379,6 +2379,18 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         "deleted": [
           {
             "id": "${json-unit.matches:id}",
+            "label": "content",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ]
+          },
+          {
+            "id": "${json-unit.matches:id}",
             "label": "emptyclass",
             "breadcrumbs": [
               {
@@ -2391,36 +2403,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
           },
           {
             "id": "${json-unit.matches:id}",
-            "label": "child",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              },
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "parent",
-                "domainType": "DataClass"
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
             "label": "parent",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "content",
             "breadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
@@ -2469,23 +2452,6 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
           },
           {
             "id": "${json-unit.matches:id}",
-            "label": "child",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              },
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "parent",
-                "domainType": "DataClass"
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
             "label": "ele1",
             "breadcrumbs": [
               {
@@ -2497,6 +2463,23 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
               {
                 "id": "${json-unit.matches:id}",
                 "label": "content",
+                "domainType": "DataClass"
+              }
+            ]
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "child",
+            "breadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+              },
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "parent",
                 "domainType": "DataClass"
               }
             ]

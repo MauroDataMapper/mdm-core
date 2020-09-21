@@ -1039,7 +1039,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test diffing 2 DataModels'() {
+    void 'D01 : test diffing 2 DataModels'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
         String otherId = createNewItem([label: 'Functional Test Model 2'])
@@ -1067,7 +1067,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test diffing branches'() {
+    void 'D02 : test diffing branches'() {
         given:
         // Create base model and finalise
         String id = createNewItem(validJson)
@@ -1098,6 +1098,87 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse OK, response
         responseBody()
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(testId)
+        cleanUpData(mainId)
+    }
+
+    void 'D03 : test diffing branches on modifications'() {
+        given:
+        // Create base model
+        String id = createNewItem(validJson)
+        // Create content
+        POST("$id/dataClasses", [label: 'parent'])
+        verifyResponse(CREATED, response)
+        String parentId = responseBody().id
+        POST("$id/dataClasses/${parentId}/dataClasses", [label: 'child'])
+        verifyResponse(CREATED, response)
+        POST("$id/dataClasses", [label: 'content', description: 'some interesting content'])
+        verifyResponse(CREATED, response)
+
+        //Finalise
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Create a new branch main
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
+
+        // Create a new branch test
+        PUT("$id/newBranchModelVersion", [branchName: 'test'])
+        verifyResponse CREATED, response
+        String testId = responseBody().id
+
+        //Change child DC label
+        GET("$testId/dataClasses")
+        verifyResponse(OK, response)
+        parentId = responseBody().items.find { it.label == 'parent' }.id
+        String contentId = responseBody().items.find { it.label == 'content' }.id
+        GET("$testId/dataClasses/${parentId}/dataClasses")
+        verifyResponse(OK, response)
+        assert responseBody().items.first().id
+        assert responseBody().items.first().label == 'child'
+        String childId = responseBody().items.first().id
+        PUT("$testId/dataClasses/${parentId}/dataClasses/$childId", [label: 'child edit'])
+        verifyResponse(OK, response)
+        // change description of the content
+        PUT("$testId/dataClasses/$contentId", [description: 'a change to the description'])
+
+        when: 'performing diff'
+        GET("$testId/diff/$mainId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 4
+        responseBody().diffs.size() == 2
+        responseBody().diffs.first().branchName.left == 'test'
+        responseBody().diffs.first().branchName.right == 'main'
+
+        and:
+        Map dataClassesDiffs = responseBody().diffs[1].dataClasses
+        dataClassesDiffs.modified.size() == 2
+
+        and:
+        Map contentDiff = dataClassesDiffs.modified.find { it.label == 'content' }
+        contentDiff.diffs.size() == 1
+        contentDiff.diffs.first().description.left == 'a change to the description'
+        contentDiff.diffs.first().description.right == 'some interesting content'
+
+        and:
+        Map parentDiff = dataClassesDiffs.modified.find { it.label == 'parent' }
+        parentDiff.diffs.size() == 1
+        parentDiff.diffs.first().dataClasses.deleted.size() == 1
+        parentDiff.diffs.first().dataClasses.created.size() == 1
+        parentDiff.diffs.first().dataClasses.deleted.first().label == 'child edit'
+        parentDiff.diffs.first().dataClasses.created.first().label == 'child'
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(testId)
+        cleanUpData(mainId)
     }
 
     void 'test export a single DataModel'() {

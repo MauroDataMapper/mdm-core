@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -205,7 +206,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!thisModel) return notFound(params[alternateParamsIdKey])
         if (!otherModel) return notFound(params.otherModelId)
 
-        respond getModelService().diff(thisModel, otherModel)
+        ObjectDiff diff = getModelService().diff(thisModel, otherModel)
+        respond diff
     }
 
     def commonAncestor() {

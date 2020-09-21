@@ -132,7 +132,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
     ObjectDiff<DataModel> diff(DataModel otherDataModel) {
         modelDiffBuilder(DataModel, this, otherDataModel)
             .appendList(DataType, 'dataTypes', this.dataTypes, otherDataModel.dataTypes)
-            .appendList(DataClass, 'dataClasses', this.dataClasses, otherDataModel.dataClasses)
+            .appendList(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
             .appendList(DataType, 'dataElements', this.getAllDataElements(), otherDataModel.getAllDataElements())
     }
 

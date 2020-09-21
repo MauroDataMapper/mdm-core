@@ -166,8 +166,8 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         catalogueItemDiffBuilder(DataClass, this, otherDataClass)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataClass.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataClass.maxMultiplicity)
-            .appendList(DataClass, 'childDataClasses', this.dataClasses, otherDataClass.dataClasses)
-            .appendList(DataElement, "dataElements", this.dataElements, otherDataClass.dataElements)
+            .appendList(DataClass, 'dataClasses', this.dataClasses, otherDataClass.dataClasses)
+            .appendList(DataElement, 'dataElements', this.dataElements, otherDataClass.dataElements)
 
     }
 
