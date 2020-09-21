@@ -11,6 +11,8 @@ if (export.id) 'mdm:id'(export.id)
 if (add) {
     if (export.description) 'mdm:description' {yield export.description}
 
+    if (export.lastUpdated) 'mdm:lastUpdated'(OffsetDateTimeConverter.toString(export.lastUpdated))
+
     if (export.aliasesString) {
         'mdm:aliases' {
             export.getAliases().each {al ->
@@ -18,8 +20,6 @@ if (add) {
             }
         }
     }
-
-    if (export.lastUpdated) 'mdm:lastUpdated'(OffsetDateTimeConverter.toString(export.lastUpdated))
 
     if (export.classifiers) {
         'mdm:classifiers' {

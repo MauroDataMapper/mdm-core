@@ -7,8 +7,6 @@ model {
 }
 json {
 
-    type export.modelType
-
     if (export.author) author export.author
     if (export.organisation) organisation export.organisation
 
@@ -16,7 +14,7 @@ json {
 
     finalised export.finalised
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
-    authority tmpl.'/authority/authority'(export.authority)
+    if (export.authority) authority tmpl.'/authority/export'(export.authority)
 
     if (export.termRelationshipTypes) termRelationshipTypes tmpl.'/termRelationshipType/export'(export.termRelationshipTypes)
     if (export.terms) {
