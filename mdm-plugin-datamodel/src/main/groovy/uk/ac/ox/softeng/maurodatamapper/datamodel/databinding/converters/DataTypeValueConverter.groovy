@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -66,6 +67,9 @@ class DataTypeValueConverter implements ValueConverter {
                         break
                     case DataType.REFERENCE_DOMAIN_TYPE:
                         dataType = new ReferenceType()
+                        break
+                    case DataType.MODEL_DATA_DOMAIN_TYPE:
+                        dataType = new ModelDataType()
                         break
                     default:
                         String defaultMessage = 'Cannot bind DataType with unknown domainType [{}]'

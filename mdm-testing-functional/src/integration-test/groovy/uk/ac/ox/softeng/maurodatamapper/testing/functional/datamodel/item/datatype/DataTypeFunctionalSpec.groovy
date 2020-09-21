@@ -237,7 +237,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
 
     @Override
     void verifyCopiedResponseBody(HttpResponse<Map> response) {
-        Map body = response.body()
+        Map body = responseBody()
 
         assert body.id
         assert body.domainType == 'PrimitiveType'
@@ -273,10 +273,10 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
 
         then: "The response is correct"
         verifyResponse HttpStatus.CREATED, response
-        String id = response.body().id
-        assert response.body().domainType == 'EnumerationType'
-        assert response.body().label == 'Functional Enumeration Type'
-        assert response.body().enumerationValues.size() == 2
+        String id = responseBody().id
+        assert responseBody().domainType == 'EnumerationType'
+        assert responseBody().label == 'Functional Enumeration Type'
+        assert responseBody().enumerationValues.size() == 2
 
         when:
         GET(id, STRING_ARG)
@@ -337,10 +337,10 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
 
         then: "The response is correct"
         verifyResponse HttpStatus.CREATED, response
-        String id = response.body().id
-        assert response.body().domainType == 'ReferenceType'
-        assert response.body().label == 'Functional Reference Type'
-        assert response.body().referenceClass.id == getReferenceDataClassId()
+        String id = responseBody().id
+        assert responseBody().domainType == 'ReferenceType'
+        assert responseBody().label == 'Functional Reference Type'
+        assert responseBody().referenceClass.id == getReferenceDataClassId()
 
         when:
         GET(id, STRING_ARG)
@@ -384,4 +384,57 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         cleanup:
         removeValidIdObject(id)
     }
+
+    void "E03 : Test the save action correctly persists an instance for model data type (as editor)"() {
+        given:
+        UUID modelId = UUID.randomUUID()
+        loginEditor()
+        Map validJson = [
+            domainType             : 'ModelDataType',
+            label                  : 'Functional ModelData Type',
+            modelResourceId        : modelId,
+            modelResourceDomainType: 'Terminology'
+        ]
+
+        when: "The save action is executed with valid data"
+        POST('', validJson)
+
+        then: "The response is correct"
+        verifyResponse HttpStatus.CREATED, response
+        String id = responseBody().id
+        responseBody().domainType == 'ModelDataType'
+        responseBody().label == 'Functional ModelData Type'
+        responseBody().modelResourceId == modelId.toString()
+        responseBody().modelResourceDomainType == 'Terminology'
+
+        when:
+        GET(id, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, '''{
+  "id": "${json-unit.matches:id}",
+  "domainType": "ModelDataType",
+  "label": "Functional ModelData Type",
+  "model": "${json-unit.matches:id}",
+  "breadcrumbs": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Complex Test DataModel",
+      "domainType": "DataModel",
+      "finalised": false
+    }
+  ],
+  "availableActions": [
+    "show","comment","editDescription","update","save","delete"
+  ],
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "modelResourceId": "${json-unit.matches:id}",
+  "modelResourceDomainType": "Terminology"
+}
+'''
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
 }

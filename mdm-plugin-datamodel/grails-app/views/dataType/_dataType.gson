@@ -1,5 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 
@@ -19,7 +20,8 @@ json {
     if (dataType.instanceOf(PrimitiveType)) {
         if (dataType.getProperty('units')) units dataType.getProperty('units')
     }
-    //    if (dataType.instanceOf(TerminologyType)) {
-    //        terminology tmpl.'/terminology/terminology'(terminology: dataType.getProperty('terminology'))
-    //    }
+    if (dataType.instanceOf(ModelDataType)) {
+        modelResourceId dataType.getProperty('modelResourceId')
+        modelResourceDomainType dataType.getProperty('modelResourceDomainType')
+    }
 }

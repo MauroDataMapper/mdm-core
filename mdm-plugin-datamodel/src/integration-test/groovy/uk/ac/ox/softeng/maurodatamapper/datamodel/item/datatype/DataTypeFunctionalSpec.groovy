@@ -91,8 +91,8 @@ class DataTypeFunctionalSpec extends ResourceFunctionalSpec<DataType> {
     void cleanUpData() {
         if (dataModelId) {
             GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
-            def items = response.body().items
-            items.each {i ->
+            def items = responseBody().items
+            items.each { i ->
                 DELETE("dataModels/$otherDataModelId/dataTypes/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
             }
@@ -240,11 +240,43 @@ class DataTypeFunctionalSpec extends ResourceFunctionalSpec<DataType> {
     }'''
     }
 
+
+    void "Test the save action correctly persists an instance for modeldata type"() {
+        when: "The save action is executed with valid data"
+        UUID modelId = UUID.randomUUID()
+        POST('', [
+            domainType             : 'ModelDataType',
+            label                  : 'functional modeldata',
+            modelResourceId        : modelId,
+            modelResourceDomainType: 'Terminology'
+        ], STRING_ARG)
+
+        then: "The response is correct"
+        verifyJsonResponse CREATED, '''{
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "domainType": "ModelDataType",
+      "availableActions": ["delete","show","update"],
+      "model": "${json-unit.matches:id}",
+      "id": "${json-unit.matches:id}",
+      "label": "functional modeldata",
+      "breadcrumbs": [
+        {
+          "domainType": "DataModel",
+          "finalised": false,
+          "id": "${json-unit.matches:id}",
+          "label": "Functional Test DataModel"
+        }
+      ],
+      "modelResourceId": "${json-unit.matches:id}",
+      "modelResourceDomainType": "Terminology"
+    }'''
+    }
+
     void 'test copying primitive type from datamodel to other datamodel'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
 
         expect:
         id
@@ -260,12 +292,12 @@ class DataTypeFunctionalSpec extends ResourceFunctionalSpec<DataType> {
 
         then:
         verifyResponse(CREATED, response)
-        response.body().id != id
-        response.body().label == validJson.label
-        response.body().availableActions == ['delete', 'show', 'update']
-        response.body().model == otherDataModelId.toString()
-        response.body().breadcrumbs.size() == 1
-        response.body().breadcrumbs[0].id == otherDataModelId.toString()
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
 
         cleanup:
         cleanUpData(id)
@@ -282,7 +314,7 @@ class DataTypeFunctionalSpec extends ResourceFunctionalSpec<DataType> {
             ]
         ])
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
 
         expect:
         id
@@ -292,12 +324,12 @@ class DataTypeFunctionalSpec extends ResourceFunctionalSpec<DataType> {
 
         then:
         verifyResponse(CREATED, response)
-        response.body().id != id
-        response.body().label == 'functional enumeration'
-        response.body().availableActions == ['delete', 'show', 'update']
-        response.body().model == otherDataModelId.toString()
-        response.body().breadcrumbs.size() == 1
-        response.body().breadcrumbs[0].id == otherDataModelId.toString()
+        responseBody().id != id
+        responseBody().label == 'functional enumeration'
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
 
         cleanup:
         cleanUpData(id)
@@ -311,7 +343,7 @@ class DataTypeFunctionalSpec extends ResourceFunctionalSpec<DataType> {
             referenceClass: dataClassId
         ])
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
 
         expect:
         id
@@ -321,6 +353,45 @@ class DataTypeFunctionalSpec extends ResourceFunctionalSpec<DataType> {
 
         then:
         verifyResponse(BAD_REQUEST, response)
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'test copying modeldata type from datamodel to other datamodel'() {
+        given:
+        String modelId = UUID.randomUUID().toString()
+        POST('', [
+            domainType             : 'ModelDataType',
+            label                  : 'functional modeldata',
+            modelResourceId        : modelId,
+            modelResourceDomainType: 'Terminology'
+        ])
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        expect:
+        id
+
+        when: 'trying to copy non-existent'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/${UUID.randomUUID()}", [:], MAP_ARG, true)
+
+        then:
+        response.status == NOT_FOUND
+
+        when: 'trying to copy valid'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/$id", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse(CREATED, response)
+        responseBody().id != id
+        responseBody().label == 'functional modeldata'
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
+        responseBody().modelResourceId == modelId
+        responseBody().modelResourceDomainType == 'Terminology'
 
         cleanup:
         cleanUpData(id)

@@ -51,6 +51,7 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     public static final String REFERENCE_DOMAIN_TYPE = ReferenceType.simpleName
     public static final String ENUMERATION_DOMAIN_TYPE = EnumerationType.simpleName
     public static final String PRIMITIVE_DOMAIN_TYPE = PrimitiveType.simpleName
+    public static final String MODEL_DATA_DOMAIN_TYPE = ModelDataType.simpleName
 
     UUID id
     String domainType

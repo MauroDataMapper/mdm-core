@@ -50,6 +50,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     PrimitiveTypeService primitiveTypeService
     ReferenceTypeService referenceTypeService
     EnumerationTypeService enumerationTypeService
+    ModelDataTypeService modelDataTypeService
     SummaryMetadataService summaryMetadataService
 
     @Override
@@ -98,6 +99,9 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 break
             case DataType.REFERENCE_DOMAIN_TYPE:
                 referenceTypeService.delete(dataType as ReferenceType, flush)
+                break
+            case DataType.MODEL_DATA_DOMAIN_TYPE:
+                modelDataTypeService.delete(dataType as ModelDataType, flush)
         }
     }
 
@@ -352,6 +356,9 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             case DataType.REFERENCE_DOMAIN_TYPE:
                 copy = new ReferenceType()
                 // Merge dataclasses in after they've all been copied
+                break
+            case DataType.MODEL_DATA_DOMAIN_TYPE:
+                copy = new ModelDataType(modelResourceId: original.modelResourceId, modelResourceDomainType: original.modelResourceDomainType)
                 break
             default:
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
