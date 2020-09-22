@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -32,7 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 07/03/2018
  */
 @Slf4j
-abstract class DataModelExporterProviderService implements ExporterProviderService {
+@CompileStatic
+abstract class DataModelExporterProviderService extends ExporterProviderService {
 
     @Autowired
     DataModelService dataModelService
@@ -54,12 +56,14 @@ abstract class DataModelExporterProviderService implements ExporterProviderServi
     @Override
     ByteArrayOutputStream exportDomains(User currentUser, List<UUID> domainIds) throws ApiException {
         List<DataModel> dataModels = []
+        List<UUID> cannotExport = []
         domainIds.each {
             DataModel dataModel = dataModelService.get(it)
             if (!dataModel) {
-                getLogger().warn('Cannot find model id [{}] to export', it)
-            } else dataModels += dataModel
+                cannotExport.add it
+            } else dataModels.add dataModel
         }
+        log.warn('Cannot find model ids [{}] to export', cannotExport)
         exportDataModels(currentUser, dataModels)
     }
 

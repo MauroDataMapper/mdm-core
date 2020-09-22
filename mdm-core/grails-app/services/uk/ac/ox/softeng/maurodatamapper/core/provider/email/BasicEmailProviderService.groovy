@@ -27,7 +27,7 @@ import org.simplejavamail.util.ConfigLoader
 
 import javax.mail.Message
 
-class BasicEmailProviderService implements EmailProviderService {
+class BasicEmailProviderService extends EmailProviderService {
 
     Map allProps
     Properties simpleMailProps

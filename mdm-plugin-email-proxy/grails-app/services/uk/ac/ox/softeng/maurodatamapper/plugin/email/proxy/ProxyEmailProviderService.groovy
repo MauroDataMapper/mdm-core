@@ -24,7 +24,7 @@ import grails.plugin.json.view.JsonViewTemplateEngine
 import groovy.text.Template
 import org.springframework.beans.factory.annotation.Autowired
 
-class ProxyEmailProviderService implements EmailProviderService {
+class ProxyEmailProviderService extends EmailProviderService {
 
     private static final String MESSAGE_VIEW_PATH = '/email/message'
 

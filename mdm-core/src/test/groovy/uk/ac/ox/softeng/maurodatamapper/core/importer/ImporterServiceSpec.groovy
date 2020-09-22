@@ -185,7 +185,7 @@ otherwise you could get an error.''',
 
     }
 
-    class TestImporterProviderService implements ImporterProviderService<Folder, TestFileImporterProviderServiceParameters> {
+    class TestImporterProviderService extends ImporterProviderService<Folder, TestFileImporterProviderServiceParameters> {
 
         @Override
         Folder importDomain(User currentUser, TestFileImporterProviderServiceParameters params) {

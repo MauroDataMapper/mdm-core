@@ -20,7 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.core.provider.email
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 
-trait EmailProviderService extends MauroDataMapperService {
+import groovy.transform.CompileStatic
+
+@CompileStatic
+abstract class EmailProviderService extends MauroDataMapperService {
 
     abstract boolean configure(Map props)
 

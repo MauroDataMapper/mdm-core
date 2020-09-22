@@ -17,16 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.exporter
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
-import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
+import uk.ac.ox.softeng.maurodatamapper.security.User
+
+import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 
 /**
  * @since 16/11/2017
  */
-trait ExporterProviderService extends MauroDataMapperService {
+@Slf4j
+@CompileStatic
+abstract class ExporterProviderService extends MauroDataMapperService {
 
     abstract ByteArrayOutputStream exportDomain(User currentUser, UUID domainId) throws ApiException
 

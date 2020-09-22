@@ -17,15 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.provider
 
-import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
+
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
+import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-trait MauroDataMapperService implements MauroDataMapperProvider, Comparable<MauroDataMapperService> {
-
-    MauroDataMapperPlugin plugin
+@Slf4j
+@CompileStatic
+abstract class MauroDataMapperService implements MauroDataMapperProvider, Comparable<MauroDataMapperService> {
 
     abstract String getDisplayName()
 

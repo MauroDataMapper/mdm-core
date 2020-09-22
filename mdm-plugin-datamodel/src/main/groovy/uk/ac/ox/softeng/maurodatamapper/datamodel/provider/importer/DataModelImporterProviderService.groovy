@@ -25,13 +25,15 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import groovy.transform.CompileStatic
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * @since 07/03/2018
  */
+@CompileStatic
 abstract class DataModelImporterProviderService<T extends DataModelImporterProviderServiceParameters>
-    implements ImporterProviderService<DataModel, T> {
+    extends ImporterProviderService<DataModel, T> {
 
     @Autowired
     DataModelService dataModelService

@@ -17,12 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.provider
 
+import groovy.transform.CompileStatic
 import io.micronaut.core.order.Ordered
 
 /**
  * @since 17/08/2017
  */
 
+@CompileStatic
 interface MauroDataMapperProvider extends Ordered {
 
     String getName()

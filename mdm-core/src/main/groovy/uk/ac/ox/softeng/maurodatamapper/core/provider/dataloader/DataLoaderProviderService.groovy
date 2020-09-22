@@ -36,7 +36,7 @@ import org.springframework.context.MessageSource
  * Created by james on 15/03/2017.
  */
 @Slf4j
-trait DataLoaderProviderService<T extends DataLoadable> implements MauroDataMapperService {
+abstract class DataLoaderProviderService<T extends DataLoadable> extends MauroDataMapperService {
 
     @Autowired
     SessionFactory sessionFactory
