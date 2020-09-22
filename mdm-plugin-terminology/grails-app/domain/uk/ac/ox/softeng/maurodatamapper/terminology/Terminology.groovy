@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.terminology.gorm.constraint.validator.TermCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.DetachedCriteria
@@ -154,13 +155,6 @@ class Terminology implements Model<Terminology> {
 
 
 
-
-
-        List<TermRelationship> getAllTermRelationships() {
-            List<List<TermRelationship>> collection = terms?.collect {it.sourceTermRelationships ?: []} ?: []
-            collection.flatten() as List<TermRelationship>
-        }
-
         List<Term> getCodeSortedTerms() {
 
             terms.sort {a, b ->
@@ -176,6 +170,11 @@ class Terminology implements Model<Terminology> {
             }
         }
     */
+
+    List<TermRelationship> getAllTermRelationships() {
+        List<List<TermRelationship>> collection = terms?.collect {it.sourceTermRelationships ?: []} ?: []
+        collection.flatten() as List<TermRelationship>
+    }
 
     static DetachedCriteria<Terminology> by() {
         new DetachedCriteria<Terminology>(Terminology)

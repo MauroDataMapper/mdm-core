@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
+model {
+    Authority export
+}
+
+json {
+    id export.id
+    url export.url
+    label export.label
+    if (export.description) description export.description
+    lastUpdated: export.lastUpdated
+}

@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -152,22 +153,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
     "label": "Mauro Data Mapper"
   }
 }'''
-    }
-
-    void 'test getting Terminology exporters'() {
-        when:
-        GET('providers/exporters', STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''[]'''
-    }
-
-    void 'test getting Terminology importers'() {
-        when:
-        GET('providers/importers', STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''[]'''
     }
 
     void 'test finalising Terminology'() {
@@ -899,163 +884,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = 'no importers/exporters')
-    void 'test export a single Terminology'() {
-        given:
-        String id = createNewItem(validJson)
-
-        when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
-  "terminology": {
-    "id": "${json-unit.matches:id}",
-    "label": "Functional Test Model",
-    "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "type": "Data Standard",
-    "documentationVersion": "1.0.0",
-    "finalised": false
-  },
-  "exportMetadata": {
-    "exportedBy": "Unlogged User",
-    "exportedOn": "${json-unit.matches:offsetDateTime}",
-    "exporter": {
-      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
-      "name": "JsonExporterService",
-      "version": "2.0"
-    }
-  }
-}'''
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    @PendingFeature(reason = 'no importers/exporters')
-    void 'test export multiple Terminologys (json only exports first id)'() {
-        given:
-        String id = createNewItem(validJson)
-        String id2 = createNewItem([label: 'Functional Test Model 2'])
-
-        when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0',
-             [terminologyIds: [id, id2]], STRING_ARG
-        )
-
-        then:
-        verifyJsonResponse OK, '''{
-  "terminology": {
-    "id": "${json-unit.matches:id}",
-    "label": "Functional Test Model",
-    "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "type": "Data Standard",
-    "documentationVersion": "1.0.0",
-    "finalised": false
-  },
-  "exportMetadata": {
-    "exportedBy": "Unlogged User",
-    "exportedOn": "${json-unit.matches:offsetDateTime}",
-    "exporter": {
-      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
-      "name": "JsonExporterService",
-      "version": "2.0"
-    }
-  }
-}'''
-
-        cleanup:
-        cleanUpData(id)
-        cleanUpData(id2)
-    }
-
-    @PendingFeature(reason = 'no importers/exporters')
-    void 'test import basic Terminology'() {
-        given:
-        String id = createNewItem(validJson)
-
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
-        verifyResponse OK, jsonCapableResponse
-        String exportedJsonString = jsonCapableResponse.body()
-
-        expect:
-        exportedJsonString
-
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            terminologyName                : 'Functional Test Import',
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
-        ], STRING_ARG)
-
-        then:
-        verifyJsonResponse CREATED, '''{
-                  "count": 1,
-                  "items": [
-                    {
-                      "domainType": "Terminology",
-                      "id": "${json-unit.matches:id}",
-                      "label": "Functional Test Import",
-                      "type": "Data Standard"
-                    }
-                  ]
-                }'''
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    @PendingFeature(reason = 'no importers/exporters')
-    void 'test import basic Terminology as new documentation version'() {
-        given:
-        String id = createNewItem([
-            label    : 'Functional Test Model',
-            finalised: true
-        ])
-
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
-        verifyResponse OK, jsonCapableResponse
-        String exportedJsonString = jsonCapableResponse.body()
-
-        expect:
-        exportedJsonString
-
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : true,
-            terminologyName                : 'Functional Test Model',
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: true,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
-        ], STRING_ARG)
-
-        then:
-        verifyJsonResponse CREATED, '''{
-                  "count": 1,
-                  "items": [
-                    {
-                      "domainType": "Terminology",
-                      "id": "${json-unit.matches:id}",
-                      "label": "Functional Test Model",
-                      "type": "Data Standard"
-                    }
-                  ]
-                }'''
-
-        cleanup:
-        cleanUpData(id)
-    }
-
     @PendingFeature(reason = 'not yet implemented')
     void 'test delete multiple models'() {
         given:
@@ -1118,56 +946,253 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse NO_CONTENT, response
     }
 
-    @PendingFeature(reason = 'no importers/exporters')
-    void 'test importing simple test Terminology'() {
+    void 'EX01: test getting Terminology exporters'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleTerminology').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
+        GET('providers/exporters', STRING_ARG)
 
         then:
-        id
-
-        cleanup:
-        cleanUpData(id)
+        verifyJsonResponse OK, '''[
+            {
+                "name": "JsonExporterService",
+                "version": "3.0",
+                "displayName": "JSON Terminology Exporter",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [],
+                "providerType": "TerminologyExporter",
+                "fileExtension": "json",
+                "fileType": "text/json",
+                "canExportMultipleDomains": false
+            },
+            {
+                "name": "XmlExporterService",
+                "version": "3.0",
+                "displayName": "XML Terminology Exporter",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [],
+                "providerType": "TerminologyExporter",
+                "fileExtension": "xml",
+                "fileType": "text/xml",
+                "canExportMultipleDomains": false
+            }
+        ]'''
     }
 
-    @PendingFeature(reason = 'no importers/exporters')
-    void 'test importing complex test Terminology'() {
+    void 'IM01: test getting Terminology importers'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexTerminology').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
+        GET('providers/importers', STRING_ARG)
 
         then:
-        id
-
-        cleanup:
-        cleanUpData(id)
+        verifyJsonResponse OK, '''[
+            {
+                "name": "XmlImporterService",
+                "version": "3.0",
+                "displayName": "XML Terminology Importer",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [
+      
+                ],
+                "providerType": "TerminologyImporter",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+                "canImportMultipleDomains": false
+            },
+            {
+                "name": "JsonImporterService",
+                "version": "3.0",
+                "displayName": "JSON Terminology Importer",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [
+      
+                ],
+                "providerType": "TerminologyImporter",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+                "canImportMultipleDomains": false
+            }
+        ]'''
     }
 
-    @PendingFeature(reason = 'no importers/exporters')
-    void 'test export simple Terminology'() {
+    void 'EX02: test export a single Terminology'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        String id = createNewItem(validJson)
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+            "terminology": {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "documentationVersion": "1.0.0",
+                "finalised": false,
+                "authority": {
+                    "id": "${json-unit.matches:id}",
+                    "url": "http://localhost",
+                    "label": "Mauro Data Mapper"
+                }
+            },
+           "exportMetadata": {
+                "exportedBy": "Unlogged User",
+                "exportedOn": "${json-unit.matches:offsetDateTime}",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                    "name": "JsonExporterService",
+                    "version": "3.0"
+                }
+            }
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM02: test import single a Terminology that was just exported'() {
+        given:
+        String id = createNewItem(validJson)
+
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+
+        expect:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+            finalised                      : false,
+            terminologyName                : 'Functional Test Import',
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, '''{
+            "count": 1,
+            "items": [
+                {
+                    "domainType": "Terminology",
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Import",
+                    "branchName": "main",
+                    "documentationVersion": "1.0.0",
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Mauro Data Mapper"
+                    }
+                }
+            ]
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'EX03: test export multiple Terminologies (json only exports first id)'() {
+        given:
+        String id = createNewItem(validJson)
+        String id2 = createNewItem([label: 'Functional Test Model 2'])
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0',
+             [terminologyIds: [id, id2]], STRING_ARG
+        )
+
+        then:
+        verifyJsonResponse OK, '''{
+            "terminology": {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "documentationVersion": "1.0.0",
+                "finalised": false,
+                "authority": {
+                    "id": "${json-unit.matches:id}",
+                    "url": "http://localhost",
+                    "label": "Mauro Data Mapper"
+                }
+            },
+            "exportMetadata": {
+                "exportedBy": "Unlogged User",
+                "exportedOn": "${json-unit.matches:offsetDateTime}",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                    "name": "JsonExporterService",
+                    "version": "3.0"
+                }
+            }
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    void 'IM03: test import basic Terminology as new documentation version'() {
+        given:
+        String id = createNewItem([
+            label    : 'Functional Test Model',
+            finalised: true,
+            modelVersion: Version.from('1.0.0')
+        ])
+
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+
+        expect:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+            finalised                      : true,
+            terminologyName                : 'Functional Test Model',
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: true,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, '''{
+            "count": 1,
+            "items": [
+                {
+                    "domainType": "Terminology",
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Model",
+                    "branchName": "main",
+                    "documentationVersion": "2.0.0",
+                    "modelVersion": "1.0.0",
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Mauro Data Mapper"
+                    }
+                }
+            ]
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+    }    
+
+
+    void 'EX04: test export simple Terminology'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1182,12 +1207,14 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('simpleTerminology')).replaceFirst('"exportedBy": "Admin User",',
                                                                                      '"exportedBy": "Unlogged User",')
+                                                                       .replace(/Test Authority/, 'Mauro Data Mapper')
+
 
         expect:
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -1196,10 +1223,32 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = 'no importers/exporters')
-    void 'test export complex Terminology'() {
+
+    void 'IM04: test importing simple test Terminology'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleTerminology').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }    
+
+    void 'EX05: test export complex Terminology'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1214,15 +1263,38 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('complexTerminology')).replaceFirst('"exportedBy": "Admin User",',
                                                                                       '"exportedBy": "Unlogged User",')
+                                                                        .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM05: test importing complex test Terminology'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexTerminology').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
 
         cleanup:
         cleanUpData(id)

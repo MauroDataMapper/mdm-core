@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -57,6 +58,7 @@ class TerminologyService extends ModelService<Terminology> {
     TermRelationshipTypeService termRelationshipTypeService
     TermService termService
     TermRelationshipService termRelationshipService
+    AuthorityService authorityService
 
     MessageSource messageSource
     VersionLinkService versionLinkService
@@ -148,8 +150,19 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology saveWithBatching(Terminology model) {
-        save(model)
+    Terminology saveWithBatching(Terminology terminology) {
+        log.debug('Saving {} using batching', terminology.label)
+
+        if (terminology.classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(terminology.classifiers)
+        }
+
+        save(terminology)
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        terminology
     }
 
     @Override
@@ -674,13 +687,6 @@ class TerminologyService extends ModelService<Terminology> {
         }
     }
 
-    void checkfinaliseModel(Terminology terminology, boolean finalised) {
-        if (finalised && !terminology.finalised) {
-            terminology.finalised = finalised
-            terminology.dateFinalised = terminology.finalised ? OffsetDateTime.now() : null
-        }
-    }
-
     /**
      * Find a Terminology by label.
      * @param label
@@ -689,4 +695,44 @@ class TerminologyService extends ModelService<Terminology> {
     Terminology findByLabel(String label) {
         Terminology.findByLabel(label)
     }
+
+    /**
+    * When importing a terminology, do checks and setting of required values as follows:
+    * (1) Set the createdBy of the terminology to be the importing user
+    * (2) Always set authority to the default authority, overriding any authority that is set in the import data
+    * (3) Check facets
+    * (4) For each terminologyRelationshipType, set the terminology and if not provided the createdBy
+    * (5) For each term, if not provided set the createdBy
+    * (6) For each termRelationship, if not provided set the createdBy
+    *
+    * @param importingUser The importing user, who will be used to set createdBy
+    * @param terminology   The terminology to be imported
+    */
+    void checkImportedTerminologyAssociations(User importingUser, Terminology terminology) {
+        terminology.createdBy = importingUser.emailAddress
+
+        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the import.
+        terminology.authority = authorityService.getDefaultAuthority()
+        
+        checkFacetsAfterImportingCatalogueItem(terminology)
+
+        if (terminology.termRelationshipTypes) {
+            terminology.termRelationshipTypes.each {
+                it.terminology = terminology
+                it.createdBy = it.createdBy ?: terminology.createdBy
+            }
+        }
+
+        if (terminology.terms) {
+            terminology.terms.each { term ->
+                term.createdBy = term.createdBy ?: terminology.createdBy
+            }
+        }
+
+        terminology.getAllTermRelationships().each { tr ->
+            tr.createdBy = tr.createdBy ?: terminology.createdBy
+        } 
+
+        log.debug("Terminology associations checked")
+    }    
 }

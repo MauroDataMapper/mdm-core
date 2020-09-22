@@ -104,6 +104,34 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "fileExtension": "xml",
     "fileType": "text/xml",
     "canExportMultipleDomains": false
+  },
+  {
+    "name": "JsonExporterService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "JSON Terminology Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "TerminologyExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
+    "canExportMultipleDomains": false
+  },
+  {
+    "name": "XmlExporterService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "XML Terminology Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "TerminologyExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
+    "canExportMultipleDomains": false
   }
 ]''')
     }
@@ -162,6 +190,32 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "providerType": "DataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": true
+  },
+  {
+    "name": "JsonImporterService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "JSON Terminology Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "TerminologyImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "XmlImporterService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "XML Terminology Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "TerminologyImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
   }
 ]''')
     }

@@ -189,4 +189,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         // If no requested version change type then just increment by the next major version
         Version.nextMajorVersion(parentModelVersion)
     }
+
+    void checkfinaliseModel(K model, boolean finalised) {
+        if (finalised && !model.finalised) {
+            model.finalised = finalised
+            model.dateFinalised = model.finalised ? OffsetDateTime.now() : null
+        }
+        if (model.finalised && !model.modelVersion) {
+            model.modelVersion = Version.from('1.0.0')
+        }
+    }
 }

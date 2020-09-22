@@ -854,16 +854,6 @@ class DataModelService extends ModelService<DataModel> {
         }
     }
 
-    void checkfinaliseModel(DataModel dataModel, boolean finalised) {
-        if (finalised && !dataModel.finalised) {
-            dataModel.finalised = finalised
-            dataModel.dateFinalised = dataModel.finalised ? OffsetDateTime.now() : null
-        }
-        if (dataModel.finalised && !dataModel.modelVersion) {
-            dataModel.modelVersion = Version.from('1.0.0')
-        }
-    }
-
     DataModel createAndSaveDataModel(User createdBy, Folder folder, DataModelType type, String label, String description,
                                      String author, String organisation, Authority authority = authorityService.getDefaultAuthority(),
                                      boolean saveDataModel = true) {

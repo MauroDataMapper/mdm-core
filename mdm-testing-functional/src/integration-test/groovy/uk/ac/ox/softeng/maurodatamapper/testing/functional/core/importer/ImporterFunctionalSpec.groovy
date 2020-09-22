@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.importer
 
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.JsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.JsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.testing.mixin.integration.Integration
@@ -36,15 +37,14 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 class ImporterFunctionalSpec extends FunctionalSpec {
 
-    JsonImporterService jsonImporterService
-
     @Override
     String getResourcePath() {
         'importer'
     }
 
-    void 'test importer parameters'() {
+    void 'test datamodel importer parameters'() {
         given:
+        uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.JsonImporterService jsonImporterService = new uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.JsonImporterService()
         String endpoint = "parameters/${jsonImporterService.class.packageName}/${jsonImporterService.class.simpleName}/${jsonImporterService.version}"
         when: 'Unlogged in call to check'
         GET(endpoint)
@@ -57,10 +57,10 @@ class ImporterFunctionalSpec extends FunctionalSpec {
         GET(endpoint, STRING_ARG)
 
         then:
-        verifyJsonResponse OK, getExpectedJson()
+        verifyJsonResponse OK, getDataModelExpectedJson()
     }
 
-    String getExpectedJson() {
+    String getDataModelExpectedJson() {
         '''{
             "importer": {
                 "name": "JsonImporterService",
@@ -129,4 +129,106 @@ class ImporterFunctionalSpec extends FunctionalSpec {
   ]
 }'''
     }
+
+    void 'test terminology importer parameters'() {
+        given:
+        uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.JsonImporterService jsonImporterService = new uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.JsonImporterService()
+        String endpoint = "parameters/${jsonImporterService.class.packageName}/${jsonImporterService.class.simpleName}/${jsonImporterService.version}"
+        when: 'Unlogged in call to check'
+        GET(endpoint)
+
+        then:
+        verifyForbidden response
+
+        when: 'logged in as user'
+        loginAuthenticated()
+        GET(endpoint, STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, getTerminologyExpectedJson()
+    }
+
+    String getTerminologyExpectedJson() {
+        '''{
+  "importer": {
+    "name": "JsonImporterService",
+    "version": "3.0",
+    "displayName": "JSON Terminology Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "TerminologyImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  "parameterGroups": [
+    {
+      "name": "Model",
+      "parameters": [
+        {
+          "name": "modelName",
+          "type": "String",
+          "optional": true,
+          "displayName": "Model name",
+          "description": "Label of Model, this will override any existing name provided in the imported data.\\n''' + 
+          '''Note that if importing multiple models this will be ignored."
+        }
+      ]
+    },
+    {
+      "name": "Terminology",
+      "parameters": [
+        {
+          "name": "folderId",
+          "type": "Folder",
+          "optional": false,
+          "displayName": "Folder",
+          "description": "The folder into which the Terminology should be imported."
+        },
+        {
+          "name": "terminologyName",
+          "type": "String",
+          "optional": true,
+          "displayName": "Terminology name",
+          "description": "Label of Terminology, this will override any existing name provided in the imported data."
+        },
+        {
+          "name": "finalised",
+          "type": "Boolean",
+          "optional": false,
+          "displayName": "Finalised",
+          "description": "Whether the new model is to be marked as finalised. Note that if the model is already finalised this will not be overridden."
+        },
+        {
+          "name": "importAsNewDocumentationVersion",
+          "type": "Boolean",
+          "optional": false,
+          "displayName": "Import as New Documentation Version",
+          "description": "Should the Terminology be imported as a new Documentation Version.\\n''' +
+          '''If selected then any models with the same name will be superseded and the imported models will be given the latest documentation version of the \\n''' +
+          '''existing Terminology.\\n''' + 
+          '''If not selected then the 'Terminology Name' field should be used to ensure the imported Terminology is uniquely named, \\n''' +
+          '''otherwise you could get an error."
+        }
+      ]
+    },
+    {
+      "name": "Source",
+      "parameters": [
+        {
+          "name": "importFile",
+          "type": "File",
+          "optional": false,
+          "displayName": "File",
+          "description": "The file containing the data to be imported"
+        }
+      ]
+    }
+  ]
+}'''
+    }
+
+
 }

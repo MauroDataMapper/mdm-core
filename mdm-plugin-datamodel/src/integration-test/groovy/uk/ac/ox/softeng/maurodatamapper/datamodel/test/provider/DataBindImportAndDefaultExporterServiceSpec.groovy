@@ -58,6 +58,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
+        importerService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
         assert dataModelService.saveWithBatching(imported)
@@ -113,6 +114,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         where:
         testName << [
             'simple',
+            'incClassifiers',
             'incAliases',
             'incMetadata',
             'incAnnotation',

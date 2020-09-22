@@ -621,13 +621,6 @@ class CodeSetService extends ModelService<CodeSet> {
         }
     }
 
-    void checkfinaliseModel(CodeSet codeSet, boolean finalised) {
-        if (finalised && !codeSet.finalised) {
-            codeSet.finalised = finalised
-            codeSet.dateFinalised = codeSet.finalised ? OffsetDateTime.now() : null
-        }
-    }
-
     /**
      * Find a CodeSet by label.
      * @param label
