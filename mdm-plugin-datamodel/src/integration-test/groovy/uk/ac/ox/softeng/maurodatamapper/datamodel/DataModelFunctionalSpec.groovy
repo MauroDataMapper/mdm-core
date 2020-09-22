@@ -747,7 +747,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData()
     }
 
-    void 'VB05 : test finding common ancestor of two Model<T> (as editor)'() {
+    void 'VB05 : test finding common ancestor of two datamodels'() {
         given:
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
@@ -825,7 +825,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'VB06 : test finding latest finalised model of a Model<T> (as editor)'() {
+    void 'VB06 : test finding latest finalised model of a datamodel'() {
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -871,7 +871,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'VB07 : test finding latest model version of a Model<T> (as editor)'() {
+    void 'VB07 : test finding latest model version of a datamodel'() {
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -913,28 +913,20 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'VB08 : test finding merge difference of two Model<T> (as editor)'() {
+    void 'VB08 : test finding merge difference of two datamodels'() {
         given:
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
         String leftId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'right'])
         verifyResponse CREATED, response
         String rightId = responseBody().id
-
-        when:
-        GET('')
-
-        then:
-        verifyResponse OK, response
-        String mainId = responseBody().items.find {
-            it.label == 'Functional Test Model' &&
-                    !(it.id in [id, leftId, rightId])
-        }?.id
-        mainId
 
         when:
         GET("$leftId/mergeDiff/$rightId")

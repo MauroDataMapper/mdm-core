@@ -115,22 +115,13 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     ObjectDiff<K> mergeDiff(K leftModel, K rightModel) {
-        def commonAncestor = commonAncestor(leftModel, rightModel)
+//        def commonAncestor = commonAncestor(leftModel, rightModel)
 
-        def left = commonAncestor.diff(leftModel)
-        if (!left.diffs) return ObjectDiff
-                .builder(modelClass)
-                .leftHandSide(leftModel.id as String, leftModel)
-                .rightHandSide(rightModel.id as String, rightModel)
-                .appendString('label', leftModel.label, rightModel.label)
-
+//        def left = commonAncestor.diff(leftModel)
+//        def right = commonAncestor.diff(rightModel)
         def top = rightModel.diff(leftModel)
-        if (!top.diffs) return top
 
-        def right = commonAncestor.diff(rightModel)
-        if (!right.diffs) return top
-
-
+        top.diffs.each { it }
         top
     }
 

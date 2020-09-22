@@ -675,22 +675,26 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.branchName == 'main'
 
         when:
-        def left = dataModelService.createNewBranchModelVersion('left', dataModel, admin, false, userSecurityPolicyManager)
-        def right = dataModelService.createNewBranchModelVersion('right', dataModel, admin, false, userSecurityPolicyManager)
+        def draft = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+        def test = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
+
+        def parent = new DataClass(createdByUser: admin, label: 'parent')
+        def child = new DataClass(createdByUser: admin, label: 'child')
+        draft.addToDataClasses(parent.addToDataClasses(child))
 
         then:
-        checkAndSave(left)
-        checkAndSave(right)
-        left.modelVersion == null
-        left.branchName == 'left'
-        right.modelVersion == null
-        right.branchName == 'right'
+        checkAndSave(draft)
+        checkAndSave(test)
+        draft.modelVersion == null
+        draft.branchName == 'main'
+        test.modelVersion == null
+        test.branchName == 'test'
 
         when:
-        def mergeDiff = dataModelService.mergeDiff(left, right)
+        def mergeDiff = dataModelService.mergeDiff(draft, test)
 
         then:
-        mergeDiff == [diffs: left.diff(right), conflicts: [left: dataModel.diff(left), right: dataModel.diff(right)]]
+        mergeDiff == test.diff(draft)
     }
 
     void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
