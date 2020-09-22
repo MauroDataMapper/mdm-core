@@ -146,6 +146,11 @@ class DataModelService extends ModelService<DataModel> {
         model
     }
 
+    DataModel unSoftDeleteModel(DataModel model) {
+        model?.deleted = false
+        model
+    }
+
     @Override
     void permanentDeleteModel(DataModel model) {
         delete(model, true)

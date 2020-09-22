@@ -36,6 +36,8 @@ class UrlMappings {
                 put '/newDocumentationVersion'(controller: 'dataModel', action: 'newDocumentationVersion')
                 put '/newForkModel'(controller: 'dataModel', action: 'newForkModel') // new URL
 
+                post '/$dataModelId/undelete'(controller: 'dataModel', action: 'undelete')
+
                 /*
                 Version Control
                  */
@@ -64,7 +66,6 @@ class UrlMappings {
                 delete '/readByEveryone'(controller: 'dataModel', action: 'readByEveryone')
                 put '/readByAuthenticated'(controller: 'dataModel', action: 'readByAuthenticated')
                 delete '/readByAuthenticated'(controller: 'dataModel', action: 'readByAuthenticated')
-
 
                 /**
                  * DataClasses

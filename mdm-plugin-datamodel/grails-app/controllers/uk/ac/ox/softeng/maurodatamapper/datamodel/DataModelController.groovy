@@ -41,7 +41,7 @@ class DataModelController extends ModelController<DataModel> {
 
     static allowedMethods = [
         export                       : 'GET', tree: 'GET', types: 'GET', finalise: 'PUT',
-        createNewDocumentationVersion: 'PUT', createNewVersion: 'PUT'
+        createNewDocumentationVersion: 'PUT', createNewVersion: 'PUT', undelete: 'POST'
     ]
 
     DataModelService dataModelService
@@ -191,4 +191,21 @@ class DataModelController extends ModelController<DataModel> {
         respond dataModelService.suggestLinksBetweenModels(dataModel, otherDataModel, maxResults)
     }
 
+    @Transactional
+    def undelete() {
+        if (handleReadOnly()) {
+            return
+        }
+
+        DataModel instance = queryForResource(params.dataModelId)
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        dataModelService.unSoftDeleteModel(instance)
+
+        updateResponse(instance)
+    }
 }
