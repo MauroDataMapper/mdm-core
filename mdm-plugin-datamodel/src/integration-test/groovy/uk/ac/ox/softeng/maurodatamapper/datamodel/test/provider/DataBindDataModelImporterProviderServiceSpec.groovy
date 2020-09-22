@@ -60,6 +60,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         assert imported
         imported.folder = testFolder
         log.debug('Check and save imported model')
+        importerService.checkImport(admin, imported, false, false)
         check(imported)
         dataModelService.saveWithBatching(imported)
         sessionFactory.currentSession.flush()
@@ -101,6 +102,25 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dm.dataClasses
 
     }
+
+    void 'test inc classifiers import'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+
+        when:
+        DataModel dm = importAndConfirm(loadTestFile('incClassifiers'))
+
+        then:
+        !dm.annotations
+        !dm.metadata
+        dm.classifiers.size() == 2
+        !dm.dataTypes
+        !dm.dataClasses
+
+    }    
 
     void 'test importing aliases'() {
 

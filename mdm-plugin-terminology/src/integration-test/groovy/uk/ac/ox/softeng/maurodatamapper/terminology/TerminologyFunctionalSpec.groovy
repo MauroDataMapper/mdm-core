@@ -1082,7 +1082,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                     "domainType": "Terminology",
                     "id": "${json-unit.matches:id}",
                     "label": "Functional Test Import",
-                    //"type": "Terminology",
+                    "branchName": "main",
+                    "documentationVersion": "1.0.0",
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",
@@ -1172,6 +1173,9 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                     "domainType": "Terminology",
                     "id": "${json-unit.matches:id}",
                     "label": "Functional Test Model",
+                    "branchName": "main",
+                    "documentationVersion": "2.0.0",
+                    "modelVersion": "1.0.0",
                     "authority": {
                         "id": "${json-unit.matches:id}",
                         "url": "http://localhost",

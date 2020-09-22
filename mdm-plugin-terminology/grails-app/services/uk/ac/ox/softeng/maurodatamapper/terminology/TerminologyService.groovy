@@ -154,11 +154,6 @@ class TerminologyService extends ModelService<Terminology> {
         log.debug('Saving {} using batching', terminology.label)
 
         if (terminology.classifiers) {
-            //mc-9091 TODO find out where this happens for DataModel
-            terminology.classifiers.each { it ->
-                it.createdBy = it.createdBy ?: terminology.createdBy
-            }
-
             log.trace('Saving {} classifiers')
             classifierService.saveAll(terminology.classifiers)
         }

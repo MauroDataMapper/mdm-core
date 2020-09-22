@@ -92,6 +92,7 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
+        importerService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
         assert terminologyService.saveWithBatching(imported)

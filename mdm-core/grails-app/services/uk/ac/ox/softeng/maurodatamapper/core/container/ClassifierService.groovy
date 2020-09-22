@@ -240,6 +240,11 @@ class ClassifierService implements ContainerService<Classifier> {
 
     void checkClassifiers(User catalogueUser, def classifiedItem) {
         if (!classifiedItem.classifiers) return
+
+        classifiedItem.classifiers.each { it ->
+            it.createdBy = it.createdBy ?: classifiedItem.createdBy
+        }
+
         Set<Classifier> classifiers = [] as HashSet
         classifiers.addAll(classifiedItem.classifiers ?: [])
 
