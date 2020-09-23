@@ -1,0 +1,17 @@
+package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
+
+model {
+    VersionTreeModel versionTreeModel
+}
+
+json {
+    id versionTreeModel.modelId
+    label versionTreeModel.label
+    branch versionTreeModel.branchName
+    isNewBranchModelVersion versionTreeModel.newBranchModelVersion
+    isNewDocumentationVersion versionTreeModel.newDocumentationVersion
+    isNewFork versionTreeModel.newFork
+    targets versionTreeModel.targets
+
+
+}
