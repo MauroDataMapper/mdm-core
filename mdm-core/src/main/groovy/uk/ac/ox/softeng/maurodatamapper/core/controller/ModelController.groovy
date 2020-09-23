@@ -25,6 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -34,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -617,5 +620,27 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     String getMultipleModelsParamsIdKey() {
         "${alternateParamsIdKey}s"
+    }
+
+    def modelVersionTree(){
+        T instance = queryForResource params[alternateParamsIdKey]
+
+        if (!instance) return notFound(params[alternateParamsIdKey])
+
+        List<VersionTreeModel> versionTreeModelList
+
+        VersionLinkService versionLinkService = new VersionLinkService()
+        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
+
+        println(instance.id)
+        versionTreeModelList = [new VersionTreeModel(instance, null)]
+
+        for (link in versionLinks){
+            println(link.model.id)
+            versionTreeModelList.add(new VersionTreeModel(link.model, link.linkType))
+            versionTreeModelList.get(0).addTarget(link.modelId)
+        }
+
+        respond versionTreeModelList
     }
 }

@@ -41,7 +41,7 @@ class DataModelController extends ModelController<DataModel> {
 
     static allowedMethods = [
         export                       : 'GET', tree: 'GET', types: 'GET', finalise: 'PUT',
-        createNewDocumentationVersion: 'PUT', createNewVersion: 'PUT'
+        createNewDocumentationVersion: 'PUT', createNewVersion: 'PUT', modelVersionTree: 'GET'
     ]
 
     DataModelService dataModelService
