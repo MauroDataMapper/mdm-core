@@ -838,7 +838,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
-            terminologyName                : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
