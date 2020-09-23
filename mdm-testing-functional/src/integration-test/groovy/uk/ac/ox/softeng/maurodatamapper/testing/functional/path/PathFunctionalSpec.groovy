@@ -181,7 +181,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
           "id": "${json-unit.matches:id}",
           "domainType": "Terminology",
-          "label": "Simple Test Terminology" 
+          "label": "Simple Test Terminology",
+          "availableActions": [
+            "show",
+            "comment"
+          ]
         }'''
 
         //With ID
@@ -193,7 +197,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
           "id": "${json-unit.matches:id}",
           "domainType": "Terminology",
-          "label": "Simple Test Terminology" 
+          "label": "Simple Test Terminology",
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
 
         //No ID
@@ -205,7 +213,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
           "id": "${json-unit.matches:id}",
           "domainType": "Terminology",
-          "label": "Complex Test Terminology" 
+          "label": "Complex Test Terminology",
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
 
         //With ID
@@ -217,7 +229,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
           "id": "${json-unit.matches:id}",
           "domainType": "Terminology",
-          "label": "Complex Test Terminology" 
+          "label": "Complex Test Terminology",
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
     }
 
@@ -264,7 +280,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
           "id": "${json-unit.matches:id}",
           "domainType": "Terminology",
-          "label": "Simple Test Terminology" 
+          "label": "Simple Test Terminology",
+          "availableActions": [
+            "show",
+            "comment"
+          ]
         }'''
     }
 
@@ -303,7 +323,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
           "id": "${json-unit.matches:id}",
           "domainType": "CodeSet",
-          "label": "Simple Test CodeSet" 
+          "label": "Simple Test CodeSet",
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
 
         //With ID
@@ -315,7 +339,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
           "id": "${json-unit.matches:id}",
           "domainType": "CodeSet",
-          "label": "Simple Test CodeSet" 
+          "label": "Simple Test CodeSet",
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
     }
 
@@ -362,7 +390,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
           "id": "${json-unit.matches:id}",
           "domainType": "CodeSet",
-          "label": "Simple Test CodeSet" 
+          "label": "Simple Test CodeSet",
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
     }
 
@@ -415,7 +447,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                "domainType":"Terminology",
                "finalised":false
                }
-          ]
+          ],
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
 
         //With Terminology ID and no label
@@ -437,7 +473,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                "domainType":"Terminology",
                "finalised":false
                }
-          ]
+          ],
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
     }
 
@@ -490,7 +530,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                "domainType":"Terminology",
                "finalised":false
                }
-          ]
+          ],
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
 
         //With CodeSet ID and no label
@@ -512,7 +556,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                "domainType":"Terminology",
                "finalised":false
                }
-          ]
+          ],
+          "availableActions": [
+            "show",
+            "comment"
+          ]          
         }'''
     }
 
@@ -551,7 +599,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
             "id": "${json-unit.matches:id}",
             "domainType": "DataModel",
-            "label": "Complex Test DataModel"
+            "label": "Complex Test DataModel",
+            "availableActions": [
+              "show",
+              "comment"
+            ]            
         }'''
 
         //With ID
@@ -563,7 +615,11 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, '''{
             "id": "${json-unit.matches:id}",
             "domainType": "DataModel",
-            "label": "Complex Test DataModel"
+            "label": "Complex Test DataModel",
+            "availableActions": [
+              "show",
+              "comment"
+            ]            
         }'''
     }
 
@@ -616,7 +672,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "domainType": "DataModel",
                 "finalised": false
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
 
         //With ID
@@ -638,7 +698,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "domainType": "DataModel",
                 "finalised": false
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
     }
 
@@ -702,7 +766,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "domainType": "DataModel",
                 "finalised": false
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
 
         //With ID
@@ -723,7 +791,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "domainType": "DataModel",
                 "finalised": false
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
 
         //No ID
@@ -749,7 +821,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                     "label": "parent",
                     "domainType": "DataClass"
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
 
         //With ID
@@ -775,6 +851,10 @@ class PathFunctionalSpec extends FunctionalSpec {
                     "label": "parent",
                     "domainType": "DataClass"
                 }
+            ],
+            "availableActions": [
+                "show",
+                "comment"
             ]
         }'''
     }
@@ -833,7 +913,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                     "label": "content",
                     "domainType": "DataClass"
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
 
         //With ID
@@ -860,7 +944,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                     "label": "content",
                     "domainType": "DataClass"
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
     }
 
@@ -913,7 +1001,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                     "domainType": "DataModel",
                     "finalised": false
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
 
         //With ID
@@ -935,7 +1027,11 @@ class PathFunctionalSpec extends FunctionalSpec {
                     "domainType": "DataModel",
                     "finalised": false
                 }
-            ]
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ]            
         }'''
     }
 }
