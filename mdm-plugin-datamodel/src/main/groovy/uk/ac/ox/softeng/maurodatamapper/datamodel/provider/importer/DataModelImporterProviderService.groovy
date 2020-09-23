@@ -69,13 +69,14 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         dataModelService.checkDocumentationVersion(dataModel, importAsNewDocumentationVersion, currentUser)
         classifierService.checkClassifiers(currentUser, dataModel)
 
-        dataModel.dataClasses.each { dc ->
+        log.debug('drop')
+        dataModel.dataClasses?.each { dc ->
             classifierService.checkClassifiers(currentUser, dc)
             dc.dataElements.each { de ->
                 classifierService.checkClassifiers(currentUser, de)
             }
         }
-        dataModel.dataTypes.each { dt ->
+        dataModel.dataTypes?.each { dt ->
             classifierService.checkClassifiers(currentUser, dt)
         }
         dataModel
