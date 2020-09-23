@@ -1064,7 +1064,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
-            terminologyName                : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
