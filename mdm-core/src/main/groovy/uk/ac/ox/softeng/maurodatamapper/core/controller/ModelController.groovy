@@ -327,6 +327,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         updateResource instance
 
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(instance,
+                                                                                                               ['finalised'] as HashSet,
+                                                                                                               currentUser)
+        }
+
         updateResponse instance
     }
 
