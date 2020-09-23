@@ -21,6 +21,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -678,23 +679,41 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def draft = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
         def test = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
 
-        def parent = new DataClass(createdByUser: admin, label: 'parent')
-        def child = new DataClass(createdByUser: admin, label: 'child')
-        draft.addToDataClasses(parent.addToDataClasses(child))
+        def draftParent = new DataClass(createdByUser: admin, label: 'draftParent')
+        def draftChild = new DataClass(createdByUser: admin, label: 'draftChild')
+        draft.addToDataClasses(draftParent.addToDataClasses(draftChild))
+        draft.description = 'Previously added description'
+        checkAndSave(draft)
+        def testParent = new DataClass(createdByUser: admin, label: 'testParent')
+        def testChild = new DataClass(createdByUser: admin, label: 'testChild')
+        test.addToDataClasses(testParent.addToDataClasses(testChild))
+        test.description = 'New description'
+        checkAndSave(test)
 
         then:
-        checkAndSave(draft)
-        checkAndSave(test)
+        // Fields
+        // both changed -> no resulting diff
         draft.modelVersion == null
-        draft.branchName == 'main'
         test.modelVersion == null
+        // left changed -> diff
+        draft.branchName == 'main'
         test.branchName == 'test'
+        // both changed -> diff, conflict
+        draft.description == 'Previously added description'
+        test.description == 'New description'
+
+        // Arrays
+        // both changed -> no resulting diff
+//        sdmclass
+//        draftParent in draft.childDataClasses
+//        testParent
 
         when:
-        def mergeDiff = dataModelService.mergeDiff(draft, test)
+        def mergeDiff = dataModelService.mergeDiff(test, draft)
 
         then:
-        mergeDiff == test.diff(draft)
+        mergeDiff.class == ObjectDiff
+        mergeDiff.diffs
     }
 
     void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {

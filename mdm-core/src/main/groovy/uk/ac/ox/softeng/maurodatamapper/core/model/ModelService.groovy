@@ -17,7 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
+import org.apache.commons.lang3.NotImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ArrayDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -80,10 +82,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
+            userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewForkModel(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
+            userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract List<K> findAllByMetadataNamespace(String namespace)
 
@@ -115,13 +117,42 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     ObjectDiff<K> mergeDiff(K leftModel, K rightModel) {
-//        def commonAncestor = commonAncestor(leftModel, rightModel)
+        def commonAncestor = commonAncestor(leftModel, rightModel)
 
-//        def left = commonAncestor.diff(leftModel)
-//        def right = commonAncestor.diff(rightModel)
+        def left = commonAncestor.diff(leftModel)
+        def right = commonAncestor.diff(rightModel)
         def top = rightModel.diff(leftModel)
 
-        top.diffs.each { it }
+        def diffs = []
+
+        top.diffs.each {
+            def fieldName = it.fieldName
+
+            if (fieldName in left.diffs.fieldName) {
+                if (fieldName in right.diffs.fieldName) {
+                    if (it.class == FieldDiff) {
+                        def commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
+                        diffs << [diff: it, conflict: true, commonAncestorValue: commonAncestorValue]
+//                        true
+                    } else if (it.class == ArrayDiff) {
+                        left.diffs.find { it.fieldName == fieldName }.created
+                        it.created.each {
+                            def diffIdentifier = it.diffIndentifier
+                            if (diffIdentifier in) {
+                            }
+                        }
+                    } else {
+                        throw new NotImplementedException('ModelService.mergeDiff only implemented for types in  [FieldDiff, ArrayDiff]')
+                    }
+                } else {
+//                        true
+                    diffs << [diff: it]
+                }
+            } else {
+//                    false
+            }
+        }
+
         top
     }
 
