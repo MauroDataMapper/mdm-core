@@ -20,10 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 14/09/2020
  */
 abstract class TerminologyImporterProviderService<T extends TerminologyImporterProviderServiceParameters>
-    implements ImporterProviderService<Terminology, T> {
+    extends ImporterProviderService<Terminology, T> {
 
     @Autowired
     TerminologyService terminologyService
@@ -43,7 +43,7 @@ abstract class TerminologyImporterProviderService<T extends TerminologyImporterP
     Terminology importDomain(User currentUser, T params) {
         Terminology terminology = importTerminology(currentUser, params)
         if (!terminology) return null
-        if (params.terminologyName) terminology.label = params.terminologyName
+        if (params.modelName) terminology.label = params.modelName
         checkImport(currentUser, terminology, params.finalised, params.importAsNewDocumentationVersion)
     }
 
