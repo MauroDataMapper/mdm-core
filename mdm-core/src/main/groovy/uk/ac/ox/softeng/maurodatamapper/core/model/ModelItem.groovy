@@ -55,7 +55,15 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     void updateIndices(int index) {
-        // No-op
+        log.debug("ModelItem.updateIndices ${index}")
+        CatalogueItem parent = getParent()
+        if (parent) {
+            parent.updateChildIndexes(this)
+        }
+    }
+
+    CatalogueItem getParent() {
+        //no-op
     }
 
     List<Breadcrumb> getBreadcrumbs() {

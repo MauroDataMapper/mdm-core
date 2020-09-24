@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataClassLabelValidator
@@ -47,7 +48,7 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware {
+class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware, IndexedSiblingAware {
 
     public final static Integer BATCH_SIZE = 1000
 
@@ -129,6 +130,13 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         }
     }
 
+    //@Override
+    //void updateIndices(int index) {
+    //    log.debug("DataClass.updateIndices ${index}")
+        //enumerationType.updateEnumerationValueIndexes(this)
+        //getParent().updateChildIndexes(this)
+    //}    
+
     @Override
     def beforeValidate() {
         dataModel = dataModel ?: parentDataClass?.getModel()
@@ -177,6 +185,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         parentDataClass.getDiffIdentifier() + "/" + this.label
     }
 
+    @Override
     CatalogueItem getParent() {
         parentDataClass ?: dataModel
     }
@@ -240,5 +249,15 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     static DetachedCriteria<DataClass> withFilter(DetachedCriteria<DataClass> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
+    }
+
+    void updateChildIndexes(DataElement childElement) {
+        log.debug("DataClass.update child elements")
+        updateSiblingIndexes(childClass, dataElements)
+    }
+
+    void updateChildIndexes(DataClass childClass) {
+        log.debug("DataModel.update child classes")
+        updateSiblingIndexes(childClass, dataClasses)
     }
 }

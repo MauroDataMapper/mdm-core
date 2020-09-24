@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataModelDataClassCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.DataModelSearch
@@ -54,7 +55,7 @@ import org.springframework.validation.FieldError
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class DataModel implements Model<DataModel>, SummaryMetadataAware {
+class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblingAware {
 
     UUID id
 
@@ -387,5 +388,10 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
 
     static DetachedCriteria<DataModel> withFilter(DetachedCriteria<DataModel> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
+    }
+
+    void updateChildIndexes(DataClass childClass) {
+        log.debug("DataModel.update child classes")
+        updateSiblingIndexes(childClass, dataClasses)
     }
 }
