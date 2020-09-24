@@ -53,7 +53,6 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.M
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_DISALLOWED_EDITOR_VERSIONING_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_DISALLOWED_FINALISED_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_EDITOR_ACTIONS
-import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_EDITOR_VERSIONING_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_READER_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_READER_VERSIONING_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_REVIEWER_ACTIONS
@@ -486,7 +485,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     private List<String> getCanBeFinalisedAction(VirtualSecurableResourceGroupRole role) {
-        //If resource can be finalised return CAN_BE_FINALISED_ACTION
+        //If resource can be finalised return FINALISE_ACTION
         role.canFinaliseModel() ? [FINALISE_ACTION] : []
 
     }

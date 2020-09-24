@@ -77,7 +77,8 @@ abstract class TieredAccessSecurableResourceInterceptor extends SecurableResourc
         }
 
         if (actionName in getEditAccessMethods()) {
-            return currentUserSecurityPolicyManager.userCanEditSecuredResourceId(securableResourceClass, id) ?:
+            // Edit actions are becoming more "powerful" so we will now check the exact write ability on the action
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(securableResourceClass, id, actionName) ?:
                    forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
 
