@@ -53,7 +53,11 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
             owningSecurableResource = proxyHandler.unwrapIfProxy(catalogueItem.getModel())
         }
 
-        respond(catalogueItem, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager, catalogueItem: catalogueItem, owningSecurableResource: owningSecurableResource], view: 'show'])
+        respond(catalogueItem, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager,
+                                        catalogueItem: catalogueItem,
+                                        owningSecurableResourceClass: owningSecurableResource.getClass(),
+                                        owningSecurableResourceId: owningSecurableResource.id],
+                                view: 'show'])
     }
 
 }
