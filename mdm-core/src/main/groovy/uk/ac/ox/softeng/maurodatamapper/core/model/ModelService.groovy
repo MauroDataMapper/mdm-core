@@ -137,9 +137,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                     } else if (it.class == ArrayDiff) {
                         left.diffs.find { it.fieldName == fieldName }.created
                         it.created.each {
-                            def diffIdentifier = it.diffIndentifier
-                            if (diffIdentifier in) {
-                            }
+                            def diffIdentifier = it.diffIdentifier
+//                            if (diffIdentifier in) {
+//                            }
                         }
                     } else {
                         throw new NotImplementedException('ModelService.mergeDiff only implemented for types in  [FieldDiff, ArrayDiff]')
