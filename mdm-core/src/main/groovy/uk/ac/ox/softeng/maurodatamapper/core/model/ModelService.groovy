@@ -135,11 +135,46 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                         diffs << [diff: it, conflict: true, commonAncestorValue: commonAncestorValue]
 //                        true
                     } else if (it.class == ArrayDiff) {
-                        left.diffs.find { it.fieldName == fieldName }.created
+                        def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
+                        def rightArrayDiff = right.diffs.find { it.fieldName == fieldName }
                         it.created.each {
                             def diffIdentifier = it.diffIdentifier
-//                            if (diffIdentifier in) {
-//                            }
+                            if (diffIdentifier in leftArrayDiff.created.diffIdentifier) {
+                                // top created, left created
+                                diffs << [diff: it, change: 'created']
+                            } else if (diffIdentifier in leftArrayDiff.modified.diffIdentifier) {
+                                // top created, left modified
+                                def commonAncestorValue = left.diffs.find { it.diffIdentifier == diffIdentifier }.left
+                                diffs << [diff: it, change: 'created', conflict: true, commonAncestorValue: commonAncestorValue]
+                            }
+                        }
+                        it.deleted.each {
+                            def diffIdentifier = it.diffIdentifier
+                            if (diffIdentifier in rightArrayDiff.modified.diffIdentifier) {
+                                // top deleted, right modified
+                                def commonAncestorValue = right.diffs.find { it.diffIdentifier == diffIdentifier }.left
+                                diffs << [diff: it, change: 'deleted', conflict: true, commonAncestorValue: commonAncestorValue]
+                            } else if (diffIdentifier in leftArrayDiff.deleted.diffIdentifier) {
+                                // top deleted, right not modified, left deleted
+                                diffs << [diff: it, change: 'deleted']
+                            }
+                        }
+                        it.modified.each {
+                            def diffIdentifier = it.diffIdentifier
+                            if (diffIdentifier in leftArrayDiff.created.diffIdentifier) {
+                                // top modified, right created
+                                def commonAncestorValue = left.diffs.find { it.diffIdentifier == diffIdentifier }.left
+                                diffs << [diff: it, change: 'modified', conflict: true, commonAncestorValue: commonAncestorValue]
+                            } else if (diffIdentifier in leftArrayDiff.modified.diffIdentifier) {
+                                if (diffIdentifier in rightArrayDiff.modified.diffIdentifier) {
+                                    // top modified, left modified, right modified
+                                    def commonAncestorValue = right.diffs.find { it.diffIdentifier == diffIdentifier }.left
+                                    diffs << [diff: it, change: 'modified', conflict: true, commonAncestorValue: commonAncestorValue]
+                                } else {
+                                    // top modified, left modified, right not modified
+                                    diffs << [diff: it, change: 'modified']
+                                }
+                            }
                         }
                     } else {
                         throw new NotImplementedException('ModelService.mergeDiff only implemented for types in  [FieldDiff, ArrayDiff]')
