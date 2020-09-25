@@ -72,7 +72,7 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         log.debug('drop')
         dataModel.dataClasses?.each { dc ->
             classifierService.checkClassifiers(currentUser, dc)
-            dc.dataElements.each { de ->
+            dc.dataElements?.each { de ->
                 classifierService.checkClassifiers(currentUser, de)
             }
         }
