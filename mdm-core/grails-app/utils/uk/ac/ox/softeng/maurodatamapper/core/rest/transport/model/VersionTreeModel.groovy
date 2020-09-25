@@ -10,7 +10,7 @@ class VersionTreeModel {
     Boolean newDocumentationVersion
     Boolean newBranchModelVersion
     Boolean newFork
-    List<UUID> targets
+    List<String> targets
 
     VersionTreeModel(Model model, VersionLinkType versionLinkType) {
         modelId = model.id.toString()
@@ -19,9 +19,10 @@ class VersionTreeModel {
         newDocumentationVersion = versionLinkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF
         newBranchModelVersion = versionLinkType == VersionLinkType.NEW_MODEL_VERSION_OF
         newFork = versionLinkType == VersionLinkType.NEW_FORK_OF
+        targets = []
     }
 
     void addTarget(UUID targetId){
-        targets.add(targetId)
+        targets.add(targetId.toString())
     }
 }
