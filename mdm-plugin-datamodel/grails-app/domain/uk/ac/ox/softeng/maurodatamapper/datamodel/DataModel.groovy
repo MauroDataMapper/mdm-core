@@ -390,8 +390,13 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         withCatalogueItemFilter(criteria, filters)
     }
 
-    void updateChildIndexes(DataClass childClass) {
-        log.debug("DataModel.update child classes")
-        updateSiblingIndexes(childClass, dataClasses)
+    /*
+     * Update the index property of the Data Classes which belong to this Data Model, and which are siblings of an updated Data Class
+     *
+     * @param DataClass updated A DataClass, which belongs to this DataModel, and which has been updated.
+     */
+    void updateChildIndexes(DataClass updated) {
+        log.debug("DataModel.updateChildIndexes")
+        updateSiblingIndexes(updated, dataClasses)
     }
 }

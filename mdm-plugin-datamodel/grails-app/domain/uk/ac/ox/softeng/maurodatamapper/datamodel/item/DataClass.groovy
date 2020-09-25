@@ -251,13 +251,21 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         withCatalogueItemFilter(criteria, filters)
     }
 
-    void updateChildIndexes(DataElement childElement) {
-        log.debug("DataClass.update child elements")
-        updateSiblingIndexes(childClass, dataElements)
+    /*
+     * Update the index property of the Data Elements which belong to this Data Class, and which are siblings of an updated Data Element
+     *
+     * @param DataElement updated A DataElement, which belongs to this DataClass, and which has been updated.
+     */
+    void updateChildIndexes(DataElement updated) {
+        updateSiblingIndexes(updated, dataElements)
     }
 
-    void updateChildIndexes(DataClass childClass) {
-        log.debug("DataModel.update child classes")
-        updateSiblingIndexes(childClass, dataClasses)
+    /*
+     * Update the index property of the Data Classes which belong to this Data Class, and which are siblings of an updated Data Class
+     *
+     * @param DataClass updated A DataClass, which belongs to this DataClass, and which has been updated.
+     */
+    void updateChildIndexes(DataClass updated) {
+        updateSiblingIndexes(updated, dataClasses)
     }
 }
