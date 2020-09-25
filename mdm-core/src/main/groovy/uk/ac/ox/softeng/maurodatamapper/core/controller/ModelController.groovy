@@ -696,20 +696,29 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        List<VersionTreeModel> versionTreeModelList
-
         VersionLinkService versionLinkService = new VersionLinkService()
+
+        List<VersionTreeModel> versionTreeModelList = modelVersionTreeInternal(instance, versionLinkService)
+
+        respond versionTreeModelList
+
+    }
+
+    List<VersionTreeModel> modelVersionTreeInternal(T instance, VersionLinkService versionLinkService){
+        List<VersionTreeModel> versionTreeModelList
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
 
-        println(instance.id)
+        println('source: ' + instance.id)
         versionTreeModelList = [new VersionTreeModel(instance, null)]
 
         for (link in versionLinks){
-            println(link.model.id)
-            versionTreeModelList.add(new VersionTreeModel(link.model, link.linkType))
-            versionTreeModelList.get(0).addTarget(link.modelId)
+            println('link: ' + link.catalogueItemId)
+            T linkedModel = queryForResource link.catalogueItemId
+            versionTreeModelList.get(0).addTarget(linkedModel.id)
+            versionTreeModelList += modelVersionTreeInternal(linkedModel, versionLinkService)
         }
 
-        respond versionTreeModelList
+        return versionTreeModelList
+
     }
 }
