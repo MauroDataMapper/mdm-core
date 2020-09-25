@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -29,7 +30,7 @@ import groovy.util.logging.Slf4j
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class EnumerationType extends DataType<EnumerationType> {
+class EnumerationType extends DataType<EnumerationType> implements IndexedSiblingAware {
 
     static hasMany = [
         enumerationValues: EnumerationValue
@@ -94,11 +95,15 @@ class EnumerationType extends DataType<EnumerationType> {
             valueToAdd.enumerationType = this
             addTo('enumerationValues', valueToAdd)
         }
-        updateEnumerationValueIndexes(valueToAdd)
+        //updateEnumerationValueIndexes(valueToAdd)
+        updateChildIndexes(valueToAdd)
         this
     }
 
-    void updateEnumerationValueIndexes(EnumerationValue updated) {
+    void updateChildIndexes(EnumerationValue updated) {
+        updateSiblingIndexes(updated, enumerationValues)
+    }
+    /*void updateEnumerationValueIndexes(EnumerationValue updated) {
         List<EnumerationValue> sorted = enumerationValues.sort()
         int updatedIndex = updated.getOrder()
         int maxIndex = sorted.size() - 1
@@ -131,5 +136,5 @@ class EnumerationType extends DataType<EnumerationType> {
             }
             log.trace('After >> EV {} has order {} (Dirty: {})', ev.key, i, ev.isDirty())
         }
-    }
+    }*/
 }

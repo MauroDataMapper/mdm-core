@@ -97,7 +97,8 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
     EnumerationValue updateIndexForModelItemInParent(EnumerationValue enumerationValue, CatalogueItem parent, int newIndex) {
         enumerationValue.index = newIndex
         if (parent.instanceOf(EnumerationType)) {
-            parent.updateEnumerationValueIndexes(enumerationValue)
+            //parent.updateEnumerationValueIndexes(enumerationValue)
+            parent.updateIndexedSiblings(enumerationValue, parent.enumerationValues)
         } else throw new ApiInternalException('EVS01', 'Non-EnumerationType passed as parent to enumeration value')
         enumerationValue
     }

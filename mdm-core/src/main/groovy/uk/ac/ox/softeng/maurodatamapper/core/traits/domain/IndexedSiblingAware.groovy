@@ -19,14 +19,23 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
+import groovy.util.logging.Slf4j
+
 /**
  * @since 24/09/2020
  */
+ @Slf4j
 trait IndexedSiblingAware {
 
-    void updateSiblingIndexes(CatalogueItem updated, Set<CatalogueItem> modelItems) {
-        log.debug("Model.updateModelItemIndexes")
-        List<CatalogueItem> sorted = modelItems.sort()
+    /**
+     * Given a CatalogueItem which has been updated, re-index its siblings.
+     *
+     * @param CatalogueItem updated         The item which has been updated
+     * @param Set<CatalogueItem> siblings   The siblings of the updated item
+     */
+    void updateSiblingIndexes(CatalogueItem updated, Set<CatalogueItem> siblings) {
+        log.debug("updateSiblingIndexes")
+        List<CatalogueItem> sorted = siblings.sort()
         int updatedIndex = updated.getOrder()
         int maxIndex = sorted.size() - 1
         sorted.eachWithIndex {CatalogueItem mi, int i ->

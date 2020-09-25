@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -131,10 +132,15 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
         false
     }
 
+    //@Override
+    //void updateIndices(int index) {
+        //enumerationType.updateEnumerationValueIndexes(this)
+    //    parent.updateChildIndexes(this)
+    //}
     @Override
-    void updateIndices(int index) {
-        enumerationType.updateEnumerationValueIndexes(this)
-    }
+    CatalogueItem getParent() {
+        enumerationType
+    }    
 
     ObjectDiff<EnumerationValue> diff(EnumerationValue otherEnumerationValue) {
         catalogueItemDiffBuilder(EnumerationValue, this, otherEnumerationValue)

@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
 import groovy.transform.SelfType
+import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.search.annotations.Field
 import org.springframework.core.Ordered
@@ -36,6 +37,7 @@ import org.springframework.core.Ordered
  * @since 04/11/2019
  */
 @SelfType(GormEntity)
+@Slf4j
 trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> implements PathAware, Ordered, Comparable<D> {
 
     abstract T getModel()
@@ -49,6 +51,7 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     void setIndex(int index) {
+        log.debug("ModelItem.setIndex ${index}")
         idx = index
         markDirty('idx')
         if (ident()) updateIndices(index)
@@ -57,7 +60,9 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     void updateIndices(int index) {
         log.debug("ModelItem.updateIndices ${index}")
         CatalogueItem parent = getParent()
+        log.debug("parent ${parent.toString()}")
         if (parent) {
+            log.debug("I have a parent")
             parent.updateChildIndexes(this)
         }
     }
