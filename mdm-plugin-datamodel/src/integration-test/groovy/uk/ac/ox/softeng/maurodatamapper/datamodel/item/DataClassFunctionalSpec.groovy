@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.test.functional.OrderedResourceFunctionalSpec
 
 import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
@@ -58,7 +58,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
+class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
     @Shared
     UUID dataModelId
@@ -152,6 +152,7 @@ class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
   "availableActions": ["delete","show","update"],
   "model": "${json-unit.matches:id}",
   "id": "${json-unit.matches:id}",
+  "index": "${json-unit.any-number}",
   "label": "A new DataClass",
   "breadcrumbs": [
     {
@@ -350,6 +351,7 @@ class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
         {
           "domainType": "DataElement",
           "id": "${json-unit.matches:id}",
+          "index": "${json-unit.any-number}",
           "model": "${json-unit.matches:id}",
           "label": "ele1",
           "breadcrumbs": [
