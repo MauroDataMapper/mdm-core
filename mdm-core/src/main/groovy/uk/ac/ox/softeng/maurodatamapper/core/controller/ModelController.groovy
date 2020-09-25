@@ -317,7 +317,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
+        if (instance.branchName != 'main') return METHOD_NOT_ALLOWED
 
         instance = modelService.finaliseModel(instance, currentUser,
                                               finaliseData.version, finaliseData.versionChangeType,
@@ -535,9 +535,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         log.info('Single Model Import complete')
 
         if (params.boolean('returnList')) {
-            respond([savedModel], status: CREATED, view: 'index')
+            respond([model], status: CREATED, view: 'index')
         } else {
-            respond savedModel, status: CREATED, view: 'show'
+            respond model, status: CREATED, view: 'show'
         }
     }
 
@@ -646,7 +646,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     @Override
     protected void serviceInsertResource(T resource) {
-        T model = getModelService().save(DEFAULT_SAVE_ARGS, resource) as T
+        T model = getModelService().save(flush: true, resource) as T
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(model, currentUser, model.label)
         }
