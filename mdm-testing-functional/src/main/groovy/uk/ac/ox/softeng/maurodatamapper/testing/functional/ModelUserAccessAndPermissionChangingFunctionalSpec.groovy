@@ -17,11 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import io.micronaut.core.type.Argument
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+
+import java.net.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -871,4 +874,56 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(finalisedId)
         cleanUpRoles(latestDraftId)
     }
+
+    void 'Test getting versionTreeModel (as editor)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [:])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        io.micronaut.http.HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body()
+        localResponse.body().size() == 4
+        Map finalisedMap = localResponse.body().find {it.modelId == id}
+        finalisedMap
+        finalisedMap == '''{
+            "branchName" : "main",
+            "label": "Functional Test DataModel",
+            "modelId": ${json-unit.matches:id},
+            "newBranchModelVersion": false,
+            "newDocumentationVersion": false,
+            "newFork": false,
+            "targets": [${json-unit.matches:finalisedId}, ${json-unit.matches:newBranchId}]
+        }'''
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(finalisedId)
+        cleanUpRoles(latestDraftId)
+    }
+
+
 }
