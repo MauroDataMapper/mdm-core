@@ -39,30 +39,33 @@ trait IndexedSiblingAware {
         int updatedIndex = updated.getOrder()
         int maxIndex = sorted.size() - 1
         sorted.eachWithIndex {CatalogueItem mi, int i ->
-            //mi is the updated one, skipping any changes
-            if (mi == updated) {
-                // Make sure updated value is not ordered larger than the actual size of the collection
-                if (mi.getOrder() > maxIndex) {
-                    mi.idx = maxIndex
+            //Don't touch anything whose index is Integer.MAX_VALUE
+            if (mi.getOrder() < Integer.MAX_VALUE) {
+                //mi is the updated one, skipping any changes
+                if (mi == updated) {
+                    // Make sure updated value is not ordered larger than the actual size of the collection
+                    if (mi.getOrder() > maxIndex) {
+                        mi.idx = maxIndex
+                    }
+                    return
                 }
-                return
-            }
 
-            // Make sure all values have trackChanges turned on
-            if (!mi.isDirty()) mi.trackChanges()
+                // Make sure all values have trackChanges turned on
+                if (!mi.isDirty()) mi.trackChanges()
 
-            // Reorder the index which matches the one we just added
-            if (i == updatedIndex) {
-                if (i == maxIndex) {
-                    // If at end of list then move the current value back one to ensure the updated value is at then end of the list
-                    mi.idx = i - 1
-                } else {
-                    // Otherwise alphabetical sorting has placed the elements in the wrong order so shift the value by 1
-                    mi.idx = i + 1
+                // Reorder the index which matches the one we just added
+                if (i == updatedIndex) {
+                    if (i == maxIndex) {
+                        // If at end of list then move the current value back one to ensure the updated value is at then end of the list
+                        mi.idx = i - 1
+                    } else {
+                        // Otherwise alphabetical sorting has placed the elements in the wrong order so shift the value by 1
+                        mi.idx = i + 1
+                    }
+                } else if (mi.getOrder() != i) {
+                    // Sorting has got the order right so make sure the idx is set correctly
+                    mi.idx = i
                 }
-            } else if (mi.getOrder() != i) {
-                // Sorting has got the order right so make sure the idx is set correctly
-                mi.idx = i
             }
         }
     }
