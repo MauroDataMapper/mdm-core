@@ -147,10 +147,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().finalised == true
         responseBody().dateFinalised
         responseBody().availableActions == [
-            "show",
-            "comment",
-            "softDelete",
-            "delete"
+                "show",
+                "createNewVersions",
+                "newForkModel",
+                "comment",
+                "newModelVersion",
+                "newDocumentationVersion",
+                "newBranchModelVersion",
+                "softDelete",
+                "delete"
         ]
         responseBody().modelVersion == '1.0.0'
 
@@ -162,10 +167,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().availableActions == [
-            "show",
-            "comment",
-            "softDelete",
-            "delete"
+                "show",
+                "createNewVersions",
+                "newForkModel",
+                "comment",
+                "newModelVersion",
+                "newDocumentationVersion",
+                "newBranchModelVersion",
+                "softDelete",
+                "delete"
         ]
 
         when: 'log out and log back in again in as admin available actions are correct'
@@ -176,10 +186,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().availableActions == [
-            "show",
-            "comment",
-            "softDelete",
-            "delete"
+                "show",
+                "createNewVersions",
+                "newForkModel",
+                "comment",
+                "newModelVersion",
+                "newDocumentationVersion",
+                "newBranchModelVersion",
+                "softDelete",
+                "delete"
         ]
 
         cleanup:
@@ -522,7 +537,12 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().dateFinalised
         responseBody().availableActions == [
             "show",
+            "createNewVersions",
+            "newForkModel",
             "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
             "softDelete",
             "delete"
         ]

@@ -49,7 +49,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     @Override
     List<String> getEditAccessMethods() {
-        ['finalise']
+        ['finalise', 'newDocumentationVersion', 'newBranchModelVersion']
     }
 
     @Override
@@ -94,14 +94,6 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
                 return notFound(getSecuredClass(), params.otherModelId)
             }
             return true
-        }
-
-        if (actionName in ['newDocumentationVersion', 'newBranchModelVersion']) {
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
-                return notFound(getSecuredClass(), getId())
-            }
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName) ?:
-                   forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
         }
 
 

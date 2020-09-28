@@ -166,7 +166,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
 
         and:
-        response.body().availableActions == ['delete', 'show', 'update'] //TODO can this be restricted by the core plugin?
+        response.body().availableActions == ['delete', 'show', 'update']
         response.body().finalised
         response.body().dateFinalised
 
