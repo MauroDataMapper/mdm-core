@@ -784,18 +784,4 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
     }
-
-    void 'test mergeDiff'() {
-        given:
-        DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-        dataModel = service.get(id)
-
-        when:
-        def diff = service.mergeDiff(dataModel, dataModel)
-
-        then:
-        diff
-    }
 }

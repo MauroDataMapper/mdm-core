@@ -8,7 +8,8 @@ json("${fieldDiff.fieldName}") {
     left fieldDiff.getLeft()
     right fieldDiff.getRight()
 
-    isMergeConflict fieldDiff.isMergeConflict
-    commonAncestorValue fieldDiff.commonAncestorValue
-
+    if (fieldDiff.isMergeConflict != null) {
+       isMergeConflict fieldDiff.isMergeConflict
+       commonAncestorValue fieldDiff.commonAncestorValue
+    }
 }

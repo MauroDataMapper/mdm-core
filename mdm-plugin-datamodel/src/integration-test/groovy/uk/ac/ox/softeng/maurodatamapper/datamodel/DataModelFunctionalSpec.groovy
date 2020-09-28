@@ -22,6 +22,7 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 import spock.lang.Shared
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -104,14 +105,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     @Override
     Map getValidJson() {
         [
-            label: 'Functional Test Model'
+                label: 'Functional Test Model'
         ]
     }
 
     @Override
     Map getInvalidJson() {
         [
-            label: null
+                label: null
         ]
     }
 
@@ -311,7 +312,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel reader",')
+                .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel reader",')
 
 
         when:
@@ -370,7 +371,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse CREATED, getExpectedShowJson()
-            .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel editor",')
+                .replaceFirst(/"label": "Functional Test Model",/, '"label": "Functional Test DataModel editor",')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -469,7 +470,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse CREATED, expectedShowJson
-            .replaceFirst(/"documentationVersion": "1\.0\.0",/, '"documentationVersion": "2.0.0",')
+                .replaceFirst(/"documentationVersion": "1\.0\.0",/, '"documentationVersion": "2.0.0",')
 
         when:
         GET("$id/semanticLinks", STRING_ARG)
@@ -635,15 +636,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().count == 2
         responseBody().items.any {
             it.linkType == SemanticLinkType.REFINES.label &&
-            it.targetCatalogueItem.id == id &&
-            it.sourceCatalogueItem.id == secondId
+                    it.targetCatalogueItem.id == id &&
+                    it.sourceCatalogueItem.id == secondId
         }
         // This is unconfirmed as its copied
         responseBody().items.any {
             it.linkType == SemanticLinkType.REFINES.label &&
-            it.targetCatalogueItem.id == id &&
-            it.sourceCatalogueItem.id == thirdId &&
-            it.unconfirmed
+                    it.targetCatalogueItem.id == id &&
+                    it.sourceCatalogueItem.id == thirdId &&
+                    it.unconfirmed
         }
 
         when: 'getting the first model VLs'
@@ -654,8 +655,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().count == 1
         responseBody().items.any {
             it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label &&
-            it.targetModel.id == id &&
-            it.sourceModel.id == secondId
+                    it.targetModel.id == id &&
+                    it.sourceModel.id == secondId
         }
 
         when: 'get second model SLs'
@@ -666,13 +667,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().count == 2
         responseBody().items.any {
             it.linkType == SemanticLinkType.REFINES.label &&
-            it.targetCatalogueItem.id == id &&
-            it.sourceCatalogueItem.id == secondId
+                    it.targetCatalogueItem.id == id &&
+                    it.sourceCatalogueItem.id == secondId
         }
         responseBody().items.any {
             it.linkType == SemanticLinkType.REFINES.label &&
-            it.targetCatalogueItem.id == secondId &&
-            it.sourceCatalogueItem.id == thirdId
+                    it.targetCatalogueItem.id == secondId &&
+                    it.sourceCatalogueItem.id == thirdId
         }
 
         when: 'getting the second model VLs'
@@ -684,12 +685,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().items.any {
             it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
             it.targetModel.id == secondId &&
-            it.sourceModel.id == thirdId
+                    it.sourceModel.id == thirdId
         }
         responseBody().items.any {
             it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
             it.targetModel.id == id &&
-            it.sourceModel.id == secondId
+                    it.sourceModel.id == secondId
         }
 
         cleanup:
@@ -714,7 +715,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse UNPROCESSABLE_ENTITY, response
         responseBody().errors.first().message == 'Property [branchName] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel] ' +
-        'with value [main] already exists for label [Functional Test Model]'
+                'with value [main] already exists for label [Functional Test Model]'
 
         cleanup:
         cleanUpData()
@@ -766,7 +767,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         String mainId = responseBody().items.find {
             it.label == 'Functional Test Model' &&
-            !(it.id in [id, leftId, rightId])
+                    !(it.id in [id, leftId, rightId])
         }?.id
         mainId
 
@@ -959,6 +960,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
+    @PendingFeature
     void 'VB08b : test finding merge difference of two complex datamodels'() {
         given:
         String id = createNewItem(validJson)
@@ -1122,12 +1124,253 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         GET("$source/mergeDiff/$target", STRING_ARG)
+//        GET("$source/mergeDiff/$target")
 
         then:
-        verifyResponse OK, response
-        responseBody().leftId == target
-        responseBody().rightId == source
-
+        verifyJsonResponse OK, '''{
+"leftId": "${json-unit.matches:id}",
+"rightId": "${json-unit.matches:id}",
+"label": "Functional Test Model",
+"count": 16,
+"diffs": [
+        {
+            "description": {
+            "left": "DescriptionRight",
+            "right": "DescriptionLeft",
+            "isMergeConflict": true,
+            "commonAncestorValue": null
+        }
+        },
+        {
+            "branchName": {
+            "left": "main",
+            "right": "source",
+            "isMergeConflict": false,
+            "commonAncestorValue": null
+        }
+        },
+        {
+            "dataClasses": {
+            "deleted": [
+                    {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteAndModify",
+                        "breadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ]
+                    },
+                    {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteLeftOnly",
+                        "breadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ]
+                    }
+            ],
+            "created": [
+                    {
+                        "id": "${json-unit.matches:id}",
+                        "label": "addLeftOnly",
+                        "breadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ]
+                    },
+                    {
+                        "id": "${json-unit.matches:id}",
+                        "label": "modifyAndDelete",
+                        "breadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ]
+                    }
+            ],
+            "modified": [
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "addAndAddReturningDifference",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                "left": "DescriptionRight",
+                                "right": "DescriptionLeft",
+                                "isMergeConflict": null,
+                                "commonAncestorValue": null
+                            }
+                            }
+                    ]
+                    },
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "existingClass",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "count": 4,
+                        "diffs": [
+                            {
+                                "dataClasses": {
+                                "deleted": [
+                                        {
+                                            "id": "${json-unit.matches:id}",
+                                            "label": "deleteLeftOnlyFromExistingClass",
+                                            "breadcrumbs": [
+                                                {
+                                                    "id": "${json-unit.matches:id}",
+                                                    "label": "Functional Test Model",
+                                                    "domainType": "DataModel",
+                                                    "finalised": false
+                                                },
+                                                {
+                                                    "id": "${json-unit.matches:id}",
+                                                    "label": "existingClass",
+                                                    "domainType": "DataClass"
+                                                }
+                                        ]
+                                        }
+                                ],
+                                "created": [
+                                        {
+                                            "id": "${json-unit.matches:id}",
+                                            "label": "addLeftToExistingClass",
+                                            "breadcrumbs": [
+                                                {
+                                                    "id": "${json-unit.matches:id}",
+                                                    "label": "Functional Test Model",
+                                                    "domainType": "DataModel",
+                                                    "finalised": false
+                                                },
+                                                {
+                                                    "id": "${json-unit.matches:id}",
+                                                    "label": "existingClass",
+                                                    "domainType": "DataClass"
+                                                }
+                                        ]
+                                        }
+                                ]
+                            }
+                            }
+                    ]
+                    },
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "modifyAndModifyReturningDifference",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                "left": "DescriptionRight",
+                                "right": "DescriptionLeft",
+                                "isMergeConflict": null,
+                                "commonAncestorValue": null
+                            }
+                            }
+                    ]
+                    },
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "modifyLeftOnly",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                "left": null,
+                                "right": "Description",
+                                "isMergeConflict": null,
+                                "commonAncestorValue": null
+                            }
+                            }
+                    ]
+                    }
+            ]
+        }
+        }
+]
+}'''
 
         cleanup:
         cleanUpData(source)
@@ -1375,7 +1618,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0',
-             [dataModelIds: [id, id2]], STRING_ARG
+                [dataModelIds: [id, id2]], STRING_ARG
         )
 
         then:
@@ -1422,15 +1665,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            modelName                      : 'Functional Test Import',
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : false,
+                modelName                      : 'Functional Test Import',
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ], STRING_ARG)
 
         then:
@@ -1455,9 +1698,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test import basic DataModel as new documentation version'() {
         given:
         String id = createNewItem([
-            label       : 'Functional Test Model',
-            finalised   : true,
-            modelVersion: Version.from('1.0.0')
+                label       : 'Functional Test Model',
+                finalised   : true,
+                modelVersion: Version.from('1.0.0')
         ])
 
         GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
@@ -1469,15 +1712,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : true,
-            modelName                      : 'Functional Test Model',
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: true,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: exportedJsonString.bytes.toList()
-            ]
+                finalised                      : true,
+                modelName                      : 'Functional Test Model',
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: true,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: exportedJsonString.bytes.toList()
+                ]
         ], STRING_ARG)
 
         then:
@@ -1505,15 +1748,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         def idstoDelete = []
         (1..4).each { n ->
             idstoDelete << createNewItem([
-                folder: folderId,
-                label : UUID.randomUUID().toString()
+                    folder: folderId,
+                    label : UUID.randomUUID().toString()
             ])
         }
 
         when:
         DELETE('', [
-            ids      : idstoDelete,
-            permanent: false
+                ids      : idstoDelete,
+                permanent: false
         ], STRING_ARG)
 
         then:
@@ -1561,8 +1804,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when:
         DELETE('', [
-            ids      : idstoDelete,
-            permanent: true
+                ids      : idstoDelete,
+                permanent: true
         ])
 
         then:
@@ -1572,14 +1815,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test importing simple test DataModel'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
+                finalised                      : true,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('simpleDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
@@ -1594,14 +1837,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test importing complex test DataModel'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
+                finalised                      : true,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('complexDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
@@ -1616,14 +1859,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test importing DataModel with classifiers'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('fullModelWithClassifiers').toList()
-            ]
+                finalised                      : true,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('fullModelWithClassifiers').toList()
+                ]
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
@@ -1638,21 +1881,21 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test export simple DataModel'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('simpleDataModel').toList()
+                ]
         ])
 
         verifyResponse CREATED, response
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('simpleDataModel'))
-            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
+                .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
+                .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id
@@ -1670,21 +1913,21 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test export complex DataModel'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('complexDataModel').toList()
+                ]
         ])
 
         verifyResponse CREATED, response
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('complexDataModel'))
-            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
+                .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
+                .replace(/Test Authority/, 'Mauro Data Mapper')
 
         expect:
         id
@@ -1702,14 +1945,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test getting simple DataModel hierarchy'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('simpleDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
@@ -1775,14 +2018,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test getting complex DataModel hierarchy'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('complexDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
@@ -2225,27 +2468,27 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test diffing 2 complex and simple DataModels'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('complexDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         String complexDataModelId = response.body().items[0].id
 
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('simpleDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         String simpleDataModelId = response.body().items[0].id
@@ -2507,14 +2750,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test searching for label "emptyclass" in complex model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('complexDataModel').toList()
+                ]
         ])
 
         verifyResponse CREATED, response
@@ -2555,14 +2798,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test searching for label "emptyclass" in simple model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('simpleDataModel').toList()
+                ]
         ])
 
         verifyResponse CREATED, response
@@ -2591,8 +2834,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
 
         POST("${simpleDataModelId}/dataTypes", [
-            domainType: 'PrimitiveType',
-            label     : 'string'
+                domainType: 'PrimitiveType',
+                label     : 'string'
         ])
         verifyResponse(CREATED, response)
         String dataTypeId = response.body().id
@@ -2600,22 +2843,22 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         assert dataTypeId
 
         POST("${simpleDataModelId}/dataClasses/${dataClass.id}/dataElements", [
-            domainType : 'DataElement',
-            label      : 'ele1',
-            description: 'most obvious match',
-            dataType   : [
-                id: dataTypeId
-            ]
+                domainType : 'DataElement',
+                label      : 'ele1',
+                description: 'most obvious match',
+                dataType   : [
+                        id: dataTypeId
+                ]
         ])
         verifyResponse CREATED, response
 
         POST("${simpleDataModelId}/dataClasses/${dataClass.id}/dataElements", [
-            domainType : 'DataElement',
-            label      : 'ele2',
-            description: 'least obvious match',
-            dataType   : [
-                id: dataTypeId
-            ]
+                domainType : 'DataElement',
+                label      : 'ele2',
+                description: 'least obvious match',
+                dataType   : [
+                        id: dataTypeId
+                ]
         ])
         verifyResponse CREATED, response
     }
@@ -2624,27 +2867,27 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test get link suggestions for a model with no data elements in the target'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('complexDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         String complexDataModelId = response.body().items[0].id
 
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('simpleDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         String simpleDataModelId = response.body().items[0].id
@@ -2668,27 +2911,27 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test get link suggestions for a model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('complexDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         String complexDataModelId = response.body().items[0].id
 
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
-            ]
+                finalised                      : false,
+                folderId                       : folderId.toString(),
+                importAsNewDocumentationVersion: false,
+                importFile                     : [
+                        fileName    : 'FT Import',
+                        fileType    : MimeType.JSON_API.name,
+                        fileContents: loadTestFile('simpleDataModel').toList()
+                ]
         ])
         verifyResponse CREATED, response
         String simpleDataModelId = response.body().items[0].id
