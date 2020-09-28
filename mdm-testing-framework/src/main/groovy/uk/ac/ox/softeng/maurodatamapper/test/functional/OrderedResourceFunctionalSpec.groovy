@@ -37,76 +37,297 @@ import java.nio.file.Paths
 @Slf4j
 abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends ResourceFunctionalSpec {
 
-    Map getValidLabelJson(String label, int index) {
-        [
-            label: label,
-            index: index
-        ]
+    Map getValidLabelJson(String label, int index = -1) {
+        if (index >= 0) {
+            [label: label, index: index]
+        } else {
+            [label: label]
+        }
     }
 
-    void 'OR1: Test adding new items with the index set'() {
-        when: 'The save action is executed with valid data at index 0'
-        createNewItem(getValidLabelJson('Alice', 0))
+   void 'OR1: Test ordering on update when the index was specified on insert'() {
+        given: 'Five resources with specified indices'
+        POST('', getValidLabelJson('A', 0))
+        String aId = response.body().id
+        POST('', getValidLabelJson('B', 1))
+        String bId = response.body().id
+        POST('', getValidLabelJson('C', 2))
+        String cId = response.body().id
+        POST('', getValidLabelJson('D', 3))
+        String dId = response.body().id
+        POST('', getValidLabelJson('E', 4))
+        String eId = response.body().id
+     
 
-        then: 'The response is correct'
-        response.status == HttpStatus.CREATED
-        String aliceId = response.body().id
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order A, B, C, D, E'
+        response.body().items[0].label == 'A'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'B'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'C'
+        response.body().items[2].index == 2
+        response.body().items[3].label == 'D'
+        response.body().items[3].index == 3
+        response.body().items[4].label == 'E'
+        response.body().items[4].index == 4
+
+        when: 'Item E is PUT at the top of the list'
+        PUT(eId, getValidLabelJson('E', 0))
+
+        then: 'The PUT works'
+        response.status == HttpStatus.OK
         response.body().index == 0
+        String fId = response.body().id
 
-        when: 'The save action is executed with valid data at index 1'
-        createNewItem(getValidLabelJson('Bob', 1))
+        when: 'All items are listed'
+        GET('')
 
-        then: 'The response is correct'
-        response.status == HttpStatus.CREATED
-        String bobId = response.body().id
-        response.body().index == 1
+        then: 'They are in the order E, A, B, C, D'
+        response.body().items[0].label == 'E'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'A'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'B'
+        response.body().items[2].index == 2
+        response.body().items[3].label == 'C'
+        response.body().items[3].index == 3
+        response.body().items[4].label == 'D'
+        response.body().items[4].index == 4
 
-        when: 'The save action is executed with valid data at index 2'
-        createNewItem(getValidLabelJson('Carlos', 2))
+        when: 'Item E is PUT to the  middle of the list'
+        PUT(eId, getValidLabelJson('E', 2))
 
-        then: 'The response is correct'
-        response.status == HttpStatus.CREATED
-        String carlosId = response.body().id
+        then: 'The PUT works'
+        response.status == HttpStatus.OK
         response.body().index == 2
 
-        when: 'The save action is executed with valid data at index 3'
-        createNewItem(getValidLabelJson('Dan', 3))
+        when: 'All items are listed'
+        GET('')
 
-        then: 'The response is correct'
-        response.status == HttpStatus.CREATED
-        String danId = response.body().id
-        response.body().index == 3
-
-        //when: 'The save action is executed with valid data at index 1'
-        //createNewItem(getValidLabelJson('Eve', 1))
-
-        //then: 'The response is correct'
-        //response.status == HttpStatus.CREATED
-        //String eveId = response.body().id
-        //response.body().index == 1      
-
-//TODO fails because indexes are not updated on a POST. 
-        /*when: 'All items are listed'
-        GET('')        
-
-        then: 'They are in the order Alice, Eve, Bob, Carlos, Dan'
-        response.body().items[0].label == 'Alice'
+        then: 'They are in the order A, B, E, C, D'
+        response.body().items[0].label == 'A'
         response.body().items[0].index == 0
-        response.body().items[1].label == 'Eve'
+        response.body().items[1].label == 'B'
         response.body().items[1].index == 1
-        response.body().items[2].label == 'Bob'
+        response.body().items[2].label == 'E'
         response.body().items[2].index == 2
-        response.body().items[3].label == 'Carlos'
+        response.body().items[3].label == 'C'
         response.body().items[3].index == 3
-        response.body().items[4].label == 'Dan'
-        response.body().items[5].index == 4   */  
+        response.body().items[4].label == 'D'
+        response.body().items[4].index == 4           
 
-        cleanup:                
-        DELETE(getDeleteEndpoint(aliceId))
-        DELETE(getDeleteEndpoint(bobId))
-        DELETE(getDeleteEndpoint(carlosId))
-        DELETE(getDeleteEndpoint(danId))
-        DELETE(getDeleteEndpoint(eveId))
+        when: 'Item E is PUT to the  end of the list'
+        PUT(eId, getValidLabelJson('E', 4))
+
+        then: 'The PUT works'
+        response.status == HttpStatus.OK
+        response.body().index == 4
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order A, B, C, D, E'
+        response.body().items[0].label == 'A'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'B'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'C'
+        response.body().items[2].index == 2
+        response.body().items[3].label == 'D'
+        response.body().items[3].index == 3
+        response.body().items[4].label == 'E'
+        response.body().items[4].index == 4           
+
     }
+
+   void 'OR2: Test ordering on insert when the index was specified on insert'() {
+        given: 'Five resources with specified indices'
+        POST('', getValidLabelJson('A', 0))
+        String aId = response.body().id
+        POST('', getValidLabelJson('B', 1))
+        String bId = response.body().id
+        POST('', getValidLabelJson('C', 2))
+        String cId = response.body().id
+        POST('', getValidLabelJson('D', 3))
+        String dId = response.body().id
+        POST('', getValidLabelJson('E', 4))
+        String eId = response.body().id
+     
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order A, B, C, D, E'
+        response.body().items[0].label == 'A'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'B'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'C'
+        response.body().items[2].index == 2
+        response.body().items[3].label == 'D'
+        response.body().items[3].index == 3
+        response.body().items[4].label == 'E'
+        response.body().items[4].index == 4
+
+        when: 'Item F is POSTed at the top of the list'
+        POST('', getValidLabelJson('F', 0))
+        
+        then: 'The item is created'
+        response.status == HttpStatus.CREATED
+        response.body().index == 0
+        String fId = response.body().id
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order F, A, B, C, D, E'
+        response.body().items[0].label == 'F'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'A'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'B'
+        response.body().items[2].index == 2
+        response.body().items[3].label == 'C'
+        response.body().items[3].index == 3
+        response.body().items[4].label == 'D'
+        response.body().items[4].index == 4   
+        response.body().items[5].label == 'E'
+        response.body().items[5].index == 5               
+
+        when: 'Item G is POSTed in the middle of the list'
+        POST('', getValidLabelJson('G', 2))
+        
+        then: 'The item is created'
+        response.status == HttpStatus.CREATED
+        response.body().index == 2
+        String gId = response.body().id
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order F, A, G, B, C, D, E'
+        response.body().items[0].label == 'F'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'A'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'G'
+        response.body().items[2].index == 2
+        response.body().items[3].label == 'B'
+        response.body().items[3].index == 3
+        response.body().items[4].label == 'C'
+        response.body().items[4].index == 4   
+        response.body().items[5].label == 'D'
+        response.body().items[5].index == 5   
+        response.body().items[6].label == 'E'
+        response.body().items[6].index == 6         
+        
+    }
+
+   void 'OR3: Test ordering on update when the index was not specified on insert'() {
+        given: 'Five resources without specified indices'
+        POST('', getValidLabelJson('C'))
+        String cId = response.body().id
+        POST('', getValidLabelJson('D'))
+        String dId = response.body().id
+        POST('', getValidLabelJson('A'))
+        String aId = response.body().id
+        POST('', getValidLabelJson('E'))
+        String eId = response.body().id
+        POST('', getValidLabelJson('B'))
+        String bId = response.body().id
+     
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order A, B, C, D, E because label sorting is used'
+        response.body().items[0].label == 'A'
+        response.body().items[0].index == Integer.MAX_VALUE
+        response.body().items[1].label == 'B'
+        response.body().items[1].index == Integer.MAX_VALUE
+        response.body().items[2].label == 'C'
+        response.body().items[2].index == Integer.MAX_VALUE
+        response.body().items[3].label == 'D'
+        response.body().items[3].index == Integer.MAX_VALUE
+        response.body().items[4].label == 'E'
+        response.body().items[4].index == Integer.MAX_VALUE
+
+        when: 'Item F is POSTed at the top of the list'
+        POST('', getValidLabelJson('F', 0))
+        
+        then: 'The item is created'
+        response.status == HttpStatus.CREATED
+        response.body().index == 0
+        String fId = response.body().id
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order F, A, B, C, D, E'
+        response.body().items[0].label == 'F'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'A'
+        response.body().items[1].index == Integer.MAX_VALUE
+        response.body().items[2].label == 'B'
+        response.body().items[2].index == Integer.MAX_VALUE
+        response.body().items[3].label == 'C'
+        response.body().items[3].index == Integer.MAX_VALUE
+        response.body().items[4].label == 'D'
+        response.body().items[4].index == Integer.MAX_VALUE   
+        response.body().items[5].label == 'E'
+        response.body().items[5].index == Integer.MAX_VALUE
+
+        when: 'Item C is PUT with an index of 1'
+        PUT(cId, getValidLabelJson('C', 1))
+
+        then: 'The item is updated'
+        response.status == HttpStatus.OK
+        response.body().index == 1
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order F, C, A, B, D, E'
+        response.body().items[0].label == 'F'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'C'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'A'
+        response.body().items[2].index == Integer.MAX_VALUE
+        response.body().items[3].label == 'B'
+        response.body().items[3].index == Integer.MAX_VALUE
+        response.body().items[4].label == 'D'
+        response.body().items[4].index == Integer.MAX_VALUE   
+        response.body().items[5].label == 'E'
+        response.body().items[5].index == Integer.MAX_VALUE           
+
+        when: 'Item B is PUT with an index of 1'
+        PUT(bId, getValidLabelJson('B', 1))
+
+        then: 'The item is updated'
+        response.status == HttpStatus.OK
+        response.body().index == 1
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order F, B, C, A, D, E'
+        response.body().items[0].label == 'F'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'B'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'C'
+        response.body().items[2].index == 2
+        response.body().items[3].label == 'A'
+        response.body().items[3].index == Integer.MAX_VALUE
+        response.body().items[4].label == 'D'
+        response.body().items[4].index == Integer.MAX_VALUE   
+        response.body().items[5].label == 'E'
+        response.body().items[5].index == Integer.MAX_VALUE               
+      
+   }    
 
 }

@@ -50,19 +50,20 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
         idx != null ? idx : Ordered.LOWEST_PRECEDENCE
     }
 
+    /**
+     * On setting the index, update the indices of siblings. 
+     */
     void setIndex(int index) {
         log.debug("ModelItem.setIndex ${index}")
         idx = index
         markDirty('idx')
+        //No ID also means no parent, which won't work.
         if (ident()) updateIndices(index)
     }
 
     void updateIndices(int index) {
-        log.debug("ModelItem.updateIndices ${index}")
         CatalogueItem parent = getParent()
-        log.debug("parent ${parent.toString()}")
         if (parent) {
-            log.debug("I have a parent")
             parent.updateChildIndexes(this)
         }
     }
