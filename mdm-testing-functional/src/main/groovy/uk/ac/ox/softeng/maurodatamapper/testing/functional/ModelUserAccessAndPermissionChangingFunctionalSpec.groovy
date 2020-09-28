@@ -17,12 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
-import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
-import static io.micronaut.http.HttpStatus.*
+import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
+
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * <pre>

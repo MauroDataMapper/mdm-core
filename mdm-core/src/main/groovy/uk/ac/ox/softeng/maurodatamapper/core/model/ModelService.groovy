@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-import org.apache.commons.lang3.NotImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
@@ -29,6 +28,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+
+import org.apache.commons.lang3.NotImplementedException
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 

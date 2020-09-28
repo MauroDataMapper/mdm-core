@@ -17,13 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import grails.gorm.transactions.Transactional
-import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
-import grails.web.mime.MimeType
-import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
-import spock.lang.Shared
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -31,7 +24,18 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
-import static io.micronaut.http.HttpStatus.*
+import grails.gorm.transactions.Transactional
+import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
+import grails.web.mime.MimeType
+import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
+import spock.lang.Shared
+
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * <pre>
@@ -774,7 +778,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyResponse OK, response
         String mainId = responseBody().items.find {
             it.label == 'Functional Test Model' &&
-                    !(it.id in [id, leftId, rightId])
+            !(it.id in [id, leftId, rightId])
         }?.id
         mainId
 
@@ -1064,7 +1068,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each {n ->
+        (1..4).each { n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()

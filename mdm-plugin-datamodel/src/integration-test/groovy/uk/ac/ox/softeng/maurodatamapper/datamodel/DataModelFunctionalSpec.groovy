@@ -17,13 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-import grails.gorm.transactions.Transactional
-import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
-import grails.web.mime.MimeType
-import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
-import spock.lang.Shared
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -33,8 +26,20 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
-import static io.micronaut.http.HttpStatus.*
+import grails.gorm.transactions.Transactional
+import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
+import grails.web.mime.MimeType
+import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
+import spock.lang.Shared
+
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * @see DataModelController* Controller: dataModel

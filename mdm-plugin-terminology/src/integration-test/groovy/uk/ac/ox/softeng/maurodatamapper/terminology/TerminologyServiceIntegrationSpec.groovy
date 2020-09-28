@@ -17,12 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import grails.gorm.transactions.Rollback
-import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 
 @Slf4j
 @Integration

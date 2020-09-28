@@ -17,10 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-import grails.gorm.transactions.Rollback
-import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -34,6 +30,11 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationS
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
+
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 
 @Slf4j
 @Integration
