@@ -1,7 +1,20 @@
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem: catalogueItem,
+                                                               userSecurityPolicyManager: userSecurityPolicyManager,
+                                                               owningSecurableResourceClass: owningSecurableResourceClass,
+                                                               owningSecurableResourceId: owningSecurableResourceId]
 
 model {
     CatalogueItem catalogueItem
+    UserSecurityPolicyManager userSecurityPolicyManager
+    Class owningSecurableResourceClass
+    UUID owningSecurableResourceId
 }
 
-json tmpl.'/catalogueItem/catalogueItem'(catalogueItem: catalogueItem)
+json {
+
+}

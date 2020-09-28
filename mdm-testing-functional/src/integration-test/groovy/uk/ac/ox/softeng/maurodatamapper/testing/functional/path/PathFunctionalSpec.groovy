@@ -130,6 +130,216 @@ class PathFunctionalSpec extends FunctionalSpec {
         }'''
     }
 
+    String getExpectedSimpleTerminologyJson() {
+        return '''{
+          "id": "${json-unit.matches:id}",
+          "domainType": "Terminology",
+          "label": "Simple Test Terminology",
+          "availableActions": [
+            "show",
+            "comment"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "classifiers": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "test classifier simple",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            }
+          ]
+        }'''
+    }
+
+    String getExpectedComplexTerminologyJson() {
+        return '''{
+          "id": "${json-unit.matches:id}",
+          "domainType": "Terminology",
+          "label": "Complex Test Terminology",
+          "availableActions": [
+            "show",
+            "comment"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "classifiers": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "test classifier",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "test classifier2",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            }
+          ]
+        }'''
+    }    
+
+    String getExpectedSimpleCodeSetJson() {
+        return '''{
+          "id": "${json-unit.matches:id}",
+          "domainType": "CodeSet",
+          "label": "Simple Test CodeSet",
+          "availableActions": [
+            "show",
+            "comment"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "classifiers": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "test classifier",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            }
+          ]
+        }'''
+    }    
+
+    String getExpectedSimpleTermJson() {
+         return '''{
+          "id": "${json-unit.matches:id}",
+          "domainType": "Term",
+          "label": "STT01: Simple Test Term 01",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+              {
+               "id": "${json-unit.matches:id}",
+               "label": "Simple Test Terminology",
+               "domainType":"Terminology",
+               "finalised":false
+               }
+          ],
+          "availableActions": [
+            "show",
+            "comment"
+          ],
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"       
+        }'''
+    }
+
+    String getExpectedComplexDataModelJson() {
+        return '''{
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataModel",
+            "label": "Complex Test DataModel",
+            "availableActions": [
+              "show",
+              "comment"
+            ],
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "classifiers": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "test classifier",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              },
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "test classifier2",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+              }
+            ]  
+        }'''
+    }
+
+    String getExpectedParentDataClassJson() {
+        return '''{
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataClass",
+            "label": "parent",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+                {
+                "id": "${json-unit.matches:id}",
+                "label": "Complex Test DataModel",
+                "domainType": "DataModel",
+                "finalised": false
+                }
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ],
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"         
+        }'''
+    }
+
+    String getExpectedChildDataClassJson() {
+        return '''{
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataClass",
+            "label": "child",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Complex Test DataModel",
+                    "domainType": "DataModel",
+                    "finalised": false
+                },
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "parent",
+                    "domainType": "DataClass"
+                }
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ],
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"         
+        }'''
+    }    
+
+    String getExpectedDataElementJson() {
+        return '''{
+            "id": "${json-unit.matches:id}",
+            "domainType": "DataElement",
+            "label": "ele1",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Complex Test DataModel",
+                    "domainType": "DataModel",
+                    "finalised": false
+                },
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "content",
+                    "domainType": "DataClass"
+                }
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ],
+            "lastUpdated": "${json-unit.matches:offsetDateTime}" 
+        }'''
+    }
+
+    String getExpectedDataTypeJson() {
+        return '''{
+            "id": "${json-unit.matches:id}",
+            "domainType": "PrimitiveType",
+            "label": "integer",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Complex Test DataModel",
+                    "domainType": "DataModel",
+                    "finalised": false
+                }
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ],
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"        
+        }'''
+    }
+
     void 'Get Terminology by path and ID when not logged in'() {
         String node
 
@@ -178,11 +388,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/terminologies/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Terminology",
-          "label": "Simple Test Terminology" 
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
 
         //With ID
         when:
@@ -190,11 +396,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Terminology",
-          "label": "Simple Test Terminology" 
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
 
         //No ID
         when:
@@ -202,11 +404,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/terminologies/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Terminology",
-          "label": "Complex Test Terminology" 
-        }'''
+        verifyJsonResponse OK, getExpectedComplexTerminologyJson()
 
         //With ID
         when:
@@ -214,11 +412,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/terminologies/${getComplexTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Terminology",
-          "label": "Complex Test Terminology" 
-        }'''
+        verifyJsonResponse OK, getExpectedComplexTerminologyJson()
     }
 
     void 'get a Terminology but use the wrong prefix when not logged in'() {
@@ -261,11 +455,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK because the ID is used"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Terminology",
-          "label": "Simple Test Terminology" 
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleTerminologyJson()
     }
 
     void 'Get CodeSet by path and ID when not logged in'() {
@@ -300,11 +490,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/codeSets/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "CodeSet",
-          "label": "Simple Test CodeSet" 
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
 
         //With ID
         when:
@@ -312,11 +498,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "CodeSet",
-          "label": "Simple Test CodeSet" 
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
     }
 
     void 'get a CodeSet but use the wrong prefix when not logged in'() {
@@ -359,11 +541,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK because the ID is used"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "CodeSet",
-          "label": "Simple Test CodeSet" 
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleCodeSetJson()
     }
 
     void 'get a Term for a Terminology when not logged in'() {
@@ -403,20 +581,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/terminologies/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Term",
-          "label": "STT01: Simple Test Term 01",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-              {
-               "id": "${json-unit.matches:id}",
-               "label": "Simple Test Terminology",
-               "domainType":"Terminology",
-               "finalised":false
-               }
-          ]
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
 
         //With Terminology ID and no label
         when:
@@ -425,20 +590,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/terminologies/${getSimpleTerminologyId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Term",
-          "label": "STT01: Simple Test Term 01",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-              {
-               "id": "${json-unit.matches:id}",
-               "label": "Simple Test Terminology",
-               "domainType":"Terminology",
-               "finalised":false
-               }
-          ]
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
     }
 
     void 'get a Term for a CodeSet when not logged in'() {
@@ -478,20 +630,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/codeSets/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Term",
-          "label": "STT01: Simple Test Term 01",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-              {
-               "id": "${json-unit.matches:id}",
-               "label": "Simple Test Terminology",
-               "domainType":"Terminology",
-               "finalised":false
-               }
-          ]
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
 
         //With CodeSet ID and no label
         when:
@@ -500,20 +639,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/codeSets/${getSimpleCodeSetId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-          "id": "${json-unit.matches:id}",
-          "domainType": "Term",
-          "label": "STT01: Simple Test Term 01",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-              {
-               "id": "${json-unit.matches:id}",
-               "label": "Simple Test Terminology",
-               "domainType":"Terminology",
-               "finalised":false
-               }
-          ]
-        }'''
+        verifyJsonResponse OK, getExpectedSimpleTermJson()
     }
 
     void 'Get DataModel by path and ID when not logged in'() {
@@ -548,11 +674,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataModels/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "label": "Complex Test DataModel"
-        }'''
+        verifyJsonResponse OK, getExpectedComplexDataModelJson()
 
         //With ID
         when:
@@ -560,11 +682,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "label": "Complex Test DataModel"
-        }'''
+        verifyJsonResponse OK, getExpectedComplexDataModelJson()
     }
 
     void 'Get DataClass with DataModel by path and ID when not logged in'() {
@@ -604,20 +722,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "parent",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedParentDataClassJson()
 
         //With ID
         when:
@@ -626,20 +731,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "parent",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedParentDataClassJson()
     }
 
     void 'Get DataClass by path and ID when not logged in'() {
@@ -690,20 +782,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataClasses/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "parent",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedParentDataClassJson()
 
         //With ID
         when:
@@ -711,20 +790,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataClasses/${getParentDataClassId()}/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "parent",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedParentDataClassJson()
 
         //No ID
         when:
@@ -732,25 +798,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataClasses/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "child",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel",
-                    "domainType": "DataModel",
-                    "finalised": false
-                },
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "parent",
-                    "domainType": "DataClass"
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedChildDataClassJson()
 
         //With ID
         when:
@@ -758,25 +806,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataClasses/${getChildDataClassId()}/path/${makePath([node])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "child",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel",
-                    "domainType": "DataModel",
-                    "finalised": false
-                },
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "parent",
-                    "domainType": "DataClass"
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedChildDataClassJson()
     }
 
     void 'Get DataElement by path and ID when not logged in'() {
@@ -816,25 +846,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataClasses/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataElement",
-            "label": "ele1",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel",
-                    "domainType": "DataModel",
-                    "finalised": false
-                },
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "content",
-                    "domainType": "DataClass"
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedDataElementJson()
 
         //With ID
         when:
@@ -843,25 +855,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataClasses/${getContentDataClassId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataElement",
-            "label": "ele1",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel",
-                    "domainType": "DataModel",
-                    "finalised": false
-                },
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "content",
-                    "domainType": "DataClass"
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedDataElementJson()
     }
 
     void 'Get DataType by DataModel, path and ID when not logged in'() {
@@ -901,20 +895,7 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "integer",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel",
-                    "domainType": "DataModel",
-                    "finalised": false
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedDataTypeJson()
 
         //With ID
         when:
@@ -923,19 +904,6 @@ class PathFunctionalSpec extends FunctionalSpec {
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, '''{
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "integer",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-                {
-                    "id": "${json-unit.matches:id}",
-                    "label": "Complex Test DataModel",
-                    "domainType": "DataModel",
-                    "finalised": false
-                }
-            ]
-        }'''
+        verifyJsonResponse OK, getExpectedDataTypeJson()
     }
 }
