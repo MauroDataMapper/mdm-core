@@ -707,10 +707,13 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         test.childDataClasses.find { it.label == 'existingClass' }
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftToExistingClass'))
+        def leftParentDataClass = (new DataClass(createdByUser: admin, label: 'leftParentDataClass'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass'))
         test.addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftOnly'))
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference'))
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left'))
-        test.description = 'DescriptionLeft'
+                .addToDataClasses(leftParentDataClass)
+        //test.description = 'DescriptionLeft'
         checkAndSave(test)
 
         dataClassService.delete(draft.dataClasses.find { it.label == 'deleteRightOnlyFromExistingClass' } as DataClass)
@@ -725,9 +728,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         draft.childDataClasses.find { it.label == 'existingClass' }
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
+        def rightParentDataClass = (new DataClass(createdByUser: admin, label: 'rightParentDataClass'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'rightChildDataClass'))
         draft.addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightOnly'))
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference'))
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right'))
+                .addToDataClasses(rightParentDataClass)
         draft.description = 'DescriptionRight'
         checkAndSave(draft)
 
@@ -741,7 +747,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         test.branchName == 'test'
         draft.branchName == 'main'
         // both changed -> diff, conflict
-        test.description == 'DescriptionLeft'
+//        test.description == 'DescriptionLeft'
         draft.description == 'DescriptionRight'
 
 

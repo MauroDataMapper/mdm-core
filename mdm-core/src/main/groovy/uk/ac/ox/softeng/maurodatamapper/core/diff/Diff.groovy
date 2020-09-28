@@ -22,6 +22,9 @@ abstract class Diff<T> {
     T left
     T right
 
+    Boolean isMergeConflict
+    T commonAncestorValue
+
     @Override
     boolean equals(o) {
         if (this.is(o)) return true

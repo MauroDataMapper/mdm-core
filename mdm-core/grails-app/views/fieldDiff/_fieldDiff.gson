@@ -7,4 +7,9 @@ model {
 json("${fieldDiff.fieldName}") {
     left fieldDiff.getLeft()
     right fieldDiff.getRight()
+
+    if (fieldDiff.isMergeConflict) {
+        isMergeConflict fieldDiff.isMergeConflict
+        commonAncestorValue fieldDiff.commonAncestorValue
+    }
 }

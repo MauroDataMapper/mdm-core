@@ -1039,13 +1039,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse NO_CONTENT, response
 
         PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
-        verifyReponse OK, response
+        verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
-        verifyReponse OK, response
+        verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
-        verifyReponse OK, response
+        verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
-        verifyReponse OK, response
+        verifyResponse OK, response
 
         POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
         verifyResponse CREATED, response
@@ -1057,7 +1057,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
 
         PUT("$source", [description: 'DescriptionLeft'])
-        verifyReponse OK, response
+        verifyResponse OK, response
 
         when:
         GET("$target/path/dm%3A%7Cdc%3AexistingClass")
@@ -1100,13 +1100,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse NO_CONTENT, response
 
         PUT("$target/dataClasses/$modifyRightOnly", [description: 'Description'])
-        verifyReponse OK, response
+        verifyResponse OK, response
         PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
-        verifyReponse OK, response
+        verifyResponse OK, response
         PUT("$target/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
-        verifyReponse OK, response
+        verifyResponse OK, response
         PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
-        verifyReponse OK, response
+        verifyResponse OK, response
 
         POST("$target/dataClasses/$existingClass/dataClasses", [label: 'addRightToExistingClass'])
         verifyResponse CREATED, response
@@ -1118,10 +1118,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
 
         PUT("$target", [description: 'DescriptionRight'])
-        verifyReponse OK, response
+        verifyResponse OK, response
 
         when:
-        GET("$source/mergeDiff/$target")
+        GET("$source/mergeDiff/$target", STRING_ARG)
 
         then:
         verifyResponse OK, response

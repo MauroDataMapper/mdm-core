@@ -123,17 +123,22 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         def right = commonAncestor.diff(rightModel)
         def top = rightModel.diff(leftModel)
 
+
+        filterMergeDiff(top, left, right)
+    }
+
+    ObjectDiff<K> filterMergeDiff(ObjectDiff<K> top, ObjectDiff<K> left, ObjectDiff<K> right) {
         def diffs = []
 
-        top.diffs.each {
+        top.diffs = top.diffs.findAll {
             def fieldName = it.fieldName
 
             if (fieldName in left.diffs.fieldName) {
                 if (fieldName in right.diffs.fieldName) {
                     if (it.class == FieldDiff) {
-                        def commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
-                        diffs << [diff: it, conflict: true, commonAncestorValue: commonAncestorValue]
-//                        true
+                        it.isMergeConflict = true
+                        it.commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
+                        true
                     } else if (it.class == ArrayDiff) {
                         def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
                         def rightArrayDiff = right.diffs.find { it.fieldName == fieldName }
@@ -179,11 +184,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                         throw new NotImplementedException('ModelService.mergeDiff only implemented for types in  [FieldDiff, ArrayDiff]')
                     }
                 } else {
-//                        true
                     diffs << [diff: it]
+                    it.isMergeConflict = false
+                    true
                 }
             } else {
-//                    false
+                false
             }
         }
 
