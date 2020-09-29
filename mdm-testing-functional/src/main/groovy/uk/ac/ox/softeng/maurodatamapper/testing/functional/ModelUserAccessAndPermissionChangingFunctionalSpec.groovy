@@ -29,6 +29,8 @@ import spock.lang.PendingFeature
 
 import java.net.http.HttpResponse
 
+import java.net.http.HttpResponse
+
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
