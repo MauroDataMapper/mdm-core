@@ -17,6 +17,12 @@ json {
         ContainerTreeItem cti = (ContainerTreeItem) treeItem
         deleted cti.deleted
         if (cti.containerId) parentFolder cti.containerId
+        if (cti.versionAware) {
+            finalised cti.finalised
+            documentationVersion cti.documentationVersion.toString()
+            if (cti.modelVersion) modelVersion cti.modelVersion.toString()
+            if (cti.branchName && !cti.modelVersion) branchName cti.branchName
+        }
     } else if (treeItem instanceof ModelTreeItem) {
         ModelTreeItem mti = (ModelTreeItem) treeItem
         deleted mti.deleted

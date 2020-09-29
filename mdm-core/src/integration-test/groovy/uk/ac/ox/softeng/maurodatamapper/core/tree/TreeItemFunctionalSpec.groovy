@@ -60,6 +60,35 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         [:]
     }
 
+    void '1 : Test the save action correctly persists an instance'() {
+        when: 'The save action is executed with valid data'
+        client.toBlocking().exchange(HttpRequest.POST(newTreeResourcePath, validJson), Map)
+
+        then: 'The response is correct'
+        def e = thrown(HttpClientResponseException)
+        e.response.status == HttpStatus.NOT_FOUND
+    }
+
+    void '2 : Test the update action correctly updates an instance'() {
+        when: 'The update action is executed with valid data'
+        String path = "$newTreeResourcePath/1"
+        client.toBlocking().exchange(HttpRequest.PUT(path, validJson), Map)
+
+        then: 'The response is correct'
+        def e = thrown(HttpClientResponseException)
+        e.response.status == HttpStatus.NOT_FOUND
+    }
+
+    void '3 : Test the delete action correctly deletes an instance'() {
+        when: 'When the delete action is executed on an unknown instance'
+        def path = "$newTreeResourcePath/99999"
+        client.toBlocking().exchange(HttpRequest.DELETE(path))
+
+        then: 'The response is correct'
+        def e = thrown(HttpClientResponseException)
+        e.response.status == HttpStatus.NOT_FOUND
+    }
+
     void '4 : test call to full tree no containers'() {
 
         when: 'no containers new url'
@@ -178,587 +207,100 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    /*
-                               '''[
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "children": [
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "Terminology",
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": true,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "superseded": false
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "CodeSet",
-            "documentationVersion": "1.0.0",
-            "hasChildren": false,
-            "finalised": true,
-            "id": "${json-unit.matches:id}",
-            "label": "Simple Test CodeSet",
-            "superseded": false
-          }
-        ],
-        "hasChildren": true,
-        "id": "${json-unit.matches:id}",
-        "label": "Test Folder"
-      }
-    ]'''
+    void '8 : test single versioned folder in existence'() {
+        given:
+        String exp = '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test Folder",
+    "hasChildren": false,
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  }
+]'''
 
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet('')
+        when: 'creating new folder'
+        POST('versionedFolders', [label: 'Functional Test Folder'])
 
-            then:
-            verifyResponse OK, response, '''[
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "children": [
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Simple Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "Terminology",
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": true,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "superseded": false
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "Terminology",
-            "documentationVersion": "1.0.0",
-            "hasChildren": false,
-            "finalised": true,
-            "id": "${json-unit.matches:id}",
-            "label": "Simple Test Terminology",
-            "superseded": false
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "CodeSet",
-            "documentationVersion": "1.0.0",
-            "hasChildren": false,
-            "finalised": true,
-            "id": "${json-unit.matches:id}",
-            "label": "Simple Test CodeSet",
-            "superseded": false
-          }
-        ],
-        "hasChildren": true,
-        "id": "${json-unit.matches:id}",
-        "label": "Test Folder"
-      }
-    ]'''
+        then:
+        verifyResponse HttpStatus.CREATED, response
 
-            when: 'logged in as admin user'
-            loginAdmin()
-            response = restGet('')
+        when: 'getting folder tree'
+        def folderId = response.body().id
+        GET(newTreeResourcePath, STRING_ARG)
 
-            then:
-            verifyResponse OK, response, '''[
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "children": [
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Simple Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "Terminology",
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": true,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test Terminology",
-            "superseded": false
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "Terminology",
-            "documentationVersion": "1.0.0",
-            "hasChildren": false,
-            "finalised": true,
-            "id": "${json-unit.matches:id}",
-            "label": "Simple Test Terminology",
-            "superseded": false
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "CodeSet",
-            "documentationVersion": "1.0.0",
-            "hasChildren": false,
-            "finalised": true,
-            "id": "${json-unit.matches:id}",
-            "label": "Simple Test CodeSet",
-            "superseded": false
-          }
-        ],
-        "hasChildren": true,
-        "id": "${json-unit.matches:id}",
-        "label": "Test Folder"
-      },
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "hasChildren": false,
-        "id": "${json-unit.matches:id}",
-        "label": "Miscellaneous"
-      }
-    ]'''
-        }
+        then:
+        verifyJsonResponse HttpStatus.OK, exp
 
-        void 'test call to tree using DataModel id'() {
-            given:
-            def id = testDataModel.id
-            String expectedJson = '''[
-      {
-        "domainType": "DataClass",
-        "hasChildren": true,
-        "dataModel": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "parent"
-      },
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "dataModel": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "content"
-      },
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "dataModel": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "emptyclass"
-      }
-    ]'''
-
-            when: 'not logged in'
-            RestResponse response = restGet("$id")
-
-            then:
-            verifyUnauthorised response
-
-            when: 'logged in as reader 3 user'
-            loginUser(reader3)
-            response = restGet("$id")
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet("$id")
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as admin user'
-            loginAdmin()
-            response = restGet("$id")
-
-            then:
-            verifyResponse OK, response, expectedJson
-        }
-
-        void 'test call to tree using DataClass id'() {
-            given:
-            def id = testDataModel.childDataClasses.find {it.label == 'parent'}.id
-
-            when: 'not logged in'
-            RestResponse response = restGet("$id")
-
-            then:
-            verifyUnauthorised response
-
-            when: 'logged in as reader 3'
-            loginUser(reader3)
-            response = restGet("$id")
-
-            then:
-            verifyResponse OK, response, '''[
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "dataModel": "${json-unit.matches:id}",
-        "parentDataClass": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "child"
-      }
-    ]'''
-
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet("$id")
-
-            then:
-            verifyResponse OK, response, '''[
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "dataModel": "${json-unit.matches:id}",
-        "parentDataClass": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "child"
-      }
-    ]'''
-
-            when: 'logged in as admin user'
-            loginAdmin()
-            response = restGet("$id")
-
-            then:
-            verifyResponse OK, response, '''[
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "dataModel": "${json-unit.matches:id}",
-        "parentDataClass": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "child"
-      }
-    ]'''
-        }
-
-        void 'test searching for "model"'() {
-            given:
-            String expectedJson = '''[
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "children": [
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "documentationVersion": "1.0.0",
-            "hasChildren": false,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          },
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "documentationVersion": "1.0.0",
-            "hasChildren": false,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Simple Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          }
-        ],
-        "hasChildren": true,
-        "id": "${json-unit.matches:id}",
-        "label": "Test Folder"
-      }
-    ]'''
-            String search = 'search/model'
-
-            when: 'not logged in'
-            RestResponse response = restGet(search)
-
-            then:
-            verifyResponse OK, response, '[]'
-
-            when: 'logged in as reader 3 user'
-            loginUser(reader3)
-            response = restGet(search)
-
-            then:
-            verifyResponse OK, response, '''[
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "children": [
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "documentationVersion": "1.0.0",
-            "hasChildren": false,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          }
-        ],
-        "hasChildren": true,
-        "id": "${json-unit.matches:id}",
-        "label": "Test Folder"
-      }
-    ]'''
-
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet(search)
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as admin user'
-            loginAdmin()
-            response = restGet(search)
-
-            then:
-            verifyResponse OK, response, expectedJson
-        }
-
-        void 'test searching for "emptyclass"'() {
-            given:
-            String expectedJson = '''[
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "children": [
-          {
-            "deleted": false,
-            "folder": "${json-unit.matches:id}",
-            "domainType": "DataModel",
-            "children": [
-              {
-                "domainType": "DataClass",
-                "hasChildren": false,
-                "dataModel": "${json-unit.matches:id}",
-                "id": "${json-unit.matches:id}",
-                "label": "emptyclass"
-              }
-            ],
-            "documentationVersion": "1.0.0",
-            "hasChildren": true,
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel",
-            "superseded": false,
-            "type": "Data Standard"
-          }
-        ],
-        "hasChildren": true,
-        "id": "${json-unit.matches:id}",
-        "label": "Test Folder"
-      }
-    ]'''
-
-            when: 'not logged in'
-            RestResponse response = restGet("search/emptyclass")
-
-            then:
-            verifyResponse OK, response, '[]'
-
-            when: 'logged in as reader 3 user'
-            loginUser(reader3)
-            response = restGet("search/emptyclass")
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet("search/emptyclass")
-
-            then:
-            verifyResponse OK, response, expectedJson
-
-            when: 'logged in as admin user'
-            loginAdmin()
-            response = restGet("search/emptyclass")
-
-            then:
-            verifyResponse OK, response, expectedJson
-        }
-
-        void 'test call to full tree with foldersOnly'() {
-
-            when: 'not logged in'
-            RestResponse response = restGet('?foldersOnly=true')
-
-            then:
-            verifyResponse OK, response, '[]'
-
-            when: 'logged in as reader 3 user'
-            loginUser(reader3)
-            response = restGet('?foldersOnly=true')
-
-            then:
-            verifyResponse OK, response, '''[]'''
-
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet('?foldersOnly=true')
-
-            then:
-            verifyResponse OK, response, '''[
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "hasChildren": false,
-        "id": "${json-unit.matches:id}",
-        "label": "Test Folder"
-      }
-    ]'''
-
-            when: 'logged in as admin user'
-            loginAdmin()
-            response = restGet('?foldersOnly=true')
-
-            then:
-            verifyResponse OK, response, '''[
-       {
-        "deleted": false,
-        "domainType": "Folder",
-        "hasChildren": false,
-        "id": "${json-unit.matches:id}",
-        "label": "Test Folder"
-      },
-      {
-        "deleted": false,
-        "domainType": "Folder",
-        "hasChildren": false,
-        "id": "${json-unit.matches:id}",
-        "label": "Miscellaneous"
-      }
-    ]'''
-        }
-
-        void 'test call to tree using Terminology id'() {
-            given:
-            def id = complexTestTerminology.id
-
-            when: 'not logged in'
-            RestResponse response = restGet("$id")
-
-            then:
-            verifyResponse NOT_FOUND, response
-
-            when: 'logged in as reader 3 user'
-            loginUser(reader3)
-            response = restGet("$id")
-
-            then:
-            verifyResponse NOT_FOUND, response
-
-            when: 'logged in as normal user'
-            loginEditor()
-            response = restGet("$id")
-
-            then:
-            verifyResponse NOT_FOUND, response
-
-            when: 'logged in as admin user'
-            loginAdmin()
-            response = restGet("$id")
-
-            then:
-            verifyResponse NOT_FOUND, response
-        }
-    */
-
-    void '1 : Test the save action correctly persists an instance'() {
-        when: 'The save action is executed with valid data'
-        client.toBlocking().exchange(HttpRequest.POST(newTreeResourcePath, validJson), Map)
-
-        then: 'The response is correct'
-        def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.NOT_FOUND
+        cleanup:
+        DELETE("folders/$folderId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void '2 : Test the update action correctly updates an instance'() {
-        when: 'The update action is executed with valid data'
-        String path = "$newTreeResourcePath/1"
-        client.toBlocking().exchange(HttpRequest.PUT(path, validJson), Map)
+    void '9 : test nested folders with a versioned folder'() {
+        given:
+        String exp = '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder Child",
+        "hasChildren": false,
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "VersionedFolder",
+        "label": "Functional Test Versioned Folder Child",
+        "hasChildren": false,
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}",
+        "finalised": false,
+        "documentationVersion": "1.0.0",
+        "branchName": "main"
+      }
+    ]
+  }
+]'''
 
-        then: 'The response is correct'
-        def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.NOT_FOUND
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Test Versioned Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'getting folder tree'
+        GET(newTreeResourcePath, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, exp
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void '3 : Test the delete action correctly deletes an instance'() {
-        when: 'When the delete action is executed on an unknown instance'
-        def path = "$newTreeResourcePath/99999"
-        client.toBlocking().exchange(HttpRequest.DELETE(path))
-
-        then: 'The response is correct'
-        def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.NOT_FOUND
-    }
 }
