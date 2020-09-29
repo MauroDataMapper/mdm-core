@@ -705,7 +705,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         for (link in versionLinks){
             T linkedModel = queryForResource link.catalogueItemId
-            versionTreeModelList.get(0).addTarget(linkedModel.id)
+            versionTreeModelList.get(0).addTarget(linkedModel.id, link.linkType)
             versionTreeModelList += modelVersionTreeInternal(linkedModel, versionLinkService, link.linkType)
         }
 
@@ -723,7 +723,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         for (link in versionLinks){
             T linkedModel = queryForResource link.catalogueItemId
-            versionTreeModelList.get(0).addTarget(linkedModel.id)
+            versionTreeModelList.get(0).addTarget(linkedModel.id, link.linkType)
             versionTreeModelList += modelVersionTreeInternal(linkedModel, versionLinkService, link.linkType)
         }
 
