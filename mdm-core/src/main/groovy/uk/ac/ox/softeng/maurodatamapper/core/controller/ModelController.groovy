@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -629,24 +630,32 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         VersionLinkService versionLinkService = new VersionLinkService()
 
-        List<VersionTreeModel> versionTreeModelList = modelVersionTreeInternal(instance, versionLinkService)
+        List<VersionTreeModel> versionTreeModelList = [new VersionTreeModel(instance, null)]
+
+        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
+
+        for (link in versionLinks){
+            T linkedModel = queryForResource link.catalogueItemId
+            versionTreeModelList.get(0).addTarget(linkedModel.id)
+            versionTreeModelList += modelVersionTreeInternal(linkedModel, versionLinkService, link.linkType)
+        }
 
         respond versionTreeModelList
 
     }
 
-    List<VersionTreeModel> modelVersionTreeInternal(T instance, VersionLinkService versionLinkService){
-        List<VersionTreeModel> versionTreeModelList
+    List<VersionTreeModel> modelVersionTreeInternal(T instance, VersionLinkService versionLinkService, VersionLinkType versionLinkType){
+        if(!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id))
+            return []
+
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
 
-        println('source: ' + instance.id)
-        versionTreeModelList = [new VersionTreeModel(instance, null)]
+        List<VersionTreeModel> versionTreeModelList = [new VersionTreeModel(instance, versionLinkType)]
 
         for (link in versionLinks){
-            println('link: ' + link.catalogueItemId)
             T linkedModel = queryForResource link.catalogueItemId
             versionTreeModelList.get(0).addTarget(linkedModel.id)
-            versionTreeModelList += modelVersionTreeInternal(linkedModel, versionLinkService)
+            versionTreeModelList += modelVersionTreeInternal(linkedModel, versionLinkService, link.linkType)
         }
 
         return versionTreeModelList
