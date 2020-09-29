@@ -11,7 +11,7 @@ json {
     isNewBranchModelVersion versionTreeModel.newBranchModelVersion
     isNewDocumentationVersion versionTreeModel.newDocumentationVersion
     isNewFork versionTreeModel.newFork
-    targets versionTreeModel.targets
+    targets tmpl.'/modelLinkTarget/modelLinkTarget'('modelLinkTarget',  versionTreeModel.targets)
 
 
 }
