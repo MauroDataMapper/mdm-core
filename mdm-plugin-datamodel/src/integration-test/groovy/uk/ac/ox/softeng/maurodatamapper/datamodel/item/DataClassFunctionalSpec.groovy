@@ -152,7 +152,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
   "availableActions": ["delete","show","update"],
   "model": "${json-unit.matches:id}",
   "id": "${json-unit.matches:id}",
-  "index": "${json-unit.any-number}",
   "label": "A new DataClass",
   "breadcrumbs": [
     {
@@ -351,7 +350,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         {
           "domainType": "DataElement",
           "id": "${json-unit.matches:id}",
-          "index": "${json-unit.any-number}",
           "model": "${json-unit.matches:id}",
           "label": "ele1",
           "breadcrumbs": [

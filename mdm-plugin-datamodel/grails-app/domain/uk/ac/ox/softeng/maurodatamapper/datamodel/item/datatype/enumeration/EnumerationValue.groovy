@@ -132,13 +132,8 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
         false
     }
 
-    //@Override
-    //void updateIndices(int index) {
-        //enumerationType.updateEnumerationValueIndexes(this)
-    //    parent.updateChildIndexes(this)
-    //}
     @Override
-    CatalogueItem getParent() {
+    CatalogueItem getIndexedWithin() {
         enumerationType
     }    
 

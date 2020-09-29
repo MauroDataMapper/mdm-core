@@ -54,7 +54,6 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
      * On setting the index, update the indices of siblings. 
      */
     void setIndex(int index) {
-        log.debug("ModelItem.setIndex ${index}")
         idx = index
         markDirty('idx')
         //No ID also means no parent, which won't work.
@@ -62,13 +61,13 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     void updateIndices(int index) {
-        CatalogueItem parent = getParent()
-        if (parent) {
-            parent.updateChildIndexes(this)
+        CatalogueItem indexedWithin = getIndexedWithin()
+        if (indexedWithin) {
+            indexedWithin.updateChildIndexes(this)
         }
     }
 
-    CatalogueItem getParent() {
+    CatalogueItem getIndexedWithin() {
         //no-op
     }
 

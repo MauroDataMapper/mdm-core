@@ -185,10 +185,17 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         parentDataClass.getDiffIdentifier() + "/" + this.label
     }
 
-    @Override
     CatalogueItem getParent() {
         parentDataClass ?: dataModel
     }
+
+    /**
+     * A DataClass is indexed within its parent, which is either a DataModel or DataClass
+     */
+    @Override
+    CatalogueItem getIndexedWithin() {
+        getParent()
+    }    
 
     DataClass findDataClass(String label) {
         this.dataClasses.find {it.label == label}

@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
@@ -44,7 +45,7 @@ import org.hibernate.search.annotations.Index
 import org.hibernate.search.bridge.builtin.UUIDBridge
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAware {
+abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAware, IndexedSiblingAware {
 
     public final static Integer BATCH_SIZE = 1000
 
@@ -189,4 +190,12 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     static DetachedCriteria<DataType> byDataModelIdAndLabel(UUID dataModelId, String label) {
         byDataModelId(dataModelId).eq('label', label)
     }
+
+    /**
+     * A DataType is indexed within the DataModel to which it belongs
+     */
+    @Override
+    DataModel getIndexedWithin() {
+        dataModel
+    }    
 }
