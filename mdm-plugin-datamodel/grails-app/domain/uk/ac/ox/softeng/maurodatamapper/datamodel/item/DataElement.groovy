@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemC
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.DataTypeBindingHelper
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
@@ -51,7 +50,7 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
 @Slf4j
-class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAware, SummaryMetadataAware, IndexedSiblingAware {
+class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAware, SummaryMetadataAware {
 
     public final static Integer BATCH_SIZE = 1000
 

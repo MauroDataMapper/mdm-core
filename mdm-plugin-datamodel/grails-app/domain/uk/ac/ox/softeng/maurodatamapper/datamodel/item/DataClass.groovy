@@ -128,14 +128,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         } else {
             this.dataClasses == null ? false : !this.dataClasses.isEmpty()
         }
-    }
-
-    //@Override
-    //void updateIndices(int index) {
-    //    log.debug("DataClass.updateIndices ${index}")
-        //enumerationType.updateEnumerationValueIndexes(this)
-        //getParent().updateChildIndexes(this)
-    //}    
+    } 
 
     @Override
     def beforeValidate() {

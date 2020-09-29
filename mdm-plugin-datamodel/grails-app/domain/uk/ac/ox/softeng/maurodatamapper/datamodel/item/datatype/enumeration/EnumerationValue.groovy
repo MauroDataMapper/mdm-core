@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -133,7 +132,7 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
     }
 
     @Override
-    CatalogueItem getIndexedWithin() {
+    EnumerationType getIndexedWithin() {
         enumerationType
     }    
 

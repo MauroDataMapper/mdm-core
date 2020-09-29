@@ -95,46 +95,17 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
             valueToAdd.enumerationType = this
             addTo('enumerationValues', valueToAdd)
         }
-        //updateEnumerationValueIndexes(valueToAdd)
         updateChildIndexes(valueToAdd)
         this
     }
 
+
+    /*
+     * Update the index property of the EnumerationValues which belong to this EnumerationType, and which are siblings of an updated EnumerationValue
+     *
+     * @param EnumerationValue updated An EnumerationValue, which belongs to this EnumerationType, and which has been updated.
+     */
     void updateChildIndexes(EnumerationValue updated) {
         updateSiblingIndexes(updated, enumerationValues)
     }
-    /*void updateEnumerationValueIndexes(EnumerationValue updated) {
-        List<EnumerationValue> sorted = enumerationValues.sort()
-        int updatedIndex = updated.getOrder()
-        int maxIndex = sorted.size() - 1
-        sorted.eachWithIndex {EnumerationValue ev, int i ->
-            //EV is the updated one, skipping any changes
-            if (ev == updated) {
-                // Make sure updated value is not ordered larger than the actual size of the collection
-                if (ev.getOrder() > maxIndex) {
-                    ev.idx = maxIndex
-                }
-                return
-            }
-
-            // Make sure all values have trackChanges turned on
-            if (!ev.isDirty()) ev.trackChanges()
-
-            log.trace('Before >> EV {} has order {} sorted to {}', ev.key, ev.order)
-            // Reorder the index which matches the one we just added
-            if (i == updatedIndex) {
-                if (i == maxIndex) {
-                    // If at end of list then move the current value back one to ensure the updated value is at then end of the list
-                    ev.idx = i - 1
-                } else {
-                    // Otherwise alphabetical sorting has placed the elements in the wrong order so shift the value by 1
-                    ev.idx = i + 1
-                }
-            } else if (ev.getOrder() != i) {
-                // Sorting has got the order right so make sure the idx is set correctly
-                ev.idx = i
-            }
-            log.trace('After >> EV {} has order {} (Dirty: {})', ev.key, i, ev.isDirty())
-        }
-    }*/
 }

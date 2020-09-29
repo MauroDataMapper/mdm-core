@@ -26,7 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
 import groovy.transform.SelfType
-import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.search.annotations.Field
 import org.springframework.core.Ordered
@@ -37,7 +36,6 @@ import org.springframework.core.Ordered
  * @since 04/11/2019
  */
 @SelfType(GormEntity)
-@Slf4j
 trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> implements PathAware, Ordered, Comparable<D> {
 
     abstract T getModel()
