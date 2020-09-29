@@ -1568,6 +1568,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         and:
         Map parentDiff = dataClassesDiffs.modified.find { it.label == 'parent' }
         parentDiff.diffs.size() == 1
+        //TODO update for mc-9228 changes
         parentDiff.diffs.first().dataClasses.deleted.size() == 1
         parentDiff.diffs.first().dataClasses.created.size() == 1
         parentDiff.diffs.first().dataClasses.deleted.first().label == 'child edit'

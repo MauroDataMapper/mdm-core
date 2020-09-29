@@ -107,45 +107,32 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
 
         // If no lhs then all rhs have been created/added
         if (!lhs) {
-            return append(diff.created(rhs))
+            return append(diff.objectDiffs(rhs.collect { (null as K).diff(it) }))
         }
 
         // If no rhs then all lhs have been deleted/removed
         if (!rhs) {
-            return append(diff.deleted(lhs))
+            return append(diff.objectDiffs(lhs.collect { it.diff(null as K) }))
         }
 
-        Collection<K> deleted = []
         Collection<ObjectDiff> modified = []
 
-        // Assume all rhs have been created new
-        List<K> created = new ArrayList<>(rhs)
+        Map<String, K> lhsMap = lhs.collectEntries { [it.getDiffIdentifier(), it] }
+        Map<String, K> rhsMap = rhs.collectEntries { [it.getDiffIdentifier(), it] }
 
-        Map<String, K> lhsMap = lhs.collectEntries {[it.getDiffIdentifier(), it]}
-        Map<String, K> rhsMap = rhs.collectEntries {[it.getDiffIdentifier(), it]}
+        Set<String> uniqueDiffIdentifiers = ((lhsMap.keySet() as ArrayList) + (rhsMap.keySet() as ArrayList)) as Set
 
-        // Work through each lhs object and compare to rhs object
-        lhsMap.each {di, lObj ->
-            K rObj = rhsMap[di]
-            if (rObj) {
-                // If robj then it exists and has not been created
-                created.remove(rObj)
-                ObjectDiff od = lObj.diff(rObj)
-                // If not equal then objects have been modified
-                if (!od.objectsAreIdentical()) {
-                    modified.add(od)
-                }
-            } else {
-                // If no robj then object has been deleted from lhs
-                deleted.add(lObj)
+        uniqueDiffIdentifiers.each {
+            K lObj = lhsMap[it]
+            K rObj = rhsMap[it]
+            ObjectDiff od = lObj.diff(rObj)
+            // If not equal then objects have been modified
+            if (!od.objectsAreIdentical()) {
+                modified.add(od)
             }
         }
 
-        if (created || deleted || modified) {
-            append(diff.created(created)
-                       .deleted(deleted)
-                       .modified(modified))
-        }
+        if (modified) append(diff.objectDiffs(modified))
         this
     }
 

@@ -21,12 +21,12 @@ class ArrayDiff<T extends Diffable> extends FieldDiff<Collection<T>> {
 
     Collection<T> created
     Collection<T> deleted
-    Collection<ObjectDiff<T>> modified
+    Collection<ObjectDiff<T>> objectDiffs
 
     private ArrayDiff() {
         created = []
         deleted = []
-        modified = []
+        objectDiffs = []
     }
 
     ArrayDiff<T> created(Collection<T> created) {
@@ -39,8 +39,8 @@ class ArrayDiff<T extends Diffable> extends FieldDiff<Collection<T>> {
         this
     }
 
-    ArrayDiff<T> modified(Collection<ObjectDiff<T>> modified) {
-        this.modified = modified
+    ArrayDiff<T> objectDiffs(Collection<ObjectDiff<T>> objectDiffs) {
+        this.objectDiffs = objectDiffs
         this
     }
 
@@ -61,22 +61,17 @@ class ArrayDiff<T extends Diffable> extends FieldDiff<Collection<T>> {
 
     @Override
     Integer getNumberOfDiffs() {
-        created.size() + deleted.size() + ((modified.sum {it.getNumberOfDiffs()} ?: 0) as Integer)
+        (objectDiffs.sum { it.getNumberOfDiffs() } ?: 0) as Integer
     }
 
     @Override
     String toString() {
         StringBuilder stringBuilder = new StringBuilder(super.toString())
 
-        if (created) {
-            stringBuilder.append('\n  Created ::\n').append(created)
+        if (objectDiffs) {
+            stringBuilder.append('\n  ObjectDiffs ::\n').append(objectDiffs)
         }
-        if (deleted) {
-            stringBuilder.append('\n  Deleted ::\n').append(deleted)
-        }
-        if (modified) {
-            stringBuilder.append('\n  Modified ::\n').append(modified)
-        }
+
         stringBuilder.toString()
     }
 
