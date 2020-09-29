@@ -98,9 +98,9 @@ class BootstrapModels {
 
             .addToDataClasses(createdBy: DEVELOPMENT, label: 'emptyclass', description: 'dataclass with desc')
             .addToDataTypes(new EnumerationType(createdBy: DEVELOPMENT, label: 'yesnounknown')
-                                .addToEnumerationValues(key: 'Y', value: 'Yes')
-                                .addToEnumerationValues(key: 'N', value: 'No')
-                                .addToEnumerationValues(key: 'U', value: 'Unknown'))
+                                .addToEnumerationValues(key: 'Y', value: 'Yes', index: 0)
+                                .addToEnumerationValues(key: 'N', value: 'No', index: 1)
+                                .addToEnumerationValues(key: 'U', value: 'Unknown', index: 2))
 
         DataClass parent =
             new DataClass(createdBy: DEVELOPMENT, label: 'parent', minMultiplicity: 1, maxMultiplicity: -1, dataModel: dataModel)
