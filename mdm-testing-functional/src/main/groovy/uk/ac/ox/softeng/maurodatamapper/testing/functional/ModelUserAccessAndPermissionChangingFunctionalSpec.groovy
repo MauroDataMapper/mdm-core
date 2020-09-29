@@ -976,7 +976,19 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
                          newBranchModelVersion  : false,
                          newDocumentationVersion: false,
                          newFork                : false,
-                         targets                : [forkId, mainBranchId, newBranchId]]
+                         targets                : [[
+                                                            modelId: forkId,
+                                                            description: VersionLinkType.NEW_FORK_OF.toString()
+                                                   ],
+                                                   [
+                                                           modelId: mainBranchId,
+                                                           description: VersionLinkType.NEW_MODEL_VERSION_OF.toString()
+                                                   ],
+                                                   [
+                                                            modelId: newBranchId,
+                                                            description: VersionLinkType.NEW_MODEL_VERSION_OF.toString()
+                                                   ]]
+                ]
 
         Map forkMap = localResponse.body().find { it.modelId == forkId }
         forkMap
@@ -986,7 +998,11 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
                       newBranchModelVersion  : false,
                       newDocumentationVersion: false,
                       newFork                : true,
-                      targets                : [latestDraftId]]
+                      targets                : [[
+                                                        modelId: latestDraftId,
+                                                        description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.toString()
+                                                ]]
+                ]
 
         Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
         mainBranchMap
