@@ -1,7 +1,7 @@
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-inherits template: 'folder'
+inherits template: '/folder/folder'
 
 model {
     Folder folder

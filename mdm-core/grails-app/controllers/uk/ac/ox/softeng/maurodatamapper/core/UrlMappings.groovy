@@ -71,6 +71,8 @@ class UrlMappings {
 
             '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES) {
                 '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES)
+                '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES)
+
                 put '/readByEveryone'(controller: 'folder', action: 'readByEveryone')
                 delete '/readByEveryone'(controller: 'folder', action: 'readByEveryone')
                 put '/readByAuthenticated'(controller: 'folder', action: 'readByAuthenticated')
@@ -78,6 +80,19 @@ class UrlMappings {
 
                 post '/search'(controller: 'folder', action: 'search')
                 get '/search'(controller: 'folder', action: 'search')
+            }
+
+            '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES) {
+                '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES)
+                '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES)
+
+                put '/readByEveryone'(controller: 'versionedFolder', action: 'readByEveryone')
+                delete '/readByEveryone'(controller: 'versionedFolder', action: 'readByEveryone')
+                put '/readByAuthenticated'(controller: 'versionedFolder', action: 'readByAuthenticated')
+                delete '/readByAuthenticated'(controller: 'versionedFolder', action: 'readByAuthenticated')
+
+                post '/search'(controller: 'versionedFolder', action: 'search')
+                get '/search'(controller: 'versionedFolder', action: 'search')
             }
 
             '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES) {

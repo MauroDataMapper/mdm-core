@@ -54,7 +54,7 @@ class Folder implements Container {
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
-        label validator: {val, obj -> new FolderLabelValidator(obj).isValid(val)}
+        label validator: { val, obj -> new FolderLabelValidator(obj).isValid(val) }
         parentFolder nullable: true
     }
 
@@ -99,7 +99,7 @@ class Folder implements Container {
     @Override
     def beforeValidate() {
         buildPath()
-        childFolders.each {it.beforeValidate()}
+        childFolders.each { it.beforeValidate() }
     }
 
     @Override
@@ -143,6 +143,10 @@ class Folder implements Container {
         by().eq('parentFolder.id', id)
     }
 
+    static DetachedCriteria<Folder> byParentFolderIdAndLabel(UUID id, String label) {
+        byParentFolderId(id).eq('label', label)
+    }
+
     static Folder getMiscellaneousFolder() {
         findByLabel(MISCELLANEOUS_FOLDER_LABEL)
     }
@@ -171,7 +175,7 @@ class Folder implements Container {
         by()
             .isNotNull('path')
             .ne('path', '')
-            .findAll {f ->
+            .findAll { f ->
                 ids.any {
                     it in f.path.split('/')
                 }

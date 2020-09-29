@@ -1,22 +1,6 @@
-/*
- * Copyright 2020 University of Oxford
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
@@ -29,32 +13,20 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
-class FolderController extends EditLoggingController<Folder> {
+class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     static responseFormats = ['json', 'xml']
 
     FolderService folderService
+    AuthorityService authorityService
+    VersionedFolderService versionedFolderService
     SearchService mdmCoreSearchService
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
 
-    FolderController() {
-        super(Folder)
+    VersionedFolderController() {
+        super(VersionedFolder)
     }
-
-    @Override
-    def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
-        respond folderList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager
-    }
-
-    @Override
-    def show() {
-        def resource = queryForResource(params.id)
-        resource ? respond(folder: resource, userSecurityPolicyManager: currentUserSecurityPolicyManager) : notFound(params.id)
-
-    }
-
 
     def search(SearchParams searchParams) {
 
@@ -71,7 +43,8 @@ class FolderController extends EditLoggingController<Folder> {
             params.order = searchParams.order
         }
 
-        PaginatedLuceneResult<CatalogueItem> result = mdmCoreSearchService.findAllByFolderIdByLuceneSearch(params.folderId, searchParams, params)
+        PaginatedLuceneResult<CatalogueItem> result =
+            mdmCoreSearchService.findAllByFolderIdByLuceneSearch(params.versionedFolderId, searchParams, params)
         respond result
     }
 
@@ -82,15 +55,15 @@ class FolderController extends EditLoggingController<Folder> {
             return
         }
 
-        def instance = queryForResource(params.id ?: params.folderId)
+        def instance = queryForResource(params.id ?: params.versionedFolderId)
         if (instance == null) {
             transactionStatus.setRollbackOnly()
-            notFound(params.id ?: params.folderId)
+            notFound(params.id ?: params.versionedFolderId)
             return
         }
 
         if (params.boolean('permanent')) {
-            folderService.delete(instance, true)
+            versionedFolderService.delete(instance, true)
 
             if (securityPolicyManagerService) {
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
@@ -103,16 +76,16 @@ class FolderController extends EditLoggingController<Folder> {
         }
 
         // Otherwise perform "soft delete"
-        folderService.delete(instance)
+        versionedFolderService.delete(instance)
         updateResource(instance)
         updateResponse(instance)
     }
 
     @Transactional
     def readByEveryone() {
-        Folder instance = queryForResource(params.folderId)
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
 
-        if (!instance) return notFound(params.folderId)
+        if (!instance) return notFound(params.versionedFolderId)
 
         instance.readableByEveryone = request.method == 'PUT'
 
@@ -122,9 +95,9 @@ class FolderController extends EditLoggingController<Folder> {
 
     @Transactional
     def readByAuthenticated() {
-        Folder instance = queryForResource(params.folderId)
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
 
-        if (!instance) return notFound(params.folderId)
+        if (!instance) return notFound(params.versionedFolderId)
 
         instance.readableByAuthenticatedUsers = request.method == 'PUT'
 
@@ -133,27 +106,30 @@ class FolderController extends EditLoggingController<Folder> {
     }
 
     @Override
-    protected Folder queryForResource(Serializable id) {
-        folderService.get(id)
+    protected VersionedFolder queryForResource(Serializable id) {
+        versionedFolderService.get(id)
     }
 
     @Override
-    protected Folder createResource() {
-        //Explicitly set the exclude map to empty so that the transient property Folder.userGroups is bound (if present) from the request
-        Folder resource = super.createResource([exclude:[]]) as Folder
+    protected VersionedFolder createResource() {
+        //Explicitly set the exclude map to empty so that the transient property VersionedFolder.userGroups is bound (if present) from the request
+        VersionedFolder resource = super.createResource([exclude: []]) as VersionedFolder
+        if (params.versionedFolderId) {
+            resource.parentFolder = versionedFolderService.get(params.versionedFolderId)
+        }
         if (params.folderId) {
             resource.parentFolder = folderService.get(params.folderId)
         }
-
+        resource.authority = authorityService.getDefaultAuthority()
         if (!resource.label) {
-            folderService.generateDefaultFolderLabel(resource)
+            versionedFolderService.generateDefaultFolderLabel(resource)
         }
         resource
     }
 
     @Override
-    protected Folder saveResource(Folder resource) {
-        Folder folder = super.saveResource(resource) as Folder
+    protected VersionedFolder saveResource(VersionedFolder resource) {
+        VersionedFolder folder = super.saveResource(resource) as VersionedFolder
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(folder, currentUser, folder.label)
         }
@@ -161,9 +137,9 @@ class FolderController extends EditLoggingController<Folder> {
     }
 
     @Override
-    protected Folder updateResource(Folder resource) {
+    protected VersionedFolder updateResource(VersionedFolder resource) {
         Set<String> changedProperties = resource.getDirtyPropertyNames()
-        Folder folder = super.updateResource(resource) as Folder
+        VersionedFolder folder = super.updateResource(resource) as VersionedFolder
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(folder,
                                                                                                                changedProperties,
@@ -173,19 +149,19 @@ class FolderController extends EditLoggingController<Folder> {
     }
 
     @Override
-    protected List<Folder> listAllReadableResources(Map params) {
-        if (params.folderId) {
-            return folderService.findAllByParentId(params.folderId, params)
+    protected List<VersionedFolder> listAllReadableResources(Map params) {
+        if (params.versionedFolderId) {
+            return versionedFolderService.findAllByParentId(params.versionedFolderId, params)
         }
 
-        folderService.findAllByUser(currentUserSecurityPolicyManager, params)
+        versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
     }
 
     @Override
-    protected void serviceDeleteResource(Folder resource) {
+    protected void serviceDeleteResource(VersionedFolder resource) {
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(resource, currentUser)
         }
-        folderService.delete(resource)
+        versionedFolderService.delete(resource)
     }
 }
