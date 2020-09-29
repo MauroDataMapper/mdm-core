@@ -9,5 +9,11 @@ model {
 }
 
 json {
+    branchName versionedFolder.branchName
+    documentationVersion versionedFolder.documentationVersion.toString()
+    finalised versionedFolder.finalised
+    if (versionedFolder.finalised) dateFinalised versionedFolder.dateFinalised
+    if (versionedFolder.modelVersion) modelVersion versionedFolder.modelVersion.toString()
 
+    authority tmpl.'/authority/authority'(versionedFolder.authority)
 }

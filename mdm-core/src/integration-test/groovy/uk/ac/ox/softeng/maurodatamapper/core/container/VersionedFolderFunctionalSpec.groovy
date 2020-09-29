@@ -81,14 +81,26 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
     @Override
     String getExpectedShowJson() {
         '''{
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "hasChildFolders": false,
-  "domainType": "VersionedFolder",
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Folder",
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "domainType": "VersionedFolder",
+  "hasChildFolders": false,
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["update","delete","show"]
+  "availableActions": [
+    "delete",
+    "show",
+    "update"
+  ],
+  "branchName": "main",
+  "documentationVersion": "1.0.0",
+  "finalised": false,
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  }
 }'''
     }
 
@@ -191,15 +203,27 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
 
         then: 'The response is correct'
         verifyJsonResponse(HttpStatus.OK, '''{
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "hasChildFolders": false,
-  "domainType": "VersionedFolder",
-  "deleted": true,
   "id": "${json-unit.matches:id}",
   "label": "Functional Test Folder",
+  "deleted": true,
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "domainType": "VersionedFolder",
+  "hasChildFolders": false,
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["update","delete","show"]
+  "availableActions": [
+    "delete",
+    "show",
+    "update"
+  ],
+  "branchName": "main",
+  "documentationVersion": "1.0.0",
+  "finalised": false,
+  "authority": {
+    "id": "${json-unit.matches:id}",
+    "url": "http://localhost",
+    "label": "Mauro Data Mapper"
+  }
 }''')
 
         cleanup:
