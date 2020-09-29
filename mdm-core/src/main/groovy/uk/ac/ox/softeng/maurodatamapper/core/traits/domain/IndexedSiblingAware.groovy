@@ -19,12 +19,9 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
-import groovy.util.logging.Slf4j
-
 /**
  * @since 24/09/2020
  */
- @Slf4j
 trait IndexedSiblingAware {
 
     /**
@@ -34,7 +31,6 @@ trait IndexedSiblingAware {
      * @param Set<CatalogueItem> siblings   The siblings of the updated item
      */
     void updateSiblingIndexes(CatalogueItem updated, Set<CatalogueItem> siblings) {
-        log.debug("updateSiblingIndexes")
         List<CatalogueItem> sorted = siblings.sort()
         int updatedIndex = updated.getOrder()
         int maxIndex = sorted.size() - 1
