@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissi
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import spock.lang.PendingFeature
 
 import java.net.http.HttpResponse
@@ -943,15 +944,18 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         given:
         String id = getValidFinalisedId()
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
         verifyResponse CREATED, response
-        String finalisedId = responseBody().id
+        String forkId = responseBody().id
+        PUT("$id/newBranchModelVersion", [ : ])
+        verifyResponse CREATED, response
+        String mainBranchId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
         verifyResponse CREATED, response
         String newBranchId = responseBody().id
-        PUT("$finalisedId/finalise", [:])
+        PUT("$forkId/finalise", [versionChangeType: VersionChangeType.MINOR])
         verifyResponse OK, response
-        PUT("$finalisedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$forkId/newDocumentationVersion",[ : ])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -961,27 +965,68 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, localResponse
         localResponse.body()
-        localResponse.body().size() == 4
-        Map finalisedMap = localResponse.body().find {it.modelId == id}
-        finalisedMap
-        finalisedMap == '''{
-            "branchName" : "main",
-            "label": "Functional Test DataModel",
-            "modelId": ${json-unit.matches:id},
-            "newBranchModelVersion": false,
-            "newDocumentationVersion": false,
-            "newFork": false,
-            "targets": [${json-unit.matches:finalisedId}, ${json-unit.matches:newBranchId}]
-        }'''
+        localResponse.body().size() == 5
+
+
+        Map sourceMap = localResponse.body().find { it.modelId == id }
+        sourceMap
+        sourceMap == [branchName             : "main",
+                         label                  : "Functional Test " + getModelType(),
+                         modelId                : id,
+                         newBranchModelVersion  : false,
+                         newDocumentationVersion: false,
+                         newFork                : false,
+                         targets                : [forkId, mainBranchId, newBranchId]]
+
+        Map forkMap = localResponse.body().find { it.modelId == forkId }
+        forkMap
+        forkMap ==    [branchName            : "main",
+                      label                  : "Functional Test " + getModelType() + " v2",
+                      modelId                : forkId,
+                      newBranchModelVersion  : false,
+                      newDocumentationVersion: false,
+                      newFork                : true,
+                      targets                : [latestDraftId]]
+
+        Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
+        mainBranchMap
+        mainBranchMap == [branchName             : "main",
+                         label                  : "Functional Test " + getModelType(),
+                         modelId                : mainBranchId,
+                         newBranchModelVersion  : true,
+                         newDocumentationVersion: false,
+                         newFork                : false,
+                         targets                : []]
+
+        Map newBranchMap = localResponse.body().find { it.modelId == newBranchId }
+        newBranchMap
+        newBranchMap == [branchName             : "newBranch",
+                         label                  : "Functional Test " + getModelType(),
+                         modelId                : newBranchId,
+                         newBranchModelVersion  : true,
+                         newDocumentationVersion: false,
+                         newFork                : false,
+                         targets                : []]
+
+        Map latestDraftMap = localResponse.body().find { it.modelId == latestDraftId }
+        latestDraftMap
+        latestDraftMap == [branchName           : "main",
+                         label                  : "Functional Test " + getModelType() + " v2",
+                         modelId                : latestDraftId,
+                         newBranchModelVersion  : false,
+                         newDocumentationVersion: true,
+                         newFork                : false,
+                         targets                : []]
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(forkId)
         removeValidIdObjectUsingTransaction(latestDraftId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
         cleanUpRoles(id)
         cleanUpRoles(newBranchId)
-        cleanUpRoles(finalisedId)
+        cleanUpRoles(forkId)
         cleanUpRoles(latestDraftId)
     }
 
