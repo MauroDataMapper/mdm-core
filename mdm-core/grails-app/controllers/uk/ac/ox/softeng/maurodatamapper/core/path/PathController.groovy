@@ -22,8 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
-
 import org.springframework.beans.factory.annotation.Autowired
 
 import grails.rest.RestfulController
@@ -31,8 +29,6 @@ import grails.rest.RestfulController
 class PathController extends RestfulController<CatalogueItem> implements MdmController {
 
     static responseFormats = ['json', 'xml']
-
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
     PathService pathService
 
@@ -47,16 +43,8 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
         CatalogueItem catalogueItem = pathService.findCatalogueItemByPath(currentUserSecurityPolicyManager, params)
         if (!catalogueItem) return notFound(CatalogueItem, params.path)
 
-        //In order to display availableActions within the view we need to provide a securable resource
-        CatalogueItem owningSecurableResource = catalogueItem
-        if (catalogueItem instanceof ModelItem) {
-            owningSecurableResource = proxyHandler.unwrapIfProxy(catalogueItem.getModel())
-        }
-
         respond(catalogueItem, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager,
-                                        catalogueItem: catalogueItem,
-                                        owningSecurableResourceClass: owningSecurableResource.getClass(),
-                                        owningSecurableResourceId: owningSecurableResource.id],
+                                        catalogueItem: catalogueItem],
                                 view: 'show'])
     }
 
