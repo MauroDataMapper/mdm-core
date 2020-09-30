@@ -11,6 +11,6 @@ model {
 json {
     readableByEveryone folder.readableByEveryone
     readableByAuthenticatedUsers folder.readableByAuthenticatedUsers
-    availableActions userSecurityPolicyManager.userAvailableActions(Folder, folder.id)
+    availableActions userSecurityPolicyManager.userAvailableActions(folder.getClass(), folder.id)
     if (folder.description) description folder.description
 }

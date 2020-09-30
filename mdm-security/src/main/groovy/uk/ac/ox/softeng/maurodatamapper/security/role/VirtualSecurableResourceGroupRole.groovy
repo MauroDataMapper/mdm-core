@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -30,6 +31,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     private GroupRole groupRole
     private String domainType
+    private String alternateDomainType
     private UUID domainId
     private GroupRole appliedGroupRole
     private UserGroup userGroup
@@ -53,6 +55,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     VirtualSecurableResourceGroupRole forSecurableResource(String domainType, UUID domainId) {
         this.domainType = domainType
         this.domainId = domainId
+        if (domainType == VersionedFolder.simpleName) alternateDomainType = Folder.simpleName
         this
     }
 
@@ -130,12 +133,24 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
         return result
     }
 
+    boolean matchesDomainResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        (domainType == securableResourceClass.simpleName || alternateDomainType == securableResourceClass.simpleName) && domainId == id
+    }
+
+    boolean matchesGroupRole(String roleName) {
+        groupRole.name == roleName
+    }
+
     GroupRole getGroupRole() {
         groupRole
     }
 
     String getDomainType() {
         domainType
+    }
+
+    String getAlternateDomainType() {
+        alternateDomainType
     }
 
     UUID getDomainId() {

@@ -77,7 +77,6 @@ abstract class SecurableResourceInterceptor implements MdmInterceptor {
         if (isSave()) {
             // A save wont have an id on a securable resource so it will always be forbidden or allowed
             return currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(securableResourceClass, id) ?: forbiddenDueToPermissions()
-            //forbiddenOrNotFound(canRead, securableResourceClass, id)
         }
         // If index on an id or show then if user can read then they can see it otherwise the id is notFound
         if ((isIndex() && id) || isShow()) {

@@ -28,10 +28,10 @@ class VersionedFolderInterceptor extends SecurableResourceInterceptor {
         securableResourceChecks()
 
         if (actionName == 'search') {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, getId()) ?:
-                   notFound(Folder, getId())
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, getId()) ?:
+                   notFound(VersionedFolder, getId())
         }
 
-        checkActionAuthorisationOnSecuredResource(Folder, getId(), true)
+        checkActionAuthorisationOnSecuredResource(VersionedFolder, getId(), true)
     }
 }
