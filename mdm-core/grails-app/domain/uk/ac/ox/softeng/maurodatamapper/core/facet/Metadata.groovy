@@ -92,10 +92,10 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
     ObjectDiff<Metadata> diff(Metadata obj) {
         ObjectDiff.builder(Metadata)
             .leftHandSide(id.toString(), this)
-            .rightHandSide(obj?.id.toString(), obj)
-            .appendString('namespace', this?.namespace, obj?.namespace)
-            .appendString('key', this?.key, obj?.key)
-            .appendString('value', this?.value, obj?.value)
+            .rightHandSide(obj.id.toString(), obj)
+            .appendString('namespace', this.namespace, obj.namespace)
+            .appendString('key', this.key, obj.key)
+            .appendString('value', this.value, obj.value)
     }
 
     @Override

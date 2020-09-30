@@ -114,9 +114,9 @@ class Annotation implements CatalogueItemAware, PathAware, InformationAware, Cre
     ObjectDiff<Annotation> diff(Annotation otherAnnotation) {
         ObjectDiff.builder(Annotation)
             .leftHandSide(this.id.toString(), this)
-            .rightHandSide(otherAnnotation?.id.toString(), otherAnnotation)
-            .appendString('description', this?.description, otherAnnotation?.description)
-            .appendList(Annotation, 'childAnnotations', this?.childAnnotations, otherAnnotation?.childAnnotations)
+            .rightHandSide(otherAnnotation.id.toString(), otherAnnotation)
+            .appendString('description', this.description, otherAnnotation.description)
+            .appendList(Annotation, 'childAnnotations', this.childAnnotations, otherAnnotation.childAnnotations)
 
     }
 

@@ -107,12 +107,12 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
 
         // If no lhs then all rhs have been created/added
         if (!lhs) {
-            return append(diff.objectDiffs(rhs.collect { (null as K).diff(it) }))
+            return append(diff.objectDiffs(rhs.collect { diffableClass.getDeclaredConstructor().newInstance().diff(it) }))
         }
 
         // If no rhs then all lhs have been deleted/removed
         if (!rhs) {
-            return append(diff.objectDiffs(lhs.collect { it.diff(null as K) }))
+            return append(diff.objectDiffs(lhs.collect { it.diff(diffableClass.getDeclaredConstructor().newInstance()) }))
         }
 
         Collection<ObjectDiff> modified = []
@@ -123,8 +123,8 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
         Set<String> uniqueDiffIdentifiers = ((lhsMap.keySet() as ArrayList) + (rhsMap.keySet() as ArrayList)) as Set
 
         uniqueDiffIdentifiers.each {
-            K lObj = lhsMap[it]
-            K rObj = rhsMap[it]
+            K lObj = lhsMap[it] ?: diffableClass.getDeclaredConstructor().newInstance()
+            K rObj = rhsMap[it] ?: diffableClass.getDeclaredConstructor().newInstance()
             ObjectDiff od = lObj.diff(rObj)
             // If not equal then objects have been modified
             if (!od.objectsAreIdentical()) {

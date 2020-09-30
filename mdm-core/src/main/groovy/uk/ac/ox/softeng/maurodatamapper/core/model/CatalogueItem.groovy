@@ -86,16 +86,16 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
     }
 
     static <T extends CatalogueItem> ObjectDiff catalogueItemDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
-        String lhsId = lhs ? lhs.id ?: "Left:Unsaved_${lhs.domainType}" : null
-        String rhsId = rhs ? rhs.id ?: "Right:Unsaved_${rhs.domainType}" : null
+        String lhsId = lhs.id ?: "Left:Unsaved_${lhs.domainType}"
+        String rhsId = rhs.id ?: "Right:Unsaved_${rhs.domainType}"
         ObjectDiff
             .builder(diffClass)
             .leftHandSide(lhsId, lhs)
             .rightHandSide(rhsId, rhs)
-            .appendString('label', lhs?.label, rhs?.label)
-            .appendString('description', lhs?.description, rhs?.description)
-            .appendList(Metadata, 'metadata', lhs?.metadata, rhs?.metadata)
-            .appendList(Annotation, 'annotations', lhs?.annotations, rhs?.annotations)
+            .appendString('label', lhs.label, rhs.label)
+            .appendString('description', lhs.description, rhs.description)
+            .appendList(Metadata, 'metadata', lhs.metadata, rhs.metadata)
+            .appendList(Annotation, 'annotations', lhs.annotations, rhs.annotations)
     }
 
     static <T extends CatalogueItem> DetachedCriteria<T> withCatalogueItemFilter(DetachedCriteria<T> criteria, Map filters) {
