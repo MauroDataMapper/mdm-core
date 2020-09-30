@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadata
 
 import groovy.transform.CompileStatic
 import groovy.transform.SelfType

@@ -28,10 +28,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.search.StandardSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -63,7 +65,8 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         semanticLinks  : SemanticLink,
         annotations    : Annotation,
         versionLinks   : VersionLink,
-        referenceFiles : ReferenceFile
+        referenceFiles : ReferenceFile,
+        summaryMetadata: SummaryMetadata
     ]
 
     static belongsTo = [Folder]
@@ -88,7 +91,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
     ]
 
     static search = {
-        CallableSearch.call(ReferenceModelSearch, delegate)
+        CallableSearch.call(StandardSearch, delegate)
     }
 
     DataModel() {

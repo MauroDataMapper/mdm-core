@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataServi
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.EnumerationTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.PrimitiveTypeService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceTypeService
+
 import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElementService

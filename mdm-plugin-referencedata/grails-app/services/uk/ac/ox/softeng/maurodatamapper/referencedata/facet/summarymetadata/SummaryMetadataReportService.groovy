@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.summarymetadata.SummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.util.logging.Slf4j

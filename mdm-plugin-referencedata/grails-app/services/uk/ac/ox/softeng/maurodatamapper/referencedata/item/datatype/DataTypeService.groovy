@@ -24,14 +24,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultDataType
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -44,10 +43,8 @@ import groovy.util.logging.Slf4j
 @Transactional
 class DataTypeService extends ModelItemService<DataType> implements DefaultDataTypeProvider {
 
-    uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElementService dataElementService
-    uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClassService dataClassService
+    DataElementService dataElementService
     PrimitiveTypeService primitiveTypeService
-    ReferenceTypeService referenceTypeService
     EnumerationTypeService enumerationTypeService
     SummaryMetadataService summaryMetadataService
 
@@ -77,7 +74,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
     void delete(DataType dataType, boolean flush = false) {
         if (!dataType) return
-        dataType.dataModel.removeFromDataTypes(dataType)
+        dataType.referenceDataModel.removeFromDataTypes(dataType)
         dataType.breadcrumbTree.removeFromParent()
 
         List<DataElement> dataElements = dataElementService.findAllByDataType(dataType)
@@ -89,9 +86,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 break
             case DataType.ENUMERATION_DOMAIN_TYPE:
                 enumerationTypeService.delete(dataType as EnumerationType, flush)
-                break
-            case DataType.REFERENCE_DOMAIN_TYPE:
-                referenceTypeService.delete(dataType as ReferenceType, flush)
         }
     }
 
@@ -120,7 +114,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     @Override
     List<DataType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         DataType.byClassifierId(DataType, classifier.id).list().findAll {
-            userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
+            userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)
         }
     }
 
@@ -142,7 +136,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     @Override
     List<DataType> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                               String searchTerm, String domainType) {
-        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
+        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
         if (!readableIds) return []
 
         List<DataType> results = []
@@ -264,8 +258,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.byDataModelIdAndId(dataModelId, id).find()
     }
 
-    void checkImportedDataTypeAssociations(User importingUser, DataModel dataModel, DataType dataType) {
-        dataModel.addToDataTypes(dataType)
+    void checkImportedDataTypeAssociations(User importingUser, ReferenceDataModel referenceDataModel, DataType dataType) {
+        referenceDataModel.addToDataTypes(dataType)
         dataType.createdBy = importingUser.emailAddress
         if (dataType.instanceOf(EnumerationType)) {
             (dataType as EnumerationType).enumerationValues.each { ev ->
@@ -279,55 +273,15 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         throw new ApiNotYetImplementedException('DTSXX', 'DataType setting created by')
     }
 
-    private def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
-        DataType.withFilter(DataType.byDataModelId(dataModelId), paginate).list(paginate)
+    private def findAllByReferenceDataModelId(Serializable referenceDataModel, Map paginate = [:]) {
+        DataType.withFilter(DataType.byReferenceDataModelId(referenceDataModel), paginate).list(paginate)
     }
 
-    private def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
-        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
+    private def findAllByReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable referenceDataModelId, String searchTerm, Map paginate = [:]) {
+        DataType.byReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(referenceDataModelId, searchTerm).list(paginate)
     }
 
-    private void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {
-        referenceTypes.sort { it.label }.each { rdt ->
-            Map dataTypeBindingMap = bindingMaps.find { it.label == rdt.label } ?: [:]
-            Map refClassBindingMap = dataTypeBindingMap.referenceClass ?: [:]
-            matchReferenceClass(dataModel, rdt, refClassBindingMap)
-        }
-    }
-
-    private void matchReferenceClass(DataModel dataModel, ReferenceType referenceType, Map bindingMap = [:]) {
-
-        if (bindingMap.dataClassPath) {
-            String dataClassPath = bindingMap.dataClassPath
-            List<String> dataClassPaths = dataClassPath.split(/\|/)?.toList() ?: []
-            DataClass dataClass = dataClassService.findDataClassByPath(dataModel, dataClassPaths)
-            if (dataClass) dataClass.addToReferenceTypes(referenceType)
-        } else if (referenceType.referenceClass) {
-            DataClass dataClass = dataClassService.findSameLabelTree(dataModel, referenceType.referenceClass)
-            if (dataClass) dataClass.addToReferenceTypes(referenceType)
-            else {
-                log.
-                    trace('No referenceClass could be found to match label tree for {}, attempting no label tree', referenceType.referenceClass.label)
-                def possibles = dataModel.dataClasses.findAll { it.label == referenceType.referenceClass.label }
-                if (possibles.size() == 1) {
-                    log.trace('Single possible referenceClass found, safely using')
-                    possibles.first().addToReferenceTypes(referenceType)
-                } else if (possibles.size() > 1) {
-                    log.warn('Multiple possibilities found for referenceClass, using first found however this could be wrong')
-                    possibles.first().addToReferenceTypes(referenceType)
-                } else {
-                    log.error('No referenceClass {} could be found for referenceType {}', referenceType.referenceClass.label, referenceType.label)
-                    referenceType.referenceClass = null
-                }
-            }
-        } else {
-            log.trace('Making best guess for matching reference class as no path nor bound class')
-            DataClass dataClass = dataModel.dataClasses.find { it.label == bindingMap.referenceClass.label }
-            if (dataClass) dataClass.addToReferenceTypes(referenceType)
-        }
-    }
-
-    DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+    DataType copyDataType(ReferenceDataModel copiedReferenceDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
                           boolean copySummaryMetadata = false) {
 
         DataType copy
@@ -343,10 +297,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                     copy.addToEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
                 }
                 break
-            case DataType.REFERENCE_DOMAIN_TYPE:
-                copy = new ReferenceType()
-                // Merge dataclasses in after they've all been copied
-                break
             default:
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
         }
@@ -354,7 +304,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
-        copiedDataModel.addToDataTypes(copy)
+        copiedReferenceDataModel.addToDataTypes(copy)
 
         copy
     }
@@ -374,7 +324,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         copy
     }
 
-    DataModel addDefaultListOfDataTypesToDataModel(DataModel dataModel, List<DefaultDataType> defaultDataTypes) {
+    ReferenceDataModel addDefaultListOfDataTypesToDataModel(ReferenceDataModel referenceDataModel, List<DefaultDataType> defaultDataTypes) {
         defaultListOfDataTypes.each {
             DataType dataType
             switch (it.domainType) {
@@ -387,12 +337,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 default:
                     throw new ApiInternalException('DTSXX', "Unknown DataType [${it.domainType}] used for default datatype")
             }
-            dataType.createdBy = dataModel.createdBy
+            dataType.createdBy = referenceDataModel.createdBy
             dataType.label = it.label
             dataType.description = it.description
-            dataModel.addToDataTypes(dataType)
+            referenceDataModel.addToDataTypes(dataType)
         }
-        dataModel
+        referenceDataModel
     }
 
     private def <T extends DataType> T mergeDataTypes(List<T> dataTypes) {

@@ -22,9 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -140,18 +138,18 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> {
         new PrimitiveType(label: label, description: description, createdBy: createdByEmailAddress, units: units)
     }
 
-    PrimitiveType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy,
+    PrimitiveType findOrCreateDataTypeForDataModel(ReferenceDataModel referenceDataModel, String label, String description, User createdBy,
                                                    String units = null) {
-        findOrCreateDataTypeForDataModel(dataModel, label, description, createdBy.emailAddress, units)
+        findOrCreateDataTypeForDataModel(referenceDataModel, label, description, createdBy.emailAddress, units)
     }
 
-    PrimitiveType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, String createdByEmailAddress,
+    PrimitiveType findOrCreateDataTypeForDataModel(ReferenceDataModel referenceDataModel, String label, String description, String createdByEmailAddress,
                                                    String units = null) {
         String cleanLabel = label.trim()
         PrimitiveType primitiveType = dataModel.findDataTypeByLabelAndType(cleanLabel, DataType.PRIMITIVE_DOMAIN_TYPE) as PrimitiveType
         if (!primitiveType) {
             primitiveType = createDataType(cleanLabel, description, createdByEmailAddress, units)
-            dataModel.addToDataTypes(primitiveType)
+            referenceDataModel.addToDataTypes(primitiveType)
         }
         primitiveType
     }

@@ -20,8 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.SummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.summarymetadata.SummaryMetadataReport
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.SummaryMetadataReport
 
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired

@@ -26,11 +26,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -52,7 +51,6 @@ import javax.persistence.EntityManager
 @Transactional
 class DataElementService extends ModelItemService<DataElement> {
 
-    DataClassService dataClassService
     DataTypeService dataTypeService
     SummaryMetadataService summaryMetadataService
 
@@ -88,7 +86,7 @@ class DataElementService extends ModelItemService<DataElement> {
         if (!dataElement) return
         dataElement.breadcrumbTree.removeFromParent()
         dataElement.dataType = null
-        dataElement.dataClass?.removeFromDataElements(dataElement)
+        dataElement.referenceDataModel?.removeFromDataElements(dataElement)
         dataElement.delete(flush: flush)
     }
 
@@ -129,7 +127,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     @Override
     List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataElement.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        DataElement.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id) }
     }
 
     @Override
@@ -151,7 +149,7 @@ class DataElementService extends ModelItemService<DataElement> {
     @Override
     List<DataElement> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                  String searchTerm, String domainType) {
-        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
+        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
         if (!readableIds) return []
 
         List<DataElement> results = []
@@ -213,10 +211,10 @@ class DataElementService extends ModelItemService<DataElement> {
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
     }
 
-    void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
-        if (dataModel.dataTypes == null) dataModel.dataTypes = [] as HashSet
+    void matchUpDataTypes(ReferenceDataModel referenceDataModel, Collection<DataElement> dataElements) {
+        if (referenceDataModel.dataTypes == null) referenceDataModel.dataTypes = [] as HashSet
         if (dataElements) {
-            log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
+            log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), referenceDataModel.dataTypes.size())
             def grouped = dataElements.groupBy { it.dataType.label }.sort { a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
@@ -225,36 +223,36 @@ class DataElementService extends ModelItemService<DataElement> {
             log.debug('Grouped {} DataElements by DataType label', grouped.size())
             grouped.each { label, elements ->
                 log.trace('Matching {} elements to DataType label {}', elements.size(), label)
-                DataType dataType = dataModel.findDataTypeByLabel(label)
+                DataType dataType = referenceDataModel.findDataTypeByLabel(label)
 
                 if (!dataType) {
                     log.debug('No DataType for {} in DataModel, using first DataElement DataType as base', label)
                     dataType = elements.first().dataType
-                    dataModel.addToDataTypes(dataType)
+                    referenceDataModel.addToDataTypes(dataType)
                 }
                 elements.each { dataType.addToDataElements(it) }
             }
         }
     }
 
-    DataElement findByDataClassIdAndId(Serializable dataClassId, Serializable id) {
-        DataElement.byDataClassIdAndId(dataClassId, id).find()
+    DataElement findByReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable id) {
+        DataElement.byReferenceDataModelIdAndId(referenceDataModelId, id).find()
     }
 
     DataElement findByDataTypeIdAndId(Serializable dataTypeId, Serializable id) {
         DataElement.byDataTypeIdAndId(dataTypeId, id).find()
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:]) {
-        findAllByDataClassId(dataClassId, pagination, pagination)
+    List<DataElement> findAllByReferenceDataModelId(Serializable referenceDataModelId, Map pagination = [:]) {
+        findAllByReferenceDataModelId(referenceDataModelId, pagination, pagination)
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination) {
-        DataElement.withFilter(DataElement.byDataClassId(dataClassId), filter).list(pagination)
+    List<DataElement> findAllByReferenceDataModelId(Serializable referenceDataModelId, Map filter, Map pagination) {
+        DataElement.withFilter(DataElement.byReferenceDataModelId(referenceDataModelId), filter).list(pagination)
     }
 
-    List<DataElement> findAllByDataClassIdJoinDataType(Serializable dataClassId) {
-        DataElement.byDataClassId(dataClassId).join('dataType').sort('label').list()
+    List<DataElement> findAllByReferenceDataModelIdJoinDataType(Serializable referenceDataModelId) {
+        DataElement.byReferenceDataModelId(referenceDataModelId).join('dataType').sort('label').list()
     }
 
     List<DataElement> findAllByDataTypeId(Serializable dataTypeId, Map pagination = [:]) {
@@ -265,44 +263,29 @@ class DataElementService extends ModelItemService<DataElement> {
         DataElement.byDataType(dataType).list()
     }
 
-    List<DataElement> findAllByDataClass(DataClass dataClass) {
-        DataElement.byDataClass(dataClass).list()
+    List<DataElement> findAllByReferenceDataModel(ReferenceDataModel referenceDataModel) {
+        DataElement.byReferenceDataModel(referenceDataModel).list()
     }
 
-    List<DataElement> findAllByDataModelId(Serializable dataModelId, Map pagination = [:]) {
-        DataElement.byDataModelId(dataModelId).list(pagination)
-    }
 
-    List<DataElement> findAllByDataModelIdAndLabelIlike(Serializable dataModelId, String labelSearch, Map pagination = [:]) {
-        DataElement.byDataModelIdAndLabelIlike(dataModelId, labelSearch).list(pagination)
-    }
-
-    Number countByDataClassId(Serializable dataClassId) {
-        DataElement.byDataClassId(dataClassId).count()
+    List<DataElement> findAllByReferenceDataModelIdAndLabelIlike(Serializable referenceDataModelId, String labelSearch, Map pagination = [:]) {
+        DataElement.byReferenceDataModelIdAndLabelIlike(referenceDataModelId, labelSearch).list(pagination)
     }
 
     Number countByDataTypeId(Serializable dataTypeId) {
         DataElement.byDataTypeId(dataTypeId).count()
     }
 
-    Number countByDataModelId(Serializable dataModelId) {
-        DataElement.byDataModelId(dataModelId).count()
+    Number countByReferenceDataModelId(Serializable dataModelId) {
+        DataElement.byReferenceDataModelId(dataModelId).count()
     }
 
-    DataElement findByDataClassPathAndLabel(DataModel dataModel, List<String> dataClassPath, String label) {
-        DataClass dataClass = dataClassService.findDataClassByPath(dataModel, dataClassPath)
-        dataClass ? findByDataClassIdAndLabel(dataClass.id, label) : null
-    }
 
-    DataElement findByDataClassIdAndLabel(Serializable dataClassId, String label) {
-        DataElement.byDataClassIdAndLabel(dataClassId, label).get()
-    }
-
-    DataElement findOrCreateDataElementForDataClass(DataClass parentClass, String label, String description, User createdBy,
+    DataElement findOrCreateDataElementForReferenceDataModel(ReferenceDataModel referenceDataModel, String label, String description, User createdBy,
                                                     DataType dataType,
                                                     Integer minMultiplicity = 0, Integer maxMultiplicity = 1) {
         String cleanLabel = label.trim()
-        DataElement dataElement = parentClass.findDataElement(cleanLabel)
+        DataElement dataElement = referenceDataModel.findDataElement(cleanLabel)
 
         if (!dataElement) {
             dataElement = new DataElement(label: cleanLabel, description: description, createdBy: createdBy.emailAddress,
@@ -311,16 +294,16 @@ class DataElementService extends ModelItemService<DataElement> {
 
             if (!dataType.label) dataType.setLabel("$cleanLabel-dataType")
             dataType.addToDataElements(dataElement)
-            parentClass.addToDataElements(dataElement)
+            referenceDataModel.addToDataElements(dataElement)
         }
         if (dataElement.dataType.label != dataType.label) {
-            return findOrCreateDataElementForDataClass(parentClass, "${cleanLabel}.1", description, createdBy, dataType, minMultiplicity,
+            return findOrCreateDataElementForReferenceDataModel(referenceDataModel, "${cleanLabel}.1", description, createdBy, dataType, minMultiplicity,
                                                        maxMultiplicity)
         }
         dataElement
     }
 
-    DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
+    DataElement copyDataElement(ReferenceDataModel copiedReferenceDataModel, DataElement original, User copier,
                                 UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
@@ -328,11 +311,11 @@ class DataElementService extends ModelItemService<DataElement> {
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
-        DataType dataType = copiedDataModel.findDataTypeByLabel(original.dataType.label)
+        DataType dataType = copiedReferenceDataModel.findDataTypeByLabel(original.dataType.label)
 
         // If theres no DataType then copy the original's DataType into the DataModel
         if (!dataType) {
-            dataType = dataTypeService.copyDataType(copiedDataModel, original.dataType, copier,
+            dataType = dataTypeService.copyDataType(copiedReferenceDataModel, original.dataType, copier,
                                                     userSecurityPolicyManager)
         }
 
@@ -356,7 +339,7 @@ class DataElementService extends ModelItemService<DataElement> {
         copy
     }
 
-    DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {
+    DataElementSimilarityResult findAllSimilarDataElementsInDataModel(ReferenceDataModel referenceDataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {
 
         EntityManager entityManager = sessionFactory.createEntityManager()
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager)
@@ -374,7 +357,6 @@ class DataElementService extends ModelItemService<DataElement> {
                       .comparingField('label').boostedTo(1f)
                       .andField('description').boostedTo(1f)
                       .andField('dataType.label').boostedTo(1f)
-                      .andField('dataClass.label').boostedTo(1f)
                       .toEntity(dataElementToCompare)
                       .createQuery()
             )
@@ -396,11 +378,6 @@ class DataElementService extends ModelItemService<DataElement> {
         similarityResult
     }
 
-
-    DataElement findDataElementWithSameLabelTree(DataModel dataModel, DataElement original) {
-        DataClass parent = dataClassService.findSameLabelTree(dataModel, original.dataClass)
-        parent.findDataElement(original.label)
-    }
 
     void addDataElementIsFromDataElements(DataElement dataElement, Collection<DataElement> fromDataElements, User user) {
         addDataElementsAreFromDataElements([dataElement], fromDataElements, user)

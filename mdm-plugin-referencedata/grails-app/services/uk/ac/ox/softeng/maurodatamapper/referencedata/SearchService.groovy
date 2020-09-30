@@ -20,15 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.searchparamfilter.SearchParamFilter
 import uk.ac.ox.softeng.maurodatamapper.core.search.AbstractCatalogueItemSearchService
 import uk.ac.ox.softeng.maurodatamapper.core.search.CatalogueItemSearchDomainProvider
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.EnumerationType
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.ReferenceType
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.EnumerationValue
 
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
@@ -38,22 +35,14 @@ class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implem
         findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataModelId], searchParams, true, pagination)
     }
 
-    PaginatedLuceneResult<ModelItem> findAllByDataClassIdByLuceneSearch(UUID dataClassId, SearchParams searchParams, Map pagination = [:]) {
-        findAllCatalogueItemsOfTypeByOwningIdsByLuceneSearch([dataClassId], searchParams, true, pagination)
-    }
-
     @Override
     Set<Class<ModelItem>> getDomainsToSearch() {
-        (getSearchableCatalogueItemDomains() - [DataModel]) as HashSet<Class<ModelItem>>
+        (getSearchableCatalogueItemDomains() - [ReferenceDataModel]) as HashSet<Class<ModelItem>>
     }
 
-    @Override
-    Set<Class<SearchParamFilter>> getSearchParamFilters() {
-        super.getSearchParamFilters() + [DataModelTypeFilter] as HashSet<Class<SearchParamFilter>>
-    }
 
     @Override
     Set<Class<CatalogueItem>> getSearchableCatalogueItemDomains() {
-        [DataModel, DataClass, DataElement, ReferenceType, EnumerationType, PrimitiveType, EnumerationValue] as HashSet<Class<CatalogueItem>>
+        [ReferenceDataModel, DataElement, EnumerationType, PrimitiveType, EnumerationValue] as HashSet<Class<CatalogueItem>>
     }
 }

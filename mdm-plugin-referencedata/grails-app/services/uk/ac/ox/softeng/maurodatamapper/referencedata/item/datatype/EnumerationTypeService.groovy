@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -167,12 +167,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
         new EnumerationType(label: label, description: description, createdBy: createdBy.emailAddress)
     }
 
-    private EnumerationType findOrCreateDataTypeForDataModel(DataModel dataModel, String label, String description, User createdBy) {
+    private EnumerationType findOrCreateDataTypeForDataModel(ReferenceDataModel referenceDataModel, String label, String description, User createdBy) {
         String cleanLabel = label.trim()
-        EnumerationType enumerationType = dataModel.findDataTypeByLabelAndType(cleanLabel, DataType.ENUMERATION_DOMAIN_TYPE) as EnumerationType
+        EnumerationType enumerationType = referenceDataModel.findDataTypeByLabelAndType(cleanLabel, DataType.ENUMERATION_DOMAIN_TYPE) as EnumerationType
         if (!enumerationType) {
             enumerationType = createDataType(cleanLabel, description, createdBy)
-            dataModel.addToDataTypes(enumerationType)
+            referenceDataModel.addToDataTypes(enumerationType)
         }
         enumerationType
     }

@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClassService
+
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataElement
