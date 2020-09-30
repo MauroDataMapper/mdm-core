@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataClass
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataClass]
+model {
+    DataClass dataClass
+}
+
+json {
+    if (dataClass.maxMultiplicity != null) maxMultiplicity dataClass.maxMultiplicity
+    if (dataClass.minMultiplicity != null) minMultiplicity dataClass.minMultiplicity
+
+    if (dataClass.parentDataClass) parentDataClass dataClass.parentDataClassId
+}

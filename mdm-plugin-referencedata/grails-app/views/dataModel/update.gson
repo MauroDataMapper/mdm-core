@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    DataModel dataModel
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.fullDataModel(dataModel: dataModel, userSecurityPolicyManager: userSecurityPolicyManager)
+

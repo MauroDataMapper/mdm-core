@@ -1,0 +1,25 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.ReferenceType
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataType]
+model {
+    DataType dataType
+}
+
+json {
+
+    if (dataType.instanceOf(EnumerationType)) {
+        enumerationValues g.render(dataType.getProperty('enumerationValues'))
+    }
+    if (dataType.instanceOf(ReferenceType)) {
+        referenceClass tmpl.'/dataClass/dataClass'(dataClass: dataType.getProperty('referenceClass'), renderLinks: false)
+    }
+    if (dataType.instanceOf(PrimitiveType)) {
+        if (dataType.getProperty('units')) units dataType.getProperty('units')
+    }
+    //    if (dataType.instanceOf(TerminologyType)) {
+    //        terminology tmpl.'/terminology/terminology'(terminology: dataType.getProperty('terminology'))
+    //    }
+}

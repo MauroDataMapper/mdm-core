@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataModelDataClassCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.DataModelSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass

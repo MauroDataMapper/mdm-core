@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataElement
+
+inherits template: '/catalogueItem/export', model: [export: dataElement]
+model {
+    DataElement dataElement
+}
+json {
+    dataType tmpl.'/dataType/export'(dataElement.dataType)
+    if (dataElement.maxMultiplicity != null) maxMultiplicity dataElement.maxMultiplicity
+    if (dataElement.minMultiplicity != null) minMultiplicity dataElement.minMultiplicity
+}

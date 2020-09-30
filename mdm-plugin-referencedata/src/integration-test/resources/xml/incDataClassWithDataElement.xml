@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2020 University of Oxford
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    SPDX-License-Identifier: Apache-2.0
+
+-->
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.1" xmlns:mdm="http://maurodatamapper.com/dataModel/3.1">
+  <mdm:dataModel>
+    <mdm:id>85c51db1-6e48-486e-9be7-001b572798f2</mdm:id>
+    <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
+    <mdm:lastUpdated>2017-11-21T13:17:04.184Z</mdm:lastUpdated>
+    <mdm:type>Data Standard</mdm:type>
+    <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+    <mdm:finalised>false</mdm:finalised>
+    <mdm:authority>
+      <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
+      <mdm:label>Test Authority</mdm:label>
+      <mdm:url>http://localhost</mdm:url>
+      <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
+    </mdm:authority>
+    <mdm:dataTypes>
+      <mdm:dataType>
+        <mdm:id>c83ff0a2-7a9f-45b8-a2d1-61c71dfd7a7a</mdm:id>
+        <mdm:label>openworld_tick</mdm:label>
+        <mdm:lastUpdated>2017-11-21T13:17:04.185Z</mdm:lastUpdated>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+    </mdm:dataTypes>
+    <mdm:childDataClasses>
+      <mdm:dataClass>
+        <mdm:id>cbdc2865-a0f1-4463-add9-282089aa478d</mdm:id>
+        <mdm:label>Core</mdm:label>
+        <mdm:lastUpdated>2017-11-21T13:17:04.188Z</mdm:lastUpdated>
+        <mdm:dataElements>
+          <mdm:dataElement>
+            <mdm:id>c426bd16-73e2-4b48-856f-f82a5479c621</mdm:id>
+            <mdm:label>Lung Cancer Surgery</mdm:label>
+            <mdm:description>Is the patient undergoing</mdm:description>
+            <mdm:lastUpdated>2017-11-21T13:17:04.192Z</mdm:lastUpdated>
+            <mdm:metadata>
+              <mdm:metadata>
+                <mdm:id>ba14c3be-d804-4b52-bb44-3609d504f5cb</mdm:id>
+                <mdm:namespace>ox.softeng.maurodatamapper.dataloaders.cancer.audits</mdm:namespace>
+                <mdm:key>Number</mdm:key>
+                <mdm:value>93</mdm:value>
+                <mdm:lastUpdated>2017-11-21T13:17:04.195Z</mdm:lastUpdated>
+              </mdm:metadata>
+              <mdm:metadata>
+                <mdm:id>48d07dff-473d-4c7a-926d-b14e7fe03760</mdm:id>
+                <mdm:namespace>ox.softeng.maurodatamapper.dataloaders.cancer.audits</mdm:namespace>
+                <mdm:key>Notes</mdm:key>
+                <mdm:value>Some interesting notes</mdm:value>
+                <mdm:lastUpdated>2017-11-21T13:17:04.194Z</mdm:lastUpdated>
+              </mdm:metadata>
+            </mdm:metadata>
+            <mdm:dataType>
+              <mdm:id>c83ff0a2-7a9f-45b8-a2d1-61c71dfd7a7a</mdm:id>
+              <mdm:label>openworld_tick</mdm:label>
+              <mdm:lastUpdated>2017-11-21T13:17:04.185Z</mdm:lastUpdated>
+              <mdm:domainType>PrimitiveType</mdm:domainType>
+            </mdm:dataType>
+            <mdm:maxMultiplicity>1</mdm:maxMultiplicity>
+            <mdm:minMultiplicity>1</mdm:minMultiplicity>
+          </mdm:dataElement>
+        </mdm:dataElements>
+      </mdm:dataClass>
+    </mdm:childDataClasses>
+  </mdm:dataModel>
+  <exp:exportMetadata>
+    <exp:exportedBy>Admin User</exp:exportedBy>
+    <exp:exportedOn>2017-11-21T13:17:04.197Z</exp:exportedOn>
+    <exp:exporter>
+      <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
+      <exp:name>XmlExporterService</exp:name>
+      <exp:version>3.1</exp:version>
+    </exp:exporter>
+  </exp:exportMetadata>
+</exp:exportModel>

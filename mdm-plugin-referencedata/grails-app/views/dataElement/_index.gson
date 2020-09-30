@@ -1,0 +1,20 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataElement
+
+model {
+    DataElement dataElement
+}
+
+json {
+    id dataElement.id
+    domainType dataElement.domainType
+    label dataElement.label
+    if (dataElement.description) description dataElement.description
+    if (dataElement.maxMultiplicity != null) maxMultiplicity dataElement.maxMultiplicity
+    if (dataElement.minMultiplicity != null) minMultiplicity dataElement.minMultiplicity
+    dataType {
+        id dataElement.dataType.id
+        label dataElement.dataType.label
+        domainType dataElement.dataType.domainType
+    }
+    breadcrumbs g.render(dataElement.getBreadcrumbs())
+}
