@@ -13,7 +13,7 @@ json {
     // Model items should render their model and breadcrumbs to allow link rebuilding in the UI
     if (catalogueItem instanceof ModelItem) {
         call('model', (catalogueItem as ModelItem).model.id)
-        breadcrumbs g.render((catalogueItem as ModelItem).getBreadcrumbs())
+        if (catalogueItem.breadcrumbTree) breadcrumbs g.render((catalogueItem as ModelItem).getBreadcrumbs())
     }
 
 }

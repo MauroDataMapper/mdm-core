@@ -16,5 +16,5 @@ json {
         label dataElement.dataType.label
         domainType dataElement.dataType.domainType
     }
-    breadcrumbs g.render(dataElement.getBreadcrumbs())
+    if (dataElement.breadcrumbTree) breadcrumbs g.render(dataElement.getBreadcrumbs())
 }

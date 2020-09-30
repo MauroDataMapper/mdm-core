@@ -25,6 +25,6 @@ json {
     }
 
     if (diffable instanceof ModelItem) {
-        breadcrumbs g.render(((ModelItem) diffable).getBreadcrumbs())
+        if ((diffable as ModelItem).breadcrumbTree) breadcrumbs g.render(((ModelItem) diffable).getBreadcrumbs())
     }
 }

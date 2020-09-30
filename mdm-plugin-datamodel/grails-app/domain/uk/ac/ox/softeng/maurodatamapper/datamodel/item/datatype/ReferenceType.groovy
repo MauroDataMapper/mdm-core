@@ -40,7 +40,7 @@ class ReferenceType extends DataType<ReferenceType> {
 
     ObjectDiff<ReferenceType> diff(ReferenceType otherDataType) {
         catalogueItemDiffBuilder(ReferenceType, this, otherDataType)
-            .appendString('referenceClass.label', this.referenceClass.label, otherDataType.referenceClass.label)
+            .appendString('referenceClass.label', this.referenceClass?.label, otherDataType.referenceClass?.label)
     }
 
 }

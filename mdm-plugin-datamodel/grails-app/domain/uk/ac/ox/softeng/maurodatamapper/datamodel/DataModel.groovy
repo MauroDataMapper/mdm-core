@@ -133,7 +133,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware {
         modelDiffBuilder(DataModel, this, otherDataModel)
             .appendList(DataType, 'dataTypes', this.dataTypes, otherDataModel.dataTypes)
             .appendList(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
-            .appendList(DataType, 'dataElements', this.getAllDataElements(), otherDataModel.getAllDataElements())
+            .appendList(DataElement, 'dataElements', this.getAllDataElements(), otherDataModel.getAllDataElements())
     }
 
     def beforeValidate() {
