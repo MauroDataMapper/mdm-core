@@ -103,11 +103,13 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Override
     void cleanUpData() {
         if (otherDataModelId) {
+            sleep(20)
             GET(getResourcePath(otherDataModelId), MAP_ARG, true)
             def items = response.body().items
             items.each {i ->
                 DELETE("${getResourcePath(otherDataModelId)}/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
+                sleep(20)
             }
             super.cleanUpData()
         }

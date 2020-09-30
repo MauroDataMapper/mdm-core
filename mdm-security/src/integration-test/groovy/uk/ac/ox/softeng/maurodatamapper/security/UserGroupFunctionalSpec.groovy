@@ -37,8 +37,8 @@ import org.springframework.context.ApplicationContext
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
-import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * @see UserGroupController* Controller: userGroup
@@ -144,6 +144,7 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
 
     @Override
     void cleanUpData(String id = null) {
+        sleep(20)
         //UserGroup can be marked as undeleteable which causes cleanup to fail.
         //Update any items to be cleaned as deleteable before cleaning.
         if (id) {

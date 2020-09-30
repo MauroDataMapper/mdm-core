@@ -144,13 +144,17 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
     "id": "${json-unit.matches:id}",
     "domainType": "DataModel",
     "label": "SourceFlowDataModel",
-    "type": "Data Asset"
+    "type": "Data Asset",
+    "branchName": "main",
+    "documentationVersion": "1.0.0"
   },
   "target": {
     "id": "${json-unit.matches:id}",
     "domainType": "DataModel",
     "label": "TargetFlowDataModel",
-    "type": "Data Asset"
+    "type": "Data Asset",
+    "branchName": "main",
+    "documentationVersion": "1.0.0"
   },
   "diagramLayout": null
 }'''

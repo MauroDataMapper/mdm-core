@@ -33,7 +33,7 @@ class LuceneIndexingServiceIntegrationSpec extends MdmSpecification {
 
     void 'test core lucene index directory'() {
         expect:
-        luceneIndexingService.luceneIndexPath.toString() == '/tmp/lucene/core'
+        luceneIndexingService.luceneIndexPath.toString().startsWith('/tmp/lucene/')
     }
 
     void 'test lucene default config mass indexer properties'() {

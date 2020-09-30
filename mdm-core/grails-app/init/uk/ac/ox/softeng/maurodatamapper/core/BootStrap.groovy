@@ -81,6 +81,7 @@ class BootStrap {
         configureEmailers(grailsApplication.config)
         loadDefaultAuthority()
 
+        log.info("Using lucene index directory of: {}", grailsApplication.config.hibernate.search.default.indexBase)
         log.debug('Main bootstrap complete')
 
         environments {

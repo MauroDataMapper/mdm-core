@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrat
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 
 /**
  * @since 04/06/2018
@@ -38,7 +37,6 @@ import org.hibernate.SessionFactory
 class TermRelationshipTypeServiceSpec extends BaseTerminologyIntegrationSpec {
 
     TermRelationshipTypeService termRelationshipTypeService
-    SessionFactory sessionFactory
 
     @Override
     void setupDomainData() {

@@ -36,6 +36,13 @@ if (tasks.findByName('integrationTest')) {
         }
     }
 
+    integrationTest{
+        systemProperty 'hibernate.search.default.indexBase', "/tmp/lucene/${UUID.randomUUID().toString()}"
+        System.properties.each {prop ->
+            systemProperty prop.key, prop.value
+        }
+    }
+
     if (integrationTests && !functionalTests) {
         logger.log(LogLevel.WARN, '<<>> Running integration tests only <<>>')
         integrationTest {

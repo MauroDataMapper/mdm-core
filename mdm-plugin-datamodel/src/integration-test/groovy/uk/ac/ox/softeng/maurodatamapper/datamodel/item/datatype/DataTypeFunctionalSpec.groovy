@@ -90,11 +90,13 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     @Override
     void cleanUpData() {
         if (dataModelId) {
+            sleep(20)
             GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
             def items = responseBody().items
             items.each { i ->
                 DELETE("dataModels/$otherDataModelId/dataTypes/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
+                sleep(20)
             }
             super.cleanUpData()
         }
