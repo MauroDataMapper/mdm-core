@@ -17,14 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-import grails.testing.gorm.DomainUnitTest
-import org.spockframework.util.InternalSpockError
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 
-abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> implements DomainUnitTest<K> {
+import org.spockframework.util.InternalSpockError
+
+abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
 
     abstract K newContainerClass(Map<String, Object> args)
 
@@ -33,6 +33,10 @@ abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> im
     abstract Map<String, Object> getChildFolderArgs()
 
     abstract Map<String, Object> getOtherFolderArgs()
+
+    void verifyC04Error(K other) {
+        other.errors.fieldErrors.any { it.field == 'label' && it.code == 'default.not.unique.message' }
+    }
 
     def setup() {
         mockDomain(Edit)
@@ -148,7 +152,8 @@ abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> im
 
         then:
         thrown(InternalSpockError)
-        other.errors.fieldErrors.any { it.field == 'label' && it.code == 'default.not.unique.message' }
+        verifyC04Error(other)
+
     }
 
     void 'C05 : test unique label naming for direct child folders of 2 folders'() {

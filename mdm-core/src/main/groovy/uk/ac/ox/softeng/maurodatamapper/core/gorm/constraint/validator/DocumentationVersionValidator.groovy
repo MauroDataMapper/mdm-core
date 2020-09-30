@@ -17,22 +17,23 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.Validator
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 class DocumentationVersionValidator implements Validator<Version> {
 
-    final Model model
+    final VersionAware versionAware
 
-    DocumentationVersionValidator(Model model) {
-        this.model = model
+    DocumentationVersionValidator(VersionAware versionAware) {
+        this.versionAware = versionAware
     }
 
     @Override
     Object isValid(Version documentationVersion) {
-        if (model.ident() && model.isDirty('documentationVersion')) {
-            return ['model.documentation.version.change.not.allowed']
+        if (versionAware.ident() && versionAware.isDirty('documentationVersion')) {
+            return ['version.aware.documentation.version.change.not.allowed']
         }
         true
     }

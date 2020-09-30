@@ -27,18 +27,18 @@ import java.time.OffsetDateTime
 
 trait VersionAware {
 
+    String branchName
     Boolean finalised
     OffsetDateTime dateFinalised
+
+    @BindUsing({ obj, source -> Version.from(source['modelVersion'] as String) })
+    Version modelVersion
 
     @BindUsing({ obj, source -> Version.from(source['documentationVersion'] as String) })
     Version documentationVersion
 
-    @BindUsing({ obj, source -> Version.from(source['modelVersion'] as String) })
-    Version modelVersion
-    String branchName
-
     void initialiseVersioning() {
-        documentationVersion = Version.from('1')
+        setDocumentationVersion Version.from('1')
         finalised = false
         branchName = VersionAwareConstraints.DEFAULT_BRANCH_NAME
     }

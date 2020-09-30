@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.DocumentationVersionValidator
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.ModelVersionValidator
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 class VersionAwareConstraints {
@@ -30,8 +30,8 @@ class VersionAwareConstraints {
         finalised nullable: false
         dateFinalised nullable: true
 
-        documentationVersion nullable: false, validator: { Version val, Model obj -> new DocumentationVersionValidator(obj).isValid(val) }
-        modelVersion nullable: true, validator: { Version val, Model obj -> new ModelVersionValidator(obj).isValid(val) }
+        documentationVersion nullable: false, validator: { Version val, VersionAware obj -> new DocumentationVersionValidator(obj).isValid(val) }
+        modelVersion nullable: true, validator: { Version val, VersionAware obj -> new ModelVersionValidator(obj).isValid(val) }
         branchName nullable: false
     }
 }

@@ -17,10 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.ModelLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 
 /**
@@ -29,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 class ModelConstraints extends CatalogueItemConstraints {
 
     static constraints = {
-        CallableConstraints.call(VersionAware, delegate)
+        CallableConstraints.call(VersionAwareConstraints, delegate)
         folder nullable: false
         deleted nullable: false
 

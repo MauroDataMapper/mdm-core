@@ -380,6 +380,10 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         byLabel(label).eq('finalised', false)
     }
 
+    static DetachedCriteria<DataModel> byLabelAndNotFinalisedAndIdNotEqual(String label, UUID id) {
+        byLabelAndNotFinalised().ne('id', id)
+    }
+
     static DetachedCriteria<DataModel> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
         byLabelAndNotFinalised(label).eq('branchName', branchName)
     }
