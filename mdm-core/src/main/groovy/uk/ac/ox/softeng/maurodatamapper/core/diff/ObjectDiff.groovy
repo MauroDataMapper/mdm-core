@@ -107,34 +107,45 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
 
         // If no lhs then all rhs have been created/added
         if (!lhs) {
-            return append(diff.objectDiffs(rhs.collect { it.class.getDeclaredConstructor().newInstance().diff(it) }))
+            return append(diff.created(rhs))
         }
 
         // If no rhs then all lhs have been deleted/removed
         if (!rhs) {
-            return append(diff.objectDiffs(lhs.collect { it.diff(it.class.getDeclaredConstructor().newInstance()) }))
+            return append(diff.deleted(lhs))
         }
 
+        Collection<K> deleted = []
         Collection<ObjectDiff> modified = []
+
+        // Assume all rhs have been created new
+        List<K> created = new ArrayList<>(rhs)
 
         Map<String, K> lhsMap = lhs.collectEntries { [it.getDiffIdentifier(), it] }
         Map<String, K> rhsMap = rhs.collectEntries { [it.getDiffIdentifier(), it] }
 
-        Set<String> uniqueDiffIdentifiers = ((lhsMap.keySet() as ArrayList) + (rhsMap.keySet() as ArrayList)) as Set
-
-        uniqueDiffIdentifiers.each {
-            K lObj = lhsMap[it]
-            K rObj = rhsMap[it]
-            lObj = lObj ?: rObj.class.getDeclaredConstructor().newInstance()
-            rObj = rObj ?: lObj.class.getDeclaredConstructor().newInstance()
-            ObjectDiff od = lObj.diff(rObj)
-            // If not equal then objects have been modified
-            if (!od.objectsAreIdentical()) {
-                modified.add(od)
+        // Work through each lhs object and compare to rhs object
+        lhsMap.each { di, lObj ->
+            K rObj = rhsMap[di]
+            if (rObj) {
+                // If robj then it exists and has not been created
+                created.remove(rObj)
+                ObjectDiff od = lObj.diff(rObj)
+                // If not equal then objects have been modified
+                if (!od.objectsAreIdentical()) {
+                    modified.add(od)
+                }
+            } else {
+                // If no robj then object has been deleted from lhs
+                deleted.add(lObj)
             }
         }
 
-        if (modified) append(diff.objectDiffs(modified))
+        if (created || deleted || modified) {
+            append(diff.created(created)
+                       .deleted(deleted)
+                       .modified(modified))
+        }
         this
     }
 

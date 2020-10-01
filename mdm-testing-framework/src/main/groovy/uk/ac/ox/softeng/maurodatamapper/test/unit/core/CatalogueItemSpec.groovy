@@ -488,9 +488,9 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
         then:
         mdDiffs.getNumberOfDiffs() == 1
-        mdDiffs.objectDiffs.size() == 1
-        mdDiffs.objectDiffs[0].find { it.fieldName == 'value' }.left == 'v1'
-        mdDiffs.objectDiffs[0].find { it.fieldName == 'value' }.right == 'v2'
+        mdDiffs.modified.size() == 1
+        mdDiffs.modified[0].find { it.fieldName == 'value' }.left == 'v1'
+        mdDiffs.modified[0].find { it.fieldName == 'value' }.right == 'v2'
 
         when:
         domain.addToMetadata('ns1', 'k2', 'v1')
@@ -503,7 +503,6 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         mdDiffs = diff.find { it.fieldName == 'metadata' } as ArrayDiff
 
         then:
-        //TODO update for mc-9228 changes
         mdDiffs.getNumberOfDiffs() == 2
         mdDiffs.deleted.size() == 1
         mdDiffs.deleted[0].key == 'k2'
@@ -538,9 +537,9 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
         then:
         diffs.getNumberOfDiffs() == 1
-        diffs.objectDiffs.size() == 1
-        !diffs.objectDiffs[0].find { it.fieldName == 'description' }.left
-        diffs.objectDiffs[0].find { it.fieldName == 'description' }.right == 'hello'
+        diffs.modified.size() == 1
+        !diffs.modified[0].find { it.fieldName == 'description' }.left
+        diffs.modified[0].find { it.fieldName == 'description' }.right == 'hello'
 
         when:
         domain.addToAnnotations(createdBy: editor.emailAddress, label: 'test annotation 3')
@@ -553,7 +552,6 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         diffs = diff.find { it.fieldName == 'annotations' } as ArrayDiff
 
         then:
-        //TODO update for mc-9228 changes
         diffs.getNumberOfDiffs() == 2
         diffs.deleted.size() == 1
         diffs.deleted[0].label == 'test annotation 3'

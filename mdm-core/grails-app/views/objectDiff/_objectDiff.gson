@@ -24,8 +24,8 @@ json {
     if (objectDiff.getLeft() instanceof ModelItem && objectDiff.getRight() instanceof ModelItem) {
         ModelItem left = objectDiff.getLeft() as ModelItem
         ModelItem right = objectDiff.getRight() as ModelItem
-        if (left.breadcrumbTree) leftBreadcrumbs g.render(left.getBreadcrumbs())
-        if (right.breadcrumbTree) rightBreadcrumbs g.render(right.getBreadcrumbs())
+        leftBreadcrumbs g.render(left.getBreadcrumbs())
+        rightBreadcrumbs g.render(right.getBreadcrumbs())
     }
 
     count objectDiff.getNumberOfDiffs()

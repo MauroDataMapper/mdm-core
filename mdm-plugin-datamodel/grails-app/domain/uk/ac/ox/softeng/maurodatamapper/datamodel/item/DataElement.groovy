@@ -164,7 +164,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     ObjectDiff<DataElement> diff(DataElement otherDataElement) {
         catalogueItemDiffBuilder(DataElement, this, otherDataElement)
-            .appendString('dataType.label', this.dataType?.label, otherDataElement.dataType?.label)
+            .appendString('dataType.label', this.dataType.label, otherDataElement.dataType.label)
             .appendNumber('minMultiplicity', this.minMultiplicity, otherDataElement.minMultiplicity)
             .appendNumber('maxMultiplicity', this.maxMultiplicity, otherDataElement.maxMultiplicity)
 
