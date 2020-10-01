@@ -46,6 +46,7 @@ class EnumerationValueSpec extends ModelItemSpec<EnumerationValue> implements Do
         enumerationType.addToEnumerationValues(domain)
         domain.key = 'ev_key'
         domain.value = 'ev_value'
+        domain.index = 0
         domain
     }
 
