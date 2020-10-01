@@ -17,13 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
-abstract class Diff<T> {
+abstract class Diff<T> extends Mergeable {
 
     T left
     T right
-
-    Boolean isMergeConflict
-    T commonAncestorValue
 
     @Override
     boolean equals(o) {

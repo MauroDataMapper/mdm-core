@@ -505,7 +505,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         then:
         mdDiffs.getNumberOfDiffs() == 2
         mdDiffs.deleted.size() == 1
-        mdDiffs.deleted[0].key == 'k2'
+        mdDiffs.deleted[0].value.key == 'k2'
     }
 
     void 'CI13 : test diffing annotations'() {
@@ -554,6 +554,6 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         then:
         diffs.getNumberOfDiffs() == 2
         diffs.deleted.size() == 1
-        diffs.deleted[0].label == 'test annotation 3'
+        diffs.deleted[0].value.label == 'test annotation 3'
     }
 }

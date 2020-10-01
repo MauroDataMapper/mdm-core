@@ -19,8 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff
 
 class ArrayDiff<T extends Diffable> extends FieldDiff<Collection<T>> {
 
-    Collection<T> created
-    Collection<T> deleted
+    Collection<MergeWrapper<T>> created
+    Collection<MergeWrapper<T>> deleted
     Collection<ObjectDiff<T>> modified
 
     private ArrayDiff() {
@@ -30,12 +30,12 @@ class ArrayDiff<T extends Diffable> extends FieldDiff<Collection<T>> {
     }
 
     ArrayDiff<T> created(Collection<T> created) {
-        this.created = created
+        this.created = created.collect { new MergeWrapper(it) }
         this
     }
 
     ArrayDiff<T> deleted(Collection<T> deleted) {
-        this.deleted = deleted
+        this.deleted = deleted.collect { new MergeWrapper(it) }
         this
     }
 

@@ -144,36 +144,39 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                         def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
                         def rightArrayDiff = right.diffs.find { it.fieldName == fieldName }
                         it.created.each {
-                            def diffIdentifier = it.diffIdentifier
-                            if (diffIdentifier in leftArrayDiff.created.diffIdentifier) {
+                            def diffIdentifier = it.value.diffIdentifier
+                            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
                                 // top created, left created
                                 diffs << [diff: it, change: 'created']
                             } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
                                 // top created, left modified
-                                def commonAncestorValue = left.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
+                                def commonAncestorValue =
+                                    left.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
                                 diffs << [diff: it, change: 'created', conflict: true, commonAncestorValue: commonAncestorValue]
                             }
                         }
                         it.deleted.each {
-                            def diffIdentifier = it.diffIdentifier
+                            def diffIdentifier = it.value.diffIdentifier
                             if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
                                 // top deleted, right modified
-                                def commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
+                                def commonAncestorValue =
+                                    right.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
                                 diffs << [diff: it, change: 'deleted', conflict: true, commonAncestorValue: commonAncestorValue]
-                            } else if (diffIdentifier in leftArrayDiff.deleted.diffIdentifier) {
+                            } else if (diffIdentifier in leftArrayDiff.deleted.value.diffIdentifier) {
                                 // top deleted, right not modified, left deleted
                                 diffs << [diff: it, change: 'deleted']
                             }
                         }
                         it.modified.right.each {
                             def diffIdentifier = it.diffIdentifier
-                            if (diffIdentifier in leftArrayDiff.created.diffIdentifier) {
+                            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
                                 // top modified, right created, (left also created)
                                 diffs << [diff: it, change: 'modified', conflict: true, commonAncestorValue: null]
                             } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
                                 if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
                                     // top modified, left modified, right modified
-                                    def commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
+                                    def commonAncestorValue =
+                                        right.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
                                     diffs << [diff: it, change: 'modified', conflict: true, commonAncestorValue: commonAncestorValue]
                                 } else {
                                     // top modified, left modified, right not modified
