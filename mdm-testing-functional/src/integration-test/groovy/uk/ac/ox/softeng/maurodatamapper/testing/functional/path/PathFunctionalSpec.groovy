@@ -65,7 +65,9 @@ class PathFunctionalSpec extends FunctionalSpec {
     String CHILD_DATACLASS_NAME = 'child'
     String CONTENT_DATACLASS_NAME = 'content'
     String DATA_ELEMENT_NAME = 'ele1'
-    String DATA_TYPE_NAME = 'integer'
+    String PRIMITIVE_DATA_TYPE_NAME = 'integer'
+    String ENUMERATION_DATA_TYPE_NAME = 'yesnounknown'
+    String REFERENCE_DATA_TYPE_NAME = 'child'
 
     @Override
     String getResourcePath() {
@@ -146,7 +148,20 @@ class PathFunctionalSpec extends FunctionalSpec {
               "label": "test classifier simple",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
-          ]
+          ],
+          "type": "Terminology",
+          "branchName": "main",
+          "documentationVersion": "1.0.0",
+          "finalised": false,
+          "readableByEveryone": false,
+          "readableByAuthenticatedUsers": false,
+          "author": "Test Bootstrap",
+          "organisation": "Oxford BRC",
+          "authority": {
+            "id": "${json-unit.matches:id}",
+            "url": "http://localhost",
+            "label": "Mauro Data Mapper"
+          }
         }'''
     }
 
@@ -171,7 +186,20 @@ class PathFunctionalSpec extends FunctionalSpec {
               "label": "test classifier2",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
-          ]
+          ],
+          "type": "Terminology",
+          "branchName": "main",
+          "documentationVersion": "1.0.0",
+          "finalised": false,
+          "readableByEveryone": false,
+          "readableByAuthenticatedUsers": false,
+          "author": "Test Bootstrap",
+          "organisation": "Oxford BRC",
+            "authority": {
+            "id": "${json-unit.matches:id}",
+            "url": "http://localhost",
+            "label": "Mauro Data Mapper"
+          }          
         }'''
     }    
 
@@ -182,6 +210,8 @@ class PathFunctionalSpec extends FunctionalSpec {
           "label": "Simple Test CodeSet",
           "availableActions": [
             "show",
+            "createNewVersions",
+            "newForkModel",
             "comment"
           ],
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
@@ -191,7 +221,22 @@ class PathFunctionalSpec extends FunctionalSpec {
               "label": "test classifier",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
-          ]
+          ],
+          "type": "CodeSet",
+          "branchName": "main",
+          "documentationVersion": "1.0.0",
+          "finalised": true,
+          "readableByEveryone": false,
+          "readableByAuthenticatedUsers": false,
+          "dateFinalised": "${json-unit.matches:offsetDateTime}",
+          "author": "Test Bootstrap",
+          "organisation": "Oxford BRC",
+          "modelVersion": "1.0.0",
+          "authority": {
+            "id": "${json-unit.matches:id}",
+            "url": "http://localhost",
+            "label": "Mauro Data Mapper"
+          }          
         }'''
     }    
 
@@ -213,7 +258,9 @@ class PathFunctionalSpec extends FunctionalSpec {
             "show",
             "comment"
           ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"       
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "code": "STT01",
+          "definition": "Simple Test Term 01"            
         }'''
     }
 
@@ -238,7 +285,20 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "label": "test classifier2",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}"
               }
-            ]  
+            ],
+            "type": "Data Standard",
+            "branchName": "main",
+            "documentationVersion": "1.0.0",
+            "finalised": false,
+            "readableByEveryone": false,
+            "readableByAuthenticatedUsers": false,
+            "author": "admin person",
+            "organisation": "brc",
+            "authority": {
+              "id": "${json-unit.matches:id}",
+              "url": "http://localhost",
+              "label": "Mauro Data Mapper"
+            }
         }'''
     }
 
@@ -260,7 +320,9 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "show",
                 "comment"
             ],
-            "lastUpdated": "${json-unit.matches:offsetDateTime}"         
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "maxMultiplicity": -1,
+            "minMultiplicity": 1      
         }'''
     }
 
@@ -287,7 +349,8 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "show",
                 "comment"
             ],
-            "lastUpdated": "${json-unit.matches:offsetDateTime}"         
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "parentDataClass": "${json-unit.matches:id}"   
         }'''
     }    
 
@@ -314,11 +377,28 @@ class PathFunctionalSpec extends FunctionalSpec {
                 "show",
                 "comment"
             ],
-            "lastUpdated": "${json-unit.matches:offsetDateTime}" 
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "dataClass": "${json-unit.matches:id}",
+            "dataType": {
+              "id": "${json-unit.matches:id}",
+              "domainType": "PrimitiveType",
+              "label": "string",
+              "model": "${json-unit.matches:id}",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test DataModel",
+                  "domainType": "DataModel",
+                  "finalised": false
+                }
+            ]
+            },            
+            "maxMultiplicity": 20,
+            "minMultiplicity": 0
         }'''
     }
 
-    String getExpectedDataTypeJson() {
+    String getExpectedPrimitiveTypeJson() {
         return '''{
             "id": "${json-unit.matches:id}",
             "domainType": "PrimitiveType",
@@ -339,6 +419,93 @@ class PathFunctionalSpec extends FunctionalSpec {
             "lastUpdated": "${json-unit.matches:offsetDateTime}"        
         }'''
     }
+
+    String getExpectedEnumerationTypeJson() {
+        return '''{
+            "id": "${json-unit.matches:id}",
+            "domainType": "EnumerationType",
+            "label": "yesnounknown",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Complex Test DataModel",
+                    "domainType": "DataModel",
+                    "finalised": false
+                }
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ],
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "enumerationValues": [
+              {
+                "index": 1,
+                "id": "${json-unit.matches:id}",
+                "key": "N",
+                "value": "No",
+                "category": null
+              },
+              {
+                "index": 2,
+                "id": "${json-unit.matches:id}",
+                "key": "U",
+                "value": "Unknown",
+                "category": null
+              },
+              {
+                "index": 0,
+                "id": "${json-unit.matches:id}",
+                "key": "Y",
+                "value": "Yes",
+                "category": null
+              }
+            ]            
+        }'''
+    }
+
+    String getExpectedReferenceTypeJson() {
+        return '''{
+            "id": "${json-unit.matches:id}",
+            "domainType": "ReferenceType",
+            "label": "child",
+            "model": "${json-unit.matches:id}",
+            "breadcrumbs": [
+                {
+                    "id": "${json-unit.matches:id}",
+                    "label": "Complex Test DataModel",
+                    "domainType": "DataModel",
+                    "finalised": false
+                }
+            ],
+            "availableActions": [
+                "show",
+                "comment"
+            ],
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "referenceClass": {
+              "id": "${json-unit.matches:id}",
+              "domainType": "DataClass",
+              "label": "child",
+              "model": "${json-unit.matches:id}",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test DataModel",
+                  "domainType": "DataModel",
+                  "finalised": false
+                },
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "parent",
+                  "domainType": "DataClass"
+                }
+              ],
+              "parentDataClass": "${json-unit.matches:id}"
+            }            
+        }'''
+    }     
 
     void 'Get Terminology by path and ID when not logged in'() {
         String node
@@ -858,14 +1025,14 @@ class PathFunctionalSpec extends FunctionalSpec {
         verifyJsonResponse OK, getExpectedDataElementJson()
     }
 
-    void 'Get DataType by DataModel, path and ID when not logged in'() {
+    void 'Get PrimitiveDataType by DataModel, path and ID when not logged in'() {
         String node1
         String node2
 
         //No ID
         when:
         node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', DATA_TYPE_NAME)
+        node2 = makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME)
         GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is Not Found"
@@ -874,14 +1041,14 @@ class PathFunctionalSpec extends FunctionalSpec {
         //With ID
         when:
         node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', DATA_TYPE_NAME)
+        node2 = makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME)
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is Not Found"
         verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
     }
 
-    void 'Get DataType by DataModel, path and ID when logged in'() {
+    void 'Get PrimitiveDataType by DataModel, path and ID when logged in'() {
         String node1
         String node2
 
@@ -891,19 +1058,117 @@ class PathFunctionalSpec extends FunctionalSpec {
         //No ID
         when:
         node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', DATA_TYPE_NAME)
+        node2 = makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME)
         GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, getExpectedDataTypeJson()
+        verifyJsonResponse OK, getExpectedPrimitiveTypeJson()
 
         //With ID
         when:
         node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
-        node2 = makePathNode('dt', DATA_TYPE_NAME)
+        node2 = makePathNode('dt', PRIMITIVE_DATA_TYPE_NAME)
         GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
 
         then: "The response is OK"
-        verifyJsonResponse OK, getExpectedDataTypeJson()
+        verifyJsonResponse OK, getExpectedPrimitiveTypeJson()
     }
+
+    void 'Get EnumerationType by DataModel, path and ID when not logged in'() {
+        String node1
+        String node2
+
+        //No ID
+        when:
+        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        node2 = makePathNode('dt', ENUMERATION_DATA_TYPE_NAME)
+        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
+
+        then: "The response is Not Found"
+        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
+
+        //With ID
+        when:
+        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        node2 = makePathNode('dt', ENUMERATION_DATA_TYPE_NAME)
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
+
+        then: "The response is Not Found"
+        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
+    }
+
+    void 'Get EnumerationType by DataModel, path and ID when logged in'() {
+        String node1
+        String node2
+
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        node2 = makePathNode('dt', ENUMERATION_DATA_TYPE_NAME)
+        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedEnumerationTypeJson()
+
+        //With ID
+        when:
+        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        node2 = makePathNode('dt', ENUMERATION_DATA_TYPE_NAME)
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedEnumerationTypeJson()
+    }
+
+    void 'Get ReferenceType by DataModel, path and ID when not logged in'() {
+        String node1
+        String node2
+
+        //No ID
+        when:
+        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        node2 = makePathNode('dt', REFERENCE_DATA_TYPE_NAME)
+        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
+
+        then: "The response is Not Found"
+        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
+
+        //With ID
+        when:
+        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        node2 = makePathNode('dt', REFERENCE_DATA_TYPE_NAME)
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
+
+        then: "The response is Not Found"
+        verifyJsonResponse NOT_FOUND, getNotFoundPathJson()
+    }
+
+    void 'Get ReferenceType by DataModel, path and ID when logged in'() {
+        String node1
+        String node2
+
+        given:
+        loginReader()
+
+        //No ID
+        when:
+        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        node2 = makePathNode('dt', REFERENCE_DATA_TYPE_NAME)
+        GET("/api/dataModels/path/${makePath([node1, node2])}", STRING_ARG, true)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedReferenceTypeJson()
+
+        //With ID
+        when:
+        node1 = makePathNode('dm', COMPLEX_DATAMODEL_NAME)
+        node2 = makePathNode('dt', REFERENCE_DATA_TYPE_NAME)
+        GET("/api/dataModels/${getComplexDataModelId()}/path/${makePath([node1, node2])}", STRING_ARG, true)
+
+        then: "The response is OK"
+        verifyJsonResponse OK, getExpectedReferenceTypeJson()
+    }      
 }

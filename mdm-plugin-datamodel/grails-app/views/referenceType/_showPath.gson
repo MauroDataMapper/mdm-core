@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/dataType/fullDataType', model: [dataType: catalogueItem, userSecurityPolicyManager: userSecurityPolicyManager]
+
+model {
+    ReferenceType catalogueItem
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+
+}
