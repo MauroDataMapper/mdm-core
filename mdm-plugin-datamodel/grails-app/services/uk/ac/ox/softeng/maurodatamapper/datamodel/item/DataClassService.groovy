@@ -609,11 +609,6 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     @Override
-    DataClass updateIndexForModelItemInParent(DataClass modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('DCSXX', 'DataClass Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         !domainType || domainType == DataClass.simpleName
     }

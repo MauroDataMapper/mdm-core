@@ -104,11 +104,6 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     }
 
     @Override
-    ReferenceType updateIndexForModelItemInParent(ReferenceType modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('RTSXX', 'ReferenceType Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferenceType.simpleName
     }

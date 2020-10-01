@@ -259,11 +259,6 @@ class DataFlowService extends ModelItemService<DataFlow> {
     }
 
     @Override
-    DataFlow updateIndexForModelItemInParent(DataFlow modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('DCSXX', 'DataFlow Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         false
     }

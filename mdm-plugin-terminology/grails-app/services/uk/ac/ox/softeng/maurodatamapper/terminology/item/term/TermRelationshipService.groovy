@@ -180,11 +180,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    TermRelationship updateIndexForModelItemInParent(TermRelationship modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('TRSXX', 'TermRelationshipType Ordering')
-    }
-
-    @Override
     List<TermRelationship> getAll(Collection<UUID> ids) {
         TermRelationship.getAll(ids).findAll()
     }

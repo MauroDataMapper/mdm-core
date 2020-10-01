@@ -140,11 +140,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    DataType updateIndexForModelItemInParent(DataType modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('DTSXX', 'DataType Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == DataType.simpleName
     }

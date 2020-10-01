@@ -213,11 +213,6 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    Term updateIndexForModelItemInParent(Term modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('TSXX', 'Term Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         !domainType || domainType == Term.simpleName
     }

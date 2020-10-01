@@ -142,11 +142,6 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     @Override
-    DataElement updateIndexForModelItemInParent(DataElement modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('DESXX', 'DataElement Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == DataElement.simpleName
     }

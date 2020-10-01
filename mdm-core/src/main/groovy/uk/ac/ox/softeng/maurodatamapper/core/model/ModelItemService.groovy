@@ -26,8 +26,6 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
 
     abstract Class<K> getModelItemClass()
 
-    abstract K updateIndexForModelItemInParent(K modelItem, CatalogueItem parent, int newIndex)
-
    /**
     * After saving a new modelItem whose index is set, update the indices of its siblings.
     */
