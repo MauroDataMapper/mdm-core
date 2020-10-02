@@ -918,15 +918,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
                          newFork                : false,
                          targets                : [[
                                                             modelId: forkId,
-                                                            description: VersionLinkType.NEW_FORK_OF.toString()
+                                                            description: VersionLinkType.NEW_FORK_OF.label
                                                    ],
                                                    [
                                                            modelId: mainBranchId,
-                                                           description: VersionLinkType.NEW_MODEL_VERSION_OF.toString()
+                                                           description: VersionLinkType.NEW_MODEL_VERSION_OF.label
                                                    ],
                                                    [
                                                             modelId: newBranchId,
-                                                            description: VersionLinkType.NEW_MODEL_VERSION_OF.toString()
+                                                            description: VersionLinkType.NEW_MODEL_VERSION_OF.label
                                                    ]]
                 ]
 
@@ -940,7 +940,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
                       newFork                : true,
                       targets                : [[
                                                         modelId: latestDraftId,
-                                                        description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.toString()
+                                                        description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
                                                 ]]
                 ]
 
