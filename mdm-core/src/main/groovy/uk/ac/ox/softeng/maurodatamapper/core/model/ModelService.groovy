@@ -17,8 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ArrayDiff
-import uk.ac.ox.softeng.maurodatamapper.core.diff.FieldDiff
+
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -28,8 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
-
-import org.apache.commons.lang3.NotImplementedException
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
@@ -124,80 +121,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         def right = commonAncestor.diff(rightModel)
         def top = rightModel.diff(leftModel)
 
-
-        filterMergeDiff(top, left, right)
-    }
-
-    ObjectDiff<K> filterMergeDiff(ObjectDiff<K> top, ObjectDiff<K> left, ObjectDiff<K> right) {
-        def diffs = []
-
-        top.diffs = top.diffs.findAll {
-            def fieldName = it.fieldName
-
-            if (fieldName in left.diffs.fieldName) {
-                if (fieldName in right.diffs.fieldName) {
-                    if (it.class == FieldDiff) {
-                        it.isMergeConflict = true
-                        it.commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
-                        true
-                    } else if (it.class == ArrayDiff) {
-                        def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
-                        def rightArrayDiff = right.diffs.find { it.fieldName == fieldName }
-                        it.created.each {
-                            def diffIdentifier = it.value.diffIdentifier
-                            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
-                                // top created, left created
-                                diffs << [diff: it, change: 'created']
-                            } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
-                                // top created, left modified
-                                def commonAncestorValue =
-                                    left.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
-                                diffs << [diff: it, change: 'created', conflict: true, commonAncestorValue: commonAncestorValue]
-                            }
-                        }
-                        it.deleted.each {
-                            def diffIdentifier = it.value.diffIdentifier
-                            if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
-                                // top deleted, right modified
-                                def commonAncestorValue =
-                                    right.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
-                                diffs << [diff: it, change: 'deleted', conflict: true, commonAncestorValue: commonAncestorValue]
-                            } else if (diffIdentifier in leftArrayDiff.deleted.value.diffIdentifier) {
-                                // top deleted, right not modified, left deleted
-                                diffs << [diff: it, change: 'deleted']
-                            }
-                        }
-                        it.modified.right.each {
-                            def diffIdentifier = it.diffIdentifier
-                            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
-                                // top modified, right created, (left also created)
-                                diffs << [diff: it, change: 'modified', conflict: true, commonAncestorValue: null]
-                            } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
-                                if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
-                                    // top modified, left modified, right modified
-                                    def commonAncestorValue =
-                                        right.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
-                                    diffs << [diff: it, change: 'modified', conflict: true, commonAncestorValue: commonAncestorValue]
-                                } else {
-                                    // top modified, left modified, right not modified
-                                    diffs << [diff: it, change: 'modified']
-                                }
-                            }
-                        }
-                    } else {
-                        throw new NotImplementedException('ModelService.mergeDiff only implemented for types in  [FieldDiff, ArrayDiff]')
-                    }
-                } else {
-                    diffs << [diff: it]
-                    it.isMergeConflict = false
-                    true
-                }
-            } else {
-                false
-            }
-        }
-
-        top
+        top.mergeDiff(left, right)
     }
 
     K currentMainBranch(K model) {
