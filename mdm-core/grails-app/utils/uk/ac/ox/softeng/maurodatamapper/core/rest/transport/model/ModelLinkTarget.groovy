@@ -8,6 +8,6 @@ class ModelLinkTarget {
 
     ModelLinkTarget(UUID targetId, VersionLinkType versionLinkType) {
         modelId = targetId.toString()
-        this.description = versionLinkType.toString()
+        this.description = versionLinkType.label
     }
 }
