@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -55,6 +56,7 @@ class CodeSetService extends ModelService<CodeSet> {
     TermRelationshipTypeService termRelationshipTypeService
     TermService termService
     TermRelationshipService termRelationshipService
+    AuthorityService authorityService
 
     MessageSource messageSource
     VersionLinkService versionLinkService
@@ -629,4 +631,41 @@ class CodeSetService extends ModelService<CodeSet> {
     CodeSet findByLabel(String label) {
         CodeSet.findByLabel(label)
     }
+
+    /**
+    * When importing a codeSet, do checks and setting of required values as follows:
+    * (1) Set the createdBy of the codeSeT to be the importing user
+    * (2) Always set authority to the default authority, overriding any authority that is set in the import data
+    * (3) Check facets
+    *
+    * @param importingUser The importing user, who will be used to set createdBy
+    * @param codeSet   The codeSet to be imported
+    */
+    void checkImportedCodeSetAssociations(User importingUser, CodeSet codeSet) {
+        codeSet.createdBy = importingUser.emailAddress
+
+        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the import.
+        codeSet.authority = authorityService.getDefaultAuthority()
+        
+        checkFacetsAfterImportingCatalogueItem(codeSet)
+
+        /*if (terminology.termRelationshipTypes) {
+            terminology.termRelationshipTypes.each {
+                it.terminology = terminology
+                it.createdBy = it.createdBy ?: terminology.createdBy
+            }
+        }
+
+        if (terminology.terms) {
+            terminology.terms.each { term ->
+                term.createdBy = term.createdBy ?: terminology.createdBy
+            }
+        }
+
+        terminology.getAllTermRelationships().each { tr ->
+            tr.createdBy = tr.createdBy ?: terminology.createdBy
+        } */
+
+        log.debug("CodeSet associations checked")
+    }     
 }

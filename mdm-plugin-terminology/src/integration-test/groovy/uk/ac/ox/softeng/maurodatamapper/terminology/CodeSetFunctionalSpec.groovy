@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -159,22 +160,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     "label": "Mauro Data Mapper"
   }
 }'''
-    }
-
-    void 'test getting CodeSet exporters'() {
-        when:
-        GET('providers/exporters', STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''[]'''
-    }
-
-    void 'test getting CodeSet importers'() {
-        when:
-        GET('providers/importers', STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''[]'''
     }
 
     void 'test finalising CodeSet'() {
@@ -1235,4 +1220,303 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanup:
         cleanUpData(id)
     }
+
+    void 'EX01: test getting CodeSet exporters'() {
+        when:
+        GET('providers/exporters', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+            {
+                "name": "CodeSetJsonExporterService",
+                "version": "3.0",
+                "displayName": "JSON CodeSet Exporter",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [],
+                "providerType": "CodeSetExporter",
+                "fileExtension": "json",
+                "fileType": "text/json",
+                "canExportMultipleDomains": false
+            },
+            {
+                "name": "CodeSetXmlExporterService",
+                "version": "3.0",
+                "displayName": "XML CodeSet Exporter",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [],
+                "providerType": "CodeSetExporter",
+                "fileExtension": "xml",
+                "fileType": "text/xml",
+                "canExportMultipleDomains": false
+            }
+        ]'''
+    }    
+
+    void 'IM01: test getting CodeSet importers'() {
+        when:
+        GET('providers/importers', STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+            {
+                "name": "CodeSetXmlImporterService",
+                "version": "3.0",
+                "displayName": "XML CodeSet Importer",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [
+      
+                ],
+                "providerType": "CodeSetImporter",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
+                "canImportMultipleDomains": false
+            },
+            {
+                "name": "CodeSetJsonImporterService",
+                "version": "3.0",
+                "displayName": "JSON CodeSet Importer",
+                "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+                "allowsExtraMetadataKeys": true,
+                "knownMetadataKeys": [
+      
+                ],
+                "providerType": "CodeSetImporter",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
+                "canImportMultipleDomains": false
+            }
+        ]'''
+    }    
+
+    void 'EX02: test export a single CodeSet'() {
+        given:
+        String id = createNewItem(validJson)
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''{
+            "codeSet": {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "documentationVersion": "1.0.0",
+                "finalised": false,
+                "authority": {
+                    "id": "${json-unit.matches:id}",
+                    "url": "http://localhost",
+                    "label": "Mauro Data Mapper"
+                }
+            },
+           "exportMetadata": {
+                "exportedBy": "Unlogged User",
+                "exportedOn": "${json-unit.matches:offsetDateTime}",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                    "name": "CodeSetJsonExporterService",
+                    "version": "3.0"
+                }
+            }
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+   void 'IM02: test import single a CodeSet that was just exported'() {
+        given:
+        String id = createNewItem(validJson)
+
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+
+        expect:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+            finalised                      : false,
+            modelName                      : 'Functional Test Import',
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, '''{
+            "count": 1,
+            "items": [
+                {
+                    "domainType": "CodeSet",
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Import",
+                    "branchName": "main",
+                    "documentationVersion": "1.0.0",
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Mauro Data Mapper"
+                    }
+                }
+            ]
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'EX03: test export multiple CodeSets (json only exports first id)'() {
+        given:
+        String id = createNewItem(validJson)
+        String id2 = createNewItem([label: 'Functional Test Model 2'])
+
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0',
+             [codeSetIds: [id, id2]], STRING_ARG
+        )
+
+        then:
+        verifyJsonResponse OK, '''{
+            "codeSet": {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "documentationVersion": "1.0.0",
+                "finalised": false,
+                "authority": {
+                    "id": "${json-unit.matches:id}",
+                    "url": "http://localhost",
+                    "label": "Mauro Data Mapper"
+                }
+            },
+            "exportMetadata": {
+                "exportedBy": "Unlogged User",
+                "exportedOn": "${json-unit.matches:offsetDateTime}",
+                "exporter": {
+                    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+                    "name": "CodeSetJsonExporterService",
+                    "version": "3.0"
+                }
+            }
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }
+
+    void 'IM03: test import basic CodeSet as new documentation version'() {
+        given:
+        String id = createNewItem([
+            label    : 'Functional Test Model',
+            finalised: true,
+            modelVersion: Version.from('1.0.0')
+        ])
+
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+
+        expect:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+            finalised                      : true,
+            terminologyName                : 'Functional Test Model',
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: true,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, '''{
+            "count": 1,
+            "items": [
+                {
+                    "domainType": "CodeSet",
+                    "id": "${json-unit.matches:id}",
+                    "label": "Functional Test Model",
+                    "branchName": "main",
+                    "documentationVersion": "2.0.0",
+                    "modelVersion": "1.0.0",
+                    "authority": {
+                        "id": "${json-unit.matches:id}",
+                        "url": "http://localhost",
+                        "label": "Mauro Data Mapper"
+                    }
+                }
+            ]
+        }'''
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'EX04: test export simple CodeSet'() {
+        given:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleCodeSet').toList()
+            ]
+        ])
+
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+        String expected = new String(loadTestFile('simpleCodeSet')).replaceFirst('"exportedBy": "Admin User",',
+                                                                                     '"exportedBy": "Unlogged User",')
+                                                                       .replace(/Test Authority/, 'Mauro Data Mapper')
+
+
+        expect:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'IM04: test importing simple test CodeSet'() {
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleCodeSet').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
+
+        cleanup:
+        cleanUpData(id)
+    }    
+
 }
