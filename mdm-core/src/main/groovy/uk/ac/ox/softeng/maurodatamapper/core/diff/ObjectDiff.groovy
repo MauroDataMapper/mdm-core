@@ -60,7 +60,7 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
 
     @Override
     Integer getNumberOfDiffs() {
-        diffs?.sum {it.getNumberOfDiffs()} as Integer ?: 0
+        diffs?.sum { it.getNumberOfDiffs() } as Integer ?: 0
     }
 
     ObjectDiff<T> leftHandSide(String leftId, T lhs) {
@@ -167,15 +167,19 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
     }
 
     ObjectDiff<T> mergeDiff(ObjectDiff<T> left, ObjectDiff<T> right) {
-        this.diffs = this.diffs.findAll {
-            def fieldName = it.fieldName
+        List<FieldDiff> diffs = []
+        def existingDiffs = this.diffs
+
+        for (int i = 0; i < existingDiffs.size; i++) {
+            def it = existingDiffs[i]
+            String fieldName = it.fieldName
 
             if (fieldName in left.diffs.fieldName) {
                 if (fieldName in right.diffs.fieldName) {
                     if (it.class == FieldDiff) {
                         it.isMergeConflict = true
                         it.commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
-                        true
+                        diffs.add(it)
                     } else if (it.class == ArrayDiff) {
                         def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
                         def rightArrayDiff = right.diffs.find { it.fieldName == fieldName }
@@ -251,6 +255,92 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
             }
         }
 
+
+
+        //        this.diffs = this.diffs.findAll {
+        //            def fieldName = it.fieldName
+        //
+        //            if (fieldName in left.diffs.fieldName) {
+        //                if (fieldName in right.diffs.fieldName) {
+        //                    if (it.class == FieldDiff) {
+        //                        it.isMergeConflict = true
+        //                        it.commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
+        //                        true
+        //                    } else if (it.class == ArrayDiff) {
+        //                        def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
+        //                        def rightArrayDiff = right.diffs.find { it.fieldName == fieldName }
+        //                        it.created = it.created.findAll {
+        //                            def diffIdentifier = it.value.diffIdentifier
+        //                            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
+        //                                // top created, left created
+        //                                it.isMergeConflict = false
+        //                                true
+        //                            } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
+        //                                // top created, left modified
+        //                                it.isMergeConflict = true
+        //                                it.commonAncestorValue = leftArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
+        //                                true
+        //                            } else {
+        //                                false
+        //                            }
+        //                        }
+        //                        it.deleted = it.deleted.findAll {
+        //                            def diffIdentifier = it.value.diffIdentifier
+        //                            if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
+        //                                // top deleted, right modified
+        //                                it.isMergeConflict = true
+        //                                it.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
+        //                                true
+        //                            } else if (diffIdentifier in leftArrayDiff.deleted.value.diffIdentifier) {
+        //                                // top deleted, right not modified, left deleted
+        //                                it.isMergeConflict = false
+        //                                true
+        //                            } else {
+        //                                false
+        //                            }
+        //                        }
+        //                        it.modified = it.modified.findAll {
+        //                            def diffIdentifier = it.right.diffIdentifier
+        //                            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
+        //                                // top modified, right created, (left also created)
+        //                                it.diffs.each {
+        //                                    it.isMergeConflict = true
+        //                                    it.commonAncestorValue = null
+        //                                }
+        //                                it.isMergeConflict = true
+        //                                it.commonAncestorValue = null
+        //                                true
+        //                            } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
+        //                                if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
+        //                                    // top modified, left modified, right modified
+        //                                    def leftObjDiff = leftArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier }
+        //                                    def rightObjDiff = rightArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier }
+        //                                    it = it.mergeDiff(leftObjDiff, rightObjDiff)
+        //                                    it.isMergeConflict = true
+        //                                    it.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
+        //                                    true
+        //                                } else {
+        //                                    // top modified, left modified, right not modified
+        //                                    it.diffs.each { it.isMergeConflict = false }
+        //                                    it.isMergeConflict = false
+        //                                    true
+        //                                }
+        //                            } else {
+        //                                false
+        //                            }
+        //                        }
+        //                    } else {
+        //                        throw new NotImplementedException('ObjectDiff.mergeDiff only implemented for types in [FieldDiff, ArrayDiff]')
+        //                    }
+        //                } else {
+        //                    it.isMergeConflict = false
+        //                    true
+        //                }
+        //            } else {
+        //                false
+        //            }
+        //        }
+        this.diffs = diffs
         this
     }
 
