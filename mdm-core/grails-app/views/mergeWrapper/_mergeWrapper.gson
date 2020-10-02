@@ -6,5 +6,7 @@ model {
 }
 
 json {
-    tmpl.'/diffable/diffable'(mergeWrapper.value)
+    value tmpl.'/diffable/diffable'(mergeWrapper.value)
+    isMergeConflict mergeWrapper.isMergeConflict
+    commonAncestorValue tmpl.'/diffable/diffable'(mergeWrapper.commonAncestorValue)
 }
