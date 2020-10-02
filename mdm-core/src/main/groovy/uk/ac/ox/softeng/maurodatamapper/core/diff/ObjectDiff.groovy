@@ -188,8 +188,7 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
                             } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
                                 // top created, left modified
                                 it.isMergeConflict = true
-                                it.commonAncestorValue =
-                                    left.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
+                                it.commonAncestorValue = leftArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
                                 true
                             } else {
                                 false
@@ -200,8 +199,7 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
                             if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
                                 // top deleted, right modified
                                 it.isMergeConflict = true
-                                it.commonAncestorValue =
-                                    right.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
+                                it.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
                                 true
                             } else if (diffIdentifier in leftArrayDiff.deleted.value.diffIdentifier) {
                                 // top deleted, right not modified, left deleted
@@ -215,18 +213,25 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
                             def diffIdentifier = it.right.diffIdentifier
                             if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
                                 // top modified, right created, (left also created)
+                                it.diffs.each {
+                                    it.isMergeConflict = true
+                                    it.commonAncestorValue = null
+                                }
                                 it.isMergeConflict = true
                                 it.commonAncestorValue = null
                                 true
                             } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
                                 if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
                                     // top modified, left modified, right modified
+                                    def leftObjDiff = leftArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier }
+                                    def rightObjDiff = rightArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier }
+                                    it = it.mergeDiff(leftObjDiff, rightObjDiff)
                                     it.isMergeConflict = true
-                                    it.commonAncestorValue =
-                                        right.diffs.find { it.fieldName == fieldName }.left.find { it.diffIdentifier == diffIdentifier }
+                                    it.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
                                     true
                                 } else {
                                     // top modified, left modified, right not modified
+                                    it.diffs.each { it.isMergeConflict = false }
                                     it.isMergeConflict = false
                                     true
                                 }

@@ -1136,7 +1136,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 "leftId": "${json-unit.matches:id}",
 "rightId": "${json-unit.matches:id}",
 "label": "Functional Test Model",
-"count": 12,
+"count": 13,
 "diffs": [
         {
             "description": {
