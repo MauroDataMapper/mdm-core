@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+
+inherits template: '/catalogueItem/baseCatalogueItem', model: [catalogueItem: referenceDataElement]
+model {
+    ReferenceDataElement referenceDataElement
+}
+
+json {
+    dataType referenceDataElement.referenceDataTypeId
+    if (referenceDataElement.maxMultiplicity != null) maxMultiplicity referenceDataElement.maxMultiplicity
+    if (referenceDataElement.minMultiplicity != null) minMultiplicity referenceDataElement.minMultiplicity
+}

@@ -29,18 +29,18 @@ import groovy.transform.SelfType
 @CompileStatic
 trait SummaryMetadataAware {
 
-    abstract Set<SummaryMetadata> getSummaryMetadata()
+    abstract Set<ReferenceSummaryMetadata> getSummaryMetadata()
 
-    CatalogueItem addToSummaryMetadata(SummaryMetadata summaryMetadata) {
+    CatalogueItem addToSummaryMetadata(ReferenceSummaryMetadata summaryMetadata) {
         summaryMetadata.setCatalogueItem(this as CatalogueItem)
         addTo('summaryMetadata', summaryMetadata)
     }
 
     CatalogueItem addToSummaryMetadata(Map args) {
-        addToSummaryMetadata(new SummaryMetadata(args))
+        addToSummaryMetadata(new ReferenceSummaryMetadata(args))
     }
 
-    CatalogueItem removeFromSummaryMetadata(SummaryMetadata summaryMetadata) {
+    CatalogueItem removeFromSummaryMetadata(ReferenceSummaryMetadata summaryMetadata) {
         removeFrom('summaryMetadata', summaryMetadata)
     }
 }

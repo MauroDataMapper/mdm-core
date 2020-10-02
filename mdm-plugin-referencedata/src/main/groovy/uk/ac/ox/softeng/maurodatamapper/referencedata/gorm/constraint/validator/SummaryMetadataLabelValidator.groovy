@@ -17,15 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringValidator
 
 /**
  * @since 19/04/2018
  */
-class SummaryMetadataLabelValidator extends UniqueStringValidator<SummaryMetadata> {
+class SummaryMetadataLabelValidator extends UniqueStringValidator<ReferenceSummaryMetadata> {
 
-    SummaryMetadataLabelValidator(SummaryMetadata object) {
+    SummaryMetadataLabelValidator(ReferenceSummaryMetadata object) {
         super(object)
     }
 

@@ -19,9 +19,9 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.EnumerationType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.databinding.DataBindingSource
@@ -46,27 +46,27 @@ class DataTypeValueConverter implements ValueConverter {
 
     @Override
     def convert(Object value) {
-        DataType dataType
+        ReferenceDataType dataType
         if (value instanceof Serializable && Utils.toUuid(value)) {
-            dataType = DataType.get(value)
+            dataType = ReferenceDataType.get(value)
             if (!dataType) throw new ApiBadRequestException('DTB02', 'Provided id cannot be found')
         } else {
             Map map = value as Map
-            dataType = DataType.get(map.id as Serializable)
+            dataType = ReferenceDataType.get(map.id as Serializable)
             BindingResult bindingResult = new BeanPropertyBindingResult(dataType, 'DataType')
             if (!dataType) {
                 String domainType = map.domainType
                 switch (domainType) {
-                    case DataType.PRIMITIVE_DOMAIN_TYPE:
-                        dataType = new PrimitiveType()
+                    case ReferenceDataType.PRIMITIVE_DOMAIN_TYPE:
+                        dataType = new ReferencePrimitiveType()
                         break
-                    case DataType.ENUMERATION_DOMAIN_TYPE:
-                        dataType = new EnumerationType()
+                    case ReferenceDataType.ENUMERATION_DOMAIN_TYPE:
+                        dataType = new ReferenceEnumerationType()
                         break
                     default:
                         String defaultMessage = 'Cannot bind DataType with unknown domainType [{}]'
                         Object[] arguments = [domainType]
-                        String[] codes = getMessageCodes('unknownDomainType', DataType)
+                        String[] codes = getMessageCodes('unknownDomainType', ReferenceDataType)
                         bindingResult.addError(new ObjectError(bindingResult.getObjectName(), codes, arguments, defaultMessage))
                         throw new ApiInvalidModelException('DTBXX', "Cannot bind DataType with unknown domainType [${domainType}]", bindingResult)
                 }
@@ -74,7 +74,7 @@ class DataTypeValueConverter implements ValueConverter {
                 if (!dataType) {
                     String defaultMessage = 'Cannot bind DataType as id or domainType are not provided'
                     Object[] arguments = []
-                    String[] codes = getMessageCodes('noIdOrDomainType', DataType)
+                    String[] codes = getMessageCodes('noIdOrDomainType', ReferenceDataType)
                     bindingResult.addError(new ObjectError(bindingResult.getObjectName(), codes, arguments, defaultMessage))
                     throw new ApiInvalidModelException('DTB01', defaultMessage, bindingResult)
                 }
@@ -91,7 +91,7 @@ class DataTypeValueConverter implements ValueConverter {
 
     @Override
     Class<?> getTargetType() {
-        DataType
+        ReferenceDataType
     }
 
     protected static String[] getMessageCodes(String messageCode,

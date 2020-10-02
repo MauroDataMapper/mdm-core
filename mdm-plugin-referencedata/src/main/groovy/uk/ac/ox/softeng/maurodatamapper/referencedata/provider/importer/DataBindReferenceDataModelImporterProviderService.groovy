@@ -48,7 +48,7 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
     }
 
     @Override
-    List<ReferenceDataModel> importDataModels(User currentUser, T params) {
+    List<ReferenceDataModel> importReferenceDataModels(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
@@ -57,11 +57,11 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
     }
 
     @Override
-    ReferenceDataModel importDataModel(User currentUser, T params) {
+    ReferenceDataModel importReferenceDataModel(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        ReferenceDataModel imported = importDataModel(currentUser, params.importFile.fileContents)
+        ReferenceDataModel imported = importReferenceDataModel(currentUser, params.importFile.fileContents)
         updateImportedModelFromParameters(imported, params)
     }
 
@@ -82,7 +82,7 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         DataBindingUtils.bindObjectToInstance(referenceDataModel, referenceDataModelMap, null, ['id', 'domainType', 'lastUpdated'], null)
 
         log.debug('Fixing bound ReferenceDataModel')
-        referenceDataModelService.checkImportedDataModelAssociations(currentUser, referenceDataModel, referenceDataModelMap)
+        referenceDataModelService.checkImportedReferenceDataModelAssociations(currentUser, referenceDataModel, referenceDataModelMap)
 
         log.info('Import complete')
         referenceDataModel

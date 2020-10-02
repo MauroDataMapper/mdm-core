@@ -17,15 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringValidator
 
 /**
  * @since 19/04/2018
  */
-class DataElementLabelValidator extends UniqueStringValidator<DataElement> {
+class DataElementLabelValidator extends UniqueStringValidator<ReferenceDataElement> {
 
-    DataElementLabelValidator(DataElement object) {
+    DataElementLabelValidator(ReferenceDataElement object) {
         super(object)
     }
 

@@ -17,10 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.EnumerationType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 
 /**
  * @since 23/03/2020
@@ -31,22 +31,22 @@ class DefaultDataType {
     String label
     String description
 
-    List<EnumerationValue> enumerationValues
+    List<ReferenceEnumerationValue> enumerationValues
     String units
 
-    private void initialise(DataType dataType) {
+    private void initialise(ReferenceDataType dataType) {
         this.domainType = dataType.domainType
         this.label = dataType.label
         this.description = dataType.description
     }
 
-    DefaultDataType(PrimitiveType primitiveType) {
+    DefaultDataType(ReferencePrimitiveType primitiveType) {
         initialise(primitiveType)
         this.units = primitiveType.units
     }
 
-    DefaultDataType(EnumerationType enumerationType) {
+    DefaultDataType(ReferenceEnumerationType enumerationType) {
         initialise(enumerationType)
-        this.enumerationValues = enumerationType.enumerationValues
+        this.enumerationValues = enumerationType.referenceEnumerationValues
     }
 }

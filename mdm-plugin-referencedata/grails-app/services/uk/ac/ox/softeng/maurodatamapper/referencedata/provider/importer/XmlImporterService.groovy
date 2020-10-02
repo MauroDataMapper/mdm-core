@@ -20,9 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.DataBindDataModelImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.DataBindReferenceDataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import asset.pipeline.grails.AssetResourceLocator
@@ -38,13 +38,13 @@ import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
 
 @Slf4j
-class XmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> {
+class XmlImporterService extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> {
 
     AssetResourceLocator assetResourceLocator
 
     @Override
     String getDisplayName() {
-        'XML DataModel Importer'
+        'XML Reference Data Model Importer'
     }
 
     @Override
@@ -58,7 +58,7 @@ class XmlImporterService extends DataBindDataModelImporterProviderService<DataMo
     }
 
     @Override
-    DataModel importDataModel(User currentUser, byte[] content) {
+    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
 
@@ -75,7 +75,7 @@ class XmlImporterService extends DataBindDataModelImporterProviderService<DataMo
     }
 
     @Override
-    List<DataModel> importDataModels(User currentUser, byte[] content) {
+    List<ReferenceDataModel> importDataModels(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
 
@@ -84,9 +84,9 @@ class XmlImporterService extends DataBindDataModelImporterProviderService<DataMo
         log.debug('Parsing in file content using XmlSlurper')
         GPathResult result = new XmlSlurper().parseText(xml)
 
-        List<DataModel> imported = []
-        if (result.name() == 'dataModels') {
-            log.debug('Importing DataModel list')
+        List<ReferenceDataModel> imported = []
+        if (result.name() == 'referenceDataModels') {
+            log.debug('Importing Reference Data Model list')
             List list = convertToList(result as NodeChild)
             list.each {
                 imported += bindMapToDataModel(currentUser, it as Map)
@@ -94,21 +94,21 @@ class XmlImporterService extends DataBindDataModelImporterProviderService<DataMo
         } else {
             // Handle single DM map or exportModel being passed to this method
             Map map = convertToMap(result)
-            log.debug('Importing DataModel map')
-            imported += bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
+            log.debug('Importing Reference Data Model map')
+            imported += bindMapToDataModel currentUser, backwardsCompatibleExtractReferenceDataModelMap(result, map)
         }
 
         imported
     }
 
-    Map backwardsCompatibleExtractDataModelMap(GPathResult result, Map map) {
+    Map backwardsCompatibleExtractReferenceDataModelMap(GPathResult result, Map map) {
         switch (result.name()) {
             case 'exportModel':
-                return map.dataModel as Map
-            case 'dataModel':
+                return map.referenceDataModel as Map
+            case 'referenceDataModel':
                 return map
         }
-        throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel is not present')
+        throw new ApiBadRequestException('XIS03', 'Cannot import XML as referenceDataModel is not present')
     }
 
     Map<String, Object> convertToMap(NodeChild nodes) {
@@ -140,7 +140,7 @@ class XmlImporterService extends DataBindDataModelImporterProviderService<DataMo
 
     String validateXml(String xml) {
 
-        Resource xsdResource = assetResourceLocator.findAssetForURI("dataModel_${version}.xsd")
+        Resource xsdResource = assetResourceLocator.findAssetForURI("referenceDataModel_${version}.xsd")
 
         def factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
         def schema = factory.newSchema(new StreamSource(xsdResource.inputStream))

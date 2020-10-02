@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+
+model {
+    ReferenceDataModel referenceDataModel
+}
+
+json tmpl.referenceDataModel(referenceDataModel: referenceDataModel)

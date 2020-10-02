@@ -24,7 +24,7 @@ Controller: dataClass
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${id}                                                                                     | Action: show
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${otherDataModelId}/${otherDataClassId}                                                   | Action: copyDataClass
 
-Controller: dataElement
+Controller: referenceDataElement
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${dataElementId}/suggestLinks/${otherDataModelId}             | Action: suggestLinks
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements                                                               | Action: save
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements                                                               | Action: index
@@ -66,7 +66,7 @@ Controller: dataModel
  |   PUT    | /api/dataModels/${id}                                                                                                                | Action: update
  |   GET    | /api/dataModels/${id}                                                                                                                | Action: show
 
-Controller: dataType
+Controller: referenceDataType
  |   POST   | /api/dataModels/${dataModelId}/dataTypes                                                                                             | Action: save
  |   GET    | /api/dataModels/${dataModelId}/dataTypes                                                                                             | Action: index
  |  DELETE  | /api/dataModels/${dataModelId}/dataTypes/${id}                                                                                       | Action: delete
@@ -74,7 +74,7 @@ Controller: dataType
  |   GET    | /api/dataModels/${dataModelId}/dataTypes/${id}                                                                                       | Action: show
  |   POST   | /api/dataModels/${dataModelId}/dataTypes/${otherDataModelId}/${dataTypeId}                                                           | Action: copyDataType
 
-Controller: enumerationValue
+Controller: referenceEnumerationValue
  |   POST   | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues                                               | Action: save
  |   GET    | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues                                               | Action: index
  |   POST   | /api/dataModels/${dataModelId}/dataTypes/${dataTypeId}/enumerationValues                                                             | Action: save
@@ -86,17 +86,17 @@ Controller: enumerationValue
  |   PUT    | /api/dataModels/${dataModelId}/dataTypes/${dataTypeId}/enumerationValues/${id}                                                       | Action: update
  |   GET    | /api/dataModels/${dataModelId}/dataTypes/${dataTypeId}/enumerationValues/${id}                                                       | Action: show
 
-Controller: summaryMetadata
- |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata                                                                   | Action: save
- |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata                                                                   | Action: index
- |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${id}                                                             | Action: delete
- |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${id}                                                             | Action: update
- |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${id}                                                             | Action: show
+Controller: referenceSummaryMetadata
+ |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata                                                                   | Action: save
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata                                                                   | Action: index
+ |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${id}                                                             | Action: delete
+ |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${id}                                                             | Action: update
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${id}                                                             | Action: show
 
-Controller: summaryMetadataReport
- |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports                       | Action: save
- |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports                       | Action: index
- |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id}                 | Action: delete
- |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id}                 | Action: update
- |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/summaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id}                 | Action: show
+Controller: referenceSummaryMetadataReport
+ |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${summaryMetadataId}/summaryMetadataReports                       | Action: save
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${summaryMetadataId}/summaryMetadataReports                       | Action: index
+ |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id}                 | Action: delete
+ |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id}                 | Action: update
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${summaryMetadataId}/summaryMetadataReports/${id}                 | Action: show
 ```

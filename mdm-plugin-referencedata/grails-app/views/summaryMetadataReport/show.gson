@@ -1,7 +1,0 @@
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.summarymetadata.SummaryMetadataReport
-
-model {
-    SummaryMetadataReport summaryMetadataReport
-}
-
-json tmpl.summaryMetadataReport(summaryMetadataReport)

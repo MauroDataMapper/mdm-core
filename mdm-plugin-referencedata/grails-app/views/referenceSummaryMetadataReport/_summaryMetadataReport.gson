@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
+
+model {
+    ReferenceSummaryMetadataReport summaryMetadataReport
+}
+
+json {
+    id summaryMetadataReport.id
+    lastUpdated summaryMetadataReport.lastUpdated
+    reportDate summaryMetadataReport.reportDate
+    reportValue summaryMetadataReport.reportValue
+}

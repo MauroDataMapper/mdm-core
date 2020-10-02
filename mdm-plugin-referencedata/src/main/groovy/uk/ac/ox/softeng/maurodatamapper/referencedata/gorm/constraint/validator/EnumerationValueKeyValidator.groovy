@@ -17,15 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.EnumerationValue
+
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringValidator
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 
 /**
  * @since 27/02/2020
  */
-class EnumerationValueKeyValidator extends UniqueStringValidator<EnumerationValue> {
+class EnumerationValueKeyValidator extends UniqueStringValidator<ReferenceEnumerationValue> {
 
-    EnumerationValueKeyValidator(EnumerationValue object) {
+    EnumerationValueKeyValidator(ReferenceEnumerationValue object) {
         super(object)
     }
 

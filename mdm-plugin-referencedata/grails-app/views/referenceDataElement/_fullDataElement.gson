@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+
+inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem               : dataElement,
+                                                               userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                               owningSecurableResourceId   : dataElement.modelId,
+                                                               owningSecurableResourceClass: ReferenceDataModel]
+model {
+    ReferenceDataElement dataElement
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    dataType tmpl.'/dataType/dataType'(dataElement.referenceDataType)
+    if (dataElement.maxMultiplicity != null) maxMultiplicity dataElement.maxMultiplicity
+    if (dataElement.minMultiplicity != null) minMultiplicity dataElement.minMultiplicity
+}

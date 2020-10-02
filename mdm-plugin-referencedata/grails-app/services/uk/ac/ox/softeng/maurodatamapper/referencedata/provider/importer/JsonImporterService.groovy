@@ -20,9 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.DataBindDataModelImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.json.JsonSlurper
@@ -31,7 +30,7 @@ import groovy.util.logging.Slf4j
 import java.nio.charset.Charset
 
 @Slf4j
-class JsonImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> {
+class JsonImporterService extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> {
 
     @Override
     String getDisplayName() {
@@ -44,16 +43,16 @@ class JsonImporterService extends DataBindDataModelImporterProviderService<DataM
     }
 
     @Override
-    DataModel importDataModel(User currentUser, byte[] content) {
+    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
         log.debug('Parsing in file content using JsonSlurper')
         def result = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
-        Map dataModel = result.dataModel
-        if (!dataModel) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
+        Map referenceDataModel = result.referenceDataModel
+        if (!referenceDataModel) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
 
         log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, new HashMap(dataModel)
+        bindMapToDataModel currentUser, new HashMap(referenceDataModel)
     }
 }

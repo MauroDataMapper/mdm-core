@@ -33,13 +33,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElementService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataTypeService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
@@ -48,8 +48,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
-
-import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -63,13 +61,13 @@ import java.time.ZoneOffset
 @SuppressWarnings('unused')
 class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
-    DataTypeService dataTypeService
-    DataElementService dataElementService
+    ReferenceDataTypeService referenceDataTypeService
+    ReferenceDataElementService referenceDataElementService
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
     AuthorityService authorityService
-    SummaryMetadataService summaryMetadataService
+    ReferenceSummaryMetadataService referenceSummaryMetadataService
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
@@ -161,28 +159,28 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     @Override
     ReferenceDataModel updateFacetsAfterInsertingCatalogueItem(ReferenceDataModel catalogueItem) {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
-        if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {
+        if (catalogueItem.referenceSummaryMetadata) {
+            catalogueItem.referenceSummaryMetadata.each {
                 if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
-            SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
+            ReferenceSummaryMetadata.saveAll(catalogueItem.referenceSummaryMetadata)
         }
         catalogueItem
     }
 
     ReferenceDataModel saveWithBatching(ReferenceDataModel referenceDataModel) {
         log.debug('Saving {} using batching', referenceDataModel.label)
-        Collection<DataType> dataTypes = []
+        Collection<ReferenceDataType> dataTypes = []
 
         if (referenceDataModel.classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(referenceDataModel.classifiers)
         }
 
-        if (referenceDataModel.dataTypes) {
-            dataTypes.addAll referenceDataModel.dataTypes
-            referenceDataModel.dataTypes.clear()
+        if (referenceDataModel.referenceDataTypes) {
+            dataTypes.addAll referenceDataModel.referenceDataTypes
+            referenceDataModel.referenceDataTypes.clear()
         }
 
         save(referenceDataModel)
@@ -191,12 +189,12 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
 
         log.trace('Saving {} datatypes', dataTypes.size())
-        dataTypeService.saveAll(dataTypes)
+        referenceDataTypeService.saveAll(dataTypes)
 
-        Collection<DataElement> dataElements = hierarchySaveAllAndGetDataElements(referenceDataModel)
+        Collection<ReferenceDataElement> dataElements = hierarchySaveAllAndGetDataElements(referenceDataModel)
 
         log.trace('Saving {} dataelements ', dataElements.size())
-        dataElementService.saveAll(dataElements)
+        referenceDataElementService.saveAll(dataElements)
 
         referenceDataModel
     }
@@ -260,7 +258,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
             DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.displayName == defaultDataTypeProvider }
             if (provider) {
                 log.debug("Adding ${provider.displayName} default DataTypes")
-                return dataTypeService.addDefaultListOfDataTypesToDataModel(resource, provider.defaultListOfDataTypes)
+                return referenceDataTypeService.addDefaultListOfDataTypesToDataModel(resource, provider.defaultListOfDataTypes)
             }
         }
         resource
@@ -268,7 +266,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     void deleteAllUnusedDataTypes(ReferenceDataModel referenceDataModel) {
         log.debug('Cleaning ReferenceDataModel {} of DataTypes', referenceDataModel.label)
-        referenceDataModel.dataTypes.findAll { !it.dataElements }.each {
+        referenceDataModel.referenceDataTypes.findAll { !it.dataElements }.each {
             dataTypeService.delete(it)
         }
     }
@@ -279,8 +277,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         referenceDataModel.authority = authorityService.getDefaultAuthority()
         checkFacetsAfterImportingCatalogueItem(referenceDataModel)
 
-        if (referenceDataModel.dataTypes) {
-            referenceDataModel.dataTypes.each { dt ->
+        if (referenceDataModel.referenceDataTypes) {
+            referenceDataModel.referenceDataTypes.each { dt ->
                 dataTypeService.checkImportedDataTypeAssociations(importingUser, referenceDataModel, dt)
             }
         }
@@ -288,17 +286,17 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     ReferenceDataModel ensureAllEnumerationTypesHaveValues(ReferenceDataModel referenceDataModel) {
-        dataModel.dataTypes.findAll { it.instanceOf(EnumerationType) && !(it as EnumerationType).getEnumerationValues() }.each { EnumerationType et ->
-            et.addToEnumerationValues(key: '-', value: '-')
+        dataModel.referenceDataTypes.findAll { it.instanceOf(ReferenceEnumerationType) && !(it as ReferenceEnumerationType).getReferenceEnumerationValues() }.each { ReferenceEnumerationType et ->
+            et.addToReferenceEnumerationValues(key: '-', value: '-')
         }
         referenceDataModel
     }
 
-    List<DataElement> getAllDataElementsOfDataModel(ReferenceDataModel referenceDataModel) {
-        referenceDataModel.dataElements
+    List<ReferenceDataElement> getAllDataElementsOfDataModel(ReferenceDataModel referenceDataModel) {
+        referenceDataModel.referenceDataElements
     }
 
-    List<DataElement> findAllDataElementsWithNames(ReferenceDataModel dataModel, Set<String> dataElementNames, boolean caseInsensitive) {
+    List<ReferenceDataElement> findAllDataElementsWithNames(ReferenceDataModel dataModel, Set<String> dataElementNames, boolean caseInsensitive) {
         if (!dataElementNames) return []
         getAllDataElementsOfDataModel(dataModel).findAll {
             caseInsensitive ?
@@ -307,13 +305,13 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         }
     }
 
-    Set<EnumerationType> findAllEnumerationTypeByNames(ReferenceDataModel referenceDataModel, Set<String> enumerationTypeNames, boolean caseInsensitive) {
+    Set<ReferenceEnumerationType> findAllEnumerationTypeByNames(ReferenceDataModel referenceDataModel, Set<String> enumerationTypeNames, boolean caseInsensitive) {
         if (!enumerationTypeNames) return []
-        referenceDataModel.dataTypes.findAll { it.instanceOf(EnumerationType) }.findAll {
+        referenceDataModel.referenceDataTypes.findAll { it.instanceOf(ReferenceEnumerationType) }.findAll {
             caseInsensitive ?
             it.label.toLowerCase() in enumerationTypeNames.collect { it.toLowerCase() } :
             it.label in enumerationTypeNames
-        } as Set<EnumerationType>
+        } as Set<ReferenceEnumerationType>
     }
 
     @Override
@@ -478,9 +476,9 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
         copy.trackChanges()
 
-        if (original.dataTypes) {
+        if (original.referenceDataTypes) {
             // Copy all the datatypes
-            original.dataTypes.each { dt ->
+            original.referenceDataTypes.each { dt ->
                 dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
@@ -496,8 +494,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
                                                     boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
-                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
+            referenceSummaryMetadataService.findAllByCatalogueItemId(original.id).each {
+                copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
         copy
@@ -528,7 +526,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel, ReferenceDataModel otherReferenceDataModel, int maxResults) {
-        referenceDataModel.dataElements.collect { de ->
+        referenceDataModel.referenceDataElements.collect { de ->
             dataElementService.findAllSimilarDataElementsInDataModel(otherReferenceDataModel, de, maxResults)
         }
     }

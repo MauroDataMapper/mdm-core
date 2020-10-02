@@ -22,10 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.AbstractCatalogueItemSearchService
 import uk.ac.ox.softeng.maurodatamapper.core.search.CatalogueItemSearchDomainProvider
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.EnumerationType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.EnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
@@ -43,6 +43,6 @@ class SearchService extends AbstractCatalogueItemSearchService<ModelItem> implem
 
     @Override
     Set<Class<CatalogueItem>> getSearchableCatalogueItemDomains() {
-        [ReferenceDataModel, DataElement, EnumerationType, PrimitiveType, EnumerationValue] as HashSet<Class<CatalogueItem>>
+        [ReferenceDataModel, ReferenceDataElement, ReferenceEnumerationType, ReferencePrimitiveType, ReferenceEnumerationValue] as HashSet<Class<CatalogueItem>>
     }
 }

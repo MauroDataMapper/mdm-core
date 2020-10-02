@@ -21,19 +21,20 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.PrimitiveType
-
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import org.springframework.context.MessageSource
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
 class BootstrapModels {
 
+    static String SIMPLE_REFERENCE_MODEL_NAME = "Simple Reference Data Model"
+
     static ReferenceDataModel buildAndSaveExampleReferenceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: "Simple Reference Data Mode", folder: folder, authority: authority)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SIMPLE_REFERENCE_MODEL_NAME, folder: folder, authority: authority)
 
 
 
@@ -44,8 +45,8 @@ class BootstrapModels {
         checkAndSave(messageSource, referenceDataModel)
 
 
-        DataType stringDataType = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
-        DataType integerDataType = new PrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
+        ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+        ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
         referenceDataModel
                 .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
                 .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
@@ -55,8 +56,8 @@ class BootstrapModels {
 
         checkAndSave(messageSource, referenceDataModel)
 
-        referenceDataModel.addToDataElements(new DataElement(dataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT))
-        referenceDataModel.addToDataElements(new DataElement(dataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT))
+        referenceDataModel.addToReferenceDataElements(new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT))
+        referenceDataModel.addToReferenceDataElements(new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT))
 
         referenceDataModel
     }

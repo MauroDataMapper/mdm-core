@@ -43,15 +43,12 @@ class BootStrap {
                 Folder.withNewTransaction {
                     Folder folder = Folder.findByLabel('Development Folder')
                     Authority authority = authorityService.getDefaultAuthority()
-                    if (DataModel.countByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
+                    if (ReferenceDataModel.countByLabel(BootstrapModels.SIMPLE_REFERENCE_MODEL_NAME) == 0) {
+                        BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, authority)
                     }
-                    if (DataModel.countByLabel(BootstrapModels.SIMPLE_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
-                    }
-                    if (DataModel.countByAuthorityIsNull() != 0) {
-                        log.warn('DataModels missing authority, updating with default authority')
-                        DataModel.findAllByAuthorityIsNull().each {
+                    if (ReferenceDataModel.countByAuthorityIsNull() != 0) {
+                        log.warn('ReferenceDataModels missing authority, updating with default authority')
+                        ReferenceDataModel.findAllByAuthorityIsNull().each {
                             it.authority = authority
                             log.debug('Saving {}', it.label)
                             it.save(validate: false, flush: true)

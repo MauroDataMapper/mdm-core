@@ -1,5 +1,5 @@
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.EnumerationType
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultDataType
 
 model {
@@ -10,10 +10,10 @@ json {
     label defaultDataType.getLabel()
     if (defaultDataType.description) description defaultDataType.description
 
-    if (defaultDataType.domainType == EnumerationType.simpleName) {
+    if (defaultDataType.domainType == ReferenceEnumerationType.simpleName) {
         enumerationValues g.render(defaultDataType.enumerationValues)
     }
-    if (defaultDataType.domainType == PrimitiveType.simpleName) {
+    if (defaultDataType.domainType == ReferencePrimitiveType.simpleName) {
         if (defaultDataType.units) units defaultDataType.units
     }
 }

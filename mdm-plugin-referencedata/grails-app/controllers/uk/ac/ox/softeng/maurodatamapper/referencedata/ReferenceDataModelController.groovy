@@ -21,8 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.DataModelExporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.DataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataModelExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DeleteAllParams
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 

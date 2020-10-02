@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.databinding
 
 import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters.DataTypeValueConverter
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 
 import grails.databinding.BindingHelper
 import grails.databinding.DataBindingSource
@@ -28,15 +28,15 @@ import groovy.transform.CompileStatic
  * @since 16/11/2017
  */
 @CompileStatic
-class DataTypeBindingHelper implements BindingHelper<DataType> {
+class DataTypeBindingHelper implements BindingHelper<ReferenceDataType> {
 
     private static final DataTypeValueConverter converter = new DataTypeValueConverter()
 
     @Override
-    DataType getPropertyValue(Object obj, String propertyName, DataBindingSource source) {
+    ReferenceDataType getPropertyValue(Object obj, String propertyName, DataBindingSource source) {
         if (converter.canConvert(source.getPropertyValue(propertyName))) {
-            return converter.convert(source.getPropertyValue(propertyName)) as DataType
+            return converter.convert(source.getPropertyValue(propertyName)) as ReferenceDataType
         }
-        source.getPropertyValue(propertyName) as DataType
+        source.getPropertyValue(propertyName) as ReferenceDataType
     }
 }

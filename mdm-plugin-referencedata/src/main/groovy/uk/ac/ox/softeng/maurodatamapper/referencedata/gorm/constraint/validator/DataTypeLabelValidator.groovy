@@ -17,15 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
+
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringValidator
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 
 /**
  * @since 19/04/2018
  */
-class DataTypeLabelValidator extends UniqueStringValidator<DataType> {
+class DataTypeLabelValidator extends UniqueStringValidator<ReferenceDataType> {
 
-    DataTypeLabelValidator(DataType object) {
+    DataTypeLabelValidator(ReferenceDataType object) {
         super(object)
     }
 

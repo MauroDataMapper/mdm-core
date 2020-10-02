@@ -21,15 +21,13 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.DataModelExportModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.DataModelExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.plugin.json.view.JsonViewTemplateEngine
 import org.springframework.beans.factory.annotation.Autowired
 
-class JsonExporterService extends DataModelExporterProviderService implements TemplateBasedExporter {
+class JsonExporterService extends ReferenceDataModelExporterProviderService implements TemplateBasedExporter {
 
     @Autowired
     JsonViewTemplateEngine templateEngine
@@ -55,13 +53,13 @@ class JsonExporterService extends DataModelExporterProviderService implements Te
     }
 
     @Override
-    ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
+    ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new DataModelExportModel(dataModel, exportMetadata, false), fileType
+        exportModel new ReferenceDataModelExportModel(referenceDataModel, exportMetadata, false), fileType
     }
 
     @Override
-    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModel) throws ApiException {
-        throw new ApiBadRequestException('JES01', "${getName()} cannot export multiple DataModels")
+    ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModel) throws ApiException {
+        throw new ApiBadRequestException('JES01', "${getName()} cannot export multiple Reference Data Models")
     }
 }

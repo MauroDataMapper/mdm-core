@@ -21,9 +21,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.DataModelExportModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.DataModelExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataModelExportModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.plugin.markup.view.MarkupViewTemplateEngine
@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired
 /**
  * Created by james on 14/06/2017.
  */
-class XmlExporterService extends DataModelExporterProviderService implements TemplateBasedExporter {
+class XmlExporterService extends ReferenceDataModelExporterProviderService implements TemplateBasedExporter {
 
     @Autowired
     MarkupViewTemplateEngine templateEngine
@@ -49,7 +49,7 @@ class XmlExporterService extends DataModelExporterProviderService implements Tem
 
     @Override
     String getDisplayName() {
-        'XML DataModel Exporter'
+        'XML Reference Data Model Exporter'
     }
 
     @Override
@@ -58,13 +58,13 @@ class XmlExporterService extends DataModelExporterProviderService implements Tem
     }
 
     @Override
-    ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
+    ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new DataModelExportModel(dataModel, exportMetadata, true), fileType
+        exportModel new ReferenceDataModelExportModel(referenceDataModel, exportMetadata, true), fileType
     }
 
     @Override
-    ByteArrayOutputStream exportDataModels(User currentUser, List<DataModel> dataModel) throws ApiException {
-        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple DataModels")
+    ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModel) throws ApiException {
+        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple Reference Data Models")
     }
 }

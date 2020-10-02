@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
 

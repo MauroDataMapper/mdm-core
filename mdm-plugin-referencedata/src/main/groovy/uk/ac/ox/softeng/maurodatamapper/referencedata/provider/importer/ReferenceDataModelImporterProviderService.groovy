@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -41,7 +41,7 @@ abstract class ReferenceDataModelImporterProviderService<T extends ReferenceData
 
     @Override
     ReferenceDataModel importDomain(User currentUser, T params) {
-        ReferenceDataModel referenceDataModel = importDataModel(currentUser, params)
+        ReferenceDataModel referenceDataModel = importReferenceDataModel(currentUser, params)
         if (!referenceDataModel) return null
         if (params.modelName) referenceDataModel.label = params.modelName
         checkImport(currentUser, referenceDataModel, params.finalised, params.importAsNewDocumentationVersion)
@@ -67,11 +67,11 @@ abstract class ReferenceDataModelImporterProviderService<T extends ReferenceData
         referenceDataModelService.checkDocumentationVersion(referenceDataModel, importAsNewDocumentationVersion, currentUser)
         classifierService.checkClassifiers(currentUser, referenceDataModel)
 
-        referenceDataModel.dataElements.each { de ->
+        referenceDataModel.referenceDataElements.each { de ->
             classifierService.checkClassifiers(currentUser, de)
         }
 
-        referenceDataModel.dataTypes.each { dt ->
+        referenceDataModel.referenceDataTypes.each { dt ->
             classifierService.checkClassifiers(currentUser, dt)
         }
         referenceDataModel

@@ -1,9 +1,0 @@
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataClass
-
-inherits template: '/catalogueItem/export', model: [export: exportReference, addContents: false]
-model {
-    DataClass exportReference
-}
-json {
-    dataClassPath DataClass.buildLabelPath(exportReference)
-}

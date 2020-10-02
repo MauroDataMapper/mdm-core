@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/dataModel/fullDataModel', model: [dataModel                : referenceDataModel,
+                                                       userSecurityPolicyManager: userSecurityPolicyManager]
+
+model {
+    ReferenceDataModel referenceDataModel
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    dataTypes tmpl.'/dataType/fullDataType'('dataType',
+                                            referenceDataModel.getSortedDataTypes(),
+                                            [userSecurityPolicyManager: userSecurityPolicyManager]
+    )
+}
+

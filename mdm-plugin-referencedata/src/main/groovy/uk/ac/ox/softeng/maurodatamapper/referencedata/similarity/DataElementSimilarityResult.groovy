@@ -18,14 +18,14 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.similarity
 
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 
 /**
  * @since 07/04/2020
  */
-class DataElementSimilarityResult extends SimilarityResult<DataElement> {
+class DataElementSimilarityResult extends SimilarityResult<ReferenceDataElement> {
 
-    DataElementSimilarityResult(DataElement source) {
+    DataElementSimilarityResult(ReferenceDataElement source) {
         super(source)
     }
 }

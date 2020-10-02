@@ -1,9 +1,0 @@
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-
-model {
-    DataElement dataElement
-    UserSecurityPolicyManager userSecurityPolicyManager
-}
-
-json tmpl.fullDataElement(dataElement: dataElement, userSecurityPolicyManager: userSecurityPolicyManager)

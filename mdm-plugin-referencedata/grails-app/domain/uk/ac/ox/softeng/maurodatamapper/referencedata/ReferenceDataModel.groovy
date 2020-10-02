@@ -33,9 +33,9 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -58,15 +58,15 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
     Boolean hasChild
 
     static hasMany = [
-        dataTypes      : DataType,
-        dataElements   : DataElement,
-        classifiers    : Classifier,
-        metadata       : Metadata,
-        semanticLinks  : SemanticLink,
-        annotations    : Annotation,
-        versionLinks   : VersionLink,
-        referenceFiles : ReferenceFile,
-        summaryMetadata: SummaryMetadata
+            referenceDataTypes      : ReferenceDataType,
+            referenceDataElements   : ReferenceDataElement,
+            classifiers             : Classifier,
+            metadata                : Metadata,
+            semanticLinks           : SemanticLink,
+            annotations             : Annotation,
+            versionLinks            : VersionLink,
+            referenceFiles          : ReferenceFile,
+            referenceSummaryMetadata: ReferenceSummaryMetadata
     ]
 
     static belongsTo = [Folder]
@@ -75,26 +75,26 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
 
     static constraints = {
         CallableConstraints.call(ModelConstraints, delegate)
-        dataTypes validator: { val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataTypes').isValid(val) }
+        referenceDataTypes validator: { val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataTypes').isValid(val) }
     }
 
     static mapping = {
         documentationVersion type: VersionUserType
         modelVersion type: VersionUserType
         folder cascade: 'none'
-        dataTypes cascade: 'all-delete-orphan'
+        referenceDataTypes cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [
         metadata   : 'none',
-        dataTypes  : 'referenceDataModel'
+        referenceDataTypes  : 'referenceDataModel'
     ]
 
     static search = {
         CallableSearch.call(StandardSearch, delegate)
     }
 
-    DataModel() {
+    ReferenceDataModel() {
         modelType = ReferenceDataModel.simpleName
         documentationVersion = Version.from('1')
         finalised = false
@@ -112,29 +112,29 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
 
     ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel) {
         modelDiffBuilder(ReferenceDataModel, this, otherDataModel)
-            .appendList(DataType, 'dataTypes', this.dataTypes, otherDataModel.dataTypes)
-            .appendList(DataType, 'dataElements', this.getAllDataElements(), otherDataModel.getAllDataElements())
+            .appendList(ReferenceDataType, 'referenceDataTypes', this.referenceDataTypes, otherDataModel.referenceDataTypes)
+            .appendList(ReferenceDataType, 'referenceDataElements', this.referenceDataElements, otherDataModel.referenceDataElements)
     }
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
-        dataTypes?.each { it.beforeValidate() }
+        this.referenceDataTypes?.each { it.beforeValidate() }
     }
 
-    DataType findDataTypeByLabel(String label) {
-        dataTypes?.find { it.label == label }
+    ReferenceDataType findDataTypeByLabel(String label) {
+        this.referenceDataTypes?.find { it.label == label }
     }
 
-    DataType findDataTypeByLabelAndType(String label, String type) {
-        dataTypes?.find { it.domainType == type && it.label == label }
+    ReferenceDataType findDataTypeByLabelAndType(String label, String type) {
+        this.referenceDataTypes?.find { it.domainType == type && it.label == label }
     }
 
     int countDataTypesByLabel(String label) {
-        dataTypes?.count { it.label == label } ?: 0
+        this.referenceDataTypes?.count { it.label == label } ?: 0
     }
 
-    List<DataType> getSortedDataTypes() {
-        dataTypes?.sort() ?: []
+    List<ReferenceDataType> getSortedDataTypes() {
+        this.referenceDataTypes?.sort() ?: []
     }
 
     @Override
@@ -166,16 +166,16 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         boolean dmValid = true
         long start = null
 
-        if (dataElements) {
-            if (!fields || fields.contains('dataElements')) {
+        if (this.referenceDataElements) {
+            if (!fields || fields.contains('referenceDataElements')) {
                 start = System.currentTimeMillis()
                 deErrors = validateDataElements()
                 log.trace('DE validate {} (valid: {})', Utils.timeTaken(start), deErrors)
             }
         }
 
-        if (dataTypes) {
-            if (!fields || fields.contains('dataTypes')) {
+        if (this.referenceDataTypes) {
+            if (!fields || fields.contains('referenceDataTypes')) {
                 start = System.currentTimeMillis()
                 dtErrors = validateDataTypes()
                 log.trace('DT validate {} (valid: {})', Utils.timeTaken(start), dtErrors)
@@ -183,15 +183,15 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         }
 
         start = System.currentTimeMillis()
-        Collection<DataElement> storedDataElements = []
-        Collection<DataType> storedDataTypes = []
-        if (dataElements) {
-            storedDataElements.addAll(dataElements ?: [])
-            dataElements?.clear()
+        Collection<ReferenceDataElement> storedDataElements = []
+        Collection<ReferenceDataType> storedDataTypes = []
+        if (this.referenceDataElements) {
+            storedDataElements.addAll(this.referenceDataElements ?: [])
+            this.referenceDataElements?.clear()
         }
-        if (dataTypes) {
-            storedDataTypes.addAll(dataTypes ?: [])
-            dataTypes?.clear()
+        if (this.referenceDataTypes) {
+            storedDataTypes.addAll(this.referenceDataTypes ?: [])
+            this.referenceDataTypes?.clear()
         }
 
         if (args) {
@@ -203,10 +203,10 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         }
 
         if (storedDataElements) {
-            dataElements.addAll(storedDataElements)
+            this.referenceDataElements.addAll(storedDataElements)
         }
         if (storedDataTypes) {
-            dataTypes.addAll(storedDataTypes)
+            this.referenceDataTypes.addAll(storedDataTypes)
         }
 
         log.trace('Final validate {} (valid: {})', Utils.timeTaken(start), dmValid)
@@ -223,12 +223,12 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
      */
     protected Errors validateDataTypes() {
         def dataTypeErrors = new org.grails.datastore.mapping.validation.ValidationErrors(this)
-        if (!dataTypes) return dataTypeErrors
+        if (!this.referenceDataTypes) return dataTypeErrors
 
-        dataTypes.eachWithIndex { DataType dataType, int index ->
+        this.referenceDataTypes.eachWithIndex { ReferenceDataType dataType, int index ->
             if (!dataType.validate()) {
                 for (FieldError error : dataType.getErrors().getFieldErrors()) {
-                    String path = "dataTypes[$index].${error.getField()}"
+                    String path = "referenceDataTypes[$index].${error.getField()}"
 
                     Object[] args = new Object[Math.max(error.arguments.size(), 3)]
                     args[0] = path
@@ -242,17 +242,17 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
                 }
             }
         }
-        List<String> duplicates = dataTypes.groupBy { it.label }.findAll { it.value.size() > 1 }.collect { it.key }
+        List<String> duplicates = this.referenceDataTypes.groupBy { it.label }.findAll { it.value.size() > 1 }.collect { it.key }
         if (duplicates) {
             Object[] args = new Object[5]
-            args[0] = 'dataTypes'
+            args[0] = 'referenceDataTypes'
             args[1] = ReferenceDataModel
             args[2] = ReferenceDataModel
             args[3] = duplicates.sort().join(',')
             args[4] = 'label'
 
             dataTypeErrors.
-                rejectValue('dataTypes', 'invalid.unique.values.message', args, 'Property [{0}] has non-unique values [{3}] on property [{4}]')
+                rejectValue('referenceDataTypes', 'invalid.unique.values.message', args, 'Property [{0}] has non-unique values [{3}] on property [{4}]')
             //return ['invalid.unique.values.message', duplicates.sort().join(','), collectionName]
         }
 
@@ -261,12 +261,12 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
 
     protected Errors validateDataElements() {
         def dataElementErrors = new ValidationErrors(this)
-        if (!dataElements) return dataElementErrors
+        if (!this.referenceDataElements) return dataElementErrors
 
-        dataElements.eachWithIndex { DataElement dataElement, int index ->
+        this.referenceDataElements.eachWithIndex { ReferenceDataElement dataElement, int index ->
             if (!dataElement.validate()) {
                 for (FieldError error : dataElement.getErrors().getFieldErrors()) {
-                    String path = "dataElements[$index].${error.getField()}"
+                    String path = "referenceDataElements[$index].${error.getField()}"
 
                     Object[] args = new Object[Math.max(error.arguments.size(), 3)]
                     args[0] = path
@@ -282,20 +282,20 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         }
 
 
-        List<String> duplicates = dataElements
-            .findAll { !it.parentReferenceDataModel }
+        List<String> duplicates = this.referenceDataElements
+            .findAll { !it.referenceDataModel }
             .groupBy { it.label }
             .findAll { it.value.size() > 1 }
             .collect { it.key }
 
         if (duplicates) {
             Object[] args = new Object[5]
-            args[0] = 'dataElements'
+            args[0] = 'referenceDataElements'
             args[1] = ReferenceDataModel
             args[2] = ReferenceDataModel
             args[3] = duplicates.sort().join(',')
             args[4] = 'label'
-            dataElementErrors.rejectValue('childDataClasses', 'invalid.unique.values.message', args,
+            dataElementErrors.rejectValue('referenceDataElements', 'invalid.unique.values.message', args,
                                         'Property [{0}] has non-unique values [{3}] on property[{4}]')
         }
         dataElementErrors
