@@ -55,6 +55,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -380,7 +381,13 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds = []) {
+    DataModel mergeInto(DataModel leftModel, DataModel rightModel, Map<String, Object> patch, boolean deleteBranch) {
+        throw new NotImplementedException('DataModelService.mergeInto')
+    }
+
+    @Override
+    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion, VersionChangeType versionChangeType,
+                            List<Serializable> supersedeModelIds = []) {
 
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)

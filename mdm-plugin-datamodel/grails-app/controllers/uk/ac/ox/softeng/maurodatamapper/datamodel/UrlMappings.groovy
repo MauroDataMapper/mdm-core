@@ -43,6 +43,7 @@ class UrlMappings {
                 get '/latestFinalisedModel'(controller: 'dataModel', action: 'latestFinalisedModel')
                 get '/latestModelVersion'(controller: 'dataModel', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'dataModel', action: 'mergeDiff')
+                put "/mergeInto/$otherModelId"(controller: 'dataModel', action: 'mergeInto')
 
                 get '/currentMainBranch'(controller: 'dataModel', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'dataModel', action: 'availableBranches')

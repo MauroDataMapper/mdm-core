@@ -72,6 +72,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
+    abstract K mergeInto(K leftModel, K rightModel, Map<String, Object> patch, boolean deleteBranch)
+
     abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds)
 
     abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType)
@@ -80,7 +82,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-            userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
+        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewForkModel(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
             userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])

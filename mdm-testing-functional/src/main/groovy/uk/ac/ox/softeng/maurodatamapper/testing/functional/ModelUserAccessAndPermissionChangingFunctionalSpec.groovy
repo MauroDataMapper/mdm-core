@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissi
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -866,5 +867,56 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(newBranchId)
         cleanUpRoles(finalisedId)
         cleanUpRoles(latestDraftId)
+    }
+
+    @PendingFeature
+    void 'E25 : test merging object diff into a draft main model'() {
+        given:
+        // a source and draft main branch
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        // merging a patch
+        PUT("$source/mergeInto/$target", [patch: [test: 'value']])
+
+        then:
+        // success
+        verifyResponse OK, response
+        responseBody()
+        responseBody().id == target
+        responseBody().branchName == 'main'
+
+        when:
+        // merging patch and deleting source
+        PUT("$source/mergeInto/$target", [patch: [test: 'value'], deleteBranch: true])
+
+        then:
+        //TODO: decide on appropriate response when source is deleted
+        verifyResponse OK, response
+        responseBody()
+        responseBody().id == target
+        responseBody().branchName == 'main'
+
+        when:
+        // trying to get source which should be deleted
+        GET("$source")
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(target)
+        removeValidIdObjectUsingTransaction(source)
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(target)
+        cleanUpRoles(source)
+        cleanUpRoles(id)
     }
 }

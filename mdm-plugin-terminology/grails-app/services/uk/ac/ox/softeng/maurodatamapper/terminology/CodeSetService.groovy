@@ -48,6 +48,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -210,6 +211,11 @@ class CodeSetService extends ModelService<CodeSet> {
         log.debug('Found CodeSet {}({}) which matches DataLoaderPlugin {}({})', latest.label, latest.documentationVersion,
                   dataLoaderProviderService.name, dataLoaderProviderService.version)
         latest
+    }
+
+    @Override
+    CodeSet mergeInto(CodeSet leftModel, CodeSet rightModel, Map<String, Object> patch, boolean deleteBranch) {
+        throw new NotImplementedException('DataModelService.mergeInto')
     }
 
     @Override

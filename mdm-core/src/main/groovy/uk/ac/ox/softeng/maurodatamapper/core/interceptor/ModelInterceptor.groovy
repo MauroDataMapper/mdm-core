@@ -86,7 +86,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             }
         }
 
-        if (actionName in ['diff', 'commonAncestor', 'mergeDiff']) {
+        if (actionName in ['diff', 'commonAncestor', 'mergeDiff', 'mergeInto']) {
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
                 return notFound(getSecuredClass(), getId())
             }
@@ -95,7 +95,6 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             }
             return true
         }
-
 
         if (actionName == 'exportModels') {
             return checkExportModelAction()
