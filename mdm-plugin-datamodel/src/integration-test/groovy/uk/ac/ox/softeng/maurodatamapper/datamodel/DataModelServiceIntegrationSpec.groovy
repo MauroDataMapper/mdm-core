@@ -733,37 +733,58 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'rightChildDataClass'))
         draft.addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightOnly'))
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference'))
-                .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right'))
-                .addToDataClasses(rightParentDataClass)
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right'))
+            .addToDataClasses(rightParentDataClass)
         draft.description = 'DescriptionRight'
         checkAndSave(draft)
 
-
-        then:
-        // Fields
-        // both changed -> no resulting diff
-        test.modelVersion == null
-        draft.modelVersion == null
-        // left changed -> diff
-        test.branchName == 'test'
-        draft.branchName == 'main'
-        // both changed -> diff, conflict
-//        test.description == 'DescriptionLeft'
-        draft.description == 'DescriptionRight'
-
-
-        // Arrays
-        // both changed -> no resulting diff
-//        sdmclass
-//        draftParent in draft.childDataClasses
-//        testParent
-
-        when:
         def mergeDiff = dataModelService.mergeDiff(test, draft)
 
         then:
         mergeDiff.class == ObjectDiff
         mergeDiff.diffs
+        mergeDiff.numberOfDiffs == 11
+        mergeDiff.diffs[0].fieldName == 'branchName'
+        mergeDiff.diffs[0].left == 'main'
+        mergeDiff.diffs[0].right == 'test'
+        !mergeDiff.diffs[0].isMergeConflict
+        mergeDiff.diffs[1].fieldName == 'dataClasses'
+        mergeDiff.diffs[1].created.size == 3
+        mergeDiff.diffs[1].deleted.size == 2
+        mergeDiff.diffs[1].modified.size == 4
+        mergeDiff.diffs[1].created[0].value.label == 'addLeftOnly'
+        !mergeDiff.diffs[1].created[0].isMergeConflict
+        !mergeDiff.diffs[1].created[0].commonAncestorValue
+        mergeDiff.diffs[1].created[1].value.label == 'leftParentDataClass'
+        !mergeDiff.diffs[1].created[1].isMergeConflict
+        !mergeDiff.diffs[1].created[1].commonAncestorValue
+        mergeDiff.diffs[1].created[2].value.label == 'modifyAndDelete'
+        mergeDiff.diffs[1].created[2].isMergeConflict
+        mergeDiff.diffs[1].created[2].commonAncestorValue
+        mergeDiff.diffs[1].deleted[0].value.label == 'deleteAndModify'
+        mergeDiff.diffs[1].deleted[0].isMergeConflict
+        mergeDiff.diffs[1].deleted[0].commonAncestorValue
+        mergeDiff.diffs[1].deleted[1].value.label == 'deleteLeftOnly'
+        !mergeDiff.diffs[1].deleted[1].isMergeConflict
+        !mergeDiff.diffs[1].deleted[1].commonAncestorValue
+        mergeDiff.diffs[1].modified[0].diffs[0].fieldName == 'description'
+        mergeDiff.diffs[1].modified[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[0].commonAncestorValue
+        mergeDiff.diffs[1].modified[1].diffs[0].fieldName == 'dataClasses'
+        mergeDiff.diffs[1].modified[1].isMergeConflict
+        mergeDiff.diffs[1].modified[1].commonAncestorValue
+        mergeDiff.diffs[1].modified[1].diffs[0].created[0].value.label == 'addLeftToExistingClass'
+        mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].value.label == 'deleteLeftOnlyFromExistingClass'
+        !mergeDiff.diffs[1].modified[1].diffs[0].created[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[1].diffs[0].created[0].commonAncestorValue
+        !mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].commonAncestorValue
+        mergeDiff.diffs[1].modified[2].diffs[0].fieldName == 'description'
+        mergeDiff.diffs[1].modified[2].diffs[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[2].diffs[0].commonAncestorValue
+        mergeDiff.diffs[1].modified[3].diffs[0].fieldName == 'description'
+        !mergeDiff.diffs[1].modified[3].diffs[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[3].diffs[0].commonAncestorValue
     }
 
     void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {

@@ -7,6 +7,8 @@ model {
 
 json {
     value tmpl.'/diffable/diffable'(mergeWrapper.value)
-    isMergeConflict mergeWrapper.isMergeConflict
-    commonAncestorValue tmpl.'/diffable/diffable'(mergeWrapper.commonAncestorValue)
+    if (mergeWrapper.isMergeConflict != null) {
+        isMergeConflict mergeWrapper.isMergeConflict
+        if (mergeWrapper.isMergeConflict) commonAncestorValue tmpl.'/diffable/diffable'(mergeWrapper.commonAncestorValue)
+    }
 }
