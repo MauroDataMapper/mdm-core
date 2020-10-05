@@ -723,6 +723,9 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         given:
         String id = getValidFinalisedId()
         loginEditor()
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
         String leftId = responseBody().id
@@ -731,63 +734,35 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String rightId = responseBody().id
 
         when:
-        GET('')
-
-        then:
-        verifyResponse OK, response
-        responseBody().count >= 3
-
-        when:
-        String mainBranchId = responseBody().items.find {
-            it.label == validJson.label &&
-            !(it.id in [leftId, rightId, id])
-        }?.id
-
-        then:
-        mainBranchId
-
-        when:
         GET("$leftId/mergeDiff/$rightId")
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.leftId == rightId
-        responseBody().diffs.rightId == leftId
-        responseBody().conflicts.left.leftId == id
-        responseBody().conflicts.left.rightId == leftId
-        responseBody().conflicts.right.leftId == id
-        responseBody().conflicts.right.rightId == rightId
+        responseBody().leftId == rightId
+        responseBody().rightId == leftId
 
         when:
-        GET("$leftId/mergeDiff/$mainBranchId")
+        GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.leftId == mainBranchId
-        responseBody().diffs.rightId == leftId
-        responseBody().conflicts.left.leftId == id
-        responseBody().conflicts.left.rightId == leftId
-        responseBody().conflicts.right.leftId == id
-        responseBody().conflicts.right.rightId == mainBranchId
+        responseBody().leftId == mainId
+        responseBody().rightId == leftId
 
         when:
-        GET("$rightId/mergeDiff/$mainBranchId")
+        GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.leftId == mainBranchId
-        responseBody().diffs.rightId == rightId
-        responseBody().conflicts.left.leftId == id
-        responseBody().conflicts.left.rightId == rightId
-        responseBody().conflicts.right.leftId == id
-        responseBody().conflicts.right.rightId == mainBranchId
+        responseBody().leftId == mainId
+        responseBody().rightId == rightId
 
         cleanup:
-        removeValidIdObjectUsingTransaction(mainBranchId)
+        removeValidIdObjectUsingTransaction(mainId)
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
         removeValidIdObjectUsingTransaction(id)
-        cleanUpRoles(mainBranchId)
+        cleanUpRoles(mainId)
         cleanUpRoles(leftId)
         cleanUpRoles(rightId)
         cleanUpRoles(id)

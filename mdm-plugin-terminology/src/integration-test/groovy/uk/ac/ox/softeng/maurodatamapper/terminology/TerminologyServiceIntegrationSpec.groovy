@@ -275,7 +275,12 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         def mergeDiff = terminologyService.mergeDiff(left, right)
 
         then:
-        mergeDiff == [diffs: left.diff(right), conflicts: [left: terminology.diff(left), right: terminology.diff(right)]]
+        mergeDiff.diffs.size == 1
+        mergeDiff.diffs[0].fieldName == 'branchName'
+        mergeDiff.diffs[0].left == 'right'
+        mergeDiff.diffs[0].right == 'left'
+        mergeDiff.diffs[0].isMergeConflict
+        mergeDiff.diffs[0].commonAncestorValue == 'main'
     }
 
     void 'TSICMB01 : test getting current draft model on main branch from side branch'() {

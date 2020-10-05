@@ -741,6 +741,9 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: "Major"])
         verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
         String leftId = responseBody().id
@@ -749,51 +752,28 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String rightId = responseBody().id
 
         when:
-        GET('')
-
-        then:
-        verifyResponse OK, response
-        String mainId = responseBody().items.find {
-            it.label == 'Functional Test Model' &&
-                    !(it.id in [id, leftId, rightId])
-        }?.id
-        mainId
-
-        when:
         GET("$leftId/mergeDiff/$rightId")
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.leftId == rightId
-        responseBody().diffs.rightId == leftId
-        responseBody().conflicts.left.leftId == id
-        responseBody().conflicts.left.rightId == leftId
-        responseBody().conflicts.right.leftId == id
-        responseBody().conflicts.right.rightId == rightId
+        responseBody().leftId == rightId
+        responseBody().rightId == leftId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.leftId == mainId
-        responseBody().diffs.rightId == leftId
-        responseBody().conflicts.left.leftId == id
-        responseBody().conflicts.left.rightId == leftId
-        responseBody().conflicts.right.leftId == id
-        responseBody().conflicts.right.rightId == mainId
+        responseBody().leftId == mainId
+        responseBody().rightId == leftId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().diffs.leftId == mainId
-        responseBody().diffs.rightId == rightId
-        responseBody().conflicts.left.leftId == id
-        responseBody().conflicts.left.rightId == rightId
-        responseBody().conflicts.right.leftId == id
-        responseBody().conflicts.right.rightId == mainId
+        responseBody().leftId == mainId
+        responseBody().rightId == rightId
 
         cleanup:
         cleanUpData(mainId)
