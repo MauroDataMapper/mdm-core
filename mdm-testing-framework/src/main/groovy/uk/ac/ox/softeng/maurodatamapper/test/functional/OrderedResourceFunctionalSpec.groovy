@@ -310,6 +310,41 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
         !response.body().items[4].index 
         response.body().items[5].label == 'E'
         !response.body().items[5].index              
-   }    
+   }
 
+   void 'OR4: Test ordering on update when moving an item from the top to bottom'() {
+        given: 'Three resources with indices 0, 1 and 2'
+        String aId = createNewItem(getValidLabelJson('emptyclass', 0))
+        String bId = createNewItem(getValidLabelJson('parent', 1))
+        String cId = createNewItem(getValidLabelJson('content', 2))
+        
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order emptyclass, parent, content'
+        response.body().items[0].label == 'emptyclass'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'parent'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'content'
+        response.body().items[2].index == 2
+
+        when: 'emptyclass is PUT at the bottom of the list'
+        PUT(aId, getValidLabelJson('emptyclass', 2))
+        
+        then: 'The item is updated'
+        response.status == HttpStatus.OK
+        response.body().index == 2
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order parent, content, emptyclass'
+        response.body().items[0].label == 'parent'
+        response.body().items[0].index == 0
+        response.body().items[1].label == 'content'
+        response.body().items[1].index == 1
+        response.body().items[2].label == 'emptyclass'
+        response.body().items[2].index == 2
+   }
 }
