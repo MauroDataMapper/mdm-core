@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import org.springframework.context.MessageSource
 
+import java.time.temporal.ChronoUnit
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -80,7 +81,7 @@ class BootstrapModels {
         Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
 
         if (!simpleTestTerminology) {
-            simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder)
+            simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
         }
 
         simpleTestTerminology.terms.each {
@@ -88,7 +89,8 @@ class BootstrapModels {
         }
 
         codeSet.finalised = true
-        codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        //Truncate the dateFinalised to milliseconds to avoid a Diff failure when test exporting and reimporting a CodeSet
+        codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
         codeSet.modelVersion = Version.from('1.0.0')
 
         checkAndSave(messageSource, codeSet)

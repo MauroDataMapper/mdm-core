@@ -11,6 +11,7 @@ json {
     if (export.organisation) organisation export.organisation
 
     documentationVersion export.documentationVersion.toString()
+    if (export.modelVersion) modelVersion export.modelVersion.toString()
 
     finalised export.finalised
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)

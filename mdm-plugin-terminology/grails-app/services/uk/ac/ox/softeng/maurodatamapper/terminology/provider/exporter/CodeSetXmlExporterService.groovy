@@ -65,4 +65,9 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
     ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
         throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple CodeSets")
     }
+
+    @Override
+    String getExportViewPath() {
+        '/exportModel/exportCodeSet'
+    }
 }

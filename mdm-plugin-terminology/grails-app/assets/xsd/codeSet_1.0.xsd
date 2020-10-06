@@ -20,13 +20,14 @@
 Otherwise you will get an import error due to non-unique labels</xs:documentation>
         </xs:annotation>
       </xs:element>
+            <xs:element name="modelVersion" type="xs:string" />
       <xs:element name="finalised" type="xs:boolean" />
-      <xs:element name="authority" type="mdm:authorityType" />
       <xs:element minOccurs="0" name="dateFinalised" type="xs:dateTime">
         <xs:annotation>
           <xs:documentation>If finalised is true then this element is NOT optional</xs:documentation>
         </xs:annotation>
-      </xs:element>
+      </xs:element>      
+      <xs:element name="authority" type="mdm:authorityType" />
       <xs:element name="terms" type="mdm:termCollectionCT" minOccurs="0" />
     </xs:sequence>
   </xs:complexType>
