@@ -583,6 +583,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().documentationVersion == '1.0.0'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
+        !responseBody().availableActions.contains('finalise')
 
         when:
         String branchId = responseBody().id

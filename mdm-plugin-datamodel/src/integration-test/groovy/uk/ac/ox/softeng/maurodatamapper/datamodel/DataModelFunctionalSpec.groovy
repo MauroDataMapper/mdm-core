@@ -1608,8 +1608,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         parentDiff.diffs.size() == 1
         parentDiff.diffs.first().dataClasses.deleted.size() == 1
         parentDiff.diffs.first().dataClasses.created.size() == 1
-        parentDiff.diffs.first().dataClasses.deleted.first().label == 'child edit'
-        parentDiff.diffs.first().dataClasses.created.first().label == 'child'
+        parentDiff.diffs.first().dataClasses.deleted.first().value.label == 'child edit'
+        parentDiff.diffs.first().dataClasses.created.first().value.label == 'child'
 
         cleanup:
         cleanUpData(id)
