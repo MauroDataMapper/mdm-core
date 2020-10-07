@@ -33,6 +33,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 import spock.lang.Shared
 
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -104,7 +105,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec CodeSetFunctionalSpec')
-        cleanUpResources(Folder, Classifier)
+        cleanUpResources(Terminology, Folder, Classifier)
     }
 
     @Override
@@ -1497,23 +1498,68 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-    void 'IM04: test importing simple test CodeSet'() {
-        when:
+    void 'IM04: test importing and exporting a CodeSet with unknown terms'() {
+
+        when: 'importing a codeset which references unknown'
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('codeSetFunctionalTest').toList()
+            ]
+        ])
+
+        then:
+        verifyResponse BAD_REQUEST, response
+    } 
+
+    void 'IM05: test importing and exporting a CodeSet with terms'() {
+        given: 'The Simple Test Terminology is imported as a pre-requisite'
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleCodeSet').toList()
+                fileContents: loadTestFile('simpleTerminologyForCodeSet').toList()
+            ]
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+
+        
+        when: 'importing a codeset which references the terms already imported'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('codeSetFunctionalTest').toList()
             ]
         ])
+
+        then:
         verifyResponse CREATED, response
         def id = response.body().items[0].id
 
-        then:
+        String expected = new String(loadTestFile('codeSetFunctionalTest')).replaceFirst('"exportedBy": "Admin User",',
+                                                                                     '"exportedBy": "Unlogged User",')
+                                                                       .replace(/Test Authority/, 'Mauro Data Mapper')
+
+
+        expect:
         id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/CodeSetJsonExporterService/3.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expected
 
         cleanup:
         cleanUpData(id)

@@ -1,34 +1,40 @@
 {
   "codeSet": {
     "id": "${json-unit.matches:id}",
-    "label": "Simple Test CodeSet",
+    "label": "Simple CodeSet Import",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "classifiers": [
+    "metadata": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "test classifier",
+        "namespace": "codeset.test.com/simple",
+        "key": "mdk1",
+        "value": "mdv1",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "codeset.test.com",
+        "key": "mdk2",
+        "value": "mdv2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "codeset.test.com/simple",
+        "key": "mdk2",
+        "value": "mdv2",
         "lastUpdated": "${json-unit.matches:offsetDateTime}"
       }
-    ],
-    "author": "Test Bootstrap",
-    "organisation": "Oxford BRC",
+    ],    
+    "author": "Test Author",
+    "organisation": "Test Organisation",
     "documentationVersion": "1.0.0",
-    "finalised": true,
-    "dateFinalised": "${json-unit.matches:offsetDateTime}",
-    "modelVersion": "1.0.0",
+    "finalised": false,
     "authority": {
       "id": "${json-unit.matches:id}",
       "url": "http://localhost",
       "label": "Test Authority"
-    },
-    "termPaths": [
-      {
-        "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
-      },
-      {
-        "termPath": "te:Simple Test Terminology|tm:STT02: Simple Test Term 02"
-      }
-    ]
+    }
   },
   "exportMetadata": {
     "exportedBy": "Admin User",

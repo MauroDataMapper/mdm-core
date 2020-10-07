@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
@@ -668,12 +669,12 @@ class CodeSetService extends ModelService<CodeSet> {
                 //the user's ability to import a CodeSet has already been tested, or (ii) we are calling this method from a service test spec in which
                 //case it is OK to read. 
                 Term term = pathService.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, pathParams)
-                log.debug("Term ${term.toString()}")
+
                 if (term) {
                     codeSet.addToTerms(term)
                 } else {
                     //Throw an exception
-                    throw new ApiInvalidModelException('CSS01', "Term retrieval for [${path}] failed")
+                    throw new ApiBadRequestException('CSS01', "Term retrieval for ${path} failed")
                 }
             }
         }

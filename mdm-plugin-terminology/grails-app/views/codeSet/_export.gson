@@ -11,10 +11,10 @@ json {
     if (export.organisation) organisation export.organisation
 
     documentationVersion export.documentationVersion.toString()
-    if (export.modelVersion) modelVersion export.modelVersion.toString()
 
     finalised export.finalised
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
+    if (export.modelVersion) modelVersion export.modelVersion.toString()
     if (export.authority) authority tmpl.'/authority/export'(export.authority)
 
     if (export.terms) {

@@ -20,11 +20,15 @@
 Otherwise you will get an import error due to non-unique labels</xs:documentation>
         </xs:annotation>
       </xs:element>
-            <xs:element name="modelVersion" type="xs:string" />
       <xs:element name="finalised" type="xs:boolean" />
       <xs:element minOccurs="0" name="dateFinalised" type="xs:dateTime">
         <xs:annotation>
           <xs:documentation>If finalised is true then this element is NOT optional</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="modelVersion" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>ModelVersion must only be set if the CodeSet is finalised.</xs:documentation>
         </xs:annotation>
       </xs:element>      
       <xs:element name="authority" type="mdm:authorityType" />

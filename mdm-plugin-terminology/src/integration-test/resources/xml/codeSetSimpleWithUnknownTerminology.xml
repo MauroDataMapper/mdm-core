@@ -2,31 +2,21 @@
 <exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.0' xmlns:mdm='http://maurodatamapper.com/codeSet/3.0'>
     <mdm:codeSet>
         <mdm:id>9bde38fe-d4b6-4dbd-a5b9-061b606a7e23</mdm:id>
-        <mdm:label>Simple Test CodeSet</mdm:label>
+        <mdm:label>Simple CodeSet Import</mdm:label>
         <mdm:lastUpdated>2020-08-20T15:37:21.8Z</mdm:lastUpdated>
-        <mdm:classifiers>
-            <mdm:classifier>
-                <mdm:id>1bddaa14-731f-4021-8c44-7b3de8215e32</mdm:id>
-                <mdm:label>test classifier</mdm:label>
-                <mdm:lastUpdated>2020-08-20T15:37:21.68Z</mdm:lastUpdated>
-            </mdm:classifier>
-        </mdm:classifiers>
-        <mdm:author>Test Bootstrap</mdm:author>
-        <mdm:organisation>Oxford BRC</mdm:organisation>
+        <mdm:author>Test Author</mdm:author>
+        <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
-        <mdm:finalised>true</mdm:finalised>
-        <mdm:dateFinalised>2020-08-20T15:37:19.735Z</mdm:dateFinalised>
-        <mdm:modelVersion>1.0.0</mdm:modelVersion>
+        <mdm:finalised>false</mdm:finalised>
         <mdm:authority>
             <mdm:id>107adf2e-7051-4ffc-b785-1122f598f13a</mdm:id>
             <mdm:label>Test Authority</mdm:label>
             <mdm:url>http://localhost</mdm:url>
-            <mdm:lastUpdated>2020-08-20T15:37:19.735Z</mdm:lastUpdated>
+            <mdm:lastUpdated>2020-07-21T12:24:44.612Z</mdm:lastUpdated>
         </mdm:authority>
         <mdm:termPaths>
-            <mdm:termPath>te:Simple Test Terminology|tm:STT01: Simple Test Term 01</mdm:termPath>
-            <mdm:termPath>te:Simple Test Terminology|tm:STT02: Simple Test Term 02</mdm:termPath>
-        </mdm:termPaths>
+            <mdm:termPath>te:Simple Unknown Terminology|tm:STT01: Simple Test Term 01</mdm:termPath>
+        </mdm:termPaths>        
     </mdm:codeSet>
     <exp:exportMetadata>
       <exp:exportedBy>Admin User</exp:exportedBy>

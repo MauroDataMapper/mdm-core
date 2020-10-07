@@ -23,8 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
-//import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseCodeSetIntegrationSpec
 
 import grails.testing.spock.OnceBefore
@@ -49,9 +49,6 @@ abstract class BaseCodeSetImporterExporterSpec extends BaseCodeSetIntegrationSpe
 
     @Shared
     Path resourcesPath
-
-    //@Shared
-    //UUID complexTerminologyId
 
     @Shared
     UUID simpleTerminologyId
@@ -79,7 +76,6 @@ abstract class BaseCodeSetImporterExporterSpec extends BaseCodeSetIntegrationSpe
     void setupDomainData() {
         log.debug('Setting up CodeSetServiceSpec unit')
 
-        //complexTerminologyId = complexTerminology.id
         simpleTerminologyId = simpleTerminology.id
         simpleCodeSetId = simpleCodeSet.id
     }
@@ -96,12 +92,12 @@ abstract class BaseCodeSetImporterExporterSpec extends BaseCodeSetIntegrationSpe
     }
 
     CodeSet importAndConfirm(byte[] bytes) {
-        CodeSet imported = codeSetimporterService.importCodeSet(admin, bytes)
+        CodeSet imported = codeSetImporterService.importCodeSet(admin, bytes)
 
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        importerService.checkImport(admin, imported, false, false)
+        codeSetImporterService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
         assert codeSetService.saveWithBatching(imported)
@@ -120,9 +116,6 @@ abstract class BaseCodeSetImporterExporterSpec extends BaseCodeSetIntegrationSpe
     void confirmCodeSet(codeSet) {
         assert codeSet
         assert codeSet.createdBy == admin.emailAddress
-        assert codeSet.breadcrumbTree
-        assert codeSet.breadcrumbTree.domainId == codeSet.id
-        assert codeSet.breadcrumbTree.label == codeSet.label
     }
 
     void 'test that trying to export when specifying a null codeSetId fails with an exception'() {
@@ -161,50 +154,15 @@ abstract class BaseCodeSetImporterExporterSpec extends BaseCodeSetIntegrationSpe
         imported.classifiers
         imported.classifiers.size() == 1
         imported.classifiers[0].label == 'test classifier'
-        //imported.termsPaths.size() == 2
-        //log.debug(exported)
-        //log.debug(imported.dateFinalised.toString())
 
         when:
         imported.folder = testFolder
-        log.debug(imported.toString())
         ObjectDiff diff = codeSetService.diff(codeSetService.get(simpleCodeSetId), imported)
 
         then:
         diff.objectsAreIdentical()
     }
 
-    /*void 'test exporting and reimporting the complex bootstrapped terminology'() {
-        given:
-        setupData()
-
-        expect:
-        Terminology.count() == 2
-
-        when:
-        String exported = exportModel(complexTerminologyId)
-
-        then:
-        validateExportedModel('complex', exported.replace(/Test Authority/, 'Mauro Data Mapper'))
-
-        //note: importing does not actually save
-        when:
-        Terminology imported = importerService.importTerminology(admin, exported.bytes)
-
-        then:
-        assert imported
-
-        and:
-        imported.classifiers
-        imported.classifiers.size() == 2
-
-        when:
-        imported.folder = testFolder
-        ObjectDiff diff = terminologyService.diff(terminologyService.get(complexTerminologyId), imported)
-
-        then:
-        diff.objectsAreIdentical()
-    }
 
     void 'test empty data import'() {
         given:
@@ -212,7 +170,7 @@ abstract class BaseCodeSetImporterExporterSpec extends BaseCodeSetIntegrationSpe
 
         when:
         String data = ''
-        importerService.importTerminology(admin, data.bytes)
+        codeSetImporterService.importCodeSet(admin, data.bytes)
 
         then:
         thrown(ApiBadRequestException)
@@ -223,184 +181,331 @@ abstract class BaseCodeSetImporterExporterSpec extends BaseCodeSetIntegrationSpe
         setupData()
 
         expect:
-        Terminology.count() == 2
+        CodeSet.count() == 1
 
         when:
-        String data = new String(loadTestFile('terminologySimple'))
-        log.debug("importing ${data}")
+        String data = new String(loadTestFile('codeSetSimple'))
+
         and:
-        Terminology tm = importAndConfirm(data.bytes)
+        CodeSet cs = importAndConfirm(data.bytes)
 
         then:
-        tm.label == 'Simple Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'
-        !tm.annotations
-        !tm.metadata
-        !tm.classifiers
-        !tm.terms
-        !tm.termRelationshipTypes
+        cs.label == 'Simple CodeSet Import'
+        cs.author == 'Test Author'
+        cs.organisation == 'Test Organisation'
+        cs.documentationVersion.toString() == '1.0.0'
+        cs.finalised == false
+        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.url == 'http://localhost'
+        !cs.aliases
+        !cs.annotations
+        !cs.metadata
+        !cs.classifiers
+        !cs.terms
 
         when:
-        String exported = exportModel(tm.id)
+        String exported = exportModel(cs.id)
 
         then:
-        validateExportedModel('terminologySimple', exported)
-
+        validateExportedModel('codeSetSimple', exported)
     }
 
-    void 'test simple data with aliases'() {
+    void 'test simple data import finalised'() {
         given:
         setupData()
-        def testName = 'terminologyWithAliases'
 
         expect:
-        Terminology.count() == 2
+        CodeSet.count() == 1
 
         when:
-        String data = new String(loadTestFile(testName))
-        log.debug("importing ${data}")
+        String data = new String(loadTestFile('codeSetSimpleFinalised'))
+
         and:
-        Terminology tm = importAndConfirm(data.bytes)
+        CodeSet cs = importAndConfirm(data.bytes)
 
         then:
-        tm.label == 'Simple Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'
-        tm.aliases.size() == 2
-        'Alias 1' in tm.aliases
-        'Alias 2' in tm.aliases
-        !tm.annotations
-        !tm.metadata
-        !tm.classifiers
-        !tm.terms
-        !tm.termRelationshipTypes
+        cs.label == 'Simple CodeSet Import'
+        cs.author == 'Test Author'
+        cs.organisation == 'Test Organisation'
+        cs.documentationVersion.toString() == '1.0.0'
+        cs.modelVersion.toString() == '6.3.1'
+        cs.finalised == true
+        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.url == 'http://localhost'
+        !cs.aliases
+        !cs.annotations
+        !cs.metadata
+        !cs.classifiers
+        !cs.terms
 
         when:
-        String exported = exportModel(tm.id)
+        String exported = exportModel(cs.id)
 
         then:
-        validateExportedModel(testName, exported)
+        validateExportedModel('codeSetSimpleFinalised', exported)
     }
 
-    void 'test simple data with annotations'() {
+    void 'test simple data import with aliases'() {
         given:
         setupData()
-        def testName = 'terminologyWithAnnotations'
 
         expect:
-        Terminology.count() == 2
+        CodeSet.count() == 1
 
         when:
-        String data = new String(loadTestFile(testName))
-        log.debug("importing ${data}")
+        String data = new String(loadTestFile('codeSetSimpleWithAliases'))
+
         and:
-        Terminology tm = importAndConfirm(data.bytes)
+        CodeSet cs = importAndConfirm(data.bytes)
 
         then:
-        tm.label == 'Simple Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'
-        tm.annotations.size() == 1
-        !tm.metadata
-        !tm.classifiers
-        !tm.terms
-        !tm.termRelationshipTypes
+        cs.label == 'Simple CodeSet Import'
+        cs.author == 'Test Author'
+        cs.organisation == 'Test Organisation'
+        cs.documentationVersion.toString() == '1.0.0'
+        cs.finalised == false
+        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.url == 'http://localhost'
+        cs.aliases.size() == 2
+        'Alias 1' in cs.aliases
+        'Alias 2' in cs.aliases
+        !cs.annotations
+        !cs.metadata
+        !cs.classifiers
+        !cs.terms
 
         when:
-        Annotation ann = tm.annotations[0]
+        String exported = exportModel(cs.id)
+
+        then:
+        validateExportedModel('codeSetSimpleWithAliases', exported)
+    }    
+
+    void 'test simple data import with annotations'() {
+        given:
+        setupData()
+
+        expect:
+        CodeSet.count() == 1
+
+        when:
+        String data = new String(loadTestFile('codeSetSimpleWithAnnotations'))
+
+        and:
+        CodeSet cs = importAndConfirm(data.bytes)
+
+        then:
+        cs.label == 'Simple CodeSet Import'
+        cs.author == 'Test Author'
+        cs.organisation == 'Test Organisation'
+        cs.documentationVersion.toString() == '1.0.0'
+        cs.finalised == false
+        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.url == 'http://localhost'
+        !cs.aliases
+        cs.annotations.size() == 1
+        !cs.metadata
+        !cs.classifiers
+        !cs.terms
+
+        when:
+        Annotation ann = cs.annotations[0]
 
         then:
         ann.description == 'test annotation 1 description'
-        ann.label == 'test annotation 1 label'        
+        ann.label == 'test annotation 1 label'          
 
         when:
-        String exported = exportModel(tm.id)
+        String exported = exportModel(cs.id)
 
         then:
-        validateExportedModel(testName, exported)
+        validateExportedModel('codeSetSimpleWithAnnotations', exported)
     }
 
-    void 'test simple data with metadata'() {
+    void 'test simple data import with metadata'() {
         given:
         setupData()
-        def testName = 'terminologyWithMetadata'
 
         expect:
-        Terminology.count() == 2
+        CodeSet.count() == 1
 
         when:
-        String data = new String(loadTestFile(testName))
-        log.debug("importing ${data}")
+        String data = new String(loadTestFile('codeSetSimpleWithMetadata'))
+
         and:
-        Terminology tm = importAndConfirm(data.bytes)
+        CodeSet cs = importAndConfirm(data.bytes)
 
         then:
-        tm.label == 'Simple Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'
-        !tm.annotations
-        tm.metadata.size() == 3
-        !tm.classifiers
-        !tm.terms
-        !tm.termRelationshipTypes      
+        cs.label == 'Simple CodeSet Import'
+        cs.author == 'Test Author'
+        cs.organisation == 'Test Organisation'
+        cs.documentationVersion.toString() == '1.0.0'
+        cs.finalised == false
+        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.url == 'http://localhost'
+        !cs.aliases
+        !cs.annotations
+        cs.metadata.size() == 3
+        !cs.classifiers
+        !cs.terms
 
         when:
-        String exported = exportModel(tm.id)
+        String exported = exportModel(cs.id)
 
         then:
-        validateExportedModel(testName, exported)
+        validateExportedModel('codeSetSimpleWithMetadata', exported)
     }
 
-    void 'test complex'() {
+    void 'test simple data import with classifiers'() {
         given:
         setupData()
-        def testName = 'terminologyComplex'
 
         expect:
-        Terminology.count() == 2
+        CodeSet.count() == 1
 
         when:
-        String data = new String(loadTestFile(testName))
-        log.debug("importing ${data}")
+        String data = new String(loadTestFile('codeSetSimpleWithClassifiers'))
+
         and:
-        Terminology tm = importAndConfirm(data.bytes)
+        CodeSet cs = importAndConfirm(data.bytes)
 
         then:
-        tm.label == 'Complex Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'     
-        tm.annotations.size() == 2
-        tm.metadata.size() == 3
-        tm.classifiers.size() == 2
-        tm.termRelationshipTypes.size() == 4
-        tm.terms.size() == 101
+        cs.label == 'Simple CodeSet Import'
+        cs.author == 'Test Author'
+        cs.organisation == 'Test Organisation'
+        cs.documentationVersion.toString() == '1.0.0'
+        cs.finalised == false
+        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.url == 'http://localhost'
+        !cs.aliases
+        !cs.annotations
+        !cs.metadata
+        cs.classifiers.size() == 2
+        !cs.terms
+
+        when:
+        String exported = exportModel(cs.id)
+
+        then:
+        validateExportedModel('codeSetSimpleWithClassifiers', exported)
+    }
+
+    void 'test simple data import with known term'() {
+        given:
+        setupData()
+
+        expect:
+        CodeSet.count() == 1
+
+        when:
+        String data = new String(loadTestFile('codeSetSimpleWithKnownTerm'))
 
         and:
-        def i = 0
-        for (i = 0; i <= 100; i++) {
-            tm.terms.any {it.code == "CTT${i}" && it.definition == "Complex Test Term ${i}"}
-        }
+        CodeSet cs = importAndConfirm(data.bytes)
 
-    }     */
+        then:
+        cs.label == 'Simple CodeSet Import'
+        cs.author == 'Test Author'
+        cs.organisation == 'Test Organisation'
+        cs.documentationVersion.toString() == '1.0.0'
+        cs.finalised == false
+        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.url == 'http://localhost'
+        !cs.aliases
+        !cs.annotations
+        !cs.metadata
+        !cs.classifiers
+        cs.terms.size() == 1
+
+        when:
+        Term term0 = cs.terms[0]
+
+        then:
+        term0.label == 'STT01: Simple Test Term 01'       
+
+        when:
+        String exported = exportModel(cs.id)
+
+        then:
+        validateExportedModel('codeSetSimpleWithKnownTerm', exported)
+    }
+
+    void 'test simple data import with two known terms'() {
+        given:
+        setupData()
+
+        expect:
+        CodeSet.count() == 1
+
+        when:
+        String data = new String(loadTestFile('codeSetSimpleWithTwoKnownTerms'))
+
+        and:
+        CodeSet cs = importAndConfirm(data.bytes)
+
+        then:
+        cs.label == 'Simple CodeSet Import'
+        cs.author == 'Test Author'
+        cs.organisation == 'Test Organisation'
+        cs.documentationVersion.toString() == '1.0.0'
+        cs.finalised == false
+        cs.authority.label == 'Mauro Data Mapper'
+        cs.authority.url == 'http://localhost'
+        !cs.aliases
+        !cs.annotations
+        !cs.metadata
+        !cs.classifiers
+        cs.terms.size() == 2
+
+        when:
+        Term term0 = cs.terms[0]
+        Term term1 = cs.terms[1]
+
+        then:
+        term0.label == "STT01: Simple Test Term 01" || term0.label == "STT02: Simple Test Term 02"
+        term1.label == "STT01: Simple Test Term 01" || term1.label == "STT02: Simple Test Term 02"
+        term0.label != term1.label
+
+        when:
+        String exported = exportModel(cs.id)
+
+        then:
+        validateExportedModel('codeSetSimpleWithTwoKnownTerms', exported)
+    }
+
+    void 'test simple data import with unknown term'() {
+        given:
+        setupData()
+
+        expect:
+        CodeSet.count() == 1
+
+        when:
+        String data = new String(loadTestFile('codeSetSimpleWithUnknownTerm'))
+
+        and:
+        CodeSet cs = importAndConfirm(data.bytes)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == 'CSS01'
+    }
+
+    void 'test simple data import with unknown terminology'() {
+        given:
+        setupData()
+
+        expect:
+        CodeSet.count() == 1
+
+        when:
+        String data = new String(loadTestFile('codeSetSimpleWithUnknownTerminology'))
+
+        and:
+        CodeSet cs = importAndConfirm(data.bytes)
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.errorCode == 'CSS01'
+    }    
 }

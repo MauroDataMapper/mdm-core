@@ -12,10 +12,10 @@ CodeSet export = codeSet as CodeSet
     if (export.organisation) 'mdm:organisation' {yield export.organisation}
 
     'mdm:documentationVersion' export.documentationVersion.toString()
-    if (export.modelVersion) 'mdm:modelVersion' export.modelVersion.toString()
 
     'mdm:finalised'(export.finalised)
     if (export.finalised) 'mdm:dateFinalised'(convertDate(export.dateFinalised))
+    if (export.modelVersion) 'mdm:modelVersion' export.modelVersion.toString()
 
     layout '/authority/export.gml', authority: export.authority, ns: 'mdm'
 
