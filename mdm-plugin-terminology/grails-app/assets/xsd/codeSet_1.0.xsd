@@ -28,27 +28,12 @@ Otherwise you will get an import error due to non-unique labels</xs:documentatio
         </xs:annotation>
       </xs:element>      
       <xs:element name="authority" type="mdm:authorityType" />
-      <xs:element name="terms" type="mdm:termCollectionCT" minOccurs="0" />
+      <xs:element name="termPaths" type="mdm:termPathCollectionCT" minOccurs="0" />
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="termCT">
+  <xs:complexType name="termPathCollectionCT">
     <xs:sequence>
-      <xs:element minOccurs="0" name="id" type="mdm:uuid" />
-      <xs:element name="code" type="mdm:mandatoryString" />
-      <xs:element name="definition" type="mdm:mandatoryString" />
-      <xs:element minOccurs="0" name="url" type="mdm:mandatoryString" />
-      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />       
-      <xs:element minOccurs="0" name="depth" type="xs:integer" />
-      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
-      <xs:element minOccurs="0" name="aliases" type="mdm:aliasesType" />
-      <xs:element minOccurs="0" name="classifiers" type="mdm:classifiersType" />
-      <xs:element minOccurs="0" name="metadata" type="mdm:metadataCollectionType" />
-      <xs:element minOccurs="0" name="annotations" type="mdm:annotationsType" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="termCollectionCT">
-    <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="term" type="mdm:termCT" />
+      <xs:element maxOccurs="unbounded" name="termPath" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="aliasesType">

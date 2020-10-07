@@ -80,7 +80,7 @@ abstract class DataBindCodeSetImporterProviderService<T extends CodeSetFileImpor
         log.debug('Binding map to new CodeSet instance')
         DataBindingUtils.bindObjectToInstance(codeSet, codeSetMap)
 
-        codeSetService.checkImportedCodeSetAssociations(currentUser, codeSet)
+        codeSetService.checkImportedCodeSetAssociations(currentUser, codeSet, codeSetMap)
 
         log.info('Import complete')
         codeSet

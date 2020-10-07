@@ -20,12 +20,12 @@ CodeSet export = codeSet as CodeSet
     layout '/authority/export.gml', authority: export.authority, ns: 'mdm'
 
     if (export.terms) {
-        'mdm:terms' {
+        'mdm:termPaths' {
             export.terms.each {t ->
-                layout '/term/export.gml', term: t
+                'mdm:termPath'(t.termPath())
             }
         }
-    }     
+    }
 
 }
 

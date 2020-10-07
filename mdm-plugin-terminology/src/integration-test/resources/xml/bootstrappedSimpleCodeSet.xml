@@ -23,22 +23,10 @@
             <mdm:url>http://localhost</mdm:url>
             <mdm:lastUpdated>2020-08-20T15:37:19.735Z</mdm:lastUpdated>
         </mdm:authority>
-        <mdm:terms>
-            <mdm:term>
-                <mdm:id>abb5059f-7789-4e29-a2d3-3814efbc353b</mdm:id>
-                <mdm:code>STT01</mdm:code>
-                <mdm:definition>Simple Test Term 01</mdm:definition>
-                <mdm:depth>1</mdm:depth>
-                <mdm:lastUpdated>2020-08-20T15:37:21.794Z</mdm:lastUpdated>
-            </mdm:term>
-            <mdm:term>
-                <mdm:id>41a6fcd6-1035-423a-9159-740b6fa1b859</mdm:id>
-                <mdm:code>STT02</mdm:code>
-                <mdm:definition>Simple Test Term 02</mdm:definition>
-                <mdm:depth>1</mdm:depth>
-                <mdm:lastUpdated>2020-08-20T15:37:21.796Z</mdm:lastUpdated>
-            </mdm:term>
-        </mdm:terms>
+        <mdm:termPaths>
+            <mdm:termPath>te:Simple Test Terminology|tm:STT01: Simple Test Term 01</mdm:termPath>
+            <mdm:termPath>te:Simple Test Terminology|tm:STT02: Simple Test Term 02</mdm:termPath>
+        </mdm:termPaths>
     </mdm:codeSet>
     <exp:exportMetadata>
       <exp:exportedBy>Admin User</exp:exportedBy>

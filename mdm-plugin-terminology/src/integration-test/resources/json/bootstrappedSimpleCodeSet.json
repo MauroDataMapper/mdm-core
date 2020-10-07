@@ -21,20 +21,12 @@
       "url": "http://localhost",
       "label": "Test Authority"
     },
-    "terms": [
+    "termPaths": [
       {
-        "id": "${json-unit.matches:id}",
-        "label": "STT01: Simple Test Term 01",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "code": "STT01",
-        "definition": "Simple Test Term 01"
+        "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
       },
       {
-        "id": "${json-unit.matches:id}",
-        "label": "STT02: Simple Test Term 02",
-        "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "code": "STT02",
-        "definition": "Simple Test Term 02"
+        "termPath": "te:Simple Test Terminology|tm:STT02: Simple Test Term 02"
       }
     ]
   },

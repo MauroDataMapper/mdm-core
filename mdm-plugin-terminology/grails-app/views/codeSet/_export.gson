@@ -18,6 +18,6 @@ json {
     if (export.authority) authority tmpl.'/authority/export'(export.authority)
 
     if (export.terms) {
-        terms tmpl.'/term/export'(export.terms)
+        termPaths tmpl.'/term/termAsPath'(export.terms)
     }
 }
