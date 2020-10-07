@@ -31,6 +31,7 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -144,6 +145,293 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "url": "http://localhost",
     "label": "Mauro Data Mapper"
   }
+}'''
+    }
+
+    String getExpectedMergeJson() {
+        '''{
+"leftId": "${json-unit.matches:id}",
+"rightId": "${json-unit.matches:id}",
+"label": "Functional Test Model",
+"count": 11,
+"diffs": [
+        {
+            "description": {
+            "left": "DescriptionRight",
+            "right": "DescriptionLeft",
+            "isMergeConflict": true,
+            "commonAncestorValue": null
+        }
+        },
+        {
+            "branchName": {
+            "left": "main",
+            "right": "source",
+            "isMergeConflict": false
+        }
+        },
+        {
+            "dataClasses": {
+            "deleted": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "deleteAndModify",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": true,
+                        "commonAncestorValue": {
+                                                    "id":"${json-unit.matches:id}",
+                                                    "label":"deleteAndModify",
+                                                    "breadcrumbs": [
+                                                        {
+                                                            "id":"${json-unit.matches:id}",
+                                                            "label":"Functional Test Model",
+                                                            "domainType":"DataModel",
+                                                               "finalised":true
+                                                        }
+                                                    ]
+                                                }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "deleteLeftOnly",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": false
+                    }
+            ],
+            "created": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "addLeftOnly",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": false
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "modifyAndDelete",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": true,
+                        "commonAncestorValue": {
+                                                    "id":"${json-unit.matches:id}",
+                                                    "label":"modifyAndDelete",
+                                                    "breadcrumbs": [
+                                                        {
+                                                            "id":"${json-unit.matches:id}",
+                                                            "label":"Functional Test Model",
+                                                            "domainType":"DataModel",
+                                                            "finalised":true
+                                                        }
+                                                    ]
+                                                }
+                    }
+            ],
+            "modified": [
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "addAndAddReturningDifference",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                "left": "DescriptionRight",
+                                "right": "DescriptionLeft",
+                                "isMergeConflict": true,
+                                "commonAncestorValue": null
+                            }
+                            }
+                    ]
+                    },
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "existingClass",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "count": 2,
+                        "diffs": [
+                            {
+                                "dataClasses": {
+                                "deleted": [
+                                        {
+                                            "value": {
+                                                "id": "${json-unit.matches:id}",
+                                                "label": "deleteLeftOnlyFromExistingClass",
+                                                "breadcrumbs": [
+                                                    {
+                                                        "id": "${json-unit.matches:id}",
+                                                        "label": "Functional Test Model",
+                                                        "domainType": "DataModel",
+                                                        "finalised": false
+                                                    },
+                                                    {
+                                                        "id": "${json-unit.matches:id}",
+                                                        "label": "existingClass",
+                                                        "domainType": "DataClass"
+                                                    }
+                                                ]
+                                            },
+                                            "isMergeConflict": false
+                                        }
+                                ],
+                                "created": [
+                                        {
+                                            "value": {
+                                                "id": "${json-unit.matches:id}",
+                                                "label": "addLeftToExistingClass",
+                                                "breadcrumbs": [
+                                                    {
+                                                        "id": "${json-unit.matches:id}",
+                                                        "label": "Functional Test Model",
+                                                        "domainType": "DataModel",
+                                                        "finalised": false
+                                                    },
+                                                    {
+                                                        "id": "${json-unit.matches:id}",
+                                                        "label": "existingClass",
+                                                        "domainType": "DataClass"
+                                                    }
+                                                ]
+                                            },
+                                            "isMergeConflict": false
+                                        }
+                                ]
+                            }
+                            }
+                    ]
+                    },
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "modifyAndModifyReturningDifference",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                "left": "DescriptionRight",
+                                "right": "DescriptionLeft",
+                                "isMergeConflict": true,
+                                "commonAncestorValue": null
+                            }
+                            }
+                    ]
+                    },
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "modifyLeftOnly",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "DataModel",
+                                "finalised": false
+                            }
+                    ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                "left": null,
+                                "right": "Description",
+                                "isMergeConflict": false
+                            }
+                            }
+                    ]
+                    }
+            ]
+        }
+        }
+]
 }'''
     }
 
@@ -1130,290 +1418,137 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         //        GET("$source/mergeDiff/$target")
 
         then:
-        verifyJsonResponse OK, '''{
-"leftId": "${json-unit.matches:id}",
-"rightId": "${json-unit.matches:id}",
-"label": "Functional Test Model",
-"count": 11,
-"diffs": [
-        {
-            "description": {
-            "left": "DescriptionRight",
-            "right": "DescriptionLeft",
-            "isMergeConflict": true,
-            "commonAncestorValue": null
-        }
-        },
-        {
-            "branchName": {
-            "left": "main",
-            "right": "source",
-            "isMergeConflict": false
-        }
-        },
-        {
-            "dataClasses": {
-            "deleted": [
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "deleteAndModify",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "DataModel",
-                                    "finalised": false
-                                }
-                            ]
-                        },
-                        "isMergeConflict": true,
-                        "commonAncestorValue": {
-                                                    "id":"${json-unit.matches:id}",
-                                                    "label":"deleteAndModify",
-                                                    "breadcrumbs": [
-                                                        {
-                                                            "id":"${json-unit.matches:id}",
-                                                            "label":"Functional Test Model",
-                                                            "domainType":"DataModel",
-                                                               "finalised":true
-                                                        }
-                                                    ]
-                                                }
-                    },
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "deleteLeftOnly",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "DataModel",
-                                    "finalised": false
-                                }
-                            ]
-                        },
-                        "isMergeConflict": false
-                    }
-            ],
-            "created": [
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "addLeftOnly",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "DataModel",
-                                    "finalised": false
-                                }
-                            ]
-                        },
-                        "isMergeConflict": false
-                    },
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "modifyAndDelete",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "DataModel",
-                                    "finalised": false
-                                }
-                            ]
-                        },
-                        "isMergeConflict": true,
-                        "commonAncestorValue": {
-                                                    "id":"${json-unit.matches:id}",
-                                                    "label":"modifyAndDelete",
-                                                    "breadcrumbs": [
-                                                        {
-                                                            "id":"${json-unit.matches:id}",
-                                                            "label":"Functional Test Model",
-                                                            "domainType":"DataModel",
-                                                            "finalised":true
-                                                        }
-                                                    ]
-                                                }
-                    }
-            ],
-            "modified": [
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "addAndAddReturningDifference",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                    ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                    ],
-                        "count": 1,
-                        "diffs": [
-                            {
-                                "description": {
-                                "left": "DescriptionRight",
-                                "right": "DescriptionLeft",
-                                "isMergeConflict": true,
-                                "commonAncestorValue": null
-                            }
-                            }
-                    ]
-                    },
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "existingClass",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                    ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                    ],
-                        "count": 2,
-                        "diffs": [
-                            {
-                                "dataClasses": {
-                                "deleted": [
-                                        {
-                                            "value": {
-                                                "id": "${json-unit.matches:id}",
-                                                "label": "deleteLeftOnlyFromExistingClass",
-                                                "breadcrumbs": [
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "Functional Test Model",
-                                                        "domainType": "DataModel",
-                                                        "finalised": false
-                                                    },
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "existingClass",
-                                                        "domainType": "DataClass"
-                                                    }
-                                                ]
-                                            },
-                                            "isMergeConflict": false
-                                        }
-                                ],
-                                "created": [
-                                        {
-                                            "value": {
-                                                "id": "${json-unit.matches:id}",
-                                                "label": "addLeftToExistingClass",
-                                                "breadcrumbs": [
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "Functional Test Model",
-                                                        "domainType": "DataModel",
-                                                        "finalised": false
-                                                    },
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "existingClass",
-                                                        "domainType": "DataClass"
-                                                    }
-                                                ]
-                                            },
-                                            "isMergeConflict": false
-                                        }
-                                ]
-                            }
-                            }
-                    ]
-                    },
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "modifyAndModifyReturningDifference",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                    ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                    ],
-                        "count": 1,
-                        "diffs": [
-                            {
-                                "description": {
-                                "left": "DescriptionRight",
-                                "right": "DescriptionLeft",
-                                "isMergeConflict": true,
-                                "commonAncestorValue": null
-                            }
-                            }
-                    ]
-                    },
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "modifyLeftOnly",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                    ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "DataModel",
-                                "finalised": false
-                            }
-                    ],
-                        "count": 1,
-                        "diffs": [
-                            {
-                                "description": {
-                                "left": null,
-                                "right": "Description",
-                                "isMergeConflict": false
-                            }
-                            }
-                    ]
-                    }
-            ]
-        }
-        }
-]
-}'''
+        verifyJsonResponse OK, expectedMergeJson
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    @PendingFeature
+    void 'VB09 : test merging diff into draft model'() {
+        given:
+        String id = createNewItem(validJson)
+
+        POST("$id/dataClasses", [label: 'deleteLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'modifyLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'deleteAndModify'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'modifyAndDelete'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'modifyAndModifyReturningDifference'])
+        verifyResponse CREATED, response
+        POST("$id/dataClasses", [label: 'existingClass'])
+        verifyResponse CREATED, response
+        String existingClass = responseBody().id
+        POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
+        verifyResponse CREATED, response
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        GET("$source/path/dm%3A%7Cdc%3AexistingClass")
+        verifyResponse OK, response
+        existingClass = responseBody().id
+        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
+        verifyResponse OK, response
+        String deleteLeftOnlyFromExistingClass = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AdeleteLeftOnly")
+        verifyResponse OK, response
+        String deleteLeftOnly = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AdeleteAndModify")
+        verifyResponse OK, response
+        String deleteAndModify = responseBody().id
+
+        GET("$source/path/dm%3A%7Cdc%3AmodifyLeftOnly")
+        verifyResponse OK, response
+        String modifyLeftOnly = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AmodifyAndDelete")
+        verifyResponse OK, response
+        String modifyAndDelete = responseBody().id
+        GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
+        verifyResponse OK, response
+        String modifyAndModifyReturningDifference = responseBody().id
+
+        then:
+        DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
+        verifyResponse NO_CONTENT, response
+        DELETE("$source/dataClasses/$deleteLeftOnly")
+        verifyResponse NO_CONTENT, response
+        DELETE("$source/dataClasses/$deleteAndModify")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
+        verifyResponse CREATED, response
+        POST("$source/dataClasses", [label: 'addLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$source/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
+        verifyResponse CREATED, response
+
+        PUT("$source", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        when:
+        GET("$target/path/dm%3A%7Cdc%3AexistingClass")
+        verifyResponse OK, response
+        existingClass = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AmodifyAndDelete")
+        verifyResponse OK, response
+        modifyAndDelete = responseBody().id
+
+        GET("$target/path/dm%3A%7Cdc%3AdeleteAndModify")
+        verifyResponse OK, response
+        deleteAndModify = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
+        verifyResponse OK, response
+        modifyAndModifyReturningDifference = responseBody().id
+
+        then:
+        DELETE("$target/dataClasses/$modifyAndDelete")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        POST("$target/dataClasses/$existingClass/dataClasses", [label: 'addRightToExistingClass'])
+        verifyResponse CREATED, response
+        POST("$target/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'])
+        verifyResponse CREATED, response
+
+        PUT("$target", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        when:
+        GET("$source/mergeDiff/$target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedMergeJson
+
+        when:
+        GET("$source/mergeDiff/$target")
+        PUT("$source/mergeInto/$target", responseBody())
+
+        then:
+        verifyResponse OK, response
 
         cleanup:
         cleanUpData(source)

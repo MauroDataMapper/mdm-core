@@ -25,6 +25,7 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -160,15 +161,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().finalised == true
         responseBody().dateFinalised
         responseBody().availableActions == [
-                "show",
-                "createNewVersions",
-                "newForkModel",
-                "comment",
-                "newModelVersion",
-                "newDocumentationVersion",
-                "newBranchModelVersion",
-                "softDelete",
-                "delete"
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
         ]
         responseBody().modelVersion == '1.0.0'
 
@@ -180,15 +181,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().availableActions == [
-                "show",
-                "createNewVersions",
-                "newForkModel",
-                "comment",
-                "newModelVersion",
-                "newDocumentationVersion",
-                "newBranchModelVersion",
-                "softDelete",
-                "delete"
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
         ]
 
         when: 'log out and log back in again in as admin available actions are correct'
@@ -199,15 +200,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().availableActions == [
-                "show",
-                "createNewVersions",
-                "newForkModel",
-                "comment",
-                "newModelVersion",
-                "newDocumentationVersion",
-                "newBranchModelVersion",
-                "softDelete",
-                "delete"
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
         ]
 
         cleanup:
@@ -868,6 +869,36 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(newBranchId)
         cleanUpRoles(finalisedId)
         cleanUpRoles(latestDraftId)
+    }
+
+    void 'R25 : test merging object diff into a draft main model'() {
+        given:
+        // a source and draft main branch
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        logout()
+
+        when:
+        // attempt merge as reader
+        loginReader()
+        PUT("$source/mergeInto/$target", [patch: [test: 'value']])
+
+        then:
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(target)
+        removeValidIdObjectUsingTransaction(source)
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(target)
+        cleanUpRoles(source)
+        cleanUpRoles(id)
     }
 
     @PendingFeature
