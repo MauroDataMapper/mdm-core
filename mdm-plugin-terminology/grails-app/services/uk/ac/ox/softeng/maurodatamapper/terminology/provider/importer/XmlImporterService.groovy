@@ -20,15 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-//import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
-import groovy.util.slurpersupport.NodeChild
-import groovy.util.slurpersupport.NodeChildren
 import org.springframework.core.io.Resource
 
 import java.nio.charset.Charset
@@ -37,9 +35,7 @@ import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
 
 @Slf4j
-class XmlImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> {
-
-    //AssetResourceLocator assetResourceLocator
+class XmlImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> implements XmlImportMapping {
 
     @Override
     String getDisplayName() {
@@ -83,46 +79,4 @@ class XmlImporterService extends DataBindTerminologyImporterProviderService<Term
         }
         throw new ApiBadRequestException('XIS03', 'Cannot import XML as terminology is not present')
     }
-
-    Map<String, Object> convertToMap(NodeChild nodes) {
-        Map<String, Object> map = [:]
-        if (nodes.children().isEmpty()) {
-            map[nodes.name()] = nodes.text()
-        } else {
-            map = ((NodeChildren) nodes.children()).collectEntries {NodeChild child ->
-                String name = child.name()
-                def content = name == 'id' ? null : child.text()
-
-                if (child.childNodes()) {
-                    Collection<String> childrenNames = child.children().list().collect {it.name().toLowerCase()}.toSet()
-
-                    if (childrenNames.size() == 1 && child.name().toLowerCase().contains(childrenNames[0])) content = convertToList(child)
-                    else content = convertToMap(child)
-
-                }
-
-                [name, content]
-            }
-        }
-        map
-    }
-
-    List convertToList(NodeChild nodeChild) {
-        nodeChild.children().collect {convertToMap(it)}
-    }
-
-    /*String validateXml(String xml) {
-
-        Resource xsdResource = assetResourceLocator.findAssetForURI("terminology_${version}.xsd")
-
-        def factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-        def schema = factory.newSchema(new StreamSource(xsdResource.inputStream))
-        def validator = schema.newValidator()
-        try {
-            validator.validate(new StreamSource(new StringReader(xml)))
-        } catch (Exception ex) {
-            return ex.getMessage()
-        }
-        null
-    }*/
 }

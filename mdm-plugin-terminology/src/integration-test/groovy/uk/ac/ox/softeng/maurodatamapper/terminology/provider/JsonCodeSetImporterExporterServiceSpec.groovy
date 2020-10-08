@@ -71,21 +71,4 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetImporterExporter
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath)).replace(/Test Authority/, 'Mauro Data Mapper')
         verifyJson(expectedJson, exportedModel)
     }
-
-
-    /*void 'test that trying to import multiple terminologies fails'() {
-        given:
-        setupData()
-
-        expect:
-        !importerService.canImportMultipleDomains()
-
-        when:
-        importerService.importTerminologies(admin, loadTestFile('simpleTerminology'))
-
-        then:
-        ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('cannot import multiple Terminologies')
-    }*/
-
 }

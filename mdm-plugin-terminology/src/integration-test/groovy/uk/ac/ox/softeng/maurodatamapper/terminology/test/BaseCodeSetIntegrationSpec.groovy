@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
-//import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 
@@ -38,12 +37,8 @@ abstract class BaseCodeSetIntegrationSpec extends BaseIntegrationSpec {
 
     CodeSet simpleCodeSet
     CodeSetService codeSetService
-    //TerminologyService terminologyService
     AdminService adminService
-
-    //Terminology terminology
     Terminology simpleTerminology
-    //Terminology complexTerminology
     Authority testAuthority
 
     Folder getTestFolder() {

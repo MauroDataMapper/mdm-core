@@ -130,6 +130,21 @@ abstract class BaseCodeSetImporterExporterSpec extends BaseCodeSetIntegrationSpe
         exception.errorCode == 'CSEP01'
     }
 
+    void 'test that trying to import multiple codeSets fails'() {
+        given:
+        setupData()
+
+        expect:
+        !codeSetImporterService.canImportMultipleDomains()
+
+        when:
+        codeSetImporterService.importCodeSets(admin, loadTestFile('codeSetSimple'))
+
+        then:
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('cannot import multiple CodeSets')
+    }
+
     void 'test exporting and reimporting the simple bootstrapped codeset'() {
         given:
         setupData()
