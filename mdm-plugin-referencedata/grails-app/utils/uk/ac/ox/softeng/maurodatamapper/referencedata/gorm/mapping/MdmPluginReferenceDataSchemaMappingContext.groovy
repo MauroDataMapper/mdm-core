@@ -27,12 +27,12 @@ import groovy.util.logging.Slf4j
  * @since 01/11/2019
  */
 @Slf4j
-class MdmPluginReferenceDataModelSchemaMappingContext extends PluginSchemaHibernateMappingContext {
+class MdmPluginReferenceDataSchemaMappingContext extends PluginSchemaHibernateMappingContext {
 
 
     @Override
     String getPluginName() {
-        'mdmPluginReferenceDataModel'
+        'mdmPluginReferencedata'
     }
 
     @Override

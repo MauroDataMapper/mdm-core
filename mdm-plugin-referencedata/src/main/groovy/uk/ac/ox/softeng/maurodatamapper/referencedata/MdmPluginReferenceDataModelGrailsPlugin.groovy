@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.MdmPluginReferenceDataModelSchemaMappingContext
+import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.MdmPluginReferenceDataSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.SummaryMetadataAwareMappingContext
 
 import grails.plugins.Plugin
@@ -68,7 +68,7 @@ The Reference Data Model domain, services and controllers for the Mauro Data Map
     Closure doWithSpring() {
         {->
 
-            mdmPluginReferenceDataModelSchemaMappingContext MdmPluginReferenceDataModelSchemaMappingContext
+            mdmPluginReferenceDataSchemaMappingContext MdmPluginReferenceDataSchemaMappingContext
             dataTypeValueConverter DataTypeValueConverter
 
             summaryMetadataAwareMappingContext SummaryMetadataAwareMappingContext
