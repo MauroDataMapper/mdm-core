@@ -382,6 +382,13 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     DataModel mergeInto(DataModel leftModel, DataModel rightModel, Map<String, Object> patch, boolean deleteBranch) {
+        patch.diffs.each {
+            diff -> diff.each { key, value -> value.getClass() }
+                //                        .each{
+                //                        key, value -> rightModel.getProperty(key)
+                //                    }
+                //                    rightModel.getProperties()
+        }
         throw new NotImplementedException('DataModelService.mergeInto')
     }
 

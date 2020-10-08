@@ -31,7 +31,6 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -148,7 +147,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 }'''
     }
 
-    String getExpectedMergeJson() {
+    String getExpectedMergeDiffJson() {
         '''{
 "leftId": "${json-unit.matches:id}",
 "rightId": "${json-unit.matches:id}",
@@ -1418,7 +1417,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         //        GET("$source/mergeDiff/$target")
 
         then:
-        verifyJsonResponse OK, expectedMergeJson
+        verifyJsonResponse OK, expectedMergeDiffJson
 
         cleanup:
         cleanUpData(source)
@@ -1426,7 +1425,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    @PendingFeature
     void 'VB09 : test merging diff into draft model'() {
         given:
         String id = createNewItem(validJson)
@@ -1457,6 +1455,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String source = responseBody().id
 
         when:
+        //to delete
         GET("$source/path/dm%3A%7Cdc%3AexistingClass")
         verifyResponse OK, response
         existingClass = responseBody().id
@@ -1469,7 +1468,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("$source/path/dm%3A%7Cdc%3AdeleteAndModify")
         verifyResponse OK, response
         String deleteAndModify = responseBody().id
-
+        //to modify
         GET("$source/path/dm%3A%7Cdc%3AmodifyLeftOnly")
         verifyResponse OK, response
         String modifyLeftOnly = responseBody().id
@@ -1505,6 +1504,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$source", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
+        // for mergeInto json
+        GET("$source/path/dm%3A%7Cdc%3AaddLeftOnly")
+        verifyResponse OK, response
+        String addLeftOnly = responseBody().id
+        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AaddLeftToExistingClass", MAP_ARG, true)
+        verifyResponse OK, response
+        String addLeftToExistingClass = responseBody().id
+
         when:
         GET("$target/path/dm%3A%7Cdc%3AexistingClass")
         verifyResponse OK, response
@@ -1537,18 +1544,116 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$target", [description: 'DescriptionRight'])
         verifyResponse OK, response
 
+        // for mergeInto json
+        GET("$target/path/dm%3A%7Cdc%3AaddAndAddReturningDifference")
+        verifyResponse OK, response
+        String addAndAddReturningDifference = responseBody().id
+
         when:
         GET("$source/mergeDiff/$target", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expectedMergeJson
+        verifyJsonResponse OK, expectedMergeDiffJson
 
         when:
-        GET("$source/mergeDiff/$target")
-        PUT("$source/mergeInto/$target", responseBody())
+
+
+        PUT("$source/mergeInto/$target", [
+            patch: [
+                leftId : "$target",
+                rightId: "$source",
+                label  : "Functional Test Model",
+                count  : 10,
+                diffs  : [
+                    [
+                        description: "modifiedDescriptionSource"
+                    ],
+                    [
+                        "dataClasses": [
+                            "deleted": [
+                                [
+                                    id   : "$deleteAndModify",
+                                    label: "deleteAndModify"
+                                ],
+                                [
+                                    id   : "$deleteLeftOnly",
+                                    label: "deleteLeftOnly"
+                                ]
+                            ],
+                            created  : [
+                                [
+                                    id   : "$addLeftOnly",
+                                    label: "addLeftOnly"
+                                ],
+                                [
+                                    id   : "$modifyAndDelete",
+                                    label: "modifyAndDelete"
+                                ]
+                            ],
+                            modified : [
+                                [
+                                    leftId: "$addAndAddReturningDifference",
+                                    label : "addAndAddReturningDifference",
+                                    count : 1,
+                                    diffs : [
+                                        [
+                                            description: "addedDescriptionSource"
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    leftId: "$existingClass",
+                                    label : "existingClass",
+                                    count : 2,
+                                    diffs : [
+                                        [
+                                            dataClasses: [
+                                                deleted: [
+                                                    [
+                                                        id   : "$deleteLeftOnlyFromExistingClass",
+                                                        label: "deleteLeftOnlyFromExistingClass"
+                                                    ]
+                                                ],
+                                                created: [
+                                                    [
+                                                        id   : "$addLeftToExistingClass",
+                                                        label: "addLeftToExistingClass"
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    leftId: "$modifyAndModifyReturningDifference",
+                                    label : "modifyAndModifyReturningDifference",
+                                    count : 1,
+                                    diffs : [
+                                        [
+                                            description: "modifiedDescriptionSource"
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    leftId: "$modifyLeftOnly",
+                                    label : "modifyLeftOnly",
+                                    count : 1,
+                                    diffs : [
+                                        [
+                                            description: "modifiedDescriptionSourceOnly"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ])
 
         then:
         verifyResponse OK, response
+        responseBody().id == target
 
         cleanup:
         cleanUpData(source)
