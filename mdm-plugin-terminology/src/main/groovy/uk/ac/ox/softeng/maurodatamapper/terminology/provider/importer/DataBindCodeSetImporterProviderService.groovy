@@ -69,7 +69,7 @@ abstract class DataBindCodeSetImporterProviderService<T extends CodeSetFileImpor
 
     CodeSet updateImportedModelFromParameters(CodeSet codeSet, T params, boolean list = false) {
         if (params.finalised != null) codeSet.finalised = params.finalised
-        if (!list && params.codeSetName) codeSet.label = params.codeSetName
+        if (!list && params.modelName) codeSet.label = params.modelName
         codeSet
     }
 

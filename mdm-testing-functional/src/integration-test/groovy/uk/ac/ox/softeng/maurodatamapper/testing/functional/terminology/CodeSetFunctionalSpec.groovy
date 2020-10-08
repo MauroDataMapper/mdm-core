@@ -717,7 +717,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
             finalised                      : false,
-            codeSetName                    : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -750,7 +750,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         loginAuthenticated()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
             finalised                      : false,
-            codeSetName                    : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -783,7 +783,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         loginReader()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
             finalised                      : false,
-            codeSetName                    : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -816,7 +816,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/CodeSetJsonImporterService/3.0', [
             finalised                      : false,
-            codeSetName                    : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
