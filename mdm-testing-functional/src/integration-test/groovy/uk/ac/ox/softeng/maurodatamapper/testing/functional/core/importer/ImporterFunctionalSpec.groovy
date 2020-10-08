@@ -168,49 +168,36 @@ class ImporterFunctionalSpec extends FunctionalSpec {
       "name": "Model",
       "parameters": [
         {
-          "name": "modelName",
-          "type": "String",
-          "optional": true,
-          "displayName": "Model name",
-          "description": "Label of Model, this will override any existing name provided in the imported data.\\n''' + 
-          '''Note that if importing multiple models this will be ignored."
-        }
-      ]
-    },
-    {
-      "name": "Terminology",
-      "parameters": [
-        {
           "name": "folderId",
           "type": "Folder",
           "optional": false,
           "displayName": "Folder",
-          "description": "The folder into which the Terminology should be imported."
+          "description": "The folder into which the Model/s should be imported."
         },
         {
-          "name": "terminologyName",
+          "name": "modelName",
           "type": "String",
           "optional": true,
-          "displayName": "Terminology name",
-          "description": "Label of Terminology, this will override any existing name provided in the imported data."
+          "displayName": "Model name",
+          "description": "Label of Model, this will override any existing name provided in the imported data.\\n''' +
+          '''Note that if importing multiple models this will be ignored."
         },
         {
           "name": "finalised",
           "type": "Boolean",
           "optional": false,
           "displayName": "Finalised",
-          "description": "Whether the new model is to be marked as finalised. Note that if the model is already finalised this will not be overridden."
+          "description": "Whether the new model is to be marked as finalised.\\n''' +
+          '''Note that if the model is already finalised this will not be overridden."
         },
         {
           "name": "importAsNewDocumentationVersion",
           "type": "Boolean",
           "optional": false,
           "displayName": "Import as New Documentation Version",
-          "description": "Should the Terminology be imported as a new Documentation Version.\\n''' +
-          '''If selected then any models with the same name will be superseded and the imported models will be given the latest documentation version of the \\n''' +
-          '''existing Terminology.\\n''' + 
-          '''If not selected then the 'Terminology Name' field should be used to ensure the imported Terminology is uniquely named, \\n''' +
-          '''otherwise you could get an error."
+          "description": "Should the Model/s be imported as new Documentation Version/s.\\n''' +
+          '''If selected then any models with the same name will be superseded and the imported models will be given the latest documentation version of the existing Models.\\n''' +
+          '''If not selected then the 'Model Name' field should be used to ensure the imported Model is uniquely named, otherwise you could get an error."
         }
       ]
     },
