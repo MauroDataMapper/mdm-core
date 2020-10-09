@@ -254,8 +254,8 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         }
     }
 
-    def findByDataModelIdAndId(Serializable dataModelId, Serializable id) {
-        ReferenceDataType.byDataModelIdAndId(dataModelId, id).find()
+    def findByReferenceDataModelIdAndId(Serializable referenceDataModelId, Serializable id) {
+        ReferenceDataType.byReferenceDataModelIdAndId(referenceDataModelId, id).find()
     }
 
     void checkImportedDataTypeAssociations(User importingUser, ReferenceDataModel referenceDataModel, ReferenceDataType dataType) {

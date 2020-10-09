@@ -56,8 +56,10 @@ class BootstrapModels {
 
         checkAndSave(messageSource, referenceDataModel)
 
-        referenceDataModel.addToReferenceDataElements(new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT))
-        referenceDataModel.addToReferenceDataElements(new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT))
+        ReferenceDataElement organisationName = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT)
+        ReferenceDataElement organisationCode = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT)
+        referenceDataModel.addToReferenceDataElements(organisationName)
+        referenceDataModel.addToReferenceDataElements(organisationCode)
 
         checkAndSave(messageSource, referenceDataModel)
 

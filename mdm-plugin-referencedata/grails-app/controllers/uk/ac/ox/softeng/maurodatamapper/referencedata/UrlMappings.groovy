@@ -68,7 +68,7 @@ class UrlMappings {
                  * DataElements
                  */
 
-                '/dataElements'(resources: 'dataElement', excludes: DEFAULT_EXCLUDES) {
+                '/referenceDataElements'(resources: 'referenceDataElement', excludes: DEFAULT_EXCLUDES) {
                     get "/suggestLinks/$otherDataModelId"(controller: 'dataElement', action: 'suggestLinks')
                 }
                 post "/dataElements/$otherDataModelId/$dataElementId"(controller: 'dataElement', action: 'copyDataElement')
@@ -78,8 +78,8 @@ class UrlMappings {
                 /**
                  * DataTypes
                  */
-                '/dataTypes'(resources: 'dataType', excludes: DEFAULT_EXCLUDES) {
-                    get '/dataElements'(controller: 'dataElement', action: 'index')
+                '/referenceDataTypes'(resources: 'referenceDataType', excludes: DEFAULT_EXCLUDES) {
+                    get '/referenceDataElements'(controller: 'referenceDataElement', action: 'index')
                     '/enumerationValues'(resources: 'enumerationValue', excludes: DEFAULT_EXCLUDES)
                 }
                 post "/dataTypes/$otherModelId/$dataTypeId"(controller: 'dataType', action: 'copyDataType')

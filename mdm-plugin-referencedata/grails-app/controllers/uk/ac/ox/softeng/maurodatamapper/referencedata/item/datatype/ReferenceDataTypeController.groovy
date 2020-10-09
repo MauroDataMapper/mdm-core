@@ -64,7 +64,7 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
 
         ReferenceDataModel referenceDataModel = referenceDataModelService.get(params.referenceDataModelId)
         ReferenceDataModel originalReferenceDataModel = referenceDataModelService.get(params.otherReferenceDataModelId)
-        ReferenceDataType original = referenceDataTypeService.findByDataModelIdAndId(params.otherReferenceDataModelId, params.dataTypeId)
+        ReferenceDataType original = referenceDataTypeService.findByReferenceDataModelIdAndId(params.otherReferenceDataModelId, params.dataTypeId)
 
         if (!original) return notFound(params.dataTypeId)
         ReferenceDataType copy
@@ -119,7 +119,7 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
 
     @Override
     protected ReferenceDataType queryForResource(Serializable resourceId) {
-        referenceDataTypeService.findByDataModelIdAndId(params.referenceDataModelId, resourceId)
+        referenceDataTypeService.findByReferenceDataModelIdAndId(params.referenceDataModelId, resourceId)
     }
 
     @Override

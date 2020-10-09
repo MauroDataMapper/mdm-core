@@ -83,11 +83,13 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         modelVersion type: VersionUserType
         folder cascade: 'none'
         referenceDataTypes cascade: 'all-delete-orphan'
+        referenceDataElements cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [
         metadata   : 'none',
-        referenceDataTypes  : 'referenceDataModel'
+        referenceDataTypes  : 'referenceDataModel',
+        referenceDataElements  : 'referenceDataModel'
     ]
 
     static search = {

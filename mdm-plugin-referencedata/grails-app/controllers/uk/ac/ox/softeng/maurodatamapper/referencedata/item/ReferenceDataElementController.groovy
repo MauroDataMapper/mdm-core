@@ -96,8 +96,8 @@ class ReferenceDataElementController extends CatalogueItemController<ReferenceDa
 
     @Override
     protected List<ReferenceDataElement> listAllReadableResources(Map params) {
-        if (params.dataTypeId) {
-            return referenceDataElementService.findAllByDataTypeId(params.dataTypeId, params)
+        if (params.referenceDataTypeId) {
+            return referenceDataElementService.findAllByReferenceDataTypeId(params.referenceDataTypeId, params)
         }
         if (params.all) removePaginationParameters()
 
