@@ -51,13 +51,15 @@ class BootstrapModels {
                 .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
                 .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
                 .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2')
-                .addToDataTypes(stringDataType)
-                .addToDataTypes(integerDataType)
+                .addToReferenceDataTypes(stringDataType)
+                .addToReferenceDataTypes(integerDataType)
 
         checkAndSave(messageSource, referenceDataModel)
 
         referenceDataModel.addToReferenceDataElements(new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT))
         referenceDataModel.addToReferenceDataElements(new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT))
+
+        checkAndSave(messageSource, referenceDataModel)
 
         referenceDataModel
     }

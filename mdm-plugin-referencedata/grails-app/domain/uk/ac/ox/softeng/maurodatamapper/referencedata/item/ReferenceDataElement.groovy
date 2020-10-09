@@ -31,7 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.DataTypeBindingHelper
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.DataElementLabelValidator
+import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.ReferenceDataElementLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.domain.MultiplicityAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -78,7 +78,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         CallableConstraints.call(ModelItemConstraints, delegate)
         minMultiplicity nullable: true
         maxMultiplicity nullable: true
-        label validator: {val, obj -> new DataElementLabelValidator(obj).isValid(val)}
+        label validator: {val, obj -> new ReferenceDataElementLabelValidator(obj).isValid(val)}
     }
 
     static mapping = {

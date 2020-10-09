@@ -7,6 +7,6 @@ model {
 
 json {
     count referenceDataModelList instanceof PagedResultList ? ((PagedResultList) referenceDataModelList).getTotalCount() : referenceDataModelList?.size() ?: 0
-    items tmpl.dataModel(referenceDataModelList ?: [])
+    items tmpl.referenceDataModel(referenceDataModelList ?: [])
 }
 

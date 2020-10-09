@@ -70,7 +70,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel> 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
         label validator: {val, obj -> new DataTypeLabelValidator(obj).isValid(val)}
-        domainType size: 13..15
+        domainType size: 1..30
     }
 
     static mapping = {

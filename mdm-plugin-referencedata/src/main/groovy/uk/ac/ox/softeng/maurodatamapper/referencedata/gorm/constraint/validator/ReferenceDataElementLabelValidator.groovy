@@ -23,9 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringVa
 /**
  * @since 19/04/2018
  */
-class DataElementLabelValidator extends UniqueStringValidator<ReferenceDataElement> {
+class ReferenceDataElementLabelValidator extends UniqueStringValidator<ReferenceDataElement> {
 
-    DataElementLabelValidator(ReferenceDataElement object) {
+    ReferenceDataElementLabelValidator(ReferenceDataElement object) {
         super(object)
     }
 
@@ -36,6 +36,6 @@ class DataElementLabelValidator extends UniqueStringValidator<ReferenceDataEleme
 
     @Override
     boolean valueIsNotUnique(String value) {
-        object.referenceDataModel.countDataElementsByLabel(value) > 1
+        object.referenceDataModel.countReferenceDataElementsByLabel(value) > 1
     }
 }

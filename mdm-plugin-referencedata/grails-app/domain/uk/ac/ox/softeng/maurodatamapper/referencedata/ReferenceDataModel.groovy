@@ -137,6 +137,10 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         this.referenceDataTypes?.sort() ?: []
     }
 
+    int countReferenceDataElementsByLabel(String label) {
+        this.referenceDataElements?.count { it.label == label } ?: 0
+    }    
+
     @Override
     String getEditLabel() {
         "${modelType}:${label}"
@@ -164,7 +168,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         Errors deErrors = null
         Errors dtErrors = null
         boolean dmValid = true
-        long start = null
+        Long start = null
 
         if (this.referenceDataElements) {
             if (!fields || fields.contains('referenceDataElements')) {
