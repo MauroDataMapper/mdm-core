@@ -1474,7 +1474,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String modifyLeftOnly = responseBody().id
         GET("$source/path/dm%3A%7Cdc%3AmodifyAndDelete")
         verifyResponse OK, response
-        String modifyAndDelete = responseBody().id
+        String sourceModifyAndDelete = responseBody().id
         GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
         verifyResponse OK, response
         String modifyAndModifyReturningDifference = responseBody().id
@@ -1489,7 +1489,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
         verifyResponse OK, response
-        PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
+        PUT("$source/dataClasses/$sourceModifyAndDelete", [description: 'Description'])
         verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
         verifyResponse OK, response
@@ -1518,7 +1518,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         existingClass = responseBody().id
         GET("$target/path/dm%3A%7Cdc%3AmodifyAndDelete")
         verifyResponse OK, response
-        modifyAndDelete = responseBody().id
+        String targetModifyAndDelete = responseBody().id
 
         GET("$target/path/dm%3A%7Cdc%3AdeleteAndModify")
         verifyResponse OK, response
@@ -1528,7 +1528,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         modifyAndModifyReturningDifference = responseBody().id
 
         then:
-        DELETE("$target/dataClasses/$modifyAndDelete")
+        DELETE("$target/dataClasses/$targetModifyAndDelete")
         verifyResponse NO_CONTENT, response
 
         PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
@@ -1586,7 +1586,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                     label: "addLeftOnly"
                                 ],
                                 [
-                                    id   : "$modifyAndDelete",
+                                    id   : "$sourceModifyAndDelete",
                                     label: "modifyAndDelete"
                                 ]
                             ],

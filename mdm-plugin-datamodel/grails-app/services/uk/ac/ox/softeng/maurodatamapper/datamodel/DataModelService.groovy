@@ -55,7 +55,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -381,15 +380,45 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel mergeInto(DataModel leftModel, DataModel rightModel, Map<String, Object> patch, boolean deleteBranch) {
+    DataModel mergeInto(DataModel leftModel, DataModel rightModel, Map<String, Object> patch, boolean deleteBranch, User user,
+                        UserSecurityPolicyManager userSecurityPolicyManager) {
+        // iterate through maps in diff list (this could be manipulated for easier handling instead i.e. convert to map instead of list?)
         patch.diffs.each {
-            diff -> diff.each { key, value -> value.getClass() }
-                //                        .each{
-                //                        key, value -> rightModel.getProperty(key)
-                //                    }
-                //                    rightModel.getProperties()
+            diff ->
+                diff.each {
+                    key, value ->
+                        // if map doesn't have children, apply value to target object
+                        // should check that the object actually has that property
+                        if (!(value instanceof Map)) {
+                            rightModel.setProperty(key, value)
+                        }
+                        // if map has children
+                        switch (key) {
+                            case 'dataClasses':
+                                // apply deletions of children to target object
+                                rightModel.dataClasses.findAll { it.id in value.deleted.id }.each {
+                                    dataClassService.delete(it)
+                                }
+                                // copy additions from source to target object
+                                value.created.each {
+                                    obj ->
+                                        dataClassService.copyDataClass(rightModel,
+                                                                       leftModel.childDataClasses.find { it.id == obj.id },
+                                                                       user,
+                                                                       userSecurityPolicyManager)
+                                }
+                                // for modifications, recursively call this method
+                                // might need a new copy data class method when we get to nested values?
+                                break
+                            default:
+                                break
+                        }
+
+                        // Class.forName(fullname including package)
+
+                }
         }
-        throw new NotImplementedException('DataModelService.mergeInto')
+        rightModel
     }
 
     @Override
