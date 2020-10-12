@@ -484,13 +484,13 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         diff.numberOfDiffs == expectedBaseLevelOfDiffs + 1
 
         when:
-        ArrayDiff mdDiffs = diff.find {it.fieldName == 'metadata'} as ArrayDiff
+        ArrayDiff mdDiffs = diff.find { it.fieldName == 'metadata' } as ArrayDiff
 
         then:
         mdDiffs.getNumberOfDiffs() == 1
         mdDiffs.modified.size() == 1
-        mdDiffs.modified[0].find {it.fieldName == 'value'}.left == 'v1'
-        mdDiffs.modified[0].find {it.fieldName == 'value'}.right == 'v2'
+        mdDiffs.modified[0].find { it.fieldName == 'value' }.left == 'v1'
+        mdDiffs.modified[0].find { it.fieldName == 'value' }.right == 'v2'
 
         when:
         domain.addToMetadata('ns1', 'k2', 'v1')
@@ -500,12 +500,12 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         diff.numberOfDiffs == expectedBaseLevelOfDiffs + 2
 
         when:
-        mdDiffs = diff.find {it.fieldName == 'metadata'} as ArrayDiff
+        mdDiffs = diff.find { it.fieldName == 'metadata' } as ArrayDiff
 
         then:
         mdDiffs.getNumberOfDiffs() == 2
         mdDiffs.deleted.size() == 1
-        mdDiffs.deleted[0].key == 'k2'
+        mdDiffs.deleted[0].value.key == 'k2'
     }
 
     void 'CI13 : test diffing annotations'() {
@@ -533,13 +533,13 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         diff.numberOfDiffs == expectedBaseLevelOfDiffs + 1
 
         when:
-        ArrayDiff diffs = diff.find {it.fieldName == 'annotations'} as ArrayDiff
+        ArrayDiff diffs = diff.find { it.fieldName == 'annotations' } as ArrayDiff
 
         then:
         diffs.getNumberOfDiffs() == 1
         diffs.modified.size() == 1
-        !diffs.modified[0].find {it.fieldName == 'description'}.left
-        diffs.modified[0].find {it.fieldName == 'description'}.right == 'hello'
+        !diffs.modified[0].find { it.fieldName == 'description' }.left
+        diffs.modified[0].find { it.fieldName == 'description' }.right == 'hello'
 
         when:
         domain.addToAnnotations(createdBy: editor.emailAddress, label: 'test annotation 3')
@@ -549,11 +549,11 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         diff.numberOfDiffs == expectedBaseLevelOfDiffs + 2
 
         when:
-        diffs = diff.find {it.fieldName == 'annotations'} as ArrayDiff
+        diffs = diff.find { it.fieldName == 'annotations' } as ArrayDiff
 
         then:
         diffs.getNumberOfDiffs() == 2
         diffs.deleted.size() == 1
-        diffs.deleted[0].label == 'test annotation 3'
+        diffs.deleted[0].value.label == 'test annotation 3'
     }
 }

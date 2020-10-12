@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -79,10 +80,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
+            userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewForkModel(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
+            userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract List<K> findAllByMetadataNamespace(String namespace)
 
@@ -113,9 +114,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         latestFinalisedModel(label)?.modelVersion ?: Version.from('0.0.0')
     }
 
-    Map<String, Object> mergeDiff(K leftModel, K rightModel) {
+    ObjectDiff<K> mergeDiff(K leftModel, K rightModel) {
         def commonAncestor = commonAncestor(leftModel, rightModel)
-        [twoWayDiff: leftModel.diff(rightModel), threeWayDiff: [left: commonAncestor.diff(leftModel), right: commonAncestor.diff(rightModel)]]
+
+        def left = commonAncestor.diff(leftModel)
+        def right = commonAncestor.diff(rightModel)
+        def top = rightModel.diff(leftModel)
+
+        top.mergeDiff(left, right)
     }
 
     K currentMainBranch(K model) {

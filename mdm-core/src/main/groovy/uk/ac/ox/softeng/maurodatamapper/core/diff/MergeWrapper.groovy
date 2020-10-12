@@ -17,37 +17,27 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
-abstract class Diff<T> extends Mergeable {
+class MergeWrapper<T extends Diffable> extends Mergeable {
+    T value
 
-    T left
-    T right
+    MergeWrapper(T value) {
+        this.value = value
+    }
 
     @Override
     boolean equals(o) {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
 
-        Diff<T> diff = (Diff<T>) o
+        MergeWrapper<T> diff = (MergeWrapper<T>) o
 
-        if (left != diff.left) return false
-        if (right != diff.right) return false
+        if (value != diff.value) return false
 
         return true
     }
 
-    Diff<T> leftHandSide(T lhs) {
-        this.left = lhs
-        this
+    @Override
+    String toString() {
+        value.toString()
     }
-
-    Diff<T> rightHandSide(T rhs) {
-        this.right = rhs
-        this
-    }
-
-    boolean objectsAreIdentical() {
-        !getNumberOfDiffs()
-    }
-
-    abstract Integer getNumberOfDiffs()
 }

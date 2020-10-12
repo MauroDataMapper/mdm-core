@@ -764,6 +764,9 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: "Major"])
         verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'left'])
         verifyResponse CREATED, response
         String leftId = responseBody().id
@@ -772,51 +775,28 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String rightId = responseBody().id
 
         when:
-        GET('')
-
-        then:
-        verifyResponse OK, response
-        String mainId = responseBody().items.find {
-            it.label == 'Functional Test Model' &&
-            !(it.id in [id, leftId, rightId])
-        }?.id
-        mainId
-
-        when:
         GET("$leftId/mergeDiff/$rightId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == rightId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == rightId
+        responseBody().leftId == rightId
+        responseBody().rightId == leftId
 
         when:
         GET("$leftId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == leftId
-        responseBody().twoWayDiff.rightId == mainId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == leftId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainId
+        responseBody().leftId == mainId
+        responseBody().rightId == leftId
 
         when:
         GET("$rightId/mergeDiff/$mainId")
 
         then:
         verifyResponse OK, response
-        responseBody().twoWayDiff.leftId == rightId
-        responseBody().twoWayDiff.rightId == mainId
-        responseBody().threeWayDiff.left.leftId == id
-        responseBody().threeWayDiff.left.rightId == rightId
-        responseBody().threeWayDiff.right.leftId == id
-        responseBody().threeWayDiff.right.rightId == mainId
+        responseBody().leftId == mainId
+        responseBody().rightId == rightId
 
         cleanup:
         cleanUpData(mainId)
@@ -1068,7 +1048,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each {n ->
+        (1..4).each { n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()

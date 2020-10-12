@@ -2,15 +2,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 
 model {
-    ObjectDiff<CodeSet> twoWayDiff
-    Map<String, ObjectDiff<CodeSet>> threeWayDiff
-
+    ObjectDiff<CodeSet> objectDiff
 }
 
-json {
-    twoWayDiff tmpl.'/objectDiff/objectDiff'(twoWayDiff)
-    threeWayDiff {
-        left tmpl.'/objectDiff/objectDiff'(threeWayDiff.left)
-        right tmpl.'/objectDiff/objectDiff'(threeWayDiff.right)
-    }
-}
+json tmpl.'/objectDiff/objectDiff'(objectDiff)

@@ -6,7 +6,7 @@ model {
 }
 
 json("${arrayDiff.fieldName}") {
-    if (arrayDiff.deleted) deleted tmpl.'/diffable/diffable'(arrayDiff.deleted)
-    if (arrayDiff.created) created tmpl.'/diffable/diffable'(arrayDiff.created)
+    if (arrayDiff.deleted) deleted tmpl.'/mergeWrapper/mergeWrapper'(arrayDiff.deleted)
+    if (arrayDiff.created) created tmpl.'/mergeWrapper/mergeWrapper'(arrayDiff.created)
     if (arrayDiff.modified) modified tmpl.'/objectDiff/objectDiff'(arrayDiff.modified)
 }

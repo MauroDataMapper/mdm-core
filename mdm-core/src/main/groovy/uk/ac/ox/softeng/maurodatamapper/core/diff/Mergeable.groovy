@@ -17,37 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
-abstract class Diff<T> extends Mergeable {
+import grails.compiler.GrailsCompileStatic
 
-    T left
-    T right
+@GrailsCompileStatic
+abstract class Mergeable<T> {
 
-    @Override
-    boolean equals(o) {
-        if (this.is(o)) return true
-        if (getClass() != o.class) return false
-
-        Diff<T> diff = (Diff<T>) o
-
-        if (left != diff.left) return false
-        if (right != diff.right) return false
-
-        return true
-    }
-
-    Diff<T> leftHandSide(T lhs) {
-        this.left = lhs
-        this
-    }
-
-    Diff<T> rightHandSide(T rhs) {
-        this.right = rhs
-        this
-    }
-
-    boolean objectsAreIdentical() {
-        !getNumberOfDiffs()
-    }
-
-    abstract Integer getNumberOfDiffs()
+    Boolean isMergeConflict
+    T commonAncestorValue
 }

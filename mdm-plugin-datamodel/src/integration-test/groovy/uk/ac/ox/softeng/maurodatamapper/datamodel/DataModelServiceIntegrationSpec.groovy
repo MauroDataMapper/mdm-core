@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
@@ -43,6 +45,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     DataModel complexDataModel
     DataModel simpleDataModel
     DataModelService dataModelService
+    DataClassService dataClassService
 
     UserSecurityPolicyManager userSecurityPolicyManager
 
@@ -54,11 +57,11 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         simpleDataModel = buildSimpleDataModel()
 
         DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                             authority: testAuthority)
+                authority: testAuthority)
         DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                             authority: testAuthority)
+                authority: testAuthority)
         DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder,
-                                             authority: testAuthority)
+                authority: testAuthority)
 
         checkAndSave(dataModel1)
         checkAndSave(dataModel2)
@@ -138,7 +141,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataModel dataModel = new DataModel(createdByUser: reader2, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder,
-                                            authority: testAuthority)
+                authority: testAuthority)
         dataModel = dataModelService.validate(dataModel)
 
         then:
@@ -198,8 +201,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'creating new doc version on draft model is not allowed'
         DataModel dataModel = dataModelService.get(id)
         def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
-            moveDataFlows: false,
-            throwErrors  : true
+                moveDataFlows: false,
+                throwErrors  : true
         ])
 
         then:
@@ -216,8 +219,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
-            moveDataFlows: false,
-            throwErrors  : true
+                moveDataFlows: false,
+                throwErrors  : true
         ])
 
         then:
@@ -258,8 +261,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
-                it.id != odt.id &&
-                it.domainType == odt.domainType
+                        it.id != odt.id &&
+                        it.domainType == odt.domainType
             }
         }
         dataModel.dataClasses.every { odc ->
@@ -269,8 +272,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 int ides = it.dataElements?.size() ?: 0
                 int odes = odc.dataElements?.size() ?: 0
                 it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
+                        idcs == odcs &&
+                        ides == odes
             }
         }
     }
@@ -285,8 +288,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
-            moveDataFlows: false,
-            throwErrors  : true
+                moveDataFlows: false,
+                throwErrors  : true
         ])
 
         then:
@@ -327,8 +330,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
-                it.id != odt.id &&
-                it.domainType == odt.domainType
+                        it.id != odt.id &&
+                        it.domainType == odt.domainType
             }
         }
         dataModel.dataClasses.every { odc ->
@@ -338,8 +341,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 int ides = it.dataElements?.size() ?: 0
                 int odes = odc.dataElements?.size() ?: 0
                 it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
+                        idcs == odcs &&
+                        ides == odes
             }
         }
     }
@@ -353,14 +356,14 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor, null, null)
         def newDocVersion = dataModelService.
-            createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
+                createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
         def result = dataModelService.
-            createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
+                createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -376,14 +379,14 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor, null, null)
         def newDocVersion = dataModelService.
-            createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
+                createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
         def result = dataModelService.
-            createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
+                createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -397,7 +400,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         when: 'creating new version on draft model is not allowed'
         DataModel dataModel = dataModelService.get(id)
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
-                                                         [copyDataFlows: false, throwErrors: true])
+                [copyDataFlows: false, throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -415,7 +418,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
-                                                         [copyDataFlows: false, throwErrors: true])
+                [copyDataFlows: false, throwErrors: true])
 
         then:
         result.instanceOf(DataModel)
@@ -459,8 +462,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
-                it.id != odt.id &&
-                it.domainType == odt.domainType
+                        it.id != odt.id &&
+                        it.domainType == odt.domainType
             }
         }
         dataModel.dataClasses.every { odc ->
@@ -470,8 +473,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 int ides = it.dataElements?.size() ?: 0
                 int odes = odc.dataElements?.size() ?: 0
                 it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
+                        idcs == odcs &&
+                        ides == odes
             }
         }
     }
@@ -486,7 +489,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
-                                                         [copyDataFlows: false, throwErrors: true])
+                [copyDataFlows: false, throwErrors: true])
 
         then:
         result.instanceOf(DataModel)
@@ -528,8 +531,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
-                it.id != odt.id &&
-                it.domainType == odt.domainType
+                        it.id != odt.id &&
+                        it.domainType == odt.domainType
             }
         }
         dataModel.dataClasses.every { odc ->
@@ -539,8 +542,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 int ides = it.dataElements?.size() ?: 0
                 int odes = odc.dataElements?.size() ?: 0
                 it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
+                        idcs == odcs &&
+                        ides == odes
             }
         }
     }
@@ -553,14 +556,14 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel dataModel = dataModelService.get(id)
         dataModelService.finaliseModel(dataModel, editor, null, null)
         def newVersion = dataModelService.
-            createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
+                createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
-                                                         [copyDataFlows: false, throwErrors: true])
+                [copyDataFlows: false, throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
@@ -621,7 +624,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
         dataModelService.finaliseModel(expectedModel, admin, null, null)
         checkAndSave(
-            expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
+                expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
         def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
 
         then:
@@ -669,6 +672,20 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataModel dataModel = dataModelService.get(id)
+        dataModel.addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteLeftOnly'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteRightOnly'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyLeftOnly'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyRightOnly'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteAndDelete'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteAndModify'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndDelete'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndModifyReturningNoDifference'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndModifyReturningDifference'))
+        def existingClass = new DataClass(createdByUser: admin, label: 'existingClass')
+        def deleteLeftOnlyFromExistingClass = new DataClass(createdByUser: admin, label: 'deleteLeftOnlyFromExistingClass')
+        def deleteRightOnlyFromExistingClass = new DataClass(createdByUser: admin, label: 'deleteRightOnlyFromExistingClass')
+        dataModel.addToDataClasses(existingClass.addToDataClasses(deleteLeftOnlyFromExistingClass)
+                .addToDataClasses(deleteRightOnlyFromExistingClass))
         dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
 
@@ -676,22 +693,98 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.branchName == 'main'
 
         when:
-        def left = dataModelService.createNewBranchModelVersion('left', dataModel, admin, false, userSecurityPolicyManager)
-        def right = dataModelService.createNewBranchModelVersion('right', dataModel, admin, false, userSecurityPolicyManager)
+        def draft = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+        def test = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
+
+        dataClassService.delete(test.dataClasses.find { it.label == 'deleteLeftOnlyFromExistingClass' } as DataClass)
+        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteLeftOnly' })
+        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteAndDelete' })
+        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteAndModify' })
+
+        test.childDataClasses.find { it.label == 'modifyLeftOnly' }.description = 'Description'
+        test.childDataClasses.find { it.label == 'modifyAndDelete' }.description = 'Description'
+        test.childDataClasses.find { it.label == 'modifyAndModifyReturningNoDifference' }.description = 'Description'
+        test.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionLeft'
+
+        test.childDataClasses.find { it.label == 'existingClass' }
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftToExistingClass'))
+        def leftParentDataClass = (new DataClass(createdByUser: admin, label: 'leftParentDataClass'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass'))
+        test.addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftOnly'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left'))
+                .addToDataClasses(leftParentDataClass)
+        //test.description = 'DescriptionLeft'
+        checkAndSave(test)
+
+        dataClassService.delete(draft.dataClasses.find { it.label == 'deleteRightOnlyFromExistingClass' } as DataClass)
+        dataClassService.delete(draft.childDataClasses.find { it.label == 'deleteRightOnly' })
+        dataClassService.delete(draft.childDataClasses.find { it.label == 'deleteAndDelete' })
+        dataClassService.delete(draft.childDataClasses.find { it.label == 'modifyAndDelete' })
+
+        draft.childDataClasses.find { it.label == 'modifyRightOnly' }.description = 'Description'
+        draft.childDataClasses.find { it.label == 'deleteAndModify' }.description = 'Description'
+        draft.childDataClasses.find { it.label == 'modifyAndModifyReturningNoDifference' }.description = 'Description'
+        draft.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionRight'
+
+        draft.childDataClasses.find { it.label == 'existingClass' }
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
+        def rightParentDataClass = (new DataClass(createdByUser: admin, label: 'rightParentDataClass'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'rightChildDataClass'))
+        draft.addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightOnly'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right'))
+            .addToDataClasses(rightParentDataClass)
+        draft.description = 'DescriptionRight'
+        checkAndSave(draft)
+
+        def mergeDiff = dataModelService.mergeDiff(test, draft)
 
         then:
-        checkAndSave(left)
-        checkAndSave(right)
-        left.modelVersion == null
-        left.branchName == 'left'
-        right.modelVersion == null
-        right.branchName == 'right'
-
-        when:
-        def mergeDiff = dataModelService.mergeDiff(left, right)
-
-        then:
-        mergeDiff == [twoWayDiff: left.diff(right), threeWayDiff: [left: dataModel.diff(left), right: dataModel.diff(right)]]
+        mergeDiff.class == ObjectDiff
+        mergeDiff.diffs
+        mergeDiff.numberOfDiffs == 11
+        mergeDiff.diffs[0].fieldName == 'branchName'
+        mergeDiff.diffs[0].left == 'main'
+        mergeDiff.diffs[0].right == 'test'
+        !mergeDiff.diffs[0].isMergeConflict
+        mergeDiff.diffs[1].fieldName == 'dataClasses'
+        mergeDiff.diffs[1].created.size == 3
+        mergeDiff.diffs[1].deleted.size == 2
+        mergeDiff.diffs[1].modified.size == 4
+        mergeDiff.diffs[1].created[0].value.label == 'addLeftOnly'
+        !mergeDiff.diffs[1].created[0].isMergeConflict
+        !mergeDiff.diffs[1].created[0].commonAncestorValue
+        mergeDiff.diffs[1].created[1].value.label == 'leftParentDataClass'
+        !mergeDiff.diffs[1].created[1].isMergeConflict
+        !mergeDiff.diffs[1].created[1].commonAncestorValue
+        mergeDiff.diffs[1].created[2].value.label == 'modifyAndDelete'
+        mergeDiff.diffs[1].created[2].isMergeConflict
+        mergeDiff.diffs[1].created[2].commonAncestorValue
+        mergeDiff.diffs[1].deleted[0].value.label == 'deleteAndModify'
+        mergeDiff.diffs[1].deleted[0].isMergeConflict
+        mergeDiff.diffs[1].deleted[0].commonAncestorValue
+        mergeDiff.diffs[1].deleted[1].value.label == 'deleteLeftOnly'
+        !mergeDiff.diffs[1].deleted[1].isMergeConflict
+        !mergeDiff.diffs[1].deleted[1].commonAncestorValue
+        mergeDiff.diffs[1].modified[0].diffs[0].fieldName == 'description'
+        mergeDiff.diffs[1].modified[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[0].commonAncestorValue
+        mergeDiff.diffs[1].modified[1].diffs[0].fieldName == 'dataClasses'
+        mergeDiff.diffs[1].modified[1].isMergeConflict
+        mergeDiff.diffs[1].modified[1].commonAncestorValue
+        mergeDiff.diffs[1].modified[1].diffs[0].created[0].value.label == 'addLeftToExistingClass'
+        mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].value.label == 'deleteLeftOnlyFromExistingClass'
+        !mergeDiff.diffs[1].modified[1].diffs[0].created[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[1].diffs[0].created[0].commonAncestorValue
+        !mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].commonAncestorValue
+        mergeDiff.diffs[1].modified[2].diffs[0].fieldName == 'description'
+        mergeDiff.diffs[1].modified[2].diffs[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[2].diffs[0].commonAncestorValue
+        mergeDiff.diffs[1].modified[3].diffs[0].fieldName == 'description'
+        !mergeDiff.diffs[1].modified[3].diffs[0].isMergeConflict
+        !mergeDiff.diffs[1].modified[3].diffs[0].commonAncestorValue
     }
 
     void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
@@ -715,7 +808,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
         dataModelService.finaliseModel(finalisedModel, admin, null, null)
         checkAndSave(
-            finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
+                finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
         def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
 
         then:
@@ -759,7 +852,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
         dataModelService.finaliseModel(finalisedModel, admin, null, null)
         checkAndSave(
-            finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
+                finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
         def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
 
         then:
@@ -813,7 +906,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         check.addToDataTypes(new PrimitiveType(createdByUser: admin))
 
         when:
@@ -834,7 +927,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         check.addToDataClasses(new DataClass(createdByUser: admin))
 
         when:
@@ -855,7 +948,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataElements(createdByUser: admin)
         check.addToDataClasses(parent)
@@ -878,7 +971,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin, label: 'ref')
         check.addToDataClasses(dc)
         check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref'))
@@ -901,7 +994,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin)
         check.addToDataClasses(dc)
         check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref', referenceClass: dc))
@@ -925,7 +1018,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataClasses(new DataClass(createdByUser: admin))
         check.addToDataClasses(parent)
@@ -949,7 +1042,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         DataClass child = new DataClass(createdByUser: admin, label: 'child')
         child.addToDataElements(createdByUser: admin, label: 'el')
@@ -975,7 +1068,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         grandparent.addToDataClasses(parent)
@@ -1001,7 +1094,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         given:
         setupData()
         DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
+                authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         grandparent.addToDataClasses(parent)
