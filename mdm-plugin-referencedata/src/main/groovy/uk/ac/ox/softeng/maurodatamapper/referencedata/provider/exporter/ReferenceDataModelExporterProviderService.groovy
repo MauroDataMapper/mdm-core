@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 07/03/2018
  */
 @Slf4j
-abstract class ReferenceDataModelExporterProviderService implements ExporterProviderService {
+abstract class ReferenceDataModelExporterProviderService extends ExporterProviderService {
 
     @Autowired
     ReferenceDataModelService referenceDataModelService

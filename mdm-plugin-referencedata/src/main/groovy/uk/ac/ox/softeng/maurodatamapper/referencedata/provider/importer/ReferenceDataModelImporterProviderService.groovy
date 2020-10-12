@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 07/03/2018
  */
 abstract class ReferenceDataModelImporterProviderService<T extends ReferenceDataModelImporterProviderServiceParameters>
-    implements ImporterProviderService<ReferenceDataModel, T> {
+    extends ImporterProviderService<ReferenceDataModel, T> {
 
     @Autowired
     ReferenceDataModelService referenceDataModelService
