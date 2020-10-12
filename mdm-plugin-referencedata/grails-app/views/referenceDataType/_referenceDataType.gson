@@ -2,18 +2,18 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDat
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 
-inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataType]
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: referenceDataType]
 model {
-    ReferenceDataType dataType
+    ReferenceDataType referenceDataType
 }
 
 json {
 
-    if (dataType.instanceOf(ReferenceEnumerationType)) {
-        enumerationValues g.render(dataType.getProperty('enumerationValues'))
+    if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
+        enumerationValues g.render(referenceDataType.getProperty('enumerationValues'))
     }
-    if (dataType.instanceOf(ReferencePrimitiveType)) {
-        if (dataType.getProperty('units')) units dataType.getProperty('units')
+    if (referenceDataType.instanceOf(ReferencePrimitiveType)) {
+        if (referenceDataType.getProperty('units')) units referenceDataType.getProperty('units')
     }
     //    if (dataType.instanceOf(TerminologyType)) {
     //        terminology tmpl.'/terminology/terminology'(terminology: dataType.getProperty('terminology'))

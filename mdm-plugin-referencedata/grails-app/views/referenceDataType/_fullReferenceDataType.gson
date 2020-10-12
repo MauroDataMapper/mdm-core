@@ -4,23 +4,23 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnu
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem               : dataType,
+inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem               : referenceDataType,
                                                                userSecurityPolicyManager   : userSecurityPolicyManager,
-                                                               owningSecurableResourceId   : dataType.modelId,
+                                                               owningSecurableResourceId   : referenceDataType.modelId,
                                                                owningSecurableResourceClass: ReferenceDataModel]
 model {
-    ReferenceDataType dataType
+    ReferenceDataType referenceDataType
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
 json {
 
-    if (dataType.instanceOf(ReferenceEnumerationType)) {
-        ReferenceEnumerationType et = dataType as ReferenceEnumerationType
+    if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
+        ReferenceEnumerationType et = referenceDataType as ReferenceEnumerationType
         enumerationValues g.render(et.referenceEnumerationValues)
     }
-    if (dataType.instanceOf(ReferencePrimitiveType)) {
-        ReferencePrimitiveType pt = dataType as ReferencePrimitiveType
+    if (referenceDataType.instanceOf(ReferencePrimitiveType)) {
+        ReferencePrimitiveType pt = referenceDataType as ReferencePrimitiveType
         if (pt.units) units pt.units
     }
     //    if (fullDataType.instanceOf(TerminologyType)) {

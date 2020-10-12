@@ -46,13 +46,13 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
     @Override
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        respond dataTypeList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager
+        respond referenceDataTypeList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager
     }
 
     @Override
     def show() {
         def resource = queryForResource(params.id)
-        resource ? respond(dataType: resource, userSecurityPolicyManager: currentUserSecurityPolicyManager) : notFound(params.id)
+        resource ? respond(referenceDataType: resource, userSecurityPolicyManager: currentUserSecurityPolicyManager) : notFound(params.id)
 
     }
 
