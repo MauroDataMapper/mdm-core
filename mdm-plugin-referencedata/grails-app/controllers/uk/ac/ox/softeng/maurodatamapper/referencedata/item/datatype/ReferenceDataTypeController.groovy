@@ -99,7 +99,7 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
                 response.addHeader(HttpHeaders.LOCATION,
                                    grailsLinkGenerator.link(resource: this.controllerName, action: 'show', id: instance.id, absolute: true,
                                                             namespace: hasProperty('namespace') ? this.namespace : null))
-                respond status: CREATED, view: 'show', [dataType: instance, userSecurityPolicyManager: currentUserSecurityPolicyManager]
+                respond status: CREATED, view: 'show', [referenceDataType: instance, userSecurityPolicyManager: currentUserSecurityPolicyManager]
             }
         }
     }
@@ -111,7 +111,7 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
                 response.addHeader(HttpHeaders.LOCATION,
                                    grailsLinkGenerator.link(resource: this.controllerName, action: 'show', id: instance.id, absolute: true,
                                                             namespace: hasProperty('namespace') ? this.namespace : null))
-                respond status: OK, [dataType: instance, userSecurityPolicyManager: currentUserSecurityPolicyManager]
+                respond status: OK, [referenceDataType: instance, userSecurityPolicyManager: currentUserSecurityPolicyManager]
             }
 
         }
