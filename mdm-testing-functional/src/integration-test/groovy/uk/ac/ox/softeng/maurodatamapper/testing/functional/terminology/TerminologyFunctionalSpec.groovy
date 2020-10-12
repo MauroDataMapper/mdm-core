@@ -739,7 +739,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
-            terminologyName                : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -772,7 +772,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         loginAuthenticated()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
-            terminologyName                : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
@@ -805,7 +805,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         loginReader()
         POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
-            terminologyName                : 'Functional Test Import',
+            modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
