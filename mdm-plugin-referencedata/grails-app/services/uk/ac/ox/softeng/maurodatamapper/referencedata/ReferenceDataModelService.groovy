@@ -700,7 +700,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     List<UUID> findAllDocumentSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsDocumentSuperseded(DataModel.simpleName, readableIds)
+        versionLinkService.filterModelIdsWhereModelIdIsDocumentSuperseded(ReferenceDataModel.simpleName, readableIds)
     }
 
     List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
