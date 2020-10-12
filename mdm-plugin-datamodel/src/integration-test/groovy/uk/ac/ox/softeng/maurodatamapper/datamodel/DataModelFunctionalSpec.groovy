@@ -1556,92 +1556,95 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyJsonResponse OK, expectedMergeDiffJson
 
         when:
-
-
-        PUT("$source/mergeInto/$target", [
+        def requestBody = [
             patch: [
-                leftId : "$target",
-                rightId: "$source",
+                leftId : "$target" as String,
+                rightId: "$source" as String,
                 label  : "Functional Test Model",
                 count  : 10,
                 diffs  : [
                     [
-                        description: "modifiedDescriptionSource"
+                        fieldName: "description",
+                        value    : "modifiedDescriptionSource"
                     ],
                     [
-                        "dataClasses": [
-                            "deleted": [
-                                [
-                                    id   : "$deleteAndModify",
-                                    label: "deleteAndModify"
-                                ],
-                                [
-                                    id   : "$deleteLeftOnly",
-                                    label: "deleteLeftOnly"
-                                ]
+                        fieldName: "dataClasses",
+
+                        deleted  : [
+                            [
+                                id   : "$deleteAndModify" as String,
+                                label: "deleteAndModify"
                             ],
-                            created  : [
-                                [
-                                    id   : "$addLeftOnly",
-                                    label: "addLeftOnly"
-                                ],
-                                [
-                                    id   : "$sourceModifyAndDelete",
-                                    label: "modifyAndDelete"
-                                ]
+                            [
+                                id   : "$deleteLeftOnly" as String,
+                                label: "deleteLeftOnly"
+                            ]
+                        ],
+                        created  : [
+                            [
+                                id   : "$addLeftOnly" as String,
+                                label: "addLeftOnly"
                             ],
-                            modified : [
-                                [
-                                    leftId: "$addAndAddReturningDifference",
-                                    label : "addAndAddReturningDifference",
-                                    count : 1,
-                                    diffs : [
-                                        [
-                                            description: "addedDescriptionSource"
-                                        ]
+                            [
+                                id   : "$sourceModifyAndDelete" as String,
+                                label: "modifyAndDelete"
+                            ]
+                        ],
+                        modified : [
+                            [
+                                leftId: "$addAndAddReturningDifference" as String,
+                                label : "addAndAddReturningDifference",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "addedDescriptionSource"
                                     ]
-                                ],
-                                [
-                                    leftId: "$existingClass",
-                                    label : "existingClass",
-                                    count : 2,
-                                    diffs : [
-                                        [
-                                            dataClasses: [
-                                                deleted: [
-                                                    [
-                                                        id   : "$deleteLeftOnlyFromExistingClass",
-                                                        label: "deleteLeftOnlyFromExistingClass"
-                                                    ]
-                                                ],
-                                                created: [
-                                                    [
-                                                        id   : "$addLeftToExistingClass",
-                                                        label: "addLeftToExistingClass"
-                                                    ]
-                                                ]
+                                ]
+                            ],
+                            [
+                                leftId: "$existingClass" as String,
+                                label : "existingClass",
+                                count : 2,
+                                diffs : [
+                                    [
+                                        fieldName: "dataClasses",
+
+                                        deleted  : [
+                                            [
+                                                id   : "$deleteLeftOnlyFromExistingClass" as String,
+                                                label: "deleteLeftOnlyFromExistingClass"
+                                            ]
+                                        ],
+                                        created  : [
+                                            [
+                                                id   : "$addLeftToExistingClass" as String,
+                                                label: "addLeftToExistingClass"
                                             ]
                                         ]
+
                                     ]
-                                ],
-                                [
-                                    leftId: "$modifyAndModifyReturningDifference",
-                                    label : "modifyAndModifyReturningDifference",
-                                    count : 1,
-                                    diffs : [
-                                        [
-                                            description: "modifiedDescriptionSource"
-                                        ]
+                                ]
+                            ],
+                            [
+                                leftId: "$modifyAndModifyReturningDifference" as String,
+                                label : "modifyAndModifyReturningDifference",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "modifiedDescriptionSource"
                                     ]
-                                ],
-                                [
-                                    leftId: "$modifyLeftOnly",
-                                    label : "modifyLeftOnly",
-                                    count : 1,
-                                    diffs : [
-                                        [
-                                            description: "modifiedDescriptionSourceOnly"
-                                        ]
+                                ]
+                            ],
+                            [
+                                leftId: "$modifyLeftOnly" as String,
+                                label : "modifyLeftOnly",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "modifiedDescriptionSourceOnly"
                                     ]
                                 ]
                             ]
@@ -1649,7 +1652,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                     ]
                 ]
             ]
-        ])
+        ]
+
+
+        PUT("$source/mergeInto/$target", requestBody)
 
         then:
         verifyResponse OK, response

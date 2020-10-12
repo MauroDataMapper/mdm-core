@@ -33,6 +33,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -380,40 +381,40 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel mergeInto(DataModel leftModel, DataModel rightModel, Map<String, Object> patch, boolean deleteBranch, User user,
+    DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData<DataModel> patch, boolean deleteBranch, User user,
                         UserSecurityPolicyManager userSecurityPolicyManager) {
         // iterate through maps in diff list (this could be manipulated for easier handling instead i.e. convert to map instead of list?)
         patch.diffs.each {
             diff ->
                 diff.each {
-                    key, value ->
+                    mergeFieldDiff ->
                         // if map doesn't have children, apply value to target object
                         // should check that the object actually has that property
-                        if (!(value instanceof Map)) {
-                            rightModel.setProperty(key, value)
+                        if (mergeFieldDiff.value) {
+                            rightModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+                        } else {
+                            // if map has children
+                            switch (mergeFieldDiff.fieldName) {
+                                case 'dataClasses':
+                                    // apply deletions of children to target object
+                                    rightModel.dataClasses.findAll { it.id in mergeFieldDiff.deleted.id }.each {
+                                        dataClassService.delete(it)
+                                    }
+                                    // copy additions from source to target object
+                                    mergeFieldDiff.created.each {
+                                        obj ->
+                                            dataClassService.copyDataClass(rightModel,
+                                                                           leftModel.childDataClasses.find { it.id == obj.id },
+                                                                           user,
+                                                                           userSecurityPolicyManager)
+                                    }
+                                    // for modifications, recursively call this method
+                                    // might need a new copy data class method when we get to nested values?
+                                    break
+                                default:
+                                    break
+                            }
                         }
-                        // if map has children
-                        switch (key) {
-                            case 'dataClasses':
-                                // apply deletions of children to target object
-                                rightModel.dataClasses.findAll { it.id in value.deleted.id }.each {
-                                    dataClassService.delete(it)
-                                }
-                                // copy additions from source to target object
-                                value.created.each {
-                                    obj ->
-                                        dataClassService.copyDataClass(rightModel,
-                                                                       leftModel.childDataClasses.find { it.id == obj.id },
-                                                                       user,
-                                                                       userSecurityPolicyManager)
-                                }
-                                // for modifications, recursively call this method
-                                // might need a new copy data class method when we get to nested values?
-                                break
-                            default:
-                                break
-                        }
-
                         // Class.forName(fullname including package)
 
                 }

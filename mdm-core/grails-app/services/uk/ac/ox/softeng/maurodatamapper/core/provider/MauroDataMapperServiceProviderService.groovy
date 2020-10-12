@@ -116,11 +116,7 @@ class MauroDataMapperServiceProviderService extends MauroDataMapperProviderServi
 
     static <T extends MauroDataMapperService, P extends T> T findLatestService(Set<T> beans, String namespace, String name, String version = null) {
         if (version) {
-            beans.find {
-                it.namespace.equalsIgnoreCase(namespace) &&
-                it.name.equalsIgnoreCase(name) &&
-                it.version.equalsIgnoreCase(version)
-            }
+            findService(beans, namespace, name, version)
         } else {
             def plugins = beans.findAll {
                 it.namespace.equalsIgnoreCase(namespace) &&

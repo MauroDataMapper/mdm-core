@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -72,7 +73,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
-    abstract K mergeInto(K leftModel, K rightModel, Map<String, Object> patch, boolean deleteBranch, User user,
+    abstract K mergeInto(K leftModel, K rightModel, MergeObjectDiffData<K> patch, boolean deleteBranch, User user,
                          UserSecurityPolicyManager userSecurityPolicyManager)
 
     abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds)

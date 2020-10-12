@@ -17,13 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
 
+
 import grails.validation.Validateable
 
 /**
  * @since 07/02/2018
  */
-class MergeIntoData implements Validateable {
+class MergeFieldDiffData<T, K> implements Validateable {
 
-    MergeObjectDiffData patch
-    boolean deleteBranch = false
+    String fieldName
+    T value
+    Collection created
+    Collection deleted
+    Collection<MergeObjectDiffData> modified
 }
