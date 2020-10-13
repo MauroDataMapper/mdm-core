@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.importer
 
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.JsonImporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.JsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.testing.mixin.integration.Integration
@@ -132,7 +132,7 @@ class ImporterFunctionalSpec extends FunctionalSpec {
 
     void 'test terminology importer parameters'() {
         given:
-        uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.JsonImporterService jsonImporterService = new uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.JsonImporterService()
+        uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService jsonImporterService = new uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService()
         String endpoint = "parameters/${jsonImporterService.class.packageName}/${jsonImporterService.class.simpleName}/${jsonImporterService.version}"
         when: 'Unlogged in call to check'
         GET(endpoint)
@@ -151,7 +151,7 @@ class ImporterFunctionalSpec extends FunctionalSpec {
     String getTerminologyExpectedJson() {
         '''{
   "importer": {
-    "name": "JsonImporterService",
+    "name": "TerminologyJsonImporterService",
     "version": "3.0",
     "displayName": "JSON Terminology Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",

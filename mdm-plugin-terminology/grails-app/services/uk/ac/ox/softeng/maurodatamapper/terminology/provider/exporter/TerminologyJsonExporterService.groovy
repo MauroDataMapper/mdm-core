@@ -27,7 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import grails.plugin.json.view.JsonViewTemplateEngine
 import org.springframework.beans.factory.annotation.Autowired
 
-class JsonExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
+class TerminologyJsonExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
 
     @Autowired
     JsonViewTemplateEngine templateEngine

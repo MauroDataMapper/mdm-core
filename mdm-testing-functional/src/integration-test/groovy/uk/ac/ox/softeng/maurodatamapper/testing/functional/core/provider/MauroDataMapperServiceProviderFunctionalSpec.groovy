@@ -106,7 +106,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "JsonExporterService",
+    "name": "TerminologyJsonExporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON Terminology Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
@@ -120,7 +120,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "XmlExporterService",
+    "name": "TerminologyXmlExporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "XML Terminology Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
@@ -220,7 +220,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canImportMultipleDomains": true
   },
   {
-    "name": "JsonImporterService",
+    "name": "TerminologyJsonImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON Terminology Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
@@ -233,7 +233,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canImportMultipleDomains": false
   },
   {
-    "name": "XmlImporterService",
+    "name": "TerminologyXmlImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "XML Terminology Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",

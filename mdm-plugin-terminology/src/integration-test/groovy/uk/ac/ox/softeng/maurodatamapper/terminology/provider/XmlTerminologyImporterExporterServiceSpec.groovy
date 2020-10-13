@@ -18,9 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider
 
 
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.XmlExporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.XmlImporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.BaseImporterExporterSpec
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyXmlExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyXmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.BaseTerminologyImporterExporterSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
 import com.google.common.base.CaseFormat
@@ -38,10 +38,10 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
-class XmlImporterExporterServiceSpec extends BaseImporterExporterSpec implements XmlValidator {
+class XmlTerminologyImporterExporterServiceSpec extends BaseTerminologyImporterExporterSpec implements XmlValidator {
 
-    XmlImporterService xmlImporterService
-    XmlExporterService xmlExporterService
+    TerminologyXmlImporterService terminologyXmlImporterService
+    TerminologyXmlExporterService terminologyXmlExporterService
 
     @Override
     String getImportType() {
@@ -49,13 +49,13 @@ class XmlImporterExporterServiceSpec extends BaseImporterExporterSpec implements
     }
 
     @Override
-    XmlImporterService getImporterService() {
-        xmlImporterService
+    TerminologyXmlImporterService getTerminologyImporterService() {
+        terminologyXmlImporterService
     }
 
     @Override
-    XmlExporterService getExporterService() {
-        xmlExporterService
+    TerminologyXmlExporterService getTerminologyExporterService() {
+        terminologyXmlExporterService
     }
 
     @Override
@@ -67,7 +67,7 @@ class XmlImporterExporterServiceSpec extends BaseImporterExporterSpec implements
             Files.writeString(expectedPath, (prettyPrint(exportedModel)))
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-        validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export', exporterService.version)
+        validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export', terminologyExporterService.version)
     }
 
 

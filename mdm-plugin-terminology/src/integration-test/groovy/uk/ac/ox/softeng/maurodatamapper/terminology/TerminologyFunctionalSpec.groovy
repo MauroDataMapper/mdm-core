@@ -953,7 +953,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         then:
         verifyJsonResponse OK, '''[
             {
-                "name": "JsonExporterService",
+                "name": "TerminologyJsonExporterService",
                 "version": "3.0",
                 "displayName": "JSON Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
@@ -965,7 +965,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "canExportMultipleDomains": false
             },
             {
-                "name": "XmlExporterService",
+                "name": "TerminologyXmlExporterService",
                 "version": "3.0",
                 "displayName": "XML Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
@@ -986,7 +986,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         then:
         verifyJsonResponse OK, '''[
             {
-                "name": "XmlImporterService",
+                "name": "TerminologyXmlImporterService",
                 "version": "3.0",
                 "displayName": "XML Terminology Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
@@ -999,7 +999,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "canImportMultipleDomains": false
             },
             {
-                "name": "JsonImporterService",
+                "name": "TerminologyJsonImporterService",
                 "version": "3.0",
                 "displayName": "JSON Terminology Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
@@ -1019,7 +1019,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String id = createNewItem(validJson)
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -1040,7 +1040,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "exportedOn": "${json-unit.matches:offsetDateTime}",
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
-                    "name": "JsonExporterService",
+                    "name": "TerminologyJsonExporterService",
                     "version": "3.0"
                 }
             }
@@ -1054,7 +1054,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         given:
         String id = createNewItem(validJson)
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1062,7 +1062,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : folderId.toString(),
@@ -1103,7 +1103,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String id2 = createNewItem([label: 'Functional Test Model 2'])
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0',
              [terminologyIds: [id, id2]], STRING_ARG
         )
 
@@ -1126,7 +1126,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                 "exportedOn": "${json-unit.matches:offsetDateTime}",
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
-                    "name": "JsonExporterService",
+                    "name": "TerminologyJsonExporterService",
                     "version": "3.0"
                 }
             }
@@ -1145,7 +1145,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1153,7 +1153,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
             finalised                      : true,
             terminologyName                : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -1192,7 +1192,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
     void 'EX04: test export simple Terminology'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1214,7 +1214,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -1226,7 +1226,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
     void 'IM04: test importing simple test Terminology'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1248,7 +1248,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
     void 'EX05: test export complex Terminology'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1269,7 +1269,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -1280,7 +1280,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
     void 'IM05: test importing complex test Terminology'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,

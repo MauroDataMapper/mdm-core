@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 /**
  * @since 14/09/2020
  */
-class XmlExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
+class TerminologyXmlExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
 
     @Autowired
     MarkupViewTemplateEngine templateEngine

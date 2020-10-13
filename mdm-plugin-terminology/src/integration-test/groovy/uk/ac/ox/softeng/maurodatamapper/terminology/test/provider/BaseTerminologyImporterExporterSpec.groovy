@@ -44,7 +44,7 @@ import java.nio.file.Paths
 @Integration
 @Rollback
 @Slf4j
-abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
+abstract class BaseTerminologyImporterExporterSpec extends BaseTerminologyIntegrationSpec {
 
     @Shared
     Path resourcesPath
@@ -55,8 +55,8 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
     @Shared
     UUID simpleTerminologyId
 
-    abstract ImporterProviderService getImporterService()
-    abstract ExporterProviderService getExporterService()
+    abstract ImporterProviderService getTerminologyImporterService()
+    abstract ExporterProviderService getTerminologyExporterService()
     abstract void validateExportedModel(String testName, String exportedModel)
 
     abstract String getImportType()
@@ -64,7 +64,7 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
     @OnceBefore
     void setupResourcesPath() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
-        assert getImporterService()
+        assert getTerminologyImporterService()
     }
 
     @Override
@@ -82,17 +82,17 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
     }
 
     String exportModel(UUID terminologyId) {
-        ByteArrayOutputStream byteArrayOutputStream = exporterService.exportDomain(admin, terminologyId)
+        ByteArrayOutputStream byteArrayOutputStream = terminologyExporterService.exportDomain(admin, terminologyId)
         new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
     }
 
     Terminology importAndConfirm(byte[] bytes) {
-        Terminology imported = importerService.importTerminology(admin, bytes)
+        Terminology imported = terminologyImporterService.importTerminology(admin, bytes)
 
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        importerService.checkImport(admin, imported, false, false)
+        terminologyImporterService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
         assert terminologyService.saveWithBatching(imported)
@@ -143,7 +143,7 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
 
         //note: importing does not actually save
         when:
-        Terminology imported = importerService.importTerminology(admin, exported.bytes)
+        Terminology imported = terminologyImporterService.importTerminology(admin, exported.bytes)
 
         then:
         assert imported
@@ -176,7 +176,7 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
 
         //note: importing does not actually save
         when:
-        Terminology imported = importerService.importTerminology(admin, exported.bytes)
+        Terminology imported = terminologyImporterService.importTerminology(admin, exported.bytes)
 
         then:
         assert imported
@@ -199,7 +199,7 @@ abstract class BaseImporterExporterSpec extends BaseTerminologyIntegrationSpec {
 
         when:
         String data = ''
-        importerService.importTerminology(admin, data.bytes)
+        terminologyImporterService.importTerminology(admin, data.bytes)
 
         then:
         thrown(ApiBadRequestException)

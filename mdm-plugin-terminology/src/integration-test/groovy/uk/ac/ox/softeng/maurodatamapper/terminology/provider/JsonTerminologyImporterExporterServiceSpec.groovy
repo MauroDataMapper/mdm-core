@@ -18,9 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.JsonExporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.JsonImporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.BaseImporterExporterSpec
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.BaseTerminologyImporterExporterSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
 import com.google.common.base.CaseFormat
@@ -38,10 +38,10 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
-class JsonImporterExporterServiceSpec extends BaseImporterExporterSpec implements JsonComparer {
+class JsonTerminologyImporterExporterServiceSpec extends BaseTerminologyImporterExporterSpec implements JsonComparer {
 
-    JsonImporterService jsonImporterService
-    JsonExporterService jsonExporterService
+    TerminologyJsonImporterService terminologyJsonImporterService
+    TerminologyJsonExporterService terminologyJsonExporterService
 
     @Override
     String getImportType() {
@@ -49,13 +49,13 @@ class JsonImporterExporterServiceSpec extends BaseImporterExporterSpec implement
     }
 
     @Override
-    JsonImporterService getImporterService() {
-        jsonImporterService
+    TerminologyJsonImporterService getTerminologyImporterService() {
+        terminologyJsonImporterService
     }
 
     @Override
-    JsonExporterService getExporterService() {
-        jsonExporterService
+    TerminologyJsonExporterService getTerminologyExporterService() {
+        terminologyJsonExporterService
     }
 
     @Override
@@ -78,10 +78,10 @@ class JsonImporterExporterServiceSpec extends BaseImporterExporterSpec implement
         setupData()
 
         expect:
-        !importerService.canImportMultipleDomains()
+        !terminologyImporterService.canImportMultipleDomains()
 
         when:
-        importerService.importTerminologies(admin, loadTestFile('simpleTerminology'))
+        terminologyImporterService.importTerminologies(admin, loadTestFile('simpleTerminology'))
 
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
