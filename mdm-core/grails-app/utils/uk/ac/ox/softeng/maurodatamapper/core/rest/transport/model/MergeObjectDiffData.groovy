@@ -28,8 +28,8 @@ class MergeObjectDiffData<T> implements Validateable {
     T left
     T right
 
-    String leftId
-    String rightId
+    UUID leftId
+    UUID rightId
     String label
     List<MergeFieldDiffData> diffs
 }

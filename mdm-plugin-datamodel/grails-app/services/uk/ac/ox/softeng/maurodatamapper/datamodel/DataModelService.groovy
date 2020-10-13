@@ -397,8 +397,9 @@ class DataModelService extends ModelService<DataModel> {
                             switch (mergeFieldDiff.fieldName) {
                                 case 'dataClasses':
                                     // apply deletions of children to target object
-                                    rightModel.dataClasses.findAll { it.id in mergeFieldDiff.deleted.id }.each {
-                                        dataClassService.delete(it)
+                                    mergeFieldDiff.deleted.each {
+                                        obj ->
+                                            dataClassService.delete(rightModel.dataClasses.find { it.id == obj.id } as DataClass)
                                     }
                                     // copy additions from source to target object
                                     mergeFieldDiff.created.each {

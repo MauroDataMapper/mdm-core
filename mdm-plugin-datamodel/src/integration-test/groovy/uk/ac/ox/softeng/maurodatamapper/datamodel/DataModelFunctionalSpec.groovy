@@ -1504,6 +1504,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$source", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
+        when:
         // for mergeInto json
         GET("$source/path/dm%3A%7Cdc%3AaddLeftOnly")
         verifyResponse OK, response
@@ -1512,7 +1513,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         String addLeftToExistingClass = responseBody().id
 
-        when:
         GET("$target/path/dm%3A%7Cdc%3AexistingClass")
         verifyResponse OK, response
         existingClass = responseBody().id
@@ -1544,12 +1544,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$target", [description: 'DescriptionRight'])
         verifyResponse OK, response
 
+        when:
         // for mergeInto json
         GET("$target/path/dm%3A%7Cdc%3AaddAndAddReturningDifference")
         verifyResponse OK, response
         String addAndAddReturningDifference = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AdeleteLeftOnly")
+        verifyResponse OK, response
+        deleteLeftOnly = responseBody().id
 
-        when:
         GET("$source/mergeDiff/$target", STRING_ARG)
 
         then:

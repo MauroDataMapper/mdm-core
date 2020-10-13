@@ -23,11 +23,8 @@ import grails.validation.Validateable
 /**
  * @since 07/02/2018
  */
-class MergeFieldDiffData<T, K> implements Validateable {
+class MergeItemData implements Validateable {
 
-    String fieldName
-    T value
-    Collection<MergeItemData> created
-    Collection<MergeItemData> deleted
-    Collection<MergeObjectDiffData> modified
+    UUID id
+    String label
 }
