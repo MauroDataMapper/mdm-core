@@ -37,6 +37,12 @@ class CodeSetController extends ModelController<CodeSet> {
     CodeSetService codeSetService
     TermService termService
 
+    @Autowired(required = false)
+    Set<CodeSetExporterProviderService> exporterProviderServices
+    
+    @Autowired(required = false)
+    Set<CodeSetImporterProviderService> importerProviderServices    
+
     CodeSetController() {
         super(CodeSet, 'codeSetId')
     }
@@ -74,10 +80,4 @@ class CodeSetController extends ModelController<CodeSet> {
     protected ModelService getModelService() {
         codeSetService
     }
-
-    @Autowired(required = false)
-    Set<CodeSetExporterProviderService> exporterProviderServices
-    
-    @Autowired(required = false)
-    Set<CodeSetImporterProviderService> importerProviderServices
 }
