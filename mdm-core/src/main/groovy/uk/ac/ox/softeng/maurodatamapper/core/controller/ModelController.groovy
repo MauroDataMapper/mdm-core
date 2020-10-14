@@ -260,9 +260,16 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!right) return notFound(params.otherModelId)
 
         T instance =
-            modelService.mergeInto(left, right, mergeIntoData.patch, mergeIntoData.deleteBranch, currentUser, currentUserSecurityPolicyManager) as T
+            modelService.mergeInto(left, right, mergeIntoData.patch, currentUser, currentUserSecurityPolicyManager) as T
 
         if (!validateResource(instance, 'update')) return
+
+        if (mergeIntoData.deleteBranch) {
+            modelService.permanentDeleteModel(left)
+            if (securityPolicyManagerService) {
+                currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
+            }
+        }
 
         updateResource(instance)
 

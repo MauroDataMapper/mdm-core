@@ -916,7 +916,20 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         when:
         // merging a patch
-        PUT("$source/mergeInto/$target", [patch: [test: 'value']])
+        PUT("$source/mergeInto/$target", [patch: [
+            leftId : "$target" as String,
+            rightId: "$source" as String,
+            label  : "Functional Test Model",
+            count  : 10,
+            diffs  : [
+                [
+                    fieldName: "description",
+                    value    : "modifiedDescriptionSource"
+                ]
+            ]
+        ]
+        ]
+        )
 
         then:
         // success

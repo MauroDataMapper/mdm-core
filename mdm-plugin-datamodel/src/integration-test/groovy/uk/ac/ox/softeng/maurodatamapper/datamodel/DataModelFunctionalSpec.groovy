@@ -1559,6 +1559,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyJsonResponse OK, expectedMergeDiffJson
 
         when:
+        String modifiedDescriptionSource = 'modifiedDescriptionSource'
+
         def requestBody = [
             patch: [
                 leftId : "$target" as String,
@@ -1568,7 +1570,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 diffs  : [
                     [
                         fieldName: "description",
-                        value    : "modifiedDescriptionSource"
+                        value    : "$modifiedDescriptionSource" as String
                     ],
                     [
                         fieldName: "dataClasses",
@@ -1636,7 +1638,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 diffs : [
                                     [
                                         fieldName: "description",
-                                        value    : "modifiedDescriptionSource"
+                                        value: "$modifiedDescriptionSource" as String
                                     ]
                                 ]
                             ],
@@ -1663,6 +1665,25 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse OK, response
         responseBody().id == target
+        responseBody().description == modifiedDescriptionSource
+
+        when:
+        GET("$target/dataClasses")
+
+        then:
+        responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly'] as Set
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
+        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+
+
+        when:
+        GET("$target/dataClasses/$existingClass/dataClasses")
+
+        then:
+        responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
 
         cleanup:
         cleanUpData(source)

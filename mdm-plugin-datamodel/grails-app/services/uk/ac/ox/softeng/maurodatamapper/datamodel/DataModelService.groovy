@@ -381,10 +381,10 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData<DataModel> patch, boolean deleteBranch, User user,
+    DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData mergeObjectDiff, User user,
                         UserSecurityPolicyManager userSecurityPolicyManager) {
-        // iterate through maps in diff list (this could be manipulated for easier handling instead i.e. convert to map instead of list?)
-        patch.diffs.each {
+
+        mergeObjectDiff.diffs.each {
             diff ->
                 diff.each {
                     mergeFieldDiff ->
@@ -411,6 +411,11 @@ class DataModelService extends ModelService<DataModel> {
                                     }
                                     // for modifications, recursively call this method
                                     // might need a new copy data class method when we get to nested values?
+                                    //                                    mergeFieldDiff.modified.each {
+                                    //                                        obj ->
+                                    //                                            mergeInto(leftModel, rightModel, obj, user,
+                                    //                                            userSecurityPolicyManager)
+                                    //                                    }
                                     break
                                 default:
                                     break
