@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -214,7 +215,8 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet mergeInto(CodeSet leftModel, CodeSet rightModel, Map<String, Object> patch, boolean deleteBranch) {
+    CodeSet mergeInto(CodeSet leftModel, CodeSet rightModel, MergeObjectDiffData patch, User user,
+                      UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new NotImplementedException('DataModelService.mergeInto')
     }
 
@@ -660,7 +662,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
         //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the import.
         codeSet.authority = authorityService.getDefaultAuthority()
-        
+
         checkFacetsAfterImportingCatalogueItem(codeSet)
 
         //Terms are imported by use of a path such as "te:my-terminology-label|tm:my-term-label"
@@ -673,7 +675,7 @@ class CodeSetService extends ModelService<CodeSet> {
                 //pathService requires a UserSecurityPolicyManager.
                 //Assumption is that if we got this far then it is OK to read the Terms because either (i) we came via a controller in which case
                 //the user's ability to import a CodeSet has already been tested, or (ii) we are calling this method from a service test spec in which
-                //case it is OK to read. 
+                //case it is OK to read.
                 Term term = pathService.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, pathParams)
 
                 if (term) {
@@ -684,5 +686,5 @@ class CodeSetService extends ModelService<CodeSet> {
                 }
             }
         }
-    }     
+    }
 }

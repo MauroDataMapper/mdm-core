@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -221,7 +222,8 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology mergeInto(Terminology leftModel, Terminology rightModel, Map<String, Object> patch, boolean deleteBranch) {
+    Terminology mergeInto(Terminology leftModel, Terminology rightModel, MergeObjectDiffData patch, User user,
+                          UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new NotImplementedException('DataModelService.mergeInto')
     }
 
