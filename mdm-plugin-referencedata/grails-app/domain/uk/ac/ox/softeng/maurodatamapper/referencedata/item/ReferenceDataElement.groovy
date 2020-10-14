@@ -71,7 +71,8 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
             annotations    : Annotation,
             semanticLinks  : SemanticLink,
             referenceFiles : ReferenceFile,
-            referenceSummaryMetadata: ReferenceSummaryMetadata
+            referenceSummaryMetadata: ReferenceSummaryMetadata,
+            referenceDataValues: ReferenceDataValue
     ]
 
     static constraints = {

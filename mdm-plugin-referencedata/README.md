@@ -1,4 +1,4 @@
-# mdm-plugin-datamodel
+# mdm-plugin-referencedata
 
 ## Url Mappings Report
 

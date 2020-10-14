@@ -63,6 +63,11 @@ class UrlMappings {
                 put '/readByAuthenticated'(controller: 'referenceDataModel', action: 'readByAuthenticated')
                 delete '/readByAuthenticated'(controller: 'referenceDataModel', action: 'readByAuthenticated')
 
+                /**
+                 * ReferenceDataValues
+                 */
+
+                '/referenceDataValues'(resources: 'referenceDataValue', excludes: DEFAULT_EXCLUDES)
 
                 /**
                  * DataElements

@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
@@ -60,6 +61,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
     static hasMany = [
             referenceDataTypes      : ReferenceDataType,
             referenceDataElements   : ReferenceDataElement,
+            referenceDataValues     : ReferenceDataValue,
             classifiers             : Classifier,
             metadata                : Metadata,
             semanticLinks           : SemanticLink,
@@ -84,12 +86,14 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         folder cascade: 'none'
         referenceDataTypes cascade: 'all-delete-orphan'
         referenceDataElements cascade: 'all-delete-orphan'
+        referenceDataValues cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [
         metadata   : 'none',
         referenceDataTypes  : 'referenceDataModel',
-        referenceDataElements  : 'referenceDataModel'
+        referenceDataElements  : 'referenceDataModel',
+        referenceDataValues  : 'referenceDataModel'
     ]
 
     static search = {

@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: referenceDataValue]
+
+model {
+    ReferenceDataValue referenceDataValue
+}
+
+json {
+    rowNumber referenceDataValue.rowNumber
+    value referenceDataValue.value
+    referenceDataElement tmpl.'/referenceDataElement/referenceDataElement'(referenceDataValue.referenceDataElement)
+}

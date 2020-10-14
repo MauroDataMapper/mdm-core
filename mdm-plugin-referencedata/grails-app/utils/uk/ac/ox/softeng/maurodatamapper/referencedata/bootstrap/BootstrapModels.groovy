@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import org.springframework.context.MessageSource
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -29,6 +30,9 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePri
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 class BootstrapModels {
 
     static String SIMPLE_REFERENCE_MODEL_NAME = "Simple Reference Data Model"
@@ -60,6 +64,13 @@ class BootstrapModels {
         ReferenceDataElement organisationCode = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT)
         referenceDataModel.addToReferenceDataElements(organisationName)
         referenceDataModel.addToReferenceDataElements(organisationCode)
+
+        checkAndSave(messageSource, referenceDataModel)
+
+        (1..100).each {
+            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: organisationName, value: "Organisation ${it}", rowNumber: it, createdBy: DEVELOPMENT))
+            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: organisationCode, value: "ORG${it}", rowNumber: it, createdBy: DEVELOPMENT))
+        }
 
         checkAndSave(messageSource, referenceDataModel)
 
