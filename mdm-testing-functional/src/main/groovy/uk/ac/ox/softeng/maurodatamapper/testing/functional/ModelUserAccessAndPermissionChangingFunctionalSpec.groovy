@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissi
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -901,7 +900,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(id)
     }
 
-    @PendingFeature
     void 'E25 : test merging object diff into a draft main model'() {
         given:
         // a source and draft main branch
@@ -915,8 +913,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String source = responseBody().id
 
         when:
-        // merging a patch
-        PUT("$source/mergeInto/$target", [patch: [
+        def patchJson = [patch: [
             leftId : "$target" as String,
             rightId: "$source" as String,
             label  : "Functional Test Model",
@@ -929,7 +926,8 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
             ]
         ]
         ]
-        )
+        // merging a patch
+        PUT("$source/mergeInto/$target", patchJson)
 
         then:
         // success
@@ -937,17 +935,19 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody()
         responseBody().id == target
         responseBody().branchName == 'main'
+        responseBody().description == 'modifiedDescriptionSource'
 
         when:
+        patchJson.deleteBranch = true
         // merging patch and deleting source
-        PUT("$source/mergeInto/$target", [patch: [test: 'value'], deleteBranch: true])
+        PUT("$source/mergeInto/$target", patchJson)
 
         then:
-        //TODO: decide on appropriate response when source is deleted
         verifyResponse OK, response
         responseBody()
         responseBody().id == target
         responseBody().branchName == 'main'
+        responseBody().description == 'modifiedDescriptionSource'
 
         when:
         // trying to get source which should be deleted

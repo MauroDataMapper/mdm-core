@@ -581,6 +581,10 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass
     }
 
+    static String getResourcePathElement() {
+        'dataClasses'
+    }
+
     @Override
     boolean hasTreeTypeModelItems(DataClass dataClass) {
         dataClass.dataClasses

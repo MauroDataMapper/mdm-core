@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
@@ -78,6 +79,9 @@ class DataModelService extends ModelService<DataModel> {
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
+
+    @Autowired
+    Set<ModelItemService> modelItemServices
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -394,32 +398,30 @@ class DataModelService extends ModelService<DataModel> {
                             rightModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
                         } else {
                             // if map has children
-                            switch (mergeFieldDiff.fieldName) {
-                                case 'dataClasses':
-                                    // apply deletions of children to target object
-                                    mergeFieldDiff.deleted.each {
-                                        obj ->
-                                            dataClassService.delete(rightModel.dataClasses.find { it.id == obj.id } as DataClass)
-                                    }
-                                    // copy additions from source to target object
-                                    mergeFieldDiff.created.each {
-                                        obj ->
-                                            dataClassService.copyDataClass(rightModel,
-                                                                           leftModel.childDataClasses.find { it.id == obj.id },
-                                                                           user,
-                                                                           userSecurityPolicyManager)
-                                    }
-                                    // for modifications, recursively call this method
-                                    // might need a new copy data class method when we get to nested values?
-                                    //                                    mergeFieldDiff.modified.each {
-                                    //                                        obj ->
-                                    //                                            mergeInto(leftModel, rightModel, obj, user,
-                                    //                                            userSecurityPolicyManager)
-                                    //                                    }
-                                    break
-                                default:
-                                    break
+                            ModelItemService modelItemService = modelItemServices.find { it.resourcePathElement == mergeFieldDiff.fieldName }
+
+                            // apply deletions of children to target object
+                            mergeFieldDiff.deleted.each {
+                                obj ->
+                                    modelItemService.delete(rightModel.dataClasses.find { it.id == obj.id } as DataClass)
                             }
+                            // copy additions from source to target object
+                            mergeFieldDiff.created.each {
+                                obj ->
+                                    modelItemService.copyDataClass(rightModel,
+                                                                   leftModel.childDataClasses.find { it.id == obj.id },
+                                                                   user,
+                                                                   userSecurityPolicyManager)
+                            }
+                            // for modifications, recursively call this method
+                            // might need a new copy data class method when we get to nested values?
+                            mergeFieldDiff.modified.each {
+                                obj ->
+                                    mergeInto(leftModel, rightModel, obj,
+                                              user,
+                                              userSecurityPolicyManager)
+                            }
+
                         }
                         // Class.forName(fullname including package)
 
