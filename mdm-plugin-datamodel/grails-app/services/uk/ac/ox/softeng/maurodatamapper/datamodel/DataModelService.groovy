@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -57,6 +58,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -388,18 +390,27 @@ class DataModelService extends ModelService<DataModel> {
     DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData mergeObjectDiff, User user,
                         UserSecurityPolicyManager userSecurityPolicyManager) {
 
+
         mergeObjectDiff.diffs.each {
             diff ->
                 diff.each {
                     mergeFieldDiff ->
-                        // if map doesn't have children, apply value to target object
-                        // should check that the object actually has that property
+                        // get domain object by id and set property
+
+                        //TODO rethink
+                        ModelItemService modelItemService = modelItemServices.find { it?.resourcePathElement == mergeFieldDiff.fieldName }
+
+                        CatalogueItem catalogueItem = modelItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
+
+                        if (!modelItemService) throw new NotImplementedException("Mergining for ${mergeFieldDiff.fieldName} has not been " +
+                                                                                 "implemented yet.")
+
                         if (mergeFieldDiff.value) {
-                            rightModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+                            catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
                         } else {
                             // if map has children
-                            ModelItemService modelItemService = modelItemServices.find { it.resourcePathElement == mergeFieldDiff.fieldName }
 
+                            // TODO ensure delete and copyX methods are present for all relevant services
                             // apply deletions of children to target object
                             mergeFieldDiff.deleted.each {
                                 obj ->
