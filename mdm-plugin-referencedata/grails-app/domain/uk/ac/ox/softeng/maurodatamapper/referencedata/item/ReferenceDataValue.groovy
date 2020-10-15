@@ -155,4 +155,19 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
         criteria = withCatalogueItemFilter(criteria, filters)
         criteria
     }    
+
+    static DetachedCriteria<ReferenceDataValue> byReferenceDataModelIdAndRowNumber(Serializable referenceDataModelId, Integer fromRowNumber, Integer toRowNumber) {
+        new DetachedCriteria<ReferenceDataValue>(ReferenceDataValue)
+        .eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
+        .ge('rowNumber', fromRowNumber)
+        .lt('rowNumber', toRowNumber)
+    }
+
+    static DetachedCriteria<ReferenceDataValue> countByReferenceDataModelId(Serializable referenceDataModelId) {
+        new DetachedCriteria<ReferenceDataValue>(ReferenceDataValue)
+        .eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
+        .projections {
+            countDistinct("rowNumber")
+        }
+    }
 }

@@ -157,4 +157,12 @@ results = [] //TODO
         ReferenceDataValue.withFilter(ReferenceDataValue.byReferenceDataModelId(referenceDataModelId), filter).list(pagination)
     }
 
+    List<ReferenceDataValue> findAllByReferenceDataModelIdAndRowNumber(Serializable referenceDataModelId, Integer fromRowNumber, Integer toRowNumber, Map params) {
+        ReferenceDataValue.withFilter(ReferenceDataValue.byReferenceDataModelIdAndRowNumber(referenceDataModelId, fromRowNumber, toRowNumber), params).list()
+    }
+
+    Integer countRowsByReferenceDataModelId(Serializable referenceDataModelId) {
+        ReferenceDataValue.countByReferenceDataModelId(referenceDataModelId).list()[0]
+    }
+
 }
