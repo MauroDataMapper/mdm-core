@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.test.functional
 
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemFacetFunctionalSpec
 
@@ -36,7 +36,7 @@ import io.micronaut.http.HttpStatus
  * @see uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataController
  */
 @Slf4j
-abstract class CatalogueItemReferenceSummaryMetadataFunctionalSpec extends CatalogueItemFacetFunctionalSpec<SummaryMetadata> {
+abstract class CatalogueItemReferenceSummaryMetadataFunctionalSpec extends CatalogueItemFacetFunctionalSpec<ReferenceSummaryMetadata> {
 
     abstract String getSourceDataModelId()
 

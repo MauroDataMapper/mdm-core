@@ -31,9 +31,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.DataModelService
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.summarymetadata.SummaryMetadataReport
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.CatalogueItemAwareServiceSpec
 
@@ -45,7 +45,7 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
     implements ServiceUnitTest<ReferenceSummaryMetadataService> {
 
     UUID id
-    DataModel dataModel
+    ReferenceDataModel referenceDataModel
 
     def setup() {
         mockArtefact(ClassifierService)
@@ -54,24 +54,24 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
         mockArtefact(EditService)
         mockArtefact(MetadataService)
         mockArtefact(ReferenceDataTypeService)
-        mockDomains(Folder, DataModel, Edit, ReferenceSummaryMetadata, SummaryMetadataReport, Authority, Metadata, VersionLink, SemanticLink, Classifier)
-        mockArtefact(DataModelService)
+        mockDomains(Folder, ReferenceDataModel, Edit, ReferenceSummaryMetadata, SummaryMetadataReport, Authority, Metadata, VersionLink, SemanticLink, Classifier)
+        mockArtefact(ReferenceDataModelService)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
-        dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
+        referenceDataModel = new ReferenceDataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
                                   authority: Authority.findByLabel('Test Authority'))
-        checkAndSave(dataModel)
+        checkAndSave(referenceDataModel)
 
-        dataModel.
+        /*referenceDataModel.
             addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 1', summaryMetadataType: SummaryMetadataType.MAP)
-        dataModel.addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description',
+        referenceDataModel.addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description',
                                        summaryMetadataType: SummaryMetadataType.NUMBER)
         ReferenceSummaryMetadata summaryMetadata = new ReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3',
                                                               summaryMetadataType: SummaryMetadataType.STRING)
             .addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST, reportDate: OffsetDateTime.now(), reportValue: 'some value')
-        dataModel.addToSummaryMetadata(summaryMetadata)
+        referenceDataModel.addToSummaryMetadata(summaryMetadata)
 
-        checkAndSave dataModel
+        checkAndSave referenceDataModel*/
 
         id = summaryMetadata.id
     }
@@ -92,13 +92,13 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
         summaryMetadata[0].label == 'summary metadata 2'
         summaryMetadata[0].description == 'a description'
         !summaryMetadata[0].summaryMetadataReports
-        summaryMetadata[0].catalogueItemId == dataModel.id
+        summaryMetadata[0].catalogueItemId == referenceDataModel.id
 
         and:
         summaryMetadata[1].label == 'summary metadata 3'
         !summaryMetadata[1].description
         summaryMetadata[1].summaryMetadataReports.size() == 1
-        summaryMetadata[1].catalogueItemId == dataModel.id
+        summaryMetadata[1].catalogueItemId == referenceDataModel.id
 
     }
 
@@ -120,12 +120,12 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
 
     @Override
     CatalogueItem getCatalogueItem() {
-        dataModel
+        referenceDataModel
     }
 
     @Override
     CatalogueItem getCatalogueItemFromStorage() {
-        DataModel.get(dataModel.id)
+        ReferenceDataModel.get(referenceDataModel.id)
     }
 
     @Override

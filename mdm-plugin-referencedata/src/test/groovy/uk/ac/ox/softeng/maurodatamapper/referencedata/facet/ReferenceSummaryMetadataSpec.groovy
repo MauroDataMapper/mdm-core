@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -28,14 +28,14 @@ import org.spockframework.util.InternalSpockError
 
 class ReferenceSummaryMetadataSpec extends CreatorAwareSpec<ReferenceSummaryMetadata> implements DomainUnitTest<ReferenceSummaryMetadata> {
 
-    DataModel db
+    ReferenceDataModel db
     Folder misc
 
     def setup() {
         misc = new Folder(createdBy: StandardEmailAddress.UNIT_TEST, label: 'misc')
         Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost")
-        db = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: testAuthority)
-        mockDomains(Folder, DataModel, ReferenceSummaryMetadata)
+        db = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: testAuthority)
+        mockDomains(Folder, ReferenceDataModel, ReferenceSummaryMetadata)
         checkAndSave(misc)
         checkAndSave(db)
     }
@@ -66,7 +66,7 @@ class ReferenceSummaryMetadataSpec extends CreatorAwareSpec<ReferenceSummaryMeta
     void verifyDomainOtherConstraints(ReferenceSummaryMetadata domain) {
         assert domain.summaryMetadataType == SummaryMetadataType.NUMBER
         assert domain.catalogueItem.id
-        assert domain.catalogueItemDomainType == DataModel.simpleName
+        assert domain.catalogueItemDomainType == ReferenceDataModel.simpleName
         assert domain.catalogueItem.id == db.id
         assert domain.createdBy == admin.emailAddress
         assert domain.label == 'test'

@@ -19,8 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -38,23 +37,23 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 /**
  * @see ReferenceDataTypeController* Controller: dataType
- *  | POST   | /api/dataModels/${dataModelId}/dataTypes       | Action: save   |
- *  | GET    | /api/dataModels/${dataModelId}/dataTypes       | Action: index  |
- *  | DELETE | /api/dataModels/${dataModelId}/dataTypes/${id} | Action: delete |
- *  | PUT    | /api/dataModels/${dataModelId}/dataTypes/${id} | Action: update |
- *  | GET    | /api/dataModels/${dataModelId}/dataTypes/${id} | Action: show   |
+ *  | POST   | /api/referenceDataModels/${referenceDataModelId}/dataTypes       | Action: save   |
+ *  | GET    | /api/referenceDataModels/${referenceDataModelId}/dataTypes       | Action: index  |
+ *  | DELETE | /api/referenceDataModels/${referenceDataModelId}/dataTypes/${id} | Action: delete |
+ *  | PUT    | /api/referenceDataModels/${referenceDataModelId}/dataTypes/${id} | Action: update |
+ *  | GET    | /api/referenceDataModels/${referenceDataModelId}/dataTypes/${id} | Action: show   |
  *
- *  | POST   | /api/dataModels/${dataModelId}/dataTypes/${otherDataModelId}/${dataTypeId} | Action: copyDataType |
+ *  | POST   | /api/referenceDataModels/${referenceDataModelId}/dataTypes/${otherReferenceDataModelId}/${dataTypeId} | Action: copyDataType |
  */
 @Integration
 @Slf4j
 class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDataType> {
 
     @Shared
-    UUID dataModelId
+    UUID referenceDataModelId
 
     @Shared
-    UUID otherDataModelId
+    UUID otherReferenceDataModelId
 
     @Shared
     Folder folder
@@ -70,30 +69,29 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         checkAndSave(folder)
         Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
         checkAndSave(testAuthority)
-        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
-        dataModelId = dataModel.id
-        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
+        referenceDataModelId = referenceDataModel.id
+        otherReferenceDataModelId = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel 2', createdBy: FUNCTIONAL_TEST,
                                          folder: folder, authority: testAuthority).save(flush: true).id
-        dataClassId = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
-                                    dataModel: dataModel).save(flush: true).id
+
         sessionFactory.currentSession.flush()
     }
 
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec DataTypeFunctionalSpec')
-        cleanUpResources(DataClass, DataModel, Folder)
+        cleanUpResources(ReferenceDataModel, Folder)
         Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override
     void cleanUpData() {
-        if (dataModelId) {
-            GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
+        if (referenceDataModelId) {
+            GET("referenceDataModels/$otherReferenceDataModelId/dataTypes", MAP_ARG, true)
             def items = response.body().items
             items.each {i ->
-                DELETE("dataModels/$otherDataModelId/dataTypes/$i.id", MAP_ARG, true)
+                DELETE("referenceDataModels/$otherReferenceDataModelId/dataTypes/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
             }
             super.cleanUpData()
@@ -102,7 +100,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
 
     @Override
     String getResourcePath() {
-        "dataModels/${dataModelId}/dataTypes"
+        "referenceDataModels/${referenceDataModelId}/dataTypes"
     }
 
     @Override
@@ -139,10 +137,10 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
   "label": "date",
   "breadcrumbs": [
     {
-      "domainType": "DataModel",
+      "domainType": "ReferenceDataModel",
       "finalised": false,
       "id": "${json-unit.matches:id}",
-      "label": "Functional Test DataModel"
+      "label": "Functional Test ReferenceDataModel"
     }
   ]
 }'''
@@ -187,10 +185,10 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
       "label": "functional enumeration",
       "breadcrumbs": [
         {
-          "domainType": "DataModel",
+          "domainType": "ReferenceDataModel",
           "finalised": false,
           "id": "${json-unit.matches:id}",
-          "label": "Functional Test DataModel"
+          "label": "Functional Test ReferenceDataModel"
         }
       ]
     }'''
@@ -217,10 +215,10 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
       "label": "functional dataclass reference",
       "breadcrumbs": [
         {
-          "domainType": "DataModel",
+          "domainType": "ReferenceDataModel",
           "finalised": false,
           "id": "${json-unit.matches:id}",
-          "label": "Functional Test DataModel"
+          "label": "Functional Test ReferenceDataModel"
         }
       ],
       "referenceClass": {
@@ -230,10 +228,10 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         "label": "Functional Test DataClass",
         "breadcrumbs": [
           {
-            "domainType": "DataModel",
+            "domainType": "ReferenceDataModel",
             "finalised": false,
             "id": "${json-unit.matches:id}",
-            "label": "Functional Test DataModel"
+            "label": "Functional Test ReferenceDataModel"
           }
         ]
       }
@@ -250,22 +248,22 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         id
 
         when: 'trying to copy non-existent'
-        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/${UUID.randomUUID()}", [:], MAP_ARG, true)
+        POST("referenceDataModels/$otherReferenceDataModelId/dataTypes/$referenceDataModelId/${UUID.randomUUID()}", [:], MAP_ARG, true)
 
         then:
         response.status == NOT_FOUND
 
         when: 'trying to copy valid'
-        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/$id", [:], MAP_ARG, true)
+        POST("referenceDataModels/$otherReferenceDataModelId/dataTypes/$referenceDataModelId/$id", [:], MAP_ARG, true)
 
         then:
         verifyResponse(CREATED, response)
         response.body().id != id
         response.body().label == validJson.label
         response.body().availableActions == ['delete', 'show', 'update']
-        response.body().model == otherDataModelId.toString()
+        response.body().model == otherReferenceDataModelId.toString()
         response.body().breadcrumbs.size() == 1
-        response.body().breadcrumbs[0].id == otherDataModelId.toString()
+        response.body().breadcrumbs[0].id == otherReferenceDataModelId.toString()
 
         cleanup:
         cleanUpData(id)
@@ -288,16 +286,16 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         id
 
         when: 'trying to copy valid'
-        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/$id", [:], MAP_ARG, true)
+        POST("referenceDataModels/$otherReferenceDataModelId/dataTypes/$referenceDataModelId/$id", [:], MAP_ARG, true)
 
         then:
         verifyResponse(CREATED, response)
         response.body().id != id
         response.body().label == 'functional enumeration'
         response.body().availableActions == ['delete', 'show', 'update']
-        response.body().model == otherDataModelId.toString()
+        response.body().model == otherReferenceDataModelId.toString()
         response.body().breadcrumbs.size() == 1
-        response.body().breadcrumbs[0].id == otherDataModelId.toString()
+        response.body().breadcrumbs[0].id == otherReferenceDataModelId.toString()
 
         cleanup:
         cleanUpData(id)
@@ -317,7 +315,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         id
 
         when: 'trying to copy valid'
-        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/$id", [:], MAP_ARG, true)
+        POST("referenceDataModels/$otherReferenceDataModelId/dataTypes/$referenceDataModelId/$id", [:], MAP_ARG, true)
 
         then:
         verifyResponse(BAD_REQUEST, response)

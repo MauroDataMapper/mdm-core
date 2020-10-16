@@ -20,10 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
+//import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -37,18 +37,18 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
     DomainUnitTest<ReferenceSummaryMetadataReport>,
     ControllerUnitTest<ReferenceSummaryMetadataReportController> {
 
-    DataModel dataModel
+    ReferenceDataModel referenceDataModel
     OffsetDateTime dateTime
-    SummaryMetadata summaryMetadata
+    ReferenceSummaryMetadata referenceSummaryMetadata
 
     def setup() {
-        mockDomains(Folder, DataModel, SummaryMetadata, ReferenceSummaryMetadataReport, Authority)
+       /* mockDomains(Folder, ReferenceDataModel, SummaryMetadata, ReferenceSummaryMetadataReport, Authority)
         log.debug('Setting up summary metadata controller unit')
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
-        dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
+        referenceDataModel = new ReferenceDataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
                                   authority: Authority.findByLabel('Test Authority'))
-        checkAndSave dataModel
+        checkAndSave referenceDataModel
         dateTime = OffsetDateTime.now()
 
         summaryMetadata = new SummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3',
@@ -64,9 +64,9 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
                                          reportValue: 'another report 2',
                                          reportDate: dateTime.plusDays(2))
 
-        dataModel.addToSummaryMetadata(summaryMetadata)
+        referenceDataModel.addToSummaryMetadata(summaryMetadata)
 
-        checkAndSave(dataModel)
+        checkAndSave(referenceDataModel)
 
         controller.summaryMetadataReportService = Stub(ReferenceSummaryMetadataReportService) {
             findBySummaryMetadataIdAndId(summaryMetadata.id, _) >> {UUID iid, Serializable mid ->
@@ -74,11 +74,11 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
                 mid == domain.id ? domain : null
             }
             findAllBySummaryMetadataId(summaryMetadata.id, _) >> summaryMetadata.summaryMetadataReports.toList()
-            findCatalogueItemByDomainTypeAndId(DataModel.simpleName, _) >> {String domain, UUID bid -> dataModel.id == bid ? dataModel : null}
+            findCatalogueItemByDomainTypeAndId(ReferenceDataModel.simpleName, _) >> {String domain, UUID bid -> referenceDataModel.id == bid ? referenceDataModel : null}
         }
         controller.summaryMetadataService = Stub(ReferenceSummaryMetadataService) {
             get(summaryMetadata.id) >> summaryMetadata
-        }
+        }*/
     }
 
     @Override
@@ -203,8 +203,8 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = DataModel.simpleName
-        params.catalogueItemId = dataModel.id
+        params.catalogueItemDomainType = ReferenceDataModel.simpleName
+        params.catalogueItemId = referenceDataModel.id
         params.summaryMetadataId = summaryMetadata.id
     }
 }

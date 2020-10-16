@@ -19,12 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelItemSpec
 
@@ -35,22 +34,20 @@ import org.spockframework.util.InternalSpockError
 @Slf4j
 class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> implements DomainUnitTest<ReferenceDataElement> {
 
-    DataModel dataSet
-    DataClass dataClass
+    ReferenceDataModel dataSet
     ReferenceDataType dataType
 
     def setup() {
         log.debug('Setting up DataClassSpec unit')
-        mockDomains(DataModel, DataClass, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
+        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
 
         checkAndSave(dataSet)
-        assert DataModel.count() == 1
+        assert ReferenceDataModel.count() == 1
 
         dataType = new ReferencePrimitiveType(createdByUser: admin, label: 'datatype')
-        dataClass = new DataClass(createdByUser: admin, label: 'dataClass')
-        dataSet.addToDataClasses(dataClass)
+        
         dataSet.addToDataTypes(dataType)
         checkAndSave(dataSet)
     }
@@ -64,15 +61,13 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
 
     @Override
     void verifyDomainOtherConstraints(ReferenceDataElement subDomain) {
-        assert subDomain.dataClass.id == dataClass.id
         assert subDomain.model.id == dataSet.id
         assert subDomain.referenceDataType.id == dataType.id
     }
 
     @Override
     ReferenceDataElement createValidDomain(String label) {
-        ReferenceDataElement element = new ReferenceDataElement(label: label, dataModel: dataSet, referenceDataType: dataType, createdBy: editor.emailAddress)
-        dataClass.addToDataElements(element)
+        ReferenceDataElement element = new ReferenceDataElement(label: label, referenceReferenceDataModel: dataSet, referenceDataType: dataType, createdBy: editor.emailAddress)
         element
     }
 
@@ -88,23 +83,20 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
 
     @Override
     void setModel(ReferenceDataElement domain, Model model) {
-        domain.dataClass.dataModel = model as DataModel
+        domain.dataClass.referenceReferenceDataModel = model as ReferenceDataModel
     }
 
     @Override
     void wipeModel() {
         domain.breadcrumbTree = null
-        domain.dataClass.dataModel = null
-        domain.dataClass.breadcrumbTree = null
     }
 
-    void 'test unique label naming'() {
+    /*void 'test unique label naming'() {
         given:
         setValidDomainValues()
 
         expect: 'domain is currently valid'
         checkAndSave(domain)
-        checkAndSave(dataClass)
 
         when: 'adding data element with same label to dataclass'
         dataClass.addToDataElements(label: domain.label, createdByUser: admin, dataType: dataType)
@@ -139,5 +131,5 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
         checkAndSave(child)
         checkAndSave(dataClass)
         checkAndSave(other)
-    }
+    }*/
 }

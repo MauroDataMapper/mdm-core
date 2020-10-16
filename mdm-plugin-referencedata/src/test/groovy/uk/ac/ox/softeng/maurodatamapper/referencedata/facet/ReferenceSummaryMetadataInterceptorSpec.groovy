@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.VariableContainedResourceInterceptorSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
@@ -25,7 +25,7 @@ import grails.testing.web.interceptor.InterceptorUnitTest
 class ReferenceSummaryMetadataInterceptorSpec extends VariableContainedResourceInterceptorSpec implements InterceptorUnitTest<ReferenceSummaryMetadataInterceptor> {
 
     def setup() {
-        mockDomains(DataModel)
+        mockDomains(ReferenceDataModel)
     }
 
     @Override

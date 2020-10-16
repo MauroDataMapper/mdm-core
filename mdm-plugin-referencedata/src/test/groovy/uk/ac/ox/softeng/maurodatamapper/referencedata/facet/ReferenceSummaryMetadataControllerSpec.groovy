@@ -20,8 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.summarymetadata.SummaryMetadataReport
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -35,7 +35,7 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
     DomainUnitTest<ReferenceSummaryMetadata>,
     ControllerUnitTest<ReferenceSummaryMetadataController> {
 
-    DataModel dataModel
+    ReferenceDataModel referenceDataModel
 
     def setup() {
         mockDomains(Folder, DataModel, ReferenceSummaryMetadata, SummaryMetadataReport)
@@ -43,10 +43,10 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost")
         checkAndSave(testAuthority)
-        dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
-        checkAndSave dataModel
+        referenceDataModel = new ReferenceDataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
+        checkAndSave referenceDataModel
 
-        dataModel.
+       /* dataModel.
             addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 1', summaryMetadataType: SummaryMetadataType.MAP)
         dataModel.addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description',
                                        summaryMetadataType: SummaryMetadataType.NUMBER)
@@ -66,7 +66,7 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
                 if (iid != dataModel.id) return null
                 mid == domain.id ? domain : null
             }
-        }
+        }*/
     }
 
     @Override

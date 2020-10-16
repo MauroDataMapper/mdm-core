@@ -15,19 +15,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.referencedata.test.provider.DataBindDataModelImporterProviderServiceSpec
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
+import groovy.util.logging.Slf4j*/
 
 /**
  * @since 15/11/2017
  */
-@Integration
+/*@Integration
 @Rollback
 @Slf4j
 class JsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<JsonImporterService> {
@@ -58,4 +58,4 @@ class JsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSp
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.message.contains('cannot import multiple DataModels')
     }
-}
+}*/

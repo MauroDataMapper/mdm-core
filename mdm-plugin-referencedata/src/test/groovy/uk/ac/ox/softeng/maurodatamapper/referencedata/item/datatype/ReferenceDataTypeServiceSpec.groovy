@@ -19,12 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 
@@ -37,7 +36,7 @@ import spock.lang.Stepwise
 @Stepwise
 class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<ReferenceDataTypeService> {
 
-    DataModel dataModel
+    ReferenceDataModel referenceDataModel
     UUID id
 
     def setup() {
@@ -47,55 +46,45 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         mockArtefact(ReferencePrimitiveTypeService)
         mockArtefact(ReferenceEnumerationTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
-        mockDomains(DataModel, DataClass, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
+        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
-        checkAndSave(dataModel)
+        referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
+        checkAndSave(referenceDataModel)
 
         ReferencePrimitiveType primitiveType = new ReferencePrimitiveType(createdByUser: editor, label: 'varchar')
 
-        dataModel.addToDataTypes(primitiveType)
-        dataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        dataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceDataModel.addToDataTypes(primitiveType)
+        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
+        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
 
         ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdByUser: editor, label: 'et1')
             .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
             .addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdByUser: admin, key: 'key2', value: 'val2')
             )
-        dataModel.addToDataTypes(et1)
-        dataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'moreet')
+        referenceDataModel.addToDataTypes(et1)
+        referenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'moreet')
                                      .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
                                      .addToEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
                                      .addToEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
                                      .addToEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
         )
-        dataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
+        referenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
                                      .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
                                      .addToEnumerationValues(key: 'N', value: 'No')
                                      .addToEnumerationValues(key: 'U', value: 'Unknown'))
 
-        DataClass dataClass = new DataClass(createdByUser: admin, label: 'dc1')
-        dataModel.addToDataClasses(dataClass)
-        DataClass parent = new DataClass(createdByUser: editor, label: 'Unit parent', dataModel: dataModel, minMultiplicity: 0,
-                                         maxMultiplicity: 1)
-        DataClass child = new DataClass(createdByUser: reader1, label: 'Unit child', minMultiplicity: 1, maxMultiplicity: -1)
-        parent.addToDataClasses(child)
-        DataClass added = new DataClass(createdByUser: reader1, label: 'added', description: 'a desc')
-        dataModel.addToDataClasses(added)
-        DataClass grandParent = new DataClass(createdByUser: editor, label: 'Unit grandparent')
-        grandParent.addToDataClasses(parent)
-        dataModel.addToDataClasses(grandParent)
+        
 
-        ReferenceType refType = new ReferenceType(createdByUser: editor, label: 'Unit parent')
+        /*ReferenceType refType = new ReferenceType(createdByUser: editor, label: 'Unit parent')
         parent.addToReferenceTypes(refType)
-        dataModel.addToDataTypes(refType)
+        referenceDataModel.addToDataTypes(refType)
 
         ReferenceDataElement el1 = new ReferenceDataElement(createdByUser: editor, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1, referenceDataType: refType)
         parent.addToDataElements(el1)
 
         ReferenceType refType2 = new ReferenceType(createdByUser: editor, label: 'dataclass')
         dataClass.addToReferenceTypes(refType2)
-        dataModel.addToDataTypes(refType2)
+        referenceDataModel.addToDataTypes(refType2)
 
         ReferenceDataElement el2 = new ReferenceDataElement(createdByUser: editor, label: 'childEl', minMultiplicity: 1, maxMultiplicity: 1)
         refType2.addToDataElements(el2)
@@ -108,14 +97,14 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         added.addToDataElements(new ReferenceDataElement(createdByUser: editor, label: 'varcharel', minMultiplicity: 1, maxMultiplicity: 1,
                                                 referenceDataType: primitiveType))
 
-        checkAndSave(dataModel)
+        checkAndSave(referenceDataModel)
 
         SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetCatalogueItem: dataClass)
         parent.addToSemanticLinks(link)
 
         checkAndSave(link)
 
-        verifyBreadcrumbTrees()
+        verifyBreadcrumbTrees()*/
 
         id = primitiveType.id
 
@@ -170,7 +159,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     void "test save"() {
 
         when:
-        ReferenceDataType dataType = new ReferencePrimitiveType(createdByUser: reader2, label: 'saving test', dataModel: dataModel)
+        ReferenceDataType dataType = new ReferencePrimitiveType(createdByUser: reader2, label: 'saving test', referenceDataModel: referenceDataModel)
         service.save(dataType)
 
         then:
@@ -180,7 +169,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     void 'test copying primitive datatype'() {
         given:
         ReferenceDataType original = ReferencePrimitiveType.findByLabel('string')
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)
@@ -212,7 +201,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     void 'test copying enumeration datatype'() {
         given:
         ReferenceDataType original = ReferenceEnumerationType.findByLabel('yesnounknown')
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)
@@ -247,7 +236,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     void 'test copying reference datatype'() {
         given:
         ReferenceDataType original = ReferenceType.findByLabel('dataclass')
-        DataModel copyModel = new DataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(copyModel)

@@ -18,8 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.test.functional
 
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.SummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.referencedatamodel.facet.summarymetadata.SummaryMetadataReport
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemFacetFunctionalSpec
 
 import groovy.util.logging.Slf4j
@@ -40,7 +40,7 @@ import java.time.OffsetDateTime
  * @see uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReportController
  */
 @Slf4j
-abstract class CatalogueItemReferenceSummaryMetadataReportFunctionalSpec extends CatalogueItemFacetFunctionalSpec<SummaryMetadataReport> {
+abstract class CatalogueItemReferenceSummaryMetadataReportFunctionalSpec extends CatalogueItemFacetFunctionalSpec<ReferenceSummaryMetadataReport> {
 
     static final OffsetDateTime dateTime = OffsetDateTime.now()
     static final OffsetDateTimeConverter offsetDateTimeConverter = new OffsetDateTimeConverter()
@@ -50,7 +50,7 @@ abstract class CatalogueItemReferenceSummaryMetadataReportFunctionalSpec extends
     abstract String getDestinationDataModelId()
 
     @Shared
-    SummaryMetadata summaryMetadata
+    ReferenceSummaryMetadata summaryMetadata
 
     @Override
     String getFacetResourcePath() {

@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.test
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelItemSpec
 
@@ -31,16 +31,16 @@ import java.lang.reflect.ParameterizedType
 @Slf4j
 abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelItemSpec<K> {
 
-    public DataModel dataSet
+    public ReferenceDataModel dataSet
 
     def setup() {
         log.debug('Setting up DataTypeSpec unit')
-        mockDomain(DataModel)
+        mockDomain(ReferenceDataModel)
 
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
 
         checkAndSave(dataSet)
-        assert DataModel.count() == 1
+        assert ReferenceDataModel.count() == 1
     }
 
     @Override
@@ -52,13 +52,13 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
     @Override
     void verifyDomainConstraints(K domain) {
         super.verifyDomainConstraints(domain)
-        assert domain.dataModel.id == dataSet.id
+        assert domain.referenceDataModel.id == dataSet.id
     }
 
     @Override
     K createValidDomain(String label) {
         K domain = ((Class<K>) getDomainUnderTest()).getDeclaredConstructor(Map).newInstance(label: label, createdBy: editor.emailAddress)
-        domain.dataModel = dataSet
+        domain.referenceDataModel = dataSet
         domain
     }
 
@@ -69,18 +69,18 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
 
     @Override
     String getModelFieldName() {
-        'dataModel'
+        'referenceDataModel'
     }
 
     @Override
     void wipeModel() {
-        domain.dataModel = null
+        domain.referenceDataModel = null
         domain.breadcrumbTree = null
     }
 
     @Override
     void setModel(K domain, Model model) {
-        domain.dataModel = model as DataModel
+        domain.referenceDataModel = model as ReferenceDataModel
     }
 
     void 'DT01 : test unique label naming'() {
@@ -104,37 +104,37 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
     void 'DT02 : test unique label naming across datamodels'() {
         given:
         setValidDomainValues()
-        DataModel dataModel = new DataModel(label: 'another model', createdByUser: editor, folder: testFolder, authority: testAuthority)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'another model', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)
         checkAndSave(dataSet)
-        checkAndSave(dataModel)
+        checkAndSave(referenceDataModel)
 
         when: 'adding data type with same label as existing to different model'
-        dataModel.addToDataTypes(createValidDomain(domain.label))
+        referenceDataModel.addToDataTypes(createValidDomain(domain.label))
 
         then:
         checkAndSave(dataSet)
-        checkAndSave(dataModel)
+        checkAndSave(referenceDataModel)
 
         when: 'adding multiple data types with same label'
-        dataModel.addToDataTypes(createValidDomain('a'))
-        dataModel.addToDataTypes(createValidDomain('b'))
-        dataModel.addToDataTypes(createValidDomain('a'))
+        referenceDataModel.addToDataTypes(createValidDomain('a'))
+        referenceDataModel.addToDataTypes(createValidDomain('b'))
+        referenceDataModel.addToDataTypes(createValidDomain('a'))
 
         then: 'dataset is still valid'
         checkAndSave(dataSet)
 
         when: 'datamodel should be invalid'
-        checkAndSave(dataModel)
+        checkAndSave(referenceDataModel)
 
         then:
         thrown(InternalSpockError)
-        dataModel.errors.allErrors.size() == 3
-        dataModel.errors.fieldErrors.any {it.field.contains('dataTypes') && it.code.contains('unique')}
-        dataModel.errors.fieldErrors.any {it.field.contains('dataTypes[1].label') && it.code.contains('unique')}
-        dataModel.errors.fieldErrors.any {it.field.contains('dataTypes[3].label') && it.code.contains('unique')}
+        referenceDataModel.errors.allErrors.size() == 3
+        referenceDataModel.errors.fieldErrors.any {it.field.contains('dataTypes') && it.code.contains('unique')}
+        referenceDataModel.errors.fieldErrors.any {it.field.contains('dataTypes[1].label') && it.code.contains('unique')}
+        referenceDataModel.errors.fieldErrors.any {it.field.contains('dataTypes[3].label') && it.code.contains('unique')}
     }
 
     private Class<K> getDomainUnderTest() {

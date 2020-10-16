@@ -17,10 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.ContainedResourceInterceptorUnitSpec
 
@@ -31,23 +30,23 @@ import groovy.util.logging.Slf4j
 class ReferenceDataTypeInterceptorSpec extends ContainedResourceInterceptorUnitSpec implements InterceptorUnitTest<ReferenceDataTypeInterceptor> {
 
     def setup() {
-        log.debug('Setting up DataTypeInterceptorSpec')
-        mockDomains(DataModel, DataClass, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue)
+        log.debug('Setting up ReferenceDataTypeInterceptorSpec')
+        mockDomains(DataModel, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue)
     }
 
     @Override
     String getControllerName() {
-        'dataType'
+        'referenceDataType'
     }
 
     @Override
     void setContainingResourceParameters(String id) {
-        params.dataModelId = id
+        params.referenceDataModelId = id
     }
 
     @Override
     void setAnyInitialParams() {
-        params.dataModelId = UUID.randomUUID().toString()
+        params.referenceDataModelId = UUID.randomUUID().toString()
     }
 
     @Override

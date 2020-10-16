@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.annotation
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.annotation
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -30,12 +30,12 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import spock.lang.Shared
+import spock.lang.Shared*/
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationController
  */
-@Integration
+/*@Integration
 @Slf4j
 class ReferenceDataTypeAnnotationFunctionalSpec extends CatalogueItemAnnotationFunctionalSpec {
 
@@ -79,4 +79,4 @@ class ReferenceDataTypeAnnotationFunctionalSpec extends CatalogueItemAnnotationF
         'dataTypes'
     }
 
-}
+}*/

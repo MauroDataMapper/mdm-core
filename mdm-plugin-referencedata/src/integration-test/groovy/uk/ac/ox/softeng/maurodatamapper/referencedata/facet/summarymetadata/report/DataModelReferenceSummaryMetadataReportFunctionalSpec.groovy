@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.report
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.report
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -33,12 +33,12 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import spock.lang.Shared
+import spock.lang.Shared*/
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReportController
  */
-@Integration
+/*@Integration
 @Slf4j
 class DataModelReferenceSummaryMetadataReportFunctionalSpec extends CatalogueItemReferenceSummaryMetadataReportFunctionalSpec {
 
@@ -112,4 +112,4 @@ class DataModelReferenceSummaryMetadataReportFunctionalSpec extends CatalogueIte
     void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
         // Summary metadata only copied for new doc version
     }
-}
+}*/

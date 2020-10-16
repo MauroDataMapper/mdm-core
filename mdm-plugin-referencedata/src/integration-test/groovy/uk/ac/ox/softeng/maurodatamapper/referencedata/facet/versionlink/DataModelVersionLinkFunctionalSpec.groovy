@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.versionlink
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.versionlink
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -30,12 +30,12 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import spock.lang.Shared
+import spock.lang.Shared*/
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkController
  */
-@Integration
+/*@Integration
 @Slf4j
 class DataModelVersionLinkFunctionalSpec extends ModelVersionLinkFunctionalSpec {
 
@@ -115,4 +115,4 @@ class DataModelVersionLinkFunctionalSpec extends ModelVersionLinkFunctionalSpec 
     "label": "Functional Test DataModel 2"
   }'''
     }
-}
+}*/

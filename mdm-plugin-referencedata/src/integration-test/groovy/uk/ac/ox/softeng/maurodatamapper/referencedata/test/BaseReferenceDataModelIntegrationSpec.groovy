@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.admin.AdminService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 
@@ -31,9 +31,9 @@ import groovy.util.logging.Slf4j
  * @since 03/03/2020
  */
 @Slf4j
-abstract class BaseDataModelIntegrationSpec extends BaseIntegrationSpec {
+abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec {
 
-    AdminService adminService
+    /*AdminService adminService
 
     DataModel dataModel
 
@@ -57,5 +57,5 @@ abstract class BaseDataModelIntegrationSpec extends BaseIntegrationSpec {
 
     DataModel buildComplexDataModel() {
         BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority)
-    }
+    }*/
 }

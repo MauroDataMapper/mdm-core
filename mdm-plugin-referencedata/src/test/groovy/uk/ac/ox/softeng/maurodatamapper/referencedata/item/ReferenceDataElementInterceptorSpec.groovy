@@ -17,12 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.ContainedResourceInterceptorUnitSpec
 
@@ -34,7 +33,7 @@ class ReferenceDataElementInterceptorSpec extends ContainedResourceInterceptorUn
 
     def setup() {
         log.debug('Setting up DataElementInterceptorSpec')
-        mockDomains(DataModel, DataClass, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue)
+        mockDomains(ReferenceDataModel, DataClass, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue)
     }
 
     @Override
@@ -44,12 +43,12 @@ class ReferenceDataElementInterceptorSpec extends ContainedResourceInterceptorUn
 
     @Override
     void setContainingResourceParameters(String id) {
-        params.dataModelId = id
+        params.referenceDataModelId = id
     }
 
     @Override
     void setAnyInitialParams() {
-        params.dataModelId = UUID.randomUUID().toString()
+        params.referenceDataModelId = UUID.randomUUID().toString()
     }
 
     @Override

@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.semanticlink
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.semanticlink
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -29,12 +29,12 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import spock.lang.Shared
+import spock.lang.Shared*/
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkController
  */
-@Integration
+/*@Integration
 @Slf4j
 class ReferenceDataElementSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunctionalSpec {
 
@@ -157,4 +157,4 @@ class ReferenceDataElementSemanticLinkFunctionalSpec extends CatalogueItemSemant
     ]
   }'''
     }
-}
+}*/

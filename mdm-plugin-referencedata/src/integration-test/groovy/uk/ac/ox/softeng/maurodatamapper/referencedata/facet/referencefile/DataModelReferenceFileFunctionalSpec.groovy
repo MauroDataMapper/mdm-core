@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.referencefile
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.referencefile
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -29,14 +29,14 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import spock.lang.Shared
+import spock.lang.Shared*/
 
 /**
  * Where facet owner is a DataModel
  *
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileController
  */
-@Integration
+/*@Integration
 @Slf4j
 class DataModelReferenceFileFunctionalSpec extends CatalogueItemReferenceFileFunctionalSpec {
 
@@ -79,4 +79,4 @@ class DataModelReferenceFileFunctionalSpec extends CatalogueItemReferenceFileFun
     String getCatalogueItemDomainResourcePath() {
         'dataModels'
     }
-}
+}*/

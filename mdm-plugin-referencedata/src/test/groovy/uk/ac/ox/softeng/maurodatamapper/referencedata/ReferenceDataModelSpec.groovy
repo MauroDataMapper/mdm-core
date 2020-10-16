@@ -20,12 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelSpec
 
@@ -36,39 +34,39 @@ import org.spockframework.util.InternalSpockError
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.UNIT_TEST
 
 @Slf4j
-class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataModel> {
+class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements DomainUnitTest<ReferenceDataModel> {
 
     def setup() {
-        log.debug('Setting up DataModelSpec unit')
-        mockDomains(DataClass, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
+        log.debug('Setting up ReferenceDataModelSpec unit')
+        mockDomains(ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement, ReferenceDataValue)
     }
 
-    DataModel buildSimpleDataModel() {
-        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, testFolder, testAuthority)
+    ReferenceDataModel buildSimpleReferenceDataModel() {
+        BootstrapModels.buildAndSaveSimpleReferenceDataModel(messageSource, testFolder, testAuthority)
     }
 
-    DataModel buildComplexDataModel() {
-        BootstrapModels.buildAndSaveComplexDataModel(messageSource, testFolder, testAuthority)
+    ReferenceDataModel buildComplexReferenceDataModel() {
+        BootstrapModels.buildAndSaveComplexReferenceDataModel(messageSource, testFolder, testAuthority)
     }
 
     @Override
-    DataModel createValidDomain(String label) {
-        new DataModel(folder: testFolder, label: label, type: DataModelType.DATA_STANDARD, createdBy: UNIT_TEST, authority: testAuthority)
+    ReferenceDataModel createValidDomain(String label) {
+        new ReferenceDataModel(folder: testFolder, label: label, type: ReferenceDataModelType.DATA_STANDARD, createdBy: UNIT_TEST, authority: testAuthority)
     }
 
     @Override
     void setValidDomainOtherValues() {
-        domain.modelType = DataModelType.DATA_STANDARD.label
+        domain.modelType = ReferenceDataModelType.DATA_STANDARD.label
     }
 
     @Override
-    void verifyDomainOtherConstraints(DataModel domain) {
-        domain.modelType == DataModelType.DATA_STANDARD.label
+    void verifyDomainOtherConstraints(ReferenceDataModel domain) {
+        domain.modelType == ReferenceDataModelType.DATA_STANDARD.label
     }
 
-    void 'test simple datamodel valid'() {
+    /*void 'test simple ReferenceDataModel valid'() {
         when:
-        DataModel simple = buildSimpleDataModel()
+        ReferenceDataModel simple = buildSimpleReferenceDataModel()
 
         then:
         check(simple)
@@ -77,9 +75,9 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         checkAndSave(simple)
     }
 
-    void 'test complex datamodel valid'() {
+    void 'test complex ReferenceDataModel valid'() {
         when:
-        DataModel complex = buildComplexDataModel()
+        ReferenceDataModel complex = buildComplexReferenceDataModel()
 
         then:
         check(complex)
@@ -90,9 +88,9 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
     void 'simple diff of label'() {
         when:
-        def dm1 = new DataModel(label: 'test model 1', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
-        def dm2 = new DataModel(label: 'test model 2', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
-        Diff<DataModel> diff = dm1.diff(dm2)
+        def dm1 = new ReferenceDataModel(label: 'test model 1', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
+        def dm2 = new ReferenceDataModel(label: 'test model 2', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
+        Diff<ReferenceDataModel> diff = dm1.diff(dm2)
 
         then:
         diff.getNumberOfDiffs() == 1
@@ -105,7 +103,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         diff.objectsAreIdentical()
     }
 
-    void 'test adding dataclasses to datamodel'() {
+    void 'test adding dataclasses to ReferenceDataModel'() {
 
         given:
         setValidDomainValues()
@@ -127,7 +125,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         empty.path == "/${domain.id}"
         empty.depth == 1
         !empty.parentDataClass
-        empty.dataModel.id == domain.id
+        empty.referenceDataModel.id == domain.id
 
         when: 'creating a dataclass with child dataclass'
         DataClass parent = new DataClass(createdBy: UNIT_TEST, label: 'parent')
@@ -147,81 +145,19 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
         parentS.path == "/${domain.id}"
         parentS.depth == 1
         !parentS.parentDataClass
-        parentS.dataModel.id == domain.id
+        parentS.referenceDataModel.id == domain.id
 
         and:
         childS.path == "/${domain.id}/$parent.id"
         childS.depth == 2
         childS.parentDataClass.id == parent.id
-        childS.dataModel
-        childS.dataModel.id == domain.id
+        childS.referenceDataModel
+        childS.referenceDataModel.id == domain.id
 
-        when: 'creating dataclass with dataelements'
-        DataClass content = new DataClass(createdBy: UNIT_TEST, label: 'content', description: 'A dataclass with elements')
-        content.addToDataElements(createdBy: UNIT_TEST, label: 'ele1', dataType: domain.findDataTypeByLabel('string'))
-        content.addToDataElements(createdBy: UNIT_TEST, label: 'element2', dataType: domain.findDataTypeByLabel('integer'))
-        domain.addToDataClasses(content)
-
-        then:
-        checkAndSave(domain)
-        domain.count() == 1
-        DataClass.count() == 4
-        ReferenceDataElement.count() == 2
-        ReferencePrimitiveType.count() == 2
-
-        when:
-        DataClass contentS = DataClass.findByLabel('content')
-
-        then:
-        contentS.description == 'A dataclass with elements'
-        contentS.dataElements.size() == 2
-    }
-
-    void 'test invalid dataclass'() {
-        given:
-        setValidDomainValues()
-
-        when: 'adding invalid dataclass'
-        domain.addToDataClasses(createdBy: UNIT_TEST, description: 'emptyclass')
-        checkAndSave(domain)
-
-        then:
-        thrown(InternalSpockError)
-        domain.errors.allErrors.size() == 1
-    }
-
-    void 'test invalid dataclass child'() {
-        given:
-        setValidDomainValues()
-
-        when: 'creating a dataclass with invalid dataclass'
-        DataClass parent = new DataClass(createdBy: UNIT_TEST, label: 'parent')
-        parent.addToDataClasses(label: 'child')
-        domain.addToDataClasses(parent)
-        checkAndSave(domain)
-
-        then:
-        thrown(InternalSpockError)
-        domain.errors.allErrors.size() == 1
-    }
-
-    void 'test invalid dataclass element'() {
-        given:
-        setValidDomainValues()
-
-        when: 'creating dataclass with invalid dataelement'
-        DataClass content = new DataClass(createdBy: UNIT_TEST, label: 'content', description: 'A dataclass with elements')
-        content.addToDataElements(createdBy: UNIT_TEST, label: 'ele1', dataType: domain.findDataTypeByLabel('string'))
-        domain.addToDataClasses(content)
-        !checkAndSave(domain)
-
-        then:
-        thrown(InternalSpockError)
-        domain.errors.allErrors.size() == 1
-    }
+    }*/
 
 
-    void 'test adding new datatypes to datamodel'() {
+    /*void 'test adding new datatypes to datamodel'() {
 
         given:
         setValidDomainValues()
@@ -295,7 +231,7 @@ class DataModelSpec extends ModelSpec<DataModel> implements DomainUnitTest<DataM
 
         then:
         diff.getNumberOfDiffs() == 5
-    }
+    }*/
 
 
 }

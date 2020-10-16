@@ -19,13 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.referencedata.DataModelInterceptor
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelInterceptor
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.interceptor.TieredAccessCheckResourceInterceptorUnitSpec
 
@@ -36,22 +34,22 @@ import org.grails.web.util.GrailsApplicationAttributes
 import spock.lang.Unroll
 
 @Slf4j
-class DataModelInterceptorSpec extends TieredAccessCheckResourceInterceptorUnitSpec<DataModelInterceptor>
-    implements InterceptorUnitTest<DataModelInterceptor> {
+class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterceptorUnitSpec<ReferenceDataModelInterceptor>
+    implements InterceptorUnitTest<ReferenceDataModelInterceptor> {
 
     def setup() {
         log.debug('Setting up DataModelInterceptorSpec')
-        mockDomains(Folder, DataModel, DataClass, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue)
+        mockDomains(Folder, ReferenceDataModel, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataValue)
     }
 
     @Override
     String getControllerName() {
-        'dataModel'
+        'referenceDataModel'
     }
 
     @Override
     void setParamsId(UUID id) {
-        params.dataModelId = id
+        params.referenceDataModelId = id
     }
 
     HttpStatus getSaveAllowedCode() {

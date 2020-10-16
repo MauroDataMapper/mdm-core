@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -30,12 +30,12 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import spock.lang.Shared
+import spock.lang.Shared*/
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataController
  */
-@Integration
+/*@Integration
 @Slf4j
 class ReferenceDataTypeReferenceSummaryMetadataFunctionalSpec extends CatalogueItemReferenceSummaryMetadataFunctionalSpec {
 
@@ -92,4 +92,4 @@ class ReferenceDataTypeReferenceSummaryMetadataFunctionalSpec extends CatalogueI
     String getCatalogueItemDomainResourcePath() {
         'dataTypes'
     }
-}
+}*/

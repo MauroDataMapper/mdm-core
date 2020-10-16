@@ -23,13 +23,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseDataModelIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -48,17 +47,17 @@ import java.time.OffsetDateTime
 @Slf4j
 @Integration
 @Rollback
-class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
+class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
     TreeItemService treeItemService
 
-    DataModel complexDataModel
-    DataModel simpleDataModel
+    //DataModel complexDataModel
+    //DataModel simpleDataModel
 
     @SuppressWarnings('GroovyAssignabilityCheck')
     @Override
     void setupDomainData() {
-        log.debug('Setting up DataModelServiceSpec unit')
+        /*log.debug('Setting up DataModelServiceSpec unit')
 
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
@@ -101,12 +100,12 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
         dataModel3.addToVersionLinks(createdByUser: admin, targetModel: dataModel2, linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
 
-        checkAndSave(dataModel3)
+        checkAndSave(dataModel3)*/
 
         id = dataModel1.id
     }
 
-    void 'F01 - test full tree building : doc, model, deleted, empty containers'() {
+    /*void 'F01 - test full tree building : doc, model, deleted, empty containers'() {
         given:
         setupData()
 
@@ -577,9 +576,9 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         then:
         tree6
         tree6.children.isEmpty()
-    }
+    }*/
 
-    void 'S03 - test searchterm "string" full tree building (DataType label searching)'() {
+   /* void 'S03 - test searchterm "string" full tree building (DataType label searching)'() {
         given:
         setupData()
         String searchTerm = 'string'
@@ -589,15 +588,6 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
         then: 'no domain provided should not search datatypes'
         treeItems.size() == 0
-
-        /*
-        when:
-        TreeItem tree1 = treeItems.find {it.label == 'test'}
-
-        then:
-        tree1
-        tree1.children.isEmpty()
-        */
     }
 
     void 'S04 - test searchterm "ele" full tree building (DataElement label searching)'() {
@@ -610,22 +600,6 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
         then: 'no domain provided should not search data elements'
         treeItems.size() == 0
-
-        /*
-        when:
-        TreeItem tree1 = treeItems.find {it.label == 'test'}
-
-        then:
-        tree1
-        tree1.children.size() == 1
-
-        when:
-        TreeItem tree5 = tree1.find 'content'
-
-        then:
-        tree5
-        tree5.children.isEmpty()
-        */
     }
 
     void 'S05 - test searchterm "child" full tree building looking at DataModel domain'() {
@@ -692,5 +666,5 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
 
         then:
         tree1
-    }
+    }*/
 }

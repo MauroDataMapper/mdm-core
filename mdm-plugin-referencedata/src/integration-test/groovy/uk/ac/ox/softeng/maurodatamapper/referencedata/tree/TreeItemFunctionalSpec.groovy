@@ -20,8 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.tree
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -57,7 +56,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
-        log.debug('Check and setup test data')
+        /*log.debug('Check and setup test data')
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
@@ -77,7 +76,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         new Classifier(label: 'Functional Test Classifier 2', createdBy: FUNCTIONAL_TEST).save(flush: true)
         dataModel.addToClassifiers(classifier).save(flush: true)
 
-        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.flush()*/
     }
 
     @Transactional

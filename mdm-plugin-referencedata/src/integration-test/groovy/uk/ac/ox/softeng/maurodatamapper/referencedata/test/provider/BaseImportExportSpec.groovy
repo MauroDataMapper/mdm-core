@@ -19,12 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.test.provider
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
-import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseDataModelIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -34,9 +34,9 @@ import java.nio.file.Paths
  * @since 20/11/2017
  */
 @Slf4j
-abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
+abstract class BaseImportExportSpec extends BaseReferenceDataModelIntegrationSpec {
 
-    @Shared
+    /*@Shared
     Path resourcesPath
 
     @Shared
@@ -83,5 +83,5 @@ abstract class BaseImportExportSpec extends BaseDataModelIntegrationSpec {
         assert dataModel.breadcrumbTree
         assert dataModel.breadcrumbTree.domainId == dataModel.id
         assert dataModel.breadcrumbTree.label == dataModel.label
-    }
+    }*/
 }

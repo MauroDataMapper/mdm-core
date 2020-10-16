@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelItemSpec
 
@@ -30,13 +30,13 @@ import groovy.util.logging.Slf4j
 class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationValue> implements DomainUnitTest<ReferenceEnumerationValue> {
 
     ReferenceEnumerationType enumerationType
-    DataModel dataSet
+    ReferenceDataModel dataSet
 
     def setup() {
         log.debug('Setting up EnumerationValueSpec unit')
-        mockDomains(DataModel, ReferenceEnumerationType)
-        dataSet = new DataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
-        enumerationType = new ReferenceEnumerationType(createdByUser: admin, label: 'et', dataModel: dataSet)
+        mockDomains(ReferenceDataModel, ReferenceEnumerationType)
+        dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
+        enumerationType = new ReferenceEnumerationType(createdByUser: admin, label: 'et', referenceReferenceDataModel: dataSet)
         dataSet.addToDataTypes(enumerationType)
         checkAndSave(dataSet)
     }

@@ -20,8 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 import uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DeleteAllParams
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
@@ -50,7 +50,8 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
     SearchService mdmPluginReferenceDataModelSearchService
 
     @Autowired(required = false)
-    Set<ReferenceDataModelExporterProviderService> exporterProviderServices
+    Set<ExporterProviderService> exporterProviderServices
+
 
     @Autowired(required = false)
     Set<ReferenceDataModelImporterProviderService> importerProviderServices

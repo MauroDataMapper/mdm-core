@@ -20,17 +20,15 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.referencedata.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -41,52 +39,51 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 
 @Slf4j
-class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<DataModelService> {
+class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<ReferenceDataModelService> {
 
     UUID id
-    DataModel complexDataModel
-    DataModel simpleDataModel
+    ReferenceDataModel complexReferenceDataModel
+    ReferenceDataModel simpleReferenceDataModel
 
     def setup() {
-        log.debug('Setting up DataModelServiceSpec unit')
+        log.debug('Setting up ReferenceDataModelServiceSpec unit')
         mockArtefact(DataClassService)
         mockArtefact(ReferenceDataElementService)
         mockArtefact(ReferenceDataTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
-        mockDomains(DataModel, DataClass, ReferenceDataType, ReferencePrimitiveType,
+        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType,
                     ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
-        complexDataModel = buildComplexDataModel()
-        simpleDataModel = buildSimpleDataModel()
+        complexReferenceDataModel = buildComplexReferenceDataModel()
+        simpleReferenceDataModel = buildSimpleReferenceDataModel()
 
-        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'test database', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                              authority: testAuthority)
-        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'test form', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                              authority: testAuthority)
-        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'test standard', type: DataModelType.DATA_STANDARD, folder: testFolder,
+        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard', type: ReferenceDataModelType.DATA_STANDARD, folder: testFolder,
                                              authority: testAuthority)
 
-        checkAndSave(dataModel1)
-        checkAndSave(dataModel2)
-        checkAndSave(dataModel3)
+        checkAndSave(referenceDataModel1)
+        checkAndSave(referenceDataModel2)
+        checkAndSave(referenceDataModel3)
 
         ReferenceDataType dt = new ReferencePrimitiveType(createdByUser: admin, label: 'integration datatype')
-        dataModel1.addToDataTypes(dt)
+        referenceDataModel1.addToDataTypes(dt)
         ReferenceDataElement dataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor, referenceDataType: dt)
-        dataModel1.addToDataClasses(new DataClass(label: 'sdmclass', createdByUser: editor).addToDataElements(dataElement))
 
-        checkAndSave(dataModel1)
+        checkAndSave(referenceDataModel1)
 
         verifyBreadcrumbTrees()
-        id = dataModel1.id
+        id = referenceDataModel1.id
     }
 
-    DataModel buildSimpleDataModel(Authority authority) {
-        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, testFolder, testAuthority)
+    ReferenceDataModel buildSimpleReferenceDataModel(Authority authority) {
+        BootstrapModels.buildAndSaveSimpleReferenceDataModel(messageSource, testFolder, testAuthority)
     }
 
-    DataModel buildComplexDataModel() {
-        BootstrapModels.buildAndSaveComplexDataModel(messageSource, testFolder, testAuthority)
+    ReferenceDataModel buildComplexReferenceDataModel() {
+        BootstrapModels.buildAndSaveComplexReferenceDataModel(messageSource, testFolder, testAuthority)
     }
 
     void "test get"() {
@@ -96,22 +93,22 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void "test list"() {
         when:
-        List<DataModel> dataModelList = service.list(max: 2, offset: 2, sort: 'dateCreated')
+        List<ReferenceDataModel> referenceDataModelList = service.list(max: 2, offset: 2, sort: 'dateCreated')
 
         then:
-        dataModelList.size() == 2
+        referenceDataModelList.size() == 2
 
         when:
-        def dm1 = dataModelList[0]
-        def dm2 = dataModelList[1]
+        def dm1 = referenceDataModelList[0]
+        def dm2 = referenceDataModelList[1]
 
         then:
         dm1.label == 'test database'
-        dm1.modelType == DataModelType.DATA_ASSET.label
+        dm1.modelType == ReferenceDataModelType.DATA_ASSET.label
 
         and:
         dm2.label == 'test form'
-        dm2.modelType == DataModelType.DATA_ASSET.label
+        dm2.modelType == ReferenceDataModelType.DATA_ASSET.label
 
     }
 
@@ -125,29 +122,29 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         expect:
         service.count() == 5
-        DataModel dm = service.get(id)
+        ReferenceDataModel dm = service.get(id)
 
         when:
         service.delete(dm)
         service.save(dm)
 
         then:
-        DataModel.countByDeleted(false) == 4
-        DataModel.countByDeleted(true) == 1
+        ReferenceDataModel.countByDeleted(false) == 4
+        ReferenceDataModel.countByDeleted(true) == 1
     }
 
     void "test save"() {
 
         when:
-        DataModel dataModel = new DataModel(createdByUser: reader2, label: 'saving test', type: DataModelType.DATA_STANDARD, folder: testFolder,
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdByUser: reader2, label: 'saving test', type: ReferenceDataModelType.DATA_STANDARD, folder: testFolder,
                                             authority: testAuthority)
-        service.save(dataModel)
+        service.save(referenceDataModel)
 
         then:
-        dataModel.id != null
+        referenceDataModel.id != null
 
         when:
-        DataModel saved = service.get(dataModel.id)
+        ReferenceDataModel saved = service.get(referenceDataModel.id)
 
         then:
         saved.breadcrumbTree
@@ -165,33 +162,33 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'test finalising model'() {
 
         when:
-        DataModel dataModel = service.get(id)
+        ReferenceDataModel referenceDataModel = service.get(id)
 
         then:
-        !dataModel.finalised
-        !dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
+        !referenceDataModel.finalised
+        !referenceDataModel.dateFinalised
+        referenceDataModel.documentationVersion == Version.from('1')
 
         when:
-        service.finaliseModel(dataModel, admin, null, null)
+        service.finaliseModel(referenceDataModel, admin, null, null)
 
         then:
-        checkAndSave(dataModel)
+        checkAndSave(referenceDataModel)
 
         when:
-        dataModel = service.get(id)
+        referenceDataModel = service.get(id)
 
         then:
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
+        referenceDataModel.finalised
+        referenceDataModel.dateFinalised
+        referenceDataModel.documentationVersion == Version.from('1')
     }
 
     void 'DMSC01 : test creating a new documentation version on draft model'() {
 
         when: 'creating new doc version on draft model is not allowed'
-        DataModel dataModel = service.get(id)
-        def result = service.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        def result = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -203,10 +200,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
         when: 'finalising model and then creating a new doc version is allowed'
-        DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-        def result = service.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        service.finaliseModel(referenceDataModel, admin, null, null)
+        checkAndSave(referenceDataModel)
+        def result = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -215,13 +212,13 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         checkAndSave(result)
 
         when: 'load from DB to make sure everything is saved'
-        dataModel = service.get(id)
-        DataModel newDocVersion = service.get(result.id)
+        referenceDataModel = service.get(id)
+        ReferenceDataModel newDocVersion = service.get(result.id)
 
         then: 'old model is finalised and superseded'
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
+        referenceDataModel.finalised
+        referenceDataModel.dateFinalised
+        referenceDataModel.documentationVersion == Version.from('1')
 
         and: 'new doc version model is draft v2'
         newDocVersion.documentationVersion == Version.from('2')
@@ -229,31 +226,31 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         !newDocVersion.dateFinalised
 
         and: 'new doc version model matches old model'
-        newDocVersion.label == dataModel.label
-        newDocVersion.description == dataModel.description
-        newDocVersion.author == dataModel.author
-        newDocVersion.organisation == dataModel.organisation
-        newDocVersion.modelType == dataModel.modelType
+        newDocVersion.label == referenceDataModel.label
+        newDocVersion.description == referenceDataModel.description
+        newDocVersion.author == referenceDataModel.author
+        newDocVersion.organisation == referenceDataModel.organisation
+        newDocVersion.modelType == referenceDataModel.modelType
 
-        newDocVersion.dataTypes.size() == dataModel.dataTypes.size()
-        newDocVersion.dataClasses.size() == dataModel.dataClasses.size()
+        newDocVersion.dataTypes.size() == referenceDataModel.dataTypes.size()
+        newDocVersion.dataClasses.size() == referenceDataModel.dataClasses.size()
 
         and: 'annotations and edits are not copied'
         !newDocVersion.annotations
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
+        newDocVersion.versionLinks.any { it.targetModel.id == referenceDataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every { odt ->
+        referenceDataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        referenceDataModel.dataClasses.every { odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -266,13 +263,13 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         }
     }
 
-    @PendingFeature(reason = 'DataModel permission copying')
+    @PendingFeature(reason = 'ReferenceDataModel permission copying')
     void 'DMSC03 : test creating a new documentation version on finalised model with permission copying'() {
         when: 'finalising model and then creating a new doc version is allowed'
-        DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-        def result = service.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        service.finaliseModel(referenceDataModel, admin, null, null)
+        checkAndSave(referenceDataModel)
+        def result = service.createNewDocumentationVersion(referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -281,13 +278,13 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         checkAndSave(result)
 
         when: 'load from DB to make sure everything is saved'
-        dataModel = service.get(id)
-        DataModel newDocVersion = service.get(result.id)
+        referenceDataModel = service.get(id)
+        ReferenceDataModel newDocVersion = service.get(result.id)
 
         then: 'old model is finalised and superseded'
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
+        referenceDataModel.finalised
+        referenceDataModel.dateFinalised
+        referenceDataModel.documentationVersion == Version.from('1')
 
         and: 'new doc version model is draft v2'
         newDocVersion.documentationVersion == Version.from('2')
@@ -295,31 +292,31 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         !newDocVersion.dateFinalised
 
         and: 'new doc version model matches old model'
-        newDocVersion.label == dataModel.label
-        newDocVersion.description == dataModel.description
-        newDocVersion.author == dataModel.author
-        newDocVersion.organisation == dataModel.organisation
-        newDocVersion.modelType == dataModel.modelType
+        newDocVersion.label == referenceDataModel.label
+        newDocVersion.description == referenceDataModel.description
+        newDocVersion.author == referenceDataModel.author
+        newDocVersion.organisation == referenceDataModel.organisation
+        newDocVersion.modelType == referenceDataModel.modelType
 
-        newDocVersion.dataTypes.size() == dataModel.dataTypes.size()
-        newDocVersion.dataClasses.size() == dataModel.dataClasses.size()
+        newDocVersion.dataTypes.size() == referenceDataModel.dataTypes.size()
+        newDocVersion.dataClasses.size() == referenceDataModel.dataClasses.size()
 
         and: 'annotations and edits are not copied'
         !newDocVersion.annotations
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
+        newDocVersion.versionLinks.any { it.targetModel.id == referenceDataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every { odt ->
+        referenceDataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        referenceDataModel.dataClasses.every { odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -336,9 +333,9 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'DMSC04 : test creating a new documentation version on finalised superseded model'() {
 
         when: 'creating new doc version'
-        DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, editor, null, null)
-        def newDocVersion = service.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        service.finaliseModel(referenceDataModel, editor, null, null)
+        def newDocVersion = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -347,7 +344,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = service.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
+        def result = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -357,13 +354,13 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
-    @PendingFeature(reason = 'DataModel permission copying')
+    @PendingFeature(reason = 'ReferenceDataModel permission copying')
     void 'DMSC05 : test creating a new documentation version on finalised superseded model with permission copying'() {
 
         when: 'creating new doc version'
-        DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, editor, null, null)
-        def newDocVersion = service.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        service.finaliseModel(referenceDataModel, editor, null, null)
+        def newDocVersion = service.createNewDocumentationVersion(referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -372,7 +369,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         checkAndSave(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
-        def result = service.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
+        def result = service.createNewDocumentationVersion(referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -386,8 +383,8 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
 
         when: 'creating new version on draft model is not allowed'
-        DataModel dataModel = service.get(id)
-        def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        def result = service.createNewForkModel("${referenceDataModel.label}-1", referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -400,26 +397,26 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'DMSC07 : test creating a new model version on finalised model'() {
 
         when: 'finalising model and then creating a new version is allowed'
-        DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-        def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        service.finaliseModel(referenceDataModel, admin, null, null)
+        checkAndSave(referenceDataModel)
+        def result = service.createNewForkModel("${referenceDataModel.label}-1", referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
 
         then:
-        result.instanceOf(DataModel)
+        result.instanceOf(ReferenceDataModel)
         checkAndSave(result)
 
         when: 'load from DB to make sure everything is saved'
-        dataModel = service.get(id)
-        DataModel newVersion = service.get(result.id)
+        referenceDataModel = service.get(id)
+        ReferenceDataModel newVersion = service.get(result.id)
 
         then: 'old model is finalised and superseded'
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
+        referenceDataModel.finalised
+        referenceDataModel.dateFinalised
+        referenceDataModel.documentationVersion == Version.from('1')
 
         and: 'new  version model is draft v2'
         newVersion.documentationVersion == Version.from('1')
@@ -427,14 +424,14 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         !newVersion.dateFinalised
 
         and: 'new  version model matches old model'
-        newVersion.label != dataModel.label
-        newVersion.description == dataModel.description
-        newVersion.author == dataModel.author
-        newVersion.organisation == dataModel.organisation
-        newVersion.modelType == dataModel.modelType
+        newVersion.label != referenceDataModel.label
+        newVersion.description == referenceDataModel.description
+        newVersion.author == referenceDataModel.author
+        newVersion.organisation == referenceDataModel.organisation
+        newVersion.modelType == referenceDataModel.modelType
 
-        newVersion.dataTypes.size() == dataModel.dataTypes.size()
-        newVersion.dataClasses.size() == dataModel.dataClasses.size()
+        newVersion.dataTypes.size() == referenceDataModel.dataTypes.size()
+        newVersion.dataClasses.size() == referenceDataModel.dataClasses.size()
 
         and: 'annotations and edits are not copied'
         !newVersion.annotations
@@ -442,17 +439,17 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
+        newVersion.versionLinks.any { it.targetModel.id == referenceDataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
-        dataModel.dataTypes.every { odt ->
+        referenceDataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        referenceDataModel.dataClasses.every { odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -465,30 +462,30 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         }
     }
 
-    @PendingFeature(reason = 'DataModel permission copying')
+    @PendingFeature(reason = 'ReferenceDataModel permission copying')
     void 'DMSC08 : test creating a new model version on finalised model with permission copying'() {
 
         when: 'finalising model and then creating a new version is allowed'
-        DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-        def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        service.finaliseModel(referenceDataModel, admin, null, null)
+        checkAndSave(referenceDataModel)
+        def result = service.createNewForkModel("${referenceDataModel.label}-1", referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
 
         then:
-        result.instanceOf(DataModel)
+        result.instanceOf(ReferenceDataModel)
         checkAndSave(result)
 
         when: 'load from DB to make sure everything is saved'
-        dataModel = service.get(id)
-        DataModel newVersion = service.get(result.id)
+        referenceDataModel = service.get(id)
+        ReferenceDataModel newVersion = service.get(result.id)
 
         then: 'old model is finalised and superseded'
-        dataModel.finalised
-        dataModel.dateFinalised
-        dataModel.documentationVersion == Version.from('1')
+        referenceDataModel.finalised
+        referenceDataModel.dateFinalised
+        referenceDataModel.documentationVersion == Version.from('1')
 
         and: 'new  version model is draft v2'
         newVersion.documentationVersion == Version.from('1')
@@ -496,14 +493,14 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         !newVersion.dateFinalised
 
         and: 'new  version model matches old model'
-        newVersion.label != dataModel.label
-        newVersion.description == dataModel.description
-        newVersion.author == dataModel.author
-        newVersion.organisation == dataModel.organisation
-        newVersion.modelType == dataModel.modelType
+        newVersion.label != referenceDataModel.label
+        newVersion.description == referenceDataModel.description
+        newVersion.author == referenceDataModel.author
+        newVersion.organisation == referenceDataModel.organisation
+        newVersion.modelType == referenceDataModel.modelType
 
-        newVersion.dataTypes.size() == dataModel.dataTypes.size()
-        newVersion.dataClasses.size() == dataModel.dataClasses.size()
+        newVersion.dataTypes.size() == referenceDataModel.dataTypes.size()
+        newVersion.dataClasses.size() == referenceDataModel.dataClasses.size()
 
         and: 'annotations and edits are not copied'
         !newVersion.annotations
@@ -511,17 +508,17 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
+        newVersion.versionLinks.any { it.targetModel.id == referenceDataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
-        dataModel.dataTypes.every { odt ->
+        referenceDataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        referenceDataModel.dataClasses.every { odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -537,9 +534,9 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
     void 'DMSC09 : test creating a new model version on finalised superseded model'() {
 
         when: 'creating new version'
-        DataModel dataModel = service.get(id)
-        service.finaliseModel(dataModel, editor, null, null)
-        def newVersion = service.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
+        ReferenceDataModel referenceDataModel = service.get(id)
+        service.finaliseModel(referenceDataModel, editor, null, null)
+        def newVersion = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -548,7 +545,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         checkAndSave(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
-        def result = service.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager, [
+        def result = service.createNewForkModel("${referenceDataModel.label}-1", referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
@@ -560,7 +557,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV01 : test validation on valid model'() {
         given:
-        DataModel check = complexDataModel
+        ReferenceDataModel check = complexReferenceDataModel
 
         expect:
         !service.validate(check).hasErrors()
@@ -568,10 +565,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, type: DataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, type: ReferenceDataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -586,12 +583,12 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         check.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin))
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -604,14 +601,14 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         GormUtils.outputDomainErrors(messageSource, invalid)
     }
 
-    void 'DMSV04 : test validation on invalid dataclass model'() {
+    /*void 'DMSV04 : test validation on invalid dataclass model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         check.addToDataClasses(new DataClass(createdByUser: admin))
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -626,14 +623,14 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV05 : test validation on invalid dataclass dataelement model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataElements(createdByUser: admin)
         check.addToDataClasses(parent)
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -648,14 +645,14 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV06 : test validation on invalid reference datatype model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin, label: 'ref')
         check.addToDataClasses(dc)
         check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref'))
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -670,14 +667,14 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV07 : test validation on invalid nested reference datatype model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         DataClass dc = new DataClass(createdByUser: admin)
         check.addToDataClasses(dc)
         check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref', referenceClass: dc))
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -693,7 +690,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV08 : test validation on invalid nested dataclass model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         parent.addToDataClasses(new DataClass(createdByUser: admin))
@@ -701,7 +698,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -716,7 +713,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV09 : test validation on invalid nested dataclass dataelement model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
         DataClass child = new DataClass(createdByUser: admin, label: 'child')
@@ -726,7 +723,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -741,7 +738,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV10 : test validation on invalid double nested dataclass model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
@@ -751,7 +748,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -766,7 +763,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     void 'DMSV11 : test validation on invalid double nested dataclass dataelement model'() {
         given:
-        DataModel check = new DataModel(createdByUser: reader1, label: 'test invalid', type: DataModelType.DATA_ASSET, folder: testFolder,
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
                                         authority: testAuthority)
         DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
         DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
@@ -778,7 +775,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
 
         when:
-        DataModel invalid = service.validate(check)
+        ReferenceDataModel invalid = service.validate(check)
 
         then:
         invalid.hasErrors()
@@ -789,5 +786,5 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
-    }
+    }*/
 }

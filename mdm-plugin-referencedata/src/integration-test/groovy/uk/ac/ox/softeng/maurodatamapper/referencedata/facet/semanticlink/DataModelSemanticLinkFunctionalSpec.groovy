@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.semanticlink
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.semanticlink
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -32,12 +32,12 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import spock.lang.Shared
+import spock.lang.Shared*/
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkController
  */
-@Integration
+/*@Integration
 @Slf4j
 class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunctionalSpec {
 
@@ -201,4 +201,4 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
         assert response.status() == HttpStatus.NO_CONTENT
         cleanUpData(id)
     }
-}
+}*/

@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
@@ -71,7 +71,7 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
         checkAndSave(folder)
         Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
         checkAndSave(testAuthority)
-        DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
+        ReferenceDataModel dataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
 
@@ -89,7 +89,7 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec EnumerationValueFunctionalSpec')
-        cleanUpResources(ReferenceEnumerationType, ReferenceDataType, DataModel, Folder)
+        cleanUpResources(ReferenceEnumerationType, ReferenceDataType, ReferenceDataModel, Folder)
         Authority.findByLabel('Test Authority').delete(flush: true)
     }
 

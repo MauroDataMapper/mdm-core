@@ -33,11 +33,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
@@ -49,7 +48,7 @@ import spock.lang.Stepwise
 @Stepwise
 class ReferencePrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<ReferencePrimitiveTypeService> {
 
-    DataModel dataModel
+    ReferenceDataModel referenceReferenceDataModel
     UUID id
 
     Folder getTestFolder() {
@@ -61,7 +60,7 @@ class ReferencePrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceU
     }
 
     def setup() {
-        log.debug('Setting up DataClassServiceSpec Unit')
+        log.debug('Setting up ReferencePrimitiveTypeServiceSpec Unit')
         mockArtefact(ClassifierService)
         mockArtefact(VersionLinkService)
         mockArtefact(SemanticLinkService)
@@ -69,56 +68,45 @@ class ReferencePrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceU
         mockArtefact(MetadataService)
         mockArtefact(ReferenceSummaryMetadataService)
         mockDomains(Classifier, Folder, Annotation, BreadcrumbTree, Edit, Metadata, ReferenceFile, SemanticLink,
-                    DataModel, DataClass, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement, Authority)
+                    ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: admin.emailAddress))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
-        dataModel = new DataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
-        checkAndSave(dataModel)
+        referenceReferenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
+        checkAndSave(referenceReferenceDataModel)
 
         ReferencePrimitiveType primitiveType = new ReferencePrimitiveType(createdByUser: editor, label: 'varchar')
 
-        dataModel.addToDataTypes(primitiveType)
-        dataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        dataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceReferenceDataModel.addToDataTypes(primitiveType)
+        referenceReferenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
+        referenceReferenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
 
         ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdByUser: editor, label: 'et1')
             .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
             .addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdByUser: admin, key: 'key2', value: 'val2')
             )
-        dataModel.addToDataTypes(et1)
-        dataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'et2')
+        referenceReferenceDataModel.addToDataTypes(et1)
+        referenceReferenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'et2')
                                      .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
                                      .addToEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
                                      .addToEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
                                      .addToEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
         )
-        dataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
+        referenceReferenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
                                      .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
                                      .addToEnumerationValues(key: 'N', value: 'No')
                                      .addToEnumerationValues(key: 'U', value: 'Unknown'))
 
-        DataClass dataClass = new DataClass(createdByUser: admin, label: 'dc1')
-        dataModel.addToDataClasses(dataClass)
-        DataClass parent = new DataClass(createdByUser: editor, label: 'Unit parent', dataModel: dataModel, minMultiplicity: 0,
-                                         maxMultiplicity: 1)
-        DataClass child = new DataClass(createdByUser: reader1, label: 'Unit child', minMultiplicity: 1, maxMultiplicity: -1)
-        parent.addToDataClasses(child)
-        DataClass added = new DataClass(createdByUser: reader1, label: 'added', description: 'a desc')
-        dataModel.addToDataClasses(added)
-        DataClass grandParent = new DataClass(createdByUser: editor, label: 'Unit grandparent')
-        grandParent.addToDataClasses(parent)
-        dataModel.addToDataClasses(grandParent)
 
-        ReferenceType refType = new ReferenceType(createdByUser: editor, label: 'Unit parent')
-        parent.addToReferenceTypes(refType)
-        dataModel.addToDataTypes(refType)
+        /*ReferenceDataType refType = new ReferenceDataType(createdByUser: editor, label: 'Unit parent')
+        parent.addToReferenceDataTypes(refType)
+        referenceReferenceDataModel.addToDataTypes(refType)
 
         ReferenceDataElement el1 = new ReferenceDataElement(createdByUser: editor, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1, referenceDataType: refType)
         parent.addToDataElements(el1)
 
-        ReferenceType refType2 = new ReferenceType(createdByUser: editor, label: 'dataclass')
-        dataClass.addToReferenceTypes(refType2)
-        dataModel.addToDataTypes(refType2)
+        ReferenceDataType refType2 = new ReferenceDataType(createdByUser: editor, label: 'dataclass')
+        dataClass.addToReferenceDataTypes(refType2)
+        referenceReferenceDataModel.addToDataTypes(refType2)
 
         ReferenceDataElement el2 = new ReferenceDataElement(createdByUser: editor, label: 'childEl', minMultiplicity: 1, maxMultiplicity: 1)
         refType2.addToDataElements(el2)
@@ -128,12 +116,12 @@ class ReferencePrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceU
         refType.addToDataElements(el3)
         added.addToDataElements(el3)
 
-        checkAndSave(dataModel)
+        checkAndSave(referenceReferenceDataModel)
 
         SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetCatalogueItem: dataClass)
         parent.addToSemanticLinks(link)
 
-        checkAndSave(link)
+        checkAndSave(link)*/
 
         id = primitiveType.id
 

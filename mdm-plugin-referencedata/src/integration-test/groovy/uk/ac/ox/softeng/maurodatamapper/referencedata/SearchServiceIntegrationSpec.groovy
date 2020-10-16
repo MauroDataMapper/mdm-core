@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
@@ -357,4 +357,4 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.results[0].label == 'ele1'
         result.results[1].label == 'element2'
     }
-}
+}*/

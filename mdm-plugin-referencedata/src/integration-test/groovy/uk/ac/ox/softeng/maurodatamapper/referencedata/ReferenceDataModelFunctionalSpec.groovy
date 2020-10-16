@@ -30,6 +30,7 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
@@ -2306,8 +2307,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     @Transactional
     @PendingFeature(reason = "Not yet implemented")
     void setupForLinkSuggestions(String simpleDataModelId) {
-        DataClass dataClass = DataClass.byDataModelId(Utils.toUuid(simpleDataModelId)).eq('label', 'simple').find()
-        assert dataClass
+        //DataClass dataClass = DataClass.byDataModelId(Utils.toUuid(simpleDataModelId)).eq('label', 'simple').find()
+        //assert dataClass
 
 
         POST("${simpleDataModelId}/dataTypes", [

@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -598,12 +598,12 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseDataModelIntegrationS
         commonAncestor.modelVersion == Version.from('1')
     }
 
-    void 'DMSILV01 : test finding latest version of a datamodel'() {
+    void 'DMSILV01 : test finding latest version of a datamodel'() {*/
         /*
         dataModel (finalised) -- expectedModel (finalised) -- draftModel (draft)
           \_ testModel (draft)
         */
-        given:
+        /*given:
         setupData()
 
         when:
@@ -680,12 +680,12 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseDataModelIntegrationS
         mergeDiff == [left: dataModel.diff(left), right: dataModel.diff(right)]
     }
 
-    void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
+    void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {*/
         /*
         dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
           \_ testModel (draft)
         */
-        given:
+        /*given:
         setupData()
 
         when:
@@ -724,12 +724,12 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseDataModelIntegrationS
         currentMainBranch.branchName == 'main'
     }
 
-    void 'DMSIAB01 : test getting all draft models'() {
+    void 'DMSIAB01 : test getting all draft models'() {*/
         /*
         dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
           \_ testModel (draft)
         */
-        given:
+        /*given:
         setupData()
 
         when:
@@ -1044,5 +1044,5 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseDataModelIntegrationS
         ele2Res
         ele2Res.size() == 0
     }
-}
+}*/
 
