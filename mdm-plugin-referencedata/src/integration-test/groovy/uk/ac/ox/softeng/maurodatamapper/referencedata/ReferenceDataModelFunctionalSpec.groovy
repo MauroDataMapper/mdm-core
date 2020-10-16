@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
+import grails.util.BuildSettings
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
@@ -39,6 +40,10 @@ import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
+
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelController* Controller: referenceDataModel
@@ -79,14 +84,17 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     @Shared
     UUID movingFolderId
 
+    @Shared
+    Path csvResourcesPath    
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
-        folderId = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST).save(flush: true).id
+        folderId = new Folder(label: 'Reference Data Functional Test Folder', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert folderId
-        movingFolderId = new Folder(label: 'Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
+        movingFolderId = new Folder(label: 'Reference Data Functional Test Folder 2', createdBy: FUNCTIONAL_TEST).save(flush: true).id
         assert movingFolderId
     }
 
@@ -109,7 +117,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     @Override
     Map getValidJson() {
         [
-            label: 'Functional Test Model'
+            label: 'Reference Data Functional Test Model'
         ]
     }
 
@@ -119,6 +127,17 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
             label: null
         ]
     }
+    byte[] loadCsvFile(String filename) {
+        //Path testFilePath = resourcesPath.resolve("${filename}.csv")
+        Path testFilePath = csvResourcesPath.resolve("${filename}.csv")
+        assert Files.exists(testFilePath)
+        Files.readAllBytes(testFilePath)
+    }    
+
+    @OnceBefore
+    void setupCsvResourcesPath() {
+        csvResourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'csv').toAbsolutePath()
+    }    
 
     @Override
     String getDeleteEndpoint(String id) {
@@ -132,8 +151,8 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   "availableActions": ['delete', 'show', 'update'],
   "branchName": "main",
   "finalised": false,
-  "label": "Functional Test Model",
-  "type": "Data Standard",
+  "label": "Reference Data Functional Test Model",
+  "type": "ReferenceDataModel",
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "documentationVersion": "1.0.0",
   "id": "${json-unit.matches:id}",
@@ -197,36 +216,22 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 ]'''
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test getting DataModel importers'() {
+    void 'test getting ReferenceDataModel importers'() {
         when:
         GET('providers/importers', STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''[
   {
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
-    "providerType": "DataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "providerType": "ReferenceDataModelImporter",
     "knownMetadataKeys": [
       
     ],
-    "displayName": "XML DataModel Importer",
-    "name": "XmlImporterService",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
-    "allowsExtraMetadataKeys": true,
-    "canImportMultipleDomains": true,
-    "version": "${json-unit.matches:version}"
-  },
-  {
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
-    "providerType": "DataModelImporter",
-    "knownMetadataKeys": [
-      
-    ],
-    "displayName": "JSON DataModel Importer",
-    "name": "JsonImporterService",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
-    "allowsExtraMetadataKeys": true,
+    "displayName": "CSV Reference Data Importer",
+    "name": "CsvImporterService",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": false,
     "canImportMultipleDomains": false,
     "version": "${json-unit.matches:version}"
   }
@@ -1004,11 +1009,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test diffing 2 DataModels'() {
+    void 'test diffing 2 ReferenceDataModels'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
-        String otherId = createNewItem([label: 'Functional Test Model 2'])
+        String otherId = createNewItem([label: 'Reference Data Functional Test Model 2'])
 
         when:
         GET("${id}/diff/${otherId}", STRING_ARG)
@@ -1018,12 +1022,12 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "count": 1,
-  "label": "Functional Test Model",
+  "label": "Reference Data Functional Test Model",
   "diffs": [
     {
       "label": {
-        "left": "Functional Test Model",
-        "right": "Functional Test Model 2"
+        "left": "Reference Data Functional Test Model",
+        "right": "Reference Data Functional Test Model 2"
       }
     }
   ]
@@ -1263,17 +1267,16 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse NO_CONTENT, response
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test importing simple test DataModel'() {
+    void 'IM99: test importing simple test ReferenceDataModel'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/CsvImporterService/3.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
+            importAsNewDocumentationVersion: true,
             importFile                     : [
                 fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
+                fileType    : 'CSV',
+                fileContents: loadCsvFile('simpleCSV').toList()
             ]
         ])
         verifyResponse CREATED, response

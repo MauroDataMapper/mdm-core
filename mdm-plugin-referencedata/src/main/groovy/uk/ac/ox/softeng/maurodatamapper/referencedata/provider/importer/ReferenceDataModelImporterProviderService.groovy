@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
@@ -36,9 +35,6 @@ abstract class ReferenceDataModelImporterProviderService<T extends ReferenceData
     @Autowired
     ReferenceDataModelService referenceDataModelService
 
-    @Autowired
-    ClassifierService classifierService
-
     @Override
     ReferenceDataModel importDomain(User currentUser, T params) {
         ReferenceDataModel referenceDataModel = importReferenceDataModel(currentUser, params)
@@ -49,8 +45,7 @@ abstract class ReferenceDataModelImporterProviderService<T extends ReferenceData
 
     @Override
     List<ReferenceDataModel> importDomains(User currentUser, T params) {
-        List<ReferenceDataModel> referenceDataModels = importReferenceDataModels(currentUser, params)
-        referenceDataModels?.collect { checkImport(currentUser, it, params.finalised, params.importAsNewDocumentationVersion) }
+        //do nothing
     }
 
     abstract ReferenceDataModel importReferenceDataModel(User currentUser, T params)
@@ -65,15 +60,6 @@ abstract class ReferenceDataModelImporterProviderService<T extends ReferenceData
     private ReferenceDataModel checkImport(User currentUser, ReferenceDataModel referenceDataModel, boolean finalised, boolean importAsNewDocumentationVersion) {
         referenceDataModelService.checkfinaliseModel(referenceDataModel, finalised)
         referenceDataModelService.checkDocumentationVersion(referenceDataModel, importAsNewDocumentationVersion, currentUser)
-        classifierService.checkClassifiers(currentUser, referenceDataModel)
-
-        referenceDataModel.referenceDataElements.each { de ->
-            classifierService.checkClassifiers(currentUser, de)
-        }
-
-        referenceDataModel.referenceDataTypes.each { dt ->
-            classifierService.checkClassifiers(currentUser, dt)
-        }
         referenceDataModel
     }
 }

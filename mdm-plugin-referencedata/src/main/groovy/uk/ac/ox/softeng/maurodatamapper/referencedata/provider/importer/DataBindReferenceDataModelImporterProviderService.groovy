@@ -66,6 +66,8 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
     }
 
     ReferenceDataModel updateImportedModelFromParameters(ReferenceDataModel referenceDataModel, T params, boolean list = false) {
+        log.debug("updateImportedModelFromParameters ${params}")
+        log.debug("updateImportedModelFromParameters ${referenceDataModel}")
         if (params.finalised != null) referenceDataModel.finalised = params.finalised
         if (!list && params.modelName) referenceDataModel.label = params.modelName
         referenceDataModel
