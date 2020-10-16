@@ -73,8 +73,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
-    abstract K mergeInto(K leftModel, K rightModel, MergeObjectDiffData<K> patch, User user,
-                         UserSecurityPolicyManager userSecurityPolicyManager)
+    abstract K mergeInto(K leftModel, K rightModel, MergeObjectDiffData<K> patch, UserSecurityPolicyManager userSecurityPolicyManager)
 
     abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds)
 

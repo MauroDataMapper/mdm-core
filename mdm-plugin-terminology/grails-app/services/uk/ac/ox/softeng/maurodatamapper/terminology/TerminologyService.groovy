@@ -222,7 +222,7 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology mergeInto(Terminology leftModel, Terminology rightModel, MergeObjectDiffData patch, User user,
+    Terminology mergeInto(Terminology leftModel, Terminology rightModel, MergeObjectDiffData patch,
                           UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new NotImplementedException('DataModelService.mergeInto')
     }

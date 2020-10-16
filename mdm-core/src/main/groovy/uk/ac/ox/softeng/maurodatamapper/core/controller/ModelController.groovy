@@ -267,7 +267,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!right) return notFound(params.otherModelId)
 
         T instance =
-            modelService.mergeInto(left, right, mergeIntoData.patch, currentUser, currentUserSecurityPolicyManager) as T
+            modelService.mergeInto(left, right, mergeIntoData.patch, currentUserSecurityPolicyManager) as T
 
         if (!validateResource(instance, 'update')) return
 

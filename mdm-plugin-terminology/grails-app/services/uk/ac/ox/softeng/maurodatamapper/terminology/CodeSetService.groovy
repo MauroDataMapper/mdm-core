@@ -215,7 +215,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet mergeInto(CodeSet leftModel, CodeSet rightModel, MergeObjectDiffData patch, User user,
+    CodeSet mergeInto(CodeSet leftModel, CodeSet rightModel, MergeObjectDiffData patch,
                       UserSecurityPolicyManager userSecurityPolicyManager) {
         throw new NotImplementedException('DataModelService.mergeInto')
     }

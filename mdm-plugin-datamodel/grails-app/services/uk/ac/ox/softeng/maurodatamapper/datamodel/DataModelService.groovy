@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -58,7 +59,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -387,10 +387,10 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData mergeObjectDiff, User user,
-                        UserSecurityPolicyManager userSecurityPolicyManager, Class objectClass = DataModel) {
+    DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData mergeObjectDiff,
+                        UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService objectService = this) {
 
-        CatalogueItem catalogueItem = objectClass.findById(mergeObjectDiff.leftId)
+        CatalogueItem catalogueItem = objectService.catalogueItemClass.findById(mergeObjectDiff.leftId)
 
         mergeObjectDiff.diffs.each {
             diff ->
@@ -399,37 +399,31 @@ class DataModelService extends ModelService<DataModel> {
                         if (mergeFieldDiff.value) {
                             catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
                         } else {
-                            // if no value, then some combination of created, deleted, and modified should exist
-
+                            // if no value, then some combination of created, deleted, and modified may exist
                             ModelItemService modelItemService = modelItemServices.find { it.resourcePathElement == mergeFieldDiff.fieldName }
 
-                            // TODO ensure delete and copyX methods are present for all relevant services
                             // apply deletions of children to target object
                             mergeFieldDiff.deleted.each {
                                 obj ->
-                                    modelItemService.delete(rightModel.dataClasses.find { it.id == obj.id } as DataClass)
+                                    modelItemService.delete(rightModel.getProperty(mergeFieldDiff.fieldName).find { it.id == obj.id } as ModelItem)
                             }
                             // copy additions from source to target object
                             mergeFieldDiff.created.each {
                                 obj ->
-                                    modelItemService.copyDataClass(rightModel,
-                                                                   leftModel.dataClasses.find { it.id == obj.id },
-                                                                   user,
-                                                                   userSecurityPolicyManager)
+                                    modelItemService.copy(rightModel,
+                                                          leftModel.getProperty(mergeFieldDiff.fieldName).find { it.id == obj.id },
+                                                          userSecurityPolicyManager.user,
+                                                          userSecurityPolicyManager)
                             }
                             // for modifications, recursively call this method
                             // might need a new copy data class method when we get to nested values?
                             mergeFieldDiff.modified.each {
                                 obj ->
                                     mergeInto(leftModel, rightModel, obj,
-                                              user,
                                               userSecurityPolicyManager,
-                                              modelItemService.catalogueItemClass)
+                                              modelItemService)
                             }
-
                         }
-                        // Class.forName(fullname including package)
-
                 }
         }
         rightModel

@@ -1639,41 +1639,41 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         def requestBody = [
             patch: [
-                leftId : "$target" as String,
-                rightId: "$source" as String,
+                leftId : target,
+                rightId: source,
                 label  : "Functional Test Model",
                 count  : 10,
                 diffs  : [
                     [
                         fieldName: "description",
-                        value    : "$modifiedDescriptionSource" as String
+                        value    : modifiedDescriptionSource
                     ],
                     [
                         fieldName: "dataClasses",
 
                         deleted  : [
                             [
-                                id   : "$deleteAndModify" as String,
+                                id   : deleteAndModify,
                                 label: "deleteAndModify"
                             ],
                             [
-                                id   : "$deleteLeftOnly" as String,
+                                id   : deleteLeftOnly,
                                 label: "deleteLeftOnly"
                             ]
                         ],
                         created  : [
                             [
-                                id   : "$addLeftOnly" as String,
+                                id   : addLeftOnly,
                                 label: "addLeftOnly"
                             ],
                             [
-                                id   : "$sourceModifyAndDelete" as String,
+                                id   : sourceModifyAndDelete,
                                 label: "modifyAndDelete"
                             ]
                         ],
                         modified : [
                             [
-                                leftId: "$addAndAddReturningDifference" as String,
+                                leftId: addAndAddReturningDifference,
                                 label : "addAndAddReturningDifference",
                                 count : 1,
                                 diffs : [
@@ -1684,7 +1684,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 ]
                             ],
                             [
-                                leftId: "$existingClass" as String,
+                                leftId: existingClass,
                                 label : "existingClass",
                                 count : 2,
                                 diffs : [
@@ -1693,13 +1693,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
                                         deleted  : [
                                             [
-                                                id   : "$deleteLeftOnlyFromExistingClass" as String,
+                                                id   : deleteLeftOnlyFromExistingClass,
                                                 label: "deleteLeftOnlyFromExistingClass"
                                             ]
                                         ],
                                         created  : [
                                             [
-                                                id   : "$addLeftToExistingClass" as String,
+                                                id   : addLeftToExistingClass,
                                                 label: "addLeftToExistingClass"
                                             ]
                                         ]
@@ -1708,18 +1708,18 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 ]
                             ],
                             [
-                                leftId: "$modifyAndModifyReturningDifference" as String,
+                                leftId: modifyAndModifyReturningDifference,
                                 label : "modifyAndModifyReturningDifference",
                                 count : 1,
                                 diffs : [
                                     [
                                         fieldName: "description",
-                                        value: "$modifiedDescriptionSource" as String
+                                        value    : modifiedDescriptionSource
                                     ]
                                 ]
                             ],
                             [
-                                leftId: "$modifyLeftOnly" as String,
+                                leftId: modifyLeftOnly,
                                 label : "modifyLeftOnly",
                                 count : 1,
                                 diffs : [

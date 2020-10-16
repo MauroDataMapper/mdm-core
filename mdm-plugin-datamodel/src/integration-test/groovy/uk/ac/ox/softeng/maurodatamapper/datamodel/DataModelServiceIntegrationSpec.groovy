@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -787,7 +789,6 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !mergeDiff.diffs[1].modified[3].diffs[0].commonAncestorValue
     }
 
-    @PendingFeature
     void 'DMSIMI01 : test merging diff into draft model'() {
         given:
         setupData()
@@ -827,7 +828,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         test.addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftOnly'))
             .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left'))
             .addToDataClasses(leftParentDataClass)
-        //test.description = 'DescriptionLeft'
+        def modelDescriptionLeft = 'DescriptionLeft'
+        test.description = modelDescriptionLeft
         checkAndSave(test)
 
         dataClassService.delete(draft.childDataClasses.find { it.label == 'modifyAndDelete' })
@@ -847,48 +849,68 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         mergeDiff.class == ObjectDiff
         mergeDiff.diffs
-        mergeDiff.numberOfDiffs == 11
-        mergeDiff.diffs[0].fieldName == 'branchName'
-        mergeDiff.diffs[0].left == 'main'
-        mergeDiff.diffs[0].right == 'test'
-        !mergeDiff.diffs[0].isMergeConflict
-        mergeDiff.diffs[1].fieldName == 'dataClasses'
-        mergeDiff.diffs[1].created.size == 3
-        mergeDiff.diffs[1].deleted.size == 2
-        mergeDiff.diffs[1].modified.size == 4
-        mergeDiff.diffs[1].created[0].value.label == 'addLeftOnly'
-        !mergeDiff.diffs[1].created[0].isMergeConflict
-        !mergeDiff.diffs[1].created[0].commonAncestorValue
-        mergeDiff.diffs[1].created[1].value.label == 'leftParentDataClass'
-        !mergeDiff.diffs[1].created[1].isMergeConflict
-        !mergeDiff.diffs[1].created[1].commonAncestorValue
-        mergeDiff.diffs[1].created[2].value.label == 'modifyAndDelete'
-        mergeDiff.diffs[1].created[2].isMergeConflict
-        mergeDiff.diffs[1].created[2].commonAncestorValue
-        mergeDiff.diffs[1].deleted[0].value.label == 'deleteAndModify'
-        mergeDiff.diffs[1].deleted[0].isMergeConflict
-        mergeDiff.diffs[1].deleted[0].commonAncestorValue
-        mergeDiff.diffs[1].deleted[1].value.label == 'deleteLeftOnly'
-        !mergeDiff.diffs[1].deleted[1].isMergeConflict
-        !mergeDiff.diffs[1].deleted[1].commonAncestorValue
-        mergeDiff.diffs[1].modified[0].diffs[0].fieldName == 'description'
-        mergeDiff.diffs[1].modified[0].isMergeConflict
-        !mergeDiff.diffs[1].modified[0].commonAncestorValue
-        mergeDiff.diffs[1].modified[1].diffs[0].fieldName == 'dataClasses'
-        mergeDiff.diffs[1].modified[1].isMergeConflict
-        mergeDiff.diffs[1].modified[1].commonAncestorValue
-        mergeDiff.diffs[1].modified[1].diffs[0].created[0].value.label == 'addLeftToExistingClass'
-        mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].value.label == 'deleteLeftOnlyFromExistingClass'
-        !mergeDiff.diffs[1].modified[1].diffs[0].created[0].isMergeConflict
-        !mergeDiff.diffs[1].modified[1].diffs[0].created[0].commonAncestorValue
-        !mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].isMergeConflict
-        !mergeDiff.diffs[1].modified[1].diffs[0].deleted[0].commonAncestorValue
-        mergeDiff.diffs[1].modified[2].diffs[0].fieldName == 'description'
-        mergeDiff.diffs[1].modified[2].diffs[0].isMergeConflict
-        !mergeDiff.diffs[1].modified[2].diffs[0].commonAncestorValue
-        mergeDiff.diffs[1].modified[3].diffs[0].fieldName == 'description'
-        !mergeDiff.diffs[1].modified[3].diffs[0].isMergeConflict
-        !mergeDiff.diffs[1].modified[3].diffs[0].commonAncestorValue
+        mergeDiff.numberOfDiffs == 12
+        mergeDiff.diffs[0].fieldName == 'description'
+        mergeDiff.diffs[0].left == 'DescriptionRight'
+        mergeDiff.diffs[0].right == 'DescriptionLeft'
+        mergeDiff.diffs[1].fieldName == 'branchName'
+        mergeDiff.diffs[1].left == 'main'
+        mergeDiff.diffs[1].right == 'test'
+        !mergeDiff.diffs[1].isMergeConflict
+        mergeDiff.diffs[2].fieldName == 'dataClasses'
+        mergeDiff.diffs[2].created.size == 3
+        mergeDiff.diffs[2].deleted.size == 2
+        mergeDiff.diffs[2].modified.size == 4
+        mergeDiff.diffs[2].created[0].value.label == 'addLeftOnly'
+        !mergeDiff.diffs[2].created[0].isMergeConflict
+        !mergeDiff.diffs[2].created[0].commonAncestorValue
+        mergeDiff.diffs[2].created[1].value.label == 'leftParentDataClass'
+        !mergeDiff.diffs[2].created[1].isMergeConflict
+        !mergeDiff.diffs[2].created[1].commonAncestorValue
+        mergeDiff.diffs[2].created[2].value.label == 'modifyAndDelete'
+        mergeDiff.diffs[2].created[2].isMergeConflict
+        mergeDiff.diffs[2].created[2].commonAncestorValue
+        mergeDiff.diffs[2].deleted[0].value.label == 'deleteAndModify'
+        mergeDiff.diffs[2].deleted[0].isMergeConflict
+        mergeDiff.diffs[2].deleted[0].commonAncestorValue
+        mergeDiff.diffs[2].deleted[1].value.label == 'deleteLeftOnly'
+        !mergeDiff.diffs[2].deleted[1].isMergeConflict
+        !mergeDiff.diffs[2].deleted[1].commonAncestorValue
+        mergeDiff.diffs[2].modified[0].diffs[0].fieldName == 'description'
+        mergeDiff.diffs[2].modified[0].isMergeConflict
+        !mergeDiff.diffs[2].modified[0].commonAncestorValue
+        mergeDiff.diffs[2].modified[1].diffs[0].fieldName == 'dataClasses'
+        mergeDiff.diffs[2].modified[1].isMergeConflict
+        mergeDiff.diffs[2].modified[1].commonAncestorValue
+        mergeDiff.diffs[2].modified[1].diffs[0].created[0].value.label == 'addLeftToExistingClass'
+        mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].value.label == 'deleteLeftOnlyFromExistingClass'
+        !mergeDiff.diffs[2].modified[1].diffs[0].created[0].isMergeConflict
+        !mergeDiff.diffs[2].modified[1].diffs[0].created[0].commonAncestorValue
+        !mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].isMergeConflict
+        !mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].commonAncestorValue
+        mergeDiff.diffs[2].modified[2].diffs[0].fieldName == 'description'
+        mergeDiff.diffs[2].modified[2].diffs[0].isMergeConflict
+        !mergeDiff.diffs[2].modified[2].diffs[0].commonAncestorValue
+        mergeDiff.diffs[2].modified[3].diffs[0].fieldName == 'description'
+        !mergeDiff.diffs[2].modified[3].diffs[0].isMergeConflict
+        !mergeDiff.diffs[2].modified[3].diffs[0].commonAncestorValue
+
+        when:
+        def patch = new MergeObjectDiffData(
+            leftId: draft.id,
+            rightId: test.id,
+            diffs: [
+                new MergeFieldDiffData(
+                    fieldName: 'description',
+                    value: modelDescriptionLeft
+                )
+            ]
+        )
+        def mergedModel = dataModelService.mergeInto(test, draft, patch, userSecurityPolicyManager)
+
+        then:
+        mergedModel.description == modelDescriptionLeft
+        //TODO check other values
     }
 
     void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
