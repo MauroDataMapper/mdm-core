@@ -26,4 +26,8 @@ class MergeIntoData implements Validateable {
 
     MergeObjectDiffData patch
     boolean deleteBranch = false
+
+    static constraints = {
+        patch nullable: false
+    }
 }

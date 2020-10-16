@@ -388,27 +388,20 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData mergeObjectDiff, User user,
-                        UserSecurityPolicyManager userSecurityPolicyManager) {
+                        UserSecurityPolicyManager userSecurityPolicyManager, Class objectClass = DataModel) {
 
+        CatalogueItem catalogueItem = objectClass.findById(mergeObjectDiff.leftId)
 
         mergeObjectDiff.diffs.each {
             diff ->
                 diff.each {
                     mergeFieldDiff ->
-                        // get domain object by id and set property
-
-                        //TODO rethink
-                        ModelItemService modelItemService = modelItemServices.find { it?.resourcePathElement == mergeFieldDiff.fieldName }
-
-                        CatalogueItem catalogueItem = modelItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
-
-                        if (!modelItemService) throw new NotImplementedException("Mergining for ${mergeFieldDiff.fieldName} has not been " +
-                                                                                 "implemented yet.")
-
                         if (mergeFieldDiff.value) {
                             catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
                         } else {
-                            // if map has children
+                            // if no value, then some combination of created, deleted, and modified should exist
+
+                            ModelItemService modelItemService = modelItemServices.find { it.resourcePathElement == mergeFieldDiff.fieldName }
 
                             // TODO ensure delete and copyX methods are present for all relevant services
                             // apply deletions of children to target object
@@ -420,7 +413,7 @@ class DataModelService extends ModelService<DataModel> {
                             mergeFieldDiff.created.each {
                                 obj ->
                                     modelItemService.copyDataClass(rightModel,
-                                                                   leftModel.childDataClasses.find { it.id == obj.id },
+                                                                   leftModel.dataClasses.find { it.id == obj.id },
                                                                    user,
                                                                    userSecurityPolicyManager)
                             }
@@ -430,7 +423,8 @@ class DataModelService extends ModelService<DataModel> {
                                 obj ->
                                     mergeInto(leftModel, rightModel, obj,
                                               user,
-                                              userSecurityPolicyManager)
+                                              userSecurityPolicyManager,
+                                              modelItemService.catalogueItemClass)
                             }
 
                         }

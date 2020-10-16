@@ -52,6 +52,9 @@ import org.grails.datastore.gorm.GormValidationApi
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 
+/**
+ * The base element of a tree that is used to describe some data set, a domain object, a REST {@code @Resource}.
+ */
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
@@ -102,6 +105,9 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         CallableSearch.call(DataModelSearch, delegate)
     }
 
+    /**
+     * Constructor, sets a number of default and initial values.
+     */
     DataModel() {
         initialiseVersioning()
         modelType = DataModelType.DATA_STANDARD.label
@@ -128,6 +134,11 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         dataClasses?.findAll { !it.parentDataClass }?.sort() ?: [] as List<DataClass>
     }
 
+    /**
+     * Generate differences between {@code this} DataModel and some {@code otherDataModel}
+     * @param otherDataModel DataModel to compare to {@code this} DataModel
+     * @return ObjectDiff<DataModel>  containing field differences and arrays of child differences
+     */
     ObjectDiff<DataModel> diff(DataModel otherDataModel) {
         modelDiffBuilder(DataModel, this, otherDataModel)
             .appendList(DataType, 'dataTypes', this.dataTypes, otherDataModel.dataTypes)

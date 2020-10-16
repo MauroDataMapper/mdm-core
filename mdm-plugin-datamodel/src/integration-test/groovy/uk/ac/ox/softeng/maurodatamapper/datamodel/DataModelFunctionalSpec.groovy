@@ -1425,7 +1425,83 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'VB09 : test merging diff into draft model'() {
+    void 'VB09a : test merging diff with no patch data'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target", [:])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors[0].message.contains('cannot be null')
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'VB09b : test merging diff with URI id not matching body id'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+                                              [
+                                                  leftId : "$target" as String,
+                                                  rightId: "${UUID.randomUUID().toString()}" as String,
+                                                  label  : "Functional Test Model",
+                                                  count  : 0,
+                                                  diffs  : []
+                                              ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Source model id passed in request body does not match source model id in URI.'
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+                                              [
+                                                  leftId : "${UUID.randomUUID().toString()}" as String,
+                                                  rightId: "$source" as String,
+                                                  label  : "Functional Test Model",
+                                                  count  : 0,
+                                                  diffs  : []
+                                              ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Target model id passed in request body does not match target model id in URI.'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'VB09c : test merging diff into draft model'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1672,7 +1748,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
-                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly'] as Set
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly', 'addLeftToExistingClass'] as Set
         responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
         responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
         responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
