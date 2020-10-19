@@ -1628,6 +1628,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("$target/path/dm%3A%7Cdc%3AdeleteLeftOnly")
         verifyResponse OK, response
         deleteLeftOnly = responseBody().id
+        GET("$target/path/dm%3A%7Cdc%3AmodifyLeftOnly")
+        verifyResponse OK, response
+        modifyLeftOnly = responseBody().id
 
         GET("$source/mergeDiff/$target", STRING_ARG)
 

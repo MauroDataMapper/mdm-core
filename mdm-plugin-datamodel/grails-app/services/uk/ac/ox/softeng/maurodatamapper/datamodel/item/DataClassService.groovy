@@ -469,8 +469,9 @@ class DataClassService extends ModelItemService<DataClass> {
 
     }
 
-    DataClass copy(DataModel copiedDataModel, DataClass original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager)
+    DataClass copy(DataModel copiedDataModel, DataClass original, UserSecurityPolicyManager userSecurityPolicyManager,
+                   Serializable parentDataClassId) {
+        copyDataClass(copiedDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager, parentDataClassId)
     }
 
     DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier,

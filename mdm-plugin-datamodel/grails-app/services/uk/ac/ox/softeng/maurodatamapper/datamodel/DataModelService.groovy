@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -388,9 +389,9 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData mergeObjectDiff,
-                        UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService objectService = this) {
+                        UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService catalogueItemService = this, UUID parentId = null) {
 
-        CatalogueItem catalogueItem = objectService.catalogueItemClass.findById(mergeObjectDiff.leftId)
+        CatalogueItem catalogueItem = catalogueItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
 
         mergeObjectDiff.diffs.each {
             diff ->
@@ -398,6 +399,9 @@ class DataModelService extends ModelService<DataModel> {
                     mergeFieldDiff ->
                         if (mergeFieldDiff.value) {
                             catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+                            //TODO remove if not necessary
+                            //                            if (catalogueItem.validate()) catalogueItemService.save(catalogueItem, flush: true,
+                            //                            validate: false)
                         } else {
                             // if no value, then some combination of created, deleted, and modified may exist
                             ModelItemService modelItemService = modelItemServices.find { it.resourcePathElement == mergeFieldDiff.fieldName }
@@ -412,16 +416,17 @@ class DataModelService extends ModelService<DataModel> {
                                 obj ->
                                     modelItemService.copy(rightModel,
                                                           leftModel.getProperty(mergeFieldDiff.fieldName).find { it.id == obj.id },
-                                                          userSecurityPolicyManager.user,
-                                                          userSecurityPolicyManager)
+                                                          userSecurityPolicyManager,
+                                                          parentId)
                             }
                             // for modifications, recursively call this method
-                            // might need a new copy data class method when we get to nested values?
+                            def nestedParentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
                             mergeFieldDiff.modified.each {
                                 obj ->
                                     mergeInto(leftModel, rightModel, obj,
                                               userSecurityPolicyManager,
-                                              modelItemService)
+                                              modelItemService,
+                                              nestedParentId)
                             }
                         }
                 }
