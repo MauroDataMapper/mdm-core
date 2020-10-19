@@ -125,6 +125,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
     def beforeValidate() {
         beforeValidateCatalogueItem()
         this.referenceDataTypes?.each { it.beforeValidate() }
+        this.referenceDataElements?.each { it.beforeValidate() }
     }
 
     ReferenceDataType findDataTypeByLabel(String label) {
@@ -176,33 +177,36 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         boolean dmValid = true
         Long start = null
 
-        if (this.referenceDataElements) {
-            if (!fields || fields.contains('referenceDataElements')) {
-                start = System.currentTimeMillis()
-                deErrors = validateDataElements()
-                log.trace('DE validate {} (valid: {})', Utils.timeTaken(start), deErrors)
-            }
-        }
-
         if (this.referenceDataTypes) {
             if (!fields || fields.contains('referenceDataTypes')) {
                 start = System.currentTimeMillis()
                 dtErrors = validateDataTypes()
-                log.trace('DT validate {} (valid: {})', Utils.timeTaken(start), dtErrors)
+                log.debug('DT validate {} (valid: {})', Utils.timeTaken(start), dtErrors)
+            }
+        }
+
+        if (this.referenceDataElements) {
+            if (!fields || fields.contains('referenceDataElements')) {
+                start = System.currentTimeMillis()
+                deErrors = validateDataElements()
+                log.debug('DE validate {} (valid: {})', Utils.timeTaken(start), deErrors)
             }
         }
 
         start = System.currentTimeMillis()
         Collection<ReferenceDataElement> storedDataElements = []
         Collection<ReferenceDataType> storedDataTypes = []
-        if (this.referenceDataElements) {
-            storedDataElements.addAll(this.referenceDataElements ?: [])
-            this.referenceDataElements?.clear()
-        }
+
         if (this.referenceDataTypes) {
             storedDataTypes.addAll(this.referenceDataTypes ?: [])
             this.referenceDataTypes?.clear()
         }
+
+        if (this.referenceDataElements) {
+            storedDataElements.addAll(this.referenceDataElements ?: [])
+            this.referenceDataElements?.clear()
+        }
+
 
         if (args) {
             dmValid = currentGormValidationApi().validate(this, args)
@@ -219,7 +223,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
             this.referenceDataTypes.addAll(storedDataTypes)
         }
 
-        log.trace('Final validate {} (valid: {})', Utils.timeTaken(start), dmValid)
+        log.debug('Final validate {} (valid: {})', Utils.timeTaken(start), dmValid)
 
         if (dtErrors) errors.addAllErrors(dtErrors)
         if (deErrors) errors.addAllErrors(deErrors)

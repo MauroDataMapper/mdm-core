@@ -199,7 +199,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
             int count = 0
 
             notSaved.each { dt ->
-                dt.dataElements?.clear()
+                dt.referenceDataElements?.clear()
                 batch += dt
                 count++
                 if (count % ReferenceDataType.BATCH_SIZE == 0) {

@@ -1268,11 +1268,15 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     }
 
     void 'IM99: test importing simple test ReferenceDataModel'() {
+        given:
+        log.debug("${loadCsvFile('simpleCSV').toList().toString()}")
+
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/CsvImporterService/3.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: true,
+            modelName: 'FT Test Reference Data Model',
+            importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
                 fileType    : 'CSV',

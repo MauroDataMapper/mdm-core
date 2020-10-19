@@ -38,4 +38,14 @@ class ReferenceDataModelFileImporterProviderServiceParameters extends ReferenceD
     )
     FileParameter importFile
 
+    @ImportParameterConfig(
+        displayName = 'Model name',
+        description = ['Label of Model, this will override any existing name provided in the imported data.'],
+        order = 0,
+        group = @ImportGroupConfig(
+            name = 'Model',
+            order = 0
+        ))
+    String modelName    
+
 }

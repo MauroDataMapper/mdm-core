@@ -99,7 +99,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     ReferenceDataModel validate(ReferenceDataModel referenceDataModel) {
-        log.debug('Validating ReferenceDataModel')
         referenceDataModel.validate()
         referenceDataModel
     }
@@ -171,7 +170,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     ReferenceDataModel saveWithBatching(ReferenceDataModel referenceDataModel) {
         log.debug('Saving {} using batching', referenceDataModel.label)
-        Collection<ReferenceDataType> dataTypes = []
+        Collection<ReferenceDataType> referenceDataTypes = []
+        Collection<ReferenceDataElement> referenceDataElements = []
 
         if (referenceDataModel.classifiers) {
             log.trace('Saving {} classifiers')
@@ -179,22 +179,25 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         }
 
         if (referenceDataModel.referenceDataTypes) {
-            dataTypes.addAll referenceDataModel.referenceDataTypes
+            referenceDataTypes.addAll referenceDataModel.referenceDataTypes
             referenceDataModel.referenceDataTypes.clear()
         }
+
+        if (referenceDataModel.referenceDataElements) {
+            referenceDataElements.addAll referenceDataModel.referenceDataElements
+            referenceDataModel.referenceDataElements.clear()
+        }        
 
         save(referenceDataModel)
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
 
 
-        log.trace('Saving {} datatypes', dataTypes.size())
-        referenceDataTypeService.saveAll(dataTypes)
+        log.trace('Saving {} referenceDataTypes', referenceDataTypes.size())
+        referenceDataTypeService.saveAll(referenceDataTypes)
 
-        Collection<ReferenceDataElement> dataElements = hierarchySaveAllAndGetDataElements(referenceDataModel)
-
-        log.trace('Saving {} dataelements ', dataElements.size())
-        referenceDataElementService.saveAll(dataElements)
+        log.trace('Saving {} referenceDataElements ', referenceDataElements.size())
+        referenceDataElementService.saveAll(referenceDataElements)
 
         referenceDataModel
     }

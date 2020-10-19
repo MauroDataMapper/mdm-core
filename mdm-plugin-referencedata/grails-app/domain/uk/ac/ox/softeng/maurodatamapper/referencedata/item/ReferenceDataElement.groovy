@@ -126,7 +126,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
             it.catalogueItem = this
         }
         if (referenceDataType && !referenceDataType.ident()) {
-            referenceDataType.dataModel = model
+            referenceDataType.referenceDataModel = model
             referenceDataType.createdBy = createdBy
             referenceDataType.beforeValidate()
         }

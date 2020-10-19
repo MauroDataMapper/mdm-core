@@ -17,10 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -36,6 +40,8 @@ import org.apache.commons.csv.CSVRecord
 
 @Slf4j
 class CsvImporterService extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> {
+
+    AuthorityService authorityService
 
     @Override
     String getDisplayName() {
@@ -57,35 +63,41 @@ class CsvImporterService extends DataBindReferenceDataModelImporterProviderServi
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
+        def referenceDataElements = [:]
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: currentUser.emailAddress)
+        referenceDataModel.authority = authorityService.getDefaultAuthority();
+
+        ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: currentUser.emailAddress, label: 'string')
+        referenceDataModel.addToReferenceDataTypes(stringDataType)
+
         CSVFormat csvFormat = CSVFormat.newFormat((char)',').withHeader();
 
         CSVParser parser = csvFormat.parse(
         new InputStreamReader(new ByteArrayInputStream(content), "UTF8"));
 
         List headers = parser.getHeaderNames();
-        //TODO add a referenceDataElement for each column heading
+        headers.each {
+            ReferenceDataElement referenceDataElement = new ReferenceDataElement(referenceDataType: stringDataType, label: it, createdBy: currentUser.emailAddress)
+            referenceDataModel.addToReferenceDataElements(referenceDataElement)
+            referenceDataElements[it] = referenceDataElement
+        }
 
+        int rowNumber = 1
         for (CSVRecord record : parser) {
             try {
                 headers.each {
-                    //TODO create a new referenceDataValue for each value
-                    log.debug(record.get(it));
+                    ReferenceDataValue referenceDataValue = new ReferenceDataValue(referenceDataElement: referenceDataElements[it], value: record.get(it), rowNumber: rowNumber, createdBy: currentUser.emailAddress);
+                    referenceDataModel.addToReferenceDataValues(referenceDataValue)
                 }
                 
             } catch (Exception e) {
             throw new RuntimeException("Error at line "
             + parser.getCurrentLineNumber(), e);
+            }
+            rowNumber++
         }
-}
-parser.close();
-//printer.close();
+        parser.close();
 
-        //log.debug('Parsing in file content using JsonSlurper')
-        //def result = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
-        //Map terminology = result.terminology
-        //if (!terminology) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology is not present')
-
-        //log.debug('Importing Terminology map')
-        //bindMapToTerminology currentUser, new HashMap(terminology)
+        referenceDataModel
     }
 }
