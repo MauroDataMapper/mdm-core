@@ -15,12 +15,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.annotation
+package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.annotation
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -30,52 +29,48 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import spock.lang.Shared*/
+import spock.lang.Shared
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationController
  */
-/*@Integration
+@Integration
 @Slf4j
 class ReferenceDataElementAnnotationFunctionalSpec extends CatalogueItemAnnotationFunctionalSpec {
 
     @Shared
-    DataModel dataModel
+    ReferenceDataModel referenceDataModel
     @Shared
-    DataClass dataClass
+    ReferenceDataElement referenceDataElement
     @Shared
-    ReferenceDataElement dataElement
-    @Shared
-    ReferenceDataType dataType
+    ReferenceDataType referenceDataType
 
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: 'functionalTest@test.com',
+        referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
-        dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: 'functionalTest@test.com',
-                                  dataModel: dataModel).save(flush: true)
-        dataType = new ReferencePrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
-                                     dataModel: dataModel).save(flush: true)
-        dataElement = new ReferenceDataElement(label: 'Functional Test DataElement', createdBy: 'functionalTest@test.com',
-                                      dataModel: dataModel, dataClass: dataClass, referenceDataType: dataType).save(flush: true)
+        referenceDataType = new ReferencePrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
+                                     referenceDataModel: referenceDataModel).save(flush: true)
+        referenceDataElement = new ReferenceDataElement(label: 'Functional Test ReferenceDataElement', createdBy: 'functionalTest@test.com',
+                                      referenceDataModel: referenceDataModel, referenceDataType: referenceDataType).save(flush: true)
         sessionFactory.currentSession.flush()
     }
 
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec PluginCatalogueItemFunctionalSpec')
-        cleanUpResources(DataModel, Folder, DataClass, ReferenceDataElement, ReferenceDataType)
+        cleanUpResources(ReferenceDataModel, Folder, ReferenceDataElement, ReferenceDataType)
     }
 
     @Override
     UUID getCatalogueItemId() {
-        dataElement.id
+        referenceDataElement.id
     }
 
     @Override
     String getCatalogueItemDomainResourcePath() {
-        'dataElements'
+        'referenceDataElements'
     }
-}*/
+}
