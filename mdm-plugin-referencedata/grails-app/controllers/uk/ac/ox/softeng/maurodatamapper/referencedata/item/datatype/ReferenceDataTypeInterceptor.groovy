@@ -25,7 +25,7 @@ class ReferenceDataTypeInterceptor extends ReferenceDataModelSecuredInterceptor 
     boolean before() {
         performChecks()
 
-        if (actionName == 'copyDataType') {
+        if (actionName == 'copyReferenceDataType') {
             return canCopyFromReferenceDataModelToOtherReferenceDataModel()
         }
         checkStandardActions()

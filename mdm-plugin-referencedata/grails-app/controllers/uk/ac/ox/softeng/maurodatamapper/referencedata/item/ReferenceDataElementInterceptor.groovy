@@ -40,7 +40,7 @@ class ReferenceDataElementInterceptor extends ReferenceDataModelSecuredIntercept
             return true
         }
 
-        if (actionName == 'copyDataElement') {
+        if (actionName == 'copyReferenceDataElement') {
             return canCopyFromReferenceDataModelToOtherReferenceDataModel()
         }
 

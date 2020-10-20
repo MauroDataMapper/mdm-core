@@ -35,22 +35,20 @@ class ReferenceDataElementController extends CatalogueItemController<ReferenceDa
     }
 
     @Transactional
-    def copyDataElement() {
+    def copyReferenceDataElement() {
         if (handleReadOnly()) {
             return
         }
 
-        ReferenceDataModel referenceDataModel = referenceDataModelService.get(params.dataModelId)
-        ReferenceDataElement original = referenceDataElementService.findByReferenceDataModelIdAndId(params.otherReferenceDataModelId, params.dataElementId)
+        ReferenceDataModel referenceDataModel = referenceDataModelService.get(params.referenceDataModelId)
+        ReferenceDataElement original = referenceDataElementService.findByReferenceDataModelIdAndId(params.otherReferenceDataModelId, params.referenceDataElementId)
         ReferenceDataModel originalReferenceDataModel = referenceDataModelService.get(params.otherReferenceDataModelId)
 
-        if (!original) return notFound(params.dataElementId)
+        if (!original) return notFound(params.referenceDataElementId)
         ReferenceDataElement copy
         try {
-            copy = referenceDataElementService.copyDataElement(referenceDataModel, original, currentUser, currentUserSecurityPolicyManager)
+            copy = referenceDataElementService.copyReferenceDataElement(referenceDataModel, original, currentUser, currentUserSecurityPolicyManager)
             referenceDataModel.addToReferenceDataElements(copy)
-            referenceDataModelService.matchUpAndAddMissingReferenceTypeClasses(referenceDataModel, referenceDataModelService.get(params.otherReferenceDataModelId), currentUser,
-                                                                      currentUserSecurityPolicyManager)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422

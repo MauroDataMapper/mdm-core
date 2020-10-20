@@ -303,7 +303,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         dataElement
     }
 
-    ReferenceDataElement copyDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
+    ReferenceDataElement copyReferenceDataElement(ReferenceDataModel copiedReferenceDataModel, ReferenceDataElement original, User copier,
                                          UserSecurityPolicyManager userSecurityPolicyManager) {
         ReferenceDataElement copy = new ReferenceDataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)

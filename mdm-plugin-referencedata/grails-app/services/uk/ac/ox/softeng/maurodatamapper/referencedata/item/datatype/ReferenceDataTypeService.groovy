@@ -281,7 +281,7 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         ReferenceDataType.byReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(referenceDataModelId, searchTerm).list(paginate)
     }
 
-    ReferenceDataType copyDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+    ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
                                    boolean copySummaryMetadata = false) {
 
         ReferenceDataType copy

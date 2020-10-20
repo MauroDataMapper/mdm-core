@@ -57,27 +57,25 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
     }
 
     @Transactional
-    def copyDataType() {
+    def copyReferenceDataType() {
         if (handleReadOnly()) {
             return
         }
-
         ReferenceDataModel referenceDataModel = referenceDataModelService.get(params.referenceDataModelId)
         ReferenceDataModel originalReferenceDataModel = referenceDataModelService.get(params.otherReferenceDataModelId)
-        ReferenceDataType original = referenceDataTypeService.findByReferenceDataModelIdAndId(params.otherReferenceDataModelId, params.dataTypeId)
+        ReferenceDataType original = referenceDataTypeService.findByReferenceDataModelIdAndId(params.otherReferenceDataModelId, params.referenceDataTypeId)
 
-        if (!original) return notFound(params.dataTypeId)
+        if (!original) return notFound(params.referenceDataTypeId)
+
         ReferenceDataType copy
         try {
-            copy = referenceDataTypeService.copyDataType(referenceDataModel, original, currentUser, currentUserSecurityPolicyManager)
+            copy = referenceDataTypeService.copyReferenceDataType(referenceDataModel, original, currentUser, currentUserSecurityPolicyManager)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422
             return
         }
-        if (copy.instanceOf(ReferenceType)) {
-            throw new ApiBadRequestException('DTCXX', 'Copying of ReferenceType DataTypes is not possible')
-        }
+
         referenceDataModelService.get(params.referenceDataModelId)?.addToReferenceDataTypes(copy)
 
         referenceDataModelService.validate(referenceDataModel)
