@@ -42,7 +42,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         'admin/providers'
     }
 
-    void 'test get exporters'() {
+    /*void 'test get exporters'() {
         when:
         GET('exporters', Argument.of(String))
 
@@ -141,5 +141,5 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyJsonResponse(OK, '[]')
-    }
+    }*/
 }

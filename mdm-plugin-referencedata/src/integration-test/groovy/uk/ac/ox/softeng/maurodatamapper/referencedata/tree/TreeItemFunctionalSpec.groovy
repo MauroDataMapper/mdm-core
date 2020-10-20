@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.tree
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
@@ -35,12 +35,12 @@ import spock.lang.Shared
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.OK*/
 
 /**
  * @since 08/04/2020
  */
-@Integration
+/*@Integration
 @Slf4j
 class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
@@ -55,7 +55,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
     @OnceBefore
     @Transactional
-    def checkAndSetupData() {
+    def checkAndSetupData() {*/
         /*log.debug('Check and setup test data')
 
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
@@ -77,9 +77,9 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         dataModel.addToClassifiers(classifier).save(flush: true)
 
         sessionFactory.currentSession.flush()*/
-    }
+    //}
 
-    @Transactional
+    /*@Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec')
         cleanUpResources(DataModel, Folder, Classifier, DataClass)
@@ -89,9 +89,9 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     @Override
     String getResourcePath() {
         'tree'
-    }
+    }*/
 
-    void 'T01 : test folder tree'() {
+    /*void 'T01 : test folder tree'() {
         when:
         GET('folders', STRING_ARG)
 
@@ -574,5 +574,5 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         if (!id) return
         DELETE("$endpoint/$id?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
-    }
-}
+    }*/
+//}

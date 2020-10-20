@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -33,7 +33,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NOT_FOUND*/
 
 /**
  * @see ReferenceDataTypeController* Controller: dataType
@@ -45,7 +45,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
  *
  *  | POST   | /api/referenceDataModels/${referenceDataModelId}/dataTypes/${otherReferenceDataModelId}/${dataTypeId} | Action: copyDataType |
  */
-@Integration
+/*@Integration
 @Slf4j
 class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDataType> {
 
@@ -323,4 +323,4 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         cleanup:
         cleanUpData(id)
     }
-}
+}*/

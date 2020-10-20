@@ -315,7 +315,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
         // If theres no DataType then copy the original's DataType into the DataModel
         if (!dataType) {
-            dataType = referenceDataTypeService.copyDataType(copiedReferenceDataModel, original.referenceDataType, copier,
+            dataType = referenceDataTypeService.copyReferenceDataType(copiedReferenceDataModel, original.referenceDataType, copier,
                                                     userSecurityPolicyManager)
         }
 

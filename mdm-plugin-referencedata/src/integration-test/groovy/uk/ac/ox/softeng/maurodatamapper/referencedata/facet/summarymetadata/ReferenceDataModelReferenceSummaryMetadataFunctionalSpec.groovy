@@ -19,8 +19,7 @@
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -31,31 +30,30 @@ import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-import spock.lang.Shared*/
-
+import spock.lang.Shared
+*/
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataController
  */
 /*@Integration
 @Slf4j
-class DataModelReferenceSummaryMetadataFunctionalSpec extends CatalogueItemReferenceSummaryMetadataFunctionalSpec {
+class ReferenceDataModelReferenceSummaryMetadataFunctionalSpec extends CatalogueItemReferenceSummaryMetadataFunctionalSpec {
 
     @Shared
-    DataModel dataModel
+    ReferenceDataModel referenceDataModel
     @Shared
-    DataClass dataClass
+    ReferenceDataElement referenceDataElement
     @Shared
-    ReferenceDataElement dataElement
-    @Shared
-    ReferenceDataType dataType
+    ReferenceDataType referenceDataType
+
 
     String getCatalogueItemCopyPath() {
-        "dataModels/${sourceDataModelId}/newForkModel"
+        "referenceDataModels/${sourceDataModelId}/newForkModel"
     }
 
     @Transactional
     String getSourceDataModelId() {
-        DataModel.findByLabel('Functional Test DataModel').id.toString()
+        ReferenceDataModel.findByLabel('Functional Test ReferenceDataModel').id.toString()
     }
 
     @Transactional
@@ -67,31 +65,29 @@ class DataModelReferenceSummaryMetadataFunctionalSpec extends CatalogueItemRefer
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
+        referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
-        dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                  dataModel: dataModel).save(flush: true)
-        dataType = new ReferencePrimitiveType(label: 'string', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                     dataModel: dataModel).save(flush: true)
-        dataElement = new ReferenceDataElement(label: 'Functional Test DataElement', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                      dataModel: dataModel, dataClass: dataClass, referenceDataType: dataType).save(flush: true)
+        referenceDataType = new ReferencePrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
+                                     referenceDataModel: referenceDataModel).save(flush: true)
+        referenceDataElement = new ReferenceDataElement(label: 'Functional Test ReferenceDataElement', createdBy: 'functionalTest@test.com',
+                                      referenceDataModel: referenceDataModel, referenceDataType: referenceDataType).save(flush: true)
         sessionFactory.currentSession.flush()
     }
 
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec PluginCatalogueItemFunctionalSpec')
-        cleanUpResources(DataModel, Folder, DataClass, ReferenceDataElement, ReferenceDataType)
+        cleanUpResources(ReferenceDataModel, Folder, ReferenceDataElement, ReferenceDataType)
     }
 
     @Override
     UUID getCatalogueItemId() {
-        dataModel.id
+        referenceDataModel.id
     }
 
     @Override
     String getCatalogueItemDomainResourcePath() {
-        'dataModels'
+        'referenceDataModels'
     }
 
     @Override

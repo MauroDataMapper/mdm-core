@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.item
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -35,7 +35,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.OK*/
 
 /**
  * @see ReferenceDataElementController* Controller: dataElement
@@ -55,7 +55,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  suggestLinks TODO
  *
  */
-@Integration
+/*@Integration
 @Slf4j
 class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<ReferenceDataElement> {
 
@@ -86,7 +86,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
-        /*log.debug('Check and setup test data')
+        log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
         checkAndSave(folder)
         Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
@@ -121,7 +121,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         assert otherReferenceDataModelId
         assert dataClassId
         assert dataTypeId
-        assert otherDataTypeId*/
+        assert otherDataTypeId
     }
 
     @Transactional
@@ -773,4 +773,4 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     '''
         }
     */
-}
+//}

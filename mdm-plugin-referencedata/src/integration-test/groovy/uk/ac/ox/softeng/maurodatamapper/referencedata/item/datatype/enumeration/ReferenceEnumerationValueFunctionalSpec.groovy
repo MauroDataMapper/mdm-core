@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -34,7 +34,7 @@ import spock.lang.Shared
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.OK*/
 
 /**
  * @see ReferenceEnumerationValueController* Controller: enumerationValue
@@ -44,7 +44,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  | PUT    | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues/${id} | Action: update |
  *  | GET    | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues/${id} | Action: show   |
  */
-@Integration
+/*@Integration
 @Slf4j
 class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceEnumerationValue> {
 
@@ -182,8 +182,8 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
         // Therefore the first time this runs there will be no resource
         onceBeforeHasRun ? 1 : 0
     }
-
-    void 'test saving with category'() {
+*/
+    /*void 'test saving with category'() {
         when: 'The save action is executed with valid data'
         POST('', [
             key     : 'O',
@@ -500,5 +500,5 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
         response.body().items[1].key == 'C'
         response.body().items[2].key == 'D'
         response.body().items[3].key == 'B'
-    }
-}
+    }*/
+//}

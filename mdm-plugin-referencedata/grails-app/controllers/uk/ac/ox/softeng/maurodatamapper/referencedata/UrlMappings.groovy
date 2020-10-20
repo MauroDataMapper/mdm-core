@@ -109,6 +109,14 @@ class UrlMappings {
                 put "/referenceDataModels/$referenceDataModelId"(controller: 'referenceDataModel', action: 'changeFolder')
             }
 
+            /**
+             * Summary metadata
+             */
+            group "/$catalogueItemDomainType/$catalogueItemId", {
+                '/summaryMetadata'(resources: 'referenceSummaryMetadata', excludes: DEFAULT_EXCLUDES) {
+                    '/summaryMetadataReports'(resources: 'referenceSummaryMetadataReport', excludes: DEFAULT_EXCLUDES)
+                }
+            }
 
         }
     }
