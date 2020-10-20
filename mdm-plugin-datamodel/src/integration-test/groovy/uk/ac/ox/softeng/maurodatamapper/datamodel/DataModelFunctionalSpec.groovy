@@ -1631,6 +1631,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("$target/path/dm%3A%7Cdc%3AmodifyLeftOnly")
         verifyResponse OK, response
         modifyLeftOnly = responseBody().id
+        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AdeleteLeftOnlyFromExistingClass", MAP_ARG, true)
+        verifyResponse OK, response
+        deleteLeftOnlyFromExistingClass = responseBody().id
 
         GET("$source/mergeDiff/$target", STRING_ARG)
 
@@ -1751,7 +1754,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
-                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly', 'addLeftToExistingClass'] as Set
+                                              'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly'] as Set
         responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
         responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
         responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource

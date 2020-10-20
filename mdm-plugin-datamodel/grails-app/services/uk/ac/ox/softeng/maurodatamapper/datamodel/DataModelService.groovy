@@ -389,7 +389,7 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData mergeObjectDiff,
-                        UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService catalogueItemService = this, UUID parentId = null) {
+                        UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService catalogueItemService = this) {
 
         CatalogueItem catalogueItem = catalogueItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
 
@@ -399,9 +399,6 @@ class DataModelService extends ModelService<DataModel> {
                     mergeFieldDiff ->
                         if (mergeFieldDiff.value) {
                             catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-                            //TODO remove if not necessary
-                            //                            if (catalogueItem.validate()) catalogueItemService.save(catalogueItem, flush: true,
-                            //                            validate: false)
                         } else {
                             // if no value, then some combination of created, deleted, and modified may exist
                             ModelItemService modelItemService = modelItemServices.find { it.resourcePathElement == mergeFieldDiff.fieldName }
@@ -409,24 +406,25 @@ class DataModelService extends ModelService<DataModel> {
                             // apply deletions of children to target object
                             mergeFieldDiff.deleted.each {
                                 obj ->
-                                    modelItemService.delete(rightModel.getProperty(mergeFieldDiff.fieldName).find { it.id == obj.id } as ModelItem)
+                                    def modelItem = modelItemService.get(obj.id) as ModelItem
+                                    modelItemService.delete(modelItem)
                             }
+                            def parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
                             // copy additions from source to target object
                             mergeFieldDiff.created.each {
                                 obj ->
+                                    def modelItem = modelItemService.get(obj.id) as ModelItem
                                     modelItemService.copy(rightModel,
-                                                          leftModel.getProperty(mergeFieldDiff.fieldName).find { it.id == obj.id },
+                                                          modelItem,
                                                           userSecurityPolicyManager,
                                                           parentId)
                             }
                             // for modifications, recursively call this method
-                            def nestedParentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
                             mergeFieldDiff.modified.each {
                                 obj ->
                                     mergeInto(leftModel, rightModel, obj,
                                               userSecurityPolicyManager,
-                                              modelItemService,
-                                              nestedParentId)
+                                              modelItemService)
                             }
                         }
                 }
