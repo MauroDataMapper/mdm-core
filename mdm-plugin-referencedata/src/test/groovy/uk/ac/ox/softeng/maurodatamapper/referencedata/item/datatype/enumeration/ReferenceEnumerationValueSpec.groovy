@@ -29,21 +29,21 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationValue> implements DomainUnitTest<ReferenceEnumerationValue> {
 
-    ReferenceEnumerationType enumerationType
+    ReferenceEnumerationType referenceEnumerationType
     ReferenceDataModel dataSet
 
     def setup() {
         log.debug('Setting up EnumerationValueSpec unit')
         mockDomains(ReferenceDataModel, ReferenceEnumerationType)
         dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
-        enumerationType = new ReferenceEnumerationType(createdByUser: admin, label: 'et', referenceReferenceDataModel: dataSet)
-        dataSet.addToDataTypes(enumerationType)
+        referenceEnumerationType = new ReferenceEnumerationType(createdByUser: admin, label: 'et', referenceReferenceDataModel: dataSet)
+        dataSet.addToReferenceDataTypes(referenceEnumerationType)
         checkAndSave(dataSet)
     }
 
     @Override
     void setValidDomainOtherValues() {
-        enumerationType.addToReferenceEnumerationValues(domain)
+        referenceEnumerationType.addToReferenceEnumerationValues(domain)
         domain.key = 'ev_key'
         domain.value = 'ev_value'
         domain
@@ -59,7 +59,7 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
     @Override
     ReferenceEnumerationValue createValidDomain(String label) {
         ReferenceEnumerationValue ev = new ReferenceEnumerationValue(key: label, value: 'another_value', createdBy: editor.emailAddress)
-        enumerationType.addToReferenceEnumerationValues(ev)
+        referenceEnumerationType.addToReferenceEnumerationValues(ev)
         ev
     }
 
@@ -70,7 +70,7 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
 
     @Override
     String getModelFieldName() {
-        'enumerationType'
+        'referenceEnumerationType'
     }
 
     @Override
@@ -81,12 +81,12 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
     @Override
     void wipeModel() {
         domain.breadcrumbTree = null
-        domain.enumerationType = null
+        domain.referenceEnumerationType = null
     }
 
     @Override
     void setModel(ReferenceEnumerationValue domain, Model model) {
-        domain.enumerationType = enumerationType
+        domain.referenceEnumerationType = referenceEnumerationType
     }
 
     @Override
