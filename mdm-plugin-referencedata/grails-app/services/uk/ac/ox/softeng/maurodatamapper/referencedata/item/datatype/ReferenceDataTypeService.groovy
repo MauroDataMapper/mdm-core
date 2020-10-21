@@ -72,20 +72,20 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         ReferenceDataType.deleteAll(catalogueItems)
     }
 
-    void delete(ReferenceDataType dataType, boolean flush = false) {
-        if (!dataType) return
-        dataType.referenceDataModel.removeFromReferenceDataTypes(dataType)
-        dataType.breadcrumbTree.removeFromParent()
+    void delete(ReferenceDataType referenceDataType, boolean flush = false) {
+        if (!referenceDataType) return
+        referenceDataType.referenceDataModel.removeFromReferenceDataTypes(referenceDataType)
+        referenceDataType.breadcrumbTree.removeFromParent()
 
-        List<ReferenceDataElement> dataElements = referenceDataElementService.findAllByDataType(dataType)
-        dataElements.each { dataElementService.delete(it) }
+        List<ReferenceDataElement> referenceDataElements = referenceDataElementService.findAllByReferenceDataType(referenceDataType)
+        referenceDataElements.each { referenceDataElementService.delete(it) }
 
-        switch (dataType.domainType) {
+        switch (referenceDataType.domainType) {
             case ReferenceDataType.PRIMITIVE_DOMAIN_TYPE:
-                referencePrimitiveTypeService.delete(dataType as ReferencePrimitiveType, flush)
+                referencePrimitiveTypeService.delete(referenceDataType as ReferencePrimitiveType, flush)
                 break
             case ReferenceDataType.ENUMERATION_DOMAIN_TYPE:
-                referenceEnumerationTypeService.delete(dataType as ReferenceEnumerationType, flush)
+                referenceEnumerationTypeService.delete(referenceDataType as ReferenceEnumerationType, flush)
         }
     }
 
@@ -293,8 +293,8 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
                 break
             case ReferenceDataType.ENUMERATION_DOMAIN_TYPE:
                 copy = new ReferenceEnumerationType()
-                original.enumerationValues.each { ev ->
-                    copy.addToEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
+                original.referenceEnumerationValues.each { ev ->
+                    copy.addToReferenceEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
                 }
                 break
             default:

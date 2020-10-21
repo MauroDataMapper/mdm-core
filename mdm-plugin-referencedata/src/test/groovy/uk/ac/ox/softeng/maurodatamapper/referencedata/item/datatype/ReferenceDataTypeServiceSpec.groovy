@@ -42,72 +42,44 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
     def setup() {
         log.debug('Setting up DataTypeServiceSpec Unit')
         mockArtefact(ReferenceDataElementService)
-        mockArtefact(ReferenceTypeService)
+        mockArtefact(ReferenceDataTypeService)
         mockArtefact(ReferencePrimitiveTypeService)
         mockArtefact(ReferenceEnumerationTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
-        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
+        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
         referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
 
         ReferencePrimitiveType primitiveType = new ReferencePrimitiveType(createdByUser: editor, label: 'varchar')
 
-        referenceDataModel.addToDataTypes(primitiveType)
-        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceDataModel.addToReferenceDataTypes(primitiveType)
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
 
         ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdByUser: editor, label: 'et1')
             .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
             .addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdByUser: admin, key: 'key2', value: 'val2')
             )
-        referenceDataModel.addToDataTypes(et1)
-        referenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'moreet')
+        referenceDataModel.addToReferenceDataTypes(et1)
+        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'moreet')
                                      .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
         )
-        referenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
+        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
                                      .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
-                                     .addToEnumerationValues(key: 'N', value: 'No')
-                                     .addToEnumerationValues(key: 'U', value: 'Unknown'))
+                                     .addToReferenceEnumerationValues(key: 'N', value: 'No')
+                                     .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
 
         
 
-        /*ReferenceType refType = new ReferenceType(createdByUser: editor, label: 'Unit parent')
-        parent.addToReferenceTypes(refType)
-        referenceDataModel.addToDataTypes(refType)
-
-        ReferenceDataElement el1 = new ReferenceDataElement(createdByUser: editor, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1, referenceDataType: refType)
-        parent.addToDataElements(el1)
-
-        ReferenceType refType2 = new ReferenceType(createdByUser: editor, label: 'dataclass')
-        dataClass.addToReferenceTypes(refType2)
-        referenceDataModel.addToDataTypes(refType2)
-
-        ReferenceDataElement el2 = new ReferenceDataElement(createdByUser: editor, label: 'childEl', minMultiplicity: 1, maxMultiplicity: 1)
-        refType2.addToDataElements(el2)
-        child.addToDataElements(el2)
-
-        ReferenceDataElement el3 = new ReferenceDataElement(createdByUser: editor, label: 'anotherParentEl', minMultiplicity: 1, maxMultiplicity: 1)
-        refType.addToDataElements(el3)
-        added.addToDataElements(el3)
-
-        added.addToDataElements(new ReferenceDataElement(createdByUser: editor, label: 'varcharel', minMultiplicity: 1, maxMultiplicity: 1,
-                                                referenceDataType: primitiveType))
-
         checkAndSave(referenceDataModel)
 
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetCatalogueItem: dataClass)
-        parent.addToSemanticLinks(link)
-
-        checkAndSave(link)
-
-        verifyBreadcrumbTrees()*/
+        verifyBreadcrumbTrees()
 
         id = primitiveType.id
-
     }
 
     void "test get"() {
@@ -118,43 +90,47 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
 
     void "test list"() {
 
+        //referenceDataTypes are varchar, string, integer, et1, moreet, yesnounknown
+        //Ordered by label: et1, integer, moreet, string, varchar, yesnounknown
         when:
         List<ReferenceDataType> dataTypeList = service.list(max: 2, offset: 2, sort: 'label')
 
         then:
         dataTypeList.size() == 2
 
+        //At offset 2 we expect to see moreet, varchar
         and:
-        dataTypeList[0].label == 'et1'
-        dataTypeList[0].domainType == 'EnumerationType'
+        dataTypeList[0].label == 'moreet'
+        dataTypeList[0].domainType == 'ReferenceEnumerationType'
 
         and:
-        dataTypeList[1].label == 'integer'
-        dataTypeList[1].domainType == 'PrimitiveType'
+        dataTypeList[1].label == 'string'
+        dataTypeList[1].domainType == 'ReferencePrimitiveType'
     }
 
     void "test count"() {
         expect:
-        service.count() == 8
+        service.count() == 6
     }
 
-    void "test delete"() {
+    void "test delete ReferencePrimitiveType"() {
         given:
         ReferenceDataType pt = service.get(id)
 
         expect:
-        service.count() == 8
-        ReferenceDataElement.findByLabel('varcharel')
+        service.count() == 6
+        ReferenceDataType.findByLabel('varchar')
 
         when:
         service.delete(pt)
 
         then:
-        ReferenceDataType.count() == 7
+        ReferenceDataType.count() == 5
 
         and:
-        !ReferenceDataElement.findByLabel('varcharel')
+        !ReferenceDataType.findByLabel('varchar')      
     }
+  
 
     void "test save"() {
 
@@ -175,7 +151,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         checkAndSave(copyModel)
 
         when:
-        ReferenceDataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
+        ReferenceDataType copy = service.copyReferenceDataType(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -207,7 +183,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         checkAndSave(copyModel)
 
         when:
-        ReferenceDataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
+        ReferenceDataType copy = service.copyReferenceDataType(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(copyModel)
@@ -219,48 +195,15 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         then:
         copy.label == original.label
         copy.description == original.description
-        copy.enumerationValues.size() == original.referenceEnumerationValues.size()
+        copy.referenceEnumerationValues.size() == original.referenceEnumerationValues.size()
 
         and:
-        original.referenceEnumerationValues.every { o -> copy.enumerationValues.any { c -> c.key == o.key && c.value == o.value } }
+        original.referenceEnumerationValues.every { o -> copy.referenceEnumerationValues.any { c -> c.key == o.key && c.value == o.value } }
 
         and:
         copy.createdBy == editor.emailAddress
         copy.metadata?.size() == original.metadata?.size()
         copy.classifiers == original.classifiers
-
-        and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
-    }
-
-    void 'test copying reference datatype'() {
-        given:
-        ReferenceDataType original = ReferenceType.findByLabel('dataclass')
-        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
-
-        expect:
-        checkAndSave(copyModel)
-
-        when:
-        ReferenceDataType copy = service.copyDataType(copyModel, original, editor, userSecurityPolicyManager)
-        checkAndSave(copyModel)
-
-        then:
-        thrown(InternalSpockError)
-
-        and:
-        copyModel.errors.getFieldError('dataTypes[0].referenceClass').code == 'nullable'
-
-        and:
-        copy.label == original.label
-        copy.description == original.description
-
-        and:
-        copy.createdBy == editor.emailAddress
-        !copy.metadata
-        !original.metadata
-        !copy.classifiers
-        !original.classifiers
 
         and:
         copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
