@@ -76,52 +76,28 @@ class ReferencePrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceU
 
         ReferencePrimitiveType primitiveType = new ReferencePrimitiveType(createdByUser: editor, label: 'varchar')
 
-        referenceReferenceDataModel.addToDataTypes(primitiveType)
-        referenceReferenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceReferenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceReferenceDataModel.addToReferenceDataTypes(primitiveType)
+        referenceReferenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
+        referenceReferenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
 
         ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdByUser: editor, label: 'et1')
             .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
             .addToReferenceEnumerationValues(new ReferenceEnumerationValue(createdByUser: admin, key: 'key2', value: 'val2')
             )
-        referenceReferenceDataModel.addToDataTypes(et1)
-        referenceReferenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'et2')
+        referenceReferenceDataModel.addToReferenceDataTypes(et1)
+        referenceReferenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'et2')
                                      .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
         )
-        referenceReferenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
+        referenceReferenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
                                      .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
-                                     .addToEnumerationValues(key: 'N', value: 'No')
-                                     .addToEnumerationValues(key: 'U', value: 'Unknown'))
+                                     .addToReferenceEnumerationValues(key: 'N', value: 'No')
+                                     .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
 
-
-        /*ReferenceDataType refType = new ReferenceDataType(createdByUser: editor, label: 'Unit parent')
-        parent.addToReferenceDataTypes(refType)
-        referenceReferenceDataModel.addToDataTypes(refType)
-
-        ReferenceDataElement el1 = new ReferenceDataElement(createdByUser: editor, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1, referenceDataType: refType)
-        parent.addToDataElements(el1)
-
-        ReferenceDataType refType2 = new ReferenceDataType(createdByUser: editor, label: 'dataclass')
-        dataClass.addToReferenceDataTypes(refType2)
-        referenceReferenceDataModel.addToDataTypes(refType2)
-
-        ReferenceDataElement el2 = new ReferenceDataElement(createdByUser: editor, label: 'childEl', minMultiplicity: 1, maxMultiplicity: 1)
-        refType2.addToDataElements(el2)
-        child.addToDataElements(el2)
-
-        ReferenceDataElement el3 = new ReferenceDataElement(createdByUser: editor, label: 'anotherParentEl', minMultiplicity: 1, maxMultiplicity: 1)
-        refType.addToDataElements(el3)
-        added.addToDataElements(el3)
 
         checkAndSave(referenceReferenceDataModel)
-
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetCatalogueItem: dataClass)
-        parent.addToSemanticLinks(link)
-
-        checkAndSave(link)*/
 
         id = primitiveType.id
 

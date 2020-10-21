@@ -31,7 +31,7 @@ class ReferenceDataTypeInterceptorSpec extends ContainedResourceInterceptorUnitS
 
     def setup() {
         log.debug('Setting up ReferenceDataTypeInterceptorSpec')
-        mockDomains(DataModel, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue)
+        mockDomains(ReferenceDataModel, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue)
     }
 
     @Override

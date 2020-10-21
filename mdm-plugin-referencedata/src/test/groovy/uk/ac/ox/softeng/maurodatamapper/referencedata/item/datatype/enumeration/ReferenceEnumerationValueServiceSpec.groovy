@@ -42,55 +42,33 @@ class ReferenceEnumerationValueServiceSpec extends CatalogueItemServiceSpec impl
     def setup() {
         log.debug('Setting up EnumerationValueServiceSpec Unit')
         mockArtefact(ReferenceSummaryMetadataService)
-        mockDomains(ReferenceDataModel, DataClass, ReferenceDataType, ReferencePrimitiveType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
+        mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
         referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
 
-        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
         ReferenceEnumerationValue ev1 = new ReferenceEnumerationValue(createdByUser: admin, key: 'key2', value: 'val2')
         ReferenceEnumerationType et1 = new ReferenceEnumerationType(createdByUser: editor, label: 'et1')
             .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
             .addToReferenceEnumerationValues(ev1)
-        referenceDataModel.addToDataTypes(et1)
-        referenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'et2')
+        referenceDataModel.addToReferenceDataTypes(et1)
+        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: editor, label: 'et2')
                                      .addToReferenceEnumerationValues(createdByUser: admin, key: 'key1', value: 'val1')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
-                                     .addToEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key2', value: 'val2')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key3', value: 'val3')
+                                     .addToReferenceEnumerationValues(createdByUser: admin, key: 'key4', value: 'val4')
         )
-        referenceDataModel.addToDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
+        referenceDataModel.addToReferenceDataTypes(new ReferenceEnumerationType(createdByUser: admin, label: 'yesnounknown')
                                      .addToReferenceEnumerationValues(key: 'Y', value: 'Yes')
-                                     .addToEnumerationValues(key: 'N', value: 'No')
-                                     .addToEnumerationValues(key: 'U', value: 'Unknown'))
+                                     .addToReferenceEnumerationValues(key: 'N', value: 'No')
+                                     .addToReferenceEnumerationValues(key: 'U', value: 'Unknown'))
 
-
-
-        /*ReferenceDataElement el1 = new ReferenceDataElement
-            (createdByUser: editor, label: 'parentel', minMultiplicity: 1, maxMultiplicity: 1, referenceDataType: refType)
-        parent.addToDataElements(el1)
-
-        ReferenceDataElement el2 = new ReferenceDataElement
-            (createdByUser: editor, label: 'childEl', minMultiplicity: 1, maxMultiplicity: 1)
-        refType2.addToDataElements(el2)
-        child.addToDataElements(el2)
-
-        ReferenceDataElement el3 = new ReferenceDataElement(createdByUser: editor, label: 'anotherParentEl', minMultiplicity: 1, maxMultiplicity: 1)
-        refType.addToDataElements(el3)
-        added.addToDataElements(el3)
 
         checkAndSave(referenceDataModel)
 
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetCatalogueItem: dataClass)
-        parent.addToSemanticLinks(link)
-
-        checkAndSave(link)
-
-        verifyBreadcrumbTrees()*/
-
         id = ev1.id
-
     }
 
     void "test get"() {
@@ -137,11 +115,11 @@ class ReferenceEnumerationValueServiceSpec extends CatalogueItemServiceSpec impl
     void "test save"() {
 
         when:
-        ReferenceEnumerationValue enumerationValue = new ReferenceEnumerationValue(createdByUser: reader2, key: 'st', value: 'saving test',
-                                                                 enumerationType: ReferenceEnumerationType.findByLabel('yesnounknown'))
-        service.save(enumerationValue)
+        ReferenceEnumerationValue referenceEnumerationValue = new ReferenceEnumerationValue(createdByUser: reader2, key: 'st', value: 'saving test',
+                                                                 referenceEnumerationType: ReferenceEnumerationType.findByLabel('yesnounknown'))
+        service.save(referenceEnumerationValue)
 
         then:
-        enumerationValue.id != null
+        referenceEnumerationValue.id != null
     }
 }
