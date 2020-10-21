@@ -239,8 +239,8 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         ReferenceDataElement.byReferenceDataModelIdAndId(referenceDataModelId, id).find()
     }
 
-    ReferenceDataElement findByDataTypeIdAndId(Serializable dataTypeId, Serializable id) {
-        ReferenceDataElement.byDataTypeIdAndId(dataTypeId, id).find()
+    ReferenceDataElement findByReferenceDataTypeIdAndId(Serializable referenceDataTypeId, Serializable id) {
+        ReferenceDataElement.byReferenceDataTypeIdAndId(referenceDataTypeId, id).find()
     }
 
     List<ReferenceDataElement> findAllByReferenceDataModelId(Serializable referenceDataModelId, Map pagination = [:]) {
@@ -255,12 +255,12 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         ReferenceDataElement.byReferenceDataModelId(referenceDataModelId).join('dataType').sort('label').list()
     }
 
-    List<ReferenceDataElement> findAllByDataTypeId(Serializable dataTypeId, Map pagination = [:]) {
-        ReferenceDataElement.withFilter(ReferenceDataElement.byDataTypeId(dataTypeId), pagination).list(pagination)
+    List<ReferenceDataElement> findAllByReferenceDataTypeId(Serializable referenceDataTypeId, Map pagination = [:]) {
+        ReferenceDataElement.withFilter(ReferenceDataElement.byReferenceDataTypeId(referenceDataTypeId), pagination).list(pagination)
     }
 
-    List<ReferenceDataElement> findAllByDataType(ReferenceDataType dataType) {
-        ReferenceDataElement.byDataType(dataType).list()
+    List<ReferenceDataElement> findAllByReferenceDataType(ReferenceDataType referenceDataType) {
+        ReferenceDataElement.byReferenceDataType(referenceDataType).list()
     }
 
     List<ReferenceDataElement> findAllByReferenceDataModel(ReferenceDataModel referenceDataModel) {
@@ -272,12 +272,12 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         ReferenceDataElement.byReferenceDataModelIdAndLabelIlike(referenceDataModelId, labelSearch).list(pagination)
     }
 
-    Number countByDataTypeId(Serializable dataTypeId) {
-        ReferenceDataElement.byDataTypeId(dataTypeId).count()
+    Number countByReferenceDataTypeId(Serializable referenceDataTypeId) {
+        ReferenceDataElement.byReferenceDataTypeId(referenceDataTypeId).count()
     }
 
-    Number countByReferenceDataModelId(Serializable dataModelId) {
-        ReferenceDataElement.byReferenceDataModelId(dataModelId).count()
+    Number countByReferenceDataModelId(Serializable referenceDataModelId) {
+        ReferenceDataElement.byReferenceDataModelId(referenceDataModelId).count()
     }
 
 

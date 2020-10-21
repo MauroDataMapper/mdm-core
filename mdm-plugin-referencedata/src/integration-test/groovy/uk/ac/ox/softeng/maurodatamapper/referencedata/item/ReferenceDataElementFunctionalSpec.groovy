@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/*package uk.ac.ox.softeng.maurodatamapper.referencedata.item
+package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -35,7 +35,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.OK*/
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * @see ReferenceDataElementController* Controller: dataElement
@@ -55,7 +55,7 @@ import static io.micronaut.http.HttpStatus.OK*/
  *  suggestLinks TODO
  *
  */
-/*@Integration
+@Integration
 @Slf4j
 class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<ReferenceDataElement> {
 
@@ -66,19 +66,13 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     UUID otherReferenceDataModelId
 
     @Shared
-    UUID dataClassId
+    UUID referenceDataTypeId
 
     @Shared
-    UUID otherDataClassId
+    UUID differentReferenceDataTypeId
 
     @Shared
-    UUID dataTypeId
-
-    @Shared
-    UUID differentDataTypeId
-
-    @Shared
-    UUID otherDataTypeId
+    UUID otherReferenceDataTypeId
 
     @Shared
     Folder folder
@@ -99,29 +93,22 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
                                                  folder: folder, authority: testAuthority).save(flush: true)
         otherReferenceDataModelId = otherReferenceDataModel.id
 
-        DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
-                                            referenceDataModel: referenceDataModel).save(flush: true)
-        dataClassId = dataClass.id
-        DataClass otherDataClass = new DataClass(label: 'Functional Test DataClass 2', createdBy: FUNCTIONAL_TEST,
-                                                 referenceDataModel: otherReferenceDataModel).save(flush: true)
-        otherDataClassId = otherDataClass.id
 
-        dataTypeId = new ReferencePrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
+        referenceDataTypeId = new ReferencePrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                        referenceDataModel: referenceDataModel).save(flush: true).id
 
-        differentDataTypeId = new ReferencePrimitiveType(label: 'text', createdBy: FUNCTIONAL_TEST,
+        differentReferenceDataTypeId = new ReferencePrimitiveType(label: 'text', createdBy: FUNCTIONAL_TEST,
                                                 referenceDataModel: referenceDataModel).save(flush: true).id
 
-        otherDataTypeId = new ReferencePrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
+        otherReferenceDataTypeId = new ReferencePrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                             referenceDataModel: otherReferenceDataModel).save(flush: true).id
 
         sessionFactory.currentSession.flush()
 
         assert referenceDataModelId
         assert otherReferenceDataModelId
-        assert dataClassId
-        assert dataTypeId
-        assert otherDataTypeId
+        assert referenceDataTypeId
+        assert otherReferenceDataTypeId
     }
 
     @Transactional
@@ -132,25 +119,12 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     }
 
     @Override
-    void cleanUpData() {
-        if (referenceDataModelId) {
-            GET(getResourcePath(otherReferenceDataModelId, otherDataClassId), MAP_ARG, true)
-            def items = response.body().items
-            items.each {i ->
-                DELETE("${getResourcePath(otherReferenceDataModelId, otherDataClassId)}/$i.id", MAP_ARG, true)
-                assert response.status() == HttpStatus.NO_CONTENT
-            }
-            super.cleanUpData()
-        }
-    }
-
-    @Override
     String getResourcePath() {
-        getResourcePath(referenceDataModelId, dataClassId)
+        getResourcePath(referenceDataModelId)
     }
 
-    String getResourcePath(UUID referenceDataModelId, UUID dataClassId) {
-        "referenceDataModels/${referenceDataModelId}/dataClasses/$dataClassId/dataElements"
+    String getResourcePath(UUID referenceDataModelId) {
+        "referenceDataModels/${referenceDataModelId}/referenceDataElements"
     }
 
     @Override
@@ -159,7 +133,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
             label          : 'Functional Test DataElement',
             maxMultiplicity: 2,
             minMultiplicity: 0,
-            dataType       : dataTypeId.toString()
+            referenceDataType       : referenceDataTypeId.toString()
         ]
     }
 
@@ -169,7 +143,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
             label          : UUID.randomUUID().toString(),
             maxMultiplicity: 2,
             minMultiplicity: 0,
-            dataType       : null
+            referenceDataType       : null
         ]
     }
 
@@ -184,11 +158,10 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
     String getExpectedShowJson() {
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "domainType": "DataElement",
+  "domainType": "ReferenceDataElement",
   "availableActions": ["delete","show","update"],
-  "dataClass": "${json-unit.matches:id}",
-  "dataType": {
-    "domainType": "PrimitiveType",
+  "referenceDataType": {
+    "domainType": "ReferencePrimitiveType",
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "string",
@@ -212,11 +185,6 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
       "finalised": false,
       "id": "${json-unit.matches:id}",
       "label": "Functional Test ReferenceDataModel"
-    },
-    {
-      "domainType": "DataClass",
-      "id": "${json-unit.matches:id}",
-      "label": "Functional Test DataClass"
     }
   ]
 }'''
@@ -228,75 +196,15 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         response.body().description == 'adding a description'
     }
 
-    /*void 'test copying from dataclass to other dataclass with existing datatype'() {
-        given:
-        POST('', validJson)
-        String id = response.body().id
 
-        expect:
-        response.status() == CREATED
-        id
-
-        when: 'trying to copy non-existent'
-        POST("${getResourcePath(otherReferenceDataModelId, otherDataClassId)}/$referenceDataModelId/$dataClassId/${UUID.randomUUID()}", [:], MAP_ARG, true)
-
-        then:
-        response.status() == NOT_FOUND
-
-        when: 'trying to copy valid'
-        POST("${getResourcePath(otherReferenceDataModelId, otherDataClassId)}/$referenceDataModelId/$dataClassId/$id", [:], MAP_ARG, true)
-
-        then:
-        response.status() == CREATED
-        response.body().id != id
-        response.body().label == validJson.label
-        response.body().availableActions == ['delete', 'show', 'update']
-        response.body().model == otherReferenceDataModelId.toString()
-        response.body().breadcrumbs.size() == 2
-        response.body().breadcrumbs[0].id == otherReferenceDataModelId.toString()
-        response.body().breadcrumbs[1].id == otherDataClassId.toString()
-        response.body().dataType.id == otherDataTypeId.toString()
-    }
-
-    void 'test copying from dataclass to other dataclass with unknown datatype'() {
-        given:
-        POST('', [
-            label          : 'Functional Test DataElement',
-            maxMultiplicity: 1,
-            minMultiplicity: 1,
-            dataType       : differentDataTypeId.toString()
-        ])
-        String id = response.body().id
-
-        expect:
-        response.status() == CREATED
-        id
-
-        when: 'trying to copy valid'
-        POST("${getResourcePath(otherReferenceDataModelId, otherDataClassId)}/$referenceDataModelId/$dataClassId/$id", [:], MAP_ARG, true)
-
-        then:
-        response.status() == CREATED
-        response.body().id != id
-        response.body().label == validJson.label
-        response.body().availableActions == ['delete', 'show', 'update']
-        response.body().model == otherReferenceDataModelId.toString()
-        response.body().breadcrumbs.size() == 2
-        response.body().breadcrumbs[0].id == otherReferenceDataModelId.toString()
-        response.body().breadcrumbs[1].id == otherDataClassId.toString()
-        response.body().dataType.id != otherDataTypeId.toString()
-        response.body().dataType.id != differentDataTypeId.toString()
-        response.body().dataType.label == 'text'
-    }
-
-    void 'test getting all DataElements for a known DataType'() {
+    void 'test getting all ReferenceDataElements for a known ReferenceDataType'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
         String id = response.body().id
 
         when:
-        GET("referenceDataModels/$referenceDataModelId/dataTypes/$dataTypeId/dataElements", MAP_ARG, true)
+        GET("referenceDataModels/$referenceDataModelId/referenceDataTypes/$referenceDataTypeId/referenceDataElements", MAP_ARG, true)
 
         then:
         response.status() == OK
@@ -306,7 +214,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         response.body().items[0].label == validJson.label
     }
 
-    void 'test creation of DataType alongside saving DataElement'() {
+    void 'test creation of ReferenceDataType alongside saving ReferenceDataElement'() {
 
         when: 'The save action is executed with valid data'
         POST('',
@@ -314,7 +222,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
                  label          : 'Functional Test DataElement',
                  maxMultiplicity: 2,
                  minMultiplicity: 1,
-                 dataType       : [
+                 referenceDataType       : [
                      label     : 'Functional Test DataType',
                      domainType: ReferenceDataType.PRIMITIVE_DOMAIN_TYPE
                  ]
@@ -323,11 +231,10 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "domainType": "DataElement",
+  "domainType": "ReferenceDataElement",
   "availableActions": ["delete","show","update"],
-  "dataClass": "${json-unit.matches:id}",
-  "dataType": {
-    "domainType": "PrimitiveType",
+  "referenceDataType": {
+    "domainType": "ReferencePrimitiveType",
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType",
@@ -351,18 +258,13 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
       "finalised": false,
       "id": "${json-unit.matches:id}",
       "label": "Functional Test ReferenceDataModel"
-    },
-    {
-      "domainType": "DataClass",
-      "id": "${json-unit.matches:id}",
-      "label": "Functional Test DataClass"
     }
   ]
 }'''
 
     }
 
-    void 'test creation of DataType alongside updating DataElement'() {
+   void 'test creation of ReferenceDataType alongside updating ReferenceDataElement'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
@@ -370,7 +272,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
 
         when: 'The update action is executed with valid data'
         PUT(id, [
-            dataType: [
+            referenceDataType: [
                 label     : 'Functional Test DataType 2',
                 domainType: ReferenceDataType.PRIMITIVE_DOMAIN_TYPE
             ]
@@ -379,11 +281,10 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         then: 'The response is correct'
         verifyJsonResponse OK, '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "domainType": "DataElement",
+  "domainType": "ReferenceDataElement",
   "availableActions": ["delete","show","update"],
-  "dataClass": "${json-unit.matches:id}",
-  "dataType": {
-    "domainType": "PrimitiveType",
+  "referenceDataType": {
+    "domainType": "ReferencePrimitiveType",
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType 2",
@@ -407,18 +308,13 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
       "finalised": false,
       "id": "${json-unit.matches:id}",
       "label": "Functional Test ReferenceDataModel"
-    },
-    {
-      "domainType": "DataClass",
-      "id": "${json-unit.matches:id}",
-      "label": "Functional Test DataClass"
     }
   ]
 }'''
 
     }
 
-    void 'test creation of Reference DataType alongside saving DataElement'() {
+    void 'test creation of Reference DataType alongside saving ReferenceDataElement'() {
 
         when: 'The save action is executed with valid data'
         POST('',
@@ -426,21 +322,20 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
                  label          : 'Functional Test DataElement',
                  maxMultiplicity: 2,
                  minMultiplicity: 1,
-                 dataType       : [
+                 referenceDataType       : [
                      label         : 'Functional Test DataType 3',
-                     domainType    : ReferenceDataType.REFERENCE_DOMAIN_TYPE,
-                     referenceClass: dataClassId
+                     domainType    : ReferenceDataType.PRIMITIVE_DOMAIN_TYPE,
+                     referenceDataModel: referenceDataModelId
                  ]
              ], STRING_ARG)
 
         then: 'The response is correct'
         verifyJsonResponse CREATED, '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "domainType": "DataElement",
+  "domainType": "ReferenceDataElement",
   "availableActions": ["delete","show","update"],
-  "dataClass": "${json-unit.matches:id}",
-  "dataType": {
-    "domainType": "ReferenceType",
+  "referenceDataType": {
+    "domainType": "ReferencePrimitiveType",
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
     "label": "Functional Test DataType 3",
@@ -451,21 +346,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         "id": "${json-unit.matches:id}",
         "label": "Functional Test ReferenceDataModel"
       }
-    ],
-    "referenceClass": {
-        "domainType": "DataClass",
-        "model": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataClass",
-        "breadcrumbs": [
-          {
-            "domainType": "ReferenceDataModel",
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Functional Test ReferenceDataModel"
-          }
-        ]
-      }
+    ]
   },
   "model": "${json-unit.matches:id}",
   "maxMultiplicity": 2,
@@ -478,11 +359,6 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
       "finalised": false,
       "id": "${json-unit.matches:id}",
       "label": "Functional Test ReferenceDataModel"
-    },
-    {
-      "domainType": "DataClass",
-      "id": "${json-unit.matches:id}",
-      "label": "Functional Test DataClass"
     }
   ]
 }'''
@@ -496,15 +372,15 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
                  label          : 'Functional Test Reference Type DataElement',
                  maxMultiplicity: 2,
                  minMultiplicity: 1,
-                 dataType       : [
+                 referenceDataType       : [
                      label         : 'Reference Test DataType',
-                     domainType    : ReferenceDataType.REFERENCE_DOMAIN_TYPE,
-                     referenceClass: dataClassId.toString()
+                     domainType    : ReferenceDataType.PRIMITIVE_DOMAIN_TYPE,
+                     referenceDataModel: referenceDataModelId
                  ]
              ])
         verifyResponse CREATED, response
         String id = response.body().id
-        String dtId = response.body().dataType.id
+        String dtId = response.body().referenceDataType.id
 
         expect:
         response.status() == CREATED
@@ -512,7 +388,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         dtId
 
         when: 'trying to copy valid'
-        POST("${getResourcePath(otherReferenceDataModelId, otherDataClassId)}/$referenceDataModelId/$dataClassId/$id", [:], MAP_ARG, true)
+        POST("${getResourcePath(otherReferenceDataModelId)}/$referenceDataModelId/$id", [:], MAP_ARG, true)
 
         then:
         response.status() == CREATED
@@ -520,53 +396,36 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         response.body().label == 'Functional Test Reference Type DataElement'
         response.body().availableActions == ['delete', 'show', 'update']
         response.body().model == otherReferenceDataModelId.toString()
-        response.body().breadcrumbs.size() == 2
+        response.body().breadcrumbs.size() == 1
         response.body().breadcrumbs[0].id == otherReferenceDataModelId.toString()
-        response.body().breadcrumbs[1].id == otherDataClassId.toString()
-        response.body().dataType.id != otherDataTypeId.toString()
-        response.body().dataType.id != differentDataTypeId.toString()
-        response.body().dataType.id != dtId
-        response.body().dataType.label == 'Reference Test DataType'
+        response.body().referenceDataType.id != otherReferenceDataTypeId.toString()
+        response.body().referenceDataType.id != differentReferenceDataTypeId.toString()
+        response.body().referenceDataType.id != dtId
+        response.body().referenceDataType.label == 'Reference Test DataType'
     }
 
-
-    /*
-        void setupForLinkSuggestions() {
+       /* void setupForLinkSuggestions() {
             loginEditor()
-            DataType newDataType = simpleTestReferenceDataModel.findDataTypeByLabel("string")
+            ReferenceDataType newDataType = simpleTestReferenceDataModel.findReferenceDataTypeByLabel("string")
             def response
             if (!newDataType) {
-                response = post(apiPath + "/referenceDataModels/${simpleTestReferenceDataModel.id}/dataTypes") {
+                response = post(apiPath + "/referenceDataModels/${simpleTestReferenceDataModel.id}/refernceDataTypes") {
                     json {
-                        domainType = 'PrimitiveType'
+                        domainType = 'ReferencePrimitiveType'
                         label = 'string'
                     }
                 }
                 assert (response.statusCode.'2xxSuccessful')
-                newDataType = simpleTestReferenceDataModel.findDataTypeByLabel("string")
+                newDataType = simpleTestReferenceDataModel.findReferenceDataTypeByLabel("string")
             }
-            DataClass targetDataClass = DataClass.findByReferenceDataModelAndLabel(simpleTestReferenceDataModel, "simple")
 
-            response = post(apiPath + "/referenceDataModels/${simpleTestReferenceDataModel.id}/dataClasses/${targetDataClass.id}/dataElements") {
+            response = post(apiPath + "/referenceDataModels/${simpleTestReferenceDataModel.id}/referenceDataElements") {
                 json {
-                    domainType = 'DataElement'
-                    label = 'ele1'
-                    description = 'most obvious match'
-                    dataType = {
-                        domainType = 'PrimitiveType'
-                        id = newDataType.id.toString()
-                    }
-
-                }
-            }
-            assert (response.statusCode.'2xxSuccessful')
-            response = post(apiPath + "/referenceDataModels/${simpleTestReferenceDataModel.id}/dataClasses/${targetDataClass.id}/dataElements") {
-                json {
-                    domainType = 'DataElement'
+                    domainType = 'ReferenceDataElement'
                     label = 'ele2'
                     description = 'least obvious match'
                     dataType = {
-                        domainType = 'PrimitiveType'
+                        domainType = 'ReferencePrimitiveType'
                         id = newDataType.id.toString()
                     }
 
@@ -772,5 +631,5 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         }
     '''
         }
-    */
-//}
+  */  
+} 

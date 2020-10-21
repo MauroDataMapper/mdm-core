@@ -179,8 +179,8 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         byReferenceDataModelId(referenceDataModelId).eq('label', label)
     }
 
-    static DetachedCriteria<ReferenceDataElement> byDataTypeIdAndId(Serializable dataTypeId, Serializable resourceId) {
-        byDataTypeId(dataTypeId).idEq(Utils.toUuid(resourceId))
+    static DetachedCriteria<ReferenceDataElement> byReferenceDataTypeIdAndId(Serializable referenceDataTypeId, Serializable resourceId) {
+        byReferenceDataTypeId(referenceDataTypeId).idEq(Utils.toUuid(resourceId))
     }
 
     static DetachedCriteria<ReferenceDataElement> byReferenceDataModelId(Serializable referenceDataModelId) {
@@ -191,20 +191,20 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         new DetachedCriteria<ReferenceDataElement>(ReferenceDataElement).eq('referenceDataModel', referenceDataModel)
     }
 
-    static DetachedCriteria<ReferenceDataElement> byDataTypeId(Serializable dataTypeId) {
-        new DetachedCriteria<ReferenceDataElement>(ReferenceDataElement).eq('referenceDataType.id', Utils.toUuid(dataTypeId))
+    static DetachedCriteria<ReferenceDataElement> byReferenceDataTypeId(Serializable referenceDataTypeId) {
+        new DetachedCriteria<ReferenceDataElement>(ReferenceDataElement).eq('referenceDataType.id', Utils.toUuid(referenceDataTypeId))
     }
 
-    static DetachedCriteria<ReferenceDataElement> byDataType(ReferenceDataType dataType) {
-        new DetachedCriteria<ReferenceDataElement>(ReferenceDataElement).eq('referenceDataType', dataType)
+    static DetachedCriteria<ReferenceDataElement> byReferenceDataType(ReferenceDataType referenceDataType) {
+        new DetachedCriteria<ReferenceDataElement>(ReferenceDataElement).eq('referenceDataType', referenceDataType)
     }
 
     static DetachedCriteria<ReferenceDataElement> byMetadataNamespaceAndKeyAndValue(String namespace, String key, String value) {
         new DetachedCriteria<ReferenceDataElement>(ReferenceDataElement).in('id', Metadata.byNamespaceAndKeyAndValue(namespace, key, value).catalogueItemId)
     }
 
-    static DetachedCriteria<ReferenceDataElement> byDataModelIdAndLabelIlike(Serializable dataModelId, String labelSearch) {
-        byReferenceDataModelId(dataModelId).ilike('label', "%${labelSearch}%")
+    static DetachedCriteria<ReferenceDataElement> byReferenceDataModelIdAndLabelIlike(Serializable referenceDataModelId, String labelSearch) {
+        byReferenceDataModelId(referenceDataModelId).ilike('label', "%${labelSearch}%")
     }
 
     static DetachedCriteria<ReferenceDataElement> byClassifierId(Serializable classifierId) {
