@@ -106,7 +106,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     }
 
     /**
-     * Constructor, sets a number of default and initial values.
+     * Constructor, sets various default and initial values.
      */
     DataModel() {
         initialiseVersioning()
@@ -130,6 +130,11 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         modelType = DataModelType.findForLabel(type)?.label
     }
 
+    /**
+     * Gets all DataClasses which are immediate children of the DataModel,
+     * not including DataClasses nested within other DataClasses.
+     * @return List<DataClass>  of immediate children of the DataModel
+     */
     List<DataClass> getChildDataClasses() {
         dataClasses?.findAll { !it.parentDataClass }?.sort() ?: [] as List<DataClass>
     }

@@ -1521,6 +1521,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
         verifyResponse CREATED, response
 
+        POST("$id/dataTypes", [label: 'deleteDataTypeSource', domainType: 'PrimitiveType'])
+        verifyResponse CREATED, response
+        POST("$id/dataTypes", [label: 'modifyDataTypeSource', domainType: 'PrimitiveType'])
+        verifyResponse CREATED, response
+
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
         PUT("$id/newBranchModelVersion", [branchName: 'main'])
@@ -1555,7 +1560,19 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         String modifyAndModifyReturningDifference = responseBody().id
 
+        //        GET("$source/path/dm%3A%7Cdt%3AdeleteDataTypeSource")
+        //        verifyResponse OK, response
+        //        String deleteDataTypeSource = responseBody().id
+        //        GET("$source/path/dm%3A%7Cdt%3AmodifyDataTypeSource")
+        //        verifyResponse OK, response
+        //        String modifyDataTypeSource = responseBody().id
+
         then:
+        //dataModel description
+        PUT("$source", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        //dataClasses
         DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
         verifyResponse NO_CONTENT, response
         DELETE("$source/dataClasses/$deleteLeftOnly")
@@ -1572,23 +1589,26 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
         verifyResponse CREATED, response
+        String addLeftToExistingClass = responseBody().id
         POST("$source/dataClasses", [label: 'addLeftOnly'])
         verifyResponse CREATED, response
+        String addLeftOnly = responseBody().id
         POST("$source/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
         verifyResponse CREATED, response
 
-        PUT("$source", [description: 'DescriptionLeft'])
-        verifyResponse OK, response
+        //dataTypes
+        //        DELETE("$source/dataTypes/$deleteDataTypeSource")
+        //        verifyResponse NO_CONTENT, response
+        //
+        //        PUT("$source/dataClasses/$modifyDataTypeSource", [description: 'Description'])
+        //        verifyResponse OK, response
+        //
+        //        POST("$source/dataTypes", [label: 'addDataTypeSource', domainType: 'PrimitiveType'])
+        //        verifyResponse CREATED, response
+        //        String addDataTypeSource = responseBody().id
 
         when:
         // for mergeInto json
-        GET("$source/path/dm%3A%7Cdc%3AaddLeftOnly")
-        verifyResponse OK, response
-        String addLeftOnly = responseBody().id
-        GET("dataClasses/$existingClass/path/dc%3A%7Cdc%3AaddLeftToExistingClass", MAP_ARG, true)
-        verifyResponse OK, response
-        String addLeftToExistingClass = responseBody().id
-
         GET("$target/path/dm%3A%7Cdc%3AexistingClass")
         verifyResponse OK, response
         existingClass = responseBody().id
@@ -1604,6 +1624,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         modifyAndModifyReturningDifference = responseBody().id
 
         then:
+        //dataModel description
+        PUT("$target", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        //dataClasses
         DELETE("$target/dataClasses/$targetModifyAndDelete")
         verifyResponse NO_CONTENT, response
 
@@ -1616,15 +1641,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
         POST("$target/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionRight'])
         verifyResponse CREATED, response
-
-        PUT("$target", [description: 'DescriptionRight'])
-        verifyResponse OK, response
+        String addAndAddReturningDifference = responseBody().id
 
         when:
         // for mergeInto json
-        GET("$target/path/dm%3A%7Cdc%3AaddAndAddReturningDifference")
-        verifyResponse OK, response
-        String addAndAddReturningDifference = responseBody().id
         GET("$target/path/dm%3A%7Cdc%3AdeleteLeftOnly")
         verifyResponse OK, response
         deleteLeftOnly = responseBody().id
@@ -1759,7 +1779,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
         responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
         responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
-
 
         when:
         GET("$target/dataClasses/$existingClass/dataClasses")

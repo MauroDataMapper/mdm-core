@@ -19,8 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -29,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -48,8 +45,6 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     DataModel simpleDataModel
     DataModelService dataModelService
     DataClassService dataClassService
-
-    UserSecurityPolicyManager userSecurityPolicyManager
 
     @Override
     void setupDomainData() {
@@ -789,129 +784,219 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !mergeDiff.diffs[1].modified[3].diffs[0].commonAncestorValue
     }
 
-    void 'DMSIMI01 : test merging diff into draft model'() {
-        given:
-        setupData()
-
-        when:
-        DataModel dataModel = dataModelService.get(id)
-        dataModel.addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteLeftOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyLeftOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteAndModify'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndDelete'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndModifyReturningDifference'))
-        def existingClass = new DataClass(createdByUser: admin, label: 'existingClass')
-        def deleteLeftOnlyFromExistingClass = new DataClass(createdByUser: admin, label: 'deleteLeftOnlyFromExistingClass')
-        dataModel.addToDataClasses(existingClass.addToDataClasses(deleteLeftOnlyFromExistingClass))
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-
-        then:
-        dataModel.branchName == 'main'
-
-        when:
-        def draft = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
-        def test = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
-
-        dataClassService.delete(test.dataClasses.find { it.label == 'deleteLeftOnlyFromExistingClass' } as DataClass)
-        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteLeftOnly' })
-        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteAndModify' })
-
-        test.childDataClasses.find { it.label == 'modifyLeftOnly' }.description = 'Description'
-        test.childDataClasses.find { it.label == 'modifyAndDelete' }.description = 'Description'
-        test.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionLeft'
-
-        test.childDataClasses.find { it.label == 'existingClass' }
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftToExistingClass'))
-        def leftParentDataClass = (new DataClass(createdByUser: admin, label: 'leftParentDataClass'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass'))
-        test.addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left'))
-            .addToDataClasses(leftParentDataClass)
-        def modelDescriptionLeft = 'DescriptionLeft'
-        test.description = modelDescriptionLeft
-        checkAndSave(test)
-
-        dataClassService.delete(draft.childDataClasses.find { it.label == 'modifyAndDelete' })
-
-        draft.childDataClasses.find { it.label == 'deleteAndModify' }.description = 'Description'
-        draft.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionRight'
-
-        draft.childDataClasses.find { it.label == 'existingClass' }
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
-        draft.addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right'))
-
-        draft.description = 'DescriptionRight'
-        checkAndSave(draft)
-
-        def mergeDiff = dataModelService.mergeDiff(test, draft)
-
-        then:
-        mergeDiff.class == ObjectDiff
-        mergeDiff.diffs
-        mergeDiff.numberOfDiffs == 12
-        mergeDiff.diffs[0].fieldName == 'description'
-        mergeDiff.diffs[0].left == 'DescriptionRight'
-        mergeDiff.diffs[0].right == 'DescriptionLeft'
-        mergeDiff.diffs[1].fieldName == 'branchName'
-        mergeDiff.diffs[1].left == 'main'
-        mergeDiff.diffs[1].right == 'test'
-        !mergeDiff.diffs[1].isMergeConflict
-        mergeDiff.diffs[2].fieldName == 'dataClasses'
-        mergeDiff.diffs[2].created.size == 3
-        mergeDiff.diffs[2].deleted.size == 2
-        mergeDiff.diffs[2].modified.size == 4
-        mergeDiff.diffs[2].created[0].value.label == 'addLeftOnly'
-        !mergeDiff.diffs[2].created[0].isMergeConflict
-        !mergeDiff.diffs[2].created[0].commonAncestorValue
-        mergeDiff.diffs[2].created[1].value.label == 'leftParentDataClass'
-        !mergeDiff.diffs[2].created[1].isMergeConflict
-        !mergeDiff.diffs[2].created[1].commonAncestorValue
-        mergeDiff.diffs[2].created[2].value.label == 'modifyAndDelete'
-        mergeDiff.diffs[2].created[2].isMergeConflict
-        mergeDiff.diffs[2].created[2].commonAncestorValue
-        mergeDiff.diffs[2].deleted[0].value.label == 'deleteAndModify'
-        mergeDiff.diffs[2].deleted[0].isMergeConflict
-        mergeDiff.diffs[2].deleted[0].commonAncestorValue
-        mergeDiff.diffs[2].deleted[1].value.label == 'deleteLeftOnly'
-        !mergeDiff.diffs[2].deleted[1].isMergeConflict
-        !mergeDiff.diffs[2].deleted[1].commonAncestorValue
-        mergeDiff.diffs[2].modified[0].diffs[0].fieldName == 'description'
-        mergeDiff.diffs[2].modified[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[0].commonAncestorValue
-        mergeDiff.diffs[2].modified[1].diffs[0].fieldName == 'dataClasses'
-        mergeDiff.diffs[2].modified[1].isMergeConflict
-        mergeDiff.diffs[2].modified[1].commonAncestorValue
-        mergeDiff.diffs[2].modified[1].diffs[0].created[0].value.label == 'addLeftToExistingClass'
-        mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].value.label == 'deleteLeftOnlyFromExistingClass'
-        !mergeDiff.diffs[2].modified[1].diffs[0].created[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[1].diffs[0].created[0].commonAncestorValue
-        !mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].commonAncestorValue
-        mergeDiff.diffs[2].modified[2].diffs[0].fieldName == 'description'
-        mergeDiff.diffs[2].modified[2].diffs[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[2].diffs[0].commonAncestorValue
-        mergeDiff.diffs[2].modified[3].diffs[0].fieldName == 'description'
-        !mergeDiff.diffs[2].modified[3].diffs[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[3].diffs[0].commonAncestorValue
-
-        when:
-        def patch = new MergeObjectDiffData(
-            leftId: draft.id,
-            rightId: test.id,
-            diffs: [
-                new MergeFieldDiffData(
-                    fieldName: 'description',
-                    value: modelDescriptionLeft
-                )
-            ]
-        )
-        def mergedModel = dataModelService.mergeInto(test, draft, patch, userSecurityPolicyManager)
-
-        then:
-        mergedModel.description == modelDescriptionLeft
-        //TODO check other values
-    }
+    // requires UserSecurityPolicyManager wired up in this spec
+    //    void 'DMSIMI01 : test merging diff into draft model'() {
+    //        given:
+    //        setupData()
+    //
+    //        when:
+    //        DataModel dataModel = dataModelService.get(id)
+    //        def deleteLeftOnly = new DataClass(createdByUser: admin, label: 'deleteLeftOnly')
+    //        def modifyLeftOnly = new DataClass(createdByUser: admin, label: 'modifyLeftOnly')
+    //        def deleteAndModify = new DataClass(createdByUser: admin, label: 'deleteAndModify')
+    //        def modifyAndDelete = new DataClass(createdByUser: admin, label: 'modifyAndDelete')
+    //        def modifyAndModifyReturningDifference = new DataClass(createdByUser: admin, label: 'modifyAndModifyReturningDifference')
+    //        dataModel.addToDataClasses(deleteLeftOnly)
+    //            .addToDataClasses(modifyLeftOnly)
+    //            .addToDataClasses(deleteAndModify)
+    //            .addToDataClasses(modifyAndDelete)
+    //            .addToDataClasses(modifyAndModifyReturningDifference)
+    //        def existingClass = new DataClass(createdByUser: admin, label: 'existingClass')
+    //        def deleteLeftOnlyFromExistingClass = new DataClass(createdByUser: admin, label: 'deleteLeftOnlyFromExistingClass')
+    //        dataModel.addToDataClasses(existingClass.addToDataClasses(deleteLeftOnlyFromExistingClass))
+    //        dataModelService.finaliseModel(dataModel, admin, null, null)
+    //        checkAndSave(dataModel)
+    //
+    //        then:
+    //        dataModel.branchName == 'main'
+    //
+    //        when:
+    //        def draft = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+    //        def test = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
+    //
+    //        dataClassService.delete(test.dataClasses.find { it.label == 'deleteLeftOnlyFromExistingClass' } as DataClass)
+    //        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteLeftOnly' })
+    //        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteAndModify' })
+    //
+    //        test.childDataClasses.find { it.label == 'modifyLeftOnly' }.description = 'Description'
+    //        test.childDataClasses.find { it.label == 'modifyAndDelete' }.description = 'Description'
+    //        test.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionLeft'
+    //
+    //        def addLeftToExistingClass = new DataClass(createdByUser: admin, label: 'addLeftToExistingClass')
+    //        test.childDataClasses.find { it.label == 'existingClass' }
+    //            .addToDataClasses(addLeftToExistingClass)
+    //        def leftParentDataClass = (new DataClass(createdByUser: admin, label: 'leftParentDataClass'))
+    //            .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass'))
+    //        def addLeftOnly = new DataClass(createdByUser: admin, label: 'addLeftOnly')
+    //        test.addToDataClasses(addLeftOnly)
+    //            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left'))
+    //            .addToDataClasses(leftParentDataClass)
+    //        def modelDescriptionLeft = 'DescriptionLeft'
+    //        test.description = modelDescriptionLeft
+    //        checkAndSave(test)
+    //
+    //        dataClassService.delete(draft.childDataClasses.find { it.label == 'modifyAndDelete' })
+    //
+    //        draft.childDataClasses.find { it.label == 'deleteAndModify' }.description = 'Description'
+    //        draft.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionRight'
+    //
+    //        draft.childDataClasses.find { it.label == 'existingClass' }
+    //            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
+    //        def addAndAddReturningDifference = new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right')
+    //        draft.addToDataClasses(addAndAddReturningDifference)
+    //
+    //        draft.description = 'DescriptionRight'
+    //        checkAndSave(draft)
+    //
+    //        def mergeDiff = dataModelService.mergeDiff(test, draft)
+    //
+    //        then:
+    //        mergeDiff.class == ObjectDiff
+    //        mergeDiff.diffs
+    //        mergeDiff.numberOfDiffs == 12
+    //        mergeDiff.diffs[0].fieldName == 'description'
+    //        mergeDiff.diffs[0].left == 'DescriptionRight'
+    //        mergeDiff.diffs[0].right == 'DescriptionLeft'
+    //        mergeDiff.diffs[1].fieldName == 'branchName'
+    //        mergeDiff.diffs[1].left == 'main'
+    //        mergeDiff.diffs[1].right == 'test'
+    //        !mergeDiff.diffs[1].isMergeConflict
+    //        mergeDiff.diffs[2].fieldName == 'dataClasses'
+    //        mergeDiff.diffs[2].created.size == 3
+    //        mergeDiff.diffs[2].deleted.size == 2
+    //        mergeDiff.diffs[2].modified.size == 4
+    //        mergeDiff.diffs[2].created[0].value.label == 'addLeftOnly'
+    //        !mergeDiff.diffs[2].created[0].isMergeConflict
+    //        !mergeDiff.diffs[2].created[0].commonAncestorValue
+    //        mergeDiff.diffs[2].created[1].value.label == 'leftParentDataClass'
+    //        !mergeDiff.diffs[2].created[1].isMergeConflict
+    //        !mergeDiff.diffs[2].created[1].commonAncestorValue
+    //        mergeDiff.diffs[2].created[2].value.label == 'modifyAndDelete'
+    //        mergeDiff.diffs[2].created[2].isMergeConflict
+    //        mergeDiff.diffs[2].created[2].commonAncestorValue
+    //        mergeDiff.diffs[2].deleted[0].value.label == 'deleteAndModify'
+    //        mergeDiff.diffs[2].deleted[0].isMergeConflict
+    //        mergeDiff.diffs[2].deleted[0].commonAncestorValue
+    //        mergeDiff.diffs[2].deleted[1].value.label == 'deleteLeftOnly'
+    //        !mergeDiff.diffs[2].deleted[1].isMergeConflict
+    //        !mergeDiff.diffs[2].deleted[1].commonAncestorValue
+    //        mergeDiff.diffs[2].modified[0].diffs[0].fieldName == 'description'
+    //        mergeDiff.diffs[2].modified[0].isMergeConflict
+    //        !mergeDiff.diffs[2].modified[0].commonAncestorValue
+    //        mergeDiff.diffs[2].modified[1].diffs[0].fieldName == 'dataClasses'
+    //        mergeDiff.diffs[2].modified[1].isMergeConflict
+    //        mergeDiff.diffs[2].modified[1].commonAncestorValue
+    //        mergeDiff.diffs[2].modified[1].diffs[0].created[0].value.label == 'addLeftToExistingClass'
+    //        mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].value.label == 'deleteLeftOnlyFromExistingClass'
+    //        !mergeDiff.diffs[2].modified[1].diffs[0].created[0].isMergeConflict
+    //        !mergeDiff.diffs[2].modified[1].diffs[0].created[0].commonAncestorValue
+    //        !mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].isMergeConflict
+    //        !mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].commonAncestorValue
+    //        mergeDiff.diffs[2].modified[2].diffs[0].fieldName == 'description'
+    //        mergeDiff.diffs[2].modified[2].diffs[0].isMergeConflict
+    //        !mergeDiff.diffs[2].modified[2].diffs[0].commonAncestorValue
+    //        mergeDiff.diffs[2].modified[3].diffs[0].fieldName == 'description'
+    //        !mergeDiff.diffs[2].modified[3].diffs[0].isMergeConflict
+    //        !mergeDiff.diffs[2].modified[3].diffs[0].commonAncestorValue
+    //
+    //        when:
+    //        def patch = new MergeObjectDiffData(
+    //            leftId: draft.id,
+    //            rightId: test.id,
+    //            diffs: [
+    //                new MergeFieldDiffData(
+    //                    fieldName: 'description',
+    //                    value: modelDescriptionLeft
+    //                ),
+    //                new MergeFieldDiffData(
+    //                    fieldName: 'dataClasses',
+    //                    deleted: [
+    //                        new MergeItemData(
+    //                            id: deleteAndModify.id,
+    //                            label: deleteAndModify.label
+    //                        ),
+    //                        new MergeItemData(
+    //                            id: deleteLeftOnly.id,
+    //                            label: deleteLeftOnly.label
+    //                        )
+    //                    ],
+    //                    created: [
+    //                        new MergeItemData(
+    //                            id: addLeftOnly.id,
+    //                            label: addLeftOnly.label
+    //                        ),
+    //                        new MergeItemData(
+    //                            id: modifyAndDelete.id,
+    //                            label: modifyAndDelete.label
+    //                        )
+    //                    ],
+    //                    modified: [
+    //                        new MergeObjectDiffData(
+    //                            leftId: addAndAddReturningDifference.id,
+    //                            label: addAndAddReturningDifference.label,
+    //                            diffs: [
+    //                                new MergeFieldDiffData(
+    //                                    fieldName: 'description',
+    //                                    value: 'addedDescriptionSource'
+    //                                )
+    //                            ]
+    //                        ),
+    //                        new MergeObjectDiffData(
+    //                            leftId: existingClass.id,
+    //                            label: existingClass.label,
+    //                            diffs: [
+    //                                new MergeFieldDiffData(
+    //                                    fieldName: "dataClasses",
+    //
+    //                                    deleted: [
+    //                                        new MergeItemData(
+    //                                            id: deleteLeftOnlyFromExistingClass.id,
+    //                                            label: deleteLeftOnlyFromExistingClass.label
+    //                                        )
+    //                                    ],
+    //                                    created: [
+    //                                        new MergeItemData(
+    //                                            id: addLeftToExistingClass.id,
+    //                                            label: addLeftToExistingClass.label
+    //                                        )
+    //                                    ]
+    //
+    //                                )
+    //                            ]
+    //                        ),
+    //                        new MergeObjectDiffData(
+    //                            leftId: modifyAndModifyReturningDifference.id,
+    //                            label: modifyAndModifyReturningDifference.label,
+    //                            diffs: [
+    //                                new MergeFieldDiffData(
+    //                                    fieldName: 'description',
+    //                                    value: 'DescriptionLeft'
+    //                                ),
+    //                            ]
+    //                        ),
+    //                        new MergeObjectDiffData(
+    //                            leftId: modifyLeftOnly.id,
+    //                            label: "modifyLeftOnly",
+    //                            diffs: [
+    //                                new MergeFieldDiffData(
+    //                                    fieldName: 'description',
+    //                                    value: 'Description'
+    //                                )
+    //                            ]
+    //
+    //                        )
+    //                    ]
+    //
+    //                )
+    //            ]
+    //        )
+    //        def mergedModel = dataModelService.mergeInto(test, draft, patch, userSecurityPolicyManager)
+    //
+    //        then:
+    //        mergedModel.description == modelDescriptionLeft
+    //        //        mergedModel.dataClasses.size() == 8
+    //        //        mergedModel.dataClasses
+    //    }
 
     void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
         /*
