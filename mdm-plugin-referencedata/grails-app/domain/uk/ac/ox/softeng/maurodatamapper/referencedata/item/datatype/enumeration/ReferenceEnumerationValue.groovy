@@ -91,7 +91,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
 
     @Override
     GormEntity getPathParent() {
-        enumerationType
+        referenceEnumerationType
     }
 
     @Override
@@ -118,7 +118,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
 
     @Override
     ReferenceDataModel getModel() {
-        enumerationType?.model
+        referenceEnumerationType?.model
     }
 
     @Override
@@ -153,12 +153,12 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
         this.description = value
     }
 
-    static DetachedCriteria<ReferenceEnumerationValue> byEnumerationType(Serializable enumerationTypeId) {
-        new DetachedCriteria<ReferenceEnumerationValue>(ReferenceEnumerationValue).eq('enumerationType.id', Utils.toUuid(enumerationTypeId))
+    static DetachedCriteria<ReferenceEnumerationValue> byReferenceEnumerationType(Serializable referenceEnumerationTypeId) {
+        new DetachedCriteria<ReferenceEnumerationValue>(ReferenceEnumerationValue).eq('referenceEnumerationType.id', Utils.toUuid(referenceEnumerationTypeId))
     }
 
-    static DetachedCriteria<ReferenceEnumerationValue> byIdAndEnumerationType(Serializable resourceId, Serializable enumerationTypeId) {
-        byEnumerationType(enumerationTypeId).idEq(Utils.toUuid(resourceId))
+    static DetachedCriteria<ReferenceEnumerationValue> byIdAndReferenceEnumerationType(Serializable resourceId, Serializable referenceEnumerationTypeId) {
+        byReferenceEnumerationType(referenceEnumerationTypeId).idEq(Utils.toUuid(resourceId))
     }
 
     static DetachedCriteria<ReferenceEnumerationValue> byClassifierId(Serializable classifierId) {

@@ -64,41 +64,41 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
             .appendList(ReferenceEnumerationValue, 'referenceEnumerationValues', this.referenceEnumerationValues, otherDataType.referenceEnumerationValues)
     }
 
-    int countEnumerationValuesByKey(String key) {
+    int countReferenceEnumerationValuesByKey(String key) {
         this.referenceEnumerationValues?.count {it.key == key} ?: 0
     }
 
-    ReferenceEnumerationValue findEnumerationValueByKey(String key) {
+    ReferenceEnumerationValue findReferenceEnumerationValueByKey(String key) {
         this.referenceEnumerationValues?.find {it.key == key}
     }
 
-    ReferenceEnumerationType addToEnumerationValues(Map args) {
+    ReferenceEnumerationType addToReferenceEnumerationValues(Map args) {
         addToReferenceEnumerationValues(new ReferenceEnumerationValue(args))
     }
 
-    ReferenceEnumerationType addToEnumerationValues(String key, String value, User createdBy) {
+    ReferenceEnumerationType addToReferenceEnumerationValues(String key, String value, User createdBy) {
         addToReferenceEnumerationValues(key: key, value: value, createdBy: createdBy.emailAddress)
     }
 
-    ReferenceEnumerationType addToEnumerationValues(String key, String value, String category, User createdBy) {
+    ReferenceEnumerationType addToReferenceEnumerationValues(String key, String value, String category, User createdBy) {
         addToReferenceEnumerationValues(key: key, value: value, category: category, createdBy: createdBy.emailAddress)
     }
 
-    ReferenceEnumerationType addToEnumerationValues(ReferenceEnumerationValue add) {
-        ReferenceEnumerationValue valueToAdd = findEnumerationValueByKey(add.key)
+    ReferenceEnumerationType addToReferenceEnumerationValues(ReferenceEnumerationValue add) {
+        ReferenceEnumerationValue valueToAdd = findReferenceEnumerationValueByKey(add.key)
         if (valueToAdd) {
             valueToAdd.value = add.value
             markDirty('referenceEnumerationValues', valueToAdd)
         } else {
             valueToAdd = add
-            valueToAdd.enumerationType = this
+            valueToAdd.referenceEnumerationType = this
             addTo('referenceEnumerationValues', valueToAdd)
         }
-        updateEnumerationValueIndexes(valueToAdd)
+        updateReferenceEnumerationValueIndexes(valueToAdd)
         this
     }
 
-    void updateEnumerationValueIndexes(ReferenceEnumerationValue updated) {
+    void updateReferenceEnumerationValueIndexes(ReferenceEnumerationValue updated) {
         List<ReferenceEnumerationValue> sorted = this.referenceEnumerationValues.sort()
         int updatedIndex = updated.getOrder()
         int maxIndex = sorted.size() - 1

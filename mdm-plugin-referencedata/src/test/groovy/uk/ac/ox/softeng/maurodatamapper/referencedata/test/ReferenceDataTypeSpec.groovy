@@ -34,7 +34,7 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
     public ReferenceDataModel dataSet
 
     def setup() {
-        log.debug('Setting up DataTypeSpec unit')
+        log.debug('Setting up ReferenceDataTypeSpec unit')
         mockDomain(ReferenceDataModel)
 
         dataSet = new ReferenceDataModel(createdByUser: admin, label: 'dataSet', folder: testFolder, authority: testAuthority)
@@ -46,7 +46,7 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
     @Override
     void setValidDomainValues() {
         super.setValidDomainValues() as K
-        dataSet.addToDataTypes(domain)
+        dataSet.addToReferenceDataTypes(domain)
     }
 
     @Override
@@ -92,7 +92,7 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
         checkAndSave(dataSet)
 
         when: 'adding data type with same label to existing'
-        dataSet.addToDataTypes(createValidDomain(domain.label))
+        dataSet.addToReferenceDataTypes(createValidDomain(domain.label))
         checkAndSave(dataSet)
 
         then: 'datamodel should not be valid'
@@ -112,16 +112,16 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
         checkAndSave(referenceDataModel)
 
         when: 'adding data type with same label as existing to different model'
-        referenceDataModel.addToDataTypes(createValidDomain(domain.label))
+        referenceDataModel.addToReferenceDataTypes(createValidDomain(domain.label))
 
         then:
         checkAndSave(dataSet)
         checkAndSave(referenceDataModel)
 
         when: 'adding multiple data types with same label'
-        referenceDataModel.addToDataTypes(createValidDomain('a'))
-        referenceDataModel.addToDataTypes(createValidDomain('b'))
-        referenceDataModel.addToDataTypes(createValidDomain('a'))
+        referenceDataModel.addToReferenceDataTypes(createValidDomain('a'))
+        referenceDataModel.addToReferenceDataTypes(createValidDomain('b'))
+        referenceDataModel.addToReferenceDataTypes(createValidDomain('a'))
 
         then: 'dataset is still valid'
         checkAndSave(dataSet)
@@ -132,9 +132,9 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
         then:
         thrown(InternalSpockError)
         referenceDataModel.errors.allErrors.size() == 3
-        referenceDataModel.errors.fieldErrors.any {it.field.contains('dataTypes') && it.code.contains('unique')}
-        referenceDataModel.errors.fieldErrors.any {it.field.contains('dataTypes[1].label') && it.code.contains('unique')}
-        referenceDataModel.errors.fieldErrors.any {it.field.contains('dataTypes[3].label') && it.code.contains('unique')}
+        referenceDataModel.errors.fieldErrors.any {it.field.contains('referenceDataTypes') && it.code.contains('unique')}
+        referenceDataModel.errors.fieldErrors.any {it.field.contains('referenceDataTypes[1].label') && it.code.contains('unique')}
+        referenceDataModel.errors.fieldErrors.any {it.field.contains('referenceDataTypes[3].label') && it.code.contains('unique')}
     }
 
     private Class<K> getDomainUnderTest() {

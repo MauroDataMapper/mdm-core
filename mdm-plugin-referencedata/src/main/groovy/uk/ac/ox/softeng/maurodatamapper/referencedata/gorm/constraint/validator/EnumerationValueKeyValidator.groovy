@@ -32,11 +32,11 @@ class EnumerationValueKeyValidator extends UniqueStringValidator<ReferenceEnumer
 
     @Override
     boolean objectParentIsNotSaved() {
-        !object.enumerationType?.ident()
+        !object.referenceEnumerationType?.ident()
     }
 
     @Override
     boolean valueIsNotUnique(String value) {
-        object.enumerationType.countEnumerationValuesByKey(value) > 1
+        object.referenceEnumerationType.countReferenceEnumerationValuesByKey(value) > 1
     }
 }
