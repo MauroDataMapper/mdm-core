@@ -35,7 +35,7 @@ import org.spockframework.util.InternalSpockError
 class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> implements DomainUnitTest<ReferenceDataElement> {
 
     ReferenceDataModel dataSet
-    ReferenceDataType dataType
+    ReferenceDataType referenceDataType
 
     def setup() {
         log.debug('Setting up DataClassSpec unit')
@@ -46,28 +46,27 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
         checkAndSave(dataSet)
         assert ReferenceDataModel.count() == 1
 
-        dataType = new ReferencePrimitiveType(createdByUser: admin, label: 'datatype')
+        referenceDataType = new ReferencePrimitiveType(createdByUser: admin, label: 'datatype')
         
-        dataSet.addToDataTypes(dataType)
+        dataSet.addToReferenceDataTypes(referenceDataType)
         checkAndSave(dataSet)
     }
 
     @Override
     void setValidDomainOtherValues() {
-        dataClass.addToDataElements(domain)
-        domain.referenceDataType = dataType
+        domain.referenceDataType = referenceDataType
         domain
     }
 
     @Override
     void verifyDomainOtherConstraints(ReferenceDataElement subDomain) {
         assert subDomain.model.id == dataSet.id
-        assert subDomain.referenceDataType.id == dataType.id
+        assert subDomain.referenceDataType.id == referenceDataType.id
     }
 
     @Override
     ReferenceDataElement createValidDomain(String label) {
-        ReferenceDataElement element = new ReferenceDataElement(label: label, referenceReferenceDataModel: dataSet, referenceDataType: dataType, createdBy: editor.emailAddress)
+        ReferenceDataElement element = new ReferenceDataElement(label: label, referenceDataModel: dataSet, referenceDataType: referenceDataType, createdBy: editor.emailAddress)
         element
     }
 
@@ -78,58 +77,68 @@ class ReferenceDataElementSpec extends ModelItemSpec<ReferenceDataElement> imple
 
     @Override
     String getModelFieldName() {
-        null
+        'referenceDataModel'
     }
 
     @Override
     void setModel(ReferenceDataElement domain, Model model) {
-        domain.dataClass.referenceReferenceDataModel = model as ReferenceDataModel
+        domain.referenceDataModel = model as ReferenceDataModel
     }
 
     @Override
     void wipeModel() {
+        domain.referenceDataModel = null
         domain.breadcrumbTree = null
     }
 
-    /*void 'test unique label naming'() {
+    void 'test unique label naming'() {
         given:
         setValidDomainValues()
 
         expect: 'domain is currently valid'
         checkAndSave(domain)
 
-        when: 'adding data element with same label to dataclass'
-        dataClass.addToDataElements(label: domain.label, createdByUser: admin, dataType: dataType)
-        checkAndSave(dataClass)
+        when: 'adding reference data element with same label to reference data model'
+        dataSet.addToReferenceDataElements(label: domain.label, createdByUser: admin, referenceDataType: referenceDataType)
+        checkAndSave(dataSet)
 
-        then: 'dataclass should not be valid'
+        then: 'dataSet should not be valid'
         thrown(InternalSpockError)
-        dataClass.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
+        dataSet.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
     }
 
-    void 'test unique label naming across dataclasses'() {
+    void 'test unique label naming across reference reference data models'() {
         given:
         setValidDomainValues()
-        DataClass other = new DataClass(label: 'other', createdByUser: editor)
-        dataSet.addToDataClasses(other)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'another model', createdByUser: editor, folder: testFolder, authority: testAuthority)
 
-        when: 'adding data element with same label to new dataclass'
-        other.addToDataElements(label: domain.label, createdByUser: admin, dataType: dataType)
+        expect: 'domain is currently valid'
+        checkAndSave(domain)
+        checkAndSave(dataSet)
+        checkAndSave(referenceDataModel)
 
-        then: 'should be valid'
-        checkAndSave(dataClass)
-        checkAndSave(other)
+        when: 'adding reference data element with same label as existing to different model'
+        referenceDataModel.addToReferenceDataElements(createValidDomain(domain.label))
+
+        then:
+        checkAndSave(dataSet)
+        checkAndSave(referenceDataModel)
+
+        when: 'adding multiple reference data elements with same label'
+        referenceDataModel.addToReferenceDataElements(createValidDomain('a'))
+        referenceDataModel.addToReferenceDataElements(createValidDomain('b'))
+        referenceDataModel.addToReferenceDataElements(createValidDomain('a'))
+
+        then: 'dataset is still valid'
         checkAndSave(dataSet)
 
-        when: 'adding a child dataclass'
-        DataClass child = new DataClass(label: 'child', createdByUser: editor)
-        dataClass.addToDataClasses(child)
-        child.addToDataElements(label: domain.label, createdByUser: admin, dataType: dataType)
+        when: 'datamodel should be invalid'
+        checkAndSave(referenceDataModel)
 
-        then: 'should be valid'
-        checkAndSave(dataSet)
-        checkAndSave(child)
-        checkAndSave(dataClass)
-        checkAndSave(other)
-    }*/
+        then:
+        thrown(InternalSpockError)
+        referenceDataModel.errors.allErrors.size() == 2
+        referenceDataModel.errors.fieldErrors.any {it.field.contains('referenceDataElements[1].label') && it.code.contains('unique')}
+        referenceDataModel.errors.fieldErrors.any {it.field.contains('referenceDataElements[3].label') && it.code.contains('unique')}
+    }
 }

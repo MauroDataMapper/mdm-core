@@ -55,39 +55,34 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Unit test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
 
-        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
 
-        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'ele1', referenceDataType: referenceDataModel.findDataTypeByLabel('string'))
-        simple.addToDataElements(element)
+        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'ele1', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
+        referenceDataModel.addToReferenceDataElements(element)
 
-        content.addToDataElements(createdByUser: editor, label: 'ele1', dataType: referenceDataModel.findDataTypeByLabel('string'))
-        content.addToDataElements(createdByUser: reader1, label: 'element2', description: 'another',
-                                  dataType: referenceDataModel.findDataTypeByLabel('integer'))
-        content.addToDataElements(createdByUser: reader1, label: 'element3', dataType: referenceDataModel.findDataTypeByLabel('integer'),
+        referenceDataModel.addToReferenceDataElements(createdByUser: editor, label: 'elex', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
+        referenceDataModel.addToReferenceDataElements(createdByUser: reader1, label: 'element2', description: 'another',
+                                  referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'))
+        referenceDataModel.addToReferenceDataElements(createdByUser: reader1, label: 'element3', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'),
                                   maxMultiplicity: 1, minMultiplicity: 0)
 
         ReferenceDataElement el2 = new ReferenceDataElement(createdByUser: editor, label: 'another', minMultiplicity: 1, maxMultiplicity: 1,
-                                          referenceDataType: referenceDataModel.findDataTypeByLabel('integer'))
+                                          referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'))
 
-        child.addToDataElements(el2)
+        referenceDataModel.addToReferenceDataElements(el2)
 
         checkAndSave(referenceDataModel)
 
         verifyBreadcrumbTrees()
 
         elementId = element.id
-        childId = child.id
-        contentId = content.id
-        simpleId = simple.id
         referenceDataModelId = referenceDataModel.id
         element2Id = el2.id
         id = element.id
     }
 
     void "test get"() {
-
-
         expect:
         service.get(id) != null
     }
@@ -104,13 +99,13 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         dataElementList[0].label == 'element2'
         dataElementList[0].minMultiplicity == null
         dataElementList[0].maxMultiplicity == null
-        dataElementList[0].dataTypeId == ReferenceDataType.findByLabel('integer').id
+        dataElementList[0].referenceDataTypeId == ReferenceDataType.findByLabel('integer').id
 
         and:
         dataElementList[1].label == 'element3'
         dataElementList[1].minMultiplicity == 0
         dataElementList[1].maxMultiplicity == 1
-        dataElementList[1].dataTypeId == ReferenceDataType.findByLabel('integer').id
+        dataElementList[1].referenceDataTypeId == ReferenceDataType.findByLabel('integer').id
     }
 
     void "test count"() {
@@ -131,11 +126,11 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         service.count() == 4
     }
 
-   /* void "test save"() {
+    void "test save"() {
 
         when:
-        ReferenceDataElement dataElement = new ReferenceDataElement(createdByUser: reader2, label: 'saving test', 
-                                                  referenceDataType: referenceDataModel.findDataTypeByLabel('string'))
+        ReferenceDataElement dataElement = new ReferenceDataElement(createdByUser: reader2, label: 'saving test', referenceDataModel: referenceDataModelId,
+                                                  referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
         service.save(dataElement)
 
         then:
@@ -147,23 +142,24 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         then:
         saved.breadcrumbTree
         saved.breadcrumbTree.domainId == saved.id
-        saved.breadcrumbTree.parent.domainId == contentId
+        saved.breadcrumbTree.parent.domainId == referenceDataModelId
     }
 
 
-    void 'test copying DataElement'() {
+    void 'test copying ReferenceDataElement from one ReferenceDataModel to another'() {
         given:
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy', folder: testFolder, authority: testAuthority)
         ReferenceDataElement original = service.get(id)
 
         expect:
-        checkAndSave(referenceDataModel)
+        checkAndSave(copyModel)
 
         when:
-        ReferenceDataElement copy = service.copyDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
-        copyClass.addToDataElements(copy)
+        ReferenceDataElement copy = service.copyReferenceDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
+        copyModel.addToReferenceDataElements(copy)
 
         then:
-        checkAndSave(referenceDataModel)
+        checkAndSave(copyModel)
 
         when:
         original = service.get(id)
@@ -187,21 +183,20 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
     }
 
-    void 'test copying DataElement with metadata and classifiers'() {
+    void 'test copying ReferenceDataElement with metadata and classifiers'() {
         given:
+        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy', folder: testFolder, authority: testAuthority)
         ReferenceDataElement original = service.get(id)
-        DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
-        referenceDataModel.addToDataClasses(copyClass)
 
         expect:
-        checkAndSave(referenceDataModel)
+        checkAndSave(copyModel)
 
         when:
-        ReferenceDataElement copy = service.copyDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
-        copyClass.addToDataElements(copy)
+        ReferenceDataElement copy = service.copyReferenceDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
+        copyModel.addToReferenceDataElements(copy)
 
         then:
-        checkAndSave(copy)
+        checkAndSave(copyModel)
 
         when:
         original = service.get(id)
@@ -226,43 +221,4 @@ class ReferenceDataElementServiceSpec extends CatalogueItemServiceSpec implement
         copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
 
     }
-
-    void 'test copying DataElement with datatype not present'() {
-        given:
-        ReferenceDataElement original = service.get(id)
-        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
-        DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
-        copyModel.addToDataClasses(copyClass)
-
-        expect:
-        checkAndSave(copyModel)
-
-        when:
-        ReferenceDataElement copy = service.copyDataElement(copyModel, original, editor, userSecurityPolicyManager)
-        copyClass.addToDataElements(copy)
-
-        then:
-        checkAndSave(copyModel)
-
-        when:
-        original = service.get(id)
-        copy = service.get(copy.id)
-
-        then:
-        copy.label == original.label
-        copy.description == original.description
-        copy.minMultiplicity == original.minMultiplicity
-        copy.maxMultiplicity == original.maxMultiplicity
-
-        and:
-        copy.createdBy == editor.emailAddress
-        copy.metadata?.size() == original.metadata?.size()
-        copy.classifiers == original.classifiers
-
-        and:
-        copy.referenceDataType.label == original.referenceDataType.label
-
-        and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
-    }*/
 }

@@ -39,6 +39,6 @@ class DataTypeLabelValidator extends UniqueStringValidator<ReferenceDataType> {
     boolean valueIsNotUnique(String value) {
         // We can expect multiple DTs to be added at the same time to an already saved DM,
         // therefore we have to take the hit of getting all DTs and doing an in memory search
-        object.referenceDataModel.countDataTypesByLabel(value) > 1
+        object.referenceDataModel.countReferenceDataTypesByLabel(value) > 1
     }
 }

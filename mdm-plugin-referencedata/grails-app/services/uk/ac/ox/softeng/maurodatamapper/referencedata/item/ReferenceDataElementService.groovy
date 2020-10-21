@@ -311,15 +311,15 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
-        ReferenceDataType dataType = copiedReferenceDataModel.findDataTypeByLabel(original.referenceDataType.label)
+        ReferenceDataType referenceDataType = copiedReferenceDataModel.findReferenceDataTypeByLabel(original.referenceDataType.label)
 
         // If theres no DataType then copy the original's DataType into the DataModel
-        if (!dataType) {
-            dataType = referenceDataTypeService.copyReferenceDataType(copiedReferenceDataModel, original.referenceDataType, copier,
+        if (!referenceDataType) {
+            referenceDataType = referenceDataTypeService.copyReferenceDataType(copiedReferenceDataModel, original.referenceDataType, copier,
                                                     userSecurityPolicyManager)
         }
 
-        copy.referenceDataType = dataType
+        copy.referenceDataType = referenceDataType
 
         copy
     }

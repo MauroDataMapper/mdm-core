@@ -128,19 +128,19 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
         this.referenceDataElements?.each { it.beforeValidate() }
     }
 
-    ReferenceDataType findDataTypeByLabel(String label) {
+    ReferenceDataType findReferenceDataTypeByLabel(String label) {
         this.referenceDataTypes?.find { it.label == label }
     }
 
-    ReferenceDataType findDataTypeByLabelAndType(String label, String type) {
+    ReferenceDataType findReferenceDataTypeByLabelAndType(String label, String type) {
         this.referenceDataTypes?.find { it.domainType == type && it.label == label }
     }
 
-    int countDataTypesByLabel(String label) {
+    int countReferenceDataTypesByLabel(String label) {
         this.referenceDataTypes?.count { it.label == label } ?: 0
     }
 
-    List<ReferenceDataType> getSortedDataTypes() {
+    List<ReferenceDataType> getSortedReferenceDataTypes() {
         this.referenceDataTypes?.sort() ?: []
     }
 

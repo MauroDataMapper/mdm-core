@@ -33,12 +33,12 @@ class ReferenceDataElementInterceptorSpec extends ContainedResourceInterceptorUn
 
     def setup() {
         log.debug('Setting up DataElementInterceptorSpec')
-        mockDomains(ReferenceDataModel, DataClass, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue)
+        mockDomains(ReferenceDataModel, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceDataType, ReferenceEnumerationType, ReferenceEnumerationValue)
     }
 
     @Override
     String getControllerName() {
-        'dataElement'
+        'referenceDataElement'
     }
 
     @Override
