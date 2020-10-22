@@ -21,6 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelInterceptor
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -38,8 +39,8 @@ class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterce
     implements InterceptorUnitTest<ReferenceDataModelInterceptor> {
 
     def setup() {
-        log.debug('Setting up DataModelInterceptorSpec')
-        mockDomains(Folder, ReferenceDataModel, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataValue)
+        log.debug('Setting up ReferenceDataModelInterceptorSpec')
+        mockDomains(Folder, ReferenceDataModel, ReferenceDataElement, ReferenceDataType, ReferencePrimitiveType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataValue)
     }
 
     @Override
@@ -68,7 +69,7 @@ class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterce
     void 'test access to changeFolder using folder: #folderIdStr datamodel: #dataModelIdStr is #allowedStr'() {
 
         given:
-        params.dataModelId = dataModelId
+        params.referenceDataModelId = referenceDataModelId
         params.folderId = folderId
         String action = 'changeFolder'
 
@@ -102,7 +103,7 @@ class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterce
         response.status == expectedStatus.code
 
         where:
-        [folderId, dataModelId] << [[
+        [folderId, referenceDataModelId] << [[
                                         unknownId, readAccessId, noAccessId, writeAccessId
                                     ], [
                                         unknownId, readAccessId, noAccessId, writeAccessId
@@ -111,22 +112,22 @@ class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterce
                       folderId == readAccessId ? 'readAccessId' :
                       folderId == noAccessId ? 'noAccessId' :
                       'writeAccessId'
-        dataModelIdStr = dataModelId == unknownId ? 'unknownId' :
-                         dataModelId == readAccessId ? 'readAccessId' :
-                         dataModelId == noAccessId ? 'noAccessId' :
+        referenceDataModelIdStr = referenceDataModelId == unknownId ? 'unknownId' :
+                         referenceDataModelId == readAccessId ? 'readAccessId' :
+                         referenceDataModelId == noAccessId ? 'noAccessId' :
                          'writeAccessId'
-        accepted = folderId == writeAccessId && dataModelId == writeAccessId
+        accepted = folderId == writeAccessId && referenceDataModelId == writeAccessId
         allowedStr = accepted ? 'allowed' : 'not allowed'
-        expectedStatus = dataModelId == writeAccessId ?
+        expectedStatus = referenceDataModelId == writeAccessId ?
                          folderId == writeAccessId ? HttpStatus.OK : folderId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
-                                                      : dataModelId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
+                                                      : referenceDataModelId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
     }
 
     @Unroll
     void 'test access to #action using datamodel: #dataModelIdStr other datamodel: #otherDataModelIdStr is #allowedStr'() {
 
         given:
-        params.dataModelId = dataModelId
+        params.referenceDataModelId = referenceDataModelId
         params.otherModelId = otherDataModelId
 
         when:
@@ -159,7 +160,7 @@ class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterce
         response.status == (accepted ? HttpStatus.OK.code : HttpStatus.NOT_FOUND.code)
 
         where:
-        [action, dataModelId, otherDataModelId] << [['diff', 'suggestLinks'], [
+        [action, referenceDataModelId, otherDataModelId] << [['diff', 'suggestLinks'], [
             unknownId, readAccessId, noAccessId, writeAccessId
         ], [
                                                         unknownId, readAccessId, noAccessId, writeAccessId
@@ -168,16 +169,16 @@ class ReferenceDataModelInterceptorSpec extends TieredAccessCheckResourceInterce
                               otherDataModelId == readAccessId ? 'readAccessId' :
                               otherDataModelId == noAccessId ? 'noAccessId' :
                               'writeAccessId'
-        dataModelIdStr = dataModelId == unknownId ? 'unknownId' :
-                         dataModelId == readAccessId ? 'readAccessId' :
-                         dataModelId == noAccessId ? 'noAccessId' :
+        referenceDataModelIdStr = referenceDataModelId == unknownId ? 'unknownId' :
+                         referenceDataModelId == readAccessId ? 'readAccessId' :
+                         referenceDataModelId == noAccessId ? 'noAccessId' :
                          'writeAccessId'
-        accepted = otherDataModelId in [writeAccessId, readAccessId] && dataModelId in [writeAccessId, readAccessId]
+        accepted = otherDataModelId in [writeAccessId, readAccessId] && referenceDataModelId in [writeAccessId, readAccessId]
         allowedStr = accepted ? 'allowed' : 'not allowed'
-        expectedStatus = dataModelId == writeAccessId ?
+        expectedStatus = referenceDataModelId == writeAccessId ?
                          otherDataModelId == writeAccessId ? HttpStatus.OK :
                          otherDataModelId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
-                                                      : dataModelId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
+                                                      : referenceDataModelId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
 
     }
 }

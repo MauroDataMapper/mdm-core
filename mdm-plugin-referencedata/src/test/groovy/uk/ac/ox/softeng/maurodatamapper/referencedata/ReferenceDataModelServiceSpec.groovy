@@ -42,34 +42,28 @@ import spock.lang.PendingFeature
 class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<ReferenceDataModelService> {
 
     UUID id
-    ReferenceDataModel complexReferenceDataModel
     ReferenceDataModel simpleReferenceDataModel
 
     def setup() {
         log.debug('Setting up ReferenceDataModelServiceSpec unit')
-        mockArtefact(DataClassService)
         mockArtefact(ReferenceDataElementService)
         mockArtefact(ReferenceDataTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
         mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType,
-                    ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
+                    ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
-        complexReferenceDataModel = buildComplexReferenceDataModel()
-        simpleReferenceDataModel = buildSimpleReferenceDataModel()
+        simpleReferenceDataModel = buildExampleReferenceDataModel()
 
-        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                             authority: testAuthority)
-        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                             authority: testAuthority)
-        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard', type: ReferenceDataModelType.DATA_STANDARD, folder: testFolder,
-                                             authority: testAuthority)
+        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard',folder: testFolder, authority: testAuthority)
 
         checkAndSave(referenceDataModel1)
         checkAndSave(referenceDataModel2)
         checkAndSave(referenceDataModel3)
 
         ReferenceDataType dt = new ReferencePrimitiveType(createdByUser: admin, label: 'integration datatype')
-        referenceDataModel1.addToDataTypes(dt)
+        referenceDataModel1.addToReferenceDataTypes(dt)
         ReferenceDataElement dataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor, referenceDataType: dt)
 
         checkAndSave(referenceDataModel1)
@@ -78,13 +72,10 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         id = referenceDataModel1.id
     }
 
-    ReferenceDataModel buildSimpleReferenceDataModel(Authority authority) {
-        BootstrapModels.buildAndSaveSimpleReferenceDataModel(messageSource, testFolder, testAuthority)
+    ReferenceDataModel buildExampleReferenceDataModel(Authority authority) {
+        BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, testFolder, testAuthority)
     }
 
-    ReferenceDataModel buildComplexReferenceDataModel() {
-        BootstrapModels.buildAndSaveComplexReferenceDataModel(messageSource, testFolder, testAuthority)
-    }
 
     void "test get"() {
         expect:
@@ -103,25 +94,23 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         def dm2 = referenceDataModelList[1]
 
         then:
-        dm1.label == 'test database'
-        dm1.modelType == ReferenceDataModelType.DATA_ASSET.label
+        dm1.label == 'test form'
 
         and:
-        dm2.label == 'test form'
-        dm2.modelType == ReferenceDataModelType.DATA_ASSET.label
+        dm2.label == 'test standard'
 
     }
 
     void "test count"() {
 
         expect:
-        service.count() == 5
+        service.count() == 4
     }
 
     void "test delete"() {
 
         expect:
-        service.count() == 5
+        service.count() == 4
         ReferenceDataModel dm = service.get(id)
 
         when:
@@ -129,15 +118,14 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         service.save(dm)
 
         then:
-        ReferenceDataModel.countByDeleted(false) == 4
+        ReferenceDataModel.countByDeleted(false) == 3
         ReferenceDataModel.countByDeleted(true) == 1
     }
 
     void "test save"() {
 
         when:
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdByUser: reader2, label: 'saving test', type: ReferenceDataModelType.DATA_STANDARD, folder: testFolder,
-                                            authority: testAuthority)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdByUser: reader2, label: 'saving test', folder: testFolder, authority: testAuthority)
         service.save(referenceDataModel)
 
         then:
@@ -149,14 +137,6 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         then:
         saved.breadcrumbTree
         saved.breadcrumbTree.domainId == saved.id
-    }
-
-    void 'test finding datamodel types'() {
-        expect:
-        service.findAllDataAssets().size() == 2
-
-        and:
-        service.findAllDataStandards().size() == 3
     }
 
     void 'test finalising model'() {
@@ -195,7 +175,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.not.finalised.message' }
+        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.not.finalised.message' }
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -232,8 +212,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         newDocVersion.organisation == referenceDataModel.organisation
         newDocVersion.modelType == referenceDataModel.modelType
 
-        newDocVersion.dataTypes.size() == referenceDataModel.dataTypes.size()
-        newDocVersion.dataClasses.size() == referenceDataModel.dataClasses.size()
+        newDocVersion.referenceDataTypes.size() == referenceDataModel.referenceDataTypes.size()
 
         and: 'annotations and edits are not copied'
         !newDocVersion.annotations
@@ -243,22 +222,20 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         newDocVersion.versionLinks.any { it.targetModel.id == referenceDataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        referenceDataModel.dataTypes.every { odt ->
-            newDocVersion.dataTypes.any {
+        referenceDataModel.referenceDataTypes.every { odt ->
+            newDocVersion.referenceDataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        referenceDataModel.dataClasses.every { odc ->
-            newDocVersion.dataClasses.any {
-                int idcs = it.dataClasses?.size() ?: 0
-                int odcs = odc.dataClasses?.size() ?: 0
-                int ides = it.referenceDataElements?.size() ?: 0
-                int odes = odc.referenceDataElements?.size() ?: 0
-                it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
+
+        and:
+        referenceDataModel.referenceDataElements.every { odt ->
+            newDocVersion.referenceDataElements.any {
+                it.label == odt.label &&
+                it.id != odt.id &&
+                it.domainType == odt.domainType
             }
         }
     }
@@ -351,7 +328,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
+        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.superseded.message' }
     }
 
     @PendingFeature(reason = 'ReferenceDataModel permission copying')
@@ -376,7 +353,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
+        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.superseded.message' }
     }
 
     void 'DMSC06 : test creating a new model version on draft model'() {
@@ -391,7 +368,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.not.finalised.message' }
+        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.not.finalised.message' }
     }
 
     void 'DMSC07 : test creating a new model version on finalised model'() {
@@ -430,8 +407,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         newVersion.organisation == referenceDataModel.organisation
         newVersion.modelType == referenceDataModel.modelType
 
-        newVersion.dataTypes.size() == referenceDataModel.dataTypes.size()
-        newVersion.dataClasses.size() == referenceDataModel.dataClasses.size()
+        newVersion.referenceDataTypes.size() == referenceDataModel.referenceDataTypes.size()
 
         and: 'annotations and edits are not copied'
         !newVersion.annotations
@@ -442,22 +418,20 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         newVersion.versionLinks.any { it.targetModel.id == referenceDataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
-        referenceDataModel.dataTypes.every { odt ->
-            newVersion.dataTypes.any {
+        referenceDataModel.referenceDataTypes.every { odt ->
+            newVersion.referenceDataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        referenceDataModel.dataClasses.every { odc ->
-            newVersion.dataClasses.any {
-                int idcs = it.dataClasses?.size() ?: 0
-                int odcs = odc.dataClasses?.size() ?: 0
-                int ides = it.referenceDataElements?.size() ?: 0
-                int odes = odc.referenceDataElements?.size() ?: 0
-                it.label == odc.label &&
-                idcs == odcs &&
-                ides == odes
+
+        and:
+        referenceDataModel.referenceDataElements.every { odt ->
+            newVersion.referenceDataElements.any {
+                it.label == odt.label &&
+                it.id != odt.id &&
+                it.domainType == odt.domainType
             }
         }
     }
@@ -552,12 +526,12 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
+        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.superseded.message' }
     }
 
     void 'DMSV01 : test validation on valid model'() {
         given:
-        ReferenceDataModel check = complexReferenceDataModel
+        ReferenceDataModel check = simpleReferenceDataModel
 
         expect:
         !service.validate(check).hasErrors()
@@ -565,7 +539,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
     void 'DMSV02 : test validation on invalid simple model'() {
         given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, type: ReferenceDataModelType.DATA_ASSET, folder: testFolder, authority: testAuthority)
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, folder: testFolder, authority: testAuthority)
 
         when:
         ReferenceDataModel invalid = service.validate(check)
@@ -583,9 +557,8 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
     void 'DMSV03 : test validation on invalid primitive datatype model'() {
         given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        check.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin))
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid',folder: testFolder, authority: testAuthority)
+        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin))
 
         when:
         ReferenceDataModel invalid = service.validate(check)
@@ -595,17 +568,16 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('dataTypes[0].label')
+        invalid.errors.getFieldError('referenceDataTypes[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
     }
 
-    /*void 'DMSV04 : test validation on invalid dataclass model'() {
+       void 'DMSV06 : test validation on invalid reference datatype model'() {
         given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        check.addToDataClasses(new DataClass(createdByUser: admin))
+        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', folder: testFolder, authority: testAuthority)
+        check.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin))
 
         when:
         ReferenceDataModel invalid = service.validate(check)
@@ -615,176 +587,9 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].label')
+        invalid.errors.getFieldError('referenceDataTypes[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
     }
-
-    void 'DMSV05 : test validation on invalid dataclass dataelement model'() {
-        given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        parent.addToDataElements(createdByUser: admin)
-        check.addToDataClasses(parent)
-
-        when:
-        ReferenceDataModel invalid = service.validate(check)
-
-        then:
-        invalid.hasErrors()
-        invalid.errors.errorCount == 2
-        invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
-        invalid.errors.getFieldError('childDataClasses[0].dataElements[0].label')
-
-        cleanup:
-        GormUtils.outputDomainErrors(messageSource, invalid)
-    }
-
-    void 'DMSV06 : test validation on invalid reference datatype model'() {
-        given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        DataClass dc = new DataClass(createdByUser: admin, label: 'ref')
-        check.addToDataClasses(dc)
-        check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref'))
-
-        when:
-        ReferenceDataModel invalid = service.validate(check)
-
-        then:
-        invalid.hasErrors()
-        invalid.errors.errorCount == 1
-        invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('dataTypes[0].referenceClass')
-
-        cleanup:
-        GormUtils.outputDomainErrors(messageSource, invalid)
-    }
-
-    void 'DMSV07 : test validation on invalid nested reference datatype model'() {
-        given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        DataClass dc = new DataClass(createdByUser: admin)
-        check.addToDataClasses(dc)
-        check.addToDataTypes(new ReferenceType(createdByUser: admin, label: 'ref', referenceClass: dc))
-
-        when:
-        ReferenceDataModel invalid = service.validate(check)
-
-        then:
-        invalid.hasErrors()
-        invalid.errors.errorCount == 2
-        invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
-        invalid.errors.fieldErrors.any { it.field == 'dataTypes[0].referenceClass.label' }
-        invalid.errors.fieldErrors.any { it.field == 'childDataClasses[0].label' }
-
-        cleanup:
-        GormUtils.outputDomainErrors(messageSource, invalid)
-    }
-
-    void 'DMSV08 : test validation on invalid nested dataclass model'() {
-        given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        parent.addToDataClasses(new DataClass(createdByUser: admin))
-        check.addToDataClasses(parent)
-        check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
-
-        when:
-        ReferenceDataModel invalid = service.validate(check)
-
-        then:
-        invalid.hasErrors()
-        invalid.errors.errorCount == 1
-        invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].label')
-
-        cleanup:
-        GormUtils.outputDomainErrors(messageSource, invalid)
-    }
-
-    void 'DMSV09 : test validation on invalid nested dataclass dataelement model'() {
-        given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        DataClass child = new DataClass(createdByUser: admin, label: 'child')
-        child.addToDataElements(createdByUser: admin, label: 'el')
-        parent.addToDataClasses(child)
-        check.addToDataClasses(parent)
-        check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
-
-        when:
-        ReferenceDataModel invalid = service.validate(check)
-
-        then:
-        invalid.hasErrors()
-        invalid.errors.errorCount == 1
-        invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].dataElements[0].dataType')
-
-        cleanup:
-        GormUtils.outputDomainErrors(messageSource, invalid)
-    }
-
-    void 'DMSV10 : test validation on invalid double nested dataclass model'() {
-        given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        grandparent.addToDataClasses(parent)
-        parent.addToDataClasses(new DataClass(createdByUser: admin))
-        check.addToDataClasses(grandparent)
-        check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
-
-        when:
-        ReferenceDataModel invalid = service.validate(check)
-
-        then:
-        invalid.hasErrors()
-        invalid.errors.errorCount == 1
-        invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].dataClasses[0].label')
-
-        cleanup:
-        GormUtils.outputDomainErrors(messageSource, invalid)
-    }
-
-    void 'DMSV11 : test validation on invalid double nested dataclass dataelement model'() {
-        given:
-        ReferenceDataModel check = new ReferenceDataModel(createdByUser: reader1, label: 'test invalid', type: ReferenceDataModelType.DATA_ASSET, folder: testFolder,
-                                        authority: testAuthority)
-        DataClass grandparent = new DataClass(createdByUser: admin, label: 'grandparent')
-        DataClass parent = new DataClass(createdByUser: admin, label: 'parent')
-        grandparent.addToDataClasses(parent)
-        DataClass child = new DataClass(createdByUser: admin, label: 'child')
-        child.addToDataElements(createdByUser: admin, label: 'el')
-        parent.addToDataClasses(child)
-        check.addToDataClasses(grandparent)
-        check.addToDataClasses(new DataClass(createdByUser: admin, label: 'other'))
-
-        when:
-        ReferenceDataModel invalid = service.validate(check)
-
-        then:
-        invalid.hasErrors()
-        invalid.errors.errorCount == 1
-        invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].dataClasses[0].dataElements[0].dataType')
-
-        cleanup:
-        GormUtils.outputDomainErrors(messageSource, invalid)
-    }*/
 }

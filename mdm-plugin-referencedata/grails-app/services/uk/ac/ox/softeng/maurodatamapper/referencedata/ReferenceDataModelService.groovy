@@ -270,7 +270,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     void deleteAllUnusedDataTypes(ReferenceDataModel referenceDataModel) {
         log.debug('Cleaning ReferenceDataModel {} of DataTypes', referenceDataModel.label)
         referenceDataModel.referenceDataTypes.findAll { !it.dataElements }.each {
-            dataTypeService.delete(it)
+            referenceDataTypeService.delete(it)
         }
     }
 
@@ -282,7 +282,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
         if (referenceDataModel.referenceDataTypes) {
             referenceDataModel.referenceDataTypes.each { dt ->
-                dataTypeService.checkImportedDataTypeAssociations(importingUser, referenceDataModel, dt)
+                referenceDataTypeService.checkImportedDataTypeAssociations(importingUser, referenceDataModel, dt)
             }
         }
         log.debug('ReferenceDataModel associations checked')
@@ -372,7 +372,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
         ReferenceDataModel newMainBranchModelVersion
         if (!draftModelOnMainBranchForLabel) {
-            newMainBranchModelVersion = copyDataModel(referenceDataModel,
+            newMainBranchModelVersion = copyReferenceDataModel(referenceDataModel,
                                                       user,
                                                       copyPermissions,
                                                       referenceDataModel.label,
@@ -380,7 +380,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
                                                       additionalArguments.throwErrors as boolean,
                                                       userSecurityPolicyManager,
                                                       true)
-            setDataModelIsNewBranchModelVersionOfDataModel(newMainBranchModelVersion, referenceDataModel, user)
+            setReferenceDataModelIsNewBranchModelVersionOfReferenceDataModel(newMainBranchModelVersion, referenceDataModel, user)
 
             if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
         }
@@ -408,7 +408,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
                                             UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(referenceDataModel)) return referenceDataModel
 
-        ReferenceDataModel newDocVersion = copyDataModel(referenceDataModel,
+        ReferenceDataModel newDocVersion = copyReferenceDataModel(referenceDataModel,
                                                 user,
                                                 copyPermissions,
                                                 referenceDataModel.label,
@@ -417,7 +417,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
                                                 additionalArguments.throwErrors as boolean,
                                                 userSecurityPolicyManager,
                                                 true)
-        setDataModelIsNewDocumentationVersionOfDataModel(newDocVersion, referenceDataModel, user)
+        setReferenceDataModelIsNewDocumentationVersionOfReferenceDataModel(newDocVersion, referenceDataModel, user)
 
         if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
         newDocVersion
@@ -482,7 +482,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         if (original.referenceDataTypes) {
             // Copy all the datatypes
             original.referenceDataTypes.each { dt ->
-                dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager)
+                referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
 
@@ -504,7 +504,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         copy
     }
 
-    void setDataModelIsNewForkModelOfDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel, User catalogueUser) {
+    void setReferenceDataModelIsNewForkModelOfReferenceDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
             linkType: VersionLinkType.NEW_FORK_OF,
             createdBy: catalogueUser.emailAddress,
@@ -512,7 +512,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         )
     }
 
-    void setDataModelIsNewDocumentationVersionOfDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel, User catalogueUser) {
+    void setReferenceDataModelIsNewDocumentationVersionOfReferenceDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
             linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
@@ -520,7 +520,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         )
     }
 
-    void setDataModelIsNewBranchModelVersionOfDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel, User catalogueUser) {
+    void setReferenceDataModelIsNewBranchModelVersionOfReferenceDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel, User catalogueUser) {
         newModel.addToVersionLinks(
             linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
@@ -757,7 +757,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
                 existingModels.each { existing ->
                     log.debug('Setting DataModel as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
-                    setDataModelIsNewDocumentationVersionOfDataModel(referenceDataModel, existing, catalogueUser)
+                    setReferenceDataModelIsNewDocumentationVersionOfReferenceDataModel(referenceDataModel, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 referenceDataModel.documentationVersion = Version.nextMajorVersion(latestVersion)
@@ -792,7 +792,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         referenceDataModel
     }
 
-    void setDataModelIsFromDataModel(ReferenceDataModel source, ReferenceDataModel target, User user) {
+    void setReferenceDataModelIsFromReferenceDataModel(ReferenceDataModel source, ReferenceDataModel target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
 }

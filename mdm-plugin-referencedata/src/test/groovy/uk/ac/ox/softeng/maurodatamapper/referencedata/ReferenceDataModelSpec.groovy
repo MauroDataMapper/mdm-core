@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -38,35 +39,31 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
 
     def setup() {
         log.debug('Setting up ReferenceDataModelSpec unit')
-        mockDomains(ReferenceDataType, ReferencePrimitiveType, ReferenceType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement, ReferenceDataValue)
+        mockDomains(ReferenceDataType, ReferencePrimitiveType, ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement, ReferenceDataValue)
     }
 
-    ReferenceDataModel buildSimpleReferenceDataModel() {
-        BootstrapModels.buildAndSaveSimpleReferenceDataModel(messageSource, testFolder, testAuthority)
-    }
-
-    ReferenceDataModel buildComplexReferenceDataModel() {
-        BootstrapModels.buildAndSaveComplexReferenceDataModel(messageSource, testFolder, testAuthority)
+    ReferenceDataModel buildExampleReferenceDataModel() {
+        BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, testFolder, testAuthority)
     }
 
     @Override
     ReferenceDataModel createValidDomain(String label) {
-        new ReferenceDataModel(folder: testFolder, label: label, type: ReferenceDataModelType.DATA_STANDARD, createdBy: UNIT_TEST, authority: testAuthority)
+        new ReferenceDataModel(folder: testFolder, label: label, createdBy: UNIT_TEST, authority: testAuthority)
     }
 
     @Override
     void setValidDomainOtherValues() {
-        domain.modelType = ReferenceDataModelType.DATA_STANDARD.label
+        
     }
 
     @Override
     void verifyDomainOtherConstraints(ReferenceDataModel domain) {
-        domain.modelType == ReferenceDataModelType.DATA_STANDARD.label
+        
     }
 
-    /*void 'test simple ReferenceDataModel valid'() {
+    void 'test example ReferenceDataModel valid'() {
         when:
-        ReferenceDataModel simple = buildSimpleReferenceDataModel()
+        ReferenceDataModel simple = buildExampleReferenceDataModel()
 
         then:
         check(simple)
@@ -75,17 +72,7 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
         checkAndSave(simple)
     }
 
-    void 'test complex ReferenceDataModel valid'() {
-        when:
-        ReferenceDataModel complex = buildComplexReferenceDataModel()
-
-        then:
-        check(complex)
-
-        and:
-        checkAndSave(complex)
-    }
-
+    
     void 'simple diff of label'() {
         when:
         def dm1 = new ReferenceDataModel(label: 'test model 1', folder: testFolder, authority: testAuthority, createdBy: UNIT_TEST)
@@ -103,76 +90,23 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
         diff.objectsAreIdentical()
     }
 
-    void 'test adding dataclasses to ReferenceDataModel'() {
 
-        given:
-        setValidDomainValues()
-        domain.addToDataTypes(new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'string'))
-        domain.addToDataTypes(new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'integer'))
-
-        when: 'adding empty dataclass'
-        domain.addToDataClasses(createdBy: UNIT_TEST, label: 'emptyclass', authority: testAuthority)
-
-        then:
-        checkAndSave(domain)
-        domain.count() == 1
-        DataClass.count() == 1
-
-        when:
-        DataClass empty = DataClass.findByLabel('emptyclass')
-
-        then:
-        empty.path == "/${domain.id}"
-        empty.depth == 1
-        !empty.parentDataClass
-        empty.referenceDataModel.id == domain.id
-
-        when: 'creating a dataclass with child dataclass'
-        DataClass parent = new DataClass(createdBy: UNIT_TEST, label: 'parent')
-        parent.addToDataClasses(createdBy: UNIT_TEST, label: 'child')
-        domain.addToDataClasses(parent)
-
-        then:
-        checkAndSave(domain)
-        domain.count() == 1
-        DataClass.count() == 3
-
-        when:
-        DataClass parentS = DataClass.findByLabel('parent')
-        DataClass childS = DataClass.findByLabel('child')
-
-        then:
-        parentS.path == "/${domain.id}"
-        parentS.depth == 1
-        !parentS.parentDataClass
-        parentS.referenceDataModel.id == domain.id
-
-        and:
-        childS.path == "/${domain.id}/$parent.id"
-        childS.depth == 2
-        childS.parentDataClass.id == parent.id
-        childS.referenceDataModel
-        childS.referenceDataModel.id == domain.id
-
-    }*/
-
-
-    /*void 'test adding new datatypes to datamodel'() {
+    void 'test adding new ReferenceDataTypes to ReferenceDataModel'() {
 
         given:
         setValidDomainValues()
 
-        when: 'adding datatypes'
-        domain.addToDataTypes(new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'string'))
-        domain.addToDataTypes(new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'integer'))
+        when: 'adding referencedatatypes'
+        domain.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'string'))
+        domain.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'integer'))
 
         then:
         checkAndSave(domain)
         domain.count() == 1
         ReferencePrimitiveType.count() == 2
 
-        when: 'adding invalid datatype and annotation'
-        domain.addToDataTypes(new ReferencePrimitiveType(createdBy: UNIT_TEST, description: 'string'))
+        when: 'adding invalid reference datatype and annotation'
+        domain.addToReferenceDataTypes(new ReferencePrimitiveType(createdBy: UNIT_TEST, description: 'string'))
         domain.addToAnnotations(label: 'annotation', createdBy: UNIT_TEST)
         checkAndSave(domain)
 
@@ -181,57 +115,33 @@ class ReferenceDataModelSpec extends ModelSpec<ReferenceDataModel> implements Do
         domain.errors.allErrors.size() == 1
     }
 
-    void 'diff in class'() {
+    
+    void 'diff in ReferenceDataElement'() {
         when:
-        def dm1 = new DataModel(label: 'test model', folder: testFolder, authority: testAuthority)
-        def dm2 = new DataModel(label: 'test model', folder: testFolder, authority: testAuthority)
-        dm1.addToDataClasses(new DataClass(label: 'class 1'))
-        Diff<DataModel> diff = dm1.diff(dm2)
-        then:
-        diff.getNumberOfDiffs() == 1
-
-        when:
-        dm2.addToDataClasses(new DataClass(label: 'class 2'))
-        diff = dm1.diff(dm2)
-
-        then:
-        diff.getNumberOfDiffs() == 2
-    }
-
-
-    void 'diff in element'() {
-        when:
-        def dm1 = new DataModel(label: 'test model', createdBy: UNIT_TEST, folder: testFolder, authority: testAuthority)
+        def dm1 = new ReferenceDataModel(label: 'test model', createdBy: UNIT_TEST, folder: testFolder, authority: testAuthority)
         def dt = new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'string')
-        dm1.addToDataTypes(dt)
+        dm1.addToReferenceDataTypes(dt)
 
 
-        dm1.addToDataClasses(new DataClass(label: 'class 1', createdBy: UNIT_TEST))
-        dm1.childDataClasses.each {
-            c -> c.addToDataElements(new ReferenceDataElement(label: 'elem 1', referenceDataType: dt, createdBy: UNIT_TEST))
-        }
-
-        def dm2 = new DataModel(label: 'test model', createdBy: UNIT_TEST, folder: testFolder)
-        dt = new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'string')
-        dm2.addToDataTypes(dt)
-
-        dm2.addToDataClasses(new DataClass(label: 'class 1', createdBy: UNIT_TEST))
-        dm2.childDataClasses.each {
-            c -> c.addToDataElements(new ReferenceDataElement(label: 'elem 2', referenceDataType: dt, createdBy: UNIT_TEST))
-        }
+        def dm2 = new ReferenceDataModel(label: 'test model', createdBy: UNIT_TEST, folder: testFolder, authority: testAuthority)
+        dt = new ReferencePrimitiveType(createdBy: UNIT_TEST, label: 'different string')
+        dm2.addToReferenceDataTypes(dt)
 
 
-        Diff<DataModel> diff = dm1.diff(dm2)
+        Diff<ReferenceDataModel> diff = dm1.diff(dm2)
         then:
-        diff.getNumberOfDiffs() == 4
+        diff.diffs.size() == 1
+        diff.diffs.any {it.fieldName == 'referenceDataTypes'}
+
 
         when:
         dm2.label = "test model 2"
         diff = dm1.diff(dm2)
 
         then:
-        diff.getNumberOfDiffs() == 5
-    }*/
+        diff.diffs.size() == 2
+        diff.diffs.any {it.fieldName == 'referenceDataTypes'}
+        diff.diffs.any {it.fieldName == 'label'}
 
-
+    }
 }
