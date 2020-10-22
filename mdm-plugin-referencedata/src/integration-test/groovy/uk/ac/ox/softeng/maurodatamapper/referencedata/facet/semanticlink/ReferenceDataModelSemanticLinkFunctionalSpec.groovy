@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/*package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.semanticlink
+package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.semanticlink
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -31,12 +31,12 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import spock.lang.Shared*/
+import spock.lang.Shared
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkController
  */
-/*@Integration
+@Integration
 @Slf4j
 class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunctionalSpec {
 
@@ -96,25 +96,25 @@ class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemantic
 
     @Override
     String getTargetCatalogueItemId() {
-        dataClass.id.toString()
+        referenceDataElement.id.toString()
     }
 
     @Override
     String getTargetCatalogueItemDomainType() {
-        'DataClass'
+        'ReferenceDataElement'
     }
 
     @Override
     String getCatalogueItemDomainType() {
-        'DataModel'
+        'ReferenceDataModel'
     }
 
     @Override
     String getSourceCatalogueItemJsonString() {
         '''{
     "id": "${json-unit.matches:id}",
-    "domainType": "DataModel",
-    "label": "Functional Test DataModel"
+    "domainType": "ReferenceDataModel",
+    "label": "Functional Test ReferenceDataModel"
   }'''
     }
 
@@ -122,14 +122,14 @@ class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemantic
     String getTargetCatalogueItemJsonString() {
         '''{
     "id": "${json-unit.matches:id}",
-    "domainType": "DataClass",
-    "label": "Functional Test DataClass",
+    "domainType": "ReferenceDataElement",
+    "label": "Functional Test ReferenceDataElement",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataModel",
-        "domainType": "DataModel",
+        "label": "Functional Test ReferenceDataModel",
+        "domainType": "ReferenceDataModel",
         "finalised": false
       }
     ]
@@ -156,15 +156,15 @@ class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemantic
         String id = createNewItem(validJson)
 
         when: 'finalise and create a new copy of the finalised model'
-        PUT("dataModels/${dataModel.id}/finalise", [:], MAP_ARG, true)
-        PUT("dataModels/${dataModel.id}/newForkModel", ['label': 'Functional Test Fork'], MAP_ARG, true)
+        PUT("referenceDataModels/${referenceDataModel.id}/finalise", [versionChangeType: "Major"], MAP_ARG, true)
+        PUT("referenceDataModels/${referenceDataModel.id}/newForkModel", ['label': 'Functional Test Fork'], MAP_ARG, true)
 
         then:
         verifyResponse(HttpStatus.CREATED, response)
 
         when: 'Get the forked models SLs'
         String forkId = responseBody().get("id")
-        GET("dataModels/${forkId}/semanticLinks", MAP_ARG, true)
+        GET("referenceDataModels/${forkId}/semanticLinks", MAP_ARG, true)
 
         then:
         verifyResponse(HttpStatus.OK, response)
@@ -176,7 +176,7 @@ class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemantic
         }
         responseBody().items.any { Map m ->
             m.linkType == SemanticLinkType.REFINES.label &&
-            m.targetCatalogueItem.id == dataModel.id.toString() &&
+            m.targetCatalogueItem.id == referenceDataModel.id.toString() &&
             !m.unconfirmed
         }
 
@@ -186,14 +186,14 @@ class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemantic
             m.targetCatalogueItem.id == targetCatalogueItemId &&
             m.unconfirmed
         }.id
-        PUT("dataModels/${forkId}/semanticLinks/${semanticLinkId}/confirm", [:], MAP_ARG, true)
+        PUT("referenceDataModels/${forkId}/semanticLinks/${semanticLinkId}/confirm", [:], MAP_ARG, true)
 
         then:
         verifyResponse(HttpStatus.OK, response)
 
         cleanup:
-        DELETE("dataModels/$forkId?permanent=true", MAP_ARG, true)
+        DELETE("referenceDataModels/$forkId?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
         cleanUpData(id)
     }
-}*/
+}
