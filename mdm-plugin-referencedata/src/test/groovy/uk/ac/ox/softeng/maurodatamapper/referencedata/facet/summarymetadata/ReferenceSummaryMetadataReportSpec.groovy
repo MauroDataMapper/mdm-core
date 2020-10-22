@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
-//import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -37,23 +37,25 @@ class ReferenceSummaryMetadataReportSpec extends CreatorAwareSpec<ReferenceSumma
     OffsetDateTime dateTime
 
     def setup() {
-        /*mockDomains(Folder, DataModel, ReferenceSummaryMetadata, Authority)
+        mockDomains(Folder, ReferenceDataModel, ReferenceSummaryMetadata, Authority)
         misc = new Folder(createdBy: StandardEmailAddress.UNIT_TEST, label: 'misc')
-        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
-        db = new DataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: Authority.findByLabel('Test Authority'))
         checkAndSave(misc)
+
+        checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
+        db = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: Authority.findByLabel('Test Authority'))
+        
         checkAndSave(db)
-        referenceSummaryMetadata = new ReferenceSummaryMetadata(referenceSummaryMetadataType: ReferenceSummaryMetadataType.NUMBER, label: 'test',
+        referenceSummaryMetadata = new ReferenceSummaryMetadata(summaryMetadataType: SummaryMetadataType.NUMBER, label: 'test',
                                               createdBy: StandardEmailAddress.UNIT_TEST, catalogueItem: db)
         checkAndSave(referenceSummaryMetadata)
-        dateTime = OffsetDateTime.now()*/
+        dateTime = OffsetDateTime.now()
     }
 
     @Override
     void setValidDomainOtherValues() {
         domain.reportDate = dateTime
         domain.reportValue = 'some text'
-        referenceSummaryMetadata.addToReferenceSummaryMetadataReports(domain)
+        referenceSummaryMetadata.addToSummaryMetadataReports(domain)
     }
 
     @Override

@@ -51,12 +51,12 @@ class ReferenceSummaryMetadataReportService {
         summaryMetadataReport.delete()
     }
 
-    ReferenceSummaryMetadataReport findBySummaryMetadataIdAndId(UUID summaryMetadataId, Serializable id) {
-        ReferenceSummaryMetadataReport.bySummaryMetadataIdAndId(summaryMetadataId, id).get()
+    ReferenceSummaryMetadataReport findByReferenceSummaryMetadataIdAndId(UUID referenceSummaryMetadataId, Serializable id) {
+        ReferenceSummaryMetadataReport.byReferenceSummaryMetadataIdAndId(referenceSummaryMetadataId, id).get()
     }
 
-    List<ReferenceSummaryMetadataReport> findAllBySummaryMetadataId(UUID summaryMetadataId, Map pagination = [:]) {
-        ReferenceSummaryMetadataReport.bySummaryMetadataId(summaryMetadataId).list(pagination)
+    List<ReferenceSummaryMetadataReport> findAllByReferenceSummaryMetadataId(UUID referenceSummaryMetadataId, Map pagination = [:]) {
+        ReferenceSummaryMetadataReport.byReferenceSummaryMetadataId(referenceSummaryMetadataId).list(pagination)
     }
 
     ReferenceSummaryMetadataReport addCreatedEditToCatalogueItem(User creator, ReferenceSummaryMetadataReport domain, String catalogueItemDomainType,

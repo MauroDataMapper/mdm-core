@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
-//import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -42,8 +42,8 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
     ReferenceSummaryMetadata referenceSummaryMetadata
 
     def setup() {
-       /* mockDomains(Folder, ReferenceDataModel, SummaryMetadata, ReferenceSummaryMetadataReport, Authority)
-        log.debug('Setting up summary metadata controller unit')
+       mockDomains(Folder, ReferenceDataModel, ReferenceSummaryMetadata, ReferenceSummaryMetadataReport, Authority)
+        log.debug('Setting up reference summary metadata controller unit')
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
         referenceDataModel = new ReferenceDataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
@@ -51,12 +51,13 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
         checkAndSave referenceDataModel
         dateTime = OffsetDateTime.now()
 
-        summaryMetadata = new SummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3',
+        referenceSummaryMetadata = new ReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3',
                                               summaryMetadataType: SummaryMetadataType.STRING)
         domain.createdBy = StandardEmailAddress.UNIT_TEST
         domain.reportValue = 'a report value'
         domain.reportDate = dateTime
-        summaryMetadata.addToSummaryMetadataReports(domain)
+        referenceSummaryMetadata
+            .addToSummaryMetadataReports(domain)
             .addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST,
                                          reportValue: 'another report',
                                          reportDate: dateTime.plusDays(1))
@@ -64,21 +65,24 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
                                          reportValue: 'another report 2',
                                          reportDate: dateTime.plusDays(2))
 
-        referenceDataModel.addToSummaryMetadata(summaryMetadata)
+        referenceDataModel.addToReferenceSummaryMetadata(referenceSummaryMetadata)
 
         checkAndSave(referenceDataModel)
 
-        controller.summaryMetadataReportService = Stub(ReferenceSummaryMetadataReportService) {
-            findBySummaryMetadataIdAndId(summaryMetadata.id, _) >> {UUID iid, Serializable mid ->
-                if (iid != summaryMetadata.id) return null
+        controller.referenceSummaryMetadataReportService = Stub(ReferenceSummaryMetadataReportService) {
+            findByReferenceSummaryMetadataIdAndId(referenceSummaryMetadata.id, _) >> {UUID iid, Serializable mid ->
+                if (iid != referenceSummaryMetadata.id) return null
                 mid == domain.id ? domain : null
             }
-            findAllBySummaryMetadataId(summaryMetadata.id, _) >> summaryMetadata.summaryMetadataReports.toList()
+            findAllByReferenceSummaryMetadataId(referenceSummaryMetadata.id, _) >> {
+              log.debug("${referenceSummaryMetadata.summaryMetadataReports.toList()}")
+              referenceSummaryMetadata.summaryMetadataReports.toList()
+            }
             findCatalogueItemByDomainTypeAndId(ReferenceDataModel.simpleName, _) >> {String domain, UUID bid -> referenceDataModel.id == bid ? referenceDataModel : null}
         }
-        controller.summaryMetadataService = Stub(ReferenceSummaryMetadataService) {
-            get(summaryMetadata.id) >> summaryMetadata
-        }*/
+        controller.referenceSummaryMetadataService = Stub(ReferenceSummaryMetadataService) {
+            get(referenceSummaryMetadata.id) >> referenceSummaryMetadata
+        }
     }
 
     @Override
@@ -115,12 +119,12 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
   "total": 2,
   "errors": [
     {
-      "message": "Property [reportDate] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata''' +
-        '''.SummaryMetadataReport] cannot be null"
+      "message": "Property [reportDate] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata''' +
+        '''.ReferenceSummaryMetadataReport] cannot be null"
     },
     {
-      "message": "Property [reportValue] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata''' +
-        '''.SummaryMetadataReport] cannot be null"
+      "message": "Property [reportValue] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata''' +
+        '''.ReferenceSummaryMetadataReport] cannot be null"
     }
   ]
 }'''
@@ -131,8 +135,8 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
         '''{
   "total": 1,
   "errors": [
-{"message": "Property [reportDate] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.''' +
-        '''SummaryMetadataReport] cannot be null"}
+{"message": "Property [reportDate] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.''' +
+        '''ReferenceSummaryMetadataReport] cannot be null"}
   ]
 }'''
     }
@@ -162,8 +166,8 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
         '''{
   "total": 1,
   "errors": [
-    {"message": "Property [reportValue] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.''' +
-        '''SummaryMetadataReport] cannot be null"}
+    {"message": "Property [reportValue] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.''' +
+        '''ReferenceSummaryMetadataReport] cannot be null"}
   ]
 }'''
     }
@@ -205,6 +209,6 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
         super.givenParameters()
         params.catalogueItemDomainType = ReferenceDataModel.simpleName
         params.catalogueItemId = referenceDataModel.id
-        params.summaryMetadataId = summaryMetadata.id
+        params.referenceSummaryMetadataId = referenceSummaryMetadata.id
     }
 }

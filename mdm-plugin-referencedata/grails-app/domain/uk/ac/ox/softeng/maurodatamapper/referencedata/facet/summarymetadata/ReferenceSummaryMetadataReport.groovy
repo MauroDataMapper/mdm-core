@@ -59,12 +59,12 @@ class ReferenceSummaryMetadataReport implements CreatorAware {
         "Summary Metadata Report:${reportDate}"
     }
 
-    static DetachedCriteria<ReferenceSummaryMetadataReport> bySummaryMetadataId(Serializable summaryMetadataId) {
+    static DetachedCriteria<ReferenceSummaryMetadataReport> byReferenceSummaryMetadataId(Serializable referenceSummaryMetadataId) {
         new DetachedCriteria<ReferenceSummaryMetadataReport>(ReferenceSummaryMetadataReport).
-            eq('summaryMetadata.id', Utils.toUuid(summaryMetadataId)).join('summaryMetadata')
+            eq('summaryMetadata.id', Utils.toUuid(referenceSummaryMetadataId)).join('summaryMetadata')
     }
 
-    static DetachedCriteria<ReferenceSummaryMetadataReport> bySummaryMetadataIdAndId(Serializable summaryMetadataId, Serializable resourceId) {
-        bySummaryMetadataId(summaryMetadataId).idEq(Utils.toUuid(resourceId))
+    static DetachedCriteria<ReferenceSummaryMetadataReport> byReferenceSummaryMetadataIdAndId(Serializable referenceSummaryMetadataId, Serializable resourceId) {
+        byReferenceSummaryMetadataId(referenceSummaryMetadataId).idEq(Utils.toUuid(resourceId))
     }
 }

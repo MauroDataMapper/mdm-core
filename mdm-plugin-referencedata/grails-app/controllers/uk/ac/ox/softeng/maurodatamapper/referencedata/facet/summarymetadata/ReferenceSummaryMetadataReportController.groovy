@@ -33,13 +33,13 @@ class ReferenceSummaryMetadataReportController extends EditLoggingController<Ref
 
     @Override
     protected ReferenceSummaryMetadataReport queryForResource(Serializable resourceId) {
-        return referenceSummaryMetadataReportService.findBySummaryMetadataIdAndId(params.summaryMetadataId, resourceId)
+        return referenceSummaryMetadataReportService.findByReferenceSummaryMetadataIdAndId(params.referenceSummaryMetadataId, resourceId)
 
     }
 
     @Override
     protected List<ReferenceSummaryMetadataReport> listAllReadableResources(Map params) {
-        return referenceSummaryMetadataReportService.findAllBySummaryMetadataId(params.summaryMetadataId, params)
+        return referenceSummaryMetadataReportService.findAllByReferenceSummaryMetadataId(params.referenceSummaryMetadataId, params)
     }
 
     @Override
