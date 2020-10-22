@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLab
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
@@ -52,7 +53,7 @@ import org.springframework.validation.FieldError
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceDataModel implements Model<ReferenceDataModel> {
+class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryMetadataAware {
 
     UUID id
 
@@ -77,7 +78,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel> {
 
     static constraints = {
         CallableConstraints.call(ModelConstraints, delegate)
-        referenceDataTypes validator: { val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataTypes').isValid(val) }
+        referenceDataTypes validator: { val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'referenceDataTypes').isValid(val) }
     }
 
     static mapping = {

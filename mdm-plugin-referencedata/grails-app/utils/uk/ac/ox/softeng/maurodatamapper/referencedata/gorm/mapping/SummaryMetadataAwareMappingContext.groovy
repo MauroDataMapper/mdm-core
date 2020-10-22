@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.CatalogueItemJoinTableDynamicHibernateMappingContext
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataAware
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
@@ -27,11 +27,11 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 class SummaryMetadataAwareMappingContext extends CatalogueItemJoinTableDynamicHibernateMappingContext {
     @Override
     boolean handlesDomainClass(Class domainClass) {
-        Utils.parentClassIsAssignableFromChild(SummaryMetadataAware, domainClass)
+        Utils.parentClassIsAssignableFromChild(ReferenceSummaryMetadataAware, domainClass)
     }
 
     @Override
     String getPropertyName() {
-        'summaryMetadata'
+        'referenceSummaryMetadata'
     }
 }

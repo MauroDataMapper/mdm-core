@@ -30,18 +30,18 @@ class ReferenceSummaryMetadataInterceptorSpec extends VariableContainedResourceI
 
     @Override
     String getControllerName() {
-        'summaryMetadata'
+        'referenceSummaryMetadata'
     }
 
     @Override
     void setContainingResourceParameters(String id) {
-        params.catalogueItemDomainType = 'dataModels'
+        params.catalogueItemDomainType = 'referenceDataModels'
         params.catalogueItemId = id
     }
 
     @Override
     void setAnyInitialParams() {
-        params.catalogueItemDomainType = 'dataModels'
+        params.catalogueItemDomainType = 'referenceDataModels'
         params.catalogueItemId = UUID.randomUUID().toString()
     }
 

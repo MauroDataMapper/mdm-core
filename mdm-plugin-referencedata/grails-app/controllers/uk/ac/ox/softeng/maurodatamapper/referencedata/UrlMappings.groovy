@@ -113,7 +113,7 @@ class UrlMappings {
              * Summary metadata
              */
             group "/$catalogueItemDomainType/$catalogueItemId", {
-                '/summaryMetadata'(resources: 'referenceSummaryMetadata', excludes: DEFAULT_EXCLUDES) {
+                '/referenceSummaryMetadata'(resources: 'referenceSummaryMetadata', excludes: DEFAULT_EXCLUDES) {
                     '/summaryMetadataReports'(resources: 'referenceSummaryMetadataReport', excludes: DEFAULT_EXCLUDES)
                 }
             }

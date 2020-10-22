@@ -36,8 +36,8 @@ class SummaryMetadataLabelValidator extends UniqueStringValidator<ReferenceSumma
 
     @Override
     boolean valueIsNotUnique(String value) {
-        if (object.catalogueItem?.summaryMetadata) {
-            if (object.catalogueItem.summaryMetadata.count {it.label == value} > 1) return true
+        if (object.catalogueItem?.referenceSummaryMetadata) {
+            if (object.catalogueItem.referenceSummaryMetadata.count {it.label == value} > 1) return true
         }
         false
     }

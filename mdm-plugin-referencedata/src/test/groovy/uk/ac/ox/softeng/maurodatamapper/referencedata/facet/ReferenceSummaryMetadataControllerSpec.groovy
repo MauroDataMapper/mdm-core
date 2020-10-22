@@ -38,35 +38,36 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
     ReferenceDataModel referenceDataModel
 
     def setup() {
-        mockDomains(Folder, DataModel, ReferenceSummaryMetadata, SummaryMetadataReport)
-        log.debug('Setting up summary metadata controller unit')
+        mockDomains(Folder, ReferenceDataModel, ReferenceSummaryMetadata, ReferenceSummaryMetadataReport)
+        log.debug('Setting up reference summary metadata controller unit')
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost")
         checkAndSave(testAuthority)
         referenceDataModel = new ReferenceDataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'), authority: testAuthority)
         checkAndSave referenceDataModel
 
-       /* dataModel.
-            addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 1', summaryMetadataType: SummaryMetadataType.MAP)
-        dataModel.addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description',
+        referenceDataModel.
+            addToReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 1', summaryMetadataType: SummaryMetadataType.MAP)
+
+        referenceDataModel.addToReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description',
                                        summaryMetadataType: SummaryMetadataType.NUMBER)
         domain.createdBy = StandardEmailAddress.UNIT_TEST
         domain.label = 'summary metadata 3'
         domain.summaryMetadataType = SummaryMetadataType.STRING
-        domain.catalogueItem = dataModel
+        domain.catalogueItem = referenceDataModel
         domain.addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST, reportDate: OffsetDateTime.now(), reportValue: 'some value')
-        dataModel.addToSummaryMetadata(domain)
+        referenceDataModel.addToReferenceSummaryMetadata(domain)
 
-        checkAndSave(dataModel)
+        checkAndSave(referenceDataModel)
 
-        controller.summaryMetadataService = Mock(ReferenceSummaryMetadataService) {
-            findAllByCatalogueItemId(dataModel.id, _) >> dataModel.summaryMetadata.toList()
-            findCatalogueItemByDomainTypeAndId(DataModel.simpleName, _) >> {String domain, UUID bid -> dataModel.id == bid ? dataModel : null}
+        controller.referenceSummaryMetadataService = Mock(ReferenceSummaryMetadataService) {
+            findAllByCatalogueItemId(referenceDataModel.id, _) >> referenceDataModel.referenceSummaryMetadata.toList()
+            findCatalogueItemByDomainTypeAndId(ReferenceDataModel.simpleName, _) >> {String domain, UUID bid -> referenceDataModel.id == bid ? referenceDataModel : null}
             findByCatalogueItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
-                if (iid != dataModel.id) return null
+                if (iid != referenceDataModel.id) return null
                 mid == domain.id ? domain : null
             }
-        }*/
+        }
     }
 
     @Override
@@ -106,8 +107,8 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
         '''{
   "total": 2,
   "errors": [
-    {"message": "Property [label] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata] cannot be null"},
-    {"message": "Property [summaryMetadataType] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata] cannot be null"}
+    {"message": "Property [label] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata] cannot be null"},
+    {"message": "Property [summaryMetadataType] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata] cannot be null"}
   ]
 }'''
     }
@@ -117,7 +118,7 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
         '''{
   "total": 1,
   "errors": [
-    {"message": "Property [summaryMetadataType] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata] cannot be null"}
+    {"message": "Property [summaryMetadataType] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata] cannot be null"}
   ]
 }'''
     }
@@ -150,7 +151,7 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
         '''{
   "total": 1,
   "errors": [
-    {"message": "Property [label] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata] cannot be null"}
+    {"message": "Property [label] of class [class uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata] cannot be null"}
   ]
 }'''
     }
@@ -192,7 +193,7 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = DataModel.simpleName
-        params.catalogueItemId = dataModel.id
+        params.catalogueItemDomainType = ReferenceDataModel.simpleName
+        params.catalogueItemId = referenceDataModel.id
     }
 }

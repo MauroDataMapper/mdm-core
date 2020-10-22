@@ -20,10 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.SummaryMetadataLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -69,7 +69,7 @@ class ReferenceSummaryMetadata implements CatalogueItemAware, InformationAware, 
     }
 
     String getEditLabel() {
-        "Summary Metadata:${label}"
+        "Reference Summary Metadata:${label}"
     }
 
     static DetachedCriteria<ReferenceSummaryMetadata> byCatalogueItemId(Serializable catalogueItemId) {

@@ -54,7 +54,7 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
         mockArtefact(EditService)
         mockArtefact(MetadataService)
         mockArtefact(ReferenceDataTypeService)
-        mockDomains(Folder, ReferenceDataModel, Edit, ReferenceSummaryMetadata, SummaryMetadataReport, Authority, Metadata, VersionLink, SemanticLink, Classifier)
+        mockDomains(Folder, ReferenceDataModel, Edit, ReferenceSummaryMetadata, ReferenceSummaryMetadataReport, Authority, Metadata, VersionLink, SemanticLink, Classifier)
         mockArtefact(ReferenceDataModelService)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
@@ -62,18 +62,20 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
                                   authority: Authority.findByLabel('Test Authority'))
         checkAndSave(referenceDataModel)
 
-        /*referenceDataModel.
-            addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 1', summaryMetadataType: SummaryMetadataType.MAP)
-        referenceDataModel.addToSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description',
-                                       summaryMetadataType: SummaryMetadataType.NUMBER)
-        ReferenceSummaryMetadata summaryMetadata = new ReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3',
-                                                              summaryMetadataType: SummaryMetadataType.STRING)
+        referenceDataModel.
+            addToReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 1', summaryMetadataType: SummaryMetadataType.MAP)
+
+        referenceDataModel.
+            addToReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description', summaryMetadataType: SummaryMetadataType.NUMBER)
+        
+        ReferenceSummaryMetadata referenceSummaryMetadata = new ReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3', summaryMetadataType: SummaryMetadataType.STRING)
             .addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST, reportDate: OffsetDateTime.now(), reportValue: 'some value')
-        referenceDataModel.addToSummaryMetadata(summaryMetadata)
+        
+        referenceDataModel.addToReferenceSummaryMetadata(referenceSummaryMetadata)
 
-        checkAndSave referenceDataModel*/
+        checkAndSave referenceDataModel
 
-        id = summaryMetadata.id
+        id = referenceSummaryMetadata.id
     }
 
     void "test get"() {
