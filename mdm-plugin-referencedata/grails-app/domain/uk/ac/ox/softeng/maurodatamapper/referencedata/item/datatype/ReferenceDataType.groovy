@@ -60,7 +60,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel> 
         semanticLinks  : SemanticLink,
         referenceFiles : ReferenceFile,
         referenceDataElements   : ReferenceDataElement,
-        summaryMetadata: ReferenceSummaryMetadata
+        referenceSummaryMetadata: ReferenceSummaryMetadata
     ]
 
     static belongsTo = [referenceDataModel: ReferenceDataModel]
@@ -103,7 +103,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel> 
     @Override
     def beforeValidate() {
         beforeValidateModelItem()
-        summaryMetadata?.each {
+        referenceSummaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
             it.catalogueItem = this
         }

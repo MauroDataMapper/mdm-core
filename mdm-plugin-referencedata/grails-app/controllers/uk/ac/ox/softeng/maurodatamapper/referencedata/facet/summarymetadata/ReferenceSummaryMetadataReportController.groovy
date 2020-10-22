@@ -51,7 +51,7 @@ class ReferenceSummaryMetadataReportController extends EditLoggingController<Ref
     protected ReferenceSummaryMetadataReport createResource() {
         ReferenceSummaryMetadataReport resource = super.createResource() as ReferenceSummaryMetadataReport
         resource.clearErrors()
-        resource.summaryMetadata = referenceSummaryMetadataService.get(params.summaryMetadataId)
+        resource.summaryMetadata = referenceSummaryMetadataService.get(params.referenceSummaryMetadataId)
         resource
     }
 

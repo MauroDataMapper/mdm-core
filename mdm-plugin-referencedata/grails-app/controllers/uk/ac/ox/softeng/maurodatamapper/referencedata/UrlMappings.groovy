@@ -53,7 +53,7 @@ class UrlMappings {
 
                 delete '/dataTypes/clean'(controller: 'referenceDataModel', action: 'deleteAllUnusedDataTypes')
 
-                get '/hierarchy'(controller: 'dataModel', action: 'hierarchy')
+                get '/hierarchy'(controller: 'referenceDataModel', action: 'hierarchy')
 
                 post '/search'(controller: 'referenceDataModel', action: 'search')
                 get '/search'(controller: 'referenceDataModel', action: 'search')
@@ -113,7 +113,7 @@ class UrlMappings {
              * Summary metadata
              */
             group "/$catalogueItemDomainType/$catalogueItemId", {
-                '/referenceSummaryMetadata'(resources: 'referenceSummaryMetadata', excludes: DEFAULT_EXCLUDES) {
+                '/summaryMetadata'(resources: 'referenceSummaryMetadata', excludes: DEFAULT_EXCLUDES) {
                     '/summaryMetadataReports'(resources: 'referenceSummaryMetadataReport', excludes: DEFAULT_EXCLUDES)
                 }
             }
