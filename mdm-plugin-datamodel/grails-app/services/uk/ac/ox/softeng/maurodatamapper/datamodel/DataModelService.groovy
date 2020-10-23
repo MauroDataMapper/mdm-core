@@ -406,30 +406,32 @@ class DataModelService extends ModelService<DataModel> {
                             ModelItemService modelItemService = modelItemServices.find {
                                 if (it.hasProperty('resourcePathElement')) it.resourcePathElement == mergeFieldDiff.fieldName
                             }
+                            if (modelItemService) {
+                                // apply deletions of children to target object
+                                mergeFieldDiff.deleted.each {
+                                    obj ->
+                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        modelItemService.delete(modelItem)
+                                }
 
-                            // apply deletions of children to target object
-                            mergeFieldDiff.deleted.each {
-                                obj ->
-                                    def modelItem = modelItemService.get(obj.id) as ModelItem
-                                    modelItemService.delete(modelItem)
-                            }
-                            def parentId
-                            if (modelItemService) parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
-                            // copy additions from source to target object
-                            mergeFieldDiff.created.each {
-                                obj ->
-                                    def modelItem = modelItemService.get(obj.id) as ModelItem
-                                    modelItemService.copy(rightModel,
-                                                          modelItem,
-                                                          userSecurityPolicyManager,
-                                                          parentId)
-                            }
-                            // for modifications, recursively call this method
-                            mergeFieldDiff.modified.each {
-                                obj ->
-                                    mergeInto(leftModel, rightModel, obj,
-                                              userSecurityPolicyManager,
-                                              modelItemService)
+                                def parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
+
+                                // copy additions from source to target object
+                                mergeFieldDiff.created.each {
+                                    obj ->
+                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        modelItemService.copy(rightModel,
+                                                              modelItem,
+                                                              userSecurityPolicyManager,
+                                                              parentId)
+                                }
+                                // for modifications, recursively call this method
+                                mergeFieldDiff.modified.each {
+                                    obj ->
+                                        mergeInto(leftModel, rightModel, obj,
+                                                  userSecurityPolicyManager,
+                                                  modelItemService)
+                                }
                             }
                         }
                 }
