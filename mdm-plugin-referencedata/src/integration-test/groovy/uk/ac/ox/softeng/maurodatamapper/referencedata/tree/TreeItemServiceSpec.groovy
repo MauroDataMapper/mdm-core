@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -51,31 +50,27 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
     TreeItemService treeItemService
 
-    //DataModel complexDataModel
-    //DataModel simpleDataModel
+    ReferenceDataModel simpleDataModel
+    ReferenceDataModel complexDataModel
 
     @SuppressWarnings('GroovyAssignabilityCheck')
     @Override
     void setupDomainData() {
-        /*log.debug('Setting up DataModelServiceSpec unit')
+        log.debug('Setting up TreeItemServiceSpec unit')
 
-        complexDataModel = buildComplexDataModel()
-        simpleDataModel = buildSimpleDataModel()
+        simpleDataModel = buildExampleReferenceDataModel()
+        complexDataModel = buildSecondExampleReferenceDataModel()
 
         checkAndSave(new Folder(label: 'empty folder', createdBy: editor.emailAddress))
         Classifier testClassifier = new Classifier(label: 'integration test classifier', createdByUser: admin)
         testClassifier.addToChildClassifiers(new Classifier(label: 'empty classifier', createdByUser: admin))
         checkAndSave(testClassifier)
 
-        DataModel dataModel1 = new DataModel(createdByUser: reader1, label: 'dm1', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                             authority: testAuthority)
+        ReferenceDataModel dataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'dm1', folder: testFolder, authority: testAuthority)
             .addToClassifiers(testClassifier)
-        DataModel dataModel2 = new DataModel(createdByUser: reader2, label: 'dm2', type: DataModelType.DATA_ASSET, folder: testFolder,
-                                             authority: testAuthority)
+        ReferenceDataModel dataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'dm2', folder: testFolder, authority: testAuthority)
             .addToClassifiers(testClassifier)
-        DataModel dataModel3 = new DataModel(createdByUser: editor, label: 'dm3', type: DataModelType.DATA_STANDARD, folder: testFolder,
-                                             authority: testAuthority,
-                                             deleted: true)
+        ReferenceDataModel dataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'dm3', folder: testFolder, authority: testAuthority, deleted: true)
             .addToClassifiers(testClassifier)
 
         checkAndSave(dataModel1)
@@ -83,9 +78,8 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         checkAndSave(dataModel3)
 
         ReferenceDataType dt = new ReferencePrimitiveType(createdByUser: admin, label: 'integration datatype')
-        dataModel1.addToDataTypes(dt)
+        dataModel1.addToReferenceDataTypes(dt)
         ReferenceDataElement dataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor, referenceDataType: dt)
-        dataModel1.addToDataClasses(new DataClass(label: 'sdmclass', createdByUser: editor).addToDataElements(dataElement))
         dataModel1.modelVersion = Version.from('1.0.0')
         dataModel1.finalised = true
         dataModel1.dateFinalised = OffsetDateTime.now()
@@ -100,12 +94,12 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         dataModel3.addToVersionLinks(createdByUser: admin, targetModel: dataModel2, linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
 
-        checkAndSave(dataModel3)*/
+        checkAndSave(dataModel3)
 
         id = dataModel1.id
     }
 
-    /*void 'F01 - test full tree building : doc, model, deleted, empty containers'() {
+    void 'F01 - test full tree building : doc, model, deleted, empty containers'() {
         given:
         setupData()
 
@@ -128,19 +122,19 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.size() == 5
 
         when:
-        def tree1 = tf.find { it.label == 'Complex Test DataModel' }
-        def tree2 = tf.find { it.label == 'Simple Test DataModel' }
+        def tree1 = tf.find { it.label == 'Simple Reference Data Model' }
+        def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
         tree2
-        tree2.hasChildren()
+        !tree2.hasChildren()
 
         and:
         tree1
-        tree1.hasChildren()
+        !tree1.hasChildren()
 
         and:
-        tf.find { it.label == 'dm1' }.hasChildren()
+        !tf.find { it.label == 'dm1' }.hasChildren()
         !tf.find { it.label == 'dm2' }.hasChildren()
         !tf.find { it.label == 'dm3' }.hasChildren()
     }
@@ -158,6 +152,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         and:
         treeItems.any { it.label == testFolder.label }
+        !treeItems.any { it.label == 'empty folder' }
 
         when:
         def tf = treeItems.find { it.label == testFolder.label }
@@ -167,16 +162,16 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.size() == 5
 
         when:
-        def tree1 = tf.find { it.label == 'Complex Test DataModel' }
-        def tree2 = tf.find { it.label == 'Simple Test DataModel' }
+        def tree1 = tf.find { it.label == 'Simple Reference Data Model' }
+        def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
         tree2
-        tree2.hasChildren()
+        !tree2.hasChildren()
 
         and:
         tree1
-        tree1.hasChildren()
+        !tree1.hasChildren()
 
         and:
         tf.any { it.label == 'dm1' }
@@ -184,7 +179,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.any { it.label == 'dm3' }
 
         and:
-        tf.find { it.label == 'dm1' }.hasChildren()
+        !tf.find { it.label == 'dm1' }.hasChildren()
         !tf.find { it.label == 'dm2' }.hasChildren()
         !tf.find { it.label == 'dm3' }.hasChildren()
     }
@@ -202,6 +197,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         and:
         treeItems.any { it.label == testFolder.label }
+        !treeItems.any { it.label == 'empty folder' }
 
         when:
         def tf = treeItems.find { it.label == testFolder.label }
@@ -211,16 +207,16 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.size() == 4
 
         when:
-        def tree1 = tf.find { it.label == 'Complex Test DataModel' }
-        def tree2 = tf.find { it.label == 'Simple Test DataModel' }
+        def tree1 = tf.find { it.label == 'Simple Reference Data Model' }
+        def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
         tree2
-        tree2.hasChildren()
+        !tree2.hasChildren()
 
         and:
         tree1
-        tree1.hasChildren()
+        !tree1.hasChildren()
 
         and:
         tf.any { it.label == 'dm1' }
@@ -228,7 +224,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         !tf.any { it.label == 'dm3' }
 
         and:
-        tf.find { it.label == 'dm1' }.hasChildren()
+        !tf.find { it.label == 'dm1' }.hasChildren()
         !tf.find { it.label == 'dm2' }.hasChildren()
     }
 
@@ -245,6 +241,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         and:
         treeItems.any { it.label == testFolder.label }
+        !treeItems.any { it.label == 'empty folder' }
 
         when:
         def tf = treeItems.find { it.label == testFolder.label }
@@ -254,16 +251,16 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.size() == 3
 
         when:
-        def tree1 = tf.find { it.label == 'Complex Test DataModel' }
-        def tree2 = tf.find { it.label == 'Simple Test DataModel' }
+        def tree1 = tf.find { it.label == 'Simple Reference Data Model' }
+        def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
         tree2
-        tree2.hasChildren()
+        !tree2.hasChildren()
 
         and:
         tree1
-        tree1.hasChildren()
+        !tree1.hasChildren()
 
         and:
         !tf.any { it.label == 'dm1' }
@@ -287,6 +284,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         and:
         treeItems.any { it.label == testFolder.label }
+        !treeItems.any { it.label == 'empty folder' }
 
         when:
         def tf = treeItems.find { it.label == testFolder.label }
@@ -296,16 +294,16 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.size() == 3
 
         when:
-        def tree1 = tf.find { it.label == 'Complex Test DataModel' }
-        def tree2 = tf.find { it.label == 'Simple Test DataModel' }
+        def tree1 = tf.find { it.label == 'Simple Reference Data Model' }
+        def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
         tree2
-        tree2.hasChildren()
+        !tree2.hasChildren()
 
         and:
         tree1
-        tree1.hasChildren()
+        !tree1.hasChildren()
 
         and:
         tf.any { it.label == 'dm1' }
@@ -313,7 +311,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         !tf.any { it.label == 'dm3' }
 
         and:
-        tf.find { it.label == 'dm1' }.hasChildren()
+        !tf.find { it.label == 'dm1' }.hasChildren()
     }
 
     void 'F06 - test full tree building : no doc, no model, no deleted, no empty containers'() {
@@ -329,6 +327,7 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         and:
         treeItems.any { it.label == testFolder.label }
+        !treeItems.any { it.label == 'empty folder' }
 
         when:
         def tf = treeItems.find { it.label == testFolder.label }
@@ -338,16 +337,16 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.size() == 2
 
         when:
-        def tree1 = tf.find { it.label == 'Complex Test DataModel' }
-        def tree2 = tf.find { it.label == 'Simple Test DataModel' }
+        def tree1 = tf.find { it.label == 'Simple Reference Data Model' }
+        def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
         tree2
-        tree2.hasChildren()
+        !tree2.hasChildren()
 
         and:
         tree1
-        tree1.hasChildren()
+        !tree1.hasChildren()
 
         and:
         !tf.any { it.label == 'dm1' }
@@ -365,19 +364,15 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
                                                                       true, true,
                                                                       true, false)
         then:
-        treeItems.size() == 4
+        treeItems.size() == 2
 
         and:
-        treeItems.any { it.label == 'test classifier' }
         treeItems.any { it.label == 'integration test classifier' }
-        treeItems.any { it.label == 'test classifier2' }
         treeItems.any { it.label == 'test classifier simple' }
         !treeItems.any { it.label == 'empty classifier' }
 
         and:
-        !treeItems.find { it.label == 'test classifier' }.hasChildren()
         treeItems.find { it.label == 'integration test classifier' }.hasChildren()
-        !treeItems.find { it.label == 'test classifier2' }.hasChildren()
         !treeItems.find { it.label == 'test classifier simple' }.hasChildren()
     }
 
@@ -390,19 +385,15 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
                                                                       true, true,
                                                                       true, true)
         then:
-        treeItems.size() == 4
+        treeItems.size() == 2
 
         and:
-        treeItems.any { it.label == 'test classifier' }
         treeItems.any { it.label == 'integration test classifier' }
-        treeItems.any { it.label == 'test classifier2' }
         treeItems.any { it.label == 'test classifier simple' }
         !treeItems.any { it.label == 'empty classifier' }
 
         and:
-        !treeItems.find { it.label == 'test classifier' }.hasChildren()
         treeItems.find { it.label == 'integration test classifier' }.hasChildren()
-        !treeItems.find { it.label == 'test classifier2' }.hasChildren()
         !treeItems.find { it.label == 'test classifier simple' }.hasChildren()
     }
 
@@ -415,19 +406,15 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
                                                                       true, true,
                                                                       false, true)
         then:
-        treeItems.size() == 4
+        treeItems.size() == 2
 
         and:
-        treeItems.any { it.label == 'test classifier' }
         treeItems.any { it.label == 'integration test classifier' }
-        treeItems.any { it.label == 'test classifier2' }
         treeItems.any { it.label == 'test classifier simple' }
         !treeItems.any { it.label == 'empty classifier' }
 
         and:
-        !treeItems.find { it.label == 'test classifier' }.hasChildren()
         treeItems.find { it.label == 'integration test classifier' }.hasChildren()
-        !treeItems.find { it.label == 'test classifier2' }.hasChildren()
         !treeItems.find { it.label == 'test classifier simple' }.hasChildren()
     }
 
@@ -440,19 +427,15 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
                                                                       true, false,
                                                                       false, true)
         then:
-        treeItems.size() == 4
+        treeItems.size() == 2
 
         and:
-        treeItems.any { it.label == 'test classifier' }
         treeItems.any { it.label == 'integration test classifier' }
-        treeItems.any { it.label == 'test classifier2' }
         treeItems.any { it.label == 'test classifier simple' }
         !treeItems.any { it.label == 'empty classifier' }
 
         and:
-        !treeItems.find { it.label == 'test classifier' }.hasChildren()
         treeItems.find { it.label == 'integration test classifier' }.hasChildren()
-        !treeItems.find { it.label == 'test classifier2' }.hasChildren()
         !treeItems.find { it.label == 'test classifier simple' }.hasChildren()
     }
 
@@ -465,19 +448,15 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
                                                                       false, true,
                                                                       false, true)
         then:
-        treeItems.size() == 4
+        treeItems.size() == 2
 
         and:
-        treeItems.any { it.label == 'test classifier' }
         treeItems.any { it.label == 'integration test classifier' }
-        treeItems.any { it.label == 'test classifier2' }
         treeItems.any { it.label == 'test classifier simple' }
         !treeItems.any { it.label == 'empty classifier' }
 
         and:
-        !treeItems.find { it.label == 'test classifier' }.hasChildren()
         treeItems.find { it.label == 'integration test classifier' }.hasChildren()
-        !treeItems.find { it.label == 'test classifier2' }.hasChildren()
         !treeItems.find { it.label == 'test classifier simple' }.hasChildren()
     }
 
@@ -490,27 +469,23 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
                                                                       false, false,
                                                                       false, true)
         then:
-        treeItems.size() == 4
+        treeItems.size() == 2
 
         and:
-        treeItems.any { it.label == 'test classifier' }
         treeItems.any { it.label == 'integration test classifier' }
-        treeItems.any { it.label == 'test classifier2' }
         treeItems.any { it.label == 'test classifier simple' }
         !treeItems.any { it.label == 'empty classifier' }
 
         and:
-        !treeItems.find { it.label == 'test classifier' }.hasChildren()
         treeItems.find { it.label == 'integration test classifier' }.hasChildren()
-        !treeItems.find { it.label == 'test classifier2' }.hasChildren()
         !treeItems.find { it.label == 'test classifier simple' }.hasChildren()
 
     }
 
-    void 'S01 - test searchterm "test" full tree building (label searching)'() {
+    void 'S01 - test searchterm "Reference" full tree building'() {
         given:
         setupData()
-        String searchTerm = 'test'
+        String searchTerm = 'Reference'
 
         when:
         List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null)
@@ -526,8 +501,8 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.size() == 2
 
         when:
-        TreeItem tree1 = tf.find { it.label == 'Complex Test DataModel' }
-        TreeItem tree2 = tf.find { it.label == 'Simple Test DataModel' }
+        def tree1 = tf.find { it.label == 'Simple Reference Data Model' }
+        def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
         tree2
@@ -538,10 +513,11 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tree1.children.isEmpty()
     }
 
-    void 'S02 - test searchterm "child" full tree building (DataClass label searching)'() {
+
+    void 'S02 - test searchterm "Second" full tree building'() {
         given:
         setupData()
-        String searchTerm = 'child'
+        String searchTerm = 'Second'
 
         when:
         List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null)
@@ -551,37 +527,26 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
 
         when:
         def tf = treeItems.find { it.label == testFolder.label }
+        
         then:
         tf
         tf.hasChildren()
         tf.size() == 1
+        !tf.find { it.label == 'Simple Reference Data Model' }
+        tf.find { it.label == 'Second Simple Reference Data Model' }
 
-        when:
-        TreeItem tree1 = tf.find { it.label == 'Complex Test DataModel' }
-
-        then:
-        tree1
-        tree1.children.size() == 1
-
-        when:
-        TreeItem tree3 = tree1.find 'parent'
+        when:        
+        def tree2 = tf.find { it.label == 'Second Simple Reference Data Model' }
 
         then:
-        tree3
-        tree3.children.size() == 1
+        tree2
+        tree2.children.isEmpty()
+    }
 
-        when:
-        TreeItem tree6 = tree3.find('child')
-
-        then:
-        tree6
-        tree6.children.isEmpty()
-    }*/
-
-   /* void 'S03 - test searchterm "string" full tree building (DataType label searching)'() {
+    void 'S03 - test searchterm "integration datatype" full tree building on ReferenceDataType'() {
         given:
         setupData()
-        String searchTerm = 'string'
+        String searchTerm = 'integration datatype'
 
         when:
         List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null)
@@ -590,41 +555,15 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         treeItems.size() == 0
     }
 
-    void 'S04 - test searchterm "ele" full tree building (DataElement label searching)'() {
+    void 'S06 - test searchterm "integration datatype" full tree building on ReferenceDataType looking at ReferenceDataType domain'() {
         given:
         setupData()
-        String searchTerm = 'ele'
+        String searchTerm = 'integration datatype'
 
         when:
-        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, null)
+        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm, 'ReferenceDataType')
 
-        then: 'no domain provided should not search data elements'
-        treeItems.size() == 0
-    }
-
-    void 'S05 - test searchterm "child" full tree building looking at DataModel domain'() {
-        given:
-        setupData()
-        String searchTerm = 'child'
-
-        when:
-        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm,
-                                                                            'DataModel')
-
-        then:
-        treeItems.size() == 0
-    }
-
-    void 'S06 - test searchterm "string" full tree building looking at DataType domain (DataType label searching)'() {
-        given:
-        setupData()
-        String searchTerm = 'string'
-
-        when:
-        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm,
-                                                                            'DataType')
-
-        then: 'no domain provided should not search datatypes'
+        then: 'search returns 1 tree item'
         treeItems.size() == 1
 
         when:
@@ -635,36 +574,10 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
         tf.size() == 1
 
         when:
-        TreeItem tree1 = tf.find { it.label == 'Complex Test DataModel' }
+        TreeItem tree1 = tf.find { it.label == 'dm1' }
 
         then:
-        tree1
+        tree1        
+    }    
 
-    }
-
-    void 'S07 - test searchterm "ele" full tree building looking at DataElement domain (DataElement label searching)'() {
-        given:
-        setupData()
-        String searchTerm = 'ele'
-
-        when:
-        List<TreeItem> treeItems = treeItemService.buildContainerSearchTree(Folder, PublicAccessSecurityPolicyManager.instance, searchTerm,
-                                                                            'DataElement')
-
-        then: 'no domain provided should not search data elements'
-        treeItems.size() == 1
-
-        when:
-        def tf = treeItems.find { it.label == testFolder.label }
-        then:
-        tf
-        tf.hasChildren()
-        tf.size() == 1
-
-        when:
-        TreeItem tree1 = tf.find { it.label == 'Complex Test DataModel' }
-
-        then:
-        tree1
-    }*/
 }

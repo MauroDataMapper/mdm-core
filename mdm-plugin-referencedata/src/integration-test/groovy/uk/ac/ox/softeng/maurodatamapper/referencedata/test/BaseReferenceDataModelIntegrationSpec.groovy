@@ -33,9 +33,9 @@ import groovy.util.logging.Slf4j
 @Slf4j
 abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec {
 
-    /*AdminService adminService
+    AdminService adminService
 
-    DataModel dataModel
+    ReferenceDataModel referenceDataModel
 
     Folder getTestFolder() {
         folder
@@ -51,11 +51,12 @@ abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec
         checkAndSave(testAuthority)
     }
 
-    DataModel buildSimpleDataModel() {
-        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority)
+    ReferenceDataModel buildExampleReferenceDataModel() {
+        BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, testAuthority)
     }
 
-    DataModel buildComplexDataModel() {
-        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority)
-    }*/
+    ReferenceDataModel buildSecondExampleReferenceDataModel() {
+        BootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, testAuthority)
+    }    
+
 }

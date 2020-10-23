@@ -442,7 +442,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
                       copySummaryMetadata)
     }
 
-    ReferenceDataModel copyDataModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
+    ReferenceDataModel copyReferenceDataModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
                             UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
         copyReferenceDataModel(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager,
                       copySummaryMetadata)

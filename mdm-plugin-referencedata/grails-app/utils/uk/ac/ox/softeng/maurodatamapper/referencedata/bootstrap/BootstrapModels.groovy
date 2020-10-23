@@ -36,6 +36,7 @@ import groovy.util.logging.Slf4j
 class BootstrapModels {
 
     static String SIMPLE_REFERENCE_MODEL_NAME = "Simple Reference Data Model"
+    static String SECOND_SIMPLE_REFERENCE_MODEL_NAME = "Second Simple Reference Data Model"
 
     static ReferenceDataModel buildAndSaveExampleReferenceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SIMPLE_REFERENCE_MODEL_NAME, folder: folder, authority: authority)
@@ -77,5 +78,47 @@ class BootstrapModels {
         referenceDataModel
     }
 
+    static ReferenceDataModel buildAndSaveSecondExampleReferenceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SECOND_SIMPLE_REFERENCE_MODEL_NAME, folder: folder, authority: authority)
+
+
+
+        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
+                readableByAuthenticatedUsers: true)
+        checkAndSave(messageSource, classifier)
+        referenceDataModel.addToClassifiers(classifier)
+        checkAndSave(messageSource, referenceDataModel)
+
+
+        ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+        ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
+        referenceDataModel
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'example.com/simple', key: 'mdk1', value: 'mdv1')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'example.com', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'example.com/simple', key: 'mdk2', value: 'mdv2')
+                .addToReferenceDataTypes(stringDataType)
+                .addToReferenceDataTypes(integerDataType)
+
+        checkAndSave(messageSource, referenceDataModel)
+
+        ReferenceDataElement a = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column A", createdBy: DEVELOPMENT)
+        ReferenceDataElement b = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column B", createdBy: DEVELOPMENT)
+        ReferenceDataElement c = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column C", createdBy: DEVELOPMENT)
+        referenceDataModel.addToReferenceDataElements(a)
+        referenceDataModel.addToReferenceDataElements(b)
+        referenceDataModel.addToReferenceDataElements(c)
+
+        checkAndSave(messageSource, referenceDataModel)
+
+        (1..25).each {
+            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: a, value: "A ${it}", rowNumber: it, createdBy: DEVELOPMENT))
+            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: b, value: "B ${it}", rowNumber: it, createdBy: DEVELOPMENT))
+            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: c, value: "C ${it}", rowNumber: it, createdBy: DEVELOPMENT))
+        }
+
+        checkAndSave(messageSource, referenceDataModel)
+
+        referenceDataModel
+    }    
 
 }
