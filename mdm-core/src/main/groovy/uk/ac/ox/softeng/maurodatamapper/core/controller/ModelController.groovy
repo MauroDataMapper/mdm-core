@@ -253,10 +253,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
-        if (mergeIntoData.patch.rightId != params[alternateParamsIdKey]) {
+        if (mergeIntoData.patch.leftId != params[alternateParamsIdKey]) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Source model id passed in request body does not match source model id in URI.')
         }
-        if (mergeIntoData.patch.leftId != params.otherModelId) {
+        if (mergeIntoData.patch.rightId != params.otherModelId) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Target model id passed in request body does not match target model id in URI.')
         }
 
