@@ -15,22 +15,24 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/*package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
+package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.referencedata.test.provider.DataBindDataModelImporterProviderServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.referencedata.test.provider.DataBindReferenceDataModelImporterProviderServiceSpec
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j*/
+import groovy.util.logging.Slf4j
+
+import spock.lang.PendingFeature
 
 /**
  * @since 15/11/2017
  */
-/*@Integration
+@Integration
 @Rollback
 @Slf4j
-class JsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<JsonImporterService> {
+class JsonImporterServiceSpec extends DataBindReferenceDataModelImporterProviderServiceSpec<JsonImporterService> {
 
     JsonImporterService jsonImporterService
 
@@ -44,6 +46,7 @@ class JsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSp
         'json'
     }
 
+    @PendingFeature(reason = "Not yet implemented")
     void 'test multiple DataModel import fails'() {
         given:
         setupData()
@@ -58,4 +61,4 @@ class JsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSp
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.message.contains('cannot import multiple DataModels')
     }
-}*/
+}

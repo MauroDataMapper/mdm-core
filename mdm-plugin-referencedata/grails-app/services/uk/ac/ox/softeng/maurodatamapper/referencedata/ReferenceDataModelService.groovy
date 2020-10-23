@@ -480,11 +480,19 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         copy.trackChanges()
 
         if (original.referenceDataTypes) {
-            // Copy all the datatypes
+            // Copy all the referencedatatypes
             original.referenceDataTypes.each { dt ->
                 referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
+
+        if (original.referenceDataElements) {
+            // Copy all the referencedataelements
+            original.referenceDataElements.each { de ->
+                log.debug("copy element ${de}")
+                referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager)
+            }
+        }        
 
         copy
     }
@@ -530,7 +538,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel, ReferenceDataModel otherReferenceDataModel, int maxResults) {
         referenceDataModel.referenceDataElements.collect { de ->
-            dataElementService.findAllSimilarDataElementsInDataModel(otherReferenceDataModel, de, maxResults)
+            referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(otherReferenceDataModel, de, maxResults)
         }
     }
 

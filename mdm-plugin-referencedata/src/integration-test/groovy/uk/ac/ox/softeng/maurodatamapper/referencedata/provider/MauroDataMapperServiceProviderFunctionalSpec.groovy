@@ -26,6 +26,8 @@ import io.micronaut.core.type.Argument
 
 import static io.micronaut.http.HttpStatus.OK
 
+import spock.lang.PendingFeature
+
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderController* Controller: mauroDataMapperServiceProvider
  *  | GET | /api/admin/providers/exporters   | Action: exporterProviders   |
@@ -42,7 +44,8 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         'admin/providers'
     }
 
-    /*void 'test get exporters'() {
+    @PendingFeature(reason = "Not yet implemented")
+    void 'test get exporters'() {
         when:
         GET('exporters', Argument.of(String))
 
@@ -107,30 +110,43 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "JsonImporterService",
+    "name": "XmlImporterService",
     "version": "${json-unit.matches:version}",
-    "displayName": "JSON DataModel Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
+    "displayName": "XML ReferenceDataModel Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "providerType": "DataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": true
+  },
+  {
+    "name": "CsvImporterService",
+    "version": "3.0",
+    "displayName": "CSV Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   },
   {
-    "name": "XmlImporterService",
+    "name": "JsonImporterService",
     "version": "${json-unit.matches:version}",
-    "displayName": "XML DataModel Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
+    "displayName": "JSON ReferenceDataModel Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "providerType": "DataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": true
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
   }
 ]''')
     }
@@ -141,5 +157,5 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyJsonResponse(OK, '[]')
-    }*/
+    }
 }

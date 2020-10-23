@@ -46,17 +46,17 @@ abstract class BaseImportExportSpec extends BaseReferenceDataModelIntegrationSpe
     UUID simpleDataModelId
 
     public static final String DATAMODEL_WITH_DATATYPES_FILENAME = 'export_with_datatypes_only'
-    public static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'
+    public static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'*/
 
     abstract ImporterProviderService getImporterService()
 
     abstract String getImportType()
 
-    @OnceBefore
+    /*@OnceBefore
     void setupResourcesPath() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
         assert getImporterService()
-    }
+    }*/
 
     @Override
     void setupDomainData() {
@@ -66,7 +66,7 @@ abstract class BaseImportExportSpec extends BaseReferenceDataModelIntegrationSpe
         simpleDataModelId = buildSimpleDataModel().id
     }
 
-    byte[] loadTestFile(String filename) {
+    /*byte[] loadTestFile(String filename) {
         Path testFilePath = resourcesPath.resolve("${filename}.${importType}").toAbsolutePath()
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)

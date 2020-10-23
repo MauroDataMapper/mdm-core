@@ -15,21 +15,21 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/*package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
+package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.test.provider.DataBindDataModelImporterProviderServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.referencedata.test.provider.DataBindReferenceDataModelImporterProviderServiceSpec
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j*/
+import groovy.util.logging.Slf4j
 
 /**
  * @since 04/08/2017
  */
-/*@Integration
+@Integration
 @Rollback
 @Slf4j
-class XmlImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<XmlImporterService> {
+class XmlImporterServiceSpec extends DataBindReferenceDataModelImporterProviderServiceSpec<XmlImporterService> {
 
     XmlImporterService xmlImporterService
 
@@ -42,4 +42,18 @@ class XmlImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpe
     String getImportType() {
         'xml'
     }
-}*/
+
+    void 'empty test to prevent a no tests found error'() {
+        given:
+        def a = 42
+
+        expect:
+        a == 42
+
+        when:
+        def b = a + 1
+
+        then:
+        b == 43
+    }
+}

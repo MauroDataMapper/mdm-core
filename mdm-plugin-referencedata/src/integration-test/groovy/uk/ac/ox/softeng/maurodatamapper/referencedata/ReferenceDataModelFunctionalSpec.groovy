@@ -223,17 +223,43 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyJsonResponse OK, '''[
   {
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
-    "providerType": "ReferenceDataModelImporter",
+    "name": "XmlImporterService",
+    "version": "3.0",
+    "displayName": "XML ReferenceDataModel Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "displayName": "CSV Reference Data Importer",
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": true
+  },
+  {
     "name": "CsvImporterService",
+    "version": "3.0",
+    "displayName": "CSV Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
-    "canImportMultipleDomains": false,
-    "version": "${json-unit.matches:version}"
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "JsonImporterService",
+    "version": "2.0",
+    "displayName": "JSON ReferenceDataModel Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
   }
 ]'''
     }

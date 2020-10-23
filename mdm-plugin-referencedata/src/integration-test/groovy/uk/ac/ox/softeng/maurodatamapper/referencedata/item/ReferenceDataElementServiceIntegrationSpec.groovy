@@ -181,14 +181,13 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         given:
         setupData()
         ReferenceDataElement original = referenceDataElementService.get(id)
-        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destibation integration test model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destination integration test model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(destination)
 
         when:
-        ReferenceDataElement copy = referenceDataElementService.copyReferenceDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
-        destination.addToReferenceDataElements(copy)
+        ReferenceDataElement copy = referenceDataElementService.copyReferenceDataElement(destination, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(destination)
@@ -219,14 +218,13 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         given:
         setupData()
         ReferenceDataElement original = referenceDataElementService.get(id)
-        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destibation integration test model', folder: testFolder, authority: testAuthority)
+        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destination integration test model', folder: testFolder, authority: testAuthority)
 
         expect:
         checkAndSave(destination)
 
         when:
-        ReferenceDataElement copy = referenceDataElementService.copyReferenceDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
-        destination.addToReferenceDataElements(copy)
+        ReferenceDataElement copy = referenceDataElementService.copyReferenceDataElement(destination, original, editor, userSecurityPolicyManager)
 
         then:
         checkAndSave(destination)

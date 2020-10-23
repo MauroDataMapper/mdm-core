@@ -15,13 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/*package uk.ac.ox.softeng.maurodatamapper.referencedata
+package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseDataModelIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
 import grails.gorm.transactions.Rollback
@@ -33,10 +33,10 @@ import org.springframework.context.ApplicationContext
 @Slf4j
 @Integration
 @Rollback
-class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
+class SearchServiceIntegrationSpec extends BaseReferenceDataModelIntegrationSpec {
 
-    UUID complexDataModelId
-    UUID simpleDataModelId
+    UUID referenceModelId
+    UUID secondReferenceModelId
     @Autowired
     SearchService mdmPluginDataModelSearchService
     ApplicationContext applicationContext
@@ -47,130 +47,52 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     @Override
     void setupDomainData() {
-        log.debug('Setting up DataModelServiceSpec unit')
+        log.debug('Setting up ReferenceDataModelServiceSpec unit')
 
-        complexDataModelId = buildComplexDataModel().id
-        simpleDataModelId = buildSimpleDataModel().id
+        referenceModelId = buildExampleReferenceDataModel().id
+        secondReferenceModelId = buildSecondExampleReferenceDataModel().id
     }
 
-    void 'test performStandardSearch on simple DataModel'() {
+    void 'test performStandardSearch on ReferenceDataElement'() {
 
         given:
         setupData()
 
         when:
-        SearchParams searchParams = new SearchParams(search: 'simple')
-        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
+        SearchParams searchParams = new SearchParams(search: 'Organisation')
+        List<ModelItem> modelItems = searchService.performStandardSearch([ReferenceDataElement].toSet(), [referenceModelId], searchParams.searchTerm)
 
         then:
-        modelItems.size() == 1
+        modelItems.size() == 2
 
         when:
         searchParams = new SearchParams(search: 'nothing')
-        modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performStandardSearch([ReferenceDataElement].toSet(), [referenceModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
     }
 
-    void 'test performLabelSearch on simple DataModel'() {
+    void 'test performStandardSearch on ReferenceDataElement'() {
 
         given:
         setupData()
 
         when:
-        SearchParams searchParams = new SearchParams(search: 'simple')
-        List<ModelItem> modelItems = searchService.performLabelSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
+        SearchParams searchParams = new SearchParams(search: 'Organisation')
+        List<ModelItem> modelItems = searchService.performLabelSearch([ReferenceDataElement].toSet(), [referenceModelId], searchParams.searchTerm)
 
         then:
-        modelItems.size() == 1
+        modelItems.size() == 2
 
         when:
         searchParams = new SearchParams(search: 'nothing')
-        modelItems = searchService.performLabelSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performLabelSearch([ReferenceDataElement].toSet(), [referenceModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
     }
 
-    void 'test performStandardSearch domain restricted on simple DataModel'() {
-
-        given:
-        setupData()
-
-        when:
-        SearchParams searchParams = new SearchParams(search: 'simple')
-        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 1
-
-        when:
-        searchParams = new SearchParams(search: 'nothing')
-        modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 0
-        when:
-        searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performStandardSearch([ReferenceDataElement].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 0
-        when:
-        searchParams = new SearchParams(search: 'simple', domainType: '')
-        modelItems = searchService.performStandardSearch([ReferenceType].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 0
-        when:
-        searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performStandardSearch([DataClass, ReferencePrimitiveType].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 1
-    }
-
-    void 'test performLabelSearch  domain restricted label search on simple DataModel'() {
-
-        given:
-        setupData()
-
-        when:
-        SearchParams searchParams = new SearchParams(search: 'simple')
-        List<ModelItem> modelItems = searchService.performLabelSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 1
-
-        when:
-        searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performLabelSearch([DataClass, ReferenceDataElement].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 1
-
-        when:
-        searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performLabelSearch([ReferenceDataElement].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 0
-
-        when:
-        searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performLabelSearch([ReferenceType].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 0
-
-        when:
-        searchParams = new SearchParams(search: 'simple')
-        modelItems = searchService.performLabelSearch([ReferenceDataElement, ReferencePrimitiveType].toSet(), [simpleDataModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 0
-    }
 
     void 'test perform x search on simple DataModel looking for metadata entry'() {
 
@@ -179,182 +101,15 @@ class SearchServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when: 'standard search'
         SearchParams searchParams = new SearchParams(search: 'mdk1')
-        List<ModelItem> modelItems = searchService.performStandardSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
+        List<ModelItem> modelItems = searchService.performStandardSearch([ReferenceDataModel].toSet(), [referenceModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 1
 
         when: 'label only search'
-        modelItems = searchService.performLabelSearch([DataClass].toSet(), [simpleDataModelId], searchParams.searchTerm)
+        modelItems = searchService.performLabelSearch([ReferenceDataModel].toSet(), [referenceModelId], searchParams.searchTerm)
 
         then:
         modelItems.size() == 0
     }
-
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with no pagination'() {
-
-        given:
-        setupData()
-        SearchParams searchParams = new SearchParams(search: 'emptyclass')
-
-        when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
-
-        then:
-        result.count == 1
-        result.results[0].label == 'emptyclass'
-        result.results[0].domainType == 'DataClass'
-
-        when:
-        searchParams = new SearchParams(search: 'string')
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
-
-        then:
-        result.count == 1
-        result.results[0].label == 'string'
-        result.results[0].domainType == 'PrimitiveType'
-
-        when:
-        searchParams = new SearchParams(search: 'ele*')
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
-
-        then:
-        result.count == 3
-        result.results.any { it.label == 'ele1' && it.domainType == 'DataElement' }
-        result.results.any { it.label == 'element2' && it.domainType == 'DataElement' }
-        result.results.any { it.label == 'content' && it.domainType == 'DataClass' && it.description == 'A dataclass with elements' }
-
-        when:
-        searchParams = new SearchParams(search: 'child')
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
-
-        then:
-        result.count == 3
-        result.results.any { it.label == 'child' && it.domainType == 'DataClass' }
-        result.results.any { it.label == 'child' && it.domainType == 'DataElement' }
-        result.results.any { it.label == 'child' && it.domainType == 'ReferenceType' }
-
-        when:
-        searchParams = new SearchParams(search: 'yes')
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams)
-
-        then:
-        result.count == 1
-        result.results[0].label == 'Y'
-        result.results[0].domainType == 'EnumerationValue'
-    }
-
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with pagination'() {
-
-        given:
-        setupData()
-        SearchParams searchParams = new SearchParams(search: 'ele*')
-        Map pagination = [sort: 'label']
-
-
-        when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 3
-        result.results[0].label == 'content'
-        result.results[1].label == 'ele1'
-        result.results[2].label == 'element2'
-
-        when:
-        pagination.order = 'desc'
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 3
-        result.results[2].label == 'content'
-        result.results[1].label == 'ele1'
-        result.results[0].label == 'element2'
-
-        when:
-        pagination = [max: 2]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 3
-        result.results[0].label == 'content'
-        result.results[1].label == 'ele1'
-
-        when:
-        pagination = [max: 2, offset: 1]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 3
-        result.results[0].label == 'ele1'
-        result.results[1].label == 'element2'
-    }
-
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel with domain filtering'() {
-
-        given:
-        setupData()
-        SearchParams searchParams = new SearchParams(search: 'ele*', domainTypes: [DataClass.simpleName])
-        Map pagination = [sort: 'label']
-
-
-        when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 1
-        result.results[0].label == 'content'
-
-        when:
-        searchParams.domainTypes = [ReferenceDataElement.simpleName]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 2
-        result.results[0].label == 'ele1'
-        result.results[1].label == 'element2'
-
-        when:
-        searchParams.searchTerm = 'child'
-        searchParams.domainTypes = [ReferenceDataElement.simpleName]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 1
-        result.results.any { it.label == 'child' && it.domainType == 'DataElement' }
-
-        when:
-        searchParams.domainTypes = [ReferenceDataElement.simpleName, DataClass.simpleName]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 2
-        result.results.any { it.label == 'child' && it.domainType == 'DataClass' }
-        result.results.any { it.label == 'child' && it.domainType == 'DataElement' }
-
-        when:
-        searchParams.domainTypes = [ReferenceType.simpleName]
-        result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 1
-        result.results.any { it.label == 'child' && it.domainType == 'ReferenceType' }
-    }
-
-    void 'test findAllByDataModelIdByLuceneSearch on complex DataModel label search only'() {
-
-        given:
-        setupData()
-        SearchParams searchParams = new SearchParams(search: 'ele*', labelOnly: true)
-        Map pagination = [sort: 'label']
-
-
-        when:
-        PaginatedLuceneResult<ModelItem> result = searchService.findAllByDataModelIdByLuceneSearch(complexDataModelId, searchParams, pagination)
-
-        then:
-        result.count == 2
-        result.results[0].label == 'ele1'
-        result.results[1].label == 'element2'
-    }
-}*/
+}

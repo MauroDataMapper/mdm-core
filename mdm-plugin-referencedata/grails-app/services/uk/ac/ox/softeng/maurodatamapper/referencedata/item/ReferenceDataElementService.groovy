@@ -321,6 +321,8 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
         copy.referenceDataType = referenceDataType
 
+        copiedReferenceDataModel.addToReferenceDataElements(copy)
+
         copy
     }
 
