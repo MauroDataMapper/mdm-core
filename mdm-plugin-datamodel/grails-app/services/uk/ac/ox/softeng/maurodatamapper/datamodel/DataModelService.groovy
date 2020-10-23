@@ -403,7 +403,9 @@ class DataModelService extends ModelService<DataModel> {
                             catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
                         } else {
                             // if no value, then some combination of created, deleted, and modified may exist
-                            ModelItemService modelItemService = modelItemServices.find { it?.resourcePathElement == mergeFieldDiff.fieldName }
+                            ModelItemService modelItemService = modelItemServices.find {
+                                if (it.hasProperty('resourcePathElement')) it.resourcePathElement == mergeFieldDiff.fieldName
+                            }
 
                             // apply deletions of children to target object
                             mergeFieldDiff.deleted.each {
