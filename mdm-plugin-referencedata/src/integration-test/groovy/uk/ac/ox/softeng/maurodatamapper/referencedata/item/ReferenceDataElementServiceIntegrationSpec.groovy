@@ -42,7 +42,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
     UUID elementId
     UUID element2Id
 
-    ReferenceDataElementService dataElementService
+    ReferenceDataElementService referenceDataElementService
 
     Boolean buildComplex = false
 
@@ -51,217 +51,151 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
     UserSecurityPolicyManager userSecurityPolicyManager
 
     void setupDomainData() {
-        /*log.debug('Setting up DataElementServiceSpec')
+        log.debug('Setting up ReferenceDataElementServiceSpec')
         referenceDataModel = new ReferenceDataModel(createdByUser: admin, label: 'Integration test model', folder: testFolder, authority: testAuthority)
         checkAndSave(referenceDataModel)
 
-        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        referenceDataModel.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
+        referenceDataModel.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
 
-        DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
-        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'ele1', referenceDataType: referenceDataModel.findDataTypeByLabel('string'))
-        simple.addToDataElements(element)
-        referenceDataModel.addToDataClasses(simple)
+        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'ele1', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('string'))
+        referenceDataModel.addToReferenceDataElements(element)
 
-        DataClass content = new DataClass(createdByUser: editor, label: 'content', description: 'A dataclass with elements')
-        content.addToDataElements(createdByUser: editor, label: 'ele1', dataType: referenceDataModel.findDataTypeByLabel('string'))
-        content.addToDataElements(createdByUser: reader1, label: 'element2', description: 'another',
-                                  dataType: referenceDataModel.findDataTypeByLabel('integer'))
-        content.addToDataElements(createdByUser: reader1, label: 'element3', dataType: referenceDataModel.findDataTypeByLabel('integer'),
-                                  maxMultiplicity: 1, minMultiplicity: 0)
-        DataClass child = new DataClass(createdByUser: editor, label: 'child')
-
-        ReferenceDataElement el2 = new ReferenceDataElement(createdByUser: editor, label: 'another', minMultiplicity: 1, maxMultiplicity: 1,
-                                          referenceDataType: referenceDataModel.findDataTypeByLabel('integer'))
-
-        child.addToDataElements(el2)
-        content.addToDataClasses(child)
-        referenceDataModel.addToDataClasses(content)
+        ReferenceDataElement element2 = new ReferenceDataElement(createdByUser: admin, label: 'ele2', referenceDataType: referenceDataModel.findReferenceDataTypeByLabel('integer'),
+                                                                 minMultiplicity: 0, maxMultiplicity: 1)
+        referenceDataModel.addToReferenceDataElements(element2)        
 
         checkAndSave(referenceDataModel)
         elementId = element.id
-        childId = child.id
-        contentId = content.id
-        simpleId = simple.id
+        element2Id = element2.id
         referenceDataModelId = referenceDataModel.id
-        element2Id = el2.id
 
-        if (buildComplex) complexReferenceDataModel = buildComplexReferenceDataModel()
+        if (buildComplex) complexReferenceDataModel = buildSecondExampleReferenceDataModel()
 
-        id = element.id*/
+        id = element.id
     }
 
-    /*void "test get"() {
+    void "test get"() {
         setupData()
 
         expect:
-        dataElementService.get(id) != null
+        referenceDataElementService.get(id) != null
     }
 
     void "test list"() {
         setupData()
 
         when:
-        List<ReferenceDataElement> dataElementList = dataElementService.list(max: 2, offset: 2)
+        List<ReferenceDataElement> dataElementList = referenceDataElementService.list(max: 2, offset: 0)
 
         then:
         dataElementList.size() == 2
 
         and:
-        dataElementList[0].label == 'element2'
-        dataElementList[0].dataClassId == DataClass.findByLabel('content').id
+        dataElementList[0].label == 'ele1'
         dataElementList[0].minMultiplicity == null
         dataElementList[0].maxMultiplicity == null
-        dataElementList[0].dataTypeId == ReferenceDataType.findByLabel('integer').id
+        dataElementList[0].referenceDataTypeId == ReferenceDataType.findByLabel('string').id
 
         and:
-        dataElementList[1].label == 'element3'
-        dataElementList[1].dataClassId == DataClass.findByLabel('content').id
+        dataElementList[1].label == 'ele2'
         dataElementList[1].minMultiplicity == 0
         dataElementList[1].maxMultiplicity == 1
-        dataElementList[1].dataTypeId == ReferenceDataType.findByLabel('integer').id
+        dataElementList[1].referenceDataTypeId == ReferenceDataType.findByLabel('integer').id
     }
 
     void "test count"() {
         setupData()
 
         expect:
-        dataElementService.count() == 5
+        referenceDataElementService.count() == 2
     }
 
     void "test delete"() {
         setupData()
 
         expect:
-        dataElementService.count() == 5
-        BreadcrumbTree.findByDomainType('DataElement').any { it.domainId == id }
+        referenceDataElementService.count() == 2
+        BreadcrumbTree.findByDomainType('ReferenceDataElement').any { it.domainId == id }
 
         when:
-        dataElementService.delete(id)
+        referenceDataElementService.delete(id)
         sessionFactory.currentSession.flush()
 
         then:
-        dataElementService.count() == 4
-        BreadcrumbTree.findByDomainType('DataElement').every { it.domainId != id }
+        referenceDataElementService.count() == 1
+        BreadcrumbTree.findByDomainType('ReferenceDataElement').every { it.domainId != id }
     }
 
-    void 'test findByDataClassIdAndId'() {
+    void 'test findByReferenceDataTypeIdAndId'() {
         given:
         setupData()
 
         expect:
-        dataElementService.findByDataClassIdAndId(UUID.randomUUID(), UUID.randomUUID())?.id == null
-        dataElementService.findByDataClassIdAndId(simpleId, UUID.randomUUID())?.id == null
-        dataElementService.findByDataClassIdAndId(simpleId, elementId)?.id == elementId
-        dataElementService.findByDataClassIdAndId(contentId, elementId)?.id == null
-        dataElementService.findByDataClassIdAndId(contentId, element2Id)?.id == null
-        dataElementService.findByDataClassIdAndId(childId, element2Id)?.id == element2Id
+        referenceDataElementService.findByReferenceDataTypeIdAndId(UUID.randomUUID(), UUID.randomUUID())?.id == null
+        referenceDataElementService.findByReferenceDataTypeIdAndId(referenceDataModel.findReferenceDataTypeByLabel('string').id, UUID.randomUUID())?.id == null
+        referenceDataElementService.findByReferenceDataTypeIdAndId(referenceDataModel.findReferenceDataTypeByLabel('string').id, elementId)?.id == elementId
+        referenceDataElementService.findByReferenceDataTypeIdAndId(referenceDataModel.findReferenceDataTypeByLabel('integer').id, elementId)?.id == null
+        referenceDataElementService.findByReferenceDataTypeIdAndId(referenceDataModel.findReferenceDataTypeByLabel('integer').id, element2Id)?.id == element2Id
     }
 
-    void 'test findByDataTypeIdAndId'() {
+    void 'test findAllByReferenceDataTypeId'() {
         given:
         setupData()
 
         expect:
-        dataElementService.findByDataTypeIdAndId(UUID.randomUUID(), UUID.randomUUID())?.id == null
-        dataElementService.findByDataTypeIdAndId(referenceDataModel.findDataTypeByLabel('string').id, UUID.randomUUID())?.id == null
-        dataElementService.findByDataTypeIdAndId(referenceDataModel.findDataTypeByLabel('string').id, elementId)?.id == elementId
-        dataElementService.findByDataTypeIdAndId(referenceDataModel.findDataTypeByLabel('integer').id, elementId)?.id == null
-        dataElementService.findByDataTypeIdAndId(referenceDataModel.findDataTypeByLabel('integer').id, element2Id)?.id == element2Id
-    }
-
-    void 'test findAllByDataClassId'() {
-        given:
-        setupData()
-
-        expect:
-        dataElementService.findAllByDataClassId(UUID.randomUUID()).isEmpty()
-        dataElementService.findAllByDataClassId(simpleId).size() == 1
-        dataElementService.findAllByDataClassId(elementId).isEmpty()
-        dataElementService.findAllByDataClassId(contentId).size() == 3
-        dataElementService.findAllByDataClassId(childId).size() == 1
-    }
-
-    void 'test findAllByDataTypeId'() {
-        given:
-        setupData()
-
-        expect:
-        dataElementService.findAllByDataTypeId(UUID.randomUUID()).isEmpty()
-        dataElementService.findAllByDataTypeId(referenceDataModel.findDataTypeByLabel('string').id).size() == 2
-        dataElementService.findAllByDataTypeId(elementId).isEmpty()
-        dataElementService.findAllByDataTypeId(referenceDataModel.findDataTypeByLabel('integer').id).size() == 3
-        dataElementService.findAllByDataTypeId(childId).isEmpty()
-    }
-
-    void 'test findAllByReferenceDataModelId'() {
-        given:
-        setupData()
-        ReferenceDataModel other = new ReferenceDataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder, authority: testAuthority)
-        other.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        other.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
-        DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
-        other.addToDataClasses(simple)
-
-        expect:
-        checkAndSave(other)
-
-        when:
-        simple.addToDataElements(createdByUser: admin, label: 'ele1', dataType: other.findDataTypeByLabel('string'))
-
-        then:
-        checkAndSave(other)
-        dataElementService.findAllByReferenceDataModelId(UUID.randomUUID()).isEmpty()
-        dataElementService.findAllByReferenceDataModelId(referenceDataModel.id).size() == 5
-        dataElementService.findAllByReferenceDataModelId(other.id).size() == 1
-        dataElementService.findAllByReferenceDataModelId(elementId).isEmpty()
+        referenceDataElementService.findAllByReferenceDataTypeId(UUID.randomUUID()).isEmpty()
+        referenceDataElementService.findAllByReferenceDataTypeId(referenceDataModel.findReferenceDataTypeByLabel('string').id).size() == 1
+        referenceDataElementService.findAllByReferenceDataTypeId(elementId).isEmpty()
+        referenceDataElementService.findAllByReferenceDataTypeId(referenceDataModel.findReferenceDataTypeByLabel('integer').id).size() == 1
+        referenceDataElementService.findAllByReferenceDataTypeId(childId).isEmpty()
     }
 
     void 'test findAllByReferenceDataModelIdAndLabelIlike'() {
         given:
         setupData()
         ReferenceDataModel other = new ReferenceDataModel(createdByUser: admin, label: 'anotherModel', folder: testFolder, authority: testAuthority)
-        other.addToDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
-        other.addToDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
-
-        DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
-        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'element', referenceDataType: other.findDataTypeByLabel('string'))
-        simple.addToDataElements(element)
-        other.addToDataClasses(simple)
+        other.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: admin, label: 'string'))
+        other.addToReferenceDataTypes(new ReferencePrimitiveType(createdByUser: editor, label: 'integer'))
+        checkAndSave(other)
+        ReferenceDataElement element = new ReferenceDataElement(createdByUser: admin, label: 'other element', referenceDataType: other.findReferenceDataTypeByLabel('string'))
+        other.addToReferenceDataElements(element)        
         checkAndSave(other)
 
         expect:
-        dataElementService.findAllByReferenceDataModelIdAndLabelIlike(UUID.randomUUID(), '').isEmpty()
-        dataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, '').size() == 5
-        dataElementService.findAllByReferenceDataModelIdAndLabelIlike(other.id, '').size() == 1
-        dataElementService.findAllByReferenceDataModelIdAndLabelIlike(elementId, '').isEmpty()
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(UUID.randomUUID(), '').isEmpty()
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, '').size() == 2
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(other.id, '').size() == 1
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(elementId, '').isEmpty()
 
-        dataElementService.findAllByReferenceDataModelIdAndLabelIlike(UUID.randomUUID(), 'element').isEmpty()
-        dataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, 'element').size() == 2
-        dataElementService.findAllByReferenceDataModelIdAndLabelIlike(other.id, 'element').size() == 1
-        dataElementService.findAllByReferenceDataModelIdAndLabelIlike(elementId, 'element').isEmpty()
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(UUID.randomUUID(), 'element').isEmpty()
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, 'ele').size() == 2
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, 'ele1').size() == 1       
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(referenceDataModel.id, 'aele1').size() == 0
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(other.id, 'element').size() == 1
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(other.id, 'other eleme').size() == 1        
+        referenceDataElementService.findAllByReferenceDataModelIdAndLabelIlike(elementId, 'element').isEmpty()
     }
 
-    void 'test copying DataElement'() {
+    void 'test copying ReferenceDataElement'() {
         given:
         setupData()
-        ReferenceDataElement original = dataElementService.get(id)
-        DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
-        referenceDataModel.addToDataClasses(copyClass)
+        ReferenceDataElement original = referenceDataElementService.get(id)
+        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destibation integration test model', folder: testFolder, authority: testAuthority)
 
         expect:
-        checkAndSave(referenceDataModel)
+        checkAndSave(destination)
 
         when:
-        ReferenceDataElement copy = dataElementService.copyDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
-        copyClass.addToDataElements(copy)
+        ReferenceDataElement copy = referenceDataElementService.copyReferenceDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
+        destination.addToReferenceDataElements(copy)
 
         then:
-        checkAndSave(referenceDataModel)
+        checkAndSave(destination)
 
         when:
-        original = dataElementService.get(id)
-        copy = dataElementService.get(copy.id)
+        original = referenceDataElementService.get(id)
+        copy = referenceDataElementService.get(copy.id)
 
         then:
         copy.label == original.label
@@ -284,23 +218,22 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
     void 'test copying DataElement with metadata and classifiers'() {
         given:
         setupData()
-        ReferenceDataElement original = dataElementService.get(id)
-        DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
-        referenceDataModel.addToDataClasses(copyClass)
+        ReferenceDataElement original = referenceDataElementService.get(id)
+        ReferenceDataModel destination = new ReferenceDataModel(createdByUser: admin, label: 'Destibation integration test model', folder: testFolder, authority: testAuthority)
 
         expect:
-        checkAndSave(referenceDataModel)
+        checkAndSave(destination)
 
         when:
-        ReferenceDataElement copy = dataElementService.copyDataElement(referenceDataModel, original, admin, userSecurityPolicyManager)
-        copyClass.addToDataElements(copy)
+        ReferenceDataElement copy = referenceDataElementService.copyReferenceDataElement(referenceDataModel, original, editor, userSecurityPolicyManager)
+        destination.addToReferenceDataElements(copy)
 
         then:
-        checkAndSave(copy)
+        checkAndSave(destination)
 
         when:
-        original = dataElementService.get(id)
-        copy = dataElementService.get(copy.id)
+        original = referenceDataElementService.get(id)
+        copy = referenceDataElementService.get(copy.id)
 
         then:
         copy.label == original.label
@@ -321,59 +254,19 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
 
     }
 
-    void 'test copying DataElement with datatype not present'() {
-        given:
-        setupData()
-        ReferenceDataElement original = dataElementService.get(id)
-        ReferenceDataModel copyModel = new ReferenceDataModel(createdByUser: admin, label: 'copy model', folder: testFolder, authority: testAuthority)
-        DataClass copyClass = new DataClass(label: 'copy', createdByUser: editor)
-        copyModel.addToDataClasses(copyClass)
-
-        expect:
-        checkAndSave(copyModel)
-
-        when:
-        ReferenceDataElement copy = dataElementService.copyDataElement(copyModel, original, editor, userSecurityPolicyManager)
-        copyClass.addToDataElements(copy)
-
-        then:
-        checkAndSave(copyModel)
-
-        when:
-        original = dataElementService.get(id)
-        copy = dataElementService.get(copy.id)
-
-        then:
-        copy.label == original.label
-        copy.description == original.description
-        copy.minMultiplicity == original.minMultiplicity
-        copy.maxMultiplicity == original.maxMultiplicity
-
-        and:
-        copy.createdBy == editor.emailAddress
-        copy.metadata?.size() == original.metadata?.size()
-        copy.classifiers == original.classifiers
-
-        and:
-        copy.referenceDataType.label == original.referenceDataType.label
-
-        and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
-    }
-
     void 'test finding all similar DataElements in another model'() {
         given:
         buildComplex = true
         setupData()
-        ReferenceDataElement original = dataElementService.get(id)
+        ReferenceDataElement original = referenceDataElementService.get(id)
 
         when:
-        DataElementSimilarityResult result = dataElementService.findAllSimilarDataElementsInReferenceDataModel(complexReferenceDataModel, original)
+        DataElementSimilarityResult result = referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(complexReferenceDataModel, original)
 
         then:
-        result.size() == 1
-        result.first().item.label == 'ele1'
+        result.size() == 3
+        result.first().item.label == 'Column A'
         result.first().item.id != elementId
         result.first().similarity > 0
-    }*/
+    }
 }

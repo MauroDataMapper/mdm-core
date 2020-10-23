@@ -339,7 +339,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         copy
     }
 
-    DataElementSimilarityResult findAllSimilarDataElementsInDataModel(ReferenceDataModel referenceDataModelToSearch, ReferenceDataElement dataElementToCompare, maxResults = 5) {
+    DataElementSimilarityResult findAllSimilarReferenceDataElementsInReferenceDataModel(ReferenceDataModel referenceDataModelToSearch, ReferenceDataElement referenceDataElementToCompare, maxResults = 5) {
 
         EntityManager entityManager = sessionFactory.createEntityManager()
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager)
@@ -356,20 +356,20 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
                       .excludeEntityUsedForComparison()
                       .comparingField('label').boostedTo(1f)
                       .andField('description').boostedTo(1f)
-                      .andField('dataType.label').boostedTo(1f)
-                      .toEntity(dataElementToCompare)
+                      .andField('referenceDataType.label').boostedTo(1f)
+                      .toEntity(referenceDataElementToCompare)
                       .createQuery()
             )
             .createQuery()
 
-        SimilarityResult similarityResult = new DataElementSimilarityResult(dataElementToCompare)
+        SimilarityResult similarityResult = new DataElementSimilarityResult(referenceDataElementToCompare)
 
         FullTextQuery query = fullTextEntityManager
             .createFullTextQuery(moreLikeThisQuery, ReferenceDataElement)
             .setMaxResults(maxResults)
             .setProjection(ProjectionConstants.THIS, ProjectionConstants.SCORE)
 
-        query.enableFullTextFilter('idPathSecured').setParameter('allowedIds', [dataModelToSearch.id])
+        query.enableFullTextFilter('idPathSecured').setParameter('allowedIds', [referenceDataModelToSearch.id])
 
         query.getResultList().each {
             similarityResult.add(get(it[0].id), it[1])
