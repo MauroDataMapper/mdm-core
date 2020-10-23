@@ -393,6 +393,8 @@ class DataModelService extends ModelService<DataModel> {
 
         CatalogueItem catalogueItem = catalogueItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
 
+        // TODO is this useful? CatalogueItemService service = catalogueItemServices.find {it.handles(domainType)}
+
         mergeObjectDiff.diffs.each {
             diff ->
                 diff.each {
@@ -401,7 +403,7 @@ class DataModelService extends ModelService<DataModel> {
                             catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
                         } else {
                             // if no value, then some combination of created, deleted, and modified may exist
-                            ModelItemService modelItemService = modelItemServices.find { it.resourcePathElement == mergeFieldDiff.fieldName }
+                            ModelItemService modelItemService = modelItemServices.find { it?.resourcePathElement == mergeFieldDiff.fieldName }
 
                             // apply deletions of children to target object
                             mergeFieldDiff.deleted.each {
