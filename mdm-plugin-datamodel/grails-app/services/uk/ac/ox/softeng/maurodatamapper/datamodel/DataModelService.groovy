@@ -413,7 +413,8 @@ class DataModelService extends ModelService<DataModel> {
                                     def modelItem = modelItemService.get(obj.id) as ModelItem
                                     modelItemService.delete(modelItem)
                             }
-                            def parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
+                            def parentId
+                            if (modelItemService) parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
                             // copy additions from source to target object
                             mergeFieldDiff.created.each {
                                 obj ->
