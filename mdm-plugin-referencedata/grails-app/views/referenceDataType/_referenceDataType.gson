@@ -10,12 +10,9 @@ model {
 json {
 
     if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
-        enumerationValues g.render(referenceDataType.getProperty('enumerationValues'))
+        referenceEnumerationValues g.render(referenceDataType.getProperty('referenceEnumerationValues'))
     }
     if (referenceDataType.instanceOf(ReferencePrimitiveType)) {
         if (referenceDataType.getProperty('units')) units referenceDataType.getProperty('units')
     }
-    //    if (dataType.instanceOf(TerminologyType)) {
-    //        terminology tmpl.'/terminology/terminology'(terminology: dataType.getProperty('terminology'))
-    //    }
 }

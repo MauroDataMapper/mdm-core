@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/*package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
+package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -34,31 +34,31 @@ import spock.lang.Shared
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.OK*/
+import static io.micronaut.http.HttpStatus.OK
 
 /**
- * @see ReferenceEnumerationValueController* Controller: enumerationValue
- *  | POST   | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues       | Action: save   |
- *  | GET    | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues       | Action: index  |
- *  | DELETE | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues/${id} | Action: delete |
- *  | PUT    | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues/${id} | Action: update |
- *  | GET    | /api/dataModels/${dataModelId}/enumerationTypes/${enumerationTypeId}/enumerationValues/${id} | Action: show   |
+ * @see ReferenceEnumerationValueController* Controller: referenceEnumerationValue
+ *  | POST   | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues       | Action: save   |
+ *  | GET    | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues       | Action: index  |
+ *  | DELETE | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues/${id} | Action: delete |
+ *  | PUT    | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues/${id} | Action: update |
+ *  | GET    | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues/${id} | Action: show   |
  */
-/*@Integration
+@Integration
 @Slf4j
 class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<ReferenceEnumerationValue> {
 
     @Shared
-    UUID dataModelId
+    UUID referenceDataModelId
 
     @Shared
     Folder folder
 
     @Shared
-    UUID dataTypeId
+    UUID referenceDataTypeId
 
     @Shared
-        enumerationValueId
+    UUID referenceEnumerationValueId
 
     @Shared
     boolean onceBeforeHasRun = false
@@ -71,16 +71,15 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
         checkAndSave(folder)
         Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
         checkAndSave(testAuthority)
-        ReferenceDataModel dataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: FUNCTIONAL_TEST,
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
-        dataModelId = dataModel.id
+        referenceDataModelId = referenceDataModel.id
 
-        dataTypeId = new ReferenceEnumerationType(label: 'Functional Test DataType', createdBy: FUNCTIONAL_TEST,
-                                         dataModel: dataModel)
+        referenceDataTypeId = new ReferenceEnumerationType(label: 'Functional Test DataType', createdBy: FUNCTIONAL_TEST, referenceDataModel: referenceDataModel)
             .addToReferenceEnumerationValues(key: 'A', value: 'A value', createdBy: FUNCTIONAL_TEST)
             .save(flush: true).id
 
-        enumerationValueId = ReferenceEnumerationValue.findByKey('A').id
+        referenceEnumerationValueId = ReferenceEnumerationValue.findByKey('A').id
 
         sessionFactory.currentSession.flush()
         onceBeforeHasRun = true
@@ -88,14 +87,14 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
 
     @Transactional
     def cleanupSpec() {
-        log.debug('CleanupSpec EnumerationValueFunctionalSpec')
+        log.debug('CleanupSpec ReferenceEnumerationValueFunctionalSpec')
         cleanUpResources(ReferenceEnumerationType, ReferenceDataType, ReferenceDataModel, Folder)
         Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override
     void cleanUpData() {
-        if (dataModelId) {
+        if (referenceDataModelId) {
             GET('')
             assert response.status() == OK
             def items = response.body().items
@@ -110,7 +109,7 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
 
     @Override
     String getResourcePath() {
-        "dataModels/$dataModelId/enumerationTypes/$dataTypeId/enumerationValues"
+        "referenceDataModels/$referenceDataModelId/referenceEnumerationTypes/$referenceDataTypeId/referenceEnumerationValues"
     }
 
     @Override
@@ -182,8 +181,8 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
         // Therefore the first time this runs there will be no resource
         onceBeforeHasRun ? 1 : 0
     }
-*/
-    /*void 'test saving with category'() {
+
+    void 'test saving with category'() {
         when: 'The save action is executed with valid data'
         POST('', [
             key     : 'O',
@@ -227,7 +226,7 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
         when:
 
         when:
-        PUT("$enumerationValueId", [
+        PUT("$referenceEnumerationValueId", [
             category: 'alpha'
         ])
 
@@ -500,5 +499,5 @@ class ReferenceEnumerationValueFunctionalSpec extends ResourceFunctionalSpec<Ref
         response.body().items[1].key == 'C'
         response.body().items[2].key == 'D'
         response.body().items[3].key == 'B'
-    }*/
-//}
+    }
+}

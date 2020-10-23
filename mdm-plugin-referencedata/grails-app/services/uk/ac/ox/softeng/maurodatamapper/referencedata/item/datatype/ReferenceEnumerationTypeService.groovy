@@ -136,7 +136,7 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     ReferenceEnumerationType updateFacetsAfterInsertingCatalogueItem(ReferenceEnumerationType enumerationType) {
         super.updateFacetsAfterInsertingCatalogueItem(enumerationType) as ReferenceEnumerationType
         enumerationType.referenceEnumerationValues.each {
-            enumerationValueService.updateFacetsAfterInsertingCatalogueItem(it)
+            referenceEnumerationValueService.updateFacetsAfterInsertingCatalogueItem(it)
         }
         enumerationType
     }
@@ -145,7 +145,7 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     ReferenceEnumerationType checkFacetsAfterImportingCatalogueItem(ReferenceEnumerationType enumerationType) {
         enumerationType = super.checkFacetsAfterImportingCatalogueItem(enumerationType) as ReferenceEnumerationType
         enumerationType.referenceEnumerationValues.each {
-            enumerationValueService.checkFacetsAfterImportingCatalogueItem(it)
+            referenceEnumerationValueService.checkFacetsAfterImportingCatalogueItem(it)
         }
         enumerationType
     }

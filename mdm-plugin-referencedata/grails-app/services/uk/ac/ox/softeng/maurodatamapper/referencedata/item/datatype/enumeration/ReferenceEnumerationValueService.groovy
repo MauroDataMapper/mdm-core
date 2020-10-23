@@ -94,12 +94,12 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
     }
 
     @Override
-    ReferenceEnumerationValue updateIndexForModelItemInParent(ReferenceEnumerationValue enumerationValue, CatalogueItem parent, int newIndex) {
-        enumerationValue.index = newIndex
-        if (parent.instanceOf(EnumerationType)) {
-            parent.updateEnumerationValueIndexes(enumerationValue)
-        } else throw new ApiInternalException('EVS01', 'Non-EnumerationType passed as parent to enumeration value')
-        enumerationValue
+    ReferenceEnumerationValue updateIndexForModelItemInParent(ReferenceEnumerationValue referenceEnumerationValue, CatalogueItem parent, int newIndex) {
+        referenceEnumerationValue.index = newIndex
+        if (parent.instanceOf(ReferenceEnumerationType)) {
+            parent.updateReferenceEnumerationValueIndexes(referenceEnumerationValue)
+        } else throw new ApiInternalException('EVS01', 'Non-ReferenceEnumerationType passed as parent to reference enumeration value')
+        referenceEnumerationValue
     }
 
     @Override
@@ -125,11 +125,11 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
         results
     }
 
-    ReferenceEnumerationValue findByIdAndEnumerationType(UUID resourceId, UUID enumerationTypeId) {
-        ReferenceEnumerationValue.byIdAndEnumerationType(resourceId, enumerationTypeId).find()
+    ReferenceEnumerationValue findByIdAndReferenceEnumerationType(UUID resourceId, UUID referenceEnumerationTypeId) {
+        ReferenceEnumerationValue.byIdAndReferenceEnumerationType(resourceId, referenceEnumerationTypeId).find()
     }
 
-    private List<ReferenceEnumerationValue> findAllByEnumerationType(UUID enumerationTypeId, Map pagination = [:]) {
-        ReferenceEnumerationValue.byEnumerationType(enumerationTypeId).list(pagination)
+    List<ReferenceEnumerationValue> findAllByReferenceEnumerationType(UUID referenceEnumerationTypeId, Map pagination = [:]) {
+        ReferenceEnumerationValue.byReferenceEnumerationType(referenceEnumerationTypeId).list(pagination)
     }
 }

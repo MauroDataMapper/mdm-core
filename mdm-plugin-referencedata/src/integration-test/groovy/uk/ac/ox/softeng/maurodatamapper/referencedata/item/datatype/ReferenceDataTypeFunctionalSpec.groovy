@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/*package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
+package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -33,7 +33,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NOT_FOUND*/
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 /**
  * @see ReferenceDataTypeController* Controller: dataType
@@ -45,7 +45,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND*/
  *
  *  | POST   | /api/referenceDataModels/${referenceDataModelId}/dataTypes/${otherReferenceDataModelId}/${dataTypeId} | Action: copyDataType |
  */
-/*@Integration
+@Integration
 @Slf4j
 class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDataType> {
 
@@ -58,8 +58,8 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
     @Shared
     Folder folder
 
-    @Shared
-    UUID dataClassId
+    //@Shared
+    //UUID dataClassId
 
     @OnceBefore
     @Transactional
@@ -80,7 +80,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
 
     @Transactional
     def cleanupSpec() {
-        log.debug('CleanupSpec DataTypeFunctionalSpec')
+        log.debug('CleanupSpec ReferenceDataTypeFunctionalSpec')
         cleanUpResources(ReferenceDataModel, Folder)
         Authority.findByLabel('Test Authority').delete(flush: true)
     }
@@ -88,10 +88,10 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
     @Override
     void cleanUpData() {
         if (referenceDataModelId) {
-            GET("referenceDataModels/$otherReferenceDataModelId/dataTypes", MAP_ARG, true)
+            GET("referenceDataModels/$otherReferenceDataModelId/referenceDataTypes", MAP_ARG, true)
             def items = response.body().items
             items.each {i ->
-                DELETE("referenceDataModels/$otherReferenceDataModelId/dataTypes/$i.id", MAP_ARG, true)
+                DELETE("referenceDataModels/$otherReferenceDataModelId/referenceDataTypes/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
             }
             super.cleanUpData()
@@ -100,13 +100,13 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
 
     @Override
     String getResourcePath() {
-        "referenceDataModels/${referenceDataModelId}/dataTypes"
+        "referenceDataModels/${referenceDataModelId}/referenceDataTypes"
     }
 
     @Override
     Map getValidJson() {
         [
-            domainType: 'PrimitiveType',
+            domainType: 'ReferencePrimitiveType',
             label     : 'date'
         ]
     }
@@ -115,7 +115,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
     Map getInvalidJson() {
         [
             label     : null,
-            domainType: 'PrimitiveType'
+            domainType: 'ReferencePrimitiveType'
         ]
     }
 
@@ -130,7 +130,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
     String getExpectedShowJson() {
         '''{
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "domainType": "PrimitiveType",
+  "domainType": "ReferencePrimitiveType",
   "availableActions": ["delete","show","update"],
   "model": "${json-unit.matches:id}",
   "id": "${json-unit.matches:id}",
@@ -151,9 +151,9 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         when: "The save action is executed with valid data"
         POST('',
              [
-                 domainType       : 'EnumerationType',
+                 domainType       : 'ReferenceEnumerationType',
                  label            : 'functional enumeration',
-                 enumerationValues: [
+                 referenceEnumerationValues: [
                      [key: 'a', value: 'wibble'],
                      [key: 'b', value: 'wobble']
                  ]
@@ -161,10 +161,20 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
 
         then: "The response is correct"
         verifyJsonResponse CREATED, '''{
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "domainType": "EnumerationType",
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceEnumerationType",
+      "label": "functional enumeration",      
+      "model": "${json-unit.matches:id}",     
+      "breadcrumbs": [
+        {
+          "domainType": "ReferenceDataModel",
+          "finalised": false,
+          "id": "${json-unit.matches:id}",
+          "label": "Functional Test ReferenceDataModel"
+        }
+      ],
       "availableActions": ["delete","show","update"],
-      "model": "${json-unit.matches:id}",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "enumerationValues": [
         {
           "index": 0,
@@ -180,65 +190,12 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
           "value": "wobble",
           "key": "b"
         }
-      ],
-      "id": "${json-unit.matches:id}",
-      "label": "functional enumeration",
-      "breadcrumbs": [
-        {
-          "domainType": "ReferenceDataModel",
-          "finalised": false,
-          "id": "${json-unit.matches:id}",
-          "label": "Functional Test ReferenceDataModel"
-        }
       ]
     }'''
     }
 
-    void "Test the save action correctly persists an instance for reference type"() {
 
-        when: "The save action is executed with valid data"
-        POST('',
-             [
-                 domainType    : 'ReferenceType',
-                 label         : 'functional dataclass reference',
-                 referenceClass: dataClassId
-             ]
-             , STRING_ARG)
-
-        then: "The response is correct"
-        verifyJsonResponse CREATED, '''{
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "domainType": "ReferenceType",
-      "availableActions": ["delete","show","update"],
-      "model": "${json-unit.matches:id}",
-      "id": "${json-unit.matches:id}",
-      "label": "functional dataclass reference",
-      "breadcrumbs": [
-        {
-          "domainType": "ReferenceDataModel",
-          "finalised": false,
-          "id": "${json-unit.matches:id}",
-          "label": "Functional Test ReferenceDataModel"
-        }
-      ],
-      "referenceClass": {
-        "domainType": "DataClass",
-        "model": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "Functional Test DataClass",
-        "breadcrumbs": [
-          {
-            "domainType": "ReferenceDataModel",
-            "finalised": false,
-            "id": "${json-unit.matches:id}",
-            "label": "Functional Test ReferenceDataModel"
-          }
-        ]
-      }
-    }'''
-    }
-
-    void 'test copying primitive type from datamodel to other datamodel'() {
+    void 'test copying primitive type from referencedatamodel to other referencedatamodel'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
@@ -248,13 +205,13 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         id
 
         when: 'trying to copy non-existent'
-        POST("referenceDataModels/$otherReferenceDataModelId/dataTypes/$referenceDataModelId/${UUID.randomUUID()}", [:], MAP_ARG, true)
+        POST("referenceDataModels/$otherReferenceDataModelId/referenceDataTypes/$referenceDataModelId/${UUID.randomUUID()}", [:], MAP_ARG, true)
 
         then:
         response.status == NOT_FOUND
 
         when: 'trying to copy valid'
-        POST("referenceDataModels/$otherReferenceDataModelId/dataTypes/$referenceDataModelId/$id", [:], MAP_ARG, true)
+        POST("referenceDataModels/$otherReferenceDataModelId/referenceDataTypes/$referenceDataModelId/$id", [:], MAP_ARG, true)
 
         then:
         verifyResponse(CREATED, response)
@@ -269,12 +226,12 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         cleanUpData(id)
     }
 
-    void 'test copying enumeration type from datamodel to other datamodel'() {
+    void 'test copying enumeration type from referencedatamodel to other referencedatamodel'() {
         given:
         POST('', [
-            domainType       : 'EnumerationType',
+            domainType       : 'ReferenceEnumerationType',
             label            : 'functional enumeration',
-            enumerationValues: [
+            referenceEnumerationValues: [
                 [key: 'a', value: 'wibble'],
                 [key: 'b', value: 'wobble']
             ]
@@ -286,7 +243,7 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         id
 
         when: 'trying to copy valid'
-        POST("referenceDataModels/$otherReferenceDataModelId/dataTypes/$referenceDataModelId/$id", [:], MAP_ARG, true)
+        POST("referenceDataModels/$otherReferenceDataModelId/referenceDataTypes/$referenceDataModelId/$id", [:], MAP_ARG, true)
 
         then:
         verifyResponse(CREATED, response)
@@ -300,27 +257,4 @@ class ReferenceDataTypeFunctionalSpec extends ResourceFunctionalSpec<ReferenceDa
         cleanup:
         cleanUpData(id)
     }
-
-    void 'test copying reference type from datamodel to other datamodel'() {
-        given:
-        POST('', [
-            domainType    : 'ReferenceType',
-            label         : 'functional dataclass reference',
-            referenceClass: dataClassId
-        ])
-        verifyResponse CREATED, response
-        String id = response.body().id
-
-        expect:
-        id
-
-        when: 'trying to copy valid'
-        POST("referenceDataModels/$otherReferenceDataModelId/dataTypes/$referenceDataModelId/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyResponse(BAD_REQUEST, response)
-
-        cleanup:
-        cleanUpData(id)
-    }
-}*/
+}

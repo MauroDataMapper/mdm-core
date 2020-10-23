@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
+
+model {
+    ReferenceEnumerationValue referenceEnumerationValue
+}
+
+json {
+    index referenceEnumerationValue.idx
+    id referenceEnumerationValue.id
+    key referenceEnumerationValue.key
+    value referenceEnumerationValue.value
+    category referenceEnumerationValue.category
+}

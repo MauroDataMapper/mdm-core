@@ -25,8 +25,8 @@ class ReferenceEnumerationValueInterceptor extends ReferenceDataModelSecuredInte
     @Override
     void checkIds() {
         super.checkIds()
-        Utils.toUuid(params, 'enumerationTypeId')
-        Utils.toUuid(params, 'dataTypeId')
+        Utils.toUuid(params, 'referenceEnumerationTypeId')
+        Utils.toUuid(params, 'referenceDataTypeId')
     }
 
     boolean before() {

@@ -33,13 +33,13 @@ class ReferenceEnumerationValueController extends CatalogueItemController<Refere
 
     @Override
     protected ReferenceEnumerationValue queryForResource(Serializable resourceId) {
-        return referenceEnumerationValueService.findByIdAndEnumerationType(resourceId, params.enumerationTypeId ?: params.dataTypeId)
+        return referenceEnumerationValueService.findByIdAndReferenceEnumerationType(resourceId, params.referenceEnumerationTypeId ?: params.referenceDataTypeId)
     }
 
     @Override
     protected List<ReferenceEnumerationValue> listAllReadableResources(Map params) {
         params.sort = params.sort ?: 'idx'
-        return referenceEnumerationValueService.findAllByEnumerationType(params.enumerationTypeId ?: params.dataTypeId, params)
+        return referenceEnumerationValueService.findAllByReferenceEnumerationType(params.referenceEnumerationTypeId ?: params.referenceDataTypeId, params)
     }
 
     @Override
@@ -55,7 +55,7 @@ class ReferenceEnumerationValueController extends CatalogueItemController<Refere
     @Override
     protected ReferenceEnumerationValue createResource() {
         ReferenceEnumerationValue resource = super.createResource() as ReferenceEnumerationValue
-        referenceEnumerationTypeService.get(params.enumerationTypeId ?: params.dataTypeId)?.addToReferenceEnumerationValues(resource)
+        referenceEnumerationTypeService.get(params.referenceEnumerationTypeId ?: params.referenceDataTypeId)?.addToReferenceEnumerationValues(resource)
         resource
     }
 }

@@ -51,7 +51,7 @@ class UrlMappings {
                 put "/folder/$folderId"(controller: 'referenceDataModel', action: 'changeFolder')
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'referenceDataModel', action: 'exportModel')
 
-                delete '/dataTypes/clean'(controller: 'referenceDataModel', action: 'deleteAllUnusedDataTypes')
+                delete '/referenceDataTypes/clean'(controller: 'referenceDataModel', action: 'deleteAllUnusedReferenceDataTypes')
 
                 get '/hierarchy'(controller: 'referenceDataModel', action: 'hierarchy')
 
@@ -70,7 +70,7 @@ class UrlMappings {
                 '/referenceDataValues'(resources: 'referenceDataValue', excludes: DEFAULT_EXCLUDES)
 
                 /**
-                 * DataElements
+                 * ReferenceDataElements
                  */
 
                 '/referenceDataElements'(resources: 'referenceDataElement', excludes: DEFAULT_EXCLUDES) {
@@ -81,14 +81,14 @@ class UrlMappings {
                 get '/search'(controller: 'dataElement', action: 'search')
 
                 /**
-                 * DataTypes
+                 * ReferenceDataTypes
                  */
                 '/referenceDataTypes'(resources: 'referenceDataType', excludes: DEFAULT_EXCLUDES) {
                     get '/referenceDataElements'(controller: 'referenceDataElement', action: 'index')
-                    '/enumerationValues'(resources: 'enumerationValue', excludes: DEFAULT_EXCLUDES)
+                    '/referenceEnumerationValues'(resources: 'referenceEnumerationValue', excludes: DEFAULT_EXCLUDES)
                 }
                 post "/referenceDataTypes/$otherReferenceDataModelId/$referenceDataTypeId"(controller: 'referenceDataType', action: 'copyReferenceDataType')
-                "/enumerationTypes/${enumerationTypeId}/enumerationValues"(resources: 'enumerationValue', excludes: DEFAULT_EXCLUDES)
+                "/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues"(resources: 'referenceEnumerationValue', excludes: DEFAULT_EXCLUDES)
             }
 
             group '/referenceDataModels', {

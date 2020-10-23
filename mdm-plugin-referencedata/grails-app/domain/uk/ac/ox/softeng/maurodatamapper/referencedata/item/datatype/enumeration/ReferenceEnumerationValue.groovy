@@ -70,7 +70,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
         key type: 'text'
         value type: 'text'
         category type: 'text'
-        enumerationType index: 'enumeration_value_enumeration_type_idx', fetch: 'join'
+        referenceEnumerationType index: 'enumeration_value_enumeration_type_idx', fetch: 'join'
         model cascade: 'none'
     }
 
@@ -133,7 +133,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
 
     @Override
     void updateIndices(int index) {
-        enumerationType.updateEnumerationValueIndexes(this)
+        referenceEnumerationType.updateReferenceEnumerationValueIndexes(this)
     }
 
     ObjectDiff<ReferenceEnumerationValue> diff(ReferenceEnumerationValue otherEnumerationValue) {
