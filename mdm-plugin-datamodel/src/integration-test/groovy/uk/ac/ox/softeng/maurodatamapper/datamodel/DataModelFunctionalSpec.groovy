@@ -827,7 +827,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData()
     }
 
-    void 'VB01 : test creating a new main branch model version of a DataModel'() {
+    void 'VB01a : test creating a new main branch model version of a DataModel'() {
         given: 'finalised model is created'
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
@@ -892,6 +892,69 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData()
     }
+
+    void 'VB01b : performance test creating a new main branch model version of a simple DataModel'() {
+        given: 'finalised model is created'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('simpleDataModel').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when:
+        long start = System.currentTimeMillis()
+        PUT("$id/newBranchModelVersion", [:])
+        long newBranchModelVersionDuration = System.currentTimeMillis() - start
+        log.debug('newBranchModelVersion took {}', Utils.getTimeString(newBranchModelVersionDuration))
+
+        then:
+        verifyResponse CREATED, response
+        newBranchModelVersionDuration < 1000
+
+        cleanup:
+        cleanUpData()
+    }
+
+    void 'VB01c : performance test creating a new main branch model version of a complex DataModel'() {
+        given: 'finalised model is created'
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: loadTestFile('complexDataModel').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        when:
+        long start = System.currentTimeMillis()
+        PUT("$id/newBranchModelVersion", [:])
+        long newBranchModelVersionDuration = System.currentTimeMillis() - start
+        log.debug('newBranchModelVersion took {}', Utils.getTimeString(newBranchModelVersionDuration))
+
+        then:
+        verifyResponse CREATED, response
+        newBranchModelVersionDuration < 1500
+
+        cleanup:
+        cleanUpData()
+    }
+
 
     void 'VB02 : test creating a main branch model version finalising and then creating another main branch of a DataModel'() {
         given: 'finalised model is created'
@@ -1521,10 +1584,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
         verifyResponse CREATED, response
 
-        POST("$id/dataTypes", [label: 'deleteDataTypeSource', domainType: 'PrimitiveType'])
+        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
         verifyResponse CREATED, response
-        POST("$id/dataTypes", [label: 'modifyDataTypeSource', domainType: 'PrimitiveType'])
+        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'modifyMetadataSource', value: 'original'])
         verifyResponse CREATED, response
+
+        //        POST("$id/dataTypes", [label: 'deleteDataTypeSource', domainType: 'PrimitiveType'])
+        //        verifyResponse CREATED, response
+        //        POST("$id/dataTypes", [label: 'modifyDataTypeSource', domainType: 'PrimitiveType'])
+        //        verifyResponse CREATED, response
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
@@ -1559,6 +1627,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("$source/path/dm%3A%7Cdc%3AmodifyAndModifyReturningDifference")
         verifyResponse OK, response
         String modifyAndModifyReturningDifference = responseBody().id
+
+        GET("$source/metadata")
+        verifyResponse OK, response
+        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
+        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
 
         //        GET("$source/path/dm%3A%7Cdt%3AdeleteDataTypeSource")
         //        verifyResponse OK, response
@@ -1595,6 +1668,17 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String addLeftOnly = responseBody().id
         POST("$source/dataClasses", [label: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
         verifyResponse CREATED, response
+
+        //metadata
+        DELETE("$source/metadata/$deleteMetadataSource")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])
+        verifyResponse OK, response
+
+        POST("$source/metadata", [namespace: 'functional.test.namespace', key: 'addMetadataSource', value: 'original'])
+        verifyResponse CREATED, response
+        String addMetadataSource = responseBody().id
 
         //dataTypes
         //        DELETE("$source/dataTypes/$deleteDataTypeSource")
