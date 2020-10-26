@@ -57,7 +57,7 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
-        value blank: true
+        value blank: true, nullable: true
     }
 
     static mapping = {
