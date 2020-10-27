@@ -1584,10 +1584,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
         verifyResponse CREATED, response
 
-        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
-        verifyResponse CREATED, response
-        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'modifyMetadataSource', value: 'original'])
-        verifyResponse CREATED, response
+        //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
+        //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'modifyMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
 
         //        POST("$id/dataTypes", [label: 'deleteDataTypeSource', domainType: 'PrimitiveType'])
         //        verifyResponse CREATED, response
@@ -1628,10 +1628,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         String modifyAndModifyReturningDifference = responseBody().id
 
-        GET("$source/metadata")
-        verifyResponse OK, response
-        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
-        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
+        //        GET("$source/metadata")
+        //        verifyResponse OK, response
+        //        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
+        //        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
 
         //        GET("$source/path/dm%3A%7Cdt%3AdeleteDataTypeSource")
         //        verifyResponse OK, response
@@ -1670,15 +1670,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
 
         //metadata
-        DELETE("$source/metadata/$deleteMetadataSource")
-        verifyResponse NO_CONTENT, response
-
-        PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])
-        verifyResponse OK, response
-
-        POST("$source/metadata", [namespace: 'functional.test.namespace', key: 'addMetadataSource', value: 'original'])
-        verifyResponse CREATED, response
-        String addMetadataSource = responseBody().id
+        //        DELETE("$source/metadata/$deleteMetadataSource")
+        //        verifyResponse NO_CONTENT, response
+        //
+        //        PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])
+        //        verifyResponse OK, response
+        //
+        //        POST("$source/metadata", [namespace: 'functional.test.namespace', key: 'addMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
+        //        String addMetadataSource = responseBody().id
 
         //dataTypes
         //        DELETE("$source/dataTypes/$deleteDataTypeSource")

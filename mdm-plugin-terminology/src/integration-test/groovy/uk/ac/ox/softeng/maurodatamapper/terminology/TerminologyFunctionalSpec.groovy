@@ -155,6 +155,221 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 }'''
     }
 
+    String getExpectedMergeDiffJson() {
+        '''{
+    "leftId": "${json-unit.matches:id}",
+    "rightId": "${json-unit.matches:id}",
+    "label": "Functional Test Model",
+    "count": 9,
+    "diffs": [
+        {
+            "description": {
+                "left": "DescriptionRight",
+                "right": "DescriptionLeft",
+                "isMergeConflict": true,
+                "commonAncestorValue": null
+            }
+        },
+        {
+            "branchName": {
+                "left": "main",
+                "right": "source",
+                "isMergeConflict": false
+            }
+        },
+        {
+            "terms": {
+                "deleted": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "DAM: deleteAndModify",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "Terminology",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": true,
+                        "commonAncestorValue": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "DAM: deleteAndModify",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "Terminology",
+                                    "finalised": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "DLO: deleteLeftOnly",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "Terminology",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": false
+                    }
+                ],
+                "created": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "MAD: modifyAndDelete",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "Terminology",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": true,
+                        "commonAncestorValue": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "MAD: modifyAndDelete",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "Terminology",
+                                    "finalised": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "ALO: addLeftOnly",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "Terminology",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": false
+                    }
+                ],
+                "modified": [
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "MAMRD: modifyAndModifyReturningDifference",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "Terminology",
+                                "finalised": false
+                            }
+                        ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "Terminology",
+                                "finalised": false
+                            }
+                        ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                    "left": "DescriptionRight",
+                                    "right": "DescriptionLeft",
+                                    "isMergeConflict": true,
+                                    "commonAncestorValue": null
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "MLO: modifyLeftOnly",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "Terminology",
+                                "finalised": false
+                            }
+                        ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "Terminology",
+                                "finalised": false
+                            }
+                        ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                    "left": null,
+                                    "right": "Description",
+                                    "isMergeConflict": false
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "label": "AAARD: addAndAddReturningDifference",
+                        "leftBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "Terminology",
+                                "finalised": false
+                            }
+                        ],
+                        "rightBreadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Functional Test Model",
+                                "domainType": "Terminology",
+                                "finalised": false
+                            }
+                        ],
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "description": {
+                                    "left": "DescriptionRight",
+                                    "right": "DescriptionLeft",
+                                    "isMergeConflict": true,
+                                    "commonAncestorValue": null
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}'''
+    }
+
     void 'test finalising Terminology'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
@@ -779,6 +994,317 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(mainId)
         cleanUpData(leftId)
         cleanUpData(rightId)
+        cleanUpData(id)
+    }
+
+    void 'VB09a : test merging diff with no patch data'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target", [:])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors[0].message.contains('cannot be null')
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'VB09b : test merging diff with URI id not matching body id'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+                                              [
+                                                  leftId : "$target" as String,
+                                                  rightId: "${UUID.randomUUID().toString()}" as String,
+                                                  label  : "Functional Test Model",
+                                                  count  : 0,
+                                                  diffs  : []
+                                              ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Source model id passed in request body does not match source model id in URI.'
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+                                              [
+                                                  leftId : "${UUID.randomUUID().toString()}" as String,
+                                                  rightId: "$source" as String,
+                                                  label  : "Functional Test Model",
+                                                  count  : 0,
+                                                  diffs  : []
+                                              ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Target model id passed in request body does not match target model id in URI.'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'VB09c : test merging diff into draft model'() {
+        given:
+        String id = createNewItem(validJson)
+
+        POST("$id/terms", [code: 'DLO', definition: 'deleteLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$id/terms", [code: 'MLO', definition: 'modifyLeftOnly'])
+        verifyResponse CREATED, response
+        POST("$id/terms", [code: 'DAM', definition: 'deleteAndModify'])
+        verifyResponse CREATED, response
+        POST("$id/terms", [code: 'MAD', definition: 'modifyAndDelete'])
+        verifyResponse CREATED, response
+        POST("$id/terms", [code: 'MAMRD', definition: 'modifyAndModifyReturningDifference'])
+        verifyResponse CREATED, response
+
+        //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
+        //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'modifyMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        //to delete
+        GET("$source/path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly")
+        verifyResponse OK, response
+        String deleteLeftOnly = responseBody().id
+        GET("$source/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
+        verifyResponse OK, response
+        String deleteAndModify = responseBody().id
+        //to modify
+        GET("$source/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
+        verifyResponse OK, response
+        String modifyLeftOnly = responseBody().id
+        GET("$source/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete")
+        verifyResponse OK, response
+        String sourceModifyAndDelete = responseBody().id
+        GET("$source/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
+        verifyResponse OK, response
+        String modifyAndModifyReturningDifference = responseBody().id
+
+        //        GET("$source/metadata")
+        //        verifyResponse OK, response
+        //        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
+        //        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
+
+        then:
+        //dataModel description
+        PUT("$source", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        //terms
+        DELETE("$source/terms/$deleteLeftOnly")
+        verifyResponse NO_CONTENT, response
+        DELETE("$source/terms/$deleteAndModify")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$source/terms/$modifyLeftOnly", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/terms/$sourceModifyAndDelete", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/terms/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        POST("$source/terms", [code: 'ALO', definition: 'addLeftOnly'])
+        verifyResponse CREATED, response
+        String addLeftOnly = responseBody().id
+        POST("$source/terms", [code: 'AAARD', definition: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
+        verifyResponse CREATED, response
+
+        //metadata
+        //        DELETE("$source/metadata/$deleteMetadataSource")
+        //        verifyResponse NO_CONTENT, response
+        //
+        //        PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])
+        //        verifyResponse OK, response
+        //
+        //        POST("$source/metadata", [namespace: 'functional.test.namespace', key: 'addMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
+        //        String addMetadataSource = responseBody().id
+
+        when:
+        // for mergeInto json
+        GET("$target/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete")
+        verifyResponse OK, response
+        String targetModifyAndDelete = responseBody().id
+
+        GET("$target/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
+        verifyResponse OK, response
+        deleteAndModify = responseBody().id
+        GET("$target/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
+        verifyResponse OK, response
+        modifyAndModifyReturningDifference = responseBody().id
+
+        then:
+        //dataModel description
+        PUT("$target", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        //terms
+        DELETE("$target/terms/$targetModifyAndDelete")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$target/terms/$deleteAndModify", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$target/terms/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        POST("$target/terms", [code: 'AAARD', definition: 'addAndAddReturningDifference', description: 'DescriptionRight'])
+        verifyResponse CREATED, response
+        String addAndAddReturningDifference = responseBody().id
+
+        when:
+        // for mergeInto json
+        GET("$target/path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly")
+        verifyResponse OK, response
+        deleteLeftOnly = responseBody().id
+        GET("$target/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
+        verifyResponse OK, response
+        modifyLeftOnly = responseBody().id
+
+        GET("$source/mergeDiff/$target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedMergeDiffJson
+
+        when:
+        String modifiedDescriptionSource = 'modifiedDescriptionSource'
+
+        def requestBody = [
+            patch: [
+                leftId : target,
+                rightId: source,
+                label  : "Functional Test Model",
+                count  : 7,
+                diffs  : [
+                    [
+                        fieldName: "description",
+                        value    : modifiedDescriptionSource
+                    ],
+                    [
+                        fieldName: "terms",
+                        deleted  : [
+                            [
+                                id   : deleteAndModify,
+                                label: "DAM: deleteAndModify"
+                            ],
+                            [
+                                id   : deleteLeftOnly,
+                                label: "DLO: deleteLeftOnly"
+                            ]
+                        ],
+                        created  : [
+                            [
+                                id   : addLeftOnly,
+                                label: "ALO: addLeftOnly"
+                            ],
+                            [
+                                id   : sourceModifyAndDelete,
+                                label: "MAD: modifyAndDelete"
+                            ]
+                        ],
+                        modified : [
+                            [
+                                leftId: addAndAddReturningDifference,
+                                label : "AAARD: addAndAddReturningDifference",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "addedDescriptionSource"
+                                    ]
+                                ]
+                            ],
+                            [
+                                leftId: modifyAndModifyReturningDifference,
+                                label : "modifyAndModifyReturningDifference",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : modifiedDescriptionSource
+                                    ]
+                                ]
+                            ],
+                            [
+                                leftId: modifyLeftOnly,
+                                label : "modifyLeftOnly",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "modifiedDescriptionSourceOnly"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+
+        PUT("$source/mergeInto/$target", requestBody)
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == target
+        responseBody().description == modifiedDescriptionSource
+
+        when:
+        GET("$target/terms")
+
+        then:
+        responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'MAD: modifyAndDelete',
+                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly'] as Set
+        responseBody().items.find { dataClass -> dataClass.label == 'MAD: modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'AAARD: addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { dataClass -> dataClass.label == 'MAMRD: modifyAndModifyReturningDifference' }.description ==
+        modifiedDescriptionSource
+        responseBody().items.find { dataClass -> dataClass.label == 'MLO: modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
         cleanUpData(id)
     }
 

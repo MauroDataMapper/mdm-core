@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
@@ -29,15 +28,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -82,9 +77,6 @@ class DataModelService extends ModelService<DataModel> {
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
-
-    @Autowired
-    Set<ModelItemService> modelItemServices
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -385,58 +377,6 @@ class DataModelService extends ModelService<DataModel> {
             it.label.toLowerCase() in enumerationTypeNames.collect { it.toLowerCase() } :
             it.label in enumerationTypeNames
         } as Set<EnumerationType>
-    }
-
-    @Override
-    DataModel mergeInto(DataModel leftModel, DataModel rightModel, MergeObjectDiffData mergeObjectDiff,
-                        UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService catalogueItemService = this) {
-
-        CatalogueItem catalogueItem = catalogueItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
-
-        // TODO is this useful? CatalogueItemService service = catalogueItemServices.find {it.handles(domainType)}
-
-        mergeObjectDiff.diffs.each {
-            diff ->
-                diff.each {
-                    mergeFieldDiff ->
-                        if (mergeFieldDiff.value) {
-                            catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-                        } else {
-                            // if no value, then some combination of created, deleted, and modified may exist
-                            ModelItemService modelItemService = modelItemServices.find {
-                                if (it.hasProperty('resourcePathElement')) it.resourcePathElement == mergeFieldDiff.fieldName
-                            }
-                            if (modelItemService) {
-                                // apply deletions of children to target object
-                                mergeFieldDiff.deleted.each {
-                                    obj ->
-                                        def modelItem = modelItemService.get(obj.id) as ModelItem
-                                        modelItemService.delete(modelItem)
-                                }
-
-                                def parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
-
-                                // copy additions from source to target object
-                                mergeFieldDiff.created.each {
-                                    obj ->
-                                        def modelItem = modelItemService.get(obj.id) as ModelItem
-                                        modelItemService.copy(rightModel,
-                                                              modelItem,
-                                                              userSecurityPolicyManager,
-                                                              parentId)
-                                }
-                                // for modifications, recursively call this method
-                                mergeFieldDiff.modified.each {
-                                    obj ->
-                                        mergeInto(leftModel, rightModel, obj,
-                                                  userSecurityPolicyManager,
-                                                  modelItemService)
-                                }
-                            }
-                        }
-                }
-        }
-        rightModel
     }
 
     @Override

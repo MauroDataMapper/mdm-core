@@ -29,7 +29,12 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
+import org.springframework.beans.factory.annotation.Autowired
+
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
+
+    @Autowired
+    Set<ModelItemService> modelItemServices
 
     @Override
     Class<K> getCatalogueItemClass() {
@@ -73,7 +78,51 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
-    abstract K mergeInto(K leftModel, K rightModel, MergeObjectDiffData<K> patch, UserSecurityPolicyManager userSecurityPolicyManager)
+    K mergeInto(K leftModel, K rightModel, MergeObjectDiffData mergeObjectDiff,
+                UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService catalogueItemService = this) {
+
+        CatalogueItem catalogueItem = catalogueItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
+
+        mergeObjectDiff.diffs.each {
+            diff ->
+                diff.each {
+                    mergeFieldDiff ->
+                        if (mergeFieldDiff.value) {
+                            catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+                        } else {
+                            // if no value, then some combination of created, deleted, and modified may exist
+                            ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+                            if (modelItemService) {
+                                // apply deletions of children to target object
+                                mergeFieldDiff.deleted.each {
+                                    obj ->
+                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        modelItemService.delete(modelItem)
+                                }
+
+                                def parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
+
+                                // copy additions from source to target object
+                                mergeFieldDiff.created.each {
+                                    obj ->
+                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        parentId ?
+                                        modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager, parentId) :
+                                        modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager)
+                                }
+                                // for modifications, recursively call this method
+                                mergeFieldDiff.modified.each {
+                                    obj ->
+                                        mergeInto(leftModel, rightModel, obj,
+                                                  userSecurityPolicyManager,
+                                                  modelItemService)
+                                }
+                            }
+                        }
+                }
+        }
+        rightModel
+    }
 
     abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds)
 

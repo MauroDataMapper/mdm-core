@@ -470,7 +470,7 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     DataClass copy(DataModel copiedDataModel, DataClass original, UserSecurityPolicyManager userSecurityPolicyManager,
-                   Serializable parentDataClassId) {
+                   Serializable parentDataClassId = null) {
         copyDataClass(copiedDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager, parentDataClassId)
     }
 
@@ -584,10 +584,6 @@ class DataClassService extends ModelItemService<DataClass> {
     @Override
     Class<DataClass> getModelItemClass() {
         DataClass
-    }
-
-    static String getResourcePathElement() {
-        'dataClasses'
     }
 
     @Override

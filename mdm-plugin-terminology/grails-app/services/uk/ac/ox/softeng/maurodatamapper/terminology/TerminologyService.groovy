@@ -31,7 +31,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -46,7 +45,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -219,12 +217,6 @@ class TerminologyService extends ModelService<Terminology> {
         log.debug('Found Terminology {}({}) which matches DataLoaderPlugin {}({})', latest.label, latest.documentationVersion,
                   dataLoaderProviderService.name, dataLoaderProviderService.version)
         latest
-    }
-
-    @Override
-    Terminology mergeInto(Terminology leftModel, Terminology rightModel, MergeObjectDiffData patch,
-                          UserSecurityPolicyManager userSecurityPolicyManager) {
-        throw new NotImplementedException('DataModelService.mergeInto')
     }
 
     @Override

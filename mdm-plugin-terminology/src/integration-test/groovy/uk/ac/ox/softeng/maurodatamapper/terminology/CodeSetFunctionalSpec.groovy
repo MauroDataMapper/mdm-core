@@ -791,6 +791,334 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
+    void 'VB09a : test merging diff with no patch data'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target", [:])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().total == 1
+        responseBody().errors[0].message.contains('cannot be null')
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'VB09b : test merging diff with URI id not matching body id'() {
+        given:
+        String id = createNewItem(validJson)
+
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+                                              [
+                                                  leftId : "$target" as String,
+                                                  rightId: "${UUID.randomUUID().toString()}" as String,
+                                                  label  : "Functional Test Model",
+                                                  count  : 0,
+                                                  diffs  : []
+                                              ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Source model id passed in request body does not match source model id in URI.'
+
+        when:
+        PUT("$source/mergeInto/$target", [patch:
+                                              [
+                                                  leftId : "${UUID.randomUUID().toString()}" as String,
+                                                  rightId: "$source" as String,
+                                                  label  : "Functional Test Model",
+                                                  count  : 0,
+                                                  diffs  : []
+                                              ]
+        ])
+
+        then:
+        verifyResponse(UNPROCESSABLE_ENTITY, response)
+        responseBody().message == 'Target model id passed in request body does not match target model id in URI.'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+        cleanUpData(id)
+    }
+
+    void 'VB09c : test merging diff into draft model'() {
+        given:
+        POST("folders/${folderId}/terminologies", validJson, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String baseTerminology = responseBody().id
+
+        POST("terminologies/$baseTerminology/terms", [code: 'DLO', definition: 'deleteLeftOnly'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String deleteLeftOnly = responseBody().id
+        POST("terminologies/$baseTerminology/terms", [code: 'MLO', definition: 'modifyLeftOnly'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String modifyLeftOnly = responseBody().id
+        POST("terminologies/$baseTerminology/terms", [code: 'DAM', definition: 'deleteAndModify'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String deleteAndModify = responseBody().id
+        POST("terminologies/$baseTerminology/terms", [code: 'MAD', definition: 'modifyAndDelete'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String modifyAndDelete = responseBody().id
+        POST("terminologies/$baseTerminology/terms", [code: 'MAMRD', definition: 'modifyAndModifyReturningDifference'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String modifyAndModifyReturningDifference = responseBody().id
+
+        //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
+        //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'modifyMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
+
+        String baseCodeSet = createNewItem(validJson)
+
+        PUT("$baseCodeSet/terms/$deleteLeftOnly", [:])
+        verifyResponse OK, response
+
+
+        PUT("$baseCodeSet/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$baseCodeSet/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$baseCodeSet/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        //to delete
+        GET("$source/path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly")
+        verifyResponse OK, response
+        deleteLeftOnly = responseBody().id
+        GET("$source/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
+        verifyResponse OK, response
+        deleteAndModify = responseBody().id
+        //to modify
+        GET("$source/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
+        verifyResponse OK, response
+        modifyLeftOnly = responseBody().id
+        GET("$source/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete")
+        verifyResponse OK, response
+        String sourceModifyAndDelete = responseBody().id
+        GET("$source/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
+        verifyResponse OK, response
+        modifyAndModifyReturningDifference = responseBody().id
+
+        //        GET("$source/metadata")
+        //        verifyResponse OK, response
+        //        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
+        //        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
+
+        then:
+        //dataModel description
+        PUT("$source", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        //terms
+        DELETE("$source/terms/$deleteLeftOnly")
+        verifyResponse NO_CONTENT, response
+        DELETE("$source/terms/$deleteAndModify")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$source/terms/$modifyLeftOnly", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/terms/$sourceModifyAndDelete", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$source/terms/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
+        verifyResponse OK, response
+
+        POST("$source/terms", [code: 'ALO', definition: 'addLeftOnly'])
+        verifyResponse CREATED, response
+        String addLeftOnly = responseBody().id
+        POST("$source/terms", [code: 'AAARD', definition: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
+        verifyResponse CREATED, response
+
+        //metadata
+        //        DELETE("$source/metadata/$deleteMetadataSource")
+        //        verifyResponse NO_CONTENT, response
+        //
+        //        PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])
+        //        verifyResponse OK, response
+        //
+        //        POST("$source/metadata", [namespace: 'functional.test.namespace', key: 'addMetadataSource', value: 'original'])
+        //        verifyResponse CREATED, response
+        //        String addMetadataSource = responseBody().id
+
+        when:
+        // for mergeInto json
+        GET("$target/path/te%3A%7Ctm%3AMAD:%20modifyAndDelete")
+        verifyResponse OK, response
+        String targetModifyAndDelete = responseBody().id
+
+        GET("$target/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
+        verifyResponse OK, response
+        deleteAndModify = responseBody().id
+        GET("$target/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
+        verifyResponse OK, response
+        modifyAndModifyReturningDifference = responseBody().id
+
+        then:
+        //dataModel description
+        PUT("$target", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        //terms
+        DELETE("$target/terms/$targetModifyAndDelete")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$target/terms/$deleteAndModify", [description: 'Description'])
+        verifyResponse OK, response
+        PUT("$target/terms/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
+        verifyResponse OK, response
+
+        POST("$target/terms", [code: 'AAARD', definition: 'addAndAddReturningDifference', description: 'DescriptionRight'])
+        verifyResponse CREATED, response
+        String addAndAddReturningDifference = responseBody().id
+
+        when:
+        // for mergeInto json
+        GET("$target/path/te%3A%7Ctm%3ADLO:%20deleteLeftOnly")
+        verifyResponse OK, response
+        deleteLeftOnly = responseBody().id
+        GET("$target/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
+        verifyResponse OK, response
+        modifyLeftOnly = responseBody().id
+
+        GET("$source/mergeDiff/$target", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedMergeDiffJson
+
+        when:
+        String modifiedDescriptionSource = 'modifiedDescriptionSource'
+
+        def requestBody = [
+            patch: [
+                leftId : target,
+                rightId: source,
+                label  : "Functional Test Model",
+                count  : 7,
+                diffs  : [
+                    [
+                        fieldName: "description",
+                        value    : modifiedDescriptionSource
+                    ],
+                    [
+                        fieldName: "terms",
+                        deleted  : [
+                            [
+                                id   : deleteAndModify,
+                                label: "DAM: deleteAndModify"
+                            ],
+                            [
+                                id   : deleteLeftOnly,
+                                label: "DLO: deleteLeftOnly"
+                            ]
+                        ],
+                        created  : [
+                            [
+                                id   : addLeftOnly,
+                                label: "ALO: addLeftOnly"
+                            ],
+                            [
+                                id   : sourceModifyAndDelete,
+                                label: "MAD: modifyAndDelete"
+                            ]
+                        ],
+                        modified : [
+                            [
+                                leftId: addAndAddReturningDifference,
+                                label : "AAARD: addAndAddReturningDifference",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "addedDescriptionSource"
+                                    ]
+                                ]
+                            ],
+                            [
+                                leftId: modifyAndModifyReturningDifference,
+                                label : "modifyAndModifyReturningDifference",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : modifiedDescriptionSource
+                                    ]
+                                ]
+                            ],
+                            [
+                                leftId: modifyLeftOnly,
+                                label : "modifyLeftOnly",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "description",
+                                        value    : "modifiedDescriptionSourceOnly"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+
+        PUT("$source/mergeInto/$target", requestBody)
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == target
+        responseBody().description == modifiedDescriptionSource
+
+        when:
+        GET("$target/terms")
+
+        then:
+        responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'MAD: modifyAndDelete',
+                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly'] as Set
+        responseBody().items.find { dataClass -> dataClass.label == 'MAD: modifyAndDelete' }.description == 'Description'
+        responseBody().items.find { dataClass -> dataClass.label == 'AAARD: addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { dataClass -> dataClass.label == 'MAMRD: modifyAndModifyReturningDifference' }.description ==
+        modifiedDescriptionSource
+        responseBody().items.find { dataClass -> dataClass.label == 'MLO: modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+
+        cleanup:
+        cleanUpData(source)
+        cleanUpData(target)
+
+        DELETE("terminologies/$baseTerminology?permanent=true", MAP_ARG, true)
+        response.status() == NO_CONTENT
+        //        cleanUpData(baseTerminology)
+        cleanUpData(baseCodeSet)
+    }
+
     void 'cd  folder from CodeSet context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)

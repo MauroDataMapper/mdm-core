@@ -27,9 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
-import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
@@ -160,6 +160,10 @@ class TermService extends ModelItemService<Term> {
 
     List<Term> findAllWhereRootTermOfTerminologyId(UUID terminologyId, Map pagination = [:]) {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
+    }
+
+    Term copy(Terminology copiedTerminology, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 
     Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
