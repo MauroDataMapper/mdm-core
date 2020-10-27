@@ -70,7 +70,9 @@ class CsvImporterService extends DataBindReferenceDataModelImporterProviderServi
         ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: currentUser.emailAddress, label: 'string')
         referenceDataModel.addToReferenceDataTypes(stringDataType)
 
-        CSVFormat csvFormat = CSVFormat.newFormat((char)',').withHeader();
+        CSVFormat csvFormat = CSVFormat.newFormat((char)',')
+            .withQuote((char)'"')
+            .withHeader();
 
         CSVParser parser = csvFormat.parse(
         new InputStreamReader(new ByteArrayInputStream(content), "UTF8"));
