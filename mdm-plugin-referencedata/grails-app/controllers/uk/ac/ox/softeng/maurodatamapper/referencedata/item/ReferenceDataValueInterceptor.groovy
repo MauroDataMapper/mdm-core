@@ -28,6 +28,11 @@ class ReferenceDataValueInterceptor extends ReferenceDataModelSecuredInterceptor
 
     boolean before() {
         performChecks()
+
+        if (actionName in ['search']) {
+            return canReadReferenceDataModel()
+        }
+
         checkStandardActions()
     }
 }

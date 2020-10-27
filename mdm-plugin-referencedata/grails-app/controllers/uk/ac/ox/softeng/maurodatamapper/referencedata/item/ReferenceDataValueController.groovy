@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 
 import groovy.util.logging.Slf4j
 
@@ -26,10 +27,43 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
     static responseFormats = ['json', 'xml']
 
     ReferenceDataValueService referenceDataValueService
-    //ReferenceDataElementService referenceDataElementService
 
     ReferenceDataValueController() {
         super(ReferenceDataValue)
+    }
+
+    def search(SearchParams searchParams) {
+        if (params.all) removePaginationParameters()
+
+        //Always sort by rowNumber
+        params.sortBy = 'rowNumber'
+
+        //Paginate the distinct rowNumber selection or selection of values
+        params.max = params.max ?: searchParams.max ?: 10
+        params.offset = params.offset ?: searchParams.offset ?: 0
+
+        searchParams.searchTerm = searchParams.searchTerm ?: params.search ?: ""
+  
+
+        if (params.asRows) {
+            List referenceDataRows = []
+
+            //Get distinct rowNumbers which have a value matching the searchTerm
+            List rowNumbers = referenceDataValueService.findDistinctRowNumbersByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchParams.searchTerm, params)
+
+            if (rowNumbers.size() > 0) {
+                //Make a list of referenceDataValues WHERE reference_data_model_id = params.referenceDataModelId AND rowNumber IN [rowNumbers] and convert this into rows
+                referenceDataRows = rowify(referenceDataValueService.findAllByReferenceDataModelIdAndRowNumberIn(params.referenceDataModelId, rowNumbers, params))
+            }
+
+            respond referenceDataRows, [model: [numberOfRows: rowNumbers.size(), referenceDataRows: referenceDataRows, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'searchAsRows']
+
+        } else {
+            //Make a list of referenceDataValues which have a value matching the search term
+            List referenceDataValues = referenceDataValueService.findAllByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchParams.searchTerm, params)
+
+            respond referenceDataValues, [model: [referenceDataValues: referenceDataValues, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'search']
+        }     
     }
 
     /**
@@ -63,30 +97,7 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
             //Make a list of referenceDataValues WHERE reference_data_model_id = params.referenceDataModelId AND rowNumber >= fromRowNumber AND rowNumber < toRowNumber
             List referenceDataValues = referenceDataValueService.findAllByReferenceDataModelIdAndRowNumber(params.referenceDataModelId, fromRowNumber, toRowNumber, params)
             
-            //Sort the list by rowNumber ascending
-            referenceDataValues.sort{it.getProperty(params.sortBy)}
-
-            //Make a list of row numbers
-            List rowNumbers = []
-            referenceDataValues.each {
-                if (!rowNumbers.contains(it.rowNumber)) {
-                    rowNumbers.add(it.rowNumber)
-                }
-            }
-
-            //Make a List containing rows
-            List referenceDataRows = []
-            //Make a row for each row number
-            rowNumbers.eachWithIndex { rowNumber, i ->
-                List referenceDataRow = []
-                referenceDataValues.each {
-                    if (it.rowNumber == rowNumber) {
-                        referenceDataRow.add(it)
-                    }
-                }
-                referenceDataRows.add(referenceDataRow)
-            }
-
+            List referenceDataRows = rowify(referenceDataValues)
             respond referenceDataRows, [model: [numberOfRows: referenceDataValueService.countRowsByReferenceDataModelId(params.referenceDataModelId), referenceDataRows: referenceDataRows, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'indexAsRows']
         } else {            
             return referenceDataValueService.findAllByReferenceDataModelId(params.referenceDataModelId, params)
@@ -101,5 +112,36 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
     @Override
     protected void serviceInsertResource(ReferenceDataValue resource) {
         //referenceDataValueService.save(flush: true, resource)
+    }
+
+    /**
+     * Turn a list of ReferenceDataValue into a list of rows
+     */
+    private List rowify(List<ReferenceDataValue> referenceDataValues) {
+        //Sort the list by rowNumber ascending
+        referenceDataValues.sort{it.getProperty(params.sortBy)}
+
+        //Make a list of row numbers
+        List rowNumbers = []
+        referenceDataValues.each {
+            if (!rowNumbers.contains(it.rowNumber)) {
+                rowNumbers.add(it.rowNumber)
+            }
+        }
+
+        //Make a List containing rows
+        List referenceDataRows = []
+        //Make a row for each row number
+        rowNumbers.eachWithIndex { rowNumber, i ->
+            List referenceDataRow = []
+            referenceDataValues.each {
+                if (it.rowNumber == rowNumber) {
+                    referenceDataRow.add(it)
+                }
+            }
+            referenceDataRows.add(referenceDataRow)
+        }
+
+        return referenceDataRows
     }
 }

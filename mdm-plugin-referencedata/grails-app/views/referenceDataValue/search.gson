@@ -1,0 +1,11 @@
+import grails.gorm.PagedResultList
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
+
+model {
+    List<ReferenceDataValue> referenceDataValueList
+}
+json {
+    count referenceDataValueList instanceof PagedResultList ? ((PagedResultList) referenceDataValueList).getTotalCount() : referenceDataValueList?.size() ?: 0
+    items tmpl.referenceDataValue(referenceDataValueList ?: [])
+}
+

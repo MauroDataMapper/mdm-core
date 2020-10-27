@@ -26,9 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
-import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -140,7 +140,8 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
     }
 
     static DetachedCriteria<ReferenceDataValue> byReferenceDataModelId(Serializable referenceDataModelId) {
-        new DetachedCriteria<ReferenceDataValue>(ReferenceDataValue).eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
+        new DetachedCriteria<ReferenceDataValue>(ReferenceDataValue)
+        .eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
     }
 
     /*static DetachedCriteria<ReferenceEnumerationValue> byClassifierId(Serializable classifierId) {
@@ -157,17 +158,32 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
     }    
 
     static DetachedCriteria<ReferenceDataValue> byReferenceDataModelIdAndRowNumber(Serializable referenceDataModelId, Integer fromRowNumber, Integer toRowNumber) {
-        new DetachedCriteria<ReferenceDataValue>(ReferenceDataValue)
-        .eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
+        ReferenceDataValue.byReferenceDataModelId(referenceDataModelId)
         .ge('rowNumber', fromRowNumber)
         .lt('rowNumber', toRowNumber)
     }
 
+    static DetachedCriteria<ReferenceDataValue> byReferenceDataModelIdAndRowNumberIn(Serializable referenceDataModelId, List rowNumbers) {
+        ReferenceDataValue.byReferenceDataModelId(referenceDataModelId)
+        .'in'('rowNumber', rowNumbers)
+    }    
+
     static DetachedCriteria<ReferenceDataValue> countByReferenceDataModelId(Serializable referenceDataModelId) {
-        new DetachedCriteria<ReferenceDataValue>(ReferenceDataValue)
-        .eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
+        ReferenceDataValue.byReferenceDataModelId(referenceDataModelId)
         .projections {
             countDistinct("rowNumber")
         }
     }
+
+    static DetachedCriteria<ReferenceDataValue> distinctRowNumbersByReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {
+        ReferenceDataValue.byReferenceDataModelIdAndValueIlike(referenceDataModelId, valueSearch)
+        .projections {
+            distinct("rowNumber")
+        }
+    }
+
+    static DetachedCriteria<ReferenceDataValue> byReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {
+        ReferenceDataValue.byReferenceDataModelId(referenceDataModelId)
+        .ilike('value', "%${valueSearch}%")
+    } 
 }
