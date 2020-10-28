@@ -42,14 +42,14 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
         params.max = params.max ?: searchParams.max ?: 10
         params.offset = params.offset ?: searchParams.offset ?: 0
 
-        searchParams.searchTerm = searchParams.searchTerm ?: params.search ?: ""
+        String searchTerm = params.search ?: searchParams.searchTerm ?: ""
   
 
         if (params.asRows) {
             List referenceDataRows = []
 
             //Get distinct rowNumbers which have a value matching the searchTerm
-            List rowNumbers = referenceDataValueService.findDistinctRowNumbersByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchParams.searchTerm, params)
+            List rowNumbers = referenceDataValueService.findDistinctRowNumbersByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchTerm)
 
             if (rowNumbers.size() > 0) {
                 //Make a list of referenceDataValues WHERE reference_data_model_id = params.referenceDataModelId AND rowNumber IN [rowNumbers] and convert this into rows
@@ -60,7 +60,7 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
 
         } else {
             //Make a list of referenceDataValues which have a value matching the search term
-            List referenceDataValues = referenceDataValueService.findAllByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchParams.searchTerm, params)
+            List referenceDataValues = referenceDataValueService.findAllByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchTerm, params)
 
             respond referenceDataValues, [model: [referenceDataValues: referenceDataValues, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'search']
         }     

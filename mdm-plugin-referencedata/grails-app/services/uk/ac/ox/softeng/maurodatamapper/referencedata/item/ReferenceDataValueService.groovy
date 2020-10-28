@@ -161,16 +161,16 @@ results = [] //TODO
         ReferenceDataValue.withFilter(ReferenceDataValue.byReferenceDataModelIdAndRowNumber(referenceDataModelId, fromRowNumber, toRowNumber), params).list()
     }
 
-    List<ReferenceDataValue> findAllByReferenceDataModelIdAndRowNumberIn(Serializable referenceDataModelId, List rowNumbers, Map params) {
-        ReferenceDataValue.withFilter(ReferenceDataValue.byReferenceDataModelIdAndRowNumberIn(referenceDataModelId, rowNumbers), params).list()
+    List<ReferenceDataValue> findAllByReferenceDataModelIdAndRowNumberIn(Serializable referenceDataModelId, List rowNumbers, Map params = [:]) {
+        ReferenceDataValue.withFilter(ReferenceDataValue.byReferenceDataModelIdAndRowNumberIn(referenceDataModelId, rowNumbers), params).list(params)
     }    
 
     Integer countRowsByReferenceDataModelId(Serializable referenceDataModelId) {
         ReferenceDataValue.countByReferenceDataModelId(referenceDataModelId).list()[0]
     }
 
-    List<Integer> findDistinctRowNumbersByReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch, Map pagination = [:]) {
-        ReferenceDataValue.distinctRowNumbersByReferenceDataModelIdAndValueIlike(referenceDataModelId, valueSearch).list(pagination)
+    List<Integer> findDistinctRowNumbersByReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {
+        ReferenceDataValue.distinctRowNumbersByReferenceDataModelIdAndValueIlike(referenceDataModelId, valueSearch).list()
     }
 
     List<ReferenceDataValue> findAllByReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch, Map pagination = [:]) {
