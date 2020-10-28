@@ -395,8 +395,8 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
      *
      * @param DataClass updated A DataClass, which belongs to this DataModel, and which has been updated.
      */
-    void updateChildIndexes(DataClass updated) {
-        updateSiblingIndexes(updated, getChildDataClasses() as Set)
+    void updateChildIndexes(DataClass updated, int oldIndex) {
+        updateSiblingIndexes(updated, oldIndex, getChildDataClasses() as Set)
     }
 
     /*
@@ -404,7 +404,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
      *
      * @param DataType updated A DataType, which belongs to this DataModel, and which has been updated.
      */
-    void updateChildIndexes(DataType updated) {
-        updateSiblingIndexes(updated, dataTypes)
+    void updateChildIndexes(DataType updated, int oldIndex) {
+        updateSiblingIndexes(updated, oldIndex, dataTypes)
     }    
 }

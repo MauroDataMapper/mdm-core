@@ -105,7 +105,7 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
      *
      * @param EnumerationValue updated An EnumerationValue, which belongs to this EnumerationType, and which has been updated.
      */
-    void updateChildIndexes(EnumerationValue updated) {
-        updateSiblingIndexes(updated, enumerationValues)
+    void updateChildIndexes(EnumerationValue updated, int oldIndex) {
+        updateSiblingIndexes(updated, oldIndex, enumerationValues)
     }
 }
