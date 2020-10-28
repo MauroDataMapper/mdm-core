@@ -44,7 +44,7 @@ class DateTimeDifferenceEvaluator implements DifferenceEvaluator {
 
             // Check names match for elements containing the values
             if (controlElement.nodeName == testElement.nodeName) {
-                if (controlElement?.localName in ['lastUpdated', 'exportedOn']) {
+                if (controlElement?.localName in ['lastUpdated', 'exportedOn', 'dateFinalised']) {
                     return ComparisonResult.EQUAL
                 }
             }

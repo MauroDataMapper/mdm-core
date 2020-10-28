@@ -20,8 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 
@@ -36,6 +36,12 @@ class CodeSetController extends ModelController<CodeSet> {
 
     CodeSetService codeSetService
     TermService termService
+
+    @Autowired(required = false)
+    Set<CodeSetExporterProviderService> exporterProviderServices
+    
+    @Autowired(required = false)
+    Set<CodeSetImporterProviderService> importerProviderServices    
 
     CodeSetController() {
         super(CodeSet, 'codeSetId')
@@ -73,15 +79,5 @@ class CodeSetController extends ModelController<CodeSet> {
     @Override
     protected ModelService getModelService() {
         codeSetService
-    }
-
-    @Override
-    Set<ExporterProviderService> getExporterProviderServices() {
-        [] as Set
-    }
-
-    @Override
-    Set<ImporterProviderService> getImporterProviderServices() {
-        [] as Set
     }
 }

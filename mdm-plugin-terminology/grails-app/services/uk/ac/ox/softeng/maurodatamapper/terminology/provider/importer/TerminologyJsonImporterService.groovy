@@ -30,7 +30,7 @@ import groovy.util.logging.Slf4j
 import java.nio.charset.Charset
 
 @Slf4j
-class JsonImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> {
+class TerminologyJsonImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> {
 
     @Override
     String getDisplayName() {

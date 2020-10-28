@@ -21,13 +21,13 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.plugin.json.view.JsonViewTemplateEngine
 import org.springframework.beans.factory.annotation.Autowired
 
-class JsonExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
+class CodeSetJsonExporterService extends CodeSetExporterProviderService implements TemplateBasedExporter {
 
     @Autowired
     JsonViewTemplateEngine templateEngine
@@ -44,7 +44,7 @@ class JsonExporterService extends TerminologyExporterProviderService implements 
 
     @Override
     String getDisplayName() {
-        'JSON Terminology Exporter'
+        'JSON CodeSet Exporter'
     }
 
     @Override
@@ -53,13 +53,13 @@ class JsonExporterService extends TerminologyExporterProviderService implements 
     }
 
     @Override
-    ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
+    ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new TerminologyExportModel(terminology, exportMetadata, false), fileType
+        exportModel new CodeSetExportModel(codeSet, exportMetadata, false), fileType
     }
 
     @Override
-    ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminology) throws ApiException {
-        throw new ApiBadRequestException('TES01', "${getName()} cannot export multiple Terminologies")
+    ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
+        throw new ApiBadRequestException('CSES01', "${getName()} cannot export multiple CodeSets")
     }
 }

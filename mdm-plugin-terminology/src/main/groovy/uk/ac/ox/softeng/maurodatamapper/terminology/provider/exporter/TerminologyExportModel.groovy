@@ -29,7 +29,7 @@ import groovy.xml.Namespace
 class TerminologyExportModel extends ExportModel {
 
     public static String getCurrentVersion(boolean isXml) {
-        isXml ? new XmlExporterService().version : new JsonExporterService().version
+        isXml ? new TerminologyXmlExporterService().version : new TerminologyJsonExporterService().version
     }
 
     TerminologyExportModel(Terminology terminology, ExportMetadata exportMetadata, boolean isXml) {

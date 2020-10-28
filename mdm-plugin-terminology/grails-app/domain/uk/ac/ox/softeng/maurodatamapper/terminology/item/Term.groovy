@@ -295,4 +295,12 @@ class Term implements ModelItem<Term, Terminology> {
         }
         criteria
     }
+
+    /**
+    * A path used when exporting as part of a CodeSet
+    */
+    String termPath()
+    {
+        "te:${terminology.label}|tm:${label}"
+    }
 }

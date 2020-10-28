@@ -106,7 +106,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "JsonExporterService",
+    "name": "TerminologyJsonExporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON Terminology Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
@@ -120,7 +120,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "XmlExporterService",
+    "name": "TerminologyXmlExporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "XML Terminology Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
@@ -131,6 +131,34 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "providerType": "TerminologyExporter",
     "fileExtension": "xml",
     "fileType": "text/xml",
+    "canExportMultipleDomains": false
+  },
+  {
+    "name": "CodeSetXmlExporterService",
+    "version": "3.0",
+    "displayName": "XML CodeSet Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "CodeSetExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
+    "canExportMultipleDomains": false
+  },
+  {
+    "name": "CodeSetJsonExporterService",
+    "version": "3.0",
+    "displayName": "JSON CodeSet Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "CodeSetExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
     "canExportMultipleDomains": false
   }
 ]''')
@@ -192,7 +220,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canImportMultipleDomains": true
   },
   {
-    "name": "JsonImporterService",
+    "name": "TerminologyJsonImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON Terminology Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
@@ -205,7 +233,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canImportMultipleDomains": false
   },
   {
-    "name": "XmlImporterService",
+    "name": "TerminologyXmlImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "XML Terminology Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
@@ -215,6 +243,32 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "TerminologyImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "CodeSetXmlImporterService",
+    "version": "3.0",
+    "displayName": "XML CodeSet Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "CodeSetImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "CodeSetJsonImporterService",
+    "version": "3.0",
+    "displayName": "JSON CodeSet Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "CodeSetImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   }
 ]''')

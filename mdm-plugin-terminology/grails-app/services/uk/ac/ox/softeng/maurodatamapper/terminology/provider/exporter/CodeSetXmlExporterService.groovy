@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.plugin.markup.view.MarkupViewTemplateEngine
@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 /**
  * @since 14/09/2020
  */
-class XmlExporterService extends TerminologyExporterProviderService implements TemplateBasedExporter {
+class CodeSetXmlExporterService extends CodeSetExporterProviderService implements TemplateBasedExporter {
 
     @Autowired
     MarkupViewTemplateEngine templateEngine
@@ -47,7 +47,7 @@ class XmlExporterService extends TerminologyExporterProviderService implements T
 
     @Override
     String getDisplayName() {
-        'XML Terminology Exporter'
+        'XML CodeSet Exporter'
     }
 
     @Override
@@ -56,13 +56,18 @@ class XmlExporterService extends TerminologyExporterProviderService implements T
     }
 
     @Override
-    ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
+    ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new TerminologyExportModel(terminology, exportMetadata, true), fileType
+        exportModel new CodeSetExportModel(codeSet, exportMetadata, true), fileType
     }
 
     @Override
-    ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
-        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple Terminologies")
+    ByteArrayOutputStream exportCodeSets(User currentUser, List<CodeSet> codeSets) throws ApiException {
+        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple CodeSets")
+    }
+
+    @Override
+    String getExportViewPath() {
+        '/exportModel/exportCodeSet'
     }
 }

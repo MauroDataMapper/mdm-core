@@ -18,9 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.JsonExporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.JsonImporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.BaseImporterExporterSpec
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.test.provider.BaseCodeSetImporterExporterSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
 import com.google.common.base.CaseFormat
@@ -38,10 +38,10 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
-class JsonImporterExporterServiceSpec extends BaseImporterExporterSpec implements JsonComparer {
+class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetImporterExporterSpec implements JsonComparer {
 
-    JsonImporterService jsonImporterService
-    JsonExporterService jsonExporterService
+    CodeSetJsonImporterService codeSetJsonImporterService
+    CodeSetJsonExporterService codeSetJsonExporterService
 
     @Override
     String getImportType() {
@@ -49,13 +49,13 @@ class JsonImporterExporterServiceSpec extends BaseImporterExporterSpec implement
     }
 
     @Override
-    JsonImporterService getImporterService() {
-        jsonImporterService
+    CodeSetJsonImporterService getCodeSetImporterService() {
+        codeSetJsonImporterService
     }
 
     @Override
-    JsonExporterService getExporterService() {
-        jsonExporterService
+    CodeSetJsonExporterService getCodeSetExporterService() {
+        codeSetJsonExporterService
     }
 
     @Override
@@ -71,21 +71,4 @@ class JsonImporterExporterServiceSpec extends BaseImporterExporterSpec implement
         String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath)).replace(/Test Authority/, 'Mauro Data Mapper')
         verifyJson(expectedJson, exportedModel)
     }
-
-
-    void 'test that trying to import multiple terminologies fails'() {
-        given:
-        setupData()
-
-        expect:
-        !importerService.canImportMultipleDomains()
-
-        when:
-        importerService.importTerminologies(admin, loadTestFile('simpleTerminology'))
-
-        then:
-        ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('cannot import multiple Terminologies')
-    }
-
 }
