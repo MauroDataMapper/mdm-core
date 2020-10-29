@@ -257,7 +257,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      * @param DataElement updated A DataElement, which belongs to this DataClass, and which has been updated.
      */
     void updateChildIndexes(DataElement updated, int oldIndex) {
-        updateSiblingIndexes(updated, oldIndex, dataElements)
+        updateSiblingIndexes(updated, dataElements, oldIndex)
     }
 
     /*
@@ -266,6 +266,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      * @param DataClass updated A DataClass, which belongs to this DataClass, and which has been updated.
      */
     void updateChildIndexes(DataClass updated, int oldIndex) {
-        updateSiblingIndexes(updated, oldIndex, dataClasses)
+        updateSiblingIndexes(updated, dataClasses, oldIndex)
     }
 }
