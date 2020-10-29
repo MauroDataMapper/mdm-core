@@ -53,7 +53,19 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
 
             if (rowNumbers.size() > 0) {
                 //Make a list of referenceDataValues WHERE reference_data_model_id = params.referenceDataModelId AND rowNumber IN [rowNumbers] and convert this into rows
-                referenceDataRows = rowify(referenceDataValueService.findAllByReferenceDataModelIdAndRowNumberIn(params.referenceDataModelId, rowNumbers, params))
+                
+                //Do our own pagination by choosing the relevant n items from our distinct rowNumbers
+                int fromRow = params.offset
+                if (fromRow > rowNumbers.size() - 1) {
+                    fromRow = 0
+                }
+
+                int toRow = fromRow + params.max
+                if (toRow > rowNumbers.size() - 1) {
+                    toRow = rowNumbers.size() - 1
+                }
+                List rowNumbersToFetch = rowNumbers[fromRow..toRow]
+                referenceDataRows = rowify(referenceDataValueService.findAllByReferenceDataModelIdAndRowNumberIn(params.referenceDataModelId, rowNumbersToFetch))
             }
 
             respond referenceDataRows, [model: [numberOfRows: rowNumbers.size(), referenceDataRows: referenceDataRows, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'searchAsRows']

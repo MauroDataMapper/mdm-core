@@ -180,6 +180,7 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
         .projections {
             distinct("rowNumber")
         }
+        .order("rowNumber", "asc")
     }
 
     static DetachedCriteria<ReferenceDataValue> byReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {
