@@ -122,6 +122,14 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "keys": [
       
     ],
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer"
+  },  
+  {
+    "defaultNamespace": true,
+    "editable": true,
+    "keys": [
+      
+    ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter"
   },
   {

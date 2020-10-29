@@ -194,6 +194,32 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
+    "name": "XmlImporterService",
+    "version": "3.0",
+    "displayName": "XML ReferenceDataModel Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": true
+  },
+  {
+    "name": "CsvImporterService",
+    "version": "3.0",
+    "displayName": "CSV Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },          
+  {
     "name": "JsonImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON DataModel Importer",

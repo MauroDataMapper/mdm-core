@@ -144,13 +144,13 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
         .eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
     }
 
-    /*static DetachedCriteria<ReferenceEnumerationValue> byClassifierId(Serializable classifierId) {
+    static DetachedCriteria<ReferenceDataValue> byClassifierId(Serializable classifierId) {
         where {
             classifiers {
                 eq 'id', Utils.toUuid(classifierId)
             }
         }
-    }*/
+    }
 
     static DetachedCriteria<ReferenceDataValue> withFilter(DetachedCriteria<ReferenceDataValue> criteria, Map filters) {
         criteria = withCatalogueItemFilter(criteria, filters)

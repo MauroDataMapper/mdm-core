@@ -11,7 +11,7 @@ model {
 
 json {
     dataTypes tmpl.'/dataType/fullDataType'('dataType',
-                                            referenceDataModel.getSortedDataTypes(),
+                                            referenceDataModel.getSortedReferenceDataTypes(),
                                             [userSecurityPolicyManager: userSecurityPolicyManager]
     )
 }
