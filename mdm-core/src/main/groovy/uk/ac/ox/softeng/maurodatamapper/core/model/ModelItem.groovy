@@ -54,15 +54,14 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
      * On setting the index, update the indices of siblings. 
      */
     void setIndex(int index) {
-        int oldIndex = idx
-        log.debug("setting index from ${idx} to ${index} for ${label}")
+        int oldIndex = idx != null ? idx : Integer.MAX_VALUE
         idx = index
         markDirty('idx')
         //No ID also means no parent, which won't work.
-        if (ident()) updateIndices(index, oldIndex)
+        if (ident()) updateIndices(oldIndex)
     }
 
-    void updateIndices(int index, int oldIndex) {
+    void updateIndices(int oldIndex = Integer.MAX_VALUE) {
         CatalogueItem indexedWithin = getIndexedWithin()
         if (indexedWithin) {
             indexedWithin.updateChildIndexes(this, oldIndex)
@@ -91,12 +90,10 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     def beforeValidateModelItem() {
-        log.debug("beforeValidateModelItem idx ${idx}")
         //if index is null and this is a thing whose siblings are ordered, add this to the end of the list
-        //CatalogueItem indexedWithin = getIndexedWithin()
-        //if (indexedWithin) {
-        //    indexedWithin.updateChildIndexes(this)
-        //}
+        if (idx == null) {
+            updateIndices()
+        }
         if (idx == null) idx = Ordered.LOWEST_PRECEDENCE
         buildPath()
         beforeValidateCatalogueItem()
