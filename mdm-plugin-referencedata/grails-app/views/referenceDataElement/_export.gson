@@ -1,11 +1,11 @@
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 
-inherits template: '/catalogueItem/export', model: [export: dataElement]
+inherits template: '/catalogueItem/export', model: [export: referenceDataElement]
 model {
-    ReferenceDataElement dataElement
+    ReferenceDataElement referenceDataElement
 }
 json {
-    dataType tmpl.'/dataType/export'(dataElement.referenceDataType)
-    if (dataElement.maxMultiplicity != null) maxMultiplicity dataElement.maxMultiplicity
-    if (dataElement.minMultiplicity != null) minMultiplicity dataElement.minMultiplicity
+    referenceDataType tmpl.'/referenceDataType/export'(referenceDataElement.referenceDataType)
+    if (referenceDataElement.maxMultiplicity != null) maxMultiplicity referenceDataElement.maxMultiplicity
+    if (referenceDataElement.minMultiplicity != null) minMultiplicity referenceDataElement.minMultiplicity
 }

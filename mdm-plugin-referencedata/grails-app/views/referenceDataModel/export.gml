@@ -16,13 +16,13 @@ ReferenceDataModel rdm = referenceDataModel as ReferenceDataModel
     'mdm:finalised'(rdm.finalised)
     if (rdm.finalised) 'mdm:dateFinalised'(OffsetDateTimeConverter.toString(rdm.dateFinalised))
 
-    layout '/authority/export.gml', authority: rdm.authority, ns: 'mdm'
+    //layout '/authority/export.gml', authority: rdm.authority, ns: 'mdm'
 
-    if (rdm.dataTypes) {
-        'mdm:dataTypes' {
-            rdm.dataTypes.each {dt ->
-                layout '/referenceDataType/export.gml', referenceDataType: dt
-            }
-        }
-    }
+    //if (rdm.referenceDataTypes) {
+    //    'mdm:referenceDataTypes' {
+    //        rdm.referenceDataTypes.each {rdt ->
+    //            layout '/referenceDataType/export.gml', referenceDataType: rdt
+    //        }
+    //    }
+    //}
 }

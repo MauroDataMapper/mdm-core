@@ -9,7 +9,7 @@ model {
 json {
     domainType export.domainType
     if (export.instanceOf(ReferenceEnumerationType)) {
-        enumerationValues tmpl.'/enumerationValue/export'(((ReferenceEnumerationType) export).referenceEnumerationValues)
+        referenceEnumerationValues tmpl.'/referenceEnumerationValue/export'(((ReferenceEnumerationType) export).referenceEnumerationValues)
     } else if (export.instanceOf(ReferencePrimitiveType)) {
         ReferencePrimitiveType pt = export as ReferencePrimitiveType
         if (pt.units) units pt.units
