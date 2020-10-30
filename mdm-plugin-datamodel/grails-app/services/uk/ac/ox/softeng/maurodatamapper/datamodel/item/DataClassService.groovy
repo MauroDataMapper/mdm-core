@@ -588,12 +588,12 @@ class DataClassService extends ModelItemService<DataClass> {
 
     @Override
     boolean hasTreeTypeModelItems(DataClass dataClass) {
-        dataClass.dataClasses
+        dataClass.dataClasses || dataClass.dataElements
     }
 
     @Override
     List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass) {
-        DataClass.byParentDataClassId(dataClass.id).list()
+        (DataClass.byParentDataClassId(dataClass.id).list() + DataElement.byDataClassId(dataClass.id).list()) as List<ModelItem>
     }
 
     @Override
