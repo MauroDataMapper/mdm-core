@@ -109,19 +109,19 @@ class Terminology implements Model<Terminology> {
         "Terminology:${label}"
     }
 
-    ObjectDiff<Terminology> diff(Terminology otherTerminolgy) {
-        modelDiffBuilder(Terminology, this, otherTerminolgy)
-            .appendList(Term, 'terms', this.terms, otherTerminolgy.terms)
-        //   .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminolgy.termRelationshipTypes)
+    ObjectDiff<Terminology> diff(Terminology otherTerminology) {
+        modelDiffBuilder(Terminology, this, otherTerminology)
+            .appendList(Term, 'terms', this.terms, otherTerminology.terms)
+        //   .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
     }
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
-        terms?.each {it.beforeValidate()}
+        terms?.each { it.beforeValidate() }
     }
 
     int countTermsByCode(String code) {
-        terms.count {it.code == code}
+        terms.count { it.code == code }
     }
 
     int countTermRelationshipTypesByLabel(String label) {

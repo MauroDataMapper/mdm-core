@@ -1083,9 +1083,24 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse CREATED, response
         POST("$id/terms", [code: 'DAM', definition: 'deleteAndModify'])
         verifyResponse CREATED, response
+        String deleteAndModify = responseBody().id
         POST("$id/terms", [code: 'MAD', definition: 'modifyAndDelete'])
         verifyResponse CREATED, response
+        String modifyAndDelete = responseBody().id
         POST("$id/terms", [code: 'MAMRD', definition: 'modifyAndModifyReturningDifference'])
+        verifyResponse CREATED, response
+
+        POST("$id/termRelationshipTypes", [label: 'inverseOf'])
+        verifyResponse CREATED, response
+        String inverseOf = responseBody().id
+        POST("$id/termRelationshipTypes", [label: 'oppositeActionTo'])
+        verifyResponse CREATED, response
+
+        POST("$id/terms/$deleteAndModify/termRelationships", [
+            targetTerm      : modifyAndDelete,
+            relationshipType: inverseOf,
+            sourceTerm      : deleteAndModify
+        ])
         verifyResponse CREATED, response
 
         //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
@@ -1109,7 +1124,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String deleteLeftOnly = responseBody().id
         GET("$source/path/te%3A%7Ctm%3ADAM:%20deleteAndModify")
         verifyResponse OK, response
-        String deleteAndModify = responseBody().id
+        deleteAndModify = responseBody().id
         //to modify
         GET("$source/path/te%3A%7Ctm%3AMLO:%20modifyLeftOnly")
         verifyResponse OK, response
@@ -1120,6 +1135,11 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         GET("$source/path/te%3A%7Ctm%3AMAMRD:%20modifyAndModifyReturningDifference")
         verifyResponse OK, response
         String modifyAndModifyReturningDifference = responseBody().id
+
+        GET("$source/termRelationshipTypes")
+        verifyResponse OK, response
+        String oppositeActionTo = responseBody().items.find { it.label == 'oppositeActionTo' }.id
+        inverseOf = responseBody().items.find { it.label == 'inverseOf' }.id
 
         //        GET("$source/metadata")
         //        verifyResponse OK, response
@@ -1148,6 +1168,13 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse CREATED, response
         String addLeftOnly = responseBody().id
         POST("$source/terms", [code: 'AAARD', definition: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
+        verifyResponse CREATED, response
+
+        DELETE("$source/termRelationshipTypes/$oppositeActionTo")
+
+        PUT("$source/terms/$inverseOf", [description: 'inverseOf(Modified)'])
+
+        POST("$source/termRelationshipTypes", [label: 'sameActionAs'])
         verifyResponse CREATED, response
 
         //metadata
