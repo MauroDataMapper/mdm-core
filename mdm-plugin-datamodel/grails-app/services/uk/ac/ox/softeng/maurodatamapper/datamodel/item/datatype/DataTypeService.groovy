@@ -332,6 +332,10 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
     }
 
+    DataType copy(DataModel copiedDataModel, DataType original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyDataType(copiedDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    }
+
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
                           boolean copySummaryMetadata = false) {
 

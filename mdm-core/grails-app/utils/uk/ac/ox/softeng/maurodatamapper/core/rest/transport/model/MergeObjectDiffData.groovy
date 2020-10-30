@@ -25,9 +25,6 @@ import grails.validation.Validateable
  */
 class MergeObjectDiffData<T> implements Validateable {
 
-    T left
-    T right
-
     UUID leftId
     UUID rightId
     String label

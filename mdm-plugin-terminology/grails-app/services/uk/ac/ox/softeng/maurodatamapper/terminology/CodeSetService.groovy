@@ -239,8 +239,8 @@ class CodeSetService extends ModelService<CodeSet> {
                                 // for modifications, recursively call this method
                                 mergeFieldDiff.modified.each {
                                     obj ->
-                                        catalogueItem.removeFromTerms(modelItemService.get(obj.rightId))
-                                        catalogueItem.addToTerms(modelItemService.get(obj.leftId))
+                                        catalogueItem.removeFromTerms(modelItemService.get(obj.leftId))
+                                        catalogueItem.addToTerms(modelItemService.get(obj.rightId))
                                 }
                             } else if (modelItemService) {
                                 // apply deletions of children to target object

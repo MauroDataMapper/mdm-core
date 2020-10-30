@@ -97,6 +97,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
         }
 
         if (actionName == 'mergeInto') {
+            //TODO confirm all correct
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
                 return notFound(getSecuredClass(), getId())
             }

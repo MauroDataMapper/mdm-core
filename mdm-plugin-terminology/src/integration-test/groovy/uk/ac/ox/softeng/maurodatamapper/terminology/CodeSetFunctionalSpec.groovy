@@ -1222,8 +1222,6 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyJsonResponse OK, expectedMergeDiffJson
 
         when:
-        String modifiedDescriptionSource = 'modifiedDescriptionSource'
-
         def requestBody = [
             patch: [
                 leftId : target,
@@ -1233,66 +1231,38 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 diffs  : [
                     [
                         fieldName: "description",
-                        value    : modifiedDescriptionSource
+                        value: "DescriptionLeft"
                     ],
                     [
                         fieldName: "terms",
                         deleted  : [
                             [
                                 id   : deleteAndModify,
-                                label: "DAM: deleteAndModify"
                             ],
                             [
                                 id   : deleteLeftOnly,
-                                label: "DLO: deleteLeftOnly"
                             ]
                         ],
                         created  : [
                             [
                                 id   : addLeftOnly,
-                                label: "ALO: addLeftOnly"
                             ],
                             [
                                 id   : sourceModifyAndDelete,
-                                label: "MAD: modifyAndDelete"
                             ]
                         ],
                         modified : [
                             [
                                 leftId : addAndAddReturningDifference,
                                 rightId: sourceAddAndAddReturningDifference,
-                                label  : "AAARD: addAndAddReturningDifference",
-                                count  : 1,
-                                diffs  : [
-                                    [
-                                        fieldName: "description",
-                                        value    : "addedDescriptionSource"
-                                    ]
-                                ]
                             ],
                             [
                                 leftId : modifyAndModifyReturningDifference,
                                 rightId: sourceModifyAndModifyReturningDifference,
-                                label  : "modifyAndModifyReturningDifference",
-                                count  : 1,
-                                diffs  : [
-                                    [
-                                        fieldName: "description",
-                                        value    : modifiedDescriptionSource
-                                    ]
-                                ]
                             ],
                             [
                                 leftId : modifyLeftOnly,
                                 rightId: sourceModifyLeftOnly,
-                                label  : "modifyLeftOnly",
-                                count  : 1,
-                                diffs  : [
-                                    [
-                                        fieldName: "description",
-                                        value    : "modifiedDescriptionSourceOnly"
-                                    ]
-                                ]
                             ]
                         ]
                     ]
@@ -1306,7 +1276,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         then:
         verifyResponse OK, response
         responseBody().id == target
-        responseBody().description == modifiedDescriptionSource
+        responseBody().description == 'DescriptionLeft'
 
         when:
         GET("$target/terms")
@@ -1315,10 +1285,10 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'MAD: modifyAndDelete',
                                               'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly'] as Set
         responseBody().items.find { dataClass -> dataClass.label == 'MAD: modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { dataClass -> dataClass.label == 'AAARD: addAndAddReturningDifference' }.description == 'addedDescriptionSource'
+        responseBody().items.find { dataClass -> dataClass.label == 'AAARD: addAndAddReturningDifference' }.description == 'DescriptionLeft'
         responseBody().items.find { dataClass -> dataClass.label == 'MAMRD: modifyAndModifyReturningDifference' }.description ==
-        modifiedDescriptionSource
-        responseBody().items.find { dataClass -> dataClass.label == 'MLO: modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+        'DescriptionLeft'
+        responseBody().items.find { dataClass -> dataClass.label == 'MLO: modifyLeftOnly' }.description == 'Description'
 
         cleanup:
         cleanUpData(source)

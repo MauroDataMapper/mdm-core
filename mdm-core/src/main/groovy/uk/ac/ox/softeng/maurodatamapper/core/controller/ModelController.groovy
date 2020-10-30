@@ -271,6 +271,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!validateResource(instance, 'update')) return
 
+        //TODO user must have edit to delete?
         if (mergeIntoData.deleteBranch) {
             modelService.permanentDeleteModel(left)
             if (securityPolicyManagerService) {

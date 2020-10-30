@@ -319,6 +319,10 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement
     }
 
+    DataElement copy(DataModel copiedDataModel, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyDataElement(copiedDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    }
+
     DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
                                 UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
