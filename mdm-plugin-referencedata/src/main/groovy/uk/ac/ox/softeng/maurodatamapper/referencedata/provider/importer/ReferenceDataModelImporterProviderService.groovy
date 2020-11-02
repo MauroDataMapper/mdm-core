@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
@@ -34,6 +35,9 @@ abstract class ReferenceDataModelImporterProviderService<T extends ReferenceData
 
     @Autowired
     ReferenceDataModelService referenceDataModelService
+
+    @Autowired
+    ClassifierService classifierService    
 
     @Override
     ReferenceDataModel importDomain(User currentUser, T params) {
@@ -60,6 +64,7 @@ abstract class ReferenceDataModelImporterProviderService<T extends ReferenceData
     private ReferenceDataModel checkImport(User currentUser, ReferenceDataModel referenceDataModel, boolean finalised, boolean importAsNewDocumentationVersion) {
         referenceDataModelService.checkfinaliseModel(referenceDataModel, finalised)
         referenceDataModelService.checkDocumentationVersion(referenceDataModel, importAsNewDocumentationVersion, currentUser)
+        classifierService.checkClassifiers(currentUser, referenceDataModel)
         referenceDataModel
     }
 }

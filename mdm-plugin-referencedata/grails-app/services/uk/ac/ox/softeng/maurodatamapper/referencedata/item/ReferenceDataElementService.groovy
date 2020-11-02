@@ -421,4 +421,15 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     void setDataElementIsFromDataElement(ReferenceDataElement source, ReferenceDataElement target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
+
+    void checkImportedReferenceDataElementAssociations(User importingUser, ReferenceDataModel referenceDataModel, ReferenceDataElement referenceDataElement) {
+        referenceDataModel.addToReferenceDataElements(referenceDataElement)
+        referenceDataElement.createdBy = importingUser.emailAddress
+        referenceDataElement.referenceDataType.createdBy = importingUser.emailAddress
+
+        //Get the reference data type for this element by getting the matching reference data type for the model
+        referenceDataElement.referenceDataType = referenceDataModel.referenceDataTypes.find {it.label == referenceDataElement.referenceDataType.label}
+
+        checkFacetsAfterImportingCatalogueItem(referenceDataElement)
+    }    
 }

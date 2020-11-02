@@ -37,6 +37,8 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMeta
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValueService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
@@ -61,8 +63,9 @@ import java.time.ZoneOffset
 @SuppressWarnings('unused')
 class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
-    ReferenceDataTypeService referenceDataTypeService
     ReferenceDataElementService referenceDataElementService
+    ReferenceDataTypeService referenceDataTypeService
+    ReferenceDataValueService referenceDataValueService
     MessageSource messageSource
     VersionLinkService versionLinkService
     EditService editService
@@ -275,16 +278,53 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
 
+    /**
+     * Set the relationships between Reference Data Type, Reference Data Element and Reference Data Value when importing.
+     *
+     * A Reference Data Value maps to one Reference Data Element, which maps to one Reference Data Type. This means an export looks
+     * something like this:
+     * model
+     *  - types
+     *    - type 1
+     *    - type 2
+     *  - elements
+     *    - element 1
+     *      - type 2
+     *    - element 2
+     *      - type 1
+     *  - values
+     *    - value 1
+     *      - element 1
+     *         - type 2
+     *      etc....
+     *  
+     * In other words, Reference Data Element and Reference Data Type are stated at the model level, and then restated for every
+     * Reference Data Value. When importing the Reference Data Values, we want to set an assocation for Reference Data Element (and 
+     * thus also Reference Data Type) to the entity imported at the model level, rather than creating duplicated entities by creating
+     * a new Reference Data Element and Reference Data Type for every value. This is done in the call to checkImportedReferenceDataValueAssociations.
+     */
     void checkImportedReferenceDataModelAssociations(User importingUser, ReferenceDataModel referenceDataModel, Map bindingMap = [:]) {
         referenceDataModel.createdBy = importingUser.emailAddress
         referenceDataModel.authority = authorityService.getDefaultAuthority()
         checkFacetsAfterImportingCatalogueItem(referenceDataModel)
 
         if (referenceDataModel.referenceDataTypes) {
-            referenceDataModel.referenceDataTypes.each { dt ->
-                referenceDataTypeService.checkImportedReferenceDataTypeAssociations(importingUser, referenceDataModel, dt)
+            referenceDataModel.referenceDataTypes.each { rdt ->
+                referenceDataTypeService.checkImportedReferenceDataTypeAssociations(importingUser, referenceDataModel, rdt)
             }
         }
+
+        if (referenceDataModel.referenceDataElements) {
+            referenceDataModel.referenceDataElements.each { rde ->
+                referenceDataElementService.checkImportedReferenceDataElementAssociations(importingUser, referenceDataModel, rde)
+            }
+        }        
+
+        if (referenceDataModel.referenceDataValues) {
+            referenceDataModel.referenceDataValues.each { rdv ->
+                referenceDataValueService.checkImportedReferenceDataValueAssociations(importingUser, referenceDataModel, rdv)
+            }
+        }        
         log.debug('ReferenceDataModel associations checked')
     }
 

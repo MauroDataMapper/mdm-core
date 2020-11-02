@@ -176,4 +176,14 @@ results = [] //TODO
     List<ReferenceDataValue> findAllByReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch, Map pagination = [:]) {
         ReferenceDataValue.byReferenceDataModelIdAndValueIlike(referenceDataModelId, valueSearch).list(pagination)
     }
+
+    void checkImportedReferenceDataValueAssociations(User importingUser, ReferenceDataModel referenceDataModel, ReferenceDataValue referenceDataValue) {
+        referenceDataModel.addToReferenceDataValues(referenceDataValue)
+        referenceDataValue.createdBy = importingUser.emailAddress
+
+        //Get the reference data element for this value by getting the matching reference data element for the model
+        referenceDataValue.referenceDataElement = referenceDataModel.referenceDataElements.find {it.label == referenceDataValue.referenceDataElement.label}
+
+        checkFacetsAfterImportingCatalogueItem(referenceDataValue)
+    }    
 }

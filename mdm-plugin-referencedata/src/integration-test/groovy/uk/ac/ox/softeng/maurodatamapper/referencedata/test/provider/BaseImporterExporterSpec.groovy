@@ -248,156 +248,170 @@ abstract class BaseImporterExporterSpec extends BaseReferenceDataModelIntegratio
 
         then:
         validateExportedModel('importSimpleWithAliases', exported)
-    }    
-
-    /*void 'test simple data with aliases'() {
-        given:
-        setupData()
-        def testName = 'terminologyWithAliases'
-
-        expect:
-        Terminology.count() == 2
-
-        when:
-        String data = new String(loadTestFile(testName))
-        log.debug("importing ${data}")
-        and:
-        Terminology tm = importAndConfirm(data.bytes)
-
-        then:
-        tm.label == 'Simple Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'
-        tm.aliases.size() == 2
-        'Alias 1' in tm.aliases
-        'Alias 2' in tm.aliases
-        !tm.annotations
-        !tm.metadata
-        !tm.classifiers
-        !tm.terms
-        !tm.termRelationshipTypes
-
-        when:
-        String exported = exportModel(tm.id)
-
-        then:
-        validateExportedModel(testName, exported)
     }
 
-    void 'test simple data with annotations'() {
+    void 'RDM06: test simple data with annotations import and export'() {
         given:
         setupData()
-        def testName = 'terminologyWithAnnotations'
 
         expect:
-        Terminology.count() == 2
+        ReferenceDataModel.count() == 2
 
         when:
-        String data = new String(loadTestFile(testName))
+        String data = new String(loadTestFile('importSimpleWithAnnotations'))
         log.debug("importing ${data}")
         and:
-        Terminology tm = importAndConfirm(data.bytes)
+        ReferenceDataModel rdm = importAndConfirm(data.bytes)
 
         then:
-        tm.label == 'Simple Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'
-        tm.annotations.size() == 1
-        !tm.metadata
-        !tm.classifiers
-        !tm.terms
-        !tm.termRelationshipTypes
+        rdm.label == 'importSimple Reference Data Model'
+        rdm.author == 'Test Author'
+        rdm.organisation == 'Test Organisation'
+        rdm.documentationVersion.toString() == '1.0.0'
+        rdm.finalised == false
+        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.url == 'http://localhost'
+        !rdm.aliases
+        rdm.annotations.size() == 1
+        !rdm.metadata
+        !rdm.classifiers
+        !rdm.referenceDataTypes
+        !rdm.referenceDataElements
+        !rdm.referenceDataValues
 
         when:
-        Annotation ann = tm.annotations[0]
+        Annotation ann = rdm.annotations[0]
 
         then:
         ann.description == 'test annotation 1 description'
-        ann.label == 'test annotation 1 label'        
+        ann.label == 'test annotation 1 label'          
 
         when:
-        String exported = exportModel(tm.id)
+        String exported = exportModel(rdm.id)
 
         then:
-        validateExportedModel(testName, exported)
+        validateExportedModel('importSimpleWithAnnotations', exported)
     }
 
-    void 'test simple data with metadata'() {
+    void 'RDM07: test simple data with metadata import and export'() {
         given:
         setupData()
-        def testName = 'terminologyWithMetadata'
 
         expect:
-        Terminology.count() == 2
+        ReferenceDataModel.count() == 2
 
         when:
-        String data = new String(loadTestFile(testName))
+        String data = new String(loadTestFile('importSimpleWithMetadata'))
         log.debug("importing ${data}")
         and:
-        Terminology tm = importAndConfirm(data.bytes)
+        ReferenceDataModel rdm = importAndConfirm(data.bytes)
 
         then:
-        tm.label == 'Simple Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'
-        !tm.annotations
-        tm.metadata.size() == 3
-        !tm.classifiers
-        !tm.terms
-        !tm.termRelationshipTypes      
+        rdm.label == 'importSimple Reference Data Model'
+        rdm.author == 'Test Author'
+        rdm.organisation == 'Test Organisation'
+        rdm.documentationVersion.toString() == '1.0.0'
+        rdm.finalised == false
+        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.url == 'http://localhost'
+        !rdm.aliases
+        !rdm.annotations
+        rdm.metadata.size() == 3
+        !rdm.classifiers
+        !rdm.referenceDataTypes
+        !rdm.referenceDataElements
+        !rdm.referenceDataValues
+         
 
         when:
-        String exported = exportModel(tm.id)
+        String exported = exportModel(rdm.id)
 
         then:
-        validateExportedModel(testName, exported)
+        validateExportedModel('importSimpleWithMetadata', exported)
     }
 
-    void 'test complex'() {
+    void 'RDM08: test simple data with classifiers import and export'() {
         given:
         setupData()
-        def testName = 'terminologyComplex'
 
         expect:
-        Terminology.count() == 2
+        ReferenceDataModel.count() == 2
 
         when:
-        String data = new String(loadTestFile(testName))
+        String data = new String(loadTestFile('importSimpleWithClassifiers'))
         log.debug("importing ${data}")
         and:
-        Terminology tm = importAndConfirm(data.bytes)
+        ReferenceDataModel rdm = importAndConfirm(data.bytes)
 
         then:
-        tm.label == 'Complex Test Terminology Import'
-        tm.author == 'Test Author'
-        tm.organisation == 'Test Organisation'
-        tm.documentationVersion.toString() == '1.0.0'
-        tm.finalised == false
-        tm.authority.label == 'Mauro Data Mapper'
-        tm.authority.url == 'http://localhost'     
-        tm.annotations.size() == 2
-        tm.metadata.size() == 3
-        tm.classifiers.size() == 2
-        tm.termRelationshipTypes.size() == 4
-        tm.terms.size() == 101
+        rdm.label == 'importSimple Reference Data Model'
+        rdm.author == 'Test Author'
+        rdm.organisation == 'Test Organisation'
+        rdm.documentationVersion.toString() == '1.0.0'
+        rdm.finalised == false
+        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.url == 'http://localhost'
+        !rdm.aliases
+        !rdm.annotations
+        !rdm.metadata
+        rdm.classifiers.size() == 2
+        !rdm.referenceDataTypes
+        !rdm.referenceDataElements
+        !rdm.referenceDataValues
+         
 
+        when:
+        String exported = exportModel(rdm.id)
+
+        then:
+        validateExportedModel('importSimpleWithClassifiers', exported)
+    }
+
+    void 'RDM09: test reference data import and export'() {
+        given:
+        setupData()
+
+        expect:
+        ReferenceDataModel.count() == 2
+
+        when:
+        String data = new String(loadTestFile('importReferenceDataModel'))
+        log.debug("importing ${data}")
         and:
-        def i = 0
-        for (i = 0; i <= 100; i++) {
-            tm.terms.any {it.code == "CTT${i}" && it.definition == "Complex Test Term ${i}"}
-        }
+        ReferenceDataModel rdm = importAndConfirm(data.bytes)
 
-    }     */
+        then:
+        rdm.label == 'Imported Reference Data Model'
+        rdm.author == 'Test Author'
+        rdm.organisation == 'Test Organisation'
+        rdm.documentationVersion.toString() == '1.0.0'
+        rdm.finalised == false
+        rdm.authority.label == 'Mauro Data Mapper'
+        rdm.authority.url == 'http://localhost'
+        !rdm.aliases
+        !rdm.annotations
+        
+        //Metadata
+        rdm.metadata.size() == 3
+
+        //Classifiers
+        rdm.classifiers.size() == 1
+        rdm.classifiers[0].label == "An imported classifier"
+        
+        //Reference Data Types
+        rdm.referenceDataTypes.size() == 2
+        
+        //Reference Data Elements
+        rdm.referenceDataElements.size() == 2
+
+        //Reference Data Values (100 rows of 2 columns)
+        rdm.referenceDataValues.size() == 200
+         
+
+        when:
+        String exported = exportModel(rdm.id)
+
+        then:
+        validateExportedModel('importReferenceDataModel', exported)
+    }    
 }
