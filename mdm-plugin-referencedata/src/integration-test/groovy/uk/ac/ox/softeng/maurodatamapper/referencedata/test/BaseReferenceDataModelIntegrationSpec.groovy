@@ -22,26 +22,26 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 
 import groovy.util.logging.Slf4j
 
-/**
- * @since 03/03/2020
- */
+
 @Slf4j
 abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec {
 
+    ReferenceDataModelService referenceDataModelService
     AdminService adminService
 
-    ReferenceDataModel referenceDataModel
+    ReferenceDataModel exampleReferenceDataModel
+    ReferenceDataModel secondExampleReferenceDataModel
+    Authority testAuthority
 
     Folder getTestFolder() {
         folder
     }
-
-    Authority testAuthority
 
     @Override
     void preDomainDataSetup() {
@@ -49,14 +49,7 @@ abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec
         checkAndSave(folder)
         testAuthority = new Authority(label: 'Test Authority', url: 'http://localhost', createdBy: StandardEmailAddress.INTEGRATION_TEST)
         checkAndSave(testAuthority)
+        exampleReferenceDataModel = BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, testAuthority)
+        secondExampleReferenceDataModel = BootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, testAuthority)
     }
-
-    ReferenceDataModel buildExampleReferenceDataModel() {
-        BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, testAuthority)
-    }
-
-    ReferenceDataModel buildSecondExampleReferenceDataModel() {
-        BootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, testAuthority)
-    }    
-
 }

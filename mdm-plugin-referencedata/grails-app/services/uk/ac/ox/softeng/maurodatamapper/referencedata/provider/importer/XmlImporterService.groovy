@@ -43,7 +43,7 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
 
     @Override
     String getDisplayName() {
-        'XML ReferenceDataModel Importer'
+        'XML Reference Data Importer'
     }
 
     @Override
@@ -53,12 +53,12 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
 
     @Override
     Boolean canImportMultipleDomains() {
-        true
+        false
     }
 
     @Override
     ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
-        /*if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
+        if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
 
         String xml = new String(content, Charset.defaultCharset())
@@ -69,8 +69,8 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
         log.debug('Converting result to Map')
         Map map = convertToMap(result)
 
-        log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)*/
+        log.debug('Importing ReferenceDataModel map')
+        bindMapToReferenceDataModel(currentUser, backwardsCompatibleExtractReferenceDataModelMap(result, map))
     }
 
     //@Override
@@ -100,14 +100,14 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
         imported*/
     //}
 
-    /*Map backwardsCompatibleExtractDataModelMap(GPathResult result, Map map) {
+    Map backwardsCompatibleExtractReferenceDataModelMap(GPathResult result, Map map) {
         switch (result.name()) {
             case 'exportModel':
-                return map.dataModel as Map
-            case 'dataModel':
+                return map.referenceDataModel as Map
+            case 'referenceDataModel':
                 return map
         }
-        throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel is not present')
+        throw new ApiBadRequestException('XIS03', 'Cannot import XML as referenceDataModel is not present')
     }
 
     Map<String, Object> convertToMap(NodeChild nodes) {
@@ -139,7 +139,7 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
 
     String validateXml(String xml) {
 
-        Resource xsdResource = assetResourceLocator.findAssetForURI("dataModel_${version}.xsd")
+        Resource xsdResource = assetResourceLocator.findAssetForURI("referenceDataModel_${version}.xsd")
 
         def factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
         def schema = factory.newSchema(new StreamSource(xsdResource.inputStream))
@@ -150,5 +150,5 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
             return ex.getMessage()
         }
         null
-    }*/
+    }
 }

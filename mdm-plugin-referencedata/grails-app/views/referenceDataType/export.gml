@@ -12,7 +12,7 @@ ReferenceDataType dt = referenceDataType as ReferenceDataType
     if (dt.instanceOf(ReferenceEnumerationType)) {
         ReferenceEnumerationType et = dt as ReferenceEnumerationType
         'mdm:enumerationValues' {
-            et.enumerationValues.each {ev ->
+            et.referenceEnumerationValues.each {ev ->
                 layout '/referenceEnumerationValue/export.gml', referenceEnumerationValue: ev
             }
         }

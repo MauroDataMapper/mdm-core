@@ -55,7 +55,8 @@ class XmlExporterService extends ReferenceDataModelExporterProviderService imple
     @Override
     ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new ReferenceDataModelExportModel(referenceDataModel, exportMetadata, true), fileType
+        ReferenceDataModelExportModel export = new ReferenceDataModelExportModel(referenceDataModel, exportMetadata, true)
+        exportModel(export, fileType)
     }
 
     @Override

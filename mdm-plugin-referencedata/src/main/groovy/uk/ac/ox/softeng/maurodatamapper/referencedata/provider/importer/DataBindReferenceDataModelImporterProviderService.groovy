@@ -73,11 +73,17 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         referenceDataModel
     }
 
-    ReferenceDataModel bindMapToDataModel(User currentUser, Map referenceDataModelMap) {
+    ReferenceDataModel bindMapToReferenceDataModel(User currentUser, Map referenceDataModelMap) {
         if (!referenceDataModelMap) throw new ApiBadRequestException('FBIP03', 'No ReferenceDataModelMap supplied to import')
 
-        log.debug('Setting map dataElements')
-        referenceDataModelMap.dataElements = referenceDataModelMap.remove('dataElements')
+        log.debug('Setting map referenceDataTypes')
+        referenceDataModelMap.referenceDataTypes = referenceDataModelMap.remove('referenceDataTypes')
+        
+        log.debug('Setting map referenceDataElements')
+        referenceDataModelMap.referenceDataElements = referenceDataModelMap.remove('referenceDataElements')
+
+        log.debug('Setting map referenceDataValues')
+        referenceDataModelMap.referenceDataValues = referenceDataModelMap.remove('referenceDataValues')        
 
         ReferenceDataModel referenceDataModel = new ReferenceDataModel()
         log.debug('Binding map to new ReferenceDataModel instance')

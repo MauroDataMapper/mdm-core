@@ -258,15 +258,15 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         ReferenceDataType.byReferenceDataModelIdAndId(referenceDataModelId, id).find()
     }
 
-    void checkImportedDataTypeAssociations(User importingUser, ReferenceDataModel referenceDataModel, ReferenceDataType dataType) {
-        referenceDataModel.addToReferenceDataTypes(dataType)
-        dataType.createdBy = importingUser.emailAddress
-        if (dataType.instanceOf(ReferenceEnumerationType)) {
-            (dataType as ReferenceEnumerationType).referenceEnumerationValues.each { ev ->
+    void checkImportedReferenceDataTypeAssociations(User importingUser, ReferenceDataModel referenceDataModel, ReferenceDataType referenceDataType) {
+        referenceDataModel.addToReferenceDataTypes(referenceDataType)
+        referenceDataType.createdBy = importingUser.emailAddress
+        if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
+            (referenceDataType as ReferenceEnumerationType).referenceEnumerationValues.each { ev ->
                 ev.createdBy = importingUser.emailAddress
             }
         }
-        checkFacetsAfterImportingCatalogueItem(dataType)
+        checkFacetsAfterImportingCatalogueItem(referenceDataType)
     }
 
     private void setCreatedBy(User creator, ReferenceDataType dataType) {

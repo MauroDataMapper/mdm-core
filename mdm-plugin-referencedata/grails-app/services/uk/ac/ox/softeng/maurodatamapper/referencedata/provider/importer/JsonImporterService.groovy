@@ -44,15 +44,15 @@ class JsonImporterService extends DataBindReferenceDataModelImporterProviderServ
 
     @Override
     ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
-        /*if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
+        if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
         log.debug('Parsing in file content using JsonSlurper')
         def result = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
-        Map dataModel = result.dataModel
-        if (!dataModel) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
+        Map referenceDataModel = result.referenceDataModel
+        if (!referenceDataModel) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as referenceDataModel is not present')
 
-        log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, new HashMap(dataModel)*/
+        log.debug('Importing ReferenceDataModel map')
+        bindMapToReferenceDataModel currentUser, new HashMap(referenceDataModel)
     }
 }

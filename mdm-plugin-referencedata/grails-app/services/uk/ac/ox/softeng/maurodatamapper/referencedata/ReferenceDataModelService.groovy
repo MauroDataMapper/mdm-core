@@ -275,14 +275,14 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
 
-    void checkImportedDataModelAssociations(User importingUser, ReferenceDataModel referenceDataModel, Map bindingMap = [:]) {
+    void checkImportedReferenceDataModelAssociations(User importingUser, ReferenceDataModel referenceDataModel, Map bindingMap = [:]) {
         referenceDataModel.createdBy = importingUser.emailAddress
         referenceDataModel.authority = authorityService.getDefaultAuthority()
         checkFacetsAfterImportingCatalogueItem(referenceDataModel)
 
         if (referenceDataModel.referenceDataTypes) {
             referenceDataModel.referenceDataTypes.each { dt ->
-                referenceDataTypeService.checkImportedDataTypeAssociations(importingUser, referenceDataModel, dt)
+                referenceDataTypeService.checkImportedReferenceDataTypeAssociations(importingUser, referenceDataModel, dt)
             }
         }
         log.debug('ReferenceDataModel associations checked')

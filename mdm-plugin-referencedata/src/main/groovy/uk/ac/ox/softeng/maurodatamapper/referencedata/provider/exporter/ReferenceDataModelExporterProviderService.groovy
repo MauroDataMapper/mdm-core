@@ -45,7 +45,7 @@ abstract class ReferenceDataModelExporterProviderService extends ExporterProvide
         ReferenceDataModel referenceDataModel = referenceDataModelService.get(domainId)
         if (!referenceDataModel) {
             log.error('Cannot find model id [{}] to export', domainId)
-            throw new ApiInternalException('DMEP01', "Cannot find model id [${domainId}] to export")
+            throw new ApiInternalException('RDMEP01', "Cannot find model id [${domainId}] to export")
         }
         exportReferenceDataModel(currentUser, referenceDataModel)
     }
