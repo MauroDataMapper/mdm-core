@@ -20,11 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
 import groovy.util.slurpersupport.NodeChild
@@ -37,9 +37,7 @@ import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
 
 @Slf4j
-class XmlImporterService extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> {
-
-    AssetResourceLocator assetResourceLocator
+class XmlImporterService extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> implements XmlImportMapping {
 
     @Override
     String getDisplayName() {
@@ -70,7 +68,7 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
         Map map = convertToMap(result)
 
         log.debug('Importing ReferenceDataModel map')
-        bindMapToReferenceDataModel(currentUser, backwardsCompatibleExtractReferenceDataModelMap(result, map))
+        bindMapToReferenceDataModel currentUser, map.referenceDataModel as Map
     }
 
     //@Override
@@ -99,56 +97,4 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
 
         imported*/
     //}
-
-    Map backwardsCompatibleExtractReferenceDataModelMap(GPathResult result, Map map) {
-        switch (result.name()) {
-            case 'exportModel':
-                return map.referenceDataModel as Map
-            case 'referenceDataModel':
-                return map
-        }
-        throw new ApiBadRequestException('XIS03', 'Cannot import XML as referenceDataModel is not present')
-    }
-
-    Map<String, Object> convertToMap(NodeChild nodes) {
-        Map<String, Object> map = [:]
-        if (nodes.children().isEmpty()) {
-            map[nodes.name()] = nodes.text()
-        } else {
-            map = ((NodeChildren) nodes.children()).collectEntries {NodeChild child ->
-                String name = child.name()
-                def content = name == 'id' ? null : child.text()
-
-                if (child.childNodes()) {
-                    Collection<String> childrenNames = child.children().list().collect {it.name().toLowerCase()}.toSet()
-
-                    if (childrenNames.size() == 1 && child.name().toLowerCase().contains(childrenNames[0])) content = convertToList(child)
-                    else content = convertToMap(child)
-
-                }
-
-                [name, content]
-            }
-        }
-        map
-    }
-
-    List convertToList(NodeChild nodeChild) {
-        nodeChild.children().collect {convertToMap(it)}
-    }
-
-    String validateXml(String xml) {
-
-        Resource xsdResource = assetResourceLocator.findAssetForURI("referenceDataModel_${version}.xsd")
-
-        def factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-        def schema = factory.newSchema(new StreamSource(xsdResource.inputStream))
-        def validator = schema.newValidator()
-        try {
-            validator.validate(new StreamSource(new StringReader(xml)))
-        } catch (Exception ex) {
-            return ex.getMessage()
-        }
-        null
-    }
 }
