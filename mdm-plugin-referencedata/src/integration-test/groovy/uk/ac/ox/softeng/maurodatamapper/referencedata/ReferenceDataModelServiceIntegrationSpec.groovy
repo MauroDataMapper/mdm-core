@@ -48,8 +48,8 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
     void setupDomainData() {
         log.debug('Setting up ReferenceDataModelServiceSpec unit')
 
-        referenceDataModel = buildExampleReferenceDataModel()
-        secondReferenceDataModel = buildSecondExampleReferenceDataModel()
+        referenceDataModel = exampleReferenceDataModel
+        secondReferenceDataModel = secondExampleReferenceDataModel
 
         ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder,
                                              authority: testAuthority)

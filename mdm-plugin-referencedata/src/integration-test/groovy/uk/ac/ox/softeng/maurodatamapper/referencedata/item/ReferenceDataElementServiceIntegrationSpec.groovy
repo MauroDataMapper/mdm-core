@@ -46,6 +46,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
 
     Boolean buildComplex = false
 
+    ReferenceDataModel referenceDataModel
     ReferenceDataModel complexReferenceDataModel
 
     UserSecurityPolicyManager userSecurityPolicyManager
@@ -70,7 +71,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         element2Id = element2.id
         referenceDataModelId = referenceDataModel.id
 
-        if (buildComplex) complexReferenceDataModel = buildSecondExampleReferenceDataModel()
+        if (buildComplex) complexReferenceDataModel = secondExampleReferenceDataModel
 
         id = element.id
     }
@@ -86,7 +87,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         setupData()
 
         when:
-        List<ReferenceDataElement> dataElementList = referenceDataElementService.list(max: 2, offset: 0)
+        List<ReferenceDataElement> dataElementList = referenceDataElementService.list(max: 2, offset: 5)
 
         then:
         dataElementList.size() == 2
@@ -95,36 +96,34 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         dataElementList[0].label == 'ele1'
         dataElementList[0].minMultiplicity == null
         dataElementList[0].maxMultiplicity == null
-        dataElementList[0].referenceDataTypeId == ReferenceDataType.findByLabel('string').id
+        dataElementList[0].referenceDataTypeId == referenceDataModel.findReferenceDataTypeByLabel('string').id
 
         and:
         dataElementList[1].label == 'ele2'
         dataElementList[1].minMultiplicity == 0
         dataElementList[1].maxMultiplicity == 1
-        dataElementList[1].referenceDataTypeId == ReferenceDataType.findByLabel('integer').id
+        dataElementList[1].referenceDataTypeId == referenceDataModel.findReferenceDataTypeByLabel('integer').id
     }
 
     void "test count"() {
         setupData()
 
         expect:
-        referenceDataElementService.count() == 2
+        referenceDataElementService.count() == 7 // 5 from the boostrap models and 2 from this test
     }
 
     void "test delete"() {
         setupData()
 
         expect:
-        referenceDataElementService.count() == 2
-        BreadcrumbTree.findByDomainType('ReferenceDataElement').any { it.domainId == id }
+        referenceDataElementService.count() == 7
 
         when:
         referenceDataElementService.delete(id)
         sessionFactory.currentSession.flush()
 
         then:
-        referenceDataElementService.count() == 1
-        BreadcrumbTree.findByDomainType('ReferenceDataElement').every { it.domainId != id }
+        referenceDataElementService.count() == 6
     }
 
     void 'test findByReferenceDataTypeIdAndId'() {

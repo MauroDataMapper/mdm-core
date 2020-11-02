@@ -225,7 +225,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   {
     "name": "XmlImporterService",
     "version": "3.0",
-    "displayName": "XML ReferenceDataModel Importer",
+    "displayName": "XML Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
@@ -233,7 +233,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": true
+    "canImportMultipleDomains": false
   },
   {
     "name": "CsvImporterService",
@@ -250,7 +250,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   },
   {
     "name": "JsonImporterService",
-    "version": "2.0",
+    "version": "3.0",
     "displayName": "JSON ReferenceDataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,

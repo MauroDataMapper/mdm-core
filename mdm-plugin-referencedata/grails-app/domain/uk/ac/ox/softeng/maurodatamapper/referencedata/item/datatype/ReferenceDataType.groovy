@@ -157,7 +157,8 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel> 
     }
 
     static DetachedCriteria<ReferenceDataType> byReferenceDataModelId(Serializable referenceDataModelId) {
-        new DetachedCriteria<ReferenceDataType>(ReferenceDataType).eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
+        new DetachedCriteria<ReferenceDataType>(ReferenceDataType)
+        .eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
     }
 
     static DetachedCriteria<ReferenceDataType> byReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable referenceDataModelId, String searchTerm) {
@@ -184,6 +185,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel> 
     }
 
     static DetachedCriteria<ReferenceDataType> byReferenceDataModelIdAndLabel(UUID referenceDataModelId, String label) {
-        byReferenceDataModelId(referenceDataModelId).eq('label', label)
+        byReferenceDataModelId(referenceDataModelId)
+        .eq('label', label)
     }
 }

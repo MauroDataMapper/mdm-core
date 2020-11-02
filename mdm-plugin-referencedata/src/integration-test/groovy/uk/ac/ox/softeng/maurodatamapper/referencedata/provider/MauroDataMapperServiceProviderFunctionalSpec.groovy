@@ -112,7 +112,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
   {
     "name": "XmlImporterService",
     "version": "${json-unit.matches:version}",
-    "displayName": "XML ReferenceDataModel Importer",
+    "displayName": "XML Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
@@ -120,7 +120,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     ],
     "providerType": "ReferenceDataModelImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": true
+    "canImportMultipleDomains": false
   },
   {
     "name": "CsvImporterService",

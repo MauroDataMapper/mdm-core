@@ -58,8 +58,8 @@ class TreeItemServiceSpec extends BaseReferenceDataModelIntegrationSpec {
     void setupDomainData() {
         log.debug('Setting up TreeItemServiceSpec unit')
 
-        simpleDataModel = buildExampleReferenceDataModel()
-        complexDataModel = buildSecondExampleReferenceDataModel()
+        simpleDataModel = getExampleReferenceDataModel()
+        complexDataModel = getSecondExampleReferenceDataModel()
 
         checkAndSave(new Folder(label: 'empty folder', createdBy: editor.emailAddress))
         Classifier testClassifier = new Classifier(label: 'integration test classifier', createdByUser: admin)
