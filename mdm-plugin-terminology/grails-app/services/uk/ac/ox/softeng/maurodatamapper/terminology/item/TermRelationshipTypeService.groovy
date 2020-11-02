@@ -94,6 +94,10 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
         TermRelationshipType.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).find()
     }
 
+    TermRelationshipType copy(Terminology copiedTerminology, TermRelationshipType original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTermRelationshipType(copiedTerminology, original, userSecurityPolicyManager.user)
+    }
+
     TermRelationshipType copyTermRelationshipType(Terminology copiedTerminology, TermRelationshipType original, User copier) {
         TermRelationshipType copy = new TermRelationshipType(createdBy: copier.emailAddress, label: original.label, description: original.description,
                                                              displayLabel: original.displayLabel)

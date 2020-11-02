@@ -112,7 +112,7 @@ class Terminology implements Model<Terminology> {
     ObjectDiff<Terminology> diff(Terminology otherTerminology) {
         modelDiffBuilder(Terminology, this, otherTerminology)
             .appendList(Term, 'terms', this.terms, otherTerminology.terms)
-        //   .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
+            .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
     }
 
     def beforeValidate() {

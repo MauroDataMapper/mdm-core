@@ -158,6 +158,8 @@ class Term implements ModelItem<Term, Terminology> {
             .appendString('code', this.code, otherTerm.code)
             .appendString('definition', this.definition, otherTerm.definition)
             .appendString('url', this.url, otherTerm.url)
+            .appendList(TermRelationship, 'sourceTermRelationships', this.sourceTermRelationships, otherTerm.sourceTermRelationships)
+            .appendList(TermRelationship, 'targetTermRelationships', this.targetTermRelationships, otherTerm.targetTermRelationships)
     }
 
     @Override
