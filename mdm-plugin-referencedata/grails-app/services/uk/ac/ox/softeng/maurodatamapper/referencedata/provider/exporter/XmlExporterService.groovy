@@ -44,7 +44,7 @@ class XmlExporterService extends ReferenceDataModelExporterProviderService imple
 
     @Override
     String getDisplayName() {
-        'XML ReferenceDataModel Exporter'
+        'XML Reference Data Exporter'
     }
 
     @Override

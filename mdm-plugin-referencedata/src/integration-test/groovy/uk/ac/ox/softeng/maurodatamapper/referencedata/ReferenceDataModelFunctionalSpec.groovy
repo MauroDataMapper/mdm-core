@@ -178,7 +178,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         ]'''
     }
 
-    @PendingFeature(reason = "Not yet implemented")
     void 'test getting DataModel exporters'() {
         when:
         GET('providers/exporters', STRING_ARG)
@@ -186,28 +185,28 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         then:
         verifyJsonResponse OK, '''[
   {
-    "providerType": "DataModelExporter",
+    "providerType": "ReferenceDataModelExporter",
     "knownMetadataKeys": [
       
     ],
-    "displayName": "XML DataModel Exporter",
+    "displayName": "XML Reference Data Exporter",
     "fileExtension": "xml",
     "name": "XmlExporterService",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "canExportMultipleDomains": false,
     "version": "${json-unit.matches:version}",
     "fileType": "text/xml"
   },
   {
-    "providerType": "DataModelExporter",
+    "providerType": "ReferenceDataModelExporter",
     "knownMetadataKeys": [
       
     ],
-    "displayName": "JSON DataModel Exporter",
+    "displayName": "JSON Reference Data Exporter",
     "fileExtension": "json",
     "name": "JsonExporterService",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "canExportMultipleDomains": false,
     "version": "${json-unit.matches:version}",
@@ -251,7 +250,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   {
     "name": "JsonImporterService",
     "version": "3.0",
-    "displayName": "JSON ReferenceDataModel Importer",
+    "displayName": "JSON Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
@@ -1063,21 +1062,20 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test export a single DataModel'() {
+    void 'test export a single ReferenceDataModel'() {
         given:
         String id = createNewItem(validJson)
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
-  "dataModel": {
+  "referenceDataModel": {
     "id": "${json-unit.matches:id}",
-    "label": "Functional Test Model",
+    "label": "Reference Data Functional Test Model",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "type": "Data Standard",
+    "type": "ReferenceDataModel",
     "documentationVersion": "1.0.0",
     "finalised": false,
     "authority": {
@@ -1090,9 +1088,9 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "exportedBy": "Unlogged User",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
-      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
       "name": "JsonExporterService",
-      "version": "2.0"
+      "version": "3.0"
     }
   }
 }'''
@@ -1101,24 +1099,23 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test export multiple DataModels (json only exports first id)'() {
+    void 'test export multiple ReferenceDataModels (json only exports first id)'() {
         given:
         String id = createNewItem(validJson)
         String id2 = createNewItem([label: 'Functional Test Model 2'])
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0',
-             [dataModelIds: [id, id2]], STRING_ARG
+        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0',
+             [referenceDataModelIds: [id, id2]], STRING_ARG
         )
 
         then:
         verifyJsonResponse OK, '''{
-  "dataModel": {
+  "referenceDataModel": {
     "id": "${json-unit.matches:id}",
-    "label": "Functional Test Model",
+    "label": "Reference Data Functional Test Model",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "type": "Data Standard",
+    "type": "ReferenceDataModel",
     "documentationVersion": "1.0.0",
     "finalised": false,
     "authority": {
@@ -1131,9 +1128,9 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     "exportedBy": "Unlogged User",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
-      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
       "name": "JsonExporterService",
-      "version": "2.0"
+      "version": "3.0"
     }
   }
 }'''
@@ -1143,12 +1140,11 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id2)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test import basic DataModel'() {
+    void 'test import basic ReferenceDataModel'() {
         given:
         String id = createNewItem(validJson)
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1156,7 +1152,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : folderId.toString(),
@@ -1173,10 +1169,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
                   "count": 1,
                   "items": [
                     {
-                      "domainType": "DataModel",
+                      "domainType": "ReferenceDataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Import",
-                      "type": "Data Standard"
+                      "type": "ReferenceDataModel"
                     }
                   ]
                 }'''
@@ -1185,8 +1181,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test import basic DataModel as new documentation version'() {
+    void 'test import basic ReferenceDataModel as new documentation version'() {
         given:
         String id = createNewItem([
             label       : 'Functional Test Model',
@@ -1194,7 +1189,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -1202,7 +1197,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : true,
             modelName                      : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -1219,10 +1214,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
                   "count": 1,
                   "items": [
                     {
-                      "domainType": "DataModel",
+                      "domainType": "ReferenceDataModel",
                       "id": "${json-unit.matches:id}",
                       "label": "Functional Test Model",
-                      "type": "Data Standard"
+                      "type": "ReferenceDataModel"
                     }
                   ]
                 }'''
@@ -1293,7 +1288,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         verifyResponse NO_CONTENT, response
     }
 
-    void 'IM99: test importing simple test ReferenceDataModel'() {
+    void 'test importing simple test ReferenceDataModel from CSV'() {
         given:
         log.debug("${loadCsvFile('simpleCSV').toList().toString()}")
 
@@ -1319,17 +1314,16 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test importing complex test DataModel'() {
+    void 'test importing ReferenceDataModel with classifiers'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
+                fileContents: loadTestFile('importSimpleWithClassifiers').toList()
             ]
         ])
         verifyResponse CREATED, response
@@ -1342,46 +1336,22 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         cleanUpData(id)
     }
 
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test importing DataModel with classifiers'() {
-        when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : true,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('fullModelWithClassifiers').toList()
-            ]
-        ])
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-
-        then:
-        id
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test export simple DataModel'() {
+    void 'test export ReferenceDataModel'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
             importFile                     : [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('simpleDataModel').toList()
+                fileContents: loadTestFile('importSimpleValue').toList()
             ]
         ])
 
         verifyResponse CREATED, response
         def id = response.body().items[0].id
-        String expected = new String(loadTestFile('simpleDataModel'))
+        String expected = new String(loadTestFile('importSimpleValue'))
             .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
             .replace(/Test Authority/, 'Mauro Data Mapper')
 
@@ -1389,40 +1359,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expected
-
-        cleanup:
-        cleanUpData(id)
-    }
-
-    @PendingFeature(reason = "Not yet implemented")
-    void 'test export complex DataModel'() {
-        given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
-            finalised                      : false,
-            folderId                       : folderId.toString(),
-            importAsNewDocumentationVersion: false,
-            importFile                     : [
-                fileName    : 'FT Import',
-                fileType    : MimeType.JSON_API.name,
-                fileContents: loadTestFile('complexDataModel').toList()
-            ]
-        ])
-
-        verifyResponse CREATED, response
-        def id = response.body().items[0].id
-        String expected = new String(loadTestFile('complexDataModel'))
-            .replaceFirst('"exportedBy": "Admin User",', '"exportedBy": "Unlogged User",')
-            .replace(/Test Authority/, 'Mauro Data Mapper')
-
-        expect:
-        id
-
-        when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected

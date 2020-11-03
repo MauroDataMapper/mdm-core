@@ -39,8 +39,9 @@ class ReferenceDataModelFileImporterProviderServiceParameters extends ReferenceD
     FileParameter importFile
 
     @ImportParameterConfig(
+        optional = true,
         displayName = 'Model name',
-        description = ['Label of Model, this will override any existing name provided in the imported data.'],
+        description = ['Label of Model, this will override any existing name provided in the imported data. Must be provided for CSV import.'],
         order = 0,
         group = @ImportGroupConfig(
             name = 'Model',

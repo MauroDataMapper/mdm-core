@@ -44,7 +44,7 @@ class JsonExporterService extends ReferenceDataModelExporterProviderService impl
 
     @Override
     String getDisplayName() {
-        'JSON ReferenceDataModel Exporter'
+        'JSON Reference Data Exporter'
     }
 
     @Override

@@ -196,7 +196,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
   {
     "name": "XmlImporterService",
     "version": "3.0",
-    "displayName": "XML ReferenceDataModel Importer",
+    "displayName": "XML Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [

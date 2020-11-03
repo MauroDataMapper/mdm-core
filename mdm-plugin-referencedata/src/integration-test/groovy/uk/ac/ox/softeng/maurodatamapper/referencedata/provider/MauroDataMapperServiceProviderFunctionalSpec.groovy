@@ -138,7 +138,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
   {
     "name": "JsonImporterService",
     "version": "${json-unit.matches:version}",
-    "displayName": "JSON ReferenceDataModel Importer",
+    "displayName": "JSON Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [

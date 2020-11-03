@@ -34,7 +34,7 @@ class JsonImporterService extends DataBindReferenceDataModelImporterProviderServ
 
     @Override
     String getDisplayName() {
-        'JSON ReferenceDataModel Importer'
+        'JSON Reference Data Importer'
     }
 
     @Override
