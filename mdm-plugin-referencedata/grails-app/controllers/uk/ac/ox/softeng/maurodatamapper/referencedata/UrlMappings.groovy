@@ -67,7 +67,7 @@ class UrlMappings {
                  * ReferenceDataValues
                  */
 
-                '/referenceDataValues'(resources: 'referenceDataValue', excludes: DEFAULT_EXCLUDES)
+                '/referenceDataValues'(resources: 'referenceDataValue', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE)
                 post '/referenceDataValues/search'(controller: 'referenceDataValue', action: 'search')
                 get '/referenceDataValues/search'(controller: 'referenceDataValue', action: 'search')
 
