@@ -160,7 +160,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
     "leftId": "${json-unit.matches:id}",
     "rightId": "${json-unit.matches:id}",
     "label": "Functional Test Model",
-    "count": 17,
+    "count": 13,
     "diffs": [
         {
             "description": {
@@ -242,6 +242,21 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                     {
                         "value": {
                             "id": "${json-unit.matches:id}",
+                            "label": "SALO: secondAddLeftOnly",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Functional Test Model",
+                                    "domainType": "Terminology",
+                                    "finalised": false
+                                }
+                            ]
+                        },
+                        "isMergeConflict": false
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
                             "label": "MAD: modifyAndDelete",
                             "breadcrumbs": [
                                 {
@@ -288,7 +303,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                 "finalised": false
                             }
                         ],
-                        "count": 2,
+                        "count": 1,
                         "diffs": [
                             {
                                 "description": {
@@ -296,31 +311,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                     "right": "DescriptionLeft",
                                     "isMergeConflict": true,
                                     "commonAncestorValue": null
-                                }
-                            },
-                            {
-                                "targetTermRelationships": {
-                                    "created": [
-                                        {
-                                            "value": {
-                                                "id": "${json-unit.matches:id}",
-                                                "label": "similarSourceAction",
-                                                "breadcrumbs": [
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "Functional Test Model",
-                                                        "domainType": "Terminology",
-                                                        "finalised": false
-                                                    },
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "ALO: addLeftOnly",
-                                                        "domainType": "Term"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
                                 }
                             }
                         ]
@@ -345,84 +335,13 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                 "finalised": false
                             }
                         ],
-                        "count": 3,
+                        "count": 1,
                         "diffs": [
                             {
                                 "description": {
                                     "left": null,
                                     "right": "Description",
                                     "isMergeConflict": false
-                                }
-                            },
-                            {
-                                "sourceTermRelationships": {
-                                    "deleted": [
-                                        {
-                                            "value": {
-                                                "id": "${json-unit.matches:id}",
-                                                "label": "similarSourceAction",
-                                                "breadcrumbs": [
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "Functional Test Model",
-                                                        "domainType": "Terminology",
-                                                        "finalised": false
-                                                    },
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "MLO: modifyLeftOnly",
-                                                        "domainType": "Term"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "targetTermRelationships": {
-                                    "modified": [
-                                        {
-                                            "leftId": "${json-unit.matches:id}",
-                                            "rightId": "${json-unit.matches:id}",
-                                            "label": "sameSourceActionType",
-                                            "leftBreadcrumbs": [
-                                                {
-                                                    "id": "${json-unit.matches:id}",
-                                                    "label": "Functional Test Model",
-                                                    "domainType": "Terminology",
-                                                    "finalised": false
-                                                },
-                                                {
-                                                    "id": "${json-unit.matches:id}",
-                                                    "label": "SMLO: secondModifyLeftOnly",
-                                                    "domainType": "Term"
-                                                }
-                                            ],
-                                            "rightBreadcrumbs": [
-                                                {
-                                                    "id": "${json-unit.matches:id}",
-                                                    "label": "Functional Test Model",
-                                                    "domainType": "Terminology",
-                                                    "finalised": false
-                                                },
-                                                {
-                                                    "id": "${json-unit.matches:id}",
-                                                    "label": "SMLO: secondModifyLeftOnly",
-                                                    "domainType": "Term"
-                                                }
-                                            ],
-                                            "count": 1,
-                                            "diffs": [
-                                                {
-                                                    "description": {
-                                                        "left": null,
-                                                        "right": "NewDescription"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
                                 }
                             }
                         ]
@@ -447,7 +366,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                 "finalised": false
                             }
                         ],
-                        "count": 2,
+                        "count": 1,
                         "diffs": [
                             {
                                 "description": {
@@ -455,101 +374,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                     "right": "DescriptionLeft",
                                     "isMergeConflict": true,
                                     "commonAncestorValue": null
-                                }
-                            },
-                            {
-                                "targetTermRelationships": {
-                                    "deleted": [
-                                        {
-                                            "value": {
-                                                "id": "${json-unit.matches:id}",
-                                                "label": "similarSourceAction",
-                                                "breadcrumbs": [
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "Functional Test Model",
-                                                        "domainType": "Terminology",
-                                                        "finalised": false
-                                                    },
-                                                    {
-                                                        "id": "${json-unit.matches:id}",
-                                                        "label": "MLO: modifyLeftOnly",
-                                                        "domainType": "Term"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "SMLO: secondModifyLeftOnly",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "Terminology",
-                                "finalised": false
-                            }
-                        ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "Terminology",
-                                "finalised": false
-                            }
-                        ],
-                        "count": 1,
-                        "diffs": [
-                            {
-                                "sourceTermRelationships": {
-                                    "modified": [
-                                        {
-                                            "leftId": "${json-unit.matches:id}",
-                                            "rightId": "${json-unit.matches:id}",
-                                            "label": "sameSourceActionType",
-                                            "leftBreadcrumbs": [
-                                                {
-                                                    "id": "${json-unit.matches:id}",
-                                                    "label": "Functional Test Model",
-                                                    "domainType": "Terminology",
-                                                    "finalised": false
-                                                },
-                                                {
-                                                    "id": "${json-unit.matches:id}",
-                                                    "label": "SMLO: secondModifyLeftOnly",
-                                                    "domainType": "Term"
-                                                }
-                                            ],
-                                            "rightBreadcrumbs": [
-                                                {
-                                                    "id": "${json-unit.matches:id}",
-                                                    "label": "Functional Test Model",
-                                                    "domainType": "Terminology",
-                                                    "finalised": false
-                                                },
-                                                {
-                                                    "id": "${json-unit.matches:id}",
-                                                    "label": "SMLO: secondModifyLeftOnly",
-                                                    "domainType": "Term"
-                                                }
-                                            ],
-                                            "count": 1,
-                                            "diffs": [
-                                                {
-                                                    "description": {
-                                                        "left": null,
-                                                        "right": "NewDescription"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
                                 }
                             }
                         ]
@@ -1425,6 +1249,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         String oppositeActionTo = responseBody().items.find { it.label == 'oppositeActionTo' }.id
         inverseOf = responseBody().items.find { it.label == 'inverseOf' }.id
+        sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
 
         GET("$source/terms/$modifyLeftOnly/termRelationships")
         verifyResponse OK, response
@@ -1457,6 +1282,9 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         POST("$source/terms", [code: 'ALO', definition: 'addLeftOnly'])
         verifyResponse CREATED, response
         String addLeftOnly = responseBody().id
+        POST("$source/terms", [code: 'SALO', definition: 'secondAddLeftOnly'])
+        verifyResponse CREATED, response
+        String secondAddLeftOnly = responseBody().id
         POST("$source/terms", [code: 'AAARD', definition: 'addAndAddReturningDifference', description: 'DescriptionLeft'])
         verifyResponse CREATED, response
         String sourceAddAndAddReturningDifference = responseBody().id
@@ -1481,6 +1309,13 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         POST("$source/terms/$addLeftOnly/termRelationships", [
             targetTerm      : sourceAddAndAddReturningDifference,
             relationshipType: similarSourceAction,
+            sourceTerm      : addLeftOnly
+        ])
+        verifyResponse CREATED, response
+
+        POST("$source/terms/$addLeftOnly/termRelationships", [
+            targetTerm      : secondAddLeftOnly,
+            relationshipType: sameSourceActionType,
             sourceTerm      : addLeftOnly
         ])
         verifyResponse CREATED, response
@@ -1591,6 +1426,10 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                             [
                                 id   : sourceModifyAndDelete,
                                 label: "MAD: modifyAndDelete"
+                            ],
+                            [
+                                id   : secondAddLeftOnly,
+                                label: "SALO: secondAddLeftOnly"
                             ]
                         ],
                         modified : [
@@ -1702,14 +1541,17 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         then:
         verifyResponse OK, response
-        responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'MAD: modifyAndDelete',
-                                              'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly', 'SMLO: secondModifyLeftOnly'] as Set
+        responseBody().items.label as Set == ['AAARD: addAndAddReturningDifference', 'ALO: addLeftOnly', 'SALO: secondAddLeftOnly',
+                                              'MAD: modifyAndDelete', 'MAMRD: modifyAndModifyReturningDifference', 'MLO: modifyLeftOnly',
+                                              'SMLO: secondModifyLeftOnly'] as Set
         responseBody().items.find { term -> term.label == 'MAD: modifyAndDelete' }.description == 'Description'
         responseBody().items.find { term -> term.label == 'AAARD: addAndAddReturningDifference' }.description == 'addedDescriptionSource'
         responseBody().items.find { term -> term.label == 'MAMRD: modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
         responseBody().items.find { term -> term.label == 'MLO: modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
 
         when:
+        addLeftOnly = responseBody().items.find { it.label == 'ALO: addLeftOnly' }.id
+        secondAddLeftOnly = responseBody().items.find { it.label == 'SALO: secondAddLeftOnly' }.id
         GET("$target/termRelationshipTypes")
 
         then:
@@ -1722,7 +1564,43 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         then:
         verifyResponse OK, response
-        responseBody().items.label as Set == ['sameSourceActionType', 'similarSourceAction'] as Set
+        responseBody().items.size == 1
+        responseBody().items.label as Set == ['sameSourceActionType'] as Set
+
+        when:
+        sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
+        GET("$target/terms/$modifyLeftOnly/termRelationships/$sameSourceActionType")
+
+        then:
+        verifyResponse OK, response
+        responseBody().sourceTerm.id == secondModifyLeftOnly
+        responseBody().targetTerm.id == modifyLeftOnly
+
+        when:
+        GET("$target/terms/$addLeftOnly/termRelationships")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size == 2
+        responseBody().items.label as Set == ['similarSourceAction', 'sameSourceActionType'] as Set
+
+        when:
+        sameSourceActionType = responseBody().items.find { it.label == 'sameSourceActionType' }.id
+        similarSourceAction = responseBody().items.find { it.label == 'similarSourceAction' }.id
+        GET("$target/terms/$addLeftOnly/termRelationships/$sameSourceActionType")
+
+        then:
+        verifyResponse OK, response
+        responseBody().sourceTerm.id == addLeftOnly
+        responseBody().targetTerm.id == secondAddLeftOnly
+
+        when:
+        GET("$target/terms/$addLeftOnly/termRelationships/$similarSourceAction")
+
+        then:
+        verifyResponse OK, response
+        responseBody().sourceTerm.id == addLeftOnly
+        responseBody().targetTerm.id == addAndAddReturningDifference
 
         cleanup:
         cleanUpData(source)
