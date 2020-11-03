@@ -2669,4 +2669,67 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
                         }
                     }''', '''''']
     }
+
+
+    void 'test listing and searching Reference Data Values'() {
+        given:
+        log.debug("${loadCsvFile('simpleCSV').toList().toString()}")
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/CsvImporterService/3.0', [
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            modelName: 'FT Test Reference Data Model',
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : 'CSV',
+                fileContents: loadCsvFile('simpleCSV').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
+
+        when:
+        GET("${id}/referenceDataValues", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValues'))
+
+        when:
+        GET("${id}/referenceDataValues?max=2", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax'))
+
+        when:
+        GET("${id}/referenceDataValues?asRows=true", STRING_ARG)        
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows'))
+
+        when:
+        GET("${id}/referenceDataValues?asRows=true&max=2", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax'))     
+
+        when:
+        GET("${id}/referenceDataValues/search?search=Row6Value2", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6'))
+
+        when:
+        GET("${id}/referenceDataValues/search?search=Row6Value2&asRows=true", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows'))                 
+
+        cleanup:
+        cleanUpData(id)
+    }
 }
