@@ -117,6 +117,8 @@ class BootStrap implements SecurityDefinition {
                     DataFlowBootstrapModels.buildAndSaveSourceDataModel(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveTargetDataModel(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveSampleDataFlow(messageSource)
+                    ReferenceDataModelBootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, authority)
+                    ReferenceDataModelBootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, authority)                    
                 }
             }
             log.debug('Test environment bootstrap complete')
