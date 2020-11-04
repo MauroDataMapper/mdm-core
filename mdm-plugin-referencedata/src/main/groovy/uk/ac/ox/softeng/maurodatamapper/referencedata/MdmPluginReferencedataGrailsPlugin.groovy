@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.SummaryMetada
 import grails.plugins.Plugin
 import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters.DataTypeValueConverter
 
-class MdmPluginReferenceDataModelGrailsPlugin extends Plugin {
+class MdmPluginReferencedataGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "4.0.0 > *"
@@ -33,12 +33,12 @@ class MdmPluginReferenceDataModelGrailsPlugin extends Plugin {
         "grails-app/views/error.gsp"
     ]
 
-    def title = "Mauro Data Mapper Reference Data Model Plugin"
+    def title = "Mauro Data Mapper Reference Data Plugin"
     // Headline display name of the plugin
     def author = "James Welch"
     def authorEmail = "james.welch@bdi.ox.ac.uk"
     def description = '''\
-The Reference Data Model domain, services and controllers for the Mauro Data Mapper backend. 
+The Reference Data domain, services and controllers for the Mauro Data Mapper backend. 
 '''
 
     // URL to the plugin's documentation
