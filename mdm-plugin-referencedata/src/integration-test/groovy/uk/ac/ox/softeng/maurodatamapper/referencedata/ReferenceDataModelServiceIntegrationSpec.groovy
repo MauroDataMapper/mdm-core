@@ -35,7 +35,6 @@ import spock.lang.PendingFeature
 @Slf4j
 @Integration
 @Rollback
-//@Stepwise
 class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelIntegrationSpec {
 
     ReferenceDataModel referenceDataModel
@@ -48,8 +47,8 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
     void setupDomainData() {
         log.debug('Setting up ReferenceDataModelServiceSpec unit')
 
-        referenceDataModel = exampleReferenceDataModel
-        secondReferenceDataModel = secondExampleReferenceDataModel
+        referenceDataModel = buildExampleReferenceDataModel()
+        secondReferenceDataModel = buildSecondExampleReferenceDataModel()
 
         ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder,
                                              authority: testAuthority)
@@ -579,10 +578,10 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
     }
 
     void 'DMSILV01 : test finding latest version of a datamodel'() {
-        /*
-        dataModel (finalised) -- expectedModel (finalised) -- draftModel (draft)
-          \_ testModel (draft)
-        */
+        //
+        // dataModel (finalised) -- expectedModel (finalised) -- draftModel (draft)
+        //   \_ testModel (draft)
+        //
         given:
         setupData()
 
@@ -672,12 +671,12 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         mergeDiff == [left: dataModel.diff(left), right: dataModel.diff(right)]
     }*/
 
-    /*void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {*/
-        /*
-        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
-          \_ testModel (draft)
-        */
-        /*given:
+    void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
+        //
+        // dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
+        //  \_ testModel (draft)
+        //
+        given:
         setupData()
 
         when:
@@ -714,13 +713,13 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         currentMainBranch.label == testModel.label
         currentMainBranch.modelVersion == null
         currentMainBranch.branchName == 'main'
-    }*/
+    }
 
     void 'DMSIAB01 : test getting all draft models'() {
-        /*
-        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
-          \_ testModel (draft)
-        */
+        //
+        // dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
+        //  \_ testModel (draft)
+        //
         given:
         setupData()
 

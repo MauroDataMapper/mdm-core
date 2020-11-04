@@ -71,7 +71,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         element2Id = element2.id
         referenceDataModelId = referenceDataModel.id
 
-        if (buildComplex) complexReferenceDataModel = secondExampleReferenceDataModel
+        if (buildComplex) complexReferenceDataModel = buildSecondExampleReferenceDataModel()
 
         id = element.id
     }
@@ -87,7 +87,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         setupData()
 
         when:
-        List<ReferenceDataElement> dataElementList = referenceDataElementService.list(max: 2, offset: 5)
+        List<ReferenceDataElement> dataElementList = referenceDataElementService.list(max: 2, offset: 0)
 
         then:
         dataElementList.size() == 2
@@ -109,21 +109,21 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         setupData()
 
         expect:
-        referenceDataElementService.count() == 7 // 5 from the boostrap models and 2 from this test
+        referenceDataElementService.count() ==2
     }
 
     void "test delete"() {
         setupData()
 
         expect:
-        referenceDataElementService.count() == 7
+        referenceDataElementService.count() == 2
 
         when:
         referenceDataElementService.delete(id)
         sessionFactory.currentSession.flush()
 
         then:
-        referenceDataElementService.count() == 6
+        referenceDataElementService.count() == 1
     }
 
     void 'test findByReferenceDataTypeIdAndId'() {

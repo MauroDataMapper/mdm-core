@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.provider
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.provider
 
 
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.XmlExporterService
@@ -30,12 +30,12 @@ import groovy.util.logging.Slf4j
 import org.junit.Assert
 
 import java.nio.file.Files
-import java.nio.file.Path
+import java.nio.file.Path*/
 
 /**
  * @since 18/09/2020
  */
-@Integration
+/*@Integration
 @Rollback
 @Slf4j
 class XmlImporterExporterServiceSpec extends BaseImporterExporterSpec implements XmlValidator {
@@ -73,4 +73,4 @@ class XmlImporterExporterServiceSpec extends BaseImporterExporterSpec implements
     }
 
 
-}
+}*/

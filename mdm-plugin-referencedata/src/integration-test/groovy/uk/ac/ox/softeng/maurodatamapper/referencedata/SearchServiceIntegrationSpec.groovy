@@ -49,8 +49,8 @@ class SearchServiceIntegrationSpec extends BaseReferenceDataModelIntegrationSpec
     void setupDomainData() {
         log.debug('Setting up ReferenceDataModelServiceSpec unit')
 
-        referenceModelId = getExampleReferenceDataModel().id
-        secondReferenceModelId = getSecondExampleReferenceDataModel().id
+        referenceModelId = buildExampleReferenceDataModel().id
+        secondReferenceModelId = buildSecondExampleReferenceDataModel().id
     }
 
     void 'test performStandardSearch on ReferenceDataElement'() {

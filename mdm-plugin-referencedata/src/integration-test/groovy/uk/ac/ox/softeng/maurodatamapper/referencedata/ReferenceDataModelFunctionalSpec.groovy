@@ -21,10 +21,16 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
+import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
@@ -75,7 +81,6 @@ import java.nio.file.Paths
  */
 @Integration
 @Slf4j
-//@Stepwise
 class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceDataModel> {
 
     @Shared
@@ -101,7 +106,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec ReferenceDataModelFunctionalSpec')
-        cleanUpResources(Folder, Classifier)
+        cleanUpResources(Folder, Classifier, ReferenceDataModel, ReferencePrimitiveType, ReferenceDataElement, ReferenceDataValue, ReferenceDataType)
     }
 
     @Override
@@ -128,7 +133,6 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
         ]
     }
     byte[] loadCsvFile(String filename) {
-        //Path testFilePath = resourcesPath.resolve("${filename}.csv")
         Path testFilePath = csvResourcesPath.resolve("${filename}.csv")
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
@@ -874,10 +878,10 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
 
     @PendingFeature(reason = "Not yet implemented")
     void 'VB06 : test finding latest (finalised) version of a Model<T> (as editor)'() {
-        /*
-        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
+        //
+        //id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+        //  \_ newBranchId (draft)
+        //
         given:
         String id = createNewItem(validJson)
         PUT("$id/finalise", [:])

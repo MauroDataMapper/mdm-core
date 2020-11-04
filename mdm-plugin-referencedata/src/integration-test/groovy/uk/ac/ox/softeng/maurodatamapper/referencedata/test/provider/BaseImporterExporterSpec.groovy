@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.test.provider
+/*package uk.ac.ox.softeng.maurodatamapper.referencedata.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataMode
 import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
 import grails.gorm.transactions.Rollback
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
@@ -37,13 +38,11 @@ import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
+*/
 /**
  * @since 17/09/2020
  */
-@Integration
-@Rollback
-@Slf4j
+/*@Slf4j
 abstract class BaseImporterExporterSpec extends BaseReferenceDataModelIntegrationSpec {
 
     @Shared
@@ -61,60 +60,6 @@ abstract class BaseImporterExporterSpec extends BaseReferenceDataModelIntegratio
 
     abstract String getImportType()
 
-    @OnceBefore
-    void setupResourcesPath() {
-        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType)
-        assert getImporterService()
-    }
-
-    @Override
-    void setupDomainData() {
-        log.debug('Setting up ReferenceDataModelServiceSpec unit')
-
-        exampleReferenceDataModelId = exampleReferenceDataModel.id
-        secondExampleReferenceDataModelId = secondExampleReferenceDataModel.id
-    }
-
-    byte[] loadTestFile(String filename) {
-        Path testFilePath = resourcesPath.resolve("${filename}.${importType}").toAbsolutePath()
-        assert Files.exists(testFilePath)
-        Files.readAllBytes(testFilePath)
-    }
-
-    String exportModel(UUID referenceDataModelId) {
-        ByteArrayOutputStream byteArrayOutputStream = exporterService.exportDomain(admin, referenceDataModelId)
-        new String(byteArrayOutputStream.toByteArray(), Charset.defaultCharset())
-    }
-
-    ReferenceDataModel importAndConfirm(byte[] bytes) {
-        ReferenceDataModel imported = importerService.importReferenceDataModel(admin, bytes)
-
-        assert imported
-        imported.folder = testFolder
-        log.info('Checking imported model')
-        importerService.checkImport(admin, imported, false, false)
-        check(imported)
-        log.info('Saving imported model')
-        assert referenceDataModelService.saveWithBatching(imported)
-        sessionFactory.currentSession.flush()
-        assert referenceDataModelService.count() == 3
-
-        ReferenceDataModel referenceDataModel = referenceDataModelService.get(imported.id)
-
-        log.info('Confirming imported model')
-
-        confirmReferenceDataModel(referenceDataModel)
-        referenceDataModel
-    }
-
-
-    void confirmReferenceDataModel(referenceDataModel) {
-        assert referenceDataModel
-        assert referenceDataModel.createdBy == admin.emailAddress
-        assert referenceDataModel.breadcrumbTree
-        assert referenceDataModel.breadcrumbTree.domainId == referenceDataModel.id
-        assert referenceDataModel.breadcrumbTree.label == referenceDataModel.label
-    }
 
     void 'RDM01: test that trying to export when specifying a null referenceDataModelId fails with an exception'() {
         given:
@@ -413,5 +358,5 @@ abstract class BaseImporterExporterSpec extends BaseReferenceDataModelIntegratio
 
         then:
         validateExportedModel('importReferenceDataModel', exported)
-    }    
-}
+    }
+}*/

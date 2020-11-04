@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.test
 
-import uk.ac.ox.softeng.maurodatamapper.core.admin.AdminService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -26,17 +25,10 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.integration.BaseIntegrationSpec
 
-import groovy.util.logging.Slf4j
-
-
-@Slf4j
 abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec {
 
     ReferenceDataModelService referenceDataModelService
-    AdminService adminService
 
-    ReferenceDataModel exampleReferenceDataModel
-    ReferenceDataModel secondExampleReferenceDataModel
     Authority testAuthority
 
     Folder getTestFolder() {
@@ -49,7 +41,13 @@ abstract class BaseReferenceDataModelIntegrationSpec extends BaseIntegrationSpec
         checkAndSave(folder)
         testAuthority = new Authority(label: 'Test Authority', url: 'http://localhost', createdBy: StandardEmailAddress.INTEGRATION_TEST)
         checkAndSave(testAuthority)
-        exampleReferenceDataModel = BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, testAuthority)
-        secondExampleReferenceDataModel = BootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, testAuthority)
     }
+
+    ReferenceDataModel buildExampleReferenceDataModel() {
+        BootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, testAuthority)
+    }
+
+    ReferenceDataModel buildSecondExampleReferenceDataModel() {
+        BootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, testAuthority)
+    }    
 }
