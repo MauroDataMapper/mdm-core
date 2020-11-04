@@ -61,6 +61,11 @@ class ReferenceDataElementReferenceSummaryMetadataFunctionalSpec extends Catalog
         ReferenceDataModel.findByLabel('Destination Test ReferenceDataModel').id.toString()
     }
 
+    @Override
+    String getFacetResourcePath() {
+        'referenceSummaryMetadata'
+    }    
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {

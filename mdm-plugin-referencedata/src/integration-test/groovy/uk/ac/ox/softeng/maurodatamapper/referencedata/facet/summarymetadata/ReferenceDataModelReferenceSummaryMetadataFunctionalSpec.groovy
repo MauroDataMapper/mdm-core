@@ -61,6 +61,11 @@ class ReferenceDataModelReferenceSummaryMetadataFunctionalSpec extends Catalogue
         // newForkModel doesn't require a destination data model
     }
 
+    @Override
+    String getFacetResourcePath() {
+        'referenceSummaryMetadata'
+    }      
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {

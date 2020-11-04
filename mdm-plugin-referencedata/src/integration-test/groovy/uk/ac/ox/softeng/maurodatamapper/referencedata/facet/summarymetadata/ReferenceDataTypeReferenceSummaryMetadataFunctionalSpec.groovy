@@ -61,6 +61,11 @@ class ReferenceDataTypeReferenceSummaryMetadataFunctionalSpec extends CatalogueI
         "referenceDataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"
     }    
 
+    @Override
+    String getFacetResourcePath() {
+        'referenceSummaryMetadata'
+    }      
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {

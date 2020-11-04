@@ -63,6 +63,11 @@ class ReferenceDataTypeReferenceSummaryMetadataReportFunctionalSpec extends Cata
         ReferenceDataModel.findByLabel('Destination Test DataModel').id.toString()
     }
 
+    @Override
+    String getFacetResourcePath() {
+        "referenceSummaryMetadata/${summaryMetadata.id}/summaryMetadataReports"
+    }      
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {

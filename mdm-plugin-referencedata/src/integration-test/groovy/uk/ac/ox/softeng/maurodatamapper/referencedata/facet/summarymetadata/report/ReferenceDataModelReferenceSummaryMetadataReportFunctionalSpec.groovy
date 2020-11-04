@@ -64,6 +64,11 @@ class ReferenceDataModelReferenceSummaryMetadataReportFunctionalSpec extends Cat
         ReferenceDataModel.findByLabel('Destination Test DataModel').id.toString()
     }
 
+    @Override
+    String getFacetResourcePath() {
+        "referenceSummaryMetadata/${summaryMetadata.id}/summaryMetadataReports"
+    }      
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
