@@ -152,7 +152,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 "leftId": "${json-unit.matches:id}",
 "rightId": "${json-unit.matches:id}",
 "label": "Functional Test Model",
-"count": 11,
+"count": 15,
 "diffs": [
         {
             "description": {
@@ -161,6 +161,47 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             "isMergeConflict": true,
             "commonAncestorValue": null
         }
+        },
+        {
+            "metadata": {
+                "deleted": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "namespace": "functional.test.namespace",
+                            "key": "deleteMetadataSource",
+                            "value": "original"
+                        }
+                    }
+                ],
+                "created": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "namespace": "functional.test.namespace",
+                            "key": "addMetadataSource",
+                            "value": "original"
+                        }
+                    }
+                ],
+                "modified": [
+                    {
+                        "leftId": "${json-unit.matches:id}",
+                        "rightId": "${json-unit.matches:id}",
+                        "namespace": "functional.test.namespace",
+                        "key": "modifyMetadataSource",
+                        "count": 1,
+                        "diffs": [
+                            {
+                                "value": {
+                                    "left": "original",
+                                    "right": "Modified Description"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
         },
         {
             "branchName": {
@@ -416,13 +457,27 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                                 "finalised": false
                             }
                     ],
-                        "count": 1,
+                        "count": 2,
                         "diffs": [
                             {
                                 "description": {
                                 "left": null,
                                 "right": "Description",
                                 "isMergeConflict": false
+                            },
+                            {
+                                "metadata": {
+                                    "created": [
+                                        {
+                                            "value": {
+                                                "id": "b9aab272-90da-4c46-9363-40764e814d22",
+                                                "namespace": "functional.test.namespace",
+                                                "key": "addMetadataModifyLeftOnly",
+                                                "value": "original"
+                                            }
+                                        }
+                                    ]
+                                }
                             }
                             }
                     ]
@@ -1584,10 +1639,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         POST("$id/dataClasses/$existingClass/dataClasses", [label: 'deleteLeftOnlyFromExistingClass'])
         verifyResponse CREATED, response
 
-        //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
-        //        verifyResponse CREATED, response
-        //        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'modifyMetadataSource', value: 'original'])
-        //        verifyResponse CREATED, response
+        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'deleteMetadataSource', value: 'original'])
+        verifyResponse CREATED, response
+        POST("$id/metadata", [namespace: 'functional.test.namespace', key: 'modifyMetadataSource', value: 'original'])
+        verifyResponse CREATED, response
 
         //        POST("$id/dataTypes", [label: 'deleteDataTypeSource', domainType: 'PrimitiveType'])
         //        verifyResponse CREATED, response
@@ -1628,10 +1683,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         String modifyAndModifyReturningDifference = responseBody().id
 
-        //        GET("$source/metadata")
-        //        verifyResponse OK, response
-        //        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
-        //        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
+        GET("$source/metadata")
+        verifyResponse OK, response
+        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
+        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
 
         //        GET("$source/path/dm%3A%7Cdt%3AdeleteDataTypeSource")
         //        verifyResponse OK, response
@@ -1670,15 +1725,20 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
 
         //metadata
-        //        DELETE("$source/metadata/$deleteMetadataSource")
-        //        verifyResponse NO_CONTENT, response
-        //
-        //        PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])
-        //        verifyResponse OK, response
-        //
-        //        POST("$source/metadata", [namespace: 'functional.test.namespace', key: 'addMetadataSource', value: 'original'])
-        //        verifyResponse CREATED, response
-        //        String addMetadataSource = responseBody().id
+        DELETE("$source/metadata/$deleteMetadataSource")
+        verifyResponse NO_CONTENT, response
+
+        PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])
+        verifyResponse OK, response
+
+        POST("$source/metadata", [namespace: 'functional.test.namespace', key: 'addMetadataSource', value: 'original'])
+        verifyResponse CREATED, response
+        String addMetadataSource = responseBody().id
+
+        POST("dataClasses/$modifyLeftOnly/metadata", [namespace: 'functional.test.namespace',
+                                                      key      : 'addMetadataModifyLeftOnly', value: 'original'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String addMetadataModifyLeftOnly = responseBody().id
 
         //dataTypes
         //        DELETE("$source/dataTypes/$deleteDataTypeSource")
@@ -1739,6 +1799,11 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         deleteLeftOnlyFromExistingClass = responseBody().id
 
+        GET("$target/metadata")
+        verifyResponse OK, response
+        deleteMetadataSource = responseBody().items.find { it.key == "deleteMetadataSource" }.id
+        modifyMetadataSource = responseBody().items.find { it.key == "modifyMetadataSource" }.id
+
         GET("$source/mergeDiff/$target", STRING_ARG)
 
         then:
@@ -1757,6 +1822,35 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                     [
                         fieldName: "description",
                         value    : modifiedDescriptionSource
+                    ],
+                    [
+                        fieldName: "metadata",
+
+                        deleted  : [
+                            [
+                                id   : deleteMetadataSource,
+                                label: "deleteMetadataSource"
+                            ]
+                        ],
+                        created  : [
+                            [
+                                id   : addMetadataSource,
+                                label: "addMetadataSource"
+                            ]
+                        ],
+                        modified : [
+                            [
+                                leftId: modifyMetadataSource,
+                                label : "modifyMetadataSource",
+                                count : 1,
+                                diffs : [
+                                    [
+                                        fieldName: "value",
+                                        value    : "Modified Description"
+                                    ]
+                                ]
+                            ]
+                        ]
                     ],
                     [
                         fieldName: "dataClasses",
@@ -1820,7 +1914,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                             [
                                 leftId: modifyAndModifyReturningDifference,
                                 label : "modifyAndModifyReturningDifference",
-                                count : 1,
                                 diffs : [
                                     [
                                         fieldName: "description",
@@ -1831,11 +1924,19 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                             [
                                 leftId: modifyLeftOnly,
                                 label : "modifyLeftOnly",
-                                count : 1,
                                 diffs : [
                                     [
                                         fieldName: "description",
                                         value    : "modifiedDescriptionSourceOnly"
+                                    ],
+                                    [
+                                        fieldName: "metadata",
+                                        created  : [
+                                            [
+                                                id   : addMetadataModifyLeftOnly,
+                                                label: "addMetadataModifyLeftOnly"
+                                            ]
+                                        ]
                                     ]
                                 ]
                             ]

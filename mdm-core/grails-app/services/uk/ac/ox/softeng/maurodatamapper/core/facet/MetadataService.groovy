@@ -67,6 +67,14 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         metadata.delete(flush: flush)
     }
 
+    void saveCatalogueItem(Metadata metadata) {
+        if (!metadata) return
+        CatalogueItemService catalogueItemService = catalogueItemServices.find { it.handles(metadata.catalogueItemDomainType) }
+        if (!catalogueItemService) throw new ApiBadRequestException('MS02', 'Catalogue item save for catalogue item with no supporting service')
+        metadata.catalogueItem.addToMetadata(metadata)
+        catalogueItemService.save(metadata.catalogueItem)
+    }
+
     void batchSave(Collection<Metadata> metadata) {
         log.trace('Batch saving Metadata')
         long start = System.currentTimeMillis()

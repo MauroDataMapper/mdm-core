@@ -60,6 +60,7 @@ class MetadataController extends EditLoggingController<Metadata> {
     @Override
     protected Metadata saveResource(Metadata resource) {
         resource.save flush: true, validate: false
+        metadataService.saveCatalogueItem(resource)
         metadataService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
     }
 
