@@ -113,6 +113,11 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         relationshipType.childRelationship
     }
 
+    @Override
+    String getDiffIdentifier() {
+        "$sourceTerm.label-$label-$targetTerm.label"
+    }
+
     ObjectDiff<TermRelationship> diff(TermRelationship obj) {
         catalogueItemDiffBuilder(TermRelationship, this, obj)
     }
