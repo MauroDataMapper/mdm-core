@@ -75,6 +75,30 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel"
+      },      
+      {
+        "id": "${json-unit.matches:id}",
         "domainType": "CodeSet",
         "label": "Simple Test CodeSet",
         "hasChildren": false,
@@ -178,6 +202,30 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "Terminology"
       },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel"
+      },      
       {
         "id": "${json-unit.matches:id}",
         "domainType": "CodeSet",
