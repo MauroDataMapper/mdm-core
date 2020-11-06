@@ -137,7 +137,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyJsonResponse OK, '''{
-  "count": 5,
+  "count": 7,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -167,6 +167,16 @@ class SearchFunctionalSpec extends FunctionalSpec {
         }
       ]
     },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataModel",
+      "label": "Second Simple Reference Data Model"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataModel",
+      "label": "Simple Reference Data Model"
+    },    
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -205,7 +215,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyJsonResponse OK, '''{
-  "count": 5,
+  "count": 7,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -235,6 +245,16 @@ class SearchFunctionalSpec extends FunctionalSpec {
         }
       ]
     },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataModel",
+      "label": "Second Simple Reference Data Model"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataModel",
+      "label": "Simple Reference Data Model"
+    },    
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -288,7 +308,7 @@ class SearchFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyJsonResponse OK, '''{
-  "count": 5,
+  "count": 7,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -332,17 +352,17 @@ class SearchFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyJsonResponse OK, '''{
-  "count": 5,
+  "count": 7,
   "items": [
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Simple Test DataModel"
+      "domainType": "ReferenceDataModel",
+      "label": "Second Simple Reference Data Model"
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "Terminology",
-      "label": "Simple Test Terminology"
+      "domainType": "ReferenceDataModel",
+      "label": "Simple Reference Data Model"
     }
   ]
 }'''
