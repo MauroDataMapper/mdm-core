@@ -147,7 +147,7 @@ class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
     }
 
     static CatalogueUser findByEmailAddress(String emailAddress) {
-        by().eq('emailAddress', emailAddress).get()
+        by().eq('emailAddress', SecurityUtils.normaliseEmailAddress(emailAddress)).get()
     }
 
     static DetachedCriteria<CatalogueUser> whereAnyMap(Map<String, Object> searchParams) {

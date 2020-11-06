@@ -101,6 +101,41 @@ class AuthenticatingFunctionalSpec extends BaseFunctionalSpec implements Securit
         response.body().authenticatedSession == true
     }
 
+    void 'test case insensitive username'() {
+        when: 'invalid call made to login'
+        POST('login', [
+            username: 'ADMIN@MAURODATAMAPPER.COM',
+            password: 'not a valid password'
+        ])
+
+        then:
+        verifyResponse(UNAUTHORIZED, response)
+
+        when: 'valid call made to login'
+        POST('login', [
+            username: 'ADMIN@MAURODATAMAPPER.COM',
+            password: 'password'
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''{
+  "id": "${json-unit.matches:id}",
+  "emailAddress": "admin@maurodatamapper.com",
+  "firstName": "Admin",
+  "lastName": "User",
+  "pending": false,
+  "disabled": false,
+  "createdBy": "admin@maurodatamapper.com"
+}''')
+
+        when:
+        GET('session/isAuthenticated', MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        response.body().authenticatedSession == true
+    }
+
     void "test isAuthenticatedSession"() {
         when: "Unlogged in call to check"
         GET('session/isAuthenticated', MAP_ARG, true)
