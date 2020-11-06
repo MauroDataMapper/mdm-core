@@ -14,23 +14,23 @@
         <mdm:metadata>
             <mdm:metadata>
                 <mdm:id>a5570e4f-5be6-4116-9708-9b12be883726</mdm:id>
-                <mdm:namespace>test.com/simple</mdm:namespace>
+                <mdm:namespace>referencedata.com</mdm:namespace>
                 <mdm:key>mdk1</mdm:key>
                 <mdm:value>mdv1</mdm:value>
                 <mdm:lastUpdated>2020-10-27T15:00:33.744Z</mdm:lastUpdated>
             </mdm:metadata>
             <mdm:metadata>
                 <mdm:id>6ad461a3-68d8-495e-8cd1-6cb26dabbe4b</mdm:id>
-                <mdm:namespace>test.com</mdm:namespace>
+                <mdm:namespace>referencedata.com</mdm:namespace>
                 <mdm:key>mdk2</mdm:key>
                 <mdm:value>mdv2</mdm:value>
                 <mdm:lastUpdated>2020-10-27T15:00:33.754Z</mdm:lastUpdated>
             </mdm:metadata>
             <mdm:metadata>
                 <mdm:id>489073d4-42d8-4dae-bb92-c7724cb94f2a</mdm:id>
-                <mdm:namespace>test.com/simple</mdm:namespace>
-                <mdm:key>mdk2</mdm:key>
-                <mdm:value>mdv2</mdm:value>
+                <mdm:namespace>referencedata.com</mdm:namespace>
+                <mdm:key>mdk3</mdm:key>
+                <mdm:value>mdv3</mdm:value>
                 <mdm:lastUpdated>2020-10-27T15:00:33.755Z</mdm:lastUpdated>
             </mdm:metadata>
         </mdm:metadata>

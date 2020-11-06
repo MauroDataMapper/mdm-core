@@ -13,23 +13,23 @@
         "metadata": [
             {
                 "id": "6ad461a3-68d8-495e-8cd1-6cb26dabbe4b",
-                "namespace": "test.com",
-                "key": "mdk2",
-                "value": "mdv2",
+                "namespace": "referencedata.com",
+                "key": "mdk1",
+                "value": "mdv1",
                 "lastUpdated": "2020-10-27T15:00:33.754Z"
             },
             {
                 "id": "489073d4-42d8-4dae-bb92-c7724cb94f2a",
-                "namespace": "test.com/simple",
+                "namespace": "referencedata.com",
                 "key": "mdk2",
                 "value": "mdv2",
                 "lastUpdated": "2020-10-27T15:00:33.755Z"
             },
             {
                 "id": "a5570e4f-5be6-4116-9708-9b12be883726",
-                "namespace": "test.com/simple",
-                "key": "mdk1",
-                "value": "mdv1",
+                "namespace": "referencedata.com",
+                "key": "mdk3",
+                "value": "mdv3",
                 "lastUpdated": "2020-10-27T15:00:33.744Z"
             }
         ],

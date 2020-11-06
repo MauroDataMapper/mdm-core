@@ -53,9 +53,9 @@ class BootstrapModels {
         ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
         ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
         referenceDataModel
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk1', value: 'mdv1')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk3', value: 'mdv3')
                 .addToReferenceDataTypes(stringDataType)
                 .addToReferenceDataTypes(integerDataType)
 
@@ -93,9 +93,9 @@ class BootstrapModels {
         ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
         ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
         referenceDataModel
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'example.com/simple', key: 'mdk1', value: 'mdv1')
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'example.com', key: 'mdk2', value: 'mdv2')
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'example.com/simple', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk1', value: 'mdv1')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk3', value: 'mdv3')
                 .addToReferenceDataTypes(stringDataType)
                 .addToReferenceDataTypes(integerDataType)
 
