@@ -245,7 +245,11 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
                         diffs.add(it)
                     }
                 } else {
-                    it.isMergeConflict = false
+                    if (it.class == FieldDiff) { it.isMergeConflict = false } else if (it.class == ArrayDiff) {
+                        it.deleted.each { it.isMergeConflict = false }
+                        it.created.each { it.isMergeConflict = false }
+                        it.modified.each { it.diffs.each { it.isMergeConflict = false } }
+                    }
                     diffs.add(it)
                 }
             }
