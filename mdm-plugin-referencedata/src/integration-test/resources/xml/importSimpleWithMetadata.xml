@@ -1,0 +1,51 @@
+<?xml version='1.0'?>
+<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.0' xmlns:mdm='http://maurodatamapper.com/referenceDataModel/3.0'>
+    <mdm:referenceDataModel>
+        <mdm:id>941f6774-9eae-4bfa-890e-e819eb1af281</mdm:id>
+        <mdm:label>importSimple Reference Data Model</mdm:label>
+        <mdm:lastUpdated>2020-10-27T15:00:35.77Z</mdm:lastUpdated>
+        <mdm:metadata>
+            <mdm:metadata>
+                <mdm:id>e6686f60-2714-475a-ad6e-c292ccf92f68</mdm:id>
+                <mdm:namespace>terminology.test.com</mdm:namespace>
+                <mdm:key>mdk2</mdm:key>
+                <mdm:value>mdv2</mdm:value>
+                <mdm:lastUpdated>2020-08-20T15:37:20.986Z</mdm:lastUpdated>
+            </mdm:metadata>
+            <mdm:metadata>
+                <mdm:id>2dd584f1-e9fa-4458-b570-18eec48bef79</mdm:id>
+                <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+                <mdm:key>mdk2</mdm:key>
+                <mdm:value>mdv2</mdm:value>
+                <mdm:lastUpdated>2020-08-20T15:37:20.987Z</mdm:lastUpdated>
+            </mdm:metadata>
+            <mdm:metadata>
+                <mdm:id>a2bcb907-ea47-4904-9ce4-f15117aeec4d</mdm:id>
+                <mdm:namespace>terminology.test.com/simple</mdm:namespace>
+                <mdm:key>mdk1</mdm:key>
+                <mdm:value>mdv1</mdm:value>
+                <mdm:lastUpdated>2020-08-20T15:37:20.985Z</mdm:lastUpdated>
+            </mdm:metadata>
+        </mdm:metadata>         
+        <mdm:type>ReferenceDataModel</mdm:type>
+        <mdm:author>Test Author</mdm:author>
+        <mdm:organisation>Test Organisation</mdm:organisation>
+        <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+        <mdm:finalised>false</mdm:finalised>
+        <mdm:authority>
+            <mdm:id>107adf2e-7051-4ffc-b785-1122f598f13a</mdm:id>
+            <mdm:label>Mauro Data Mapper</mdm:label>
+            <mdm:url>http://localhost</mdm:url>
+            <mdm:lastUpdated>2020-08-20T15:37:19.735Z</mdm:lastUpdated>
+        </mdm:authority>
+    </mdm:referenceDataModel>
+    <exp:exportMetadata>
+        <exp:exportedBy>Admin User</exp:exportedBy>
+        <exp:exportedOn>2020-10-30T10:38:11.274761Z</exp:exportedOn>
+        <exp:exporter>
+            <exp:namespace>uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter</exp:namespace>
+            <exp:name>XmlExporterService</exp:name>
+            <exp:version>3.0</exp:version>
+        </exp:exporter>
+    </exp:exportMetadata>
+</exp:exportModel>

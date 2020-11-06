@@ -63,4 +63,13 @@ class XmlExporterService extends ReferenceDataModelExporterProviderService imple
     ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModels) throws ApiException {
         throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple ReferenceDataModels")
     }
+
+    /**
+     * Necessary to override the view path because using '/exportModel/export' across more than one plugin results
+     * in path resolution problems i.e. grails can pick up the template from a different plugin.
+     */
+    @Override
+    String getExportViewPath() {
+        '/exportModel/exportReferenceData'
+    }    
 }

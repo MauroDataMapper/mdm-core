@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -81,13 +83,31 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         
         log.debug('Setting map referenceDataElements')
         referenceDataModelMap.referenceDataElements = referenceDataModelMap.remove('referenceDataElements')
-
-        log.debug('Setting map referenceDataValues')
-        referenceDataModelMap.referenceDataValues = referenceDataModelMap.remove('referenceDataValues')        
+  
+        List mappedReferenceDataValues = referenceDataModelMap.remove('referenceDataValues')
 
         ReferenceDataModel referenceDataModel = new ReferenceDataModel()
         log.debug('Binding map to new ReferenceDataModel instance')
         DataBindingUtils.bindObjectToInstance(referenceDataModel, referenceDataModelMap, null, ['id', 'domainType', 'lastUpdated'], null)
+
+        /**
+         * Bind each Reference Data Value. Somehow the JsonSluper and XmlSlurper produce different results. For Json, it is sufficient to do
+         * referenceDataModelMap.referenceDataValues = referenceDataModelMap.remove('referenceDataValues')
+         *
+         * But when referenceDataModelMap has come from the XmlSluper, using the line above does not set the referenceDataElement 
+         * attribute of each ReferenceDataValue.
+         */
+        mappedReferenceDataValues.each { rdv ->
+            ReferenceDataElement referenceDataElement = new ReferenceDataElement()
+            DataBindingUtils.bindObjectToInstance(referenceDataElement, rdv.referenceDataElement, null, ['id', 'domainType', 'lastUpdated'], null)
+
+            ReferenceDataValue referenceDataValue = new ReferenceDataValue()
+            DataBindingUtils.bindObjectToInstance(referenceDataValue, rdv, null, ['id', 'domainType', 'lastUpdated'], null)
+            referenceDataValue.referenceDataElement = referenceDataElement
+
+            referenceDataModel.addToReferenceDataValues(referenceDataValue)
+        }
+
 
         log.debug('Fixing bound ReferenceDataModel')
         referenceDataModelService.checkImportedReferenceDataModelAssociations(currentUser, referenceDataModel, referenceDataModelMap)

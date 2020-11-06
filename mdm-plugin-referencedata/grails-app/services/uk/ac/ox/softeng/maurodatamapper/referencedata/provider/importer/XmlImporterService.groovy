@@ -64,37 +64,9 @@ class XmlImporterService extends DataBindReferenceDataModelImporterProviderServi
         log.debug('Parsing in file content using XmlSlurper')
         GPathResult result = new XmlSlurper().parseText(xml)
 
-        log.debug('Converting result to Map')
         Map map = convertToMap(result)
 
         log.debug('Importing ReferenceDataModel map')
-        bindMapToReferenceDataModel currentUser, map.referenceDataModel as Map
+        bindMapToReferenceDataModel currentUser, new HashMap(map.referenceDataModel)
     }
-
-    //@Override
-    //List<ReferenceDataModel> importReferenceDataModels(User currentUser, byte[] content) {
-        /*if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
-        if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
-
-        String xml = new String(content, Charset.defaultCharset())
-
-        log.debug('Parsing in file content using XmlSlurper')
-        GPathResult result = new XmlSlurper().parseText(xml)
-
-        List<DataModel> imported = []
-        if (result.name() == 'dataModels') {
-            log.debug('Importing DataModel list')
-            List list = convertToList(result as NodeChild)
-            list.each {
-                imported += bindMapToDataModel(currentUser, it as Map)
-            }
-        } else {
-            // Handle single DM map or exportModel being passed to this method
-            Map map = convertToMap(result)
-            log.debug('Importing DataModel map')
-            imported += bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
-        }
-
-        imported*/
-    //}
 }
