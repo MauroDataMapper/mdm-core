@@ -25,10 +25,16 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessAndPer
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
+import grails.util.BuildSettings
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import spock.lang.Shared
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
@@ -40,43 +46,54 @@ import static io.micronaut.http.HttpStatus.OK
  * Controller: referenceDataModel
  *
  *  |  GET     | /api/referenceDataModels        | Action: index
- *  |  DELETE  | /api/dataModels/${id}  | Action: delete
- *  |  PUT     | /api/dataModels/${id}  | Action: update
- *  |  GET     | /api/dataModels/${id}  | Action: show
- *  |  POST    | /api/folders/${folderId}/dataModels                 | Action: save
+ *  |  DELETE  | /api/referenceDataModels/${id}  | Action: delete
+ *  |  PUT     | /api/referenceDataModels/${id}  | Action: update
+ *  |  GET     | /api/referenceDataModels/${id}  | Action: show
+ *  |  POST    | /api/folders/${folderId}/referenceDataModels                 | Action: save
  *
- *  |  DELETE  | /api/dataModels/${dataModelId}/readByAuthenticated    | Action: readByAuthenticated
- *  |  PUT     | /api/dataModels/${dataModelId}/readByAuthenticated    | Action: readByAuthenticated
- *  |  DELETE  | /api/dataModels/${dataModelId}/readByEveryone         | Action: readByEveryone
- *  |  PUT     | /api/dataModels/${dataModelId}/readByEveryone         | Action: readByEveryone
+ *  |  DELETE  | /api/referenceDataModels/${dataModelId}/readByAuthenticated    | Action: readByAuthenticated
+ *  |  PUT     | /api/referenceDataModels/${dataModelId}/readByAuthenticated    | Action: readByAuthenticated
+ *  |  DELETE  | /api/referenceDataModels/${dataModelId}/readByEveryone         | Action: readByEveryone
+ *  |  PUT     | /api/referenceDataModels/${dataModelId}/readByEveryone         | Action: readByEveryone
  *
- *  |  GET     | /api/dataModels/types  | Action: types
- *  |  GET     | /api/dataModels/${dataModelId}/hierarchy  | Action: hierarchy
- *  |  PUT     | /api/dataModels/${dataModelId}/finalise   | Action: finalise
+ *  |  PUT     | /api/referenceDataModels/${dataModelId}/finalise   | Action: finalise
  *
  *  |  PUT     | /api/dataModels/${dataModelId}/newForkModel          | Action: newForkModel
  *  |  PUT     | /api/dataModels/${dataModelId}/newDocumentationVersion  | Action: newDocumentationVersion
  *
  *  |  PUT     | /api/folders/${folderId}/dataModels/${dataModelId}      | Action: changeFolder
- *  |  PUT     | /api/dataModels/${dataModelId}/folder/${folderId}       | Action: changeFolder
+ *  |  PUT     | /api/referenceDataModels/${dataModelId}/folder/${folderId}       | Action: changeFolder
  *
- *  |  GET     | /api/dataModels/providers/defaultDataTypeProviders       | Action: defaultDataTypeProviders
- *  |  GET     | /api/dataModels/providers/importers                      | Action: importerProviders
- *  |  GET     | /api/dataModels/providers/exporters                      | Action: exporterProviders
- *  |  GET     | /api/dataModels/${dataModelId}/diff/${otherDataModelId}  | Action: diff
+ *  |  GET     | /api/referenceDataModels/providers/importers                      | Action: importerProviders
+ *  |  GET     | /api/referenceDataModels/providers/exporters                      | Action: exporterProviders
+ *  |  GET     | /api/referenceDataModels/${dataModelId}/diff/${otherDataModelId}  | Action: diff
  *
- *  |  POST    | /api/dataModels/import/${importerNamespace}/${importerName}/${importerVersion}                 | Action: importDataModels
- *  |  POST    | /api/dataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                 | Action: exportDataModels
- *  |  GET     | /api/dataModels/${dataModelId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportDataModel
+ *  |  POST    | /api/referenceDataModels/import/${importerNamespace}/${importerName}/${importerVersion}                 | Action: importDataModels
+ *  |  POST    | /api/referenceDataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                 | Action: exportDataModels
+ *  |  GET     | /api/referenceDataModels/${dataModelId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}  | Action: exportDataModel
  *
- *  |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
- *  |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
+ *  |   GET    | /api/referenceDataModels/${dataModelId}/search  | Action: search
+ *  |   POST   | /api/referenceDataModels/${dataModelId}/search  | Action: search
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelController
  */
 @Integration
 @Slf4j
 class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFunctionalSpec {
+
+    @Shared
+    Path resourcesPath
+
+    @OnceBefore
+    void setupResourcesPath() {
+        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'referencedata').toAbsolutePath()
+    }      
+
+    byte[] loadTestFile(String filename) {
+        Path testFilePath = resourcesPath.resolve("${filename}").toAbsolutePath()
+        assert Files.exists(testFilePath)
+        Files.readAllBytes(testFilePath)
+    }    
 
     @Transactional
     String getTestFolderId() {
@@ -116,21 +133,21 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     @Override
     Map getValidJson() {
         [
-            label: 'Functional Test DataModel'
+            label: 'Functional Test Reference Data'
         ]
     }
 
     @Override
     Map getInvalidJson() {
         [
-            label: 'Complex Test DataModel'
+            label: 'Simple Reference Data Model'
         ]
     }
 
     @Override
     Map getValidUpdateJson() {
         [
-            description: 'This is a new testing DataModel'
+            description: 'This is a new testing Reference Data'
         ]
     }
 
@@ -192,12 +209,12 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
     @Override
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[Data Standard:Functional Test DataModel] created/
+        ~/\[ReferenceDataModel:Functional Test Reference Data] created/
     }
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[Data Standard:Functional Test DataModel] changed properties \[description]/
+        ~/\[ReferenceDataModel:Functional Test Reference Data] changed properties \[description]/
     }
 
     @Override
@@ -216,39 +233,30 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     }
 
     @Override
+    boolean skipE21() {
+        return true;
+    }
+
+    @Override
+    boolean skipE22() {
+        return true;
+    }    
+
+    @Override
+    boolean skipE24() {
+        return true;
+    }    
+
+    @Override
     String getEditorIndexJson() {
         '''{
-  "count": 4,
+  "count": 2,
   "items": [
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Complex Test DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0",
-      "classifiers": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "test classifier2",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "test classifier",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
-        }
-      ],
-      "author": "admin person",
-      "organisation": "brc"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Simple Test DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0",
+      "domainType": "ReferenceDataModel",
+      "label": "Second Simple Reference Data Model",
+      "type": "ReferenceDataModel",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
@@ -259,19 +267,16 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "SourceFlowDataModel",
-      "type": "Data Asset",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "TargetFlowDataModel",
-      "type": "Data Asset",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
+      "domainType": "ReferenceDataModel",
+      "label": "Simple Reference Data Model",
+      "type": "ReferenceDataModel",
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier simple",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ]
     }
   ]
 }'''
@@ -280,15 +285,24 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     @Override
     String getShowJson() {
         '''{
-  "domainType": "ReferenceDataModel",
-  "availableActions": ['delete', 'show', 'update'],
-  "branchName": "main",
-  "finalised": false,
-  "label": "Reference Data Functional Test Model",
-  "type": "ReferenceDataModel",
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "documentationVersion": "1.0.0",
   "id": "${json-unit.matches:id}",
+  "domainType": "ReferenceDataModel",
+  "label": "Functional Test Reference Data",
+  "availableActions": [
+    "show",
+    "comment",
+    "editDescription",
+    "update",
+    "save",
+    "softDelete",
+    "finalise",
+    "delete"
+  ],
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "type": "ReferenceDataModel",
+  "branchName": "main",
+  "documentationVersion": "1.0.0",
+  "finalised": false,
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "authority": {
@@ -298,6 +312,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
   }
 }'''
     }
+
 
     void 'Test getting available ReferenceDataModel exporters'() {
 
@@ -394,917 +409,51 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
     }
 
-    /*void 'L30 : test getting DataModel hierarchy (as not logged in)'() {
+
+    void 'L34 : test export a single Reference Data Model (as not logged in)'() {
         given:
-        String id = getSimpleDataModelId()
+        String id = getValidId()
 
-        when: 'not logged in'
-        GET("${id}/hierarchy")
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0")
 
         then:
         verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
     }
 
-    void 'N30 : test getting DataModel hierarchy (as authenticated/no access)'() {
-        when: 'authenticated user'
-        String id = getSimpleDataModelId()
+    void 'N34 : test export a single Reference Data Model (as authenticated/no access)'() {
+        given:
+        String id = getValidId()
+
+        when:
         loginAuthenticated()
-        GET("${id}/hierarchy")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0")
 
         then:
         verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
     }
 
-    void 'R30 : test getting DataModel hierarchy (as reader)'() {
-        when: 'logged in as reader'
-        String id = getSimpleDataModelId()
+    void 'R34 : test export a single Reference Data Model (as reader)'() {
+        given:
+        String id = getValidId()
+
+        when:
         loginReader()
-        GET("${id}/hierarchy", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
-  "id": "${json-unit.matches:id}",
-  "domainType": "DataModel",
-  "label": "Simple Test DataModel",
-  "availableActions": [
-    "show",
-    "comment"
-  ],
-  "branchName": "main",
-  "authority": {
+  "referenceDataModel": {
     "id": "${json-unit.matches:id}",
-    "url": "http://localhost",
-    "label": "Mauro Data Mapper"
-  },
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "classifiers": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "test classifier simple",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    }
-  ],
-  "type": "Data Standard",
-  "documentationVersion": "1.0.0",
-  "finalised": false,
-  "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false,
-  "dataTypes": [
-    
-  ],
-  "childDataClasses": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "simple",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Simple Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "show",
-        "comment"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        
-      ]
-    }
-  ]
-}'''
-    }
-
-    void 'E30a : test getting DataModel hierarchy (as editor)'() {
-        when: 'logged in as editor'
-        String id = getSimpleDataModelId()
-        loginEditor()
-        GET("${id}/hierarchy", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
-  "id": "${json-unit.matches:id}",
-  "domainType": "DataModel",
-  "label": "Simple Test DataModel",
-  "availableActions": [
-        "delete",
-        "softDelete",
-        "update",
-        "save",
-        "show",
-        "comment",
-        "editDescription",
-        "finalise"
-      ],
-      "branchName": "main",
-  "authority": {
-    "id": "${json-unit.matches:id}",
-    "url": "http://localhost",
-    "label": "Mauro Data Mapper"
-  },
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "classifiers": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "test classifier simple",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    }
-  ],
-  "type": "Data Standard",
-  "documentationVersion": "1.0.0",
-  "finalised": false,
-  "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false,
-  "dataTypes": [
-    
-  ],
-  "childDataClasses": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "simple",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Simple Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "delete",
-        "update",
-        "save",
-        "show",
-        "comment",
-        "editDescription"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        
-      ]
-    }
-  ]
-}'''
-    }
-
-    void 'E30b : test getting complex DataModel hierarchy (as editor)'() {
-        when: 'logged in as editor'
-        String id = getComplexDataModelId()
-        loginEditor()
-        GET("${id}/hierarchy", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
-  "id": "${json-unit.matches:id}",
-  "domainType": "DataModel",
-  "label": "Complex Test DataModel",
-  "availableActions": [
-    "show",
-    "comment",
-    "editDescription",
-    "update",
-    "save",
-    "softDelete",
-    "delete",
-    "finalise"
-  ],
-  "branchName": "main",
-  "authority": {
-    "id": "${json-unit.matches:id}",
-    "url": "http://localhost",
-    "label": "Mauro Data Mapper"
-  },
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "classifiers": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "test classifier2",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "test classifier",
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    }
-  ],
-  "type": "Data Standard",
-  "documentationVersion": "1.0.0",
-  "finalised": false,
-  "readableByEveryone": false,
-  "readableByAuthenticatedUsers": false,
-  "author": "admin person",
-  "organisation": "brc",
-  "dataTypes": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "EnumerationType",
-      "label": "yesnounknown",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "enumerationValues": [
-        {
-          "index": 0,
-          "id": "${json-unit.matches:id}",
-          "key": "Y",
-          "value": "Yes",
-          "category": null
-        },
-        {
-          "index": 1,
-          "id": "${json-unit.matches:id}",
-          "key": "N",
-          "value": "No",
-          "category": null
-        },
-        {
-          "index": 2,
-          "id": "${json-unit.matches:id}",
-          "key": "U",
-          "value": "Unknown",
-          "category": null
-        }
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "integer",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "string",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceType",
-      "label": "child",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "referenceClass": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataClass",
-        "label": "child",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Complex Test DataModel",
-            "domainType": "DataModel",
-            "finalised": false
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "parent",
-            "domainType": "DataClass"
-          }
-        ],
-        "parentDataClass": "${json-unit.matches:id}"
-      }
-    }
-  ],
-  "childDataClasses": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "content",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "description": "A dataclass with elements",
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "maxMultiplicity": 1,
-      "minMultiplicity": 0,
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "ele1",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "content",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "show",
-            "comment",
-            "editDescription",
-            "update",
-            "save",
-            "delete"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "string",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          "maxMultiplicity": 20,
-          "minMultiplicity": 0
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "element2",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "content",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "show",
-            "comment",
-            "editDescription",
-            "update",
-            "save",
-            "delete"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "PrimitiveType",
-            "label": "integer",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1
-        }
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "emptyclass",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "description": "dataclass with desc",
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "dataClasses": [
-        
-      ],
-      "dataElements": [
-        
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataClass",
-      "label": "parent",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "availableActions": [
-        "show",
-        "comment",
-        "editDescription",
-        "update",
-        "save",
-        "delete"
-      ],
-      "lastUpdated": "${json-unit.matches:offsetDateTime}",
-      "maxMultiplicity": -1,
-      "minMultiplicity": 1,
-      "dataClasses": [
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataClass",
-          "label": "child",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "parent",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "show",
-            "comment",
-            "editDescription",
-            "update",
-            "save",
-            "delete"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "parentDataClass": "${json-unit.matches:id}",
-          "dataClasses": [
-            
-          ],
-          "dataElements": [
-            
-          ],
-          "parentDataClass": "${json-unit.matches:id}"
-        }
-      ],
-      "dataElements": [
-        {
-          "id": "${json-unit.matches:id}",
-          "domainType": "DataElement",
-          "label": "child",
-          "model": "${json-unit.matches:id}",
-          "breadcrumbs": [
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "Complex Test DataModel",
-              "domainType": "DataModel",
-              "finalised": false
-            },
-            {
-              "id": "${json-unit.matches:id}",
-              "label": "parent",
-              "domainType": "DataClass"
-            }
-          ],
-          "availableActions": [
-            "show",
-            "comment",
-            "editDescription",
-            "update",
-            "save",
-            "delete"
-          ],
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "dataClass": "${json-unit.matches:id}",
-          "dataType": {
-            "id": "${json-unit.matches:id}",
-            "domainType": "ReferenceType",
-            "label": "child",
-            "model": "${json-unit.matches:id}",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ],
-            "referenceClass": {
-              "id": "${json-unit.matches:id}",
-              "domainType": "DataClass",
-              "label": "child",
-              "model": "${json-unit.matches:id}",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Complex Test DataModel",
-                  "domainType": "DataModel",
-                  "finalised": false
-                },
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "parent",
-                  "domainType": "DataClass"
-                }
-              ],
-              "parentDataClass": "${json-unit.matches:id}"
-            }
-          },
-          "maxMultiplicity": 1,
-          "minMultiplicity": 1
-        }
-      ]
-    }
-  ]
-}'''
-    }
-
-    void 'L31 : test changing folder from DataModel context (as not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when: 'not logged in'
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N31 : test changing folder from DataModel context (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginAuthenticated()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R31 : test changing folder from DataModel context (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as reader'
-        loginReader()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E31 : test changing folder from DataModel context (as editor)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as editor of the datamodel but not the folder 2'
-        loginEditor()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyNotFound response, getTestFolder2Id()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A31 : test changing folder from DataModel context (as admin)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as admin'
-        loginAdmin()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-
-        then:
-        verifyResponse OK, response
-
-        and:
-        getDataModelFolderId(id) == getTestFolder2Id()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'L32 : test changing folder from Folder context (as not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when: 'not logged in'
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N32 : test changing folder from Folder context (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginAuthenticated()
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R32 : test changing folder from Folder context (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as reader'
-        loginReader()
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyForbidden response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'E32 : test changing folder from Folder context (as editor)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as editor of the datamodel but not the folder 2'
-        loginEditor()
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyNotFound response, getTestFolder2Id()
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'A32 : test changing folder from Folder context (as admin)'() {
-        given:
-        String id = getValidId()
-
-        when: 'logged in as admin'
-        loginAdmin()
-        PUT("folders/${getTestFolder2Id()}/dataModels/$id", [:], MAP_ARG, true)
-
-        then:
-        verifyResponse OK, response
-
-        and:
-        getDataModelFolderId(id) == getTestFolder2Id()
-
-        when: 'logged in as reader as no access to folder 2 or reader share'
-        loginReader()
-        GET(id)
-
-        then:
-        verifyNotFound response, id
-
-        when: 'logged in as editor no access to folder 2 but has direct DM access'
-        loginEditor()
-        GET(id)
-
-        then:
-        verifyResponse OK, response
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-
-    void 'L33 : test diffing 2 DataModels (as not logged in)'() {
-
-        when: 'not logged in'
-        GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}")
-
-        then:
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    void 'N33 : test diffing 2 DataModels (as authenticated/no access)'() {
-        when:
-        loginAuthenticated()
-        GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}")
-
-        then:
-        verifyNotFound response, getComplexDataModelId()
-    }
-
-    void 'R33A : test diffing 2 DataModels (as reader of LH model)'() {
-        given:
-        String id = getValidId()
-        loginAdmin()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-        logout()
-
-        when: 'able to read right model only'
-        loginReader()
-        GET("${getComplexDataModelId()}/diff/${id}")
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R33B : test diffing 2 DataModels (as reader of RH model)'() {
-        given:
-        String id = getValidId()
-        loginAdmin()
-        PUT("$id/folder/${getTestFolder2Id()}", [:])
-        logout()
-
-        when:
-        loginReader()
-        GET("${id}/diff/${getComplexDataModelId()}")
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R33C : test diffing 2 DataModels (as reader of both models)'() {
-        when:
-        loginReader()
-        GET("${getComplexDataModelId()}/diff/${getSimpleDataModelId()}", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, getExpectedDiffJson()
-    }
-
-    void 'L34 : test export a single DataModel (as not logged in)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0")
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'N34 : test export a single DataModel (as authenticated/no access)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginAuthenticated()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0")
-
-        then:
-        verifyNotFound response, id
-
-        cleanup:
-        removeValidIdObject(id)
-    }
-
-    void 'R34 : test export a single DataModel (as reader)'() {
-        given:
-        String id = getValidId()
-
-        when:
-        loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, '''{
-  "dataModel": {
-    "id": "${json-unit.matches:id}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test Reference Data",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "type": "Data Standard",
+    "type": "ReferenceDataModel",
     "documentationVersion": "1.0.0",
     "finalised": false,
     "authority": {
@@ -1317,9 +466,9 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     "exportedBy": "reader User",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
-      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
       "name": "JsonExporterService",
-      "version": "2.0"
+      "version": "3.0"
     }
   }
 }'''
@@ -1328,13 +477,13 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         removeValidIdObject(id)
     }
 
-    void 'L35 : test export multiple DataModels (json only exports first id) (as not logged in)'() {
+    void 'L35 : test export multiple Reference Data Models (json only exports first id) (as not logged in)'() {
         given:
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0',
-             [dataModelIds: [id, getSimpleDataModelId()]]
+        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0',
+             [referenceDataModelIds: [id, getSimpleDataModelId()]]
         )
 
         then:
@@ -1344,13 +493,13 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         removeValidIdObject(id)
     }
 
-    void 'N35 : test export multiple DataModels (json only exports first id) (as authenticated/no access)'() {
+    void 'N35 : test export multiple Reference Data Models (json only exports first id) (as authenticated/no access)'() {
         given:
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0',
-             [dataModelIds: [id, getSimpleDataModelId()]]
+        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0',
+             [referenceDataModelIds: [id, getSimpleDataModelId()]]
         )
 
         then:
@@ -1360,23 +509,23 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         removeValidIdObject(id)
     }
 
-    void 'R35 : test export multiple DataModels (json only exports first id) (as reader)'() {
+    void 'R35 : test export multiple Reference Data Models (json only exports first id) (as reader)'() {
         given:
         String id = getValidId()
 
         when:
         loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0',
-             [dataModelIds: [id, getSimpleDataModelId()]], STRING_ARG
+        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0',
+             [referenceDataModelIds: [id, getSimpleDataModelId()]], STRING_ARG
         )
 
         then:
         verifyJsonResponse OK, '''{
-  "dataModel": {
+  "referenceDataModel": {
     "id": "${json-unit.matches:id}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test Reference Data",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "type": "Data Standard",
+    "type": "ReferenceDataModel",
     "documentationVersion": "1.0.0",
     "finalised": false,
     "authority": {
@@ -1389,9 +538,9 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     "exportedBy": "reader User",
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
-      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
       "name": "JsonExporterService",
-      "version": "2.0"
+      "version": "3.0"
     }
   }
 }'''
@@ -1400,11 +549,11 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         removeValidIdObject(id)
     }
 
-    void 'L36 : test import basic DataModel (as not logged in)'() {
+    void 'L36 : test import basic Reference Data Model (as not logged in)'() {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1413,7 +562,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -1432,11 +581,11 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         removeValidIdObject(id)
     }
 
-    void 'N36 : test import basic DataModel (as authenticated/no access)'() {
+    void 'N36 : test import basic Reference Data Model (as authenticated/no access)'() {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1446,7 +595,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginAuthenticated()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -1469,7 +618,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1479,7 +628,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginReader()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -1498,11 +647,11 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         removeValidIdObject(id)
     }
 
-    void 'E36A : test import basic DataModel (as editor)'() {
+    void 'E36A : test import basic Reference Data Model (as editor)'() {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1512,7 +661,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -1538,11 +687,11 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         removeValidIdObject(id, NOT_FOUND)
     }
 
-    void 'E36B : test import basic DataModel as new documentation version (as editor)'() {
+   void 'E36B : test import basic Reference Data Model as new documentation version (as editor)'() {
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -1552,7 +701,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: true,
@@ -1566,7 +715,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         then:
         verifyResponse CREATED, response
         response.body().count == 1
-        response.body().items.first().label == 'Functional Test DataModel'
+        response.body().items.first().label == 'Functional Test Reference Data'
         response.body().items.first().id != id
 
         when:
@@ -1587,5 +736,75 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObject(newId, NOT_FOUND)
         removeValidIdObject(id, NOT_FOUND)
-    }*/
+    }
+
+
+    void 'E37: test importing simple test Reference Data Model from CSV as editor and then searching the loaded values'() {
+        given:
+        loginEditor()
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/CsvImporterService/3.0', [
+            finalised                       : true,
+            folderId                        : testFolderId.toString(),
+            modelName                       : 'FT Test Reference Data Model',
+            importAsNewDocumentationVersion : false,
+            importFile                      : [
+                fileName    : 'FT Import',
+                fileType    : 'CSV',
+                fileContents: loadTestFile('simpleReferenceData.csv').toList()
+            ]
+        ])
+        verifyResponse CREATED, response
+        def id = response.body().items[0].id
+
+        then:
+        id
+
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedExport.json'))
+
+        when:
+        GET("${id}/referenceDataValues", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValues.json'))
+
+        when:
+        GET("${id}/referenceDataValues?max=2", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax.json'))
+
+        when:
+        GET("${id}/referenceDataValues?asRows=true", STRING_ARG)        
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows.json'))
+
+        when:
+        GET("${id}/referenceDataValues?asRows=true&max=2", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax.json'))     
+
+        when:
+        GET("${id}/referenceDataValues/search?search=Row6Value2", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6.json'))
+
+        when:
+        GET("${id}/referenceDataValues/search?search=Row6Value2&asRows=true", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows.json'))            
+
+        cleanup:
+        logout()
+        removeValidIdObjectUsingTransaction(id)
+    }    
 }

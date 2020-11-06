@@ -90,6 +90,18 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         response.status() in [NO_CONTENT, NOT_FOUND]
     }
 
+    boolean skipE21() {
+        return false;
+    }
+
+    boolean skipE22() {
+        return false;
+    }    
+
+    boolean skipE24() {
+        return false;
+    }
+
 
     void 'L16 : Test finalising Model (as not logged in)'() {
         given:
@@ -650,6 +662,9 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     }
 
     void 'E21 : test finding latest version of a Model<T> (as editor)'() {
+        if (skipE21()) {
+            return
+        }
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -720,6 +735,9 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     }
 
     void 'E22 : test finding merge difference of two Model<T> (as editor)'() {
+        if (skipE22()) {
+            return
+        }        
         given:
         String id = getValidFinalisedId()
         loginEditor()
@@ -808,6 +826,9 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     }
 
     void 'E24 : test getting all draft models (as editor)'() {
+        if (skipE24()) {
+            return
+        }        
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
