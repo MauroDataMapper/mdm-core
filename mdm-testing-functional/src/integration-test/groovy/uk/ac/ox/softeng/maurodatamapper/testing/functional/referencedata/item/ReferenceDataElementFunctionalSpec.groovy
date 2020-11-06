@@ -30,14 +30,14 @@ import io.micronaut.http.HttpResponse
 
 /**
  * <pre>
- * Controller: term
- *  |   POST   | /api/terminologies/${terminologyId}/terms  | Action: save
- *  |   GET    | /api/terminologies/${terminologyId}/terms  | Action: index
- *  |  DELETE  | /api/terminologies/${terminologyId}/terms/${id}  | Action: delete
- *  |   PUT    | /api/terminologies/${terminologyId}/terms/${id}  | Action: update
- *  |   GET    | /api/terminologies/${terminologyId}/terms/${id}  | Action: show
+ * Controller: referenceDataElement
+ *  |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements  | Action: save
+ *  |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements  | Action: index
+ *  |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements/${id}  | Action: delete
+ *  |   PUT    | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements/${id}  | Action: update
+ *  |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements/${id}  | Action: show
  * </pre>
- * @see uk.ac.ox.softeng.maurodatamapper.terminology.item.TermController
+ * @see uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementController
  */
 @Integration
 @Slf4j
