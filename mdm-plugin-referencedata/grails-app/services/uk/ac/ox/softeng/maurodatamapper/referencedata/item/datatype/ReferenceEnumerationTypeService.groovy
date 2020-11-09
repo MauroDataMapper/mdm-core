@@ -106,11 +106,6 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     }
 
     @Override
-    ReferenceEnumerationType updateIndexForModelItemInParent(ReferenceEnumerationType modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('ETSXX', 'EnumerationType Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferenceEnumerationType.simpleName
     }

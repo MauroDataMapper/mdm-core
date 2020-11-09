@@ -136,11 +136,6 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
-    ReferenceDataElement updateIndexForModelItemInParent(ReferenceDataElement modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('DESXX', 'DataElement Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferenceDataElement.simpleName
     }

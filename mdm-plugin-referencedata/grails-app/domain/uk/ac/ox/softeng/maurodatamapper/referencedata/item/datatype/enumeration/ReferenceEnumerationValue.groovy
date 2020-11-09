@@ -133,7 +133,11 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
 
     @Override
     void updateIndices(int index) {
-        referenceEnumerationType.updateReferenceEnumerationValueIndexes(this)
+        //TODO the if statement is a work around for a test failure in ReferenceEnumerationValue.MI01
+        //Code for managing indices should be replaced with that made under mc-9218
+        if (referenceEnumerationType) {
+            referenceEnumerationType.updateReferenceEnumerationValueIndexes(this)
+        }
     }
 
     ObjectDiff<ReferenceEnumerationValue> diff(ReferenceEnumerationValue otherEnumerationValue) {

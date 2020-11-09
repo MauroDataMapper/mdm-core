@@ -119,12 +119,6 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
         ReferenceDataValue
     }
 
-//TODO can remove when mc-9218 is merged
-    @Override
-    ReferenceDataValue updateIndexForModelItemInParent(ReferenceDataValue modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('DESXX', 'ReferenceDataValue Ordering')
-    }
-
     @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferenceDataValue.simpleName

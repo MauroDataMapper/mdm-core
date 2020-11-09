@@ -124,11 +124,6 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    ReferenceDataType updateIndexForModelItemInParent(ReferenceDataType modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('DTSXX', 'DataType Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferenceDataType.simpleName
     }

@@ -94,15 +94,6 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
     }
 
     @Override
-    ReferenceEnumerationValue updateIndexForModelItemInParent(ReferenceEnumerationValue referenceEnumerationValue, CatalogueItem parent, int newIndex) {
-        referenceEnumerationValue.index = newIndex
-        if (parent.instanceOf(ReferenceEnumerationType)) {
-            parent.updateReferenceEnumerationValueIndexes(referenceEnumerationValue)
-        } else throw new ApiInternalException('EVS01', 'Non-ReferenceEnumerationType passed as parent to reference enumeration value')
-        referenceEnumerationValue
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferenceEnumerationValue.simpleName
     }

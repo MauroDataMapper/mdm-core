@@ -105,11 +105,6 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     }
 
     @Override
-    ReferencePrimitiveType updateIndexForModelItemInParent(ReferencePrimitiveType modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('ETSXX', 'PrimitiveType Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ReferencePrimitiveType.simpleName
     }
