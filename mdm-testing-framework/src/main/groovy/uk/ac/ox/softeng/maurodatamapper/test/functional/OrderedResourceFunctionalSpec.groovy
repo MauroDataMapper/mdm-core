@@ -24,6 +24,7 @@ import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.grails.datastore.gorm.GormEntity
+import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import java.lang.reflect.ParameterizedType
@@ -58,22 +59,16 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
 
         then: 'They are in the order A, B, C, D, E'
         response.body().items[0].label == 'A'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'B'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'C'
-        response.body().items[2].index == 2
         response.body().items[3].label == 'D'
-        response.body().items[3].index == 3
         response.body().items[4].label == 'E'
-        response.body().items[4].index == 4
 
         when: 'Item E is PUT at the top of the list'
         PUT(eId, getValidLabelJson('E', 0))
 
         then: 'The PUT works'
         response.status == HttpStatus.OK
-        response.body().index == 0
         String fId = response.body().id
 
         when: 'All items are listed'
@@ -81,59 +76,42 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
 
         then: 'They are in the order E, A, B, C, D'
         response.body().items[0].label == 'E'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'A'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'B'
-        response.body().items[2].index == 2
         response.body().items[3].label == 'C'
-        response.body().items[3].index == 3
         response.body().items[4].label == 'D'
-        response.body().items[4].index == 4
 
         when: 'Item E is PUT to the  middle of the list'
         PUT(eId, getValidLabelJson('E', 2))
 
         then: 'The PUT works'
         response.status == HttpStatus.OK
-        response.body().index == 2
 
         when: 'All items are listed'
         GET('')
 
         then: 'They are in the order A, B, E, C, D'
         response.body().items[0].label == 'A'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'B'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'E'
-        response.body().items[2].index == 2
         response.body().items[3].label == 'C'
-        response.body().items[3].index == 3
-        response.body().items[4].label == 'D'
-        response.body().items[4].index == 4           
+        response.body().items[4].label == 'D'           
 
         when: 'Item E is PUT to the  end of the list'
         PUT(eId, getValidLabelJson('E', 4))
 
         then: 'The PUT works'
         response.status == HttpStatus.OK
-        response.body().index == 4
 
         when: 'All items are listed'
         GET('')
 
         then: 'They are in the order A, B, C, D, E'
         response.body().items[0].label == 'A'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'B'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'C'
-        response.body().items[2].index == 2
         response.body().items[3].label == 'D'
-        response.body().items[3].index == 3
-        response.body().items[4].label == 'E'
-        response.body().items[4].index == 4           
+        response.body().items[4].label == 'E'           
 
     }
 
@@ -151,22 +129,16 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
 
         then: 'They are in the order A, B, C, D, E'
         response.body().items[0].label == 'A'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'B'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'C'
-        response.body().items[2].index == 2
         response.body().items[3].label == 'D'
-        response.body().items[3].index == 3
         response.body().items[4].label == 'E'
-        response.body().items[4].index == 4
 
         when: 'Item F is POSTed at the top of the list'
         POST('', getValidLabelJson('F', 0))
         
         then: 'The item is created'
         response.status == HttpStatus.CREATED
-        response.body().index == 0
         String fId = response.body().id
 
         when: 'All items are listed'
@@ -174,24 +146,17 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
 
         then: 'They are in the order F, A, B, C, D, E'
         response.body().items[0].label == 'F'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'A'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'B'
-        response.body().items[2].index == 2
         response.body().items[3].label == 'C'
-        response.body().items[3].index == 3
-        response.body().items[4].label == 'D'
-        response.body().items[4].index == 4   
-        response.body().items[5].label == 'E'
-        response.body().items[5].index == 5               
+        response.body().items[4].label == 'D'   
+        response.body().items[5].label == 'E'               
 
         when: 'Item G is POSTed in the middle of the list'
         POST('', getValidLabelJson('G', 2))
         
         then: 'The item is created'
         response.status == HttpStatus.CREATED
-        response.body().index == 2
         String gId = response.body().id
 
         when: 'All items are listed'
@@ -199,20 +164,12 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
 
         then: 'They are in the order F, A, G, B, C, D, E'
         response.body().items[0].label == 'F'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'A'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'G'
-        response.body().items[2].index == 2
         response.body().items[3].label == 'B'
-        response.body().items[3].index == 3
-        response.body().items[4].label == 'C'
-        response.body().items[4].index == 4   
-        response.body().items[5].label == 'D'
-        response.body().items[5].index == 5   
-        response.body().items[6].label == 'E'
-        response.body().items[6].index == 6         
-        
+        response.body().items[4].label == 'C'   
+        response.body().items[5].label == 'D'   
+        response.body().items[6].label == 'E'         
     }
 
    void 'OR3: Test ordering on update when the index was not specified on insert'() {
@@ -226,90 +183,64 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
         when: 'All items are listed'
         GET('')
 
-        then: 'They are in the order A, B, C, D, E because label sorting is used'
-        response.body().items[0].label == 'A'
-        !response.body().items[0].index
-        response.body().items[1].label == 'B'
-        !response.body().items[1].index
-        response.body().items[2].label == 'C'
-        !response.body().items[2].index
-        response.body().items[3].label == 'D'
-        !response.body().items[3].index
-        response.body().items[4].label == 'E'
-        !response.body().items[4].index
+        then: 'They are in the order C, D, A, E, B because the index is set by order of insert'
+        response.body().items[0].label == 'C'
+        response.body().items[1].label == 'D'
+        response.body().items[2].label == 'A'
+        response.body().items[3].label == 'E'
+        response.body().items[4].label == 'B'
 
         when: 'Item F is POSTed at the top of the list'
         POST('', getValidLabelJson('F', 0))
         
         then: 'The item is created'
         response.status == HttpStatus.CREATED
-        response.body().index == 0
         String fId = response.body().id
 
         when: 'All items are listed'
         GET('')
 
-        then: 'They are in the order F, A, B, C, D, E'
+        then: 'They are in the order F, C, D, A, E, B'
         response.body().items[0].label == 'F'
-        response.body().items[0].index == 0
-        response.body().items[1].label == 'A'
-        !response.body().items[1].index
-        response.body().items[2].label == 'B'
-        !response.body().items[2].index
-        response.body().items[3].label == 'C'
-        !response.body().items[3].index
-        response.body().items[4].label == 'D'
-        !response.body().items[4].index 
-        response.body().items[5].label == 'E'
-        !response.body().items[5].index
+        response.body().items[1].label == 'C'
+        response.body().items[2].label == 'D'
+        response.body().items[3].label == 'A'
+        response.body().items[4].label == 'E'
+        response.body().items[5].label == 'B'
 
-        when: 'Item C is PUT with an index of 1'
-        PUT(cId, getValidLabelJson('C', 1))
+        when: 'Item D is PUT with an index of 1'
+        PUT(dId, getValidLabelJson('D', 1))
 
         then: 'The item is updated'
         response.status == HttpStatus.OK
-        response.body().index == 1
 
         when: 'All items are listed'
         GET('')
 
-        then: 'They are in the order F, C, A, B, D, E'
+        then: 'They are in the order F, D, C, A, E, B'
         response.body().items[0].label == 'F'
-        response.body().items[0].index == 0
-        response.body().items[1].label == 'C'
-        response.body().items[1].index == 1
-        response.body().items[2].label == 'A'
-        !response.body().items[2].index
-        response.body().items[3].label == 'B'
-        !response.body().items[3].index
-        response.body().items[4].label == 'D'
-        !response.body().items[4].index  
-        response.body().items[5].label == 'E'
-        !response.body().items[5].index          
+        response.body().items[1].label == 'D'
+        response.body().items[2].label == 'C'
+        response.body().items[3].label == 'A'
+        response.body().items[4].label == 'E'
+        response.body().items[5].label == 'B'        
 
         when: 'Item B is PUT with an index of 1'
         PUT(bId, getValidLabelJson('B', 1))
 
         then: 'The item is updated'
         response.status == HttpStatus.OK
-        response.body().index == 1
 
         when: 'All items are listed'
         GET('')
 
-        then: 'They are in the order F, B, C, A, D, E'
+        then: 'They are in the order F, B, D, C, A, E'
         response.body().items[0].label == 'F'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'B'
-        response.body().items[1].index == 1
-        response.body().items[2].label == 'C'
-        response.body().items[2].index == 2
-        response.body().items[3].label == 'A'
-        !response.body().items[3].index
-        response.body().items[4].label == 'D'
-        !response.body().items[4].index 
-        response.body().items[5].label == 'E'
-        !response.body().items[5].index              
+        response.body().items[2].label == 'D'
+        response.body().items[3].label == 'C'
+        response.body().items[4].label == 'A'
+        response.body().items[5].label == 'E'            
    }
 
    void 'OR4: Test ordering on update when moving an item from the top to bottom'() {
@@ -323,28 +254,21 @@ abstract class OrderedResourceFunctionalSpec<D extends GormEntity> extends Resou
 
         then: 'They are in the order emptyclass, parent, content'
         response.body().items[0].label == 'emptyclass'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'parent'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'content'
-        response.body().items[2].index == 2
 
         when: 'emptyclass is PUT at the bottom of the list'
         PUT(aId, getValidLabelJson('emptyclass', 2))
         
         then: 'The item is updated'
         response.status == HttpStatus.OK
-        response.body().index == 2
 
         when: 'All items are listed'
         GET('')
 
         then: 'They are in the order parent, content, emptyclass'
         response.body().items[0].label == 'parent'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'content'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'emptyclass'
-        response.body().items[2].index == 2
    }
 }

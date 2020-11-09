@@ -14,10 +14,5 @@ json {
     if (catalogueItem instanceof ModelItem) {
         call('model', (catalogueItem as ModelItem).model.id)
         breadcrumbs g.render((catalogueItem as ModelItem).getBreadcrumbs())
-
-        //ModelItems with an index property should show it to allow ordering in the UI
-        if (catalogueItem["idx"] < Integer.MAX_VALUE) {
-            index catalogueItem["idx"]
-        }
     }
 }

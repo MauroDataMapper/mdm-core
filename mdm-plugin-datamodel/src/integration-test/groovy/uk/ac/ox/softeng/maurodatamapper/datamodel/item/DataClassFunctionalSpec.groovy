@@ -445,13 +445,10 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then: 'All children of parent are listed correctly'
         response.body().items[0].id == child1Id
         response.body().items[0].parentDataClass == bId
-        response.body().items[0].index == 0
         response.body().items[1].id == child2Id
         response.body().items[1].parentDataClass == bId
-        response.body().items[1].index == 1
         response.body().items[2].id == child3Id
         response.body().items[2].parentDataClass == bId
-        response.body().items[2].index == 2
 
         
         when: 'All items are listed'
@@ -459,11 +456,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then: 'They are in the order emptyclass, parent, content'
         response.body().items[0].label == 'emptyclass'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'parent'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'content'
-        response.body().items[2].index == 2
 
         /**
         dataModel            
@@ -479,7 +473,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         
         then: 'The item is updated'
         response.status == HttpStatus.OK
-        response.body().index == 2
 
         when: 'All items are listed'
         GET('')
@@ -487,11 +480,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then: 'They are in the order parent, content, emptyclass'
         log.debug(response.body().toString())
         response.body().items[0].label == 'parent'
-        response.body().items[0].index == 0
         response.body().items[1].label == 'content'
-        response.body().items[1].index == 1
         response.body().items[2].label == 'emptyclass'
-        response.body().items[2].index == 2
 
 
         when: 'All children of parent are listed'
@@ -500,12 +490,9 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then: 'All children of parent are listed correctly'
         response.body().items[0].id == child1Id
         response.body().items[0].parentDataClass == bId
-        response.body().items[0].index == 0
         response.body().items[1].id == child2Id
         response.body().items[1].parentDataClass == bId
-        response.body().items[1].index == 1
         response.body().items[2].id == child3Id
         response.body().items[2].parentDataClass == bId
-        response.body().items[2].index == 2   
    }
 }
