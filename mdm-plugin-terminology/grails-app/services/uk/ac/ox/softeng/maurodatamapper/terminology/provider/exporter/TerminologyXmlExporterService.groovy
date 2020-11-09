@@ -65,4 +65,9 @@ class TerminologyXmlExporterService extends TerminologyExporterProviderService i
     ByteArrayOutputStream exportTerminologies(User currentUser, List<Terminology> terminologies) throws ApiException {
         throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple Terminologies")
     }
+
+    @Override
+    String getExportViewPath() {
+        '/exportModel/exportTerminology'
+    }    
 }
