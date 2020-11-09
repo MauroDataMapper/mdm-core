@@ -90,10 +90,10 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     def beforeValidateModelItem() {
-        //if index is null and this is a thing whose siblings are ordered, add this to the end of the list
-        if (idx == null) {
-            updateIndices()
-        }
+        //Update indices.
+        //If index is null and this is a thing whose siblings are ordered, add this to the end of the list.
+        //If this is a thing which is not ordered, then no action will be taken.
+        updateIndices()
         if (idx == null) idx = Ordered.LOWEST_PRECEDENCE
         buildPath()
         beforeValidateCatalogueItem()

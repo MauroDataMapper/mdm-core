@@ -35,12 +35,21 @@ trait IndexedSiblingAware {
     void updateSiblingIndexes(CatalogueItem updated, Set<CatalogueItem> siblings, int oldIndex = Integer.MAX_VALUE) {
         //If the updated item does not currently have an index then add it to the end of the indexed list
         if (updated.idx == null) {
-            updated.idx = siblings.size() - 1
+            if (siblings) {
+                updated.idx = siblings.size() - 1
+            } else {
+                updated.idx = 0
+            }
             return
         }
 
         //If the update did not actually change the index then do nothing
         if (updated.idx == oldIndex) {
+            return
+        }
+
+        //If there are no siblings then they do not need to be reordered
+        if (siblings == null) {
             return
         }
 
