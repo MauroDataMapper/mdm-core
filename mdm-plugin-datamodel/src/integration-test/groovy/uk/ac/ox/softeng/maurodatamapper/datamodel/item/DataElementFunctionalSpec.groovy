@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.test.functional.OrderedResourceFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -57,7 +57,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class DataElementFunctionalSpec extends ResourceFunctionalSpec<DataElement> {
+class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElement> {
 
     @Shared
     UUID dataModelId
@@ -162,6 +162,26 @@ class DataElementFunctionalSpec extends ResourceFunctionalSpec<DataElement> {
             dataType       : dataTypeId.toString()
         ]
     }
+
+    @Override
+    Map getValidLabelJson(String label, int index = -1) {
+        if (index == -1) {
+        [
+            label          : label,
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString()
+        ]
+        } else {
+        [
+            label          : label,
+            maxMultiplicity: 2,
+            minMultiplicity: 0,
+            dataType       : dataTypeId.toString(),
+            index: index
+        ]
+        }
+    }    
 
     @Override
     Map getInvalidJson() {

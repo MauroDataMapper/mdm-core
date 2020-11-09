@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataClassLabelValidator
@@ -47,7 +48,7 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware {
+class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware, IndexedSiblingAware {
 
     public final static Integer BATCH_SIZE = 1000
 
@@ -127,7 +128,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         } else {
             this.dataClasses == null ? false : !this.dataClasses.isEmpty()
         }
-    }
+    } 
 
     @Override
     def beforeValidate() {
@@ -180,6 +181,14 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     CatalogueItem getParent() {
         parentDataClass ?: dataModel
     }
+
+    /**
+     * A DataClass is indexed within its parent, which is either a DataModel or DataClass
+     */
+    @Override
+    CatalogueItem getIndexedWithin() {
+        getParent()
+    }    
 
     DataClass findDataClass(String label) {
         this.dataClasses.find {it.label == label}
@@ -240,5 +249,23 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     static DetachedCriteria<DataClass> withFilter(DetachedCriteria<DataClass> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
+    }
+
+    /*
+     * Update the index property of the Data Elements which belong to this Data Class, and which are siblings of an updated Data Element
+     *
+     * @param DataElement updated A DataElement, which belongs to this DataClass, and which has been updated.
+     */
+    void updateChildIndexes(DataElement updated, int oldIndex) {
+        updateSiblingIndexes(updated, dataElements, oldIndex)
+    }
+
+    /*
+     * Update the index property of the Data Classes which belong to this Data Class, and which are siblings of an updated Data Class
+     *
+     * @param DataClass updated A DataClass, which belongs to this DataClass, and which has been updated.
+     */
+    void updateChildIndexes(DataClass updated, int oldIndex) {
+        updateSiblingIndexes(updated, dataClasses, oldIndex)
     }
 }

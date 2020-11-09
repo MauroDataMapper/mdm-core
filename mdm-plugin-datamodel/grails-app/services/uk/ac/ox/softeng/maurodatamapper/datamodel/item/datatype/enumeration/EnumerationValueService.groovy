@@ -26,6 +26,9 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 class EnumerationValueService extends ModelItemService<EnumerationValue> {
 
     @Override
@@ -91,15 +94,6 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
     @Override
     Class<EnumerationValue> getModelItemClass() {
         EnumerationValue
-    }
-
-    @Override
-    EnumerationValue updateIndexForModelItemInParent(EnumerationValue enumerationValue, CatalogueItem parent, int newIndex) {
-        enumerationValue.index = newIndex
-        if (parent.instanceOf(EnumerationType)) {
-            parent.updateEnumerationValueIndexes(enumerationValue)
-        } else throw new ApiInternalException('EVS01', 'Non-EnumerationType passed as parent to enumeration value')
-        enumerationValue
     }
 
     @Override

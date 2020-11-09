@@ -132,9 +132,9 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
     }
 
     @Override
-    void updateIndices(int index) {
-        enumerationType.updateEnumerationValueIndexes(this)
-    }
+    EnumerationType getIndexedWithin() {
+        enumerationType
+    }    
 
     ObjectDiff<EnumerationValue> diff(EnumerationValue otherEnumerationValue) {
         catalogueItemDiffBuilder(EnumerationValue, this, otherEnumerationValue)

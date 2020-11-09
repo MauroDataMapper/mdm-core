@@ -15,5 +15,4 @@ json {
         call('model', (catalogueItem as ModelItem).model.id)
         breadcrumbs g.render((catalogueItem as ModelItem).getBreadcrumbs())
     }
-
 }

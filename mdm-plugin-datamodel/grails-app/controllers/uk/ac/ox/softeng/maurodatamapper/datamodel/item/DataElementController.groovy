@@ -98,6 +98,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Override
     protected List<DataElement> listAllReadableResources(Map params) {
+        params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
         if (params.dataTypeId) {
             return dataElementService.findAllByDataTypeId(params.dataTypeId, params)
         }

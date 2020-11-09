@@ -153,11 +153,6 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
-    TermRelationshipType updateIndexForModelItemInParent(TermRelationshipType modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('TRTSXX', 'TermRelationshipType Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         false
     }

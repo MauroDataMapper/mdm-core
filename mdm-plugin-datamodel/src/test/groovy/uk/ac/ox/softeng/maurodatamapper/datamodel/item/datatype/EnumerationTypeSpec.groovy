@@ -32,8 +32,8 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
     def setup() {
         log.debug('Setting up EnumerationTypeSpec unit')
         mockDomain(EnumerationValue)
-        ev1 = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key1', value: 'val1')
-        ev2 = new EnumerationValue(createdByUser: admin, label: 'ev2', key: 'key2', value: 'val2')
+        ev1 = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key1', value: 'val1', index: 0)
+        ev2 = new EnumerationValue(createdByUser: admin, label: 'ev2', key: 'key2', value: 'val2', index: 1)
     }
 
     @Override
@@ -104,7 +104,7 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
         item.enumerationValues.sort()[2].value == 'val2'
     }
 
-    void 'test updating enumeration values with index 2'() {
+    void 'test updating enumeration values with index 1'() {
         given:
         setValidDomainValues()
 

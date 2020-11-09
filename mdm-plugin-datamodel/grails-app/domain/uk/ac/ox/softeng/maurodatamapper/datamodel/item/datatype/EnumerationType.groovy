@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -29,7 +30,7 @@ import groovy.util.logging.Slf4j
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class EnumerationType extends DataType<EnumerationType> {
+class EnumerationType extends DataType<EnumerationType> implements IndexedSiblingAware {
 
     static hasMany = [
         enumerationValues: EnumerationValue
@@ -94,42 +95,18 @@ class EnumerationType extends DataType<EnumerationType> {
             valueToAdd.enumerationType = this
             addTo('enumerationValues', valueToAdd)
         }
-        updateEnumerationValueIndexes(valueToAdd)
+        updateChildIndexes(valueToAdd)
         this
     }
 
-    void updateEnumerationValueIndexes(EnumerationValue updated) {
-        List<EnumerationValue> sorted = enumerationValues.sort()
-        int updatedIndex = updated.getOrder()
-        int maxIndex = sorted.size() - 1
-        sorted.eachWithIndex {EnumerationValue ev, int i ->
-            //EV is the updated one, skipping any changes
-            if (ev == updated) {
-                // Make sure updated value is not ordered larger than the actual size of the collection
-                if (ev.getOrder() > maxIndex) {
-                    ev.idx = maxIndex
-                }
-                return
-            }
 
-            // Make sure all values have trackChanges turned on
-            if (!ev.isDirty()) ev.trackChanges()
-
-            log.trace('Before >> EV {} has order {} sorted to {}', ev.key, ev.order)
-            // Reorder the index which matches the one we just added
-            if (i == updatedIndex) {
-                if (i == maxIndex) {
-                    // If at end of list then move the current value back one to ensure the updated value is at then end of the list
-                    ev.idx = i - 1
-                } else {
-                    // Otherwise alphabetical sorting has placed the elements in the wrong order so shift the value by 1
-                    ev.idx = i + 1
-                }
-            } else if (ev.getOrder() != i) {
-                // Sorting has got the order right so make sure the idx is set correctly
-                ev.idx = i
-            }
-            log.trace('After >> EV {} has order {} (Dirty: {})', ev.key, i, ev.isDirty())
-        }
+    /*
+     * Update the index property of the EnumerationValues which belong to this EnumerationType, and which are siblings of an updated EnumerationValue
+     *
+     * @param EnumerationValue updated An EnumerationValue, which belongs to this EnumerationType, and which has been updated.
+     * @param int oldIndex             The index of a value before it was updated.
+     */
+    void updateChildIndexes(EnumerationValue updated, int oldIndex = Integer.MAX_VALUE) {
+        updateSiblingIndexes(updated, enumerationValues, oldIndex)
     }
 }

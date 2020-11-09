@@ -229,5 +229,11 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         criteria
     }
 
-
+    /**
+     * A DataElement is indexed within the DataClass to which it belongs
+     */
+    @Override
+    DataClass getIndexedWithin() {
+        dataClass
+    }
 }

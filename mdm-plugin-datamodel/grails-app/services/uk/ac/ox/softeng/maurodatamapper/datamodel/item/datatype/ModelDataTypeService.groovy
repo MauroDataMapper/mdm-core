@@ -102,11 +102,6 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> {
     }
 
     @Override
-    ModelDataType updateIndexForModelItemInParent(ModelDataType modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('ETSXX', 'ModelDataType Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ModelDataType.simpleName
     }

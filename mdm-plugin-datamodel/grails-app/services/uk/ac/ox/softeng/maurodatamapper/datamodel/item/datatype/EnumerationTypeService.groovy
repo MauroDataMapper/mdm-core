@@ -106,11 +106,6 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
     }
 
     @Override
-    EnumerationType updateIndexForModelItemInParent(EnumerationType modelItem, CatalogueItem parent, int newIndex) {
-        throw new ApiNotYetImplementedException('ETSXX', 'EnumerationType Ordering')
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == EnumerationType.simpleName
     }

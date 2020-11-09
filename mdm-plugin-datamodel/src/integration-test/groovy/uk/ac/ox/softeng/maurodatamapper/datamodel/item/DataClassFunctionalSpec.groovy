@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.test.functional.OrderedResourceFunctionalSpec
 
 import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
@@ -58,7 +58,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
+class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
     @Shared
     UUID dataModelId
@@ -411,4 +411,88 @@ class DataClassFunctionalSpec extends ResourceFunctionalSpec<DataClass> {
         DELETE("dataModels/${importedId}?permanent=true", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
     }
+
+    void 'OR5: Test ordering when there are parent and child data classes, and that the children of a child are ordered separately to children'() {
+        /**
+        dataModel
+            -> dataClass "emptyclass" @ 0
+            -> dataClass "parent" @ 1
+            -> dataClass "content" @ 2
+         */
+        given: 'Three resources with indices 0, 1 and 2'
+        String aId = createNewItem(getValidLabelJson('emptyclass', 0))
+        String bId = createNewItem(getValidLabelJson('parent', 1))
+        String cId = createNewItem(getValidLabelJson('content', 2))
+
+        /**
+        dataModel
+            -> dataClass "emptyclass" @ 0
+            -> dataClass "parent" @ 1
+                 -> dataClass "child1" @ 0
+                 -> dataClass "child2" @ 1
+                 -> dataClass "child3" @ 2
+            -> dataClass "content" @ 2
+         */
+        when: 'Three children are added to parent and are then listed'
+        POST("${bId}/dataClasses", [label: "child1", index: 0])
+        String child1Id = response.body().id
+        POST("${bId}/dataClasses", [label: "child2", index: 1])
+        String child2Id = response.body().id
+        POST("${bId}/dataClasses", [label: "child3", index: 2])
+        String child3Id = response.body().id
+        GET("${bId}/dataClasses")      
+
+        then: 'All children of parent are listed correctly'
+        response.body().items[0].id == child1Id
+        response.body().items[0].parentDataClass == bId
+        response.body().items[1].id == child2Id
+        response.body().items[1].parentDataClass == bId
+        response.body().items[2].id == child3Id
+        response.body().items[2].parentDataClass == bId
+
+        
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order emptyclass, parent, content'
+        response.body().items[0].label == 'emptyclass'
+        response.body().items[1].label == 'parent'
+        response.body().items[2].label == 'content'
+
+        /**
+        dataModel            
+            -> dataClass "parent" @ 0
+                 -> dataClass "child1" @ 0
+                 -> dataClass "child2" @ 1
+                 -> dataClass "child3" @ 2
+            -> dataClass "content" @ 1
+            -> dataClass "emptyclass" @ 2
+         */
+        when: 'emptyclass is PUT at the bottom of the list'
+        PUT(aId, getValidLabelJson('emptyclass', 2))
+        
+        then: 'The item is updated'
+        response.status == HttpStatus.OK
+
+        when: 'All items are listed'
+        GET('')
+
+        then: 'They are in the order parent, content, emptyclass'
+        log.debug(response.body().toString())
+        response.body().items[0].label == 'parent'
+        response.body().items[1].label == 'content'
+        response.body().items[2].label == 'emptyclass'
+
+
+        when: 'All children of parent are listed'
+        GET("${bId}/dataClasses")
+
+        then: 'All children of parent are listed correctly'
+        response.body().items[0].id == child1Id
+        response.body().items[0].parentDataClass == bId
+        response.body().items[1].id == child2Id
+        response.body().items[1].parentDataClass == bId
+        response.body().items[2].id == child3Id
+        response.body().items[2].parentDataClass == bId
+   }
 }

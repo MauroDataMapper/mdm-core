@@ -65,6 +65,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
             assert response.status() == HttpStatus.OK
             def items = response.body().items
             items.each { i ->
+                sleep (20) //TODO Workaround to reduce the risk of StaleObjectException 
                 DELETE(getDeleteEndpoint(i.id))
                 assert response.status() in [HttpStatus.NO_CONTENT, HttpStatus.NOT_FOUND]
             }

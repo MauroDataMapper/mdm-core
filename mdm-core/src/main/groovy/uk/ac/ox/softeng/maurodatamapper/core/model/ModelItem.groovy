@@ -30,12 +30,14 @@ import org.grails.datastore.gorm.GormEntity
 import org.hibernate.search.annotations.Field
 import org.springframework.core.Ordered
 
+import groovy.util.logging.Slf4j
 /**
  * Base class for all items which are contained inside a model. These items are securable by the model they are contained in.
  * D is always the class extending ModelItem, however due to compilation issues we have to use Diffable as the constraint
  * @since 04/11/2019
  */
 @SelfType(GormEntity)
+@Slf4j
 trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> implements PathAware, Ordered, Comparable<D> {
 
     abstract T getModel()
@@ -48,14 +50,26 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
         idx != null ? idx : Ordered.LOWEST_PRECEDENCE
     }
 
+    /**
+     * On setting the index, update the indices of siblings. 
+     */
     void setIndex(int index) {
+        int oldIndex = idx != null ? idx : Integer.MAX_VALUE
         idx = index
         markDirty('idx')
-        if (ident()) updateIndices(index)
+        //No ID also means no parent, which won't work.
+        if (ident()) updateIndices(oldIndex)
     }
 
-    void updateIndices(int index) {
-        // No-op
+    void updateIndices(int oldIndex = Integer.MAX_VALUE) {
+        CatalogueItem indexedWithin = getIndexedWithin()
+        if (indexedWithin) {
+            indexedWithin.updateChildIndexes(this, oldIndex)
+        }
+    }
+
+    CatalogueItem getIndexedWithin() {
+        //no-op
     }
 
     List<Breadcrumb> getBreadcrumbs() {
@@ -76,6 +90,10 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     }
 
     def beforeValidateModelItem() {
+        //Update indices.
+        //If index is null and this is a thing whose siblings are ordered, add this to the end of the list.
+        //If this is a thing which is not ordered, then no action will be taken.
+        updateIndices()
         if (idx == null) idx = Ordered.LOWEST_PRECEDENCE
         buildPath()
         beforeValidateCatalogueItem()

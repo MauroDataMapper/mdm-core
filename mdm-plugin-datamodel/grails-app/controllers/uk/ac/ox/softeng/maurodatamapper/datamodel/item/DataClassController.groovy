@@ -125,6 +125,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     protected List<DataClass> listAllReadableResources(Map params) {
+        params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
         if (params.dataClassId) {
             return dataClassService.findAllByParentDataClassId(params.dataClassId, params)
         }

@@ -124,6 +124,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
 
     @Override
     protected List<DataType> listAllReadableResources(Map params) {
+        params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
         if (params.search) {
             return dataTypeService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(params.dataModelId, params.search, params)
         }
