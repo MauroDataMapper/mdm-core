@@ -82,8 +82,9 @@ pipeline {
             }
         }
 
-        //        stage('Parallel Unit Test') {
-        //            parallel {
+        /*
+        Unit Tests
+         */
         stage('Unit Test: mdm-common') {
             steps {
                 sh "./gradlew :mdm-common:test"
@@ -194,11 +195,24 @@ pipeline {
                 }
             }
         }
-        //            }
-        //        }
+        stage('Unit Test: mdm-plugin-referencedata') {
+            steps {
+                dir('mdm-plugin-referencedata') {
+                    sh "./grailsw test-app -unit"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-plugin-referencedata') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+                    }
+                }
+            }
+        }
 
-        //        stage('Parallel Integration Test') {
-        //            parallel {
+        /*
+        Integration Tests
+         */
         stage('Integration Test: mdm-core') {
             steps {
                 dir('mdm-core') {
@@ -241,7 +255,7 @@ pipeline {
                 }
             }
         }
-        /*
+
         stage('Integration Test: mdm-plugin-terminology') {
             steps {
                 dir('mdm-plugin-terminology') {
@@ -256,7 +270,7 @@ pipeline {
                 }
             }
         }
-        */
+
         stage('Integration Test: mdm-security') {
             steps {
                 dir('mdm-security') {
@@ -285,11 +299,24 @@ pipeline {
                 }
             }
         }
-        //    }
-        //}
+        stage('Integration Test: mdm-plugin-referencedata') {
+            steps {
+                dir('mdm-plugin-referencedata') {
+                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-plugin-referencedata') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
+                    }
+                }
+            }
+        }
 
-        //        stage('Parallel Functional Test 1') {
-        //            parallel {
+        /*
+        Functional Tests
+         */
         stage('Functional Test: mdm-core') {
             steps {
                 dir('mdm-core') {
@@ -318,11 +345,6 @@ pipeline {
                 }
             }
         }
-        //            }
-        //        }
-
-        //        stage('Parallel Functional Test 2') {
-        //            parallel {
         stage('Functional Test: mdm-plugin-datamodel') {
             steps {
                 dir('mdm-plugin-datamodel') {
@@ -365,11 +387,6 @@ pipeline {
                 }
             }
         }
-        //            }
-        //        }
-
-        //        stage('Parallel Functional Test 3') {
-        //            parallel {
         stage('Functional Test: mdm-plugin-dataflow') {
             steps {
                 dir('mdm-plugin-dataflow') {
@@ -384,11 +401,24 @@ pipeline {
                 }
             }
         }
-        //            }
-        //        }
+        stage('Functional Test: mdm-plugin-referencedata') {
+            steps {
+                dir('mdm-plugin-referencedata') {
+                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-plugin-referencedata') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
+                    }
+                }
+            }
+        }
 
-        //        stage('E2E Parallel Functional Test') {
-        //            parallel {
+        /*
+        E2E Functional Tests
+        */
         stage('Core Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
@@ -473,6 +503,20 @@ pipeline {
                 }
             }
         }
+        stage('ReferenceData Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=referencedata test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/dataflow/*.xml'
+                    }
+                }
+            }
+        }
         stage('Trouble Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
@@ -487,8 +531,6 @@ pipeline {
                 }
             }
         }
-        //            }
-        //        }
 
         stage('Deploy to Artifactory') {
             when {
