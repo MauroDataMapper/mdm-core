@@ -42,7 +42,6 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLab
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
-import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
@@ -104,14 +103,12 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     }
 
     DataModel() {
+        initialiseVersioning()
         modelType = DataModelType.DATA_STANDARD.label
-        documentationVersion = Version.from('1')
-        finalised = false
         deleted = false
         readableByAuthenticatedUsers = false
         readableByEveryone = false
         breadcrumbTree = new BreadcrumbTree(this)
-        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override
@@ -381,6 +378,10 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
 
     static DetachedCriteria<DataModel> byLabelAndNotFinalised(String label) {
         byLabel(label).eq('finalised', false)
+    }
+
+    static DetachedCriteria<DataModel> byLabelAndNotFinalisedAndIdNotEqual(String label, UUID id) {
+        byLabelAndNotFinalised().ne('id', id)
     }
 
     static DetachedCriteria<DataModel> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {

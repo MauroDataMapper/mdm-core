@@ -33,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLab
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
@@ -86,13 +85,11 @@ class CodeSet implements Model<CodeSet> {
     }
 
     CodeSet() {
+        initialiseVersioning()
         modelType = CodeSet.simpleName
-        documentationVersion = Version.from('1')
-        finalised = false
         deleted = false
         readableByAuthenticatedUsers = false
         readableByEveryone = false
-        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override

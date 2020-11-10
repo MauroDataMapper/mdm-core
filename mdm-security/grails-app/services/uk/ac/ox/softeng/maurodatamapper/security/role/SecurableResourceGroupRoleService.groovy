@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
@@ -136,7 +136,7 @@ class SecurableResourceGroupRoleService {
                 // SQL migration has taken care of finalised models, we need to take care of branches
                 modelRoles.each { role ->
                     Model model = service.get(role.securableResourceId) as Model
-                    role.canFinaliseModel = model.branchName == ModelConstraints.DEFAULT_BRANCH_NAME
+                    role.canFinaliseModel = model.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
                     role.save(validate: false)
                 }
             }

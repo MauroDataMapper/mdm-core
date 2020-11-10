@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
@@ -31,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
 @Slf4j
-class FolderService implements ContainerService<Folder> {
+class FolderService extends ContainerService<Folder> {
 
     @Autowired(required = false)
     List<ModelService> modelServices
@@ -77,6 +76,27 @@ class FolderService implements ContainerService<Folder> {
     }
 
     @Override
+    Folder findDomainByLabel(String label) {
+        Folder.byNoParentFolder().eq('label', label).get()
+    }
+
+    @Override
+    Folder findDomainByParentIdAndLabel(UUID parentId, String label) {
+        Folder.byParentFolderIdAndLabel(parentId, label.trim()).get()
+    }
+
+    @Override
+    List<Folder> findAllByParentId(UUID parentId, Map pagination = [:]) {
+        Folder.byParentFolderId(parentId).list(pagination)
+    }
+
+    @Override
+    DetachedCriteria<Folder> getCriteriaByParent(Folder folder) {
+        if (folder.parentFolder) return Folder.byParentFolderId(folder.parentFolder.id)
+        return Folder.byNoParentFolder()
+    }
+
+    @Override
     List<Folder> findAllReadableByEveryone() {
         Folder.findAllByReadableByEveryone(true)
     }
@@ -88,7 +108,7 @@ class FolderService implements ContainerService<Folder> {
 
     Folder get(Serializable id) {
         if (Utils.toUuid(id)) return Folder.get(id)
-        if (id instanceof String) return findByFolderPath(id)
+        if (id instanceof String) return findByPath(id)
         null
     }
 
@@ -128,54 +148,6 @@ class FolderService implements ContainerService<Folder> {
         }
     }
 
-    Folder findFolder(String label) {
-        Folder.byNoParentFolder().eq('label', label).get()
-    }
-
-    Folder findFolder(Folder parentFolder, String label) {
-        parentFolder.childFolders.find { it.label == label.trim() }
-    }
-
-    Folder findByFolderPath(String folderPath) {
-        List<String> paths
-        if (folderPath.contains('/')) paths = folderPath.split('/').findAll() ?: []
-        else paths = folderPath.split('\\|').findAll() ?: []
-        findByFolderPath(paths)
-    }
-
-    Folder findByFolderPath(List<String> pathLabels) {
-        if (!pathLabels) return null
-        if (pathLabels.size() == 1) {
-            return findFolder(pathLabels[0])
-        }
-
-        String parentLabel = pathLabels.remove(0)
-        Folder parent = findFolder(parentLabel)
-        findByFolderPath(parent, pathLabels)
-    }
-
-    Folder findByFolderPath(Folder parentFolder, List<String> pathLabels) {
-        if (pathLabels.size() == 1) {
-            return findFolder(parentFolder, pathLabels[0])
-        }
-
-        String parentLabel = pathLabels.remove(0)
-        Folder parent = findFolder(parentFolder, parentLabel)
-        findByFolderPath(parent, pathLabels)
-    }
-
-    List<Folder> findAllByParentFolderId(UUID parentFolderId, Map pagination = [:]) {
-        Folder.byParentFolderId(parentFolderId).list(pagination)
-    }
-
-    List<Folder> getFullPathFolders(Folder folder) {
-        List<UUID> ids = folder.path.split('/').findAll().collect { Utils.toUuid(it) }
-        List<Folder> folders = []
-        if (ids) folders += Folder.getAll(ids)
-        folders.add(folder)
-        folders
-    }
-
     /**
      * Find all resources by the defined user security policy manager. If none provided then assume no security policy in place in which case
      * everything is public.
@@ -189,27 +161,41 @@ class FolderService implements ContainerService<Folder> {
     }
 
     void generateDefaultFolderLabel(Folder folder) {
-        DetachedCriteria<Folder> criteria
-        if (folder.parentFolder) criteria = Folder.byParentFolderId(folder.parentFolder.id)
-        else criteria = Folder.byNoParentFolder()
-
-        List<Folder> siblings = criteria
-            .like('label', "${Folder.DEFAULT_FOLDER_LABEL}%")
-            .sort('label')
-            .list()
-
-        if (!siblings) {
-            folder.label = Folder.DEFAULT_FOLDER_LABEL
-            return
-        }
-
-        String lastLabel = siblings.last().label
-        int lastNum
-        lastLabel.find(/${Folder.DEFAULT_FOLDER_LABEL}( \((\d+)\))?/) {
-            lastNum = it[1] ? it[2].toInteger() : 0
-        }
-
-        folder.label = "${Folder.DEFAULT_FOLDER_LABEL} (${++lastNum})"
+        generateDefaultLabel(folder, Folder.DEFAULT_FOLDER_LABEL)
     }
 
+    @Deprecated
+    Folder findFolder(String label) {
+        findDomainByLabel(label)
+    }
+
+    @Deprecated
+    Folder findFolder(Folder parentFolder, String label) {
+        findDomainByParentIdAndLabel(parentFolder.id, label)
+    }
+
+    @Deprecated
+    Folder findByFolderPath(String folderPath) {
+        findByPath(folderPath)
+    }
+
+    @Deprecated
+    Folder findByFolderPath(List<String> pathLabels) {
+        findByPath(pathLabels)
+    }
+
+    @Deprecated
+    Folder findByFolderPath(Folder parentFolder, List<String> pathLabels) {
+        findByPath(parentFolder, pathLabels)
+    }
+
+    @Deprecated
+    List<Folder> findAllByParentFolderId(UUID parentFolderId, Map pagination = [:]) {
+        findAllByParentId(parentFolderId, pagination)
+    }
+
+    @Deprecated
+    List<Folder> getFullPathFolders(Folder folder) {
+        getFullPathDomains(folder)
+    }
 }

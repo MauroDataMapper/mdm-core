@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.search.StandardSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
@@ -109,7 +110,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         readableByAuthenticatedUsers = false
         readableByEveryone = false
         breadcrumbTree = new BreadcrumbTree(this)
-        branchName = ModelConstraints.DEFAULT_BRANCH_NAME
+        branchName = VersionAwareConstraints.DEFAULT_BRANCH_NAME
     }
 
     @Override

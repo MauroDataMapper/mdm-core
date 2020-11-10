@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.policy
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -789,16 +789,16 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         modelServices.each {modelService ->
 
             List<Model> models = modelService.findAllByContainerId(containerId) as List<Model>
-            models.each {m ->
+            models.each { Model m ->
                 virtualSecurableResourceGroupRoles.addAll(
-                    accessRoles.collect {igr ->
+                    accessRoles.collect { igr ->
                         new VirtualSecurableResourceGroupRole()
                             .forSecurableResource(m)
                             .withAccessLevel(igr)
                             .definedByGroup(userGroup)
                             .definedByAccessLevel(appliedGroupRole)
                             .asFinalisedModel(m.finalised)
-                            .withModelCanBeFinalised(m.branchName == ModelConstraints.DEFAULT_BRANCH_NAME)
+                            .withModelCanBeFinalised(m.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME)
                     }
                 )
             }

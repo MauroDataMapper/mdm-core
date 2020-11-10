@@ -96,6 +96,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
     @Override
     void cleanUpData() {
         if (dataModelId) {
+            sleep(20)
             GET('')
             assert response.status() == OK
             def items = response.body().items
@@ -103,6 +104,7 @@ class EnumerationValueFunctionalSpec extends ResourceFunctionalSpec<EnumerationV
                 if (i.key != 'A') {
                     DELETE(getDeleteEndpoint(i.id))
                     assert response.status() == HttpStatus.NO_CONTENT
+                    sleep(20)
                 }
             }
         }

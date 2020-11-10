@@ -33,6 +33,8 @@ class FolderInterceptor extends SecurableResourceInterceptor {
     void checkIds() {
         Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'folderId')
+        Utils.toUuid(params, 'versionedFolderId')
+        params.folderId = params.folderId ?: params.versionedFolderId
     }
 
     @Override
@@ -44,8 +46,8 @@ class FolderInterceptor extends SecurableResourceInterceptor {
         securableResourceChecks()
 
         if (actionName == 'search') {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.folderId) ?:
-                   notFound(Folder, params.folderId.toString())
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, getId()) ?:
+                   notFound(Folder, getId())
         }
 
         checkActionAuthorisationOnSecuredResource(Folder, getId(), true)

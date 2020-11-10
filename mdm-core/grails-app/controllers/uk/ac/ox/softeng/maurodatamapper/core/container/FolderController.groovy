@@ -42,6 +42,20 @@ class FolderController extends EditLoggingController<Folder> {
         super(Folder)
     }
 
+    @Override
+    def index(Integer max) {
+        params.max = Math.min(max ?: 10, 100)
+        respond folderList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager
+    }
+
+    @Override
+    def show() {
+        def resource = queryForResource(params.id)
+        resource ? respond(folder: resource, userSecurityPolicyManager: currentUserSecurityPolicyManager) : notFound(params.id)
+
+    }
+
+
     def search(SearchParams searchParams) {
 
         if (searchParams.hasErrors()) {
@@ -161,7 +175,7 @@ class FolderController extends EditLoggingController<Folder> {
     @Override
     protected List<Folder> listAllReadableResources(Map params) {
         if (params.folderId) {
-            return folderService.findAllByParentFolderId(params.folderId, params)
+            return folderService.findAllByParentId(params.folderId, params)
         }
 
         folderService.findAllByUser(currentUserSecurityPolicyManager, params)

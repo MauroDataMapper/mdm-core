@@ -22,16 +22,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
-import uk.ac.ox.softeng.maurodatamapper.util.Version
 
-import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
 import org.grails.datastore.gorm.query.criteria.AbstractDetachedCriteria
-
-import java.time.OffsetDateTime
 
 /**
  * Base class for all models which are contained inside a folder. These are securable resources.
@@ -39,25 +36,16 @@ import java.time.OffsetDateTime
  * @since 04/11/2019
  */
 @SelfType(GormEntity)
-trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableResource, Comparable<D>, VersionLinkAware {
+trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableResource, Comparable<D>, VersionLinkAware, VersionAware {
 
     Folder folder
     Boolean deleted
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers
-    Boolean finalised
     String modelType
     String author
     String organisation
-    OffsetDateTime dateFinalised
     Authority authority
-
-    @BindUsing({obj, source -> Version.from(source['documentationVersion'] as String)})
-    Version documentationVersion
-
-    @BindUsing({obj, source -> Version.from(source['modelVersion'] as String)})
-    Version modelVersion
-    String branchName
 
     static belongsTo = Authority
 

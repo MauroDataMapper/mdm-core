@@ -17,25 +17,19 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.path
 
-
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 
-import java.net.URLEncoder
-
-import grails.gorm.transactions.Transactional
-
-import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * <pre>
@@ -57,9 +51,9 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 @Slf4j
 class PathFunctionalSpec extends FunctionalSpec {
 
-    String SIMPLE_TERMINOLOGY_NAME = uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels.SIMPLE_TERMINOLOGY_NAME
-    String COMPLEX_TERMINOLOGY_NAME = uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels.COMPLEX_TERMINOLOGY_NAME
-    String SIMPLE_CODESET_NAME = uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels.SIMPLE_CODESET_NAME
+    String SIMPLE_TERMINOLOGY_NAME = BootstrapModels.SIMPLE_TERMINOLOGY_NAME
+    String COMPLEX_TERMINOLOGY_NAME = BootstrapModels.COMPLEX_TERMINOLOGY_NAME
+    String SIMPLE_CODESET_NAME = BootstrapModels.SIMPLE_CODESET_NAME
     String COMPLEX_DATAMODEL_NAME = uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels.COMPLEX_DATAMODEL_NAME
     String PARENT_DATACLASS_NAME = 'parent'
     String CHILD_DATACLASS_NAME = 'child'
@@ -120,7 +114,7 @@ class PathFunctionalSpec extends FunctionalSpec {
 
     String makePath(List<String> nodes) {
         //java.net.URLEncoder.encode turns spaces into +, and these are decoded by grails as +. So do a replace.
-        java.net.URLEncoder.encode(String.join("|", nodes)).replace("+", "%20")
+        URLEncoder.encode(String.join("|", nodes)).replace("+", "%20")
     }
 
     String getNotFoundPathJson() {
@@ -201,7 +195,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "label": "Mauro Data Mapper"
           }          
         }'''
-    }    
+    }
 
     String getExpectedSimpleCodeSetJson() {
         return '''{
@@ -238,10 +232,10 @@ class PathFunctionalSpec extends FunctionalSpec {
             "label": "Mauro Data Mapper"
           }          
         }'''
-    }    
+    }
 
     String getExpectedSimpleTermJson() {
-         return '''{
+        return '''{
           "id": "${json-unit.matches:id}",
           "domainType": "Term",
           "label": "STT01: Simple Test Term 01",
@@ -352,7 +346,7 @@ class PathFunctionalSpec extends FunctionalSpec {
             "lastUpdated": "${json-unit.matches:offsetDateTime}",
             "parentDataClass": "${json-unit.matches:id}"   
         }'''
-    }    
+    }
 
     String getExpectedDataElementJson() {
         return '''{

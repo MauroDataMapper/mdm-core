@@ -60,6 +60,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         if (id) {
             DELETE(getDeleteEndpoint(id))
             assert response.status() == HttpStatus.NO_CONTENT
+            sleep(20)
         } else {
             GET('')
             assert response.status() == HttpStatus.OK
@@ -68,6 +69,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
                 sleep (20) //TODO Workaround to reduce the risk of StaleObjectException 
                 DELETE(getDeleteEndpoint(i.id))
                 assert response.status() in [HttpStatus.NO_CONTENT, HttpStatus.NOT_FOUND]
+                sleep(20)
             }
         }
     }

@@ -17,7 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 /**
  * @since 07/01/2020
@@ -27,6 +30,11 @@ class ContainerTreeItem extends TreeItem {
     Boolean deleted
     String containerType
     UUID containerId
+    Boolean finalised
+    Version documentationVersion
+    Version modelVersion
+    String branchName
+    boolean versionAware
 
     ContainerTreeItem(Container container) {
         super(container, container.id, container.label, container.domainType, null)
@@ -34,6 +42,14 @@ class ContainerTreeItem extends TreeItem {
         deleted = container.deleted
         containerType = container.domainType
         renderChildren = true
+        versionAware = false
+        if (Utils.parentClassIsAssignableFromChild(VersionedFolder, container.class)) {
+            finalised = container.finalised
+            documentationVersion = container.documentationVersion
+            modelVersion = container.modelVersion
+            branchName = container.branchName
+            versionAware = true
+        }
     }
 
     boolean isEmptyContainerTree() {

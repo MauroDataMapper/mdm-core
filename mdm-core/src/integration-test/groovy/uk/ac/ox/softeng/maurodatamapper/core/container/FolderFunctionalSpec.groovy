@@ -92,7 +92,6 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 }'''
     }
 
-    @Rollback
     void 'Test the save action fails when using the same label persists an instance'() {
         given:
         List<String> createdIds = []
@@ -103,7 +102,6 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         then: 'The response is correct'
         response.status == HttpStatus.CREATED
         response.body().id
-        Folder.count() == 1
 
         when: 'The save action is executed with the same valid data'
         createdIds << response.body().id
@@ -111,12 +109,10 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         then: 'The response is correct as cannot have 2 folders with the same name'
         response.status == HttpStatus.UNPROCESSABLE_ENTITY
-        Folder.count() == 1
 
         cleanup:
-        createdIds.each {id ->
-            DELETE(getDeleteEndpoint(id))
-            assert response.status() == HttpStatus.NO_CONTENT
+        createdIds.each { id ->
+            cleanUpData(id)
         }
     }
 
@@ -152,8 +148,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 }''')
 
         cleanup:
-        DELETE(getDeleteEndpoint(id))
-        assert response.status() == HttpStatus.NO_CONTENT
+        cleanUpData(id)
     }
 
     void 'Test the permanent delete action correctly deletes an instance'() {
@@ -178,7 +173,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         response.status == HttpStatus.NO_CONTENT
     }
 
-    void 'Test the permanent delete action correctly deletes an instance with folder inside'() {
+    void 'Test saving a folder inside a folder and the permanent delete action correctly deletes'() {
         when: 'The save action is executed with valid data'
         POST('', validJson)
 
@@ -199,6 +194,69 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
 
         then: 'The response is correct'
         response.status == HttpStatus.NO_CONTENT
+
+        when:
+        GET('')
+
+        then:
+        verifyResponse(HttpStatus.OK, response)
+        responseBody().count == 0
+    }
+
+    void 'Test saving a versioned folder inside a folder and the permanent delete action correctly deletes'() {
+        when: 'The save action is executed with valid data'
+        POST('', validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'The save action is executed with valid data'
+        String id = responseBody().id
+        POST("$id/versionedFolders", validJson)
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        response.body().id
+
+        when: 'When the delete action is executed on an existing instance'
+        DELETE("${id}?permanent=true")
+
+        then: 'The response is correct'
+        response.status == HttpStatus.NO_CONTENT
+
+        when:
+        GET('')
+
+        then:
+        verifyResponse(HttpStatus.OK, response)
+        responseBody().count == 0
+    }
+
+    void 'test full indexing includes versioned folders'() {
+        given:
+        POST('', validJson)
+        verifyResponse(HttpStatus.CREATED, response)
+        String id = response.body().id
+        POST("$id/versionedFolders", validJson)
+        verifyResponse(HttpStatus.CREATED, response)
+
+        when:
+        GET("$id/folders")
+
+        then:
+        verifyResponse(HttpStatus.OK, response)
+        responseBody().count == 1
+
+        when:
+        GET('')
+
+        then:
+        verifyResponse(HttpStatus.OK, response)
+        responseBody().count == 2
+
+        cleanup:
+        cleanUpData(id)
     }
 
     void 'test searching for label "test" in empty folder'() {
@@ -215,8 +273,7 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         responseBody().items.isEmpty()
 
         cleanup:
-        DELETE(getDeleteEndpoint(id))
-        assert response.status() == HttpStatus.NO_CONTENT
+        cleanUpData(id)
     }
 
     void 'test searching for label "test" in empty folder using POST'() {
@@ -233,7 +290,6 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         responseBody().items.isEmpty()
 
         cleanup:
-        DELETE(getDeleteEndpoint(id))
-        assert response.status() == HttpStatus.NO_CONTENT
+        cleanUpData(id)
     }
 }

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.term
 
-
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
@@ -25,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrat
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.INTEGRATION_TEST
 
@@ -35,7 +33,6 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 class TermServiceSpec extends BaseTerminologyIntegrationSpec {
 
     TermService termService
-    SessionFactory sessionFactory
 
     @Override
     void setupDomainData() {

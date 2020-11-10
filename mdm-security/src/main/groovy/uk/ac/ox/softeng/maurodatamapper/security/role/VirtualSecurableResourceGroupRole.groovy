@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -29,6 +31,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     private GroupRole groupRole
     private String domainType
+    private String alternateDomainType
     private UUID domainId
     private GroupRole appliedGroupRole
     private UserGroup userGroup
@@ -52,16 +55,17 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     VirtualSecurableResourceGroupRole forSecurableResource(String domainType, UUID domainId) {
         this.domainType = domainType
         this.domainId = domainId
+        if (domainType == VersionedFolder.simpleName) alternateDomainType = Folder.simpleName
         this
     }
 
     VirtualSecurableResourceGroupRole forSecurableResource(SecurableResource securableResource) {
 
-        if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            Model model = (securableResource as Model)
+        if (Utils.parentClassIsAssignableFromChild(VersionAware, securableResource.class)) {
+            VersionAware versionAware = (securableResource as VersionAware)
             return this.forSecurableResource(securableResource.domainType, securableResource.resourceId)
-                .asFinalisedModel(model.finalised)
-                .withModelCanBeFinalised(model.branchName == ModelConstraints.DEFAULT_BRANCH_NAME)
+                .asFinalisedModel(versionAware.finalised)
+                .withModelCanBeFinalised(versionAware.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME)
         }
         this.forSecurableResource(securableResource.domainType, securableResource.resourceId)
     }
@@ -129,12 +133,24 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
         return result
     }
 
+    boolean matchesDomainResource(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        (domainType == securableResourceClass.simpleName || alternateDomainType == securableResourceClass.simpleName) && domainId == id
+    }
+
+    boolean matchesGroupRole(String roleName) {
+        groupRole.name == roleName
+    }
+
     GroupRole getGroupRole() {
         groupRole
     }
 
     String getDomainType() {
         domainType
+    }
+
+    String getAlternateDomainType() {
+        alternateDomainType
     }
 
     UUID getDomainId() {

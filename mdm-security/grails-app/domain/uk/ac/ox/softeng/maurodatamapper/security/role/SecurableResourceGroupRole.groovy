@@ -17,9 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -43,8 +44,8 @@ class SecurableResourceGroupRole implements EditHistoryAware {
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-        groupRole validator: {val -> if (val && val.applicationLevelRole) ['invalid.grouprole.cannot.be.application.level.message']}
-        userGroup validator: {val, obj ->
+        groupRole validator: { val -> if (val && val.applicationLevelRole) ['invalid.grouprole.cannot.be.application.level.message'] }
+        userGroup validator: { val, obj ->
             if (val && obj.ident() && obj.isDirty('userGroup')) ['invalid.grouprole.cannot.change.usergroup.message']
         }
         finalisedModel nullable: true
@@ -66,16 +67,21 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         SecurableResourceGroupRole.simpleName
     }
 
-    boolean canFinalise(SecurableResource securableResource){
-        securableResource.branchName == ModelConstraints.DEFAULT_BRANCH_NAME
+    boolean canFinalise(SecurableResource securableResource) {
+        if (Utils.parentClassIsAssignableFromChild(VersionAware, securableResource.class)) {
+            VersionAware versionAware = securableResource as VersionAware
+            return versionAware.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        }
+        false
     }
 
     void setSecurableResource(SecurableResource securableResource) {
         securableResourceDomainType = securableResource.domainType
         securableResourceId = securableResource.resourceId
-        if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            finalisedModel = securableResource.finalised
-            canFinaliseModel = !securableResource.finalised && securableResource.branchName == ModelConstraints.DEFAULT_BRANCH_NAME
+        if (Utils.parentClassIsAssignableFromChild(VersionAware, securableResource.class)) {
+            VersionAware versionAware = securableResource as VersionAware
+            finalisedModel = versionAware.finalised
+            canFinaliseModel = !versionAware.finalised && versionAware.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         }
     }
 

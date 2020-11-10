@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
@@ -26,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.hibernate.SessionFactory
@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
 @Slf4j
-class ClassifierService implements ContainerService<Classifier> {
+class ClassifierService extends ContainerService<Classifier> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
@@ -86,6 +86,31 @@ class ClassifierService implements ContainerService<Classifier> {
     @Override
     List<Classifier> findAllContainersInside(UUID containerId) {
         Classifier.findAllContainedInClassifierId(containerId)
+    }
+
+    @Override
+    Classifier findDomainByLabel(String label) {
+        return null
+    }
+
+    @Override
+    Classifier findDomainByParentIdAndLabel(UUID parentId, String label) {
+        return null
+    }
+
+    @Override
+    List<Classifier> findAllByParentId(UUID parentId) {
+        return null
+    }
+
+    @Override
+    List<Classifier> findAllByParentId(UUID parentId, Map pagination) {
+        return null
+    }
+
+    @Override
+    DetachedCriteria<Classifier> getCriteriaByParent(Classifier domain) {
+        return null
     }
 
     @Override

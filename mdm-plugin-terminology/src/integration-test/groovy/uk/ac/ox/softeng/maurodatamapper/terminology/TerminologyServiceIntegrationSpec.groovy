@@ -35,7 +35,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
 
     @Override
     void setupDomainData() {
-        log.debug('Setting up TerminologyServiceSpec unit')
+        log.debug('Setting up TerminologyServiceIntegrationSpec')
 
         Terminology terminology1 = new Terminology(createdByUser: reader1, label: 'test database', folder: testFolder,
                                                    authority: testAuthority)

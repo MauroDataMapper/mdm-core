@@ -26,7 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrat
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.INTEGRATION_TEST
 
@@ -39,7 +38,6 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 class TermRelationshipServiceSpec extends BaseTerminologyIntegrationSpec {
 
     TermRelationshipService termRelationshipService
-    SessionFactory sessionFactory
 
     @Override
     void setupDomainData() {

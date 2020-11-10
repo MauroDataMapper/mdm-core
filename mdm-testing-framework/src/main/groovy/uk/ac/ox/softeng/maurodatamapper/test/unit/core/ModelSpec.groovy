@@ -107,7 +107,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        second.errors.getFieldError('label').code == 'model.label.not.unique.same.branch.names'
+        second.errors.getFieldError('label').code == 'version.aware.label.not.unique.same.branch.names'
     }
 
     void 'M03 : test updating a label to a used label is not allowed'() {
@@ -131,7 +131,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        second.errors.getFieldError('label').code == 'model.label.not.unique.same.branch.names'
+        second.errors.getFieldError('label').code == 'version.aware.label.not.unique.same.branch.names'
     }
 
     void 'M04 : test updating a label to a new unused label is allowed'() {
@@ -193,7 +193,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        third.errors.getFieldError('label').code == 'model.label.not.unique.same.branch.names'
+        third.errors.getFieldError('label').code == 'version.aware.label.not.unique.same.branch.names'
     }
 
     void 'M07 : test updating a doc version is not allowed'() {
@@ -210,7 +210,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        domain.errors.getFieldError('documentationVersion').code == 'model.documentation.version.change.not.allowed'
+        domain.errors.getFieldError('documentationVersion').code == 'version.aware.documentation.version.change.not.allowed'
     }
 
     void 'M08 : test setting a model version and finalising is allowed'() {
@@ -245,7 +245,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        domain.errors.getFieldError('modelVersion').code == 'model.model.version.can.only.set.on.finalised.model'
+        domain.errors.getFieldError('modelVersion').code == 'version.aware.model.version.can.only.set.on.finalised.model'
     }
 
     void 'M10 : test finalising a model without a model version is not allowed'() {
@@ -263,7 +263,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        domain.errors.getFieldError('modelVersion').code == 'model.model.version.must.be.set.on.finalised.model'
+        domain.errors.getFieldError('modelVersion').code == 'version.aware.model.version.must.be.set.on.finalised.model'
     }
 
     void 'M11 : test setting a model version and then updating it is not allowed'() {
@@ -289,7 +289,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        domain.errors.getFieldError('modelVersion').code == 'model.model.version.change.not.allowed'
+        domain.errors.getFieldError('modelVersion').code == 'version.aware.model.version.change.not.allowed'
     }
 
     void 'M12 : test setting a model version on branch is not allowed'() {
@@ -307,7 +307,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        domain.errors.getFieldError('modelVersion').code == 'model.model.version.cannot.be.set.on.branch'
+        domain.errors.getFieldError('modelVersion').code == 'version.aware.model.version.cannot.be.set.on.branch'
     }
 
     void 'M13 : test creating a new model with the same name as existing and no model version is allowed'() {
@@ -404,7 +404,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        second.errors.getFieldError('label').code == 'model.label.not.unique.same.versions'
+        second.errors.getFieldError('label').code == 'version.aware.label.not.unique.same.versions'
     }
 
     void 'M17 : test creating models as various branches'() {
@@ -467,7 +467,7 @@ abstract class ModelSpec<K extends Model> extends CatalogueItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        sixth.errors.getFieldError('label').code == 'model.label.not.unique.same.branch.names'
+        sixth.errors.getFieldError('label').code == 'version.aware.label.not.unique.same.branch.names'
     }
 
 

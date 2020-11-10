@@ -460,11 +460,13 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
             if (role) {
-                return (MODEL_EDITOR_ACTIONS + getCanBeFinalisedAction(role)) - getFinalisedActionsToRemove(role) - getEditorVersioningActionsToRemove(role)
+                return (MODEL_EDITOR_ACTIONS + getCanBeFinalisedAction(role)) - getFinalisedActionsToRemove(role) -
+                       getEditorVersioningActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
             if (role) {
-                return (MODEL_AUTHOR_ACTIONS + getCanBeFinalisedAction(role))  - getFinalisedActionsToRemove(role) - getEditorVersioningActionsToRemove(role)
+                return (MODEL_AUTHOR_ACTIONS + getCanBeFinalisedAction(role)) - getFinalisedActionsToRemove(role) -
+                       getEditorVersioningActionsToRemove(role)
             }
             role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, REVIEWER_ROLE_NAME)
             if (role) {
@@ -490,11 +492,11 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     }
 
-    private List<String> getEditorVersioningActionsToRemove(VirtualSecurableResourceGroupRole role){
+    private List<String> getEditorVersioningActionsToRemove(VirtualSecurableResourceGroupRole role) {
         !role.isFinalisedModel() ? MODEL_DISALLOWED_EDITOR_VERSIONING_ACTIONS : []
     }
 
-    private List<String> getReaderVersioningActionsToRemove(VirtualSecurableResourceGroupRole role){
+    private List<String> getReaderVersioningActionsToRemove(VirtualSecurableResourceGroupRole role) {
         !role.isFinalisedModel() ? MODEL_READER_VERSIONING_ACTIONS : []
     }
 
@@ -517,7 +519,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
 
         return virtualSecurableResourceGroupRoles.any {
-            it.domainType == securableResourceClass.simpleName && it.domainId == id
+            it.matchesDomainResource(securableResourceClass, id)
         }
     }
 
@@ -525,9 +527,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                                                                                       UUID id,
                                                                                       String roleName) {
         virtualSecurableResourceGroupRoles.find {
-            it.domainType == securableResourceClass.simpleName &&
-            it.domainId == id &&
-            it.groupRole.name == roleName
+            it.matchesDomainResource(securableResourceClass, id) && it.matchesGroupRole(roleName)
         }
     }
 

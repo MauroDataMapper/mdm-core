@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -34,10 +34,10 @@ class Authority implements InformationAware, CreatorAware, SecurableResource {
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers
 
-    static hasMany = {
-        models:
-        Model
-    }
+    //    static hasMany = [
+    //        models          : Model,
+    //        versionedFolders: VersionedFolder
+    //    ]
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
