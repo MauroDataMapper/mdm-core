@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels as DataFlowBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels as DataModelBootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels as ReferenceDataModelBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
@@ -116,6 +117,8 @@ class BootStrap implements SecurityDefinition {
                     DataFlowBootstrapModels.buildAndSaveSourceDataModel(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveTargetDataModel(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveSampleDataFlow(messageSource)
+                    ReferenceDataModelBootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, authority)
+                    ReferenceDataModelBootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, authority)                    
                 }
             }
             log.debug('Test environment bootstrap complete')

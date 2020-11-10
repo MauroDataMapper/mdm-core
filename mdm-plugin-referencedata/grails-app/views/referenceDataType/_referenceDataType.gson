@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: referenceDataType]
+model {
+    ReferenceDataType referenceDataType
+}
+
+json {
+
+    if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
+        referenceEnumerationValues g.render(referenceDataType.getProperty('referenceEnumerationValues'))
+    }
+    if (referenceDataType.instanceOf(ReferencePrimitiveType)) {
+        if (referenceDataType.getProperty('units')) units referenceDataType.getProperty('units')
+    }
+}

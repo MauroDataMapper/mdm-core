@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+
+model {
+    ReferenceSummaryMetadata referenceSummaryMetadata
+}
+
+json {
+    id referenceSummaryMetadata.id
+    createdBy referenceSummaryMetadata.createdBy
+    lastUpdated referenceSummaryMetadata.lastUpdated
+    label referenceSummaryMetadata.label
+    if (referenceSummaryMetadata.description) description referenceSummaryMetadata.description
+    summaryMetadataType referenceSummaryMetadata.summaryMetadataType
+}

@@ -160,6 +160,34 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "fileExtension": "json",
     "fileType": "text/json",
     "canExportMultipleDomains": false
+  },
+  {
+    "name": "XmlExporterService",
+    "version": "3.0",
+    "displayName": "XML Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
+    "canExportMultipleDomains": false
+  },
+  {
+    "name": "JsonExporterService",
+    "version": "3.0",
+    "displayName": "JSON Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
+    "canExportMultipleDomains": false
   }
 ]''')
     }
@@ -193,6 +221,45 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyJsonResponse(OK, '''[
+  {
+    "name": "XmlImporterService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "XML Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "JsonImporterService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "JSON Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },  
+  {
+    "name": "CsvImporterService",
+    "version": "${json-unit.matches:version}",
+    "displayName": "CSV Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },          
   {
     "name": "JsonImporterService",
     "version": "${json-unit.matches:version}",

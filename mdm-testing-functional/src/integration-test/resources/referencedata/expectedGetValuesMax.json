@@ -1,0 +1,95 @@
+{
+  "count": 30,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataValue",
+      "label": "Model: FT Test Reference Data Model, Row: 1, Element: Column 1",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "FT Test Reference Data Model",
+          "domainType": "ReferenceDataModel",
+          "finalised": false
+        }
+      ],
+      "description": "Row1Value1",
+      "rowNumber": 1,
+      "value": "Row1Value1",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Column 1",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "FT Test Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "FT Test Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceDataValue",
+      "label": "Model: FT Test Reference Data Model, Row: 1, Element: Column 2",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "FT Test Reference Data Model",
+          "domainType": "ReferenceDataModel",
+          "finalised": false
+        }
+      ],
+      "description": "Row1Value2",
+      "rowNumber": 1,
+      "value": "Row1Value2",
+      "referenceDataElement": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataElement",
+        "label": "Column 2",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "FT Test Reference Data Model",
+            "domainType": "ReferenceDataModel",
+            "finalised": false
+          }
+        ],
+        "referenceDataType": {
+          "id": "${json-unit.matches:id}",
+          "domainType": "ReferencePrimitiveType",
+          "label": "string",
+          "model": "${json-unit.matches:id}",
+          "breadcrumbs": [
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "FT Test Reference Data Model",
+              "domainType": "ReferenceDataModel",
+              "finalised": false
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

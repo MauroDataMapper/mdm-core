@@ -343,6 +343,32 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },      
+      {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Simple Test DataModel",
         "hasChildren": false,
@@ -415,6 +441,32 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },      
+      {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Simple Test DataModel",
         "hasChildren": false,
@@ -485,6 +537,32 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "type": "Data Standard",
         "branchName": "main"
       },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },      
       {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",

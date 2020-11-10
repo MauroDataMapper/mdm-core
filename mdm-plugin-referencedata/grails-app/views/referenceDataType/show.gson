@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    ReferenceDataType referenceDataType
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.fullReferenceDataType(referenceDataType: referenceDataType, userSecurityPolicyManager: userSecurityPolicyManager)

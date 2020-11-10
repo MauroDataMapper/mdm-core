@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+
+model {
+    ObjectDiff<ReferenceDataModel> left
+    ObjectDiff<ReferenceDataModel> right
+}
+
+json {
+    left tmpl.'/objectDiff/objectDiff'(left)
+    right tmpl.'/objectDiff/objectDiff'(right)
+}
+

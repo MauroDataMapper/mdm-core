@@ -1,0 +1,168 @@
+{
+    "referenceDataModel": {
+        "id": "${json-unit.matches:id}",
+        "label": "Imported Reference Data Model",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "classifiers": [
+            {
+                "id": "${json-unit.matches:id}",
+                "label": "An imported classifier",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            }
+        ],
+        "metadata": [
+            {
+                "id": "${json-unit.matches:id}",
+                "namespace": "test.com",
+                "key": "mdk2",
+                "value": "mdv2",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            {
+                "id": "${json-unit.matches:id}",
+                "namespace": "test.com/simple",
+                "key": "mdk2",
+                "value": "mdv2",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            {
+                "id": "${json-unit.matches:id}",
+                "namespace": "test.com/simple",
+                "key": "mdk1",
+                "value": "mdv1",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            }
+        ],
+        "type": "ReferenceDataModel",
+        "documentationVersion": "1.0.0",
+        "author": "Test Author",
+        "organisation": "Test Organisation",
+        "finalised": false,
+        "authority": {
+            "id": "${json-unit.matches:id}",
+            "url": "http://localhost",
+            "label": "Mauro Data Mapper"
+        },
+        "referenceDataTypes": [
+            {
+                "id": "${json-unit.matches:id}",
+                "label": "integer",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "domainType": "ReferencePrimitiveType"
+            },
+            {
+                "id": "${json-unit.matches:id}",
+                "label": "string",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "domainType": "ReferencePrimitiveType"
+            }
+        ],
+        "referenceDataElements": [
+            {
+                "id": "${json-unit.matches:id}",
+                "label": "Organisation code",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "referenceDataType": {
+                    "id": "${json-unit.matches:id}",
+                    "label": "string",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "domainType": "ReferencePrimitiveType"
+                }
+            },
+            {
+                "id": "${json-unit.matches:id}",
+                "label": "Organisation name",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "referenceDataType": {
+                    "id": "${json-unit.matches:id}",
+                    "label": "string",
+                    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                    "domainType": "ReferencePrimitiveType"
+                }
+            }
+        ],
+        "referenceDataValues": [
+            {
+                "id": "${json-unit.matches:id}",
+                "label": "Model: Imported Reference Data Model, Row: 1, Element: Organisation code",
+                "description": "ORG1",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "rowNumber": 1,
+                "value": "ORG1",
+                "referenceDataElement": {
+                    "id": "${json-unit.matches:id}",
+                    "domainType": "ReferenceDataElement",
+                    "label": "Organisation code",
+                    "model": "${json-unit.matches:id}",
+                    "breadcrumbs": [
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Imported Reference Data Model",
+                            "domainType": "ReferenceDataModel",
+                            "finalised": false
+                        }
+                    ],
+                    "referenceDataType": {
+                        "id": "${json-unit.matches:id}",
+                        "domainType": "ReferencePrimitiveType",
+                        "label": "string",
+                        "model": "${json-unit.matches:id}",
+                        "breadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Imported Reference Data Model",
+                                "domainType": "ReferenceDataModel",
+                                "finalised": false
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "${json-unit.matches:id}",
+                "label": "Model: Imported Reference Data Model, Row: 1, Element: Organisation name",
+                "description": "Organisation 1",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "rowNumber": 1,
+                "value": "Organisation 1",
+                "referenceDataElement": {
+                    "id": "${json-unit.matches:id}",
+                    "domainType": "ReferenceDataElement",
+                    "label": "Organisation name",
+                    "model": "${json-unit.matches:id}",
+                    "breadcrumbs": [
+                        {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Imported Reference Data Model",
+                            "domainType": "ReferenceDataModel",
+                            "finalised": false
+                        }
+                    ],
+                    "referenceDataType": {
+                        "id": "${json-unit.matches:id}",
+                        "domainType": "ReferencePrimitiveType",
+                        "label": "string",
+                        "model": "${json-unit.matches:id}",
+                        "breadcrumbs": [
+                            {
+                                "id": "${json-unit.matches:id}",
+                                "label": "Imported Reference Data Model",
+                                "domainType": "ReferenceDataModel",
+                                "finalised": false
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "exportMetadata": {
+        "exportedBy": "Admin User",
+        "exportedOn": "${json-unit.matches:offsetDateTime}",
+        "exporter": {
+            "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+            "name": "JsonExporterService",
+            "version": "3.0"
+        }
+    }
+}

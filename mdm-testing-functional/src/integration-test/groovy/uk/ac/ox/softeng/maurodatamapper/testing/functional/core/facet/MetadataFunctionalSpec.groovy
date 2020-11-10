@@ -53,6 +53,16 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "defaultNamespace": false,
     "editable": true,
     "keys": [
+      "mdk1",
+      "mdk2",
+      "mdk3"
+    ],
+    "namespace": "referencedata.com"
+  },          
+  {
+    "defaultNamespace": false,
+    "editable": true,
+    "keys": [
       "mdk2"
     ],
     "namespace": "terminology.test.com"
@@ -116,6 +126,22 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer"
   },
+  {
+    "defaultNamespace": true,
+    "editable": true,
+    "keys": [
+      
+    ],
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter"
+  },  
+  {
+    "defaultNamespace": true,
+    "editable": true,
+    "keys": [
+      
+    ],
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer"
+  },  
   {
     "defaultNamespace": true,
     "editable": true,
