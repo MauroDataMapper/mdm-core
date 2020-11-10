@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
-    @Autowired
+    @Autowired(required = false)
     Set<ModelItemService> modelItemServices
 
     @Override
@@ -78,8 +78,18 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
+    /**
+     * Merges changes made to {@code leftModel} in {@code mergeObjectDiff} into {@code rightModel}. {@code mergeObjectDiff} is based on the return
+     * from ObjectDiff.mergeDiff(), customised by the user.
+     * @param leftModel Source model
+     * @param rightModel Target model
+     * @param mergeObjectDiff Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
+     * @param userSecurityPolicyManager To get user details and permissions when copying "added" items
+     * @param catalogueItemService Service which handles catalogueItems of the leftModel and rightModel type.
+     * @return The model resulting from the merging of changes.
+     */
     K mergeInto(K leftModel, K rightModel, MergeObjectDiffData mergeObjectDiff,
-                UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService catalogueItemService = this) {
+                UserSecurityPolicyManager userSecurityPolicyManager, catalogueItemService = this) {
 
         CatalogueItem catalogueItem = catalogueItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
 
@@ -91,31 +101,32 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                             catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
                         } else {
                             // if no value, then some combination of created, deleted, and modified may exist
-                            ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
-                            if (modelItemService) {
+                            def itemService = mergeFieldDiff.fieldName == 'metadata' ? metadataService :
+                                              modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+                            if (itemService) {
                                 // apply deletions of children to target object
                                 mergeFieldDiff.deleted.each {
                                     obj ->
-                                        def modelItem = modelItemService.get(obj.id) as ModelItem
-                                        modelItemService.delete(modelItem)
+                                        def item = itemService.get(obj.id)
+                                        itemService.delete(item)
                                 }
 
-                                def parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
+                                def parentId = itemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
 
                                 // copy additions from source to target object
                                 mergeFieldDiff.created.each {
                                     obj ->
-                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        def item = itemService.get(obj.id)
                                         parentId ?
-                                        modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager, parentId) :
-                                        modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager)
+                                        itemService.copy(rightModel, item, userSecurityPolicyManager, parentId) :
+                                        itemService.copy(rightModel, item, userSecurityPolicyManager)
                                 }
                                 // for modifications, recursively call this method
                                 mergeFieldDiff.modified.each {
                                     obj ->
                                         mergeInto(leftModel, rightModel, obj,
                                                   userSecurityPolicyManager,
-                                                  modelItemService)
+                                                  itemService)
                                 }
                             }
                         }

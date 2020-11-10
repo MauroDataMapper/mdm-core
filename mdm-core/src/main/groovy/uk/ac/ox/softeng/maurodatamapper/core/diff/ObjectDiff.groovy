@@ -165,92 +165,112 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
         this
     }
 
+    /**
+     * Filters an ObjectDiff of two {@code Diffable}s based on the differences of each of the Diffables to their common ancestor. See MC-9228
+     * for details on filtering criteria.
+     * @param left ObjectDiff between left Diffable and commonAncestor Diffable
+     * @param right ObjectDiff between right Diffable and commonAncestor Diffable
+     * @return this ObjectDiff with f
+     */
     ObjectDiff<T> mergeDiff(ObjectDiff<T> left, ObjectDiff<T> right) {
         List<FieldDiff> diffs = []
         def existingDiffs = this.diffs
 
         for (int i = 0; i < existingDiffs.size; i++) {
-            def it = existingDiffs[i]
-            String fieldName = it.fieldName
+            def diff = existingDiffs[i]
+            // Diffable type, i.e. description, dataClass, metadata
+            String fieldName = diff.fieldName
 
             if (fieldName in left.diffs.fieldName) {
                 if (fieldName in right.diffs.fieldName) {
-                    if (it.class == FieldDiff) {
-                        it.isMergeConflict = true
-                        it.commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
-                        diffs.add(it)
-                    } else if (it.class == ArrayDiff) {
+                    if (diff.class == FieldDiff) {
+                        diff.isMergeConflict = true
+                        diff.commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
+                        diffs.add(diff)
+                    } else if (diff.class == ArrayDiff) {
                         def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
                         def rightArrayDiff = right.diffs.find { it.fieldName == fieldName }
-                        it.created = it.created.findAll {
-                            def diffIdentifier = it.value.diffIdentifier
+                        diff.created = diff.created.findAll { MergeWrapper wrapper ->
+                            def diffIdentifier = wrapper.value.diffIdentifier
                             if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
                                 // top created, left created
-                                it.isMergeConflict = false
+                                wrapper.isMergeConflict = false
                                 true
                             } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
                                 // top created, left modified
-                                it.isMergeConflict = true
-                                it.commonAncestorValue = leftArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
+                                wrapper.isMergeConflict = true
+                                wrapper.commonAncestorValue = leftArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
                                 true
                             } else {
                                 false
                             }
                         }
-                        it.deleted = it.deleted.findAll {
-                            def diffIdentifier = it.value.diffIdentifier
+                        diff.deleted = diff.deleted.findAll { MergeWrapper wrapper ->
+                            def diffIdentifier = wrapper.value.diffIdentifier
                             if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
                                 // top deleted, right modified
-                                it.isMergeConflict = true
-                                it.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
+                                wrapper.isMergeConflict = true
+                                wrapper.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
                                 true
                             } else if (diffIdentifier in leftArrayDiff.deleted.value.diffIdentifier) {
                                 // top deleted, right not modified, left deleted
-                                it.isMergeConflict = false
+                                wrapper.isMergeConflict = false
                                 true
                             } else {
                                 false
                             }
                         }
-                        it.modified = it.modified.findAll {
-                            def diffIdentifier = it.right.diffIdentifier
+                        diff.modified = diff.modified.findAll { ObjectDiff objDiff ->
+                            def diffIdentifier = objDiff.right.diffIdentifier
                             if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
                                 // top modified, right created, (left also created)
-                                it.diffs.each {
+                                objDiff.diffs.each {
                                     it.isMergeConflict = true
                                     it.commonAncestorValue = null
                                 }
-                                it.isMergeConflict = true
-                                it.commonAncestorValue = null
+                                objDiff.isMergeConflict = true
+                                objDiff.commonAncestorValue = null
                                 true
                             } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
                                 if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
                                     // top modified, left modified, right modified
-                                    def leftObjDiff = leftArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier }
-                                    def rightObjDiff = rightArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier }
-                                    it = it.mergeDiff(leftObjDiff, rightObjDiff)
-                                    it.isMergeConflict = true
-                                    it.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
+                                    def leftObjDiff = leftArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier } as ObjectDiff
+                                    def rightObjDiff = rightArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier } as ObjectDiff
+                                    // call recursively
+                                    objDiff = objDiff.mergeDiff(leftObjDiff, rightObjDiff)
+                                    objDiff.isMergeConflict = true
+                                    objDiff.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
                                     true
                                 } else {
                                     // top modified, left modified, right not modified
-                                    it.diffs.each { it.isMergeConflict = false }
-                                    it.isMergeConflict = false
+                                    objDiff.diffs.each { it.isMergeConflict = false }
+                                    objDiff.isMergeConflict = false
                                     true
                                 }
                             } else {
                                 false
                             }
                         }
-                        diffs.add(it)
+                        diffs.add(diff)
                     }
                 } else {
-                    if (it.class == FieldDiff) { it.isMergeConflict = false } else if (it.class == ArrayDiff) {
-                        it.deleted.each { it.isMergeConflict = false }
-                        it.created.each { it.isMergeConflict = false }
-                        it.modified.each { it.diffs.each { it.isMergeConflict = false } }
+                    // An entire Diffable type may not be present on the right, so there will be no merge conflicts
+                    if (diff.class == FieldDiff) { diff.isMergeConflict = false } else if (diff.class == ArrayDiff) {
+                        diff.deleted.each { it.isMergeConflict = false }
+                        diff.created.each { it.isMergeConflict = false }
+
+                        // Can only get left, as this type is not present on the right
+                        def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
+
+                        diff.modified.each { objDiff ->
+                            def diffIdentifier = objDiff.right.diffIdentifier
+                            def leftObjDiff = leftArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier } as ObjectDiff
+                            // call recursively
+                            objDiff = objDiff.mergeDiff(leftObjDiff, new ObjectDiff<>())
+                            objDiff.isMergeConflict = false
+                        }
                     }
-                    diffs.add(it)
+                    diffs.add(diff)
                 }
             }
         }

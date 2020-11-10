@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProv
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
@@ -65,6 +66,10 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         if (!service) throw new ApiBadRequestException('MS01', 'Metadata removal for catalogue item with no supporting service')
         service.removeMetadataFromCatalogueItem(metadata.catalogueItemId, metadata)
         metadata.delete(flush: flush)
+    }
+
+    void copy(CatalogueItem target, Metadata item, UserSecurityPolicyManager userSecurityPolicyManager) {
+        target.addToMetadata(item.namespace, item.key, item.value, userSecurityPolicyManager.user)
     }
 
     void saveCatalogueItem(Metadata metadata) {
