@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.rest.RestfulController
 import groovy.util.logging.Slf4j
@@ -57,7 +56,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
         if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
 
-        respond(treeItemService.buildCatalogueItemTree(catalogueItem))
+        respond(treeItemService.buildCatalogueItemTree(catalogueItem, params.forDiff as boolean))
     }
 
     def index() {

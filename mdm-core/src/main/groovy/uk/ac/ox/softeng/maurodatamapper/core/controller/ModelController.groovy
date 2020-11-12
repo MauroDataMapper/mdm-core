@@ -271,8 +271,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!validateResource(instance, 'update')) return
 
-        //TODO user must have edit to delete?
         if (mergeIntoData.deleteBranch) {
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(left.class, left.id)) {
+                return forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(left.class, left.id))
+            }
             modelService.permanentDeleteModel(left)
             if (securityPolicyManagerService) {
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)

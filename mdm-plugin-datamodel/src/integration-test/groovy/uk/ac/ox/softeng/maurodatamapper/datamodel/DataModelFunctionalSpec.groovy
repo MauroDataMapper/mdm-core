@@ -2130,22 +2130,24 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("$target/dataClasses")
 
         then:
+        verifyResponse OK, response
         responseBody().items.label as Set == ['modifyLeftOnly'] as Set
         responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
 
         when:
+        verifyResponse OK, response
         GET("$target/metadata")
 
         then:
         responseBody().items.key as Set == ['addMetadataSource', 'modifyMetadataSource'] as Set
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyMetadataSource' }.value == 'modifiedDescriptionSourceOnly'
+        responseBody().items.find { metadata -> metadata.key == 'modifyMetadataSource' }.value == 'modifiedDescriptionSource'
 
         when:
-        GET("$target/dataClasses/$modifyLeftOnly/metadata")
+        GET("dataClasses/$modifyLeftOnly/metadata", MAP_ARG, true)
 
         then:
-        responseBody().items.label as Set == ['modifyLeftOnly'] as Set
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+        verifyResponse OK, response
+        responseBody().items.key as Set == ['addMetadataModifyLeftOnly'] as Set
 
         cleanup:
         cleanUpData(source)

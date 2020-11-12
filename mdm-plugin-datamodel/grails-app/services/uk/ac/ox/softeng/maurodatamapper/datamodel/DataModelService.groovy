@@ -637,14 +637,14 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataModel dataModel) {
-        dataClassService.countByDataModelId(dataModel.id) || dataModel.dataTypes
+    boolean hasTreeTypeModelItems(DataModel dataModel, boolean forDiff) {
+        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && forDiff)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean forDiff = false) {
         (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id) +
-         DataType.byDataModelId(catalogueItem.id).list()) as List<ModelItem>
+         (forDiff ? DataType.byDataModelId(catalogueItem.id).list() : []) as List<ModelItem>)
     }
 
     @Override

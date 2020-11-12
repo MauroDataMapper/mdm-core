@@ -189,12 +189,12 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(TermRelationship catalogueItem) {
+    boolean hasTreeTypeModelItems(TermRelationship catalogueItem, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationship catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationship catalogueItem, boolean forDiff = false) {
         []
     }
 }

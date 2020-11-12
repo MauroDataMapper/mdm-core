@@ -70,12 +70,12 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(ReferenceType catalogueItem) {
+    boolean hasTreeTypeModelItems(ReferenceType catalogueItem, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceType catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceType catalogueItem, boolean forDiff = false) {
         []
     }
 

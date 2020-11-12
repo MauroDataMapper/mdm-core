@@ -468,12 +468,12 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(Terminology terminology) {
+    boolean hasTreeTypeModelItems(Terminology terminology, boolean forDiff) {
         isTreeStructureCapableTerminology(terminology)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(Terminology terminology) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(Terminology terminology, boolean forDiff = false) {
         List<Term> terms = termService.findAllByTerminologyIdAndDepth(terminology.id, 1)
         termService.updateChildKnowledge(terms)
     }

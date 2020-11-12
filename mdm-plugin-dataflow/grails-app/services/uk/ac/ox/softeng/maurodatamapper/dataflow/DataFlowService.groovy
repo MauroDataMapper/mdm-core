@@ -232,12 +232,12 @@ class DataFlowService extends ModelItemService<DataFlow> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataFlow dataFlow) {
+    boolean hasTreeTypeModelItems(DataFlow dataFlow, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataFlow dataFlow) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataFlow dataFlow, boolean forDiff = false) {
         []
     }
 

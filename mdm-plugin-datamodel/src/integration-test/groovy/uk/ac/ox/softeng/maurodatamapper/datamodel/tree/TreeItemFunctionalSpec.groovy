@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -52,6 +53,9 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     UUID otherDataModelId
 
     @Shared
+    UUID dataClassId
+
+    @Shared
     Folder folder
 
     @OnceBefore
@@ -70,12 +74,16 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
                                          folder: folder, authority: testAuthority).save(flush: true).id
 
-        new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
-                      dataModel: dataModel).save(flush: true)
+        PrimitiveType string = new PrimitiveType(createdBy: FUNCTIONAL_TEST, label: 'string')
+
+        DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST, dataModel: dataModel)
+            .addToDataElements(label: 'Functional Test DataElement', createdBy: FUNCTIONAL_TEST, dataType: string).save(flush: true)
+
+        dataClassId = dataClass.id
 
         Classifier classifier = new Classifier(label: 'Functional Test Classifier', createdBy: FUNCTIONAL_TEST).save(flush: true)
         new Classifier(label: 'Functional Test Classifier 2', createdBy: FUNCTIONAL_TEST).save(flush: true)
-        dataModel.addToClassifiers(classifier).save(flush: true)
+        dataModel.addToClassifiers(classifier).addToDataTypes(string).save(flush: true)
 
         sessionFactory.currentSession.flush()
     }
@@ -384,6 +392,46 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanUpData(firstId)
         cleanUpData(secondId)
         cleanUpData(thirdId)
+    }
+
+    void 'T08 : test diff tree for datamodel with content'() {
+        when:
+        GET("folders/dataModels/${dataModelId}?forDiff=true", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[
+    {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataClass",
+        "label": "Functional Test DataClass",
+        "hasChildren": false,
+        "modelId": "${json-unit.matches:id}"
+    },
+    {
+        "id": "${json-unit.matches:id}",
+        "domainType": "PrimitiveType",
+        "label": "string",
+        "hasChildren": false,
+        "modelId": "${json-unit.matches:id}"
+    }
+]''')
+    }
+
+    void 'T09: test diff tree for dataclass with content'() {
+        when:
+        GET("folders/dataClasses/$dataClassId?forDiff=true", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[
+    {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataElement",
+        "label": "Functional Test DataElement",
+        "hasChildren": false,
+        "modelId": "${json-unit.matches:id}",
+        "parentId": "${json-unit.matches:id}"
+    }
+]''')
     }
 
     void 'TA01 : test getting deleted models'() {

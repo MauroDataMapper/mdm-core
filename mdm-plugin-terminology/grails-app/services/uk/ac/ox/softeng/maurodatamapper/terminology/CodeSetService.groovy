@@ -472,12 +472,12 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(CodeSet codeSet) {
+    boolean hasTreeTypeModelItems(CodeSet codeSet, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(CodeSet catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(CodeSet catalogueItem, boolean forDiff = false) {
         []
     }
 

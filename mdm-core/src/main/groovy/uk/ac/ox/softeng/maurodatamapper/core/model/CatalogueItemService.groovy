@@ -102,9 +102,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    abstract boolean hasTreeTypeModelItems(K catalogueItem)
+    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff)
 
-    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem)
+    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false)
 
     abstract K findByIdJoinClassifiers(UUID id)
 
