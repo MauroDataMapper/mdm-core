@@ -113,8 +113,8 @@ class Terminology implements Model<Terminology> {
         modelDiffBuilder(Terminology, this, otherTerminology)
             .appendList(Term, 'terms', this.terms, otherTerminology.terms)
             .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
-            .appendList(TermRelationship, 'termRelationships', this.terms.sourceTermRelationships.inject { result, i -> result + i },
-                        otherTerminology.terms.sourceTermRelationships.inject { result, i -> result + i })
+            .appendList(TermRelationship, 'termRelationships', this.terms?.sourceTermRelationships?.inject([]) { result, i -> result + i },
+                        otherTerminology.terms?.sourceTermRelationships?.inject([]) { result, i -> result + i })
     }
 
     def beforeValidate() {
