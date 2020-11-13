@@ -30,7 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.test.unit.security.IdSecuredUserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -49,14 +48,6 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     DataModel simpleDataModel
     DataModelService dataModelService
     DataClassService dataClassService
-
-    IdSecuredUserSecurityPolicyManager getAdminSecurityPolicyManager() {
-        new IdSecuredUserSecurityPolicyManager(admin, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
-    }
-
-    IdSecuredUserSecurityPolicyManager getEditorSecurityPolicyManager() {
-        new IdSecuredUserSecurityPolicyManager(editor, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
-    }
 
     @Override
     void setupDomainData() {

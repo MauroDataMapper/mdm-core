@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.test.integration
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
 import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
+import uk.ac.ox.softeng.maurodatamapper.test.unit.security.IdSecuredUserSecurityPolicyManager
 
 import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
@@ -73,5 +74,13 @@ abstract class BaseIntegrationSpec extends MdmSpecification {
 
     void postDomainDataSetup() {
         // No-op allows any extending classes to perform actions
+    }
+
+    IdSecuredUserSecurityPolicyManager getAdminSecurityPolicyManager() {
+        new IdSecuredUserSecurityPolicyManager(admin, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
+    }
+
+    IdSecuredUserSecurityPolicyManager getEditorSecurityPolicyManager() {
+        new IdSecuredUserSecurityPolicyManager(editor, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
     }
 }

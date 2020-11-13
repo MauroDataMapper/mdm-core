@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -30,8 +29,6 @@ import groovy.util.logging.Slf4j
 @Rollback
 //@Stepwise
 class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
-
-    UserSecurityPolicyManager userSecurityPolicyManager
 
     @Override
     void setupDomainData() {
@@ -171,8 +168,8 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminology.branchName == 'main'
 
         when:
-        def left = terminologyService.createNewBranchModelVersion('left', terminology, admin, false, userSecurityPolicyManager)
-        def right = terminologyService.createNewBranchModelVersion('right', terminology, admin, false, userSecurityPolicyManager)
+        def left = terminologyService.createNewBranchModelVersion('left', terminology, admin, false, adminSecurityPolicyManager)
+        def right = terminologyService.createNewBranchModelVersion('right', terminology, admin, false, adminSecurityPolicyManager)
 
         then:
         checkAndSave(left)
@@ -203,12 +200,12 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminology.branchName == 'main'
 
         when:
-        def expectedModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
-        def testModel = terminologyService.createNewBranchModelVersion('test', terminology, admin, false, userSecurityPolicyManager)
+        def expectedModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, adminSecurityPolicyManager)
+        def testModel = terminologyService.createNewBranchModelVersion('test', terminology, admin, false, adminSecurityPolicyManager)
         terminologyService.finaliseModel(expectedModel, admin, null, null)
         checkAndSave(
             expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+        def draftModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, adminSecurityPolicyManager)
 
         then:
         checkAndSave(testModel)
@@ -260,8 +257,8 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminology.branchName == 'main'
 
         when:
-        def left = terminologyService.createNewBranchModelVersion('left', terminology, admin, false, userSecurityPolicyManager)
-        def right = terminologyService.createNewBranchModelVersion('right', terminology, admin, false, userSecurityPolicyManager)
+        def left = terminologyService.createNewBranchModelVersion('left', terminology, admin, false, adminSecurityPolicyManager)
+        def right = terminologyService.createNewBranchModelVersion('right', terminology, admin, false, adminSecurityPolicyManager)
 
         then:
         checkAndSave(left)
@@ -300,12 +297,12 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminology.branchName == 'main'
 
         when:
-        def expectedModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
-        def testModel = terminologyService.createNewBranchModelVersion('test', terminology, admin, false, userSecurityPolicyManager)
+        def expectedModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, adminSecurityPolicyManager)
+        def testModel = terminologyService.createNewBranchModelVersion('test', terminology, admin, false, adminSecurityPolicyManager)
         terminologyService.finaliseModel(expectedModel, admin, null, null)
         checkAndSave(
             expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+        def draftModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, adminSecurityPolicyManager)
 
         then:
         checkAndSave(testModel)
@@ -344,12 +341,12 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminology.branchName == 'main'
 
         when:
-        def expectedModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
-        def testModel = terminologyService.createNewBranchModelVersion('test', terminology, admin, false, userSecurityPolicyManager)
+        def expectedModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, adminSecurityPolicyManager)
+        def testModel = terminologyService.createNewBranchModelVersion('test', terminology, admin, false, adminSecurityPolicyManager)
         terminologyService.finaliseModel(expectedModel, admin, null, null)
         checkAndSave(
             expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, userSecurityPolicyManager)
+        def draftModel = terminologyService.createNewBranchModelVersion('main', terminology, admin, false, adminSecurityPolicyManager)
 
         then:
         checkAndSave(testModel)
