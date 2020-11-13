@@ -137,10 +137,9 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
         result instanceof PagedResultList ? result.getTotalCount() : result?.size() ?: 0
     }
 
-    @SuppressWarnings("GrDeprecatedAPIUsage")
     @Override
     protected T createResource(Map includesExcludes = Collections.EMPTY_MAP) {
-        T instance = resource.newInstance()
+        T instance = resource.getDeclaredConstructor().newInstance()
         bindData instance, getObjectToBind(), includesExcludes
         User creator = getCurrentUser()
         if (instance.hasProperty('createdBy') && creator) {

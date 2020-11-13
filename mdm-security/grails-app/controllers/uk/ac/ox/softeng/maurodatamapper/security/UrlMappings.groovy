@@ -17,7 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
+
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES
+
+import static org.grails.web.mapping.DefaultUrlMappingEvaluator.ACTION_DELETE
+import static org.grails.web.mapping.DefaultUrlMappingEvaluator.ACTION_INDEX
+import static org.grails.web.mapping.DefaultUrlMappingEvaluator.ACTION_SAVE
 
 class UrlMappings {
 
@@ -38,6 +43,11 @@ class UrlMappings {
                 put '/userPreferences'(controller: 'catalogueUser', action: 'updateUserPreferences')
                 put '/changePassword'(controller: 'catalogueUser', action: 'changePassword')
                 put '/resetPassword'(controller: 'catalogueUser', action: 'resetPassword') // New URL
+                '/apiKeys'(resources: 'apiKey', includes: [ACTION_SAVE, ACTION_DELETE, ACTION_INDEX]) {
+                    put "/refresh/$expiresInDays"(controller: 'apiKey', action: 'refreshApiKey')
+                    put '/disable'(controller: 'apiKey', action: 'disableApiKey')
+                    put '/enable'(controller: 'apiKey', action: 'enableApiKey')
+                }
             }
 
             group '/catalogueUsers', {

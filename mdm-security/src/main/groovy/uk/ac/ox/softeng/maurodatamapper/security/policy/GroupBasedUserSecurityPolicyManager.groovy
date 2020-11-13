@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
@@ -245,6 +246,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
         // Allow users to create their own user image file
         if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
+            Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass) &&
+            owningSecureResourceId == getUser().id) {
+            return true
+        }
+        // Allow users to delete their own api keys
+        if (Utils.parentClassIsAssignableFromChild(ApiKey, resourceClass) &&
             Utils.parentClassIsAssignableFromChild(CatalogueUser, owningSecureResourceClass) &&
             owningSecureResourceId == getUser().id) {
             return true
