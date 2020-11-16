@@ -20,9 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
@@ -72,27 +70,6 @@ class SearchServiceIntegrationSpec extends BaseReferenceDataModelIntegrationSpec
         then:
         modelItems.size() == 0
     }
-
-    void 'test performStandardSearch on ReferenceDataElement'() {
-
-        given:
-        setupData()
-
-        when:
-        SearchParams searchParams = new SearchParams(search: 'Organisation')
-        List<ModelItem> modelItems = searchService.performLabelSearch([ReferenceDataElement].toSet(), [referenceModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 2
-
-        when:
-        searchParams = new SearchParams(search: 'nothing')
-        modelItems = searchService.performLabelSearch([ReferenceDataElement].toSet(), [referenceModelId], searchParams.searchTerm)
-
-        then:
-        modelItems.size() == 0
-    }
-
 
     void 'test perform x search on simple DataModel looking for metadata entry'() {
 

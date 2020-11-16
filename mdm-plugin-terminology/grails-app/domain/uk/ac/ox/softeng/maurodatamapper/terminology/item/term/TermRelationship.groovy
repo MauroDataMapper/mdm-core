@@ -115,6 +115,7 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
 
     @Override
     String getDiffIdentifier() {
+        if (!label) label = relationshipType?.label
         "$sourceTerm.label-$label-$targetTerm.label"
     }
 
