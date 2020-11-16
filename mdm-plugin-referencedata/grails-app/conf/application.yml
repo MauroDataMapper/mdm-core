@@ -153,7 +153,7 @@ environments:
         spring.flyway.enabled: false
         database:
             name: 'mpdTest'
-            creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS referencedatamodel'
+            creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS referencedata'
         dataSource:
             driverClassName: org.h2.Driver
             dialect: org.hibernate.dialect.H2Dialect
