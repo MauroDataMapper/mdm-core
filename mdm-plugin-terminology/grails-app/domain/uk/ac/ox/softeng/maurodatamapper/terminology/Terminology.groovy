@@ -36,7 +36,6 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.gorm.constraint.validator.Te
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
-import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
@@ -114,8 +113,8 @@ class Terminology implements Model<Terminology> {
             .appendList(Term, 'terms', this.terms, otherTerminology.terms)
             .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
             .appendList(TermRelationship, 'termRelationships',
-                        this.terms?.sourceTermRelationships?.inject([]) { result, i -> i ? result + i : result },
-                        otherTerminology.terms?.sourceTermRelationships?.inject([]) { result, i -> i ? result + i : result })
+                        this.terms?.sourceTermRelationships?.flatten()?.findAll(),
+                        otherTerminology.terms?.sourceTermRelationships?.flatten()?.findAll())
     }
 
     def beforeValidate() {

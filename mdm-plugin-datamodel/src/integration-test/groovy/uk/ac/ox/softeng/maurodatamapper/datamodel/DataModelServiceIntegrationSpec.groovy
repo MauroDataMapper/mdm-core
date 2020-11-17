@@ -857,50 +857,48 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergeDiff.class == ObjectDiff
         mergeDiff.diffs
         mergeDiff.numberOfDiffs == 12
-        mergeDiff.diffs[0].fieldName == 'description'
-        mergeDiff.diffs[0].left == 'DescriptionRight'
-        mergeDiff.diffs[0].right == 'DescriptionLeft'
-        dataClassesDiff.fieldName == 'branchName'
-        dataClassesDiff.left == 'main'
-        dataClassesDiff.right == 'test'
-        !dataClassesDiff.isMergeConflict
-        mergeDiff.diffs[2].fieldName == 'dataClasses'
-        mergeDiff.diffs[2].created.size == 3
-        mergeDiff.diffs[2].deleted.size == 2
-        mergeDiff.diffs[2].modified.size == 4
-        mergeDiff.diffs[2].created[0].value.label == 'addLeftOnly'
-        !mergeDiff.diffs[2].created[0].isMergeConflict
-        !mergeDiff.diffs[2].created[0].commonAncestorValue
-        mergeDiff.diffs[2].created[1].value.label == 'leftParentDataClass'
-        !mergeDiff.diffs[2].created[1].isMergeConflict
-        !mergeDiff.diffs[2].created[1].commonAncestorValue
-        mergeDiff.diffs[2].created[2].value.label == 'modifyAndDelete'
-        mergeDiff.diffs[2].created[2].isMergeConflict
-        mergeDiff.diffs[2].created[2].commonAncestorValue
-        mergeDiff.diffs[2].deleted[0].value.label == 'deleteAndModify'
-        mergeDiff.diffs[2].deleted[0].isMergeConflict
-        mergeDiff.diffs[2].deleted[0].commonAncestorValue
-        mergeDiff.diffs[2].deleted[1].value.label == 'deleteLeftOnly'
-        !mergeDiff.diffs[2].deleted[1].isMergeConflict
-        !mergeDiff.diffs[2].deleted[1].commonAncestorValue
-        mergeDiff.diffs[2].modified[0].diffs[0].fieldName == 'description'
-        mergeDiff.diffs[2].modified[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[0].commonAncestorValue
-        mergeDiff.diffs[2].modified[1].diffs[0].fieldName == 'dataClasses'
-        mergeDiff.diffs[2].modified[1].isMergeConflict
-        mergeDiff.diffs[2].modified[1].commonAncestorValue
-        mergeDiff.diffs[2].modified[1].diffs[0].created[0].value.label == 'addLeftToExistingClass'
-        mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].value.label == 'deleteLeftOnlyFromExistingClass'
-        !mergeDiff.diffs[2].modified[1].diffs[0].created[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[1].diffs[0].created[0].commonAncestorValue
-        !mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[1].diffs[0].deleted[0].commonAncestorValue
-        mergeDiff.diffs[2].modified[2].diffs[0].fieldName == 'description'
-        mergeDiff.diffs[2].modified[2].diffs[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[2].diffs[0].commonAncestorValue
-        mergeDiff.diffs[2].modified[3].diffs[0].fieldName == 'description'
-        !mergeDiff.diffs[2].modified[3].diffs[0].isMergeConflict
-        !mergeDiff.diffs[2].modified[3].diffs[0].commonAncestorValue
+        mergeDiff.diffs.fieldName as Set == ['branchName', 'dataClasses', 'description'] as Set
+        def branchNameDiff = mergeDiff.diffs.find { it.fieldName == 'branchName' }
+        branchNameDiff.left == 'main'
+        branchNameDiff.right == 'test'
+        !branchNameDiff.isMergeConflict
+        def dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' }
+        dataClassesDiff.created.size == 3
+        dataClassesDiff.deleted.size == 2
+        dataClassesDiff.modified.size == 4
+        dataClassesDiff.created.value.label as Set == ['addLeftOnly', 'leftParentDataClass', 'modifyAndDelete'] as Set
+        !dataClassesDiff.created.find { it.value.label == 'addLeftOnly' }.isMergeConflict
+        !dataClassesDiff.created.find { it.value.label == 'addLeftOnly' }.commonAncestorValue
+        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.isMergeConflict
+        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.commonAncestorValue
+        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.isMergeConflict
+        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestorValue
+        dataClassesDiff.deleted.value.label as Set == ['deleteAndModify', 'deleteLeftOnly'] as Set
+        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.isMergeConflict
+        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.commonAncestorValue
+        !dataClassesDiff.deleted.find { it.value.label == 'deleteLeftOnly' }.isMergeConflict
+        !dataClassesDiff.deleted.find { it.value.label == 'deleteLeftOnly' }.commonAncestorValue
+        dataClassesDiff.modified.left.diffIdentifier as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
+                                                                'addAndAddReturningDifference'] as Set
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.isMergeConflict
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].fieldName == 'dataClasses'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.isMergeConflict
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].value.label == 'addLeftToExistingClass'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].value.label ==
+        'deleteLeftOnlyFromExistingClass'
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].isMergeConflict
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].commonAncestorValue
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].isMergeConflict
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].isMergeConflict
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].fieldName == 'description'
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].isMergeConflict
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].commonAncestorValue
 
         when:
         def patch = new MergeObjectDiffData(
@@ -1000,9 +998,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         mergedModel.description == modelDescriptionLeft
         mergedModel.dataClasses.size() == 8
-        mergedModel.dataClasses.label == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly', 'sdmclass',
-                                          'addAndAddReturningDifference', 'addLeftOnly', 'modifyAndDelete', 'addLeftToExistingClass']
-        mergedModel.dataClasses.find { it.label == 'existingClass' }.dataClasses.label == ['addRightToExistingClass', 'addLeftToExistingClass']
+        mergedModel.dataClasses.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly', 'sdmclass',
+                                                 'addAndAddReturningDifference', 'addLeftOnly', 'modifyAndDelete', 'addLeftToExistingClass'] as Set
+        mergedModel.dataClasses.find { it.label == 'existingClass' }.dataClasses.label as Set == ['addRightToExistingClass',
+                                                                                                  'addLeftToExistingClass'] as Set
         mergedModel.dataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
         mergedModel.dataClasses.find { it.label == 'modifyLeftOnly' }.description == 'Description'
     }

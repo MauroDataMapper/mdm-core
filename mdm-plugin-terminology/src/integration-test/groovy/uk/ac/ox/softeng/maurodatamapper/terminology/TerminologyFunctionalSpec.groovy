@@ -396,7 +396,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                     "finalised": false
                                 }
                             ]
-                        }
+                        },
+                        "isMergeConflict": false
                     }
                 ],
                 "created": [
@@ -412,7 +413,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                                     "finalised": false
                                 }
                             ]
-                        }
+                        },
+                        "isMergeConflict": false
                     }
                 ],
                 "modified": [
@@ -441,7 +443,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
                             {
                                 "description": {
                                     "left": null,
-                                    "right": "inverseOf(Modified)"
+                                    "right": "inverseOf(Modified)",
+                                    "isMergeConflict": false
                                 }
                             }
                         ]
