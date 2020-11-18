@@ -1918,8 +1918,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       
                 ],
                 "providerType": "TerminologyImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
-                .TerminologyFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             },
             {
@@ -1932,8 +1931,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       
                 ],
                 "providerType": "TerminologyImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
-                .TerminologyFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             }
         ]'''

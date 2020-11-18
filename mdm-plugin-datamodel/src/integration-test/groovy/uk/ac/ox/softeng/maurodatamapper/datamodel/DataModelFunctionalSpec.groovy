@@ -3311,243 +3311,277 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         verifyJsonResponse OK, '''{
-  "leftId": "${json-unit.matches:id}",
-  "rightId": "${json-unit.matches:id}",
-  "label": "Complex Test DataModel",
-  "count": 20,
-  "diffs": [
-    {
-      "label": {
-        "left": "Complex Test DataModel",
-        "right": "Simple Test DataModel"
-      }
-    },
-    {
-      "metadata": {
-        "deleted": [
-          {
-            "id": "${json-unit.matches:id}",
-            "namespace": "test.com",
-            "key": "mdk1",
-            "value": "mdv1"
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "namespace": "test.com/test",
-            "key": "mdk1",
-            "value": "mdv2"
-          }
-        ],
-        "created": [
-          {
-            "id": "${json-unit.matches:id}",
-            "namespace": "test.com/simple",
-            "key": "mdk1",
-            "value": "mdv1"
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "namespace": "test.com/simple",
-            "key": "mdk2",
-            "value": "mdv2"
-          }
-        ]
-      }
-    },
-    {
-      "annotations": {
-        "deleted": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "test annotation 2"
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "test annotation 1"
-          }
-        ]
-      }
-    },
-    {
-      "author": {
-        "left": "admin person",
-        "right": null
-      }
-    },
-    {
-      "organisation": {
-        "left": "brc",
-        "right": null
-      }
-    },
-    {
-      "dataTypes": {
-        "deleted": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "string",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "child",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "integer",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "yesnounknown",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "dataClasses": {
-        "deleted": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "content",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "emptyclass",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "parent",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          }
-        ],
-        "created": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "simple",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Simple Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "dataElements": {
-        "deleted": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "child",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              },
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "parent",
-                "domainType": "DataClass"
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "element2",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              },
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "content",
-                "domainType": "DataClass"
-              }
-            ]
-          },
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "ele1",
-            "breadcrumbs": [
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "Complex Test DataModel",
-                "domainType": "DataModel",
-                "finalised": false
-              },
-              {
-                "id": "${json-unit.matches:id}",
-                "label": "content",
-                "domainType": "DataClass"
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ]
+    "leftId": "${json-unit.matches:id}",
+    "rightId": "${json-unit.matches:id}",
+    "label": "Complex Test DataModel",
+    "count": 20,
+    "diffs": [
+        {
+            "label": {
+                "left": "Complex Test DataModel",
+                "right": "Simple Test DataModel"
+            }
+        },
+        {
+            "metadata": {
+                "deleted": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "namespace": "test.com",
+                            "key": "mdk1",
+                            "value": "mdv1"
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "namespace": "test.com/test",
+                            "key": "mdk1",
+                            "value": "mdv2"
+                        }
+                    }
+                ],
+                "created": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "namespace": "test.com/simple",
+                            "key": "mdk1",
+                            "value": "mdv1"
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "namespace": "test.com/simple",
+                            "key": "mdk2",
+                            "value": "mdv2"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "annotations": {
+                "deleted": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "test annotation 1"
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "test annotation 2"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "author": {
+                "left": "admin person",
+                "right": null
+            }
+        },
+        {
+            "organisation": {
+                "left": "brc",
+                "right": null
+            }
+        },
+        {
+            "dataTypes": {
+                "deleted": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "string",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "integer",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "yesnounknown",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "child",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dataClasses": {
+                "deleted": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "content",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "emptyclass",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "parent",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "created": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "simple",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Simple Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "dataElements": {
+                "deleted": [
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "element2",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                },
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "content",
+                                    "domainType": "DataClass"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "child",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                },
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "parent",
+                                    "domainType": "DataClass"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "value": {
+                            "id": "${json-unit.matches:id}",
+                            "label": "ele1",
+                            "breadcrumbs": [
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "Complex Test DataModel",
+                                    "domainType": "DataModel",
+                                    "finalised": false
+                                },
+                                {
+                                    "id": "${json-unit.matches:id}",
+                                    "label": "content",
+                                    "domainType": "DataClass"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 }'''
 
         cleanup:
