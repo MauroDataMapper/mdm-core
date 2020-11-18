@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
 
@@ -26,8 +25,6 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 
 import java.util.regex.Pattern
-
-import static io.micronaut.http.HttpStatus.CREATED
 
 /**
  * <pre>
@@ -104,10 +101,6 @@ abstract class CatalogueItemMetadataFunctionalSpec extends UserAccessFunctionalS
     @Override
     void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
         verifyForbidden response
-    }
-
-    void verifySameValidDataCreationResponse() {
-        verifyResponse CREATED, response
     }
 
     @Override
