@@ -1669,10 +1669,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse NO_CONTENT, response
 
         PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
+        if (responseBody()?.exception?.type == 'StaleObjectStateException') PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
         verifyResponse OK, response
         PUT("$source/dataClasses/$sourceModifyAndDelete", [description: 'Description'])
+        if (responseBody()?.exception?.type == 'StaleObjectStateException')
+            PUT("$source/dataClasses/$sourceModifyAndDelete", [description: 'Description'])
         verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
+        if (responseBody()?.exception?.type == 'StaleObjectStateException')
+            PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
         POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
