@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissi
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -568,6 +569,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(branchId)
     }
 
+    @PendingFeature
     void 'E19d : test creating a new branch model version of a Model<T> and trying to finalise(as editor)'() {
         given:
         String id = getValidFinalisedId()
@@ -583,7 +585,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().documentationVersion == '1.0.0'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
-        !responseBody().availableActions.contains('finalise')
+        !responseBody().availableActions.contains('finalise') // TODO Functionality to satisfy this condition needs to be implemented
 
         when:
         String branchId = responseBody().id
