@@ -1315,7 +1315,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     }
 
     void 'VB08b : test finding merge difference of two complex datamodels'() {
-        // TODO remove StaleObjectStateException checks if locking changes are made
         given:
         String id = createNewItem(validJson)
 
@@ -1386,30 +1385,21 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         DELETE("$source/dataClasses/$deleteAndDelete")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$source/dataClasses/$deleteAndDelete")
         verifyResponse NO_CONTENT, response
         DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException')
-            DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
         verifyResponse NO_CONTENT, response
         DELETE("$source/dataClasses/$deleteLeftOnly")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$source/dataClasses/$deleteLeftOnly")
         verifyResponse NO_CONTENT, response
         DELETE("$source/dataClasses/$deleteAndModify")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$source/dataClasses/$deleteAndModify")
         verifyResponse NO_CONTENT, response
 
         PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
         verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
         verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
         verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') PUT("$source/dataClasses/$modifyAndDelete", [description: 'Description'])
         verifyResponse OK, response
 
         POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
@@ -1456,32 +1446,21 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         DELETE("$target/dataClasses/$existingClass/dataClasses/$deleteRightOnlyFromExistingClass")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException')
-            DELETE("$target/dataClasses/$existingClass/dataClasses/$deleteRightOnlyFromExistingClass")
         verifyResponse NO_CONTENT, response
         DELETE("$target/dataClasses/$deleteRightOnly")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$target/dataClasses/$deleteRightOnly")
         verifyResponse NO_CONTENT, response
         DELETE("$target/dataClasses/$deleteAndDelete")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$target/dataClasses/$deleteAndDelete")
         verifyResponse NO_CONTENT, response
         DELETE("$target/dataClasses/$modifyAndDelete")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$target/dataClasses/$modifyAndDelete")
         verifyResponse NO_CONTENT, response
 
         PUT("$target/dataClasses/$modifyRightOnly", [description: 'Description'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') PUT("$target/dataClasses/$modifyRightOnly", [description: 'Description'])
         verifyResponse OK, response
         PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') PUT("$target/dataClasses/$deleteAndModify", [description: 'Description'])
         verifyResponse OK, response
         PUT("$target/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException')
-            PUT("$target/dataClasses/$modifyAndModifyReturningNoDifference", [description: 'Description'])
         verifyResponse OK, response
         PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException')
-            PUT("$target/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionRight'])
         verifyResponse OK, response
 
         POST("$target/dataClasses/$existingClass/dataClasses", [label: 'addRightToExistingClass'])
@@ -1586,7 +1565,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     }
 
     void 'VB09c : test merging diff into draft model'() {
-        // TODO remove StaleObjectStateException checks if locking changes are made
         given:
         String id = createNewItem(validJson)
 
@@ -1661,23 +1639,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         DELETE("$source/dataClasses/$deleteLeftOnly")
         verifyResponse NO_CONTENT, response
         DELETE("$source/dataClasses/$deleteAndModify")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$source/dataClasses/$deleteAndModify")
         verifyResponse NO_CONTENT, response
         DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException')
-            DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
         verifyResponse NO_CONTENT, response
 
         PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') PUT("$source/dataClasses/$modifyLeftOnly", [description: 'Description'])
         verifyResponse OK, response
         PUT("$source/dataClasses/$sourceModifyAndDelete", [description: 'Description'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException')
-            PUT("$source/dataClasses/$sourceModifyAndDelete", [description: 'Description'])
         verifyResponse OK, response
         PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
-        if (responseBody()?.exception?.type == 'StaleObjectStateException')
-            PUT("$source/dataClasses/$modifyAndModifyReturningDifference", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
         POST("$source/dataClasses/$existingClass/dataClasses", [label: 'addLeftToExistingClass'])
@@ -1881,7 +1851,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     }
 
     void 'VB09d : test merging metadata diff into draft model'() {
-        // TODO remove StaleObjectStateException checks if locking changes are made
         given:
         String id = createNewItem(validJson)
 
@@ -1924,7 +1893,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         //metadata
         DELETE("$source/metadata/$deleteMetadataSource")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$source/metadata/$deleteMetadataSource")
         verifyResponse NO_CONTENT, response
 
         PUT("$source/metadata/$modifyMetadataSource", [value: 'Modified Description'])

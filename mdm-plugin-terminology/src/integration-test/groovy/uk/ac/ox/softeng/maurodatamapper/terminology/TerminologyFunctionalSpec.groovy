@@ -1271,7 +1271,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
     }
 
     void 'VB09c : test merging diff into draft model'() {
-        // TODO remove StaleObjectStateException checks if locking changes are made
         given:
         String id = createNewItem(validJson)
 
@@ -1385,7 +1384,6 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         DELETE("$source/terms/$deleteLeftOnly")
         verifyResponse NO_CONTENT, response
         DELETE("$source/terms/$deleteAndModify")
-        if (responseBody()?.exception?.type == 'StaleObjectStateException') DELETE("$source/terms/$deleteAndModify")
         verifyResponse NO_CONTENT, response
 
         PUT("$source/terms/$modifyLeftOnly", [description: 'Description'])

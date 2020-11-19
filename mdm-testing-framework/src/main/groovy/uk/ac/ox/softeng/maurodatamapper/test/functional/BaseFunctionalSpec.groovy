@@ -149,6 +149,9 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
 
     def <O> HttpResponse<O> PUT(String resourceEndpoint, Map body, Argument<O> bodyType = MAP_ARG, boolean cleanEndpoint = false) {
         HttpResponse<O> localResponse = exchange(HttpRequest.PUT(getUrl(resourceEndpoint, cleanEndpoint), body), bodyType)
+        if (localResponse?.body()?.exception?.type == 'StaleObjectStateException') {
+            localResponse = exchange(HttpRequest.PUT(getUrl(resourceEndpoint, cleanEndpoint), body), bodyType)
+        }
         if (bodyType.type == String) jsonCapableResponse = localResponse as HttpResponse<String>
         else if (bodyType.type == Map) response = localResponse as HttpResponse<Map>
         localResponse
@@ -156,6 +159,9 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
 
     def <O> HttpResponse<O> DELETE(String resourceEndpoint, Argument<O> bodyType = MAP_ARG, boolean cleanEndpoint = false) {
         HttpResponse<O> localResponse = exchange(HttpRequest.DELETE(getUrl(resourceEndpoint, cleanEndpoint)), bodyType)
+        if (localResponse?.body()?.exception?.type == 'StaleObjectStateException') {
+            localResponse = exchange(HttpRequest.DELETE(getUrl(resourceEndpoint, cleanEndpoint)), bodyType)
+        }
         if (bodyType.type == String) jsonCapableResponse = localResponse as HttpResponse<String>
         else if (bodyType.type == Map) response = localResponse as HttpResponse<Map>
         localResponse
