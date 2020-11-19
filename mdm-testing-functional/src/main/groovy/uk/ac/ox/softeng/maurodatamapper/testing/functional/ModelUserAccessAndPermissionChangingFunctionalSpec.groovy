@@ -576,10 +576,18 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         when: 'logged in as editor'
         loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+
+        then:
+        verifyResponse CREATED, response
+        String mainBranchId = responseBody().id
+
+        when:
         PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion'])
 
         then:
         verifyResponse CREATED, response
+        String branchId = responseBody().id
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
@@ -588,7 +596,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         !responseBody().availableActions.contains('finalise') // TODO Functionality to satisfy this condition needs to be implemented
 
         when:
-        String branchId = responseBody().id
         PUT("$branchId/finalise", [versionChangeType: 'Major'])
 
         then:
@@ -600,15 +607,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().count >= 3
-
-        when:
-        String mainBranchId = responseBody().items.find {
-            it.label == validJson.label &&
-            !(it.id in [branchId, id])
-        }?.id
-
-        then:
-        mainBranchId
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
