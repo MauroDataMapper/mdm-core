@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
+
+inherits template: '/mauroDataMapperProvider/mauroDataMapperProvider', model: [mauroDataMapperProvider: defaultReferenceDataTypeProvider]
+
+model {
+    DefaultReferenceDataTypeProvider defaultReferenceDataTypeProvider
+}
+
+json {
+    displayName defaultReferenceDataTypeProvider.displayName
+    dataTypes tmpl.'/defaultReferenceDataType/defaultReferenceDataType'(defaultReferenceDataTypeProvider.getDefaultListOfReferenceDataTypes())
+}

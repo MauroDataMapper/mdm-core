@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
@@ -29,8 +28,8 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMeta
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultDataTypeProvider
-import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -41,7 +40,7 @@ import groovy.util.logging.Slf4j
 @SuppressWarnings("ClashingTraitMethods")
 @Slf4j
 @Transactional
-class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> implements DefaultDataTypeProvider {
+class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> implements DefaultReferenceDataTypeProvider {
 
     ReferenceDataElementService referenceDataElementService
     ReferencePrimitiveTypeService referencePrimitiveTypeService
@@ -145,17 +144,17 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
     }
 
     @Override
-    List<DefaultDataType> getDefaultListOfDataTypes() {
+    List<DefaultReferenceDataType> getDefaultListOfReferenceDataTypes() {
         [
-                new ReferencePrimitiveType(label: 'Text', description: 'A piece of text'),
-                new ReferencePrimitiveType(label: 'Number', description: 'A whole number'),
-                new ReferencePrimitiveType(label: 'Decimal', description: 'A decimal number'),
-                new ReferencePrimitiveType(label: 'Date', description: 'A date'),
-                new ReferencePrimitiveType(label: 'DateTime', description: 'A date with a timestamp'),
-                new ReferencePrimitiveType(label: 'Timestamp', description: 'A timestamp'),
-                new ReferencePrimitiveType(label: 'Boolean', description: 'A true or false value'),
-                new ReferencePrimitiveType(label: 'Duration', description: 'A time period in arbitrary units')
-        ].collect { new DefaultDataType(it) }
+            new ReferencePrimitiveType(label: 'Text', description: 'A piece of text'),
+            new ReferencePrimitiveType(label: 'Number', description: 'A whole number'),
+            new ReferencePrimitiveType(label: 'Decimal', description: 'A decimal number'),
+            new ReferencePrimitiveType(label: 'Date', description: 'A date'),
+            new ReferencePrimitiveType(label: 'DateTime', description: 'A date with a timestamp'),
+            new ReferencePrimitiveType(label: 'Timestamp', description: 'A timestamp'),
+            new ReferencePrimitiveType(label: 'Boolean', description: 'A true or false value'),
+            new ReferencePrimitiveType(label: 'Duration', description: 'A time period in arbitrary units')
+        ].collect { new DefaultReferenceDataType(it) }
     }
 
     @Override
@@ -319,8 +318,9 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         copy
     }
 
-    ReferenceDataModel addDefaultListOfDataTypesToDataModel(ReferenceDataModel referenceDataModel, List<DefaultDataType> defaultDataTypes) {
-        defaultListOfDataTypes.each {
+    ReferenceDataModel addDefaultListOfReferenceDataTypesToReferenceDataModel(ReferenceDataModel referenceDataModel,
+                                                                              List<DefaultReferenceDataType> defaultReferenceDataTypes) {
+        defaultReferenceDataTypes.each {
             ReferenceDataType dataType
             switch (it.domainType) {
                 case ReferencePrimitiveType.simpleName:

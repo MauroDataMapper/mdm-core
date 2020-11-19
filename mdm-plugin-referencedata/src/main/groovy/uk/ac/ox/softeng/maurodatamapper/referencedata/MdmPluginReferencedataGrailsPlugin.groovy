@@ -17,12 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata
 
-
+import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters.DataTypeValueConverter
 import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.MdmPluginReferenceDataSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.SummaryMetadataAwareMappingContext
 
 import grails.plugins.Plugin
-import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters.DataTypeValueConverter
 
 class MdmPluginReferencedataGrailsPlugin extends Plugin {
 
@@ -65,8 +64,10 @@ The Reference Data domain, services and controllers for the Mauro Data Mapper ba
         mdmCore: '4.0.0 > *'
     ]
 
+    def loadAfter = ['mdmPluginDatamodel']
+
     Closure doWithSpring() {
-        {->
+        { ->
 
             mdmPluginReferenceDataSchemaMappingContext MdmPluginReferenceDataSchemaMappingContext
             dataTypeValueConverter DataTypeValueConverter

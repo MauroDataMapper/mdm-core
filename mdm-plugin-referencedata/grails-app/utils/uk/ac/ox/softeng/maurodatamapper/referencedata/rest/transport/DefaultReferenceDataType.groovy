@@ -18,14 +18,14 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport
 
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 
 /**
  * @since 23/03/2020
  */
-class DefaultDataType {
+class DefaultReferenceDataType {
 
     String domainType
     String label
@@ -40,12 +40,12 @@ class DefaultDataType {
         this.description = dataType.description
     }
 
-    DefaultDataType(ReferencePrimitiveType primitiveType) {
+    DefaultReferenceDataType(ReferencePrimitiveType primitiveType) {
         initialise(primitiveType)
         this.units = primitiveType.units
     }
 
-    DefaultDataType(ReferenceEnumerationType enumerationType) {
+    DefaultReferenceDataType(ReferenceEnumerationType enumerationType) {
         initialise(enumerationType)
         this.enumerationValues = enumerationType.referenceEnumerationValues
     }

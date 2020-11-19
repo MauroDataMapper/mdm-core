@@ -59,7 +59,8 @@ The DataFlow domain, services and controllers for the Mauro Data Mapper backend.
     def scm = [url: "https://github.com/mauroDataMapper/mdm-core"]
 
     def dependsOn = [
-        mdmCore: '4.0.0 > *'
+        mdmCore           : '4.0.0 > *',
+        mdmPluginDatamodel: '4.0.0 > *',
     ]
 
     Closure doWithSpring() {

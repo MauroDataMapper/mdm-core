@@ -35,14 +35,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProvi
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValueService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -50,6 +49,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -73,7 +73,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     ReferenceSummaryMetadataService referenceSummaryMetadataService
 
     @Autowired
-    Set<DefaultDataTypeProvider> defaultDataTypeProviders
+    Set<DefaultReferenceDataTypeProvider> defaultReferenceDataTypeProviders
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -189,7 +189,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         if (referenceDataModel.referenceDataElements) {
             referenceDataElements.addAll referenceDataModel.referenceDataElements
             referenceDataModel.referenceDataElements.clear()
-        }        
+        }
 
         save(referenceDataModel)
         sessionFactory.currentSession.flush()
@@ -259,12 +259,15 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         latest
     }
 
-    ReferenceDataModel checkForAndAddDefaultDataTypes(ReferenceDataModel resource, String defaultDataTypeProvider) {
-        if (defaultDataTypeProvider) {
-            DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.displayName == defaultDataTypeProvider }
+    ReferenceDataModel checkForAndAddDefaultReferenceDataTypes(ReferenceDataModel resource, String defaultReferenceDataTypeProvider) {
+        if (defaultReferenceDataTypeProvider) {
+            DefaultReferenceDataTypeProvider provider = defaultReferenceDataTypeProviders.find {
+                it.displayName == defaultReferenceDataTypeProvider
+            }
             if (provider) {
                 log.debug("Adding ${provider.displayName} default DataTypes")
-                return referenceDataTypeService.addDefaultListOfDataTypesToDataModel(resource, provider.defaultListOfDataTypes)
+                return referenceDataTypeService.addDefaultListOfReferenceDataTypesToReferenceDataModel(resource,
+                                                                                                       provider.defaultListOfReferenceDataTypes)
             }
         }
         resource
@@ -297,7 +300,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
      *      - element 1
      *         - type 2
      *      etc....
-     *  
+     *
      * In other words, Reference Data Element and Reference Data Type are stated at the model level, and then restated for every
      * Reference Data Value. When importing the Reference Data Values, we want to set an assocation for Reference Data Element (and 
      * thus also Reference Data Type) to the entity imported at the model level, rather than creating duplicated entities by creating
@@ -318,20 +321,22 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
             referenceDataModel.referenceDataElements.each { rde ->
                 referenceDataElementService.checkImportedReferenceDataElementAssociations(importingUser, referenceDataModel, rde)
             }
-        }        
+        }
 
         if (referenceDataModel.referenceDataValues) {
             referenceDataModel.referenceDataValues.each { rdv ->
                 referenceDataValueService.checkImportedReferenceDataValueAssociations(importingUser, referenceDataModel, rdv)
             }
-        }        
+        }
         log.debug('ReferenceDataModel associations checked')
     }
 
     ReferenceDataModel ensureAllEnumerationTypesHaveValues(ReferenceDataModel referenceDataModel) {
-        dataModel.referenceDataTypes.findAll { it.instanceOf(ReferenceEnumerationType) && !(it as ReferenceEnumerationType).getReferenceEnumerationValues() }.each { ReferenceEnumerationType et ->
-            et.addToReferenceEnumerationValues(key: '-', value: '-')
-        }
+        dataModel.referenceDataTypes.
+            findAll { it.instanceOf(ReferenceEnumerationType) && !(it as ReferenceEnumerationType).getReferenceEnumerationValues() }.
+            each { ReferenceEnumerationType et ->
+                et.addToReferenceEnumerationValues(key: '-', value: '-')
+            }
         referenceDataModel
     }
 
@@ -348,7 +353,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         }
     }
 
-    Set<ReferenceEnumerationType> findAllEnumerationTypeByNames(ReferenceDataModel referenceDataModel, Set<String> enumerationTypeNames, boolean caseInsensitive) {
+    Set<ReferenceEnumerationType> findAllEnumerationTypeByNames(ReferenceDataModel referenceDataModel, Set<String> enumerationTypeNames,
+                                                                boolean caseInsensitive) {
         if (!enumerationTypeNames) return []
         referenceDataModel.referenceDataTypes.findAll { it.instanceOf(ReferenceEnumerationType) }.findAll {
             caseInsensitive ?
@@ -358,7 +364,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     @Override
-    ReferenceDataModel finaliseModel(ReferenceDataModel referenceDataModel, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds = []) {
+    ReferenceDataModel finaliseModel(ReferenceDataModel referenceDataModel, User user, Version modelVersion, VersionChangeType versionChangeType,
+                                     List<Serializable> supersedeModelIds = []) {
 
         referenceDataModel.finalised = true
         referenceDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -367,8 +374,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         referenceDataModel.modelVersion = getNextModelVersion(referenceDataModel, modelVersion, versionChangeType)
 
         referenceDataModel.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
-                                   description: "Reference Data Model finalised by ${user.firstName} ${user.lastName} on " +
-                                                "${OffsetDateTimeConverter.toString(referenceDataModel.dateFinalised)}")
+                                            description: "Reference Data Model finalised by ${user.firstName} ${user.lastName} on " +
+                                                         "${OffsetDateTimeConverter.toString(referenceDataModel.dateFinalised)}")
         editService.createAndSaveEdit(referenceDataModel.id, referenceDataModel.domainType,
                                       "Reference Data Model finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(referenceDataModel.dateFinalised)}",
@@ -379,15 +386,15 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     boolean newVersionCreationIsAllowed(ReferenceDataModel referenceDataModel) {
         if (!referenceDataModel.finalised) {
             referenceDataModel.errors.reject('invalid.referencedatamodel.new.version.not.finalised.message',
-                                    [referenceDataModel.label, referenceDataModel.id] as Object[],
-                                    'ReferenceDataModel [{0}({1})] cannot have a new version as it is not finalised')
+                                             [referenceDataModel.label, referenceDataModel.id] as Object[],
+                                             'ReferenceDataModel [{0}({1})] cannot have a new version as it is not finalised')
             return false
         }
         ReferenceDataModel superseding = findDataModelDocumentationSuperseding(referenceDataModel)
         if (superseding) {
             referenceDataModel.errors.reject('invalid.referencedatamodel.new.version.superseded.message',
-                                    [referenceDataModel.label, referenceDataModel.id, superseding.label, superseding.id] as Object[],
-                                    'ReferenceDataModel [{0}({1})] cannot have a new version as it has been superseded by [{2}({3})]')
+                                             [referenceDataModel.label, referenceDataModel.id, superseding.label, superseding.id] as Object[],
+                                             'ReferenceDataModel [{0}({1})] cannot have a new version as it has been superseded by [{2}({3})]')
             return false
         }
 
@@ -396,30 +403,31 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     @Override
     ReferenceDataModel createNewBranchModelVersion(String branchName, ReferenceDataModel referenceDataModel, User user, boolean copyPermissions,
-                                          UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
+                                                   UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(referenceDataModel)) return referenceDataModel
 
         // Check if the branch name is already being used
         if (countAllByLabelAndBranchNameAndNotFinalised(referenceDataModel.label, branchName) > 0) {
             referenceDataModel.errors.reject('model.label.branch.name.already.exists',
-                                    ['branchName', referenceDataModel, branchName, referenceDataModel.label] as Object[],
-                                    'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
+                                             ['branchName', referenceDataModel, branchName, referenceDataModel.label] as Object[],
+                                             'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
             return referenceDataModel
         }
 
-        // We know at this point the referencedatamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
+        // We know at this point the referencedatamodel is finalised which means its branch name == main so we need to check no unfinalised main
+        // branch exists
         boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(referenceDataModel.label, 'main') > 0
 
         ReferenceDataModel newMainBranchModelVersion
         if (!draftModelOnMainBranchForLabel) {
             newMainBranchModelVersion = copyReferenceDataModel(referenceDataModel,
-                                                      user,
-                                                      copyPermissions,
-                                                      referenceDataModel.label,
-                                                      'main',
-                                                      additionalArguments.throwErrors as boolean,
-                                                      userSecurityPolicyManager,
-                                                      true)
+                                                               user,
+                                                               copyPermissions,
+                                                               referenceDataModel.label,
+                                                               'main',
+                                                               additionalArguments.throwErrors as boolean,
+                                                               userSecurityPolicyManager,
+                                                               true)
             setReferenceDataModelIsNewBranchModelVersionOfReferenceDataModel(newMainBranchModelVersion, referenceDataModel, user)
 
             if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
@@ -427,13 +435,13 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         ReferenceDataModel newBranchModelVersion
         if (branchName != 'main') {
             newBranchModelVersion = copyReferenceDataModel(referenceDataModel,
-                                                  user,
-                                                  copyPermissions,
-                                                  referenceDataModel.label,
-                                                  branchName,
-                                                  additionalArguments.throwErrors as boolean,
-                                                  userSecurityPolicyManager,
-                                                  true)
+                                                           user,
+                                                           copyPermissions,
+                                                           referenceDataModel.label,
+                                                           branchName,
+                                                           additionalArguments.throwErrors as boolean,
+                                                           userSecurityPolicyManager,
+                                                           true)
 
             setReferenceDataModelIsNewBranchModelVersionOfReferenceDataModel(newBranchModelVersion, referenceDataModel, user)
 
@@ -445,18 +453,18 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     @Override
     ReferenceDataModel createNewDocumentationVersion(ReferenceDataModel referenceDataModel, User user, boolean copyPermissions,
-                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
+                                                     UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(referenceDataModel)) return referenceDataModel
 
         ReferenceDataModel newDocVersion = copyReferenceDataModel(referenceDataModel,
-                                                user,
-                                                copyPermissions,
-                                                referenceDataModel.label,
-                                                Version.nextMajorVersion(referenceDataModel.documentationVersion),
-                                                referenceDataModel.branchName,
-                                                additionalArguments.throwErrors as boolean,
-                                                userSecurityPolicyManager,
-                                                true)
+                                                                  user,
+                                                                  copyPermissions,
+                                                                  referenceDataModel.label,
+                                                                  Version.nextMajorVersion(referenceDataModel.documentationVersion),
+                                                                  referenceDataModel.branchName,
+                                                                  additionalArguments.throwErrors as boolean,
+                                                                  userSecurityPolicyManager,
+                                                                  true)
         setReferenceDataModelIsNewDocumentationVersionOfReferenceDataModel(newDocVersion, referenceDataModel, user)
 
         if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
@@ -464,36 +472,42 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     @Override
-    ReferenceDataModel createNewForkModel(String label, ReferenceDataModel referenceDataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
+    ReferenceDataModel createNewForkModel(String label, ReferenceDataModel referenceDataModel, User user, boolean copyPermissions,
+                                          UserSecurityPolicyManager
+                                              userSecurityPolicyManager, Map<String, Object> additionalArguments) {
         if (!newVersionCreationIsAllowed(referenceDataModel)) return referenceDataModel
 
         ReferenceDataModel newForkModel = copyReferenceDataModel(referenceDataModel, user, copyPermissions, label,
-                                               additionalArguments.throwErrors as boolean,
-                                               userSecurityPolicyManager, false)
+                                                                 additionalArguments.throwErrors as boolean,
+                                                                 userSecurityPolicyManager, false)
         setReferenceDataModelIsNewForkModelOfReferenceDataModel(newForkModel, referenceDataModel, user)
         if (newForkModel.validate()) newForkModel.save(flush: true, validate: false)
         newForkModel
     }
 
     ReferenceDataModel copyReferenceDataModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
-                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
-        copyReferenceDataModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager,
-                      copySummaryMetadata)
+                                              UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+        copyReferenceDataModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors,
+                               userSecurityPolicyManager,
+                               copySummaryMetadata)
     }
 
-    ReferenceDataModel copyReferenceDataModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
-                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+    ReferenceDataModel copyReferenceDataModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, String branchName,
+                                              boolean throwErrors,
+                                              UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
         copyReferenceDataModel(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager,
-                      copySummaryMetadata)
+                               copySummaryMetadata)
     }
 
-    ReferenceDataModel copyReferenceDataModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
-                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+    ReferenceDataModel copyReferenceDataModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
+                                              String branchName,
+                                              boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
 
-        ReferenceDataModel copy = new ReferenceDataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
-                                       deleted: false, documentationVersion: copyDocVersion, folder: original.folder, authority: original.authority,
-                                       branchName: branchName
+        ReferenceDataModel copy = new ReferenceDataModel(author: original.author, organisation: original.organisation, modelType: original.modelType,
+                                                         finalised: false,
+                                                         deleted: false, documentationVersion: copyDocVersion, folder: original.folder,
+                                                         authority: original.authority,
+                                                         branchName: branchName
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
@@ -532,7 +546,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
                 log.debug("copy element ${de}")
                 referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager)
             }
-        }        
+        }
 
         copy
     }
@@ -560,7 +574,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         )
     }
 
-    void setReferenceDataModelIsNewDocumentationVersionOfReferenceDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel, User catalogueUser) {
+    void setReferenceDataModelIsNewDocumentationVersionOfReferenceDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel,
+                                                                            User catalogueUser) {
         newModel.addToVersionLinks(
             linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
@@ -568,7 +583,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         )
     }
 
-    void setReferenceDataModelIsNewBranchModelVersionOfReferenceDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel, User catalogueUser) {
+    void setReferenceDataModelIsNewBranchModelVersionOfReferenceDataModel(ReferenceDataModel newModel, ReferenceDataModel oldModel,
+                                                                          User catalogueUser) {
         newModel.addToVersionLinks(
             linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
@@ -576,25 +592,27 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         )
     }
 
-    List<DataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel, ReferenceDataModel otherReferenceDataModel, int maxResults) {
+    List<DataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel, ReferenceDataModel otherReferenceDataModel,
+                                                                int maxResults) {
         referenceDataModel.referenceDataElements.collect { de ->
             referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(otherReferenceDataModel, de, maxResults)
         }
     }
 
 
-/*    Map<UUID, Long> obtainChildKnowledge(List<ReferenceDataModel> parents) {
-        if (!parents) return [:]
-        DetachedCriteria<ReferenceDataModel> criteria = new DetachedCriteria<DataClass>(DataClass)
-            .isNull('parentDataClass')
-            .inList('dataModel', parents)
-            .projections {
-                groupProperty('dataModel.id')
-                count()
-            }.order('dataModel')
-        criteria.list().collectEntries { [it[0], it[1]] }
-    }
-*/
+    /*    Map<UUID, Long> obtainChildKnowledge(List<ReferenceDataModel> parents) {
+            if (!parents) return [:]
+            DetachedCriteria<ReferenceDataModel> criteria = new DetachedCriteria<DataClass>(DataClass)
+                .isNull('parentDataClass')
+                .inList('dataModel', parents)
+                .projections {
+                    groupProperty('dataModel.id')
+                    count()
+                }.order('dataModel')
+            criteria.list().collectEntries { [it[0], it[1]] }
+        }
+    */
+
     @Override
     boolean hasTreeTypeModelItems(ReferenceDataModel dataModel) {
         false
@@ -612,7 +630,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     @Override
     List<ReferenceDataModel> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                               String searchTerm, String domainType) {
+                                                                                        String searchTerm, String domainType) {
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
         if (!readableIds) return []
 
@@ -639,7 +657,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     @Override
     List<ReferenceDataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceDataModel.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id) }
+        ReferenceDataModel.byClassifierId(classifier.id).list().
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id) }
     }
 
     @Override
@@ -679,7 +698,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     @Override
     List<ReferenceDataModel> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
-                                          boolean includeModelSuperseded, boolean includeDeleted) {
+                                                   boolean includeModelSuperseded, boolean includeDeleted) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
         if (!ids) return []
         List<UUID> constrainedIds
@@ -766,11 +785,13 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     List<ReferenceDataModel> findAllDocumentSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
-        ReferenceDataModel.byIdInList(findAllDocumentSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel))).list(pagination)
+        ReferenceDataModel.byIdInList(findAllDocumentSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel))).
+            list(pagination)
     }
 
     List<ReferenceDataModel> findAllModelSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
-        ReferenceDataModel.byIdInList(findAllModelSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel))).list(pagination)
+        ReferenceDataModel.byIdInList(findAllModelSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel))).
+            list(pagination)
     }
 
     ReferenceDataModel findDataModelSuperseding(ReferenceDataModel dataModel) {
@@ -825,9 +846,10 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     ReferenceDataModel createAndSaveDataModel(User createdBy, Folder folder, String label, String description,
-                                     String author, String organisation, Authority authority = authorityService.getDefaultAuthority()) {
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: createdBy.emailAddress, label: label, description: description, author: author,
-                                            organisation: organisation, folder: folder, authority: authority)
+                                              String author, String organisation, Authority authority = authorityService.getDefaultAuthority()) {
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: createdBy.emailAddress, label: label, description: description,
+                                                                       author: author,
+                                                                       organisation: organisation, folder: folder, authority: authority)
 
         // Have to save before adding an edit
         if (referenceDataModel.validate()) {

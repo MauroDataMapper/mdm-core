@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
+
+model {
+    Collection<DefaultReferenceDataTypeProvider> providers
+}
+
+json tmpl.defaultReferenceDataTypeProvider(providers)

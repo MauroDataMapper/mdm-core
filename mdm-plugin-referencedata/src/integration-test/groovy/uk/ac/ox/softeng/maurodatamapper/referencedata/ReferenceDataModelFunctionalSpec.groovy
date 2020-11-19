@@ -27,10 +27,8 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
-import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
@@ -40,16 +38,16 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 import spock.lang.Shared
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
-
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelController* Controller: referenceDataModel
@@ -268,9 +266,9 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
     }
 
     @PendingFeature(reason = "Not yet implemented")
-    void 'test getting DataModel default datatype providers'() {
+    void 'test getting DataModel default reference datatype providers'() {
         when:
-        GET('providers/defaultDataTypeProviders', STRING_ARG)
+        GET('providers/defaultReferenceDataTypeProviders', STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''[

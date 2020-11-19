@@ -99,7 +99,7 @@ class UrlMappings {
                 group '/providers', {
                     get '/exporters'(controller: 'referenceDataModel', action: 'exporterProviders') // new url
                     get '/importers'(controller: 'referenceDataModel', action: 'importerProviders') // new url
-                    get '/defaultDataTypeProviders'(controller: 'referenceDataModel', action: 'defaultDataTypeProviders') // new url
+                    get '/defaultReferenceDataTypeProviders'(controller: 'referenceDataModel', action: 'defaultReferenceDataTypeProviders') // new url
                 }
 
                 post "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'referenceDataModel', action: 'exportModels')

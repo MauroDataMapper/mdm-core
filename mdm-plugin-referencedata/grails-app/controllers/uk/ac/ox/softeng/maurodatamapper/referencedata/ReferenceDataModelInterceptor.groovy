@@ -45,7 +45,7 @@ class ReferenceDataModelInterceptor extends ModelInterceptor {
 
     @Override
     List<String> getAuthenticatedAccessMethods() {
-        super.getAuthenticatedAccessMethods() + ['defaultDataTypeProviders', 'types']
+        super.getAuthenticatedAccessMethods() + ['defaultReferenceDataTypeProviders', 'types']
     }
 
     @Override

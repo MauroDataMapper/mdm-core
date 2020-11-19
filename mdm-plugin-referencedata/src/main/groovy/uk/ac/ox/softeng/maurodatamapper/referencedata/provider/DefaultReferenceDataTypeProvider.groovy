@@ -17,16 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.provider
 
-
-import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultDataType
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperProvider
+import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultReferenceDataType
 
 /**
  * @since 18/04/2018
  */
-trait DefaultDataTypeProvider implements MauroDataMapperProvider {
+trait DefaultReferenceDataTypeProvider implements MauroDataMapperProvider {
 
-    abstract List<DefaultDataType> getDefaultListOfDataTypes()
+    abstract List<DefaultReferenceDataType> getDefaultListOfReferenceDataTypes()
 
     abstract String getDisplayName()
 

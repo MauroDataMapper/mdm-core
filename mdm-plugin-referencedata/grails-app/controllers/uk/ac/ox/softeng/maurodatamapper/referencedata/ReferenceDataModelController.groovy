@@ -60,8 +60,8 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
         super(ReferenceDataModel, 'referenceDataModelId')
     }
 
-    def defaultDataTypeProviders() {
-        respond providers: referenceDataModelService.defaultDataTypeProviders
+    def defaultReferenceDataTypeProviders() {
+        respond providers: referenceDataModelService.defaultReferenceDataTypeProviders
     }
 
     def hierarchy() {
@@ -93,7 +93,7 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
 
         instance.properties = getObjectToBind()
 
-        instance = referenceDataModelService.checkForAndAddDefaultDataTypes instance, params.defaultDataTypeProvider
+        instance = referenceDataModelService.checkForAndAddDefaultReferenceDataTypes instance, params.defaultReferenceDataTypeProvider
 
         if (!validateResource(instance, 'update')) return
 
