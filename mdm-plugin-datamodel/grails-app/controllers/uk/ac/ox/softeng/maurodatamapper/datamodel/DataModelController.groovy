@@ -191,4 +191,10 @@ class DataModelController extends ModelController<DataModel> {
         respond dataModelService.suggestLinksBetweenModels(dataModel, otherDataModel, maxResults)
     }
 
+    @Override
+    protected DataModel createResource() {
+        DataModel model = super.createResource() as DataModel
+        dataModelService.checkForAndAddDefaultDataTypes(model, params.defaultDataTypeProvider)
+        model
+    }
 }
