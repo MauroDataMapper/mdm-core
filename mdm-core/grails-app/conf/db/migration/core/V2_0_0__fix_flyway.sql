@@ -220,7 +220,7 @@ INSERT INTO referencedata.flyway_schema_history(installed_rank, version, descrip
 SELECT *
 FROM core.flyway_schema_history
 WHERE version IS NOT NULL AND
-      version IN ('1.12.0');
+      version IN ('1.12.0', '1.14.0');
 
 -- Remove all the non-core migrations
 DELETE
@@ -230,7 +230,7 @@ WHERE version IS NOT NULL AND
                   '1.2.0', '1.8.0', '1.10.0',
                   '1.3.0', '1.5.2', '1.6.1',
                   '1.4.0',
-                  '1.12.0'
+                  '1.12.0', '1.14.0'
           );
 -- Set the core to have a schema statement of just core
 UPDATE core.flyway_schema_history
