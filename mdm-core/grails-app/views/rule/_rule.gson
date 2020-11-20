@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+
+model {
+    Rule rule
+}
+
+json {
+    id rule.id
+
+    name rule.name
+    if (rule.description) description rule.description
+
+    lastUpdated rule.lastUpdated
+}

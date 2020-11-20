@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<Rule> ruleList
+}
+
+json {
+    count ruleList instanceof PagedResultList ? ((PagedResultList) ruleList).getTotalCount() : ruleList?.size() ?: 0
+    items tmpl.rule(ruleList ?: [])
+}
+

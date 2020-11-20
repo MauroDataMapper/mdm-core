@@ -15,17 +15,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.model.facet
+package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import grails.compiler.GrailsCompileStatic
-import groovy.transform.SelfType
-import org.grails.datastore.gorm.GormEntity
+import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
 
-@SelfType(GormEntity)
-@GrailsCompileStatic
-trait MultiFacetAware implements MetadataAware,
-    AnnotationAware,
-    SemanticLinkAware,
-    ReferenceFileAware,
-    RuleAware {
+class RuleInterceptor extends FacetInterceptor {
+
+    @Override
+    Class getFacetClass() {
+        Rule
+    }
+
+    boolean before() {
+        facetResourceChecks()
+        checkActionAllowedOnFacet()
+    }
 }
