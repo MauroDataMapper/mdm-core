@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters.DataTypeValueConverter
 import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.MdmPluginReferenceDataSchemaMappingContext
-import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.SummaryMetadataAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.mapping.ReferenceSummaryMetadataAwareMappingContext
 
 import grails.plugins.Plugin
 
@@ -72,7 +72,7 @@ The Reference Data domain, services and controllers for the Mauro Data Mapper ba
             mdmPluginReferenceDataSchemaMappingContext MdmPluginReferenceDataSchemaMappingContext
             dataTypeValueConverter DataTypeValueConverter
 
-            summaryMetadataAwareMappingContext SummaryMetadataAwareMappingContext
+            referenceSummaryMetadataAwareMappingContext ReferenceSummaryMetadataAwareMappingContext
         }
     }
 

@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.DataTypeBindingHelper
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.ReferenceDataElementLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.domain.MultiplicityAware
@@ -49,12 +50,12 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
 @Slf4j
-class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceDataModel>, MultiplicityAware {
+class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceDataModel>, MultiplicityAware, ReferenceSummaryMetadataAware {
 
     public final static Integer BATCH_SIZE = 1000
 
     ReferenceDataModel referenceDataModel
-    @BindUsing({obj, source ->
+    @BindUsing({ obj, source ->
         new DataTypeBindingHelper().getPropertyValue(obj, 'referenceDataType', source)
     })
     ReferenceDataType referenceDataType

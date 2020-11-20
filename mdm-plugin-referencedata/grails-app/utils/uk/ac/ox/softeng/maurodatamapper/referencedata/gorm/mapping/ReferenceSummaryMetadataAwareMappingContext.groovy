@@ -24,7 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 /**
  * @since 31/10/2019
  */
-class SummaryMetadataAwareMappingContext extends CatalogueItemJoinTableDynamicHibernateMappingContext {
+class ReferenceSummaryMetadataAwareMappingContext extends CatalogueItemJoinTableDynamicHibernateMappingContext {
     @Override
     boolean handlesDomainClass(Class domainClass) {
         Utils.parentClassIsAssignableFromChild(ReferenceSummaryMetadataAware, domainClass)
