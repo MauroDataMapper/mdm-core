@@ -569,7 +569,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(branchId)
     }
 
-    @PendingFeature
+    @PendingFeature(reason = 'Finalise needs to be removed from available actions after model is finalised')
     void 'E19d : test creating a new branch model version of a Model<T> and trying to finalise(as editor)'() {
         given:
         String id = getValidFinalisedId()
