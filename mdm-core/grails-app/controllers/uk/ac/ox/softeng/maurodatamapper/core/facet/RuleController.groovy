@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
 class RuleController extends EditLoggingController<Rule> {
 
@@ -48,14 +49,14 @@ class RuleController extends EditLoggingController<Rule> {
     }
 
     @Override
-    void serviceDeleteResource(Rule resource) {
-        ruleService.delete(resource, true)
-    }
-
-    @Override
     protected Rule saveResource(Rule resource) {
+        //Save the Rule
         resource.save flush: true, validate: false
+
+        //Add an association between the Rule and CatalogueItem
         ruleService.addRuleToCatalogueItem(resource, resource.catalogueItem)
+        
+        //Record the creation against the CatalogueItem to which the Rule belongs
         ruleService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
     }
 
@@ -70,6 +71,18 @@ class RuleController extends EditLoggingController<Rule> {
     @Override
     protected void deleteResource(Rule resource) {
         serviceDeleteResource(resource)
+    }
+
+    @Override
+    protected void serviceDeleteResource(Rule resource) {
+        //Delete the association between Rule and CatalogueItem
+        CatalogueItem catalogueItem = ruleService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        ruleService.removeRuleFromCatalogueItem(resource, catalogueItem)
+        
+        //Delete the rule
+        ruleService.delete(resource, true)
+
+        //Record the deletion against the CatalogueItem to which the Rule belonged
         ruleService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
     }
 

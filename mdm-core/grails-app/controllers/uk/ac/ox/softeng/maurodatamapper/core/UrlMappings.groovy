@@ -156,7 +156,9 @@ class UrlMappings {
                 /*
                 Rules
                 */
-                '/rules'(resources: 'rule', excludes: DEFAULT_EXCLUDES)
+                '/rules'(resources: 'rule', excludes: DEFAULT_EXCLUDES) {
+                    '/representations'(resources: 'ruleRepresentation', excludes: DEFAULT_EXCLUDES)
+                }
             }
 
             /*

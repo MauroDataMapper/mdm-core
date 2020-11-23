@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.item.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
@@ -31,12 +32,14 @@ import grails.rest.Resource
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
 
-    //public final static Integer BATCH_SIZE = 5000
-
     UUID id
 
     String name
     String description
+
+    static hasMany = [
+        ruleRepresentations: RuleRepresentation
+    ]    
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
@@ -53,6 +56,7 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
         name type: 'text'
         description type: 'text'
         catalogueItemId index: 'rule_catalogue_item_idx'
+        ruleRepresentations cascade: 'all-delete-orphan'
     }
 
     static search = {

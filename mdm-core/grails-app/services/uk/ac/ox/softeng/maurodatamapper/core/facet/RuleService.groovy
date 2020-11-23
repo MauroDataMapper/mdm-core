@@ -21,11 +21,9 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 import javax.transaction.Transactional
@@ -36,9 +34,6 @@ class RuleService implements CatalogueItemAwareService<Rule> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
-
-    SessionFactory sessionFactory
-    MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
 
     Rule get(Serializable id) {
         Rule.get(id)
@@ -58,9 +53,6 @@ class RuleService implements CatalogueItemAwareService<Rule> {
 
     void delete(Rule rule, boolean flush = false) {
         if (!rule) return
-        CatalogueItemService service = catalogueItemServices.find { it.handles(rule.catalogueItemDomainType) }
-        if (!service) throw new ApiBadRequestException('RS01', 'Rule removal for catalogue item with no supporting service')
-        service.removeRuleFromCatalogueItem(rule.catalogueItemId, rule)
         rule.delete(flush: flush)
     }
 
@@ -68,6 +60,11 @@ class RuleService implements CatalogueItemAwareService<Rule> {
     void addRuleToCatalogueItem(Rule rule, CatalogueItem catalogueItem) {
         catalogueItem.addToRules(rule)
     }
+
+    //Ensure a row is removed from the _facet table
+    void removeRuleFromCatalogueItem(Rule rule, CatalogueItem catalogueItem) {
+        catalogueItem.removeFromRules(rule)
+    }    
 
     boolean validate(Rule rule) {
         boolean valid = rule.validate()
