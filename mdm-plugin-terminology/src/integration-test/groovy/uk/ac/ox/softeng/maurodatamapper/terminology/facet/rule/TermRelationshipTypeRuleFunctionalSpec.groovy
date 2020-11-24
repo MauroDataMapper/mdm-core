@@ -15,13 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.rule
+package uk.ac.ox.softeng.maurodatamapper.terminology.facet.rule
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemRuleFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -32,78 +32,82 @@ import io.micronaut.http.HttpResponse
 import spock.lang.Shared
 
 /**
- * Where facet owner is a ReferenceDataModel
+ * Where facet owner is a TermRelationshipType
  *
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.RuleController
  */
 @Integration
 @Slf4j
-class ReferenceDataModelRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
+class TermRelationshipTypeRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
 
     @Shared
-    ReferenceDataModel referenceDataModel
-    @Shared
-    ReferenceDataElement referenceDataElement
-    @Shared
-    ReferenceDataType referenceDataType
+    Terminology terminology
 
+    @Shared
+    TermRelationshipType termRelationshipType
 
     String getCatalogueItemCopyPath() {
-        "referenceDataModels/${sourceCatalogueItemId}/newForkModel"
+        "termRelationshipTypes/${sourceCatalogueItemId}/newForkModel"
     }
 
     @Transactional
     String getSourceCatalogueItemId() {
-        ReferenceDataModel.findByLabel('Functional Test ReferenceDataModel').id.toString()
+        termRelationshipType.id.toString()
     }
 
     @Transactional
     String getDestinationCatalogueItemId() {
-        // newForkModel doesn't require a destination data model
+        // newForkModel doesn't require a destination terminology
     }
 
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
-        referenceDataModel = new ReferenceDataModel(label: 'Functional Test ReferenceDataModel', createdBy: 'functionalTest@test.com',
+        terminology = new Terminology(label: 'Functional Test Terminology', createdBy: 'functionalTest@test.com',
                                   folder: folder, authority: testAuthority).save(flush: true)
-        referenceDataType = new ReferencePrimitiveType(label: 'string', createdBy: 'functionalTest@test.com',
-                                     referenceDataModel: referenceDataModel).save(flush: true)
-        referenceDataElement = new ReferenceDataElement(label: 'Functional Test ReferenceDataElement', createdBy: 'functionalTest@test.com',
-                                      referenceDataModel: referenceDataModel, referenceDataType: referenceDataType).save(flush: true)
+
+        Term term1 = new Term(code: 'Functional Test Code Source', definition: 'Functional Test Definition',
+                              terminology: terminology, createdBy: 'functionalTest@test.com').save(flush: true)
+
+        Term term2 = new Term(code: 'Functional Test Code Target', definition: 'Functional Test Definition',
+                              terminology: terminology, createdBy: 'functionalTest@test.com').save(flush: true)   
+
+        termRelationshipType = new TermRelationshipType(label: 'Functional Test TermRelationshipType',
+                                                        terminology: terminology, createdBy: 'functionalTest@test.com').save(flush: true)
+      
         sessionFactory.currentSession.flush()
     }
 
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec')
-        cleanUpResources(ReferenceDataModel, Folder, ReferenceDataElement, ReferenceDataType)
+        cleanUpResources(Terminology, Term, TermRelationship, TermRelationshipType)
     }
 
     @Override
     UUID getCatalogueItemId() {
-        referenceDataModel.id
+        termRelationshipType.id
     }
 
     @Override
     String getCatalogueItemDomainResourcePath() {
-        'referenceDataModels'
+        "termRelationshipTypes"
     }
 
     @Override
     void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
-        // Metadata only copied for new doc version
+        // Rule only copied for new doc version
     }
 
     @Override
     HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
-        /// Metadata only copied for new doc version
+        /// Rule only copied for new doc version
     }
 
     @Override
     void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
-        // Metadata only copied for new doc version
+        // Rule only copied for new doc version
     }
 
 }

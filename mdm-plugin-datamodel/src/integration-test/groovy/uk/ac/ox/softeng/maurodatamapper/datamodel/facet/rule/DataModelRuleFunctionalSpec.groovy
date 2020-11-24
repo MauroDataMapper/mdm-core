@@ -52,16 +52,16 @@ class DataModelRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
 
 
     String getCatalogueItemCopyPath() {
-        "dataModels/${sourceDataModelId}/newForkModel"
+        "dataModels/${sourceCatalogueItemId}/newForkModel"
     }
 
     @Transactional
-    String getSourceDataModelId() {
+    String getSourceCatalogueItemId() {
         DataModel.findByLabel('Functional Test DataModel').id.toString()
     }
 
     @Transactional
-    String getDestinationDataModelId() {
+    String getDestinationCatalogueItemId() {
         // newForkModel doesn't require a destination data model
     }
 

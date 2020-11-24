@@ -50,16 +50,16 @@ class ReferenceDataTypeRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpe
     ReferenceDataType referenceDataType
 
     String getCatalogueItemCopyPath() {
-        "referenceDataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"
+        "referenceDataModels/${destinationCatalogueItemId}/${catalogueItemDomainResourcePath}/${sourceCatalogueItemId}/${catalogueItemId}"
     }
 
     @Transactional
-    String getSourceDataModelId() {
+    String getSourceCatalogueItemId() {
         ReferenceDataModel.findByLabel('Functional Test ReferenceDataModel').id.toString()
     }
 
     @Transactional
-    String getDestinationDataModelId() {
+    String getDestinationCatalogueItemId() {
         ReferenceDataModel.findByLabel('Destination Test ReferenceDataModel').id.toString()
     }
 

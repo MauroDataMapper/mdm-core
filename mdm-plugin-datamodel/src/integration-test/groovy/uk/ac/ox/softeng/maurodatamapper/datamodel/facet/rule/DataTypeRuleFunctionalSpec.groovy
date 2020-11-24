@@ -53,14 +53,18 @@ class DataTypeRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
     DataType dataType
 
     @Transactional
-    String getSourceDataModelId() {
+    String getSourceCatalogueItemId() {
         DataModel.findByLabel('Functional Test DataModel').id.toString()
     }
 
     @Transactional
-    String getDestinationDataModelId() {
+    String getDestinationCatalogueItemId() {
         DataModel.findByLabel('Destination Test DataModel').id.toString()
     }
+
+    String getCatalogueItemCopyPath() {
+        "dataModels/${destinationCatalogueItemId}/${catalogueItemDomainResourcePath}/${sourceCatalogueItemId}/${catalogueItemId}"
+    }       
 
     @OnceBefore
     @Transactional

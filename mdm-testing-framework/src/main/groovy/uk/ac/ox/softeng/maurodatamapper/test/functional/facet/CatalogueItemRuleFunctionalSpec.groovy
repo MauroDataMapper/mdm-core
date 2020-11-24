@@ -35,9 +35,9 @@ import io.micronaut.http.HttpStatus
 @Slf4j
 abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctionalSpec<Rule> {
 
-    abstract String getSourceDataModelId()
+    abstract String getSourceCatalogueItemId()
 
-    abstract String getDestinationDataModelId()
+    abstract String getDestinationCatalogueItemId()
 
     @Override
     String getFacetResourcePath() {

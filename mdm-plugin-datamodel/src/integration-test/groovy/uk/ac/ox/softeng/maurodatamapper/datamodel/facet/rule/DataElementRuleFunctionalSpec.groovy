@@ -55,19 +55,20 @@ class DataElementRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
     DataType dataType
 
     String getCatalogueItemCopyPath() {
-        """dataModels/${destinationDataModelId}/dataClasses/${destinationDataClassId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}\
+        """dataModels/${destinationCatalogueItemId}/dataClasses/${destinationDataClassId}/${catalogueItemDomainResourcePath}/${sourceCatalogueItemId}\
 /${sourceDataClassId}/${catalogueItemId}"""
     }
 
     @Transactional
-    String getSourceDataModelId() {
+    String getSourceCatalogueItemId() {
         DataModel.findByLabel('Functional Test DataModel').id.toString()
     }
 
     @Transactional
-    String getDestinationDataModelId() {
+    String getDestinationCatalogueItemId() {
         DataModel.findByLabel('Destination Test DataModel').id.toString()
     }
+
 
     @Transactional
     String getSourceDataClassId() {
