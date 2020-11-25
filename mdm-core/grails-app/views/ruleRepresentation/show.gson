@@ -1,4 +1,4 @@
-import uk.ac.ox.softeng.maurodatamapper.core.facet.item.RuleRepresentation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 
 model {
     RuleRepresentation ruleRepresentation

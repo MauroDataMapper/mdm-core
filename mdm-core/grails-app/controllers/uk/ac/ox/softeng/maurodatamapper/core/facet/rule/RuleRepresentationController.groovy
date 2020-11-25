@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.facet.item
+package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
@@ -49,6 +49,9 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
         //Create an association between the Rule and RuleRepresentation
         ruleService.get(params.ruleId)?.addToRuleRepresentations(resource)
 
+        //Record the creation against the CatalogueItem to which the Rule owning the RuleRepresentation belongs
+        ruleService.addCreatedEditToCatalogueItemOfRule(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)          
+
         resource
     }    
 
@@ -62,6 +65,9 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
     protected RuleRepresentation updateResource(RuleRepresentation resource) {
         List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
+
+        //Record the update against the CatalogueItem to which the Rule owning the RuleRepresentation belongs
+        ruleService.addUpdatedEditToCatalogueItemOfRule(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)          
     }        
 
     @Override
@@ -71,10 +77,14 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
 
     @Override
     void serviceDeleteResource(RuleRepresentation resource) {
+        //Record the deletion against the CatalogueItem to which the Rule owning the RuleRepresentation belongs
+        //(do this before deleting the association to rule, because edit logging needs to know the rule)
+        ruleService.addDeletedEditToCatalogueItemOfRule(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId) 
+
         //Delete the association between the Rule and RuleRepresentation
         ruleService.get(params.ruleId)?.removeFromRuleRepresentations(resource)
 
         //Delete the RuleRepresentation
-        ruleRepresentationService.delete(resource, true)   
+        ruleRepresentationService.delete(resource, true)           
     }
 }

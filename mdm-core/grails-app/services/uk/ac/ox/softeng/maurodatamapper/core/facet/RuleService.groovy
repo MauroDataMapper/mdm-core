@@ -19,9 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -93,4 +95,25 @@ class RuleService implements CatalogueItemAwareService<Rule> {
     List<Rule> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination = [:]) {
         Rule.withFilter(Rule.byCatalogueItemId(catalogueItemId), pagination).list(pagination)
     }
+
+    //This works around the fact the RuleRepresentation is not CatalogueItemAware
+    RuleRepresentation addCreatedEditToCatalogueItemOfRule(User creator, RuleRepresentation domain, String catalogueItemDomainType, UUID catalogueItemId) {
+        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
+        catalogueItem.addToEditsTransactionally creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
+        domain
+    }
+
+    //This works around the fact the RuleRepresentation is not CatalogueItemAware
+    RuleRepresentation addUpdatedEditToCatalogueItemOfRule(User editor, RuleRepresentation domain, String catalogueItemDomainType, UUID catalogueItemId, List<String> dirtyPropertyNames) {
+        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
+        catalogueItem.addToEditsTransactionally editor, domain.editLabel, dirtyPropertyNames
+        domain
+    }
+
+    //This works around the fact the RuleRepresentation is not CatalogueItemAware
+    RuleRepresentation addDeletedEditToCatalogueItemOfRule(User deleter, RuleRepresentation domain, String catalogueItemDomainType, UUID catalogueItemId) {
+        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
+        catalogueItem.addToEditsTransactionally deleter, "[$domain.editLabel] removed from component [${catalogueItem.editLabel}]"
+        domain
+    }    
 }
