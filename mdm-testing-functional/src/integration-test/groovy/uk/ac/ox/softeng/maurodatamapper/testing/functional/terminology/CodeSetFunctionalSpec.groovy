@@ -195,8 +195,22 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 1,
+  "count": 2,
   "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "CodeSet",
+      "label": "Unfinalised Simple Test CodeSet",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "author": "Test Bootstrap",
+      "organisation": "Oxford BRC",
+      "authority": {
+        "id": "${json-unit.matches:id}",
+        "url": "http://localhost",
+        "label": "Mauro Data Mapper"
+      }
+    },    
     {
       "id": "${json-unit.matches:id}",
       "domainType": "CodeSet",

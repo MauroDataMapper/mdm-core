@@ -17,9 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.rule
 
+import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.rule.CatalogueItemRuleRepresentationFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -39,12 +39,12 @@ import groovy.util.logging.Slf4j
  */
 @Integration
 @Slf4j
-class DataModelRuleRepresentationFunctionalSpec extends CatalogueItemRuleRepresentationFunctionalSpec {
+class TerminologyRuleRepresentationFunctionalSpec extends CatalogueItemRuleRepresentationFunctionalSpec {
 
     @Transactional
     @Override
     CatalogueItem getModel() {
-        DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME)
+        Terminology.findByLabel(BootstrapModels.COMPLEX_TERMINOLOGY_NAME)
     }
 
     @Transactional
@@ -55,6 +55,6 @@ class DataModelRuleRepresentationFunctionalSpec extends CatalogueItemRuleReprese
 
     @Override
     String getCatalogueItemDomainType() {
-        'dataModels'
+        'terminologies'
     }    
 }

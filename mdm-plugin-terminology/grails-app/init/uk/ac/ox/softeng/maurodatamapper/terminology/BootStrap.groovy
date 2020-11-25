@@ -53,6 +53,9 @@ class BootStrap {
                     if (CodeSet.countByLabel(BootstrapModels.SIMPLE_CODESET_NAME) == 0) {
                         BootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)
                     }
+                    if (CodeSet.countByLabel(BootstrapModels.UNFINALISED_CODESET_NAME) == 0) {
+                        BootstrapModels.buildAndSaveUnfinalisedCodeSet(messageSource, folder, authority)
+                    }
 
                     if (Terminology.countByAuthorityIsNull() != 0) {
                         log.warn('Terminologies missing authority, updating with default authority')

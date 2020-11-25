@@ -42,6 +42,7 @@ class BootstrapModels {
     public static final String COMPLEX_TERMINOLOGY_NAME = 'Complex Test Terminology'
     public static final String SIMPLE_TERMINOLOGY_NAME = 'Simple Test Terminology'
     public static final String SIMPLE_CODESET_NAME = 'Simple Test CodeSet'
+    public static final String UNFINALISED_CODESET_NAME = 'Unfinalised Simple Test CodeSet'
 
     static Terminology buildAndSaveSimpleTerminology(MessageSource messageSource, Folder folder, Authority authority) {
         Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: SIMPLE_TERMINOLOGY_NAME, folder: folder,
@@ -175,4 +176,26 @@ class BootstrapModels {
 
         terminology
     }
+
+    static CodeSet buildAndSaveUnfinalisedCodeSet(MessageSource messageSource, Folder folder, Authority authority) {
+
+        CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: UNFINALISED_CODESET_NAME, folder: folder,
+                                      author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
+
+        checkAndSave(messageSource, codeSet)
+
+        Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
+
+        if (!simpleTestTerminology) {
+            simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
+        }
+
+        simpleTestTerminology.terms.each {
+            codeSet.addToTerms(it)
+        }
+
+        checkAndSave(messageSource, codeSet)
+
+        codeSet
+    }    
 }

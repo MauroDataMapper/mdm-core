@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.rule
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.CatalogueItemRuleFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -38,22 +40,22 @@ import groovy.util.logging.Slf4j
  */
 @Integration
 @Slf4j
-class DataModelRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
+class ReferenceDataElementRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
 
     @Transactional
     @Override
     String getModelId() {
-        DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME).id.toString()
+        ReferenceDataModel.findByLabel(BootstrapModels.SIMPLE_REFERENCE_MODEL_NAME).id.toString()
     }
 
     @Override
     String getCatalogueItemDomainType() {
-        'dataModels'
+        'referenceDataElements'
     }
 
+    @Transactional
     @Override
     String getCatalogueItemId() {
-        getModelId()
+        ReferenceDataElement.byReferenceDataModelIdAndLabel(Utils.toUuid(getModelId()), 'Organisation name').get().id.toString()
     }
-
 }

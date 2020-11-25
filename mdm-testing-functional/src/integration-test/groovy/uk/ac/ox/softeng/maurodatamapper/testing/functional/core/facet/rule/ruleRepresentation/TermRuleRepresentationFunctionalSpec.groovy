@@ -17,10 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.rule
 
+import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.rule.CatalogueItemRuleRepresentationFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -39,22 +41,22 @@ import groovy.util.logging.Slf4j
  */
 @Integration
 @Slf4j
-class DataModelRuleRepresentationFunctionalSpec extends CatalogueItemRuleRepresentationFunctionalSpec {
+class TermRuleRepresentationFunctionalSpec extends CatalogueItemRuleRepresentationFunctionalSpec {
 
     @Transactional
     @Override
     CatalogueItem getModel() {
-        DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME)
+        Terminology.findByLabel(BootstrapModels.COMPLEX_TERMINOLOGY_NAME)
     }
 
     @Transactional
     @Override
     CatalogueItem getCatalogueItem() {
-        getModel()
+        Term.byTerminologyIdAndCode(Utils.toUuid(getModel().id), 'CTT1').get()
     }
 
     @Override
     String getCatalogueItemDomainType() {
-        'dataModels'
+        'terms'
     }    
 }

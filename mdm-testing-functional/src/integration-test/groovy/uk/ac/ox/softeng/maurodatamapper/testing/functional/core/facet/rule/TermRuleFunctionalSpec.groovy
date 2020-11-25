@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.rule
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.CatalogueItemRuleFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -38,22 +40,23 @@ import groovy.util.logging.Slf4j
  */
 @Integration
 @Slf4j
-class DataModelRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
+class TermRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
 
     @Transactional
     @Override
     String getModelId() {
-        DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME).id.toString()
+        Terminology.findByLabel(BootstrapModels.COMPLEX_TERMINOLOGY_NAME).id.toString()
     }
 
     @Override
     String getCatalogueItemDomainType() {
-        'dataModels'
+        'terms'
     }
 
+    @Transactional
     @Override
     String getCatalogueItemId() {
-        getModelId()
+        Term.byTerminologyIdAndCode(Utils.toUuid(getModelId()), 'CTT1').get().id.toString()
     }
 
 }

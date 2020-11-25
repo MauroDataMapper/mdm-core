@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.rule
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.CatalogueItemRuleFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -38,17 +38,17 @@ import groovy.util.logging.Slf4j
  */
 @Integration
 @Slf4j
-class DataModelRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
+class CodeSetRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
 
     @Transactional
     @Override
     String getModelId() {
-        DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME).id.toString()
+        CodeSet.findByLabel(BootstrapModels.UNFINALISED_CODESET_NAME).id.toString()
     }
 
     @Override
     String getCatalogueItemDomainType() {
-        'dataModels'
+        'codeSets'
     }
 
     @Override

@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.rule
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -46,7 +47,7 @@ class DataElementRuleRepresentationFunctionalSpec extends CatalogueItemRuleRepre
     @Transactional
     @Override
     CatalogueItem getModel() {
-        DataModel.findByLabel('Complex Test DataModel')
+        DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME)
     }
 
     @Transactional
