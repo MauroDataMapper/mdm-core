@@ -26,11 +26,17 @@ import io.micronaut.http.HttpStatus
 /**
  *
  * @see uk.ac.ox.softeng.maurodatamapper.core.facet.RuleController* Controller: rule
- *  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/rules         | Action: save                                 |
- *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules         | Action: index                                |
- *  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}   | Action: delete                               |
- *  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}   | Action: update                               |
- *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}   | Action: show                                 |
+ * @see uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentationController* Controller: ruleRepresentation
+ *  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/rules                                              | Action: save      |
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules                                              | Action: index     |
+ *  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}                                        | Action: delete    |
+ *  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}                                        | Action: update    |
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}                                        | Action: show      |
+ *  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations                        | Action: save      |
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations                        | Action: index     |
+ *  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations/${representationId}    | Action: delete    |
+ *  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations/${representationId}    | Action: update    |
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}/representations/${representationId}    | Action: show      | 
  */
 @Slf4j
 abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctionalSpec<Rule> {
@@ -83,7 +89,7 @@ abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctio
 
     Map getValidRuleRepresentationJson() {
         [
-            language         : 'SQL',
+            language         : 'sql',
             representation   : '0 < a < 25'
         ]
     }
@@ -104,7 +110,7 @@ abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctio
     String getExpectedRuleRepresentationShowJson() {
         '''{
   "id": "${json-unit.matches:id}",
-  "language": "SQL",
+  "language": "sql",
   "representation": "0 < a < 25",
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
@@ -113,7 +119,7 @@ abstract class CatalogueItemRuleFunctionalSpec extends CatalogueItemFacetFunctio
     String getExpectedRuleRepresentationUpdateJson() {
         '''{
   "id": "${json-unit.matches:id}",
-  "language": "SQL",
+  "language": "sql",
   "representation": "0 < a < 30",
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''

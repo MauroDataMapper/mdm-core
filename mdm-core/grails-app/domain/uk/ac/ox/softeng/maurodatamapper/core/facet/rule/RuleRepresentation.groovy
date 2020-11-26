@@ -64,6 +64,13 @@ class RuleRepresentation implements CreatorAware, Diffable<RuleRepresentation>, 
     RuleRepresentation() {
     }
 
+    /**
+     * Force language to be trimmed and lower case so that e.g. 'SQL' and ' sql' are treated as the same. 
+     */
+    void setLanguage(String language) {
+        this.language = language?.trim().toLowerCase()
+    }
+
     @Override
     String getDomainType() {
         RuleRepresentation.simpleName

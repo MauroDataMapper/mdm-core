@@ -141,18 +141,18 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
 
     @Override
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[RuleRepresentation:SQL:A > 0 AND A < 5 on Rule Rule:Functional Test Rule:Functional Test Description] added to component \[.+?]/
+        ~/\[RuleRepresentation:sql:A > 0 AND A < 5 on Rule Rule:Functional Test Rule:Functional Test Description] added to component \[.+?]/
     }
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[RuleRepresentation:SQL:A > 0 AND A < 6 on Rule Rule:Functional Test Rule:Functional Test Description] changed properties \[representation]/
+        ~/\[RuleRepresentation:sql:A > 0 AND A < 6 on Rule Rule:Functional Test Rule:Functional Test Description] changed properties \[representation]/
     }
 
     @Override
     Map getValidJson() {
         [
-            language       : 'SQL',
+            language       : 'sql',
             representation : 'A > 0 AND A < 5'
         ]
     }
@@ -184,7 +184,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     String getShowJson() {
         '''{
   "id": "${json-unit.matches:id}",
-  "language": "SQL",
+  "language": "sql",
   "representation": "A > 0 AND A < 5",
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
