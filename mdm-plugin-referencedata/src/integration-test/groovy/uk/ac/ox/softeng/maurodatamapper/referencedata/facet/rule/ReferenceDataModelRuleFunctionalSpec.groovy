@@ -93,17 +93,17 @@ class ReferenceDataModelRuleFunctionalSpec extends CatalogueItemRuleFunctionalSp
 
     @Override
     void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
-        // Metadata only copied for new doc version
+        // Rules only copied for new doc version
     }
 
     @Override
     HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
-        /// Metadata only copied for new doc version
+        // Rules only copied for new doc version
     }
 
     @Override
     void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
-        // Metadata only copied for new doc version
+        // Rules only copied for new doc version
     }
 
 }

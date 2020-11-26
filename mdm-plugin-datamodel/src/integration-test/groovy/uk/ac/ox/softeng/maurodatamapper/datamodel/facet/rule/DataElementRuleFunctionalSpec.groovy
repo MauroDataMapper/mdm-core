@@ -113,23 +113,5 @@ class DataElementRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpec {
     @Override
     String getCatalogueItemDomainResourcePath() {
         'dataElements'
-    }
-
-    //TODO - check
-    @Override
-    void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
-        // Rule only copied for new doc version
-    }
-
-    //TODO - check
-    @Override
-    HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
-        /// Rule only copied for new doc version
-    }
-
-    //TODO - check
-    @Override
-    void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
-        // Rule only copied for new doc version
-    }    
+    }   
 }

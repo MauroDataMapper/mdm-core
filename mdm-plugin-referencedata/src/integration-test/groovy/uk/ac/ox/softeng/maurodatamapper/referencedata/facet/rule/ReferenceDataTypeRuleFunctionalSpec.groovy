@@ -92,23 +92,5 @@ class ReferenceDataTypeRuleFunctionalSpec extends CatalogueItemRuleFunctionalSpe
     @Override
     String getCatalogueItemDomainResourcePath() {
         'referenceDataTypes'
-    }
-
-    //TODO
-    @Override
-    void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
-        // Metadata only copied for new doc version
-    }
-
-    //TODO
-    @Override
-    HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
-        /// Metadata only copied for new doc version
-    }
-
-    //TODO
-    @Override
-    void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
-        // Metadata only copied for new doc version
-    }    
+    }  
 }
