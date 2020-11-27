@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.web.databinding.DataBindingUtils
 import groovy.util.logging.Slf4j
@@ -52,8 +53,11 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
+        long start = System.currentTimeMillis()
         List<DataModel> imported = importDataModels(currentUser, params.importFile.fileContents)
-        imported.collect {updateImportedModelFromParameters(it, params, true)}
+        List<DataModel> updated = imported.collect { updateImportedModelFromParameters(it, params, true) }
+        log.info('Imported {} models complete in {}', updated.size(), Utils.timeTaken(start))
+        updated
     }
 
     @Override
@@ -61,8 +65,11 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
+        long start = System.currentTimeMillis()
         DataModel imported = importDataModel(currentUser, params.importFile.fileContents)
-        updateImportedModelFromParameters(imported, params)
+        DataModel updated = updateImportedModelFromParameters(imported, params)
+        log.info('Import complete in {}', Utils.timeTaken(start))
+        updated
     }
 
     DataModel updateImportedModelFromParameters(DataModel dataModel, T params, boolean list = false) {
@@ -84,7 +91,7 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
         log.debug('Fixing bound DataModel')
         dataModelService.checkImportedDataModelAssociations(currentUser, dataModel, dataModelMap)
 
-        log.info('Import complete')
+        log.debug('Binding complete')
         dataModel
     }
 }
