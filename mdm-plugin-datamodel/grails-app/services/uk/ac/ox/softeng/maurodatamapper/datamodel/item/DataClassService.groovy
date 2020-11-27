@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -278,16 +277,20 @@ class DataClassService extends ModelItemService<DataClass> {
 
     void checkImportedDataClassAssociations(User importingUser, DataModel dataModel, DataClass dataClass, boolean matchDataTypes = false) {
         dataModel.addToDataClasses(dataClass)
+        dataClass.buildPath()
         dataClass.createdBy = importingUser.emailAddress
         checkFacetsAfterImportingCatalogueItem(dataClass)
         if (dataClass.dataClasses) {
+            dataClass.fullSortOfChildren(dataClass.dataClasses)
             dataClass.dataClasses.each { dc ->
                 checkImportedDataClassAssociations(importingUser, dataModel, dc, matchDataTypes)
             }
         }
         if (dataClass.dataElements) {
+            dataClass.fullSortOfChildren(dataClass.dataElements)
             dataClass.dataElements.each { de ->
                 de.createdBy = importingUser.emailAddress
+                de.buildPath()
                 dataElementService.checkFacetsAfterImportingCatalogueItem(de)
             }
             if (matchDataTypes) dataElementService.matchUpDataTypes(dataModel, dataClass.dataElements)

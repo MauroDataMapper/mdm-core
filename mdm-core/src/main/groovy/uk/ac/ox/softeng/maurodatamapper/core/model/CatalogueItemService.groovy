@@ -194,7 +194,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
         }
         catalogueItem.breadcrumbTree?.trackChanges()
         catalogueItem.breadcrumbTree?.beforeValidate()
-        catalogueItem.breadcrumbTree?.save()
+        catalogueItem.breadcrumbTree?.save(validate: false)
         catalogueItem
     }
 

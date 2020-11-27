@@ -25,15 +25,4 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     }
 
     abstract Class<K> getModelItemClass()
-
-   /**
-    * After saving a new modelItem whose index is set, update the indices of its siblings.
-    */
-    K save(Map args, K modelItem) {
-        K mi = super.save(args, modelItem)
-        if (mi.idx < Integer.MAX_VALUE) {
-            mi.updateIndices(mi.idx)
-        }
-        mi
-    }
 }

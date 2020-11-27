@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -94,6 +93,14 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement.dataType = null
         dataElement.dataClass?.removeFromDataElements(dataElement)
         dataElement.delete(flush: flush)
+    }
+
+    @Override
+    DataElement save(Map args, DataElement dataElement) {
+        if (!dataElement.dataType.ident()) {
+            dataTypeService.save(dataElement.dataType)
+        }
+        super.save(args, dataElement)
     }
 
     @Override
@@ -228,7 +235,9 @@ class DataElementService extends ModelItemService<DataElement> {
 
                 if (!dataType) {
                     log.debug('No DataType for {} in DataModel, using first DataElement DataType as base', label)
-                    dataType = elements.first().dataType
+                    DataElement dataElement = elements.first()
+                    dataType = dataElement.dataType
+                    dataType.createdBy = dataElement.createdBy
                     dataModel.addToDataTypes(dataType)
                 }
                 elements.each { dataType.addToDataElements(it) }
