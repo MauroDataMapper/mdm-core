@@ -78,7 +78,7 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
 
         Terminology terminology = new Terminology()
         log.debug('Binding map to new Terminology instance')
-        DataBindingUtils.bindObjectToInstance(terminology, terminologyMap)
+        DataBindingUtils.bindObjectToInstance(terminology, terminologyMap, null, ['id', 'domainType', 'lastUpdated'], null)
 
         bindTermRelationships(terminology, terminologyMap.termRelationships)
 
@@ -89,6 +89,17 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
     }
 
     void bindTermRelationships(Terminology terminology, List<Map> termRelationships) {
+        //Somehow XML and JSON databinding in test cases gives different results.
+        //Remove term relationships and start again.
+        terminology.terms.each { 
+            if (it.sourceTermRelationships) {
+                it.sourceTermRelationships.clear()
+            }
+            if (it.targetTermRelationships) {
+                it.targetTermRelationships.clear()
+            }
+        }
+
         termRelationships.each {tr ->
             Term sourceTerm = terminology.findTermByCode(tr.sourceTerm)
             sourceTerm.addToSourceTermRelationships(new TermRelationship(
