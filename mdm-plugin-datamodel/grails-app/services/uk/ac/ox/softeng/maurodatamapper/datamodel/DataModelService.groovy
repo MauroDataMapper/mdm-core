@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
@@ -110,8 +111,10 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     DataModel validate(DataModel dataModel) {
-        log.debug('Validating DataModel')
+        log.trace('Validating DataModel')
+        long st = System.currentTimeMillis()
         dataModel.validate()
+        log.debug('Validated DataModel in {}', Utils.timeTaken(st))
         dataModel
     }
 
@@ -182,9 +185,11 @@ class DataModelService extends ModelService<DataModel> {
 
     DataModel saveWithBatching(DataModel dataModel) {
         log.debug('Saving {} using batching', dataModel.label)
+        long start = System.currentTimeMillis()
         Collection<DataType> dataTypes = []
         Collection<ReferenceType> referenceTypes = []
         Collection<DataClass> dataClasses = []
+        Collection<BreadcrumbTree> breadcrumbTrees = []
 
         if (dataModel.classifiers) {
             log.trace('Saving {} classifiers')
@@ -204,23 +209,52 @@ class DataModelService extends ModelService<DataModel> {
             dataModel.dataClasses.clear()
         }
 
+        if (dataModel.breadcrumbTree.children) {
+            breadcrumbTrees.addAll dataModel.breadcrumbTree.children
+            dataModel.breadcrumbTree.children.clear()
+        }
+
         save(dataModel)
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
 
+        log.trace('Disabling validation on contents')
+        breadcrumbTrees.each { it.skipValidation(true) }
+        dataTypes.each { dt ->
+            dt.skipValidation(true)
+            if (dt.instanceOf(EnumerationType)) {
+                (dt as EnumerationType).enumerationValues.each { ev -> ev.skipValidation(true) }
+            }
+        }
+        dataClasses.each { dc ->
+            dc.skipValidation(true)
+            dc.dataElements.each { de -> de.skipValidation(true) }
+        }
+        referenceTypes.each { it.skipValidation(true) }
 
-        log.trace('Saving {} datatypes', dataTypes.size())
+        log.trace('Starting saving contents')
+        long subStart = System.currentTimeMillis()
+        BreadcrumbTree.saveAll(breadcrumbTrees)
+        sessionFactory.currentSession.flush()
+        log.trace('Saved {} breadcrumb trees in {}', breadcrumbTrees.size(), Utils.timeTaken(subStart))
+
+        subStart = System.currentTimeMillis()
         dataTypeService.saveAll(dataTypes)
+        log.trace('Saved {} dataTypes in {}', dataTypes.size(), Utils.timeTaken(subStart))
 
-        log.trace('Saving {} dataClasses', dataClasses.size())
+        subStart = System.currentTimeMillis()
         Collection<DataElement> dataElements = dataClassService.hierarchySaveAllAndGetDataElements(dataClasses)
+        log.trace('Saved {} dataClasses in {}', dataClasses.size(), Utils.timeTaken(subStart))
 
-        log.trace('Saving {} reference datatypes', referenceTypes.size())
+        subStart = System.currentTimeMillis()
         dataTypeService.saveAll(referenceTypes as Collection<DataType>)
+        log.trace('Saved {} reference datatypes in {}', referenceTypes.size(), Utils.timeTaken(subStart))
 
-        log.trace('Saving {} dataelements ', dataElements.size())
+        subStart = System.currentTimeMillis()
         dataElementService.saveAll(dataElements)
+        log.trace('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
+        log.debug('Batch save of DataModel complete in {}', Utils.timeTaken(start))
         dataModel
     }
 
@@ -324,13 +358,8 @@ class DataModelService extends ModelService<DataModel> {
         dataModel.authority = authorityService.getDefaultAuthority()
         checkFacetsAfterImportingCatalogueItem(dataModel)
 
-        if (dataModel.dataTypes) {
-            dataModel.dataTypes.each { dt ->
-                dataTypeService.checkImportedDataTypeAssociations(importingUser, dataModel, dt)
-            }
-        }
-
         if (dataModel.dataClasses) {
+            dataModel.fullSortOfChildren(dataModel.childDataClasses)
             Collection<DataClass> dataClasses = dataModel.childDataClasses
             dataClasses.each { dc ->
                 dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
@@ -345,6 +374,15 @@ class DataModelService extends ModelService<DataModel> {
                                                       bindingMap.dataTypes.findAll { it.domainType == DataType.REFERENCE_DOMAIN_TYPE })
             }
         }
+
+        // Make sure we have all the DTs inside the DM first as some will have been imported from the DEs
+        if (dataModel.dataTypes) {
+            dataModel.fullSortOfChildren(dataModel.dataTypes)
+            dataModel.dataTypes.each { dt ->
+                dataTypeService.checkImportedDataTypeAssociations(importingUser, dataModel, dt)
+            }
+        }
+
         log.debug('DataModel associations checked')
     }
 
