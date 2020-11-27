@@ -37,9 +37,11 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.domain.MultiplicityAwar
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
+import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.search.annotations.Field
 import org.hibernate.search.annotations.FieldBridge
@@ -47,6 +49,7 @@ import org.hibernate.search.annotations.Index
 import org.hibernate.search.bridge.builtin.UUIDBridge
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
+@Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware, IndexedSiblingAware {
 
@@ -132,15 +135,14 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     @Override
     def beforeValidate() {
+        long st = System.currentTimeMillis()
         dataModel = dataModel ?: parentDataClass?.getModel()
         beforeValidateModelItem()
-        this.dataClasses.each { it.beforeValidate() }
-        dataElements.each { it.beforeValidate() }
-        referenceTypes.each { it.beforeValidate() }
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
             it.catalogueItem = this
         }
+        log.trace('DC before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override
@@ -188,14 +190,23 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     @Override
     CatalogueItem getIndexedWithin() {
         getParent()
-    }    
+    }
+
+    @Override
+    void updateChildIndexes(ModelItem updated, Integer oldIndex) {
+        if (updated.instanceOf(DataClass)) {
+            updateSiblingIndexes(updated, dataClasses, oldIndex)
+        } else if (updated.instanceOf(DataElement)) {
+            updateSiblingIndexes(updated, dataElements, oldIndex)
+        }
+    }
 
     DataClass findDataClass(String label) {
-        this.dataClasses.find {it.label == label}
+        this.dataClasses.find { it.label == label }
     }
 
     DataElement findDataElement(String label) {
-        dataElements.find {it.label == label}
+        dataElements.find { it.label == label }
     }
 
     int countDataElementsByLabel(String label) {
@@ -249,23 +260,5 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
 
     static DetachedCriteria<DataClass> withFilter(DetachedCriteria<DataClass> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
-    }
-
-    /*
-     * Update the index property of the Data Elements which belong to this Data Class, and which are siblings of an updated Data Element
-     *
-     * @param DataElement updated A DataElement, which belongs to this DataClass, and which has been updated.
-     */
-    void updateChildIndexes(DataElement updated, int oldIndex) {
-        updateSiblingIndexes(updated, dataElements, oldIndex)
-    }
-
-    /*
-     * Update the index property of the Data Classes which belong to this Data Class, and which are siblings of an updated Data Class
-     *
-     * @param DataClass updated A DataClass, which belongs to this DataClass, and which has been updated.
-     */
-    void updateChildIndexes(DataClass updated, int oldIndex) {
-        updateSiblingIndexes(updated, dataClasses, oldIndex)
     }
 }

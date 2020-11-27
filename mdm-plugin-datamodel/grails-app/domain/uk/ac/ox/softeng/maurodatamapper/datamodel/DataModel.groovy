@@ -28,7 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
@@ -41,16 +41,10 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.ParentOwnedLabelCollectionValidator
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import grails.validation.ValidationErrors
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEnhancer
-import org.grails.datastore.gorm.GormValidationApi
-import org.springframework.validation.Errors
-import org.springframework.validation.FieldError
 
 /**
  * The base element of a tree that is used to describe some data set, a domain object, a REST {@code @Resource}.
@@ -187,169 +181,13 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         "${modelType}:${label}"
     }
 
-
     @Override
-    boolean validate(Map arguments) {
-        validate(arguments, [])
-    }
-
-    @Override
-    boolean validate(List fields) {
-        validate([:], fields)
-    }
-
-    @Override
-    boolean validate() {
-        validate([:], [])
-    }
-
-    boolean validate(Map args, List<String> fields) {
-
-        if ((args || fields) && shouldSkipValidation()) return true
-        Errors dcErrors = null
-        Errors dtErrors = null
-        boolean dmValid = true
-        long start = System.currentTimeMillis()
-
-        if (dataClasses) {
-            if (!fields || fields.contains('dataClasses') || fields.contains('childDataClasses')) {
-                start = System.currentTimeMillis()
-                dcErrors = validateDataClasses()
-                log.trace('DC validate {} (valid: {})', Utils.timeTaken(start), dcErrors)
-            }
+    void updateChildIndexes(ModelItem updated, Integer oldIndex) {
+        if (updated.instanceOf(DataClass)) {
+            updateSiblingIndexes(updated, getChildDataClasses(), oldIndex)
+        } else if (updated.instanceOf(DataType)) {
+            updateSiblingIndexes(updated, dataTypes, oldIndex)
         }
-
-        if (dataTypes) {
-            if (!fields || fields.contains('dataTypes')) {
-                start = System.currentTimeMillis()
-                dtErrors = validateDataTypes()
-                log.trace('DT validate {} (valid: {})', Utils.timeTaken(start), dtErrors)
-            }
-        }
-
-        start = System.currentTimeMillis()
-        Collection<DataClass> storedDataClasses = []
-        Collection<DataType> storedDataTypes = []
-        if (dataClasses) {
-            storedDataClasses.addAll(dataClasses ?: [])
-            dataClasses?.clear()
-        }
-        if (dataTypes) {
-            storedDataTypes.addAll(dataTypes ?: [])
-            dataTypes?.clear()
-        }
-
-        if (args) {
-            dmValid = currentGormValidationApi().validate(this, args)
-        } else if (fields) {
-            dmValid = currentGormValidationApi().validate(this, fields)
-        } else {
-            dmValid = currentGormValidationApi().validate(this)
-        }
-
-        if (storedDataClasses) {
-            dataClasses.addAll(storedDataClasses)
-        }
-        if (storedDataTypes) {
-            dataTypes.addAll(storedDataTypes)
-        }
-
-        log.trace('Final validate {} (valid: {})', Utils.timeTaken(start), dmValid)
-
-        if (dtErrors) errors.addAllErrors(dtErrors)
-        if (dcErrors) errors.addAllErrors(dcErrors)
-
-        !hasErrors()
-    }
-
-    /**
-     * There is an issue with abstract collections and mappingcontexts when validating, basically the DataType class has no mapping context validator
-     * which means no validation occurs, therefore we have to do it manually.
-     */
-    protected Errors validateDataTypes() {
-        def dataTypeErrors = new org.grails.datastore.mapping.validation.ValidationErrors(this)
-        if (!dataTypes) return dataTypeErrors
-
-        dataTypes.eachWithIndex { DataType dataType, int index ->
-            if (!dataType.validate()) {
-                for (FieldError error : dataType.getErrors().getFieldErrors()) {
-                    String path = "dataTypes[$index].${error.getField()}"
-
-                    Object[] args = new Object[Math.max(error.arguments.size(), 3)]
-                    args[0] = path
-                    args[1] = DataModel
-                    if (error.arguments.size() >= 2) {
-                        System.arraycopy(error.arguments, 2, args, 2, error.arguments.size() - 2)
-                    } else if (error.arguments.size() == 1) {
-                        System.arraycopy(error.arguments, 0, args, 2, 1)
-                    }
-                    dataTypeErrors.rejectValue(path, error.code, args, error.defaultMessage)
-                }
-            }
-        }
-        List<String> duplicates = dataTypes.groupBy { it.label }.findAll { it.value.size() > 1 }.collect { it.key }
-        if (duplicates) {
-            Object[] args = new Object[5]
-            args[0] = 'dataTypes'
-            args[1] = DataModel
-            args[2] = DataModel
-            args[3] = duplicates.sort().join(',')
-            args[4] = 'label'
-
-            dataTypeErrors.
-                rejectValue('dataTypes', 'invalid.unique.values.message', args, 'Property [{0}] has non-unique values [{3}] on property [{4}]')
-            //return ['invalid.unique.values.message', duplicates.sort().join(','), collectionName]
-        }
-
-        dataTypeErrors
-    }
-
-    /**
-     * Standard validation will validate dataClasses field which will iterate through all the dataClasses and all their child dataclasses therefore
-     * duplicating validation. This method just calls the validation on each child dataclass which will cascade validation down to their children
-     **/
-    protected Errors validateDataClasses() {
-        def dataClassErrors = new ValidationErrors(this)
-        if (!childDataClasses) return dataClassErrors
-
-        childDataClasses.eachWithIndex { DataClass dataClass, int index ->
-            if (!dataClass.validate()) {
-                for (FieldError error : dataClass.getErrors().getFieldErrors()) {
-                    String path = "childDataClasses[$index].${error.getField()}"
-
-                    Object[] args = new Object[Math.max(error.arguments.size(), 3)]
-                    args[0] = path
-                    args[1] = DataModel
-                    if (error.arguments.size() >= 2) {
-                        System.arraycopy(error.arguments, 2, args, 2, error.arguments.size() - 2)
-                    } else if (error.arguments.size() == 1) {
-                        System.arraycopy(error.arguments, 0, args, 2, 1)
-                    }
-                    dataClassErrors.rejectValue(path, error.code, args, error.defaultMessage)
-                }
-            }
-        }
-        List<String> duplicates = childDataClasses
-            .findAll { !it.parentDataClass }
-            .groupBy { it.label }
-            .findAll { it.value.size() > 1 }
-            .collect { it.key }
-
-        if (duplicates) {
-            Object[] args = new Object[5]
-            args[0] = 'childDataClasses'
-            args[1] = DataModel
-            args[2] = DataModel
-            args[3] = duplicates.sort().join(',')
-            args[4] = 'label'
-            dataClassErrors.rejectValue('childDataClasses', 'invalid.unique.values.message', args,
-                                        'Property [{0}] has non-unique values [{3}] on property[{4}]')
-        }
-        dataClassErrors
-    }
-
-    private GormValidationApi currentGormValidationApi() {
-        GormEnhancer.findValidationApi(DataModel)
     }
 
     static DetachedCriteria<DataModel> by() {
@@ -407,22 +245,4 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     static DetachedCriteria<DataModel> withFilter(DetachedCriteria<DataModel> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
     }
-
-    /*
-     * Update the index property of the DataClasses which belong to this DataModel, and which are siblings of an updated DataClass
-     *
-     * @param DataClass updated A DataClass, which belongs to this DataModel, and which has been updated.
-     */
-    void updateChildIndexes(DataClass updated, int oldIndex) {
-        updateSiblingIndexes(updated, getChildDataClasses() as Set, oldIndex)
-    }
-
-    /*
-     * Update the index property of the DataTypes which belong to this DataModel, and which are siblings of an updated DataType
-     *
-     * @param DataType updated A DataType, which belongs to this DataModel, and which has been updated.
-     */
-    void updateChildIndexes(DataType updated, int oldIndex) {
-        updateSiblingIndexes(updated, dataTypes, oldIndex)
-    }    
 }

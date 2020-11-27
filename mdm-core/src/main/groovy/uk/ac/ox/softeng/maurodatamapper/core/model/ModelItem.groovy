@@ -23,14 +23,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.Breadcrumb
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
 
-import grails.databinding.BindUsing
-import grails.gorm.DetachedCriteria
 import groovy.transform.SelfType
+import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.search.annotations.Field
 import org.springframework.core.Ordered
 
-import groovy.util.logging.Slf4j
 /**
  * Base class for all items which are contained inside a model. These items are securable by the model they are contained in.
  * D is always the class extending ModelItem, however due to compilation issues we have to use Diffable as the constraint
@@ -53,15 +51,14 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     /**
      * On setting the index, update the indices of siblings. 
      */
-    void setIndex(int index) {
-        int oldIndex = idx != null ? idx : Integer.MAX_VALUE
+    void setIndex(Integer index) {
+        Integer oldIndex = idx
         idx = index
         markDirty('idx')
-        //No ID also means no parent, which won't work.
-        if (ident()) updateIndices(oldIndex)
+        updateIndices(oldIndex)
     }
 
-    void updateIndices(int oldIndex = Integer.MAX_VALUE) {
+    void updateIndices(Integer oldIndex) {
         CatalogueItem indexedWithin = getIndexedWithin()
         if (indexedWithin) {
             indexedWithin.updateChildIndexes(this, oldIndex)
@@ -93,8 +90,8 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
         //Update indices.
         //If index is null and this is a thing whose siblings are ordered, add this to the end of the list.
         //If this is a thing which is not ordered, then no action will be taken.
-        updateIndices()
         if (idx == null) idx = Ordered.LOWEST_PRECEDENCE
+        updateIndices(idx)
         buildPath()
         beforeValidateCatalogueItem()
     }

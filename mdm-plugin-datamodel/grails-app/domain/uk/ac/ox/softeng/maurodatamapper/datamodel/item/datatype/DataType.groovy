@@ -24,9 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
@@ -38,6 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
+import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.search.annotations.Field
 import org.hibernate.search.annotations.FieldBridge
@@ -45,6 +46,7 @@ import org.hibernate.search.annotations.Index
 import org.hibernate.search.bridge.builtin.UUIDBridge
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
+@Slf4j
 abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAware, IndexedSiblingAware {
 
     public final static Integer BATCH_SIZE = 1000
@@ -78,7 +80,7 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     }
 
     static mapping = {
-        dataElements cascade: 'delete,lock,refresh,evict,replicate'
+        dataElements cascade: 'delete,lock,refresh,evict,replicate', cascadeValidate: 'none'
         summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_type_data_model_idx', cascade: 'none'
     }
@@ -106,11 +108,13 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
 
     @Override
     def beforeValidate() {
+        long st = System.currentTimeMillis()
         beforeValidateModelItem()
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
             it.catalogueItem = this
         }
+        if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override
@@ -141,6 +145,14 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     @Override
     Boolean hasChildren() {
         false
+    }
+
+    /**
+     * A DataType is indexed within the DataModel to which it belongs
+     */
+    @Override
+    DataModel getIndexedWithin() {
+        dataModel
     }
 
     Set<UUID> getDataElementIds() {
@@ -190,12 +202,4 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     static DetachedCriteria<DataType> byDataModelIdAndLabel(UUID dataModelId, String label) {
         byDataModelId(dataModelId).eq('label', label)
     }
-
-    /**
-     * A DataType is indexed within the DataModel to which it belongs
-     */
-    @Override
-    DataModel getIndexedWithin() {
-        dataModel
-    }    
 }
