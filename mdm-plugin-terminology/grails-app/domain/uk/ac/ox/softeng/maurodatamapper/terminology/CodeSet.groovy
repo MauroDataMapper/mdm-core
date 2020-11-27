@@ -108,11 +108,7 @@ class CodeSet implements Model<CodeSet> {
     }
 
     def beforeValidate() {
-        terms?.each {it.beforeValidate()}
-        annotations?.each {it.beforeValidate()}
-        classifiers?.each {it.beforeValidate()}
-        metadata?.each {it.beforeValidate()}
-        referenceFiles?.each {it.createdBy = createdBy}
+        beforeValidateCatalogueItem()
     }
 
     int countTermsByCode(String code) {
