@@ -27,13 +27,17 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -210,6 +214,64 @@ class CodeSetService extends ModelService<CodeSet> {
         log.debug('Found CodeSet {}({}) which matches DataLoaderPlugin {}({})', latest.label, latest.documentationVersion,
                   dataLoaderProviderService.name, dataLoaderProviderService.version)
         latest
+    }
+
+    @Override
+    CodeSet mergeInto(CodeSet leftModel, CodeSet rightModel, MergeObjectDiffData mergeObjectDiff,
+                      UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService catalogueItemService = this) {
+
+        CatalogueItem catalogueItem = catalogueItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
+
+        mergeObjectDiff.diffs.each {
+            diff ->
+                diff.each {
+                    mergeFieldDiff ->
+                        if (mergeFieldDiff.value) {
+                            catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+                        } else {
+                            // if no value, then some combination of created, deleted, and modified may exist
+                            ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+
+                            if (mergeFieldDiff.fieldName == 'terms' && modelItemService) {
+                                mergeFieldDiff.deleted.each { obj -> catalogueItem.removeFromTerms(modelItemService.get(obj.id)) }
+                                // copy additions from source to target object
+                                mergeFieldDiff.created.each { obj -> catalogueItem.addToTerms(modelItemService.get(obj.id)) }
+                                // for modifications, recursively call this method
+                                mergeFieldDiff.modified.each {
+                                    obj ->
+                                        catalogueItem.removeFromTerms(modelItemService.get(obj.leftId))
+                                        catalogueItem.addToTerms(modelItemService.get(obj.rightId))
+                                }
+                            } else if (modelItemService) {
+                                // apply deletions of children to target object
+                                mergeFieldDiff.deleted.each {
+                                    obj ->
+                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        modelItemService.delete(modelItem)
+                                }
+
+                                def parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
+
+                                // copy additions from source to target object
+                                mergeFieldDiff.created.each {
+                                    obj ->
+                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        parentId ?
+                                        modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager, parentId) :
+                                        modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager)
+                                }
+                                // for modifications, recursively call this method
+                                mergeFieldDiff.modified.each {
+                                    obj ->
+                                        mergeInto(leftModel, rightModel, obj,
+                                                  userSecurityPolicyManager,
+                                                  modelItemService)
+                                }
+                            }
+                        }
+                }
+        }
+        rightModel
     }
 
     @Override
@@ -410,12 +472,12 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(CodeSet codeSet) {
+    boolean hasTreeTypeModelItems(CodeSet codeSet, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(CodeSet catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(CodeSet catalogueItem, boolean forDiff = false) {
         []
     }
 
@@ -654,7 +716,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
         //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the import.
         codeSet.authority = authorityService.getDefaultAuthority()
-        
+
         checkFacetsAfterImportingCatalogueItem(codeSet)
 
         //Terms are imported by use of a path such as "te:my-terminology-label|tm:my-term-label"
@@ -667,7 +729,7 @@ class CodeSetService extends ModelService<CodeSet> {
                 //pathService requires a UserSecurityPolicyManager.
                 //Assumption is that if we got this far then it is OK to read the Terms because either (i) we came via a controller in which case
                 //the user's ability to import a CodeSet has already been tested, or (ii) we are calling this method from a service test spec in which
-                //case it is OK to read. 
+                //case it is OK to read.
                 Term term = pathService.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, pathParams)
 
                 if (term) {
@@ -678,5 +740,5 @@ class CodeSetService extends ModelService<CodeSet> {
                 }
             }
         }
-    }     
+    }
 }

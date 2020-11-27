@@ -56,6 +56,7 @@ class UrlMappings {
                 get '/latestFinalisedModel'(controller: 'terminology', action: 'latestFinalisedModel')
                 get '/latestModelVersion'(controller: 'terminology', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'terminology', action: 'mergeDiff')
+                put "/mergeInto/$otherModelId"(controller: 'terminology', action: 'mergeInto')
 
                 get '/currentMainBranch'(controller: 'terminology', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'terminology', action: 'availableBranches')
@@ -114,6 +115,7 @@ class UrlMappings {
                 get '/latestFinalisedModel'(controller: 'codeSet', action: 'latestFinalisedModel')
                 get '/latestModelVersion'(controller: 'codeSet', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'codeSet', action: 'mergeDiff')
+                put "/mergeInto/$otherModelId"(controller: 'codeSet', action: 'mergeInto')
 
                 get '/currentMainBranch'(controller: 'codeSet', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'codeSet', action: 'availableBranches')

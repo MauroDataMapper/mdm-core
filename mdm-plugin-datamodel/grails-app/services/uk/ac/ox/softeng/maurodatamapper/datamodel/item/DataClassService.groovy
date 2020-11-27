@@ -469,6 +469,11 @@ class DataClassService extends ModelItemService<DataClass> {
 
     }
 
+    DataClass copy(DataModel copiedDataModel, DataClass original, UserSecurityPolicyManager userSecurityPolicyManager,
+                   Serializable parentDataClassId = null) {
+        copyDataClass(copiedDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager, parentDataClassId)
+    }
+
     DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier,
                             UserSecurityPolicyManager userSecurityPolicyManager,
                             Serializable parentDataClassId = null, boolean copySummaryMetadata = false) {
@@ -582,13 +587,13 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataClass dataClass) {
-        dataClass.dataClasses
+    boolean hasTreeTypeModelItems(DataClass dataClass, boolean forDiff) {
+        dataClass.dataClasses || (dataClass.dataElements && forDiff)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass) {
-        DataClass.byParentDataClassId(dataClass.id).list()
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean forDiff = false) {
+        (DataClass.byParentDataClassId(dataClass.id).list() + (forDiff ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
     }
 
     @Override

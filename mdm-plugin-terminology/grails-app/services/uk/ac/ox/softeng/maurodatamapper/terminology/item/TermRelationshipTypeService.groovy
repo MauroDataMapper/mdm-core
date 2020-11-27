@@ -26,7 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -94,6 +93,10 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
         TermRelationshipType.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).find()
     }
 
+    TermRelationshipType copy(Terminology copiedTerminology, TermRelationshipType original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTermRelationshipType(copiedTerminology, original, userSecurityPolicyManager.user)
+    }
+
     TermRelationshipType copyTermRelationshipType(Terminology copiedTerminology, TermRelationshipType original, User copier) {
         TermRelationshipType copy = new TermRelationshipType(createdBy: copier.emailAddress, label: original.label, description: original.description,
                                                              displayLabel: original.displayLabel)
@@ -125,12 +128,12 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     }
 
     @Override
-    boolean hasTreeTypeModelItems(TermRelationshipType term) {
+    boolean hasTreeTypeModelItems(TermRelationshipType term, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationshipType term) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationshipType term, boolean forDiff = false) {
         []
     }
 

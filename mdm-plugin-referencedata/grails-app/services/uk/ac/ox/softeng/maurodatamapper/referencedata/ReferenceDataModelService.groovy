@@ -600,26 +600,26 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
 
-    /*    Map<UUID, Long> obtainChildKnowledge(List<ReferenceDataModel> parents) {
-            if (!parents) return [:]
-            DetachedCriteria<ReferenceDataModel> criteria = new DetachedCriteria<DataClass>(DataClass)
-                .isNull('parentDataClass')
-                .inList('dataModel', parents)
-                .projections {
-                    groupProperty('dataModel.id')
-                    count()
-                }.order('dataModel')
-            criteria.list().collectEntries { [it[0], it[1]] }
-        }
-    */
+/*    Map<UUID, Long> obtainChildKnowledge(List<ReferenceDataModel> parents) {
+        if (!parents) return [:]
+        DetachedCriteria<ReferenceDataModel> criteria = new DetachedCriteria<DataClass>(DataClass)
+            .isNull('parentDataClass')
+            .inList('dataModel', parents)
+            .projections {
+                groupProperty('dataModel.id')
+                count()
+            }.order('dataModel')
+        criteria.list().collectEntries { [it[0], it[1]] }
+    }
+*/
 
     @Override
-    boolean hasTreeTypeModelItems(ReferenceDataModel dataModel) {
+    boolean hasTreeTypeModelItems(ReferenceDataModel dataModel, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataModel catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataModel catalogueItem, boolean forDiff) {
         []
     }
 

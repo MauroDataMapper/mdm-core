@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeIntoData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -245,6 +246,46 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         respond modelService.mergeDiff(left, right)
     }
 
+    @Transactional
+    def mergeInto(MergeIntoData mergeIntoData) {
+        if (!mergeIntoData.validate()) {
+            respond mergeIntoData.errors
+            return
+        }
+
+        if (mergeIntoData.patch.rightId != params[alternateParamsIdKey]) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Source model id passed in request body does not match source model id in URI.')
+        }
+        if (mergeIntoData.patch.leftId != params.otherModelId) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Target model id passed in request body does not match target model id in URI.')
+        }
+
+        T left = queryForResource params[alternateParamsIdKey]
+        if (!left) return notFound(params[alternateParamsIdKey])
+
+        T right = queryForResource params.otherModelId
+        if (!right) return notFound(params.otherModelId)
+
+        T instance =
+            modelService.mergeInto(left, right, mergeIntoData.patch, currentUserSecurityPolicyManager) as T
+
+        if (!validateResource(instance, 'update')) return
+
+        if (mergeIntoData.deleteBranch) {
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(left.class, left.id)) {
+                return forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(left.class, left.id))
+            }
+            modelService.permanentDeleteModel(left)
+            if (securityPolicyManagerService) {
+                currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
+            }
+        }
+
+        updateResource(instance)
+
+        updateResponse(instance)
+    }
+
     def currentMainBranch() {
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
@@ -280,12 +321,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!validateResource(instance, 'update')) return
 
         updateResource instance
-
-        if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(instance,
-                                                                                                               ['finalised'] as HashSet,
-                                                                                                               currentUser)
-        }
 
         updateResponse instance
     }

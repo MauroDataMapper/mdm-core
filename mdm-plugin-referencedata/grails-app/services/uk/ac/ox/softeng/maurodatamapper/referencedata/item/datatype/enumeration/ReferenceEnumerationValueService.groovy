@@ -17,9 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
@@ -60,12 +59,12 @@ class ReferenceEnumerationValueService extends ModelItemService<ReferenceEnumera
     }
 
     @Override
-    boolean hasTreeTypeModelItems(ReferenceEnumerationValue catalogueItem) {
+    boolean hasTreeTypeModelItems(ReferenceEnumerationValue catalogueItem, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceEnumerationValue catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceEnumerationValue catalogueItem, boolean forDiff) {
         []
     }
 

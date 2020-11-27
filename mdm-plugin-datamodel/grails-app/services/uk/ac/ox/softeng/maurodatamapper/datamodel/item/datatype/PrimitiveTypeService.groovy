@@ -71,12 +71,12 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(PrimitiveType catalogueItem) {
+    boolean hasTreeTypeModelItems(PrimitiveType catalogueItem, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(PrimitiveType catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(PrimitiveType catalogueItem, boolean forDiff = false) {
         []
     }
 

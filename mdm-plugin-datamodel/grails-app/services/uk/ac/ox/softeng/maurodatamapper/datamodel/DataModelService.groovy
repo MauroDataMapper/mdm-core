@@ -380,7 +380,8 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds = []) {
+    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion, VersionChangeType versionChangeType,
+                            List<Serializable> supersedeModelIds = []) {
 
         dataModel.finalised = true
         dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -636,13 +637,14 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataModel dataModel) {
-        dataClassService.countByDataModelId(dataModel.id)
+    boolean hasTreeTypeModelItems(DataModel dataModel, boolean forDiff) {
+        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && forDiff)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem) {
-        dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id)
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean forDiff = false) {
+        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id) +
+         (forDiff ? DataType.byDataModelId(catalogueItem.id).list() : []) as List<ModelItem>)
     }
 
     @Override

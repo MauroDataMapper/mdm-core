@@ -96,17 +96,29 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             return true
         }
 
+        if (actionName == 'mergeInto') {
+            //TODO confirm all correct
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
+                return notFound(getSecuredClass(), getId())
+            }
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), params.otherModelId)) {
+                return notFound(getSecuredClass(), params.otherModelId)
+            }
+
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName) ?:
+                   forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
+        }
 
         if (actionName == 'exportModels') {
             return checkExportModelAction()
         }
 
         if (actionName == 'finalise') {
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())){
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
                 return notFound(getSecuredClass(), getId())
             }
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(),getId(), 'finalise') ?:
-                    forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName) ?:
+                   forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
         }
 
         checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId(), true)

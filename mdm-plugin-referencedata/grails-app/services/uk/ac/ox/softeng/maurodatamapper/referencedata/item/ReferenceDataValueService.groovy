@@ -17,32 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.apache.lucene.search.Query
-import org.hibernate.search.engine.ProjectionConstants
-import org.hibernate.search.jpa.FullTextEntityManager
-import org.hibernate.search.jpa.FullTextQuery
-import org.hibernate.search.jpa.Search
-import org.hibernate.search.query.dsl.QueryBuilder
-
-import javax.persistence.EntityManager
 
 @Slf4j
 @Transactional
@@ -87,13 +72,13 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(ReferenceDataValue catalogueItem) {
+    boolean hasTreeTypeModelItems(ReferenceDataValue catalogueItem, boolean forDiff) {
         false
     }
 
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataValue catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataValue catalogueItem, boolean forDiff) {
         []
     }
 

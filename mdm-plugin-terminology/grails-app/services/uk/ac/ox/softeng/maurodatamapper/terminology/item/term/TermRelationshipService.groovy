@@ -120,6 +120,10 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         TermRelationship.byTermIdHasHierarchy(termId).count()
     }
 
+    TermRelationship copy(Terminology terminology, TermRelationship original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTermRelationship(terminology, original, userSecurityPolicyManager.user)
+    }
+
     TermRelationship copyTermRelationship(Terminology terminology, TermRelationship original, User copier) {
 
         Term source = terminology.findTermByCode(original.sourceTerm.code)
@@ -185,12 +189,12 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(TermRelationship catalogueItem) {
+    boolean hasTreeTypeModelItems(TermRelationship catalogueItem, boolean forDiff) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationship catalogueItem) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationship catalogueItem, boolean forDiff = false) {
         []
     }
 }

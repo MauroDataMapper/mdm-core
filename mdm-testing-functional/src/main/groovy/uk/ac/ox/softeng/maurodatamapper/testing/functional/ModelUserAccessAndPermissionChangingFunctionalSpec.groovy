@@ -22,8 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissi
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
@@ -159,15 +161,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().finalised == true
         responseBody().dateFinalised
         responseBody().availableActions == [
-                "show",
-                "createNewVersions",
-                "newForkModel",
-                "comment",
-                "newModelVersion",
-                "newDocumentationVersion",
-                "newBranchModelVersion",
-                "softDelete",
-                "delete"
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
         ]
         responseBody().modelVersion == '1.0.0'
 
@@ -179,15 +181,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().availableActions == [
-                "show",
-                "createNewVersions",
-                "newForkModel",
-                "comment",
-                "newModelVersion",
-                "newDocumentationVersion",
-                "newBranchModelVersion",
-                "softDelete",
-                "delete"
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
         ]
 
         when: 'log out and log back in again in as admin available actions are correct'
@@ -198,15 +200,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().availableActions == [
-                "show",
-                "createNewVersions",
-                "newForkModel",
-                "comment",
-                "newModelVersion",
-                "newDocumentationVersion",
-                "newBranchModelVersion",
-                "softDelete",
-                "delete"
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
         ]
 
         cleanup:
@@ -567,24 +569,33 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(branchId)
     }
 
+    @PendingFeature
     void 'E19d : test creating a new branch model version of a Model<T> and trying to finalise(as editor)'() {
         given:
         String id = getValidFinalisedId()
 
         when: 'logged in as editor'
         loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+
+        then:
+        verifyResponse CREATED, response
+        String mainBranchId = responseBody().id
+
+        when:
         PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion'])
 
         then:
         verifyResponse CREATED, response
+        String branchId = responseBody().id
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
+        !responseBody().availableActions.contains('finalise') // TODO Functionality to satisfy this condition needs to be implemented
 
         when:
-        String branchId = responseBody().id
         PUT("$branchId/finalise", [versionChangeType: 'Major'])
 
         then:
@@ -596,15 +607,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         then:
         verifyResponse OK, response
         responseBody().count >= 3
-
-        when:
-        String mainBranchId = responseBody().items.find {
-            it.label == validJson.label &&
-            !(it.id in [branchId, id])
-        }?.id
-
-        then:
-        mainBranchId
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
@@ -866,5 +868,100 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(newBranchId)
         cleanUpRoles(finalisedId)
         cleanUpRoles(latestDraftId)
+    }
+
+    void 'R25 : test merging object diff into a draft main model'() {
+        given:
+        // a source and draft main branch
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+        logout()
+
+        when:
+        // attempt merge as reader
+        loginReader()
+        PUT("$source/mergeInto/$target", [patch: [test: 'value']])
+
+        then:
+        verifyResponse FORBIDDEN, response
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(target)
+        removeValidIdObjectUsingTransaction(source)
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(target)
+        cleanUpRoles(source)
+        cleanUpRoles(id)
+    }
+
+    void 'E25 : test merging object diff into a draft main model'() {
+        given:
+        // a source and draft main branch
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        verifyResponse CREATED, response
+        String target = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+        verifyResponse CREATED, response
+        String source = responseBody().id
+
+        when:
+        def patchJson = [patch: [
+            leftId : "$target" as String,
+            rightId: "$source" as String,
+            label  : "Functional Test Model",
+            count  : 10,
+            diffs  : [
+                [
+                    fieldName: "description",
+                    value    : "modifiedDescriptionSource"
+                ]
+            ]
+        ]
+        ]
+        // merging a patch
+        PUT("$source/mergeInto/$target", patchJson)
+
+        then:
+        // success
+        verifyResponse OK, response
+        responseBody()
+        responseBody().id == target
+        responseBody().branchName == 'main'
+        responseBody().description == 'modifiedDescriptionSource'
+
+        when:
+        patchJson.deleteBranch = true
+        // merging patch and deleting source
+        PUT("$source/mergeInto/$target", patchJson)
+
+        then:
+        verifyResponse OK, response
+        responseBody()
+        responseBody().id == target
+        responseBody().branchName == 'main'
+        responseBody().description == 'modifiedDescriptionSource'
+
+        when:
+        // trying to get source which should be deleted
+        GET("$source")
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(target)
+        removeValidIdObjectUsingTransaction(source)
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(target)
+        cleanUpRoles(source)
+        cleanUpRoles(id)
     }
 }

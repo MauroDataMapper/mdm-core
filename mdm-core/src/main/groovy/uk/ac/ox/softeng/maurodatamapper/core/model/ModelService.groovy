@@ -22,13 +22,19 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
+import org.springframework.beans.factory.annotation.Autowired
+
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
+
+    @Autowired(required = false)
+    Set<ModelItemService> modelItemServices
 
     @Override
     Class<K> getCatalogueItemClass() {
@@ -72,6 +78,85 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
+    /**
+     * Merges changes made to {@code leftModel} in {@code mergeObjectDiff} into {@code rightModel}. {@code mergeObjectDiff} is based on the return
+     * from ObjectDiff.mergeDiff(), customised by the user.
+     * @param leftModel Source model
+     * @param rightModel Target model
+     * @param mergeObjectDiff Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
+     * @param userSecurityPolicyManager To get user details and permissions when copying "added" items
+     * @param itemService Service which handles catalogueItems of the leftModel and rightModel type.
+     * @return The model resulting from the merging of changes.
+     */
+    K mergeInto(K leftModel, K rightModel, MergeObjectDiffData mergeObjectDiff,
+                UserSecurityPolicyManager userSecurityPolicyManager, itemService = this) {
+
+        def item = itemService.get(mergeObjectDiff.leftId)
+
+        mergeObjectDiff.diffs.each {
+            diff ->
+                diff.each {
+                    mergeFieldDiff ->
+                        if (mergeFieldDiff.value) {
+                            item.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+                        } else {
+                            // if no value, then some combination of created, deleted, and modified may exist
+                            if (mergeFieldDiff.fieldName == 'metadata') {
+                                // call metadataService version of below
+                                mergeFieldDiff.deleted.each {
+                                    obj ->
+                                        def metadata = metadataService.get(obj.id)
+                                        metadataService.delete(metadata)
+                                }
+
+                                // copy additions from source to target object
+                                mergeFieldDiff.created.each {
+                                    obj ->
+                                        def metadata = metadataService.get(obj.id)
+                                        metadataService.copy(item, metadata, userSecurityPolicyManager)
+                                }
+                                // for modifications, recursively call this method
+                                mergeFieldDiff.modified.each {
+                                    obj ->
+                                        mergeInto(leftModel, rightModel, obj,
+                                                  userSecurityPolicyManager,
+                                                  metadataService)
+                                }
+                            } else {
+                                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+                                if (modelItemService) {
+                                    // apply deletions of children to target object
+                                    mergeFieldDiff.deleted.each {
+                                        obj ->
+                                            def modelItem = modelItemService.get(obj.id) as ModelItem
+                                            modelItemService.delete(modelItem)
+                                    }
+
+                                    def parentId = modelItemService.class == itemService.class ? mergeObjectDiff.leftId : null
+
+                                    // copy additions from source to target object
+                                    mergeFieldDiff.created.each {
+                                        obj ->
+                                            def modelItem = modelItemService.get(obj.id) as ModelItem
+                                            parentId ?
+                                            modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager, parentId) :
+                                            modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager)
+                                    }
+                                    // for modifications, recursively call this method
+                                    mergeFieldDiff.modified.each {
+                                        obj ->
+                                            mergeInto(leftModel, rightModel, obj,
+                                                      userSecurityPolicyManager,
+                                                      modelItemService)
+                                    }
+                                }
+                            }
+                        }
+                }
+        }
+        rightModel
+    }
+
     abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds)
 
     abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType)
@@ -80,7 +165,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-            userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
+        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewForkModel(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
             userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])

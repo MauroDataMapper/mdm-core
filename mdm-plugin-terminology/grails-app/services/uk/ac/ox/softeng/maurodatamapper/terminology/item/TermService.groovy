@@ -27,10 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
-import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -162,6 +161,10 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
     }
 
+    Term copy(Terminology copiedTerminology, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    }
+
     Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, copier, userSecurityPolicyManager)
     }
@@ -191,7 +194,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(Term term) {
+    boolean hasTreeTypeModelItems(Term term, boolean forDiff) {
         termRelationshipService.countByTermIdIsParent(term.id)
     }
 
@@ -304,7 +307,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(Term term) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(Term term, boolean forDiff = false) {
         log.debug('Building source as parent relationships')
         Set<Term> sourceAsParentTerms = TermRelationship.bySourceTermIdAndParental(term.id)
             .join('targetTerm')
