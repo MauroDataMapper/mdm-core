@@ -1,0 +1,28 @@
+<plugin name='mdmPluginProfile' version='1.0.0-SNAPSHOT' grailsVersion='4.0.0 &gt; *'>
+  <type>uk.ac.ox.softeng.maurodatamapper.profile.MdmPluginProfileGrailsPlugin</type>
+  <authorEmail>oliver.freeman@bdi.ox.ac.uk</authorEmail>
+  <dependsOn mdmCore='4.0.0 &gt; *' mdmPluginDatamodel='4.0.0 &gt; *' />
+  <developers>[[name:James Welch, email:james.welch@bdi.ox.ac.uk]]</developers>
+  <author>Oliver Freeman</author>
+  <documentation></documentation>
+  <description>The profile services and controllers for the Mauro Data Mapper backend. 
+</description>
+  <title>Mauro Data Mapper Profile Plugin</title>
+  <version />
+  <grailsVersion>4.0.0 &gt; *</grailsVersion>
+  <license>APACHE</license>
+  <pluginExcludes>[grails-app/views/error.gsp]</pluginExcludes>
+  <issueManagement system='YouTrack' url='https://maurodatamapper.myjetbrains.com' />
+  <organization name='Oxford University BRC Informatics' url='www.ox.ac.uk' />
+  <name>mdm-plugin-profile</name>
+  <scm url='https://github.com/mauroDataMapper-plugins/mdm-plugins-profile' />
+  <resources>
+    <resource>uk.ac.ox.softeng.maurodatamapper.profile.ProfileController</resource>
+    <resource>uk.ac.ox.softeng.maurodatamapper.profile.ProfileInterceptor</resource>
+    <resource>uk.ac.ox.softeng.maurodatamapper.profile.UrlMappings</resource>
+    <resource>uk.ac.ox.softeng.maurodatamapper.profile.Application</resource>
+    <resource>uk.ac.ox.softeng.maurodatamapper.profile.BootStrap</resource>
+    <resource>uk.ac.ox.softeng.maurodatamapper.profile.ProfileService</resource>
+    <resource>uk.ac.ox.softeng.maurodatamapper.profile.SearchService</resource>
+  </resources>
+</plugin>
