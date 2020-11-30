@@ -89,17 +89,6 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
     }
 
     void bindTermRelationships(Terminology terminology, List<Map> termRelationships) {
-        //Somehow XML and JSON databinding in test cases gives different results.
-        //Remove term relationships and start again.
-        terminology.terms.each { 
-            if (it.sourceTermRelationships) {
-                it.sourceTermRelationships.clear()
-            }
-            if (it.targetTermRelationships) {
-                it.targetTermRelationships.clear()
-            }
-        }
-
         termRelationships.each {tr ->
             Term sourceTerm = terminology.findTermByCode(tr.sourceTerm)
             sourceTerm.addToSourceTermRelationships(new TermRelationship(
