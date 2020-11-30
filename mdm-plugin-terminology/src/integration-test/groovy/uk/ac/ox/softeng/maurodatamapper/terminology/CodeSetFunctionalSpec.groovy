@@ -2011,7 +2011,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     void 'IM05: test importing and exporting a CodeSet with terms'() {
         given: 'The Simple Test Terminology is imported as a pre-requisite'
-        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST('terminologies/import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.1', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,

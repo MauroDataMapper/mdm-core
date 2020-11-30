@@ -38,7 +38,7 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
 
     @Override
     String getVersion() {
-        '3.0'
+        '3.1'
     }
 
     @Override

@@ -48,14 +48,16 @@
           "label": "STT01: Simple Test Term 01",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "code": "STT01",
-          "definition": "Simple Test Term 01"
+          "definition": "Simple Test Term 01",
+          "depth": 1
         },
         {
           "id": "${json-unit.matches:id}",
           "label": "STT02: Simple Test Term 02",
           "lastUpdated": "${json-unit.matches:offsetDateTime}",
           "code": "STT02",
-          "definition": "Simple Test Term 02"
+          "definition": "Simple Test Term 02",
+          "depth": 1
         }
       ]
     },
@@ -65,7 +67,7 @@
       "exporter": {
         "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
         "name": "TerminologyJsonExporterService",
-        "version": "3.0"
+        "version": "${json-unit.matches:version}"
       }
     }
   }

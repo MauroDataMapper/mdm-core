@@ -104,7 +104,8 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT00",
         "definition": "Complex Test Term 00",
-        "url": "https://example.com/ctt00"
+        "url": "https://example.com/ctt00",
+        "depth" : 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -113,7 +114,8 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT01",
         "definition": "Complex Test Term 01",
-        "url": "https://example.com/ctt01"
+        "url": "https://example.com/ctt01",
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -122,7 +124,8 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT02",
         "definition": "Complex Test Term 02",
-        "url": "https://example.com/ctt02"
+        "url": "https://example.com/ctt02",
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -131,7 +134,8 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT03",
         "definition": "Complex Test Term 03",
-        "url": "https://example.com/ctt03"
+        "url": "https://example.com/ctt03",
+        "depth": 1
       }
     ],
     "termRelationships": [
@@ -153,7 +157,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "TerminologyJsonExporterService",
-      "version": "3.0"
+      "version": "${json-unit.matches:version}"
     }
   }
 }

@@ -23,7 +23,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "TerminologyJsonExporterService",
-      "version": "3.0"
+      "version": "${json-unit.matches:version}"
     }
   }
 }

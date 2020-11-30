@@ -18,7 +18,8 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CST01",
         "definition": "Test Term 01",
-        "url": "https://example.com"
+        "url": "https://example.com",
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -27,7 +28,8 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CST02",
         "definition": "Test Term 02",
-        "url": "https://example.com"
+        "url": "https://example.com",
+        "depth": 1
       }
     ]
   },
@@ -37,7 +39,7 @@
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "TerminologyJsonExporterService",
-      "version": "3.0"
+      "version": "${json-unit.matches:version}"
     }
   }
 }

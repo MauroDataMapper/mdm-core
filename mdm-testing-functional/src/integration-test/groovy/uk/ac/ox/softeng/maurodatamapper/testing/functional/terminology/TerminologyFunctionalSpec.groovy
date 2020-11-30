@@ -68,6 +68,8 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunctionalSpec {
 
+    String jsonExporterVersion = "3.1"
+    String jsonImporterVersion = "3.1"
 
     @Transactional
     String getTestFolderId() {
@@ -285,7 +287,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         verifyJsonResponse OK, '''[
             {
                 "name": "TerminologyJsonExporterService",
-                "version": "3.0",
+                "version": "${json-unit.matches:version}",
                 "displayName": "JSON Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -297,7 +299,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
             },
             {
                 "name": "TerminologyXmlExporterService",
-                "version": "3.0",
+                "version": "${json-unit.matches:version}",
                 "displayName": "XML Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -326,7 +328,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         verifyJsonResponse OK, '''[
             {
                 "name": "TerminologyXmlImporterService",
-                "version": "3.0",
+                "version": "${json-unit.matches:version}",
                 "displayName": "XML Terminology Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
@@ -339,7 +341,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
             },
             {
                 "name": "TerminologyJsonImporterService",
-                "version": "3.0",
+                "version": "${json-unit.matches:version}",
                 "displayName": "JSON Terminology Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
@@ -591,7 +593,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         String id = getValidId()
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/2.0")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/${jsonExporterVersion}")
 
         then:
         verifyNotFound response, id
@@ -606,7 +608,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
 
         when:
         loginAuthenticated()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/2.0")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/JsonExporterService/${jsonExporterVersion}")
 
         then:
         verifyNotFound response, id
@@ -621,7 +623,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
 
         when:
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -643,7 +645,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "TerminologyJsonExporterService",
-                    "version": "3.0"
+                    "version": "${json-unit.matches:version}"
                 }
             }
         }'''
@@ -657,7 +659,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/2.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}',
              [terminologyIds: [id, getSimpleTerminologyId()]]
         )
 
@@ -673,7 +675,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/2.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}',
              [terminologyIds: [id, getSimpleTerminologyId()]]
         )
 
@@ -690,7 +692,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
 
         when:
         loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0',
+        POST("export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}",
              [terminologyIds: [id, getSimpleTerminologyId()]], STRING_ARG
         )
 
@@ -714,7 +716,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "TerminologyJsonExporterService",
-                    "version": "3.0"
+                    "version": "${json-unit.matches:version}"
                 }
             }
         }'''
@@ -727,7 +729,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -736,7 +738,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST("import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/${jsonImporterVersion}", [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -759,7 +761,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -769,7 +771,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
 
         when:
         loginAuthenticated()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST("import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/${jsonImporterVersion}", [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -792,7 +794,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -802,7 +804,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
 
         when:
         loginReader()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST("import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/${jsonImporterVersion}", [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -825,7 +827,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -835,7 +837,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST("import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/${jsonImporterVersion}", [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -865,7 +867,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter/TerminologyJsonExporterService/${jsonExporterVersion}", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -875,7 +877,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/3.0', [
+        POST("import/uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer/TerminologyJsonImporterService/${jsonImporterVersion}", [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: true,
