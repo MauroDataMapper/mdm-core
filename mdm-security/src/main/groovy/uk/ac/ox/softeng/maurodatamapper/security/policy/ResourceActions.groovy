@@ -21,6 +21,7 @@ class ResourceActions {
 
     public static final String SHOW_ACTION = 'show'
     public static final String UPDATE_ACTION = 'update'
+    public static final String CHANGE_FOLDER_ACTION = 'changeFolder'
     public static final String DELETE_ACTION = 'delete'
     public static final String DISABLE_ACTION = 'disable'
     public static final String INDEX_ACTION = 'index'
