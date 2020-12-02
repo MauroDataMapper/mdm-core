@@ -78,7 +78,7 @@ abstract class DataBindCodeSetImporterProviderService<T extends CodeSetFileImpor
 
         CodeSet codeSet = new CodeSet()
         log.debug('Binding map to new CodeSet instance')
-        DataBindingUtils.bindObjectToInstance(codeSet, codeSetMap)
+        DataBindingUtils.bindObjectToInstance(codeSet, codeSetMap, null, ['id', 'domainType', 'lastUpdated'], null)
 
         codeSetService.checkImportedCodeSetAssociations(currentUser, codeSet, codeSetMap)
 

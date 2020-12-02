@@ -78,7 +78,7 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
 
         Terminology terminology = new Terminology()
         log.debug('Binding map to new Terminology instance')
-        DataBindingUtils.bindObjectToInstance(terminology, terminologyMap)
+        DataBindingUtils.bindObjectToInstance(terminology, terminologyMap, null, ['id', 'domainType', 'lastUpdated'], null)
 
         bindTermRelationships(terminology, terminologyMap.termRelationships)
 
