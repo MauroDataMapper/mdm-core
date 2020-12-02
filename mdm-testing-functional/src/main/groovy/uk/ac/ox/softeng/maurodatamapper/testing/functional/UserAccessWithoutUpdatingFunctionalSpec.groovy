@@ -250,11 +250,10 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
             // This is purely here to provide info about roles and resources which havent been cleaned up
             // It should not be used to perform cleanp of these roles and resources
-            Number rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).count()
+            List<SecurableResourceGroupRole> rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
             if (rolesLeftOver) {
-                log.warn('Roles not cleaned up : {}', rolesLeftOver)
-                List<SecurableResourceGroupRole> leftOverRoles = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
-                leftOverRoles.each { role ->
+                log.warn('Roles not cleaned up : {}', rolesLeftOver.count())
+                rolesLeftOver.each { role ->
                     log.warn('Left over role resource {}:{}', role.securableResourceDomainType, role.securableResourceId)
                 }
                 Assert.fail('Roles remaining these need to be cleaned up from another test.' +
