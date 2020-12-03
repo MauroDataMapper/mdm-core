@@ -45,8 +45,6 @@ interface UserSecurityPolicyManager {
 
     boolean userCanEditSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id)
 
-    boolean userCanChangeFolderOfSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id)
-
     boolean userCanDeleteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, boolean permanent)
 
     boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action)

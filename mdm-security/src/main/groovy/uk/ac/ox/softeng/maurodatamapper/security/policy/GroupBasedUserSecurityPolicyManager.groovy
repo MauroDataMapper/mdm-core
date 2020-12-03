@@ -271,12 +271,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     boolean userCanEditSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         userCanWriteSecuredResourceId(securableResourceClass, id, UPDATE_ACTION)
-    }
-
-    @Override
-    boolean userCanChangeFolderOfSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        userCanWriteSecuredResourceId(securableResourceClass, id, CHANGE_FOLDER_ACTION)
-    }    
+    }  
 
     @Override
     boolean userCanDeleteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, boolean permanent) {
