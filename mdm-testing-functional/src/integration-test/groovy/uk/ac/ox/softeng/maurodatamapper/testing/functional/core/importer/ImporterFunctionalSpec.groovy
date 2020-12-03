@@ -152,7 +152,7 @@ class ImporterFunctionalSpec extends FunctionalSpec {
         '''{
   "importer": {
     "name": "TerminologyJsonImporterService",
-    "version": "3.0",
+    "version": "3.1",
     "displayName": "JSON Terminology Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
