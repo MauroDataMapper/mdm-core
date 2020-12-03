@@ -56,7 +56,7 @@ abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyM
     @Override
     boolean userCanEditSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id) {
         userCanWriteSecuredResourceId(securableResourceClass, id, 'update')
-    }   
+    }
 
     @Override
     boolean userCanDeleteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, boolean permanent) {
