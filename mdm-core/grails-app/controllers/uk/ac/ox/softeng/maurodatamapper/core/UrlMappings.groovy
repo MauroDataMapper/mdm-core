@@ -144,6 +144,11 @@ class UrlMappings {
                 }
 
                 /*
+                Model Imports
+                 */
+                '/modelImports'(resources: 'modelImport', excludes: DEFAULT_EXCLUDES)
+
+                /*
                 Reference Files
                  */
                 '/referenceFiles'(resources: 'referenceFile', excludes: DEFAULT_EXCLUDES)

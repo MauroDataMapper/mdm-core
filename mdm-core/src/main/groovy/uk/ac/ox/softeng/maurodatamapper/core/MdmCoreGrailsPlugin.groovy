@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ClassifierAware
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.CreatorAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.InformationAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MetadataAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ModelImportAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.PathAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ReferenceFileAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.RuleAwareMappingContext
@@ -173,6 +174,7 @@ This is basically the backend API.
             semanticLinkAwareMappingContext SemanticLinkAwareMappingContext
             versionLinkAwareMappingContext VersionLinkAwareMappingContext
             catalogueItemMappingContext CatalogueItemMappingContext
+            modelImportAwareMappingContext ModelImportAwareMappingContext
 
             /*
              * Define the ATOM model feed renderer beans

@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -145,6 +146,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     void removeSemanticLinkFromCatalogueItem(UUID catalogueItemId, SemanticLink semanticLink) {
         removeFacetFromDomain(catalogueItemId, semanticLink.id, 'semanticLinks')
     }
+
+    void removeModelImportFromCatalogueItem(UUID catalogueItemId, ModelImport modelImport) {
+        get(catalogueItemId).removeFromModelImports(modelImport)
+    }    
 
     void removeReferenceFileFromCatalogueItem(UUID catalogueItemId, ReferenceFile referenceFile) {
         removeFacetFromDomain(catalogueItemId, referenceFile.id, 'referenceFiles')
