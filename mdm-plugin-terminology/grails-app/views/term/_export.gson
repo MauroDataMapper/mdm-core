@@ -10,5 +10,5 @@ json {
     code term.getCode()
     definition term.getDefinition()
     if (term.url) url term.getUrl()
-    if(term.depth) depth term.depth
+    if (term.depth) depth term.depth
 }
