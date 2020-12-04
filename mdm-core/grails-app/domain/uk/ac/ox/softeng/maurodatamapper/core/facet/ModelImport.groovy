@@ -110,4 +110,19 @@ class ModelImport implements CatalogueItemAware, CreatorAware {
     static DetachedCriteria<ModelImport> withFilter(DetachedCriteria<ModelImport> criteria, Map filters) {
         criteria
     }
+
+    /**
+     * Select the distinct IDs of catalogue items which are imported into the catalogue item with the specified ID.
+     * Used by other domains to select which of themselves have been imported into a particular model.
+     * Will do a query like 'DISTINCT(imported_catalogue_item_id) FROM core.model_import WHERE catalogue_item_id = catalogueItemId'
+     *
+     * @param catalogueItemId The ID of the catalogue item which imported another catalogue item
+     * @return DetachedCriteria<ModelImport> Projection for distinct imported_catalogue_item_id
+     */
+    static DetachedCriteria<ModelImport> importedByCatalogueItemId(Serializable catalogueItemId) {
+        byCatalogueItemId(catalogueItemId)
+        .projections {
+            distinct('importedCatalogueItemId')
+        }
+    }    
 }
