@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -58,6 +59,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     ClassifierService classifierService
     MetadataService metadataService
     RuleService ruleService
+    ModelImportService modelImportService
     SemanticLinkService semanticLinkService
     SessionFactory sessionFactory
     AnnotationService annotationService
@@ -207,7 +209,15 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each {link ->
+        modelImportService.findAllByCatalogueItemId(original.id).each { 
+            copy.addToModelImports(it.catalogueItemDomainType,
+                                   it.catalogueItemId,
+                                   it.importedCatalogueItemDomainType,
+                                   it.importedCatalogueItemId,
+                                   copier) 
+        }
+
+        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
                                     targetCatalogueItemDomainType: link.targetCatalogueItemDomainType,
@@ -260,7 +270,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         if (catalogueItem.modelImports) {
             catalogueItem.modelImports.each {
                 if (!it.isDirty()) it.trackChanges()
-                it.beforeValidate()
+                it.catalogueItemId = catalogueItem.getId()
             }
             ModelImport.saveAll(catalogueItem.modelImports)
         }        

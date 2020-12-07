@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
@@ -43,5 +44,17 @@ trait ModelImportAware {
 
     def removeFromModelImports(ModelImport modelImports) {
         removeFrom('modelImports', modelImports)
+    }
+
+    def addToModelImports(String catalogueItemDomainType, UUID catalogueItemId, String importedCatalogueItemDomainType, UUID importedCatalogueItemId, User createdBy)  {
+        addToModelImports(catalogueItemDomainType, catalogueItemId, importedCatalogueItemDomainType, importedCatalogueItemId, createdBy.emailAddress)
+    }
+
+    def addToModelImports(String catalogueItemDomainType, UUID catalogueItemId, String importedCatalogueItemDomainType, UUID importedCatalogueItemId, String createdBy)  {
+        addToModelImports(new ModelImport(catalogueItemDomainType: catalogueItemDomainType,
+                                          catalogueItemId: catalogueItemId,
+                                          importedCatalogueItemDomainType: importedCatalogueItemDomainType, 
+                                          importedCatalogueItemId: importedCatalogueItemId,
+                                          createdBy: createdBy))
     }
 }
