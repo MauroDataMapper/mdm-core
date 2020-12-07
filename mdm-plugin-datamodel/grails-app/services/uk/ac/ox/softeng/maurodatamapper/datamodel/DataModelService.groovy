@@ -95,6 +95,14 @@ class DataModelService extends ModelService<DataModel> {
         pathPrefix == "dm"
     }
 
+    /**
+     * DataModel allows the import of DataType and DataClass
+     */
+    @Override
+    List<Class> importsDomains() {
+        [DataType, DataClass]
+    }
+
     Long count() {
         DataModel.count()
     }

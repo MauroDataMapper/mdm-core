@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
@@ -81,6 +82,13 @@ class DataClassService extends ModelItemService<DataClass> {
     void delete(UUID id) {
         delete(get(id))
     }
+    /**
+     * DataClass allows the import of DataClass and DataElement
+     */
+    @Override
+    List<Class> importsDomains() {
+        [DataElement, DataClass]
+    }    
 
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
