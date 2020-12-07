@@ -89,7 +89,7 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         }
         if (!modelImport.importedCatalogueItem) {
             modelImport.importedCatalogueItem = findCatalogueItemByDomainTypeAndId(modelImport.importedCatalogueItemDomainType,
-                                                                                  modelImport.importedCatalogueItemId)
+                                                                                   modelImport.importedCatalogueItemId)
         }
         modelImport
     }
@@ -98,21 +98,21 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         if (!modelImports) return []
         Map<String, Set<UUID>> itemIdsMap = [:]
 
-        log.debug('Collecting all catalogue items for {} semantic links', modelImports.size())
-        modelImports.each {sl ->
+        log.debug('Collecting all catalogue items for {} model imports', modelImports.size())
+        modelImports.each {mi ->
 
-            itemIdsMap.compute(sl.catalogueItemDomainType, [
+            itemIdsMap.compute(mi.catalogueItemDomainType, [
                 apply: {String s, Set<UUID> uuids ->
                     uuids = uuids ?: new HashSet<>()
-                    uuids.add(sl.catalogueItemId)
+                    uuids.add(mi.catalogueItemId)
                     uuids
                 }
             ] as BiFunction)
 
-            itemIdsMap.compute(sl.importedCatalogueItemDomainType, [
+            itemIdsMap.compute(mi.importedCatalogueItemDomainType, [
                 apply: {String s, Set<UUID> uuids ->
                     uuids = uuids ?: new HashSet<>()
-                    uuids.add(sl.importedCatalogueItemId)
+                    uuids.add(mi.importedCatalogueItemId)
                     uuids
                 }
             ] as BiFunction)
@@ -122,15 +122,15 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         Map<Pair<String, UUID>, CatalogueItem> itemMap = [:]
         itemIdsMap.each {domain, ids ->
             CatalogueItemService service = catalogueItemServices.find {it.handles(domain)}
-            if (!service) throw new ApiBadRequestException('SLS02', 'Semantic link loading for catalogue item with no supporting service')
+            if (!service) throw new ApiBadRequestException('MIS02', 'Model import loading for catalogue item with no supporting service')
             List<CatalogueItem> items = service.getAll(ids)
             itemMap.putAll(items.collectEntries {i -> [new Pair<String, UUID>(domain, i.id), i]})
         }
 
-        log.debug('Loading {} retrieved catalogue items into semantic links', itemMap.size())
-        modelImports.each {sl ->
-            sl.catalogueItem = itemMap.get(new Pair(sl.catalogueItemDomainType, sl.catalogueItemId))
-            sl.importedCatalogueItem = itemMap.get(new Pair(sl.importedCatalogueItemDomainType, sl.importedCatalogueItemId))
+        log.debug('Loading {} retrieved catalogue items into  model imports', itemMap.size())
+        modelImports.each {mi ->
+            mi.catalogueItem = itemMap.get(new Pair(mi.catalogueItemDomainType, mi.catalogueItemId))
+            mi.importedCatalogueItem = itemMap.get(new Pair(mi.importedCatalogueItemDomainType, mi.importedCatalogueItemId))
         }
 
         modelImports
@@ -151,31 +151,13 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
 
     @Override
     List<ModelImport> findAllByCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
-        findAllBySourceOrTargetCatalogueItemId(catalogueItemId, paginate)
-    }
-
-    List<ModelImport> findAllBySourceCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
-        ModelImport.withFilter(ModelImport.byCatalogueItemId(catalogueItemId), paginate).list(paginate)
-    }
-
-    List<ModelImport> findAllByTargetCatalogueItemId(Serializable catalogueItemId, Map paginate = [:]) {
-        ModelImport.withFilter(ModelImport.byTargetCatalogueItemId(catalogueItemId), paginate).list(paginate)
-    }
-
-    List<ModelImport> findAllBySourceOrTargetCatalogueItemId(Serializable catalogueItemId, Map paginate = [:]) {
         ModelImport.withFilter(ModelImport.byAnyCatalogueItemId(catalogueItemId), paginate).list(paginate)
     }
 
-    @Deprecated(forRemoval = true)
-    List<ModelImport> findAllByCatalogueItemIdAndType(UUID catalogueItemId, String type, Map paginate = [:]) {
-        switch (type) {
-            case 'source':
-                return findAllBySourceCatalogueItemId(catalogueItemId, paginate)
-                break
-            case 'imported':
-                return findAllByTargetCatalogueItemId(catalogueItemId, paginate)
-        }
-        findAllBySourceOrTargetCatalogueItemId(catalogueItemId, paginate)
+    boolean catalogueItemDomainTypeImportsDomainType(String catalogueItemDomainType, String importedCatalogueItemDomainType) {
+        CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItemDomainType)}
+        if (!service) throw new ApiBadRequestException('MIS03', 'Model import loading for catalogue item with no supporting service')
+        service.importsDomainType(importedCatalogueItemDomainType)
     }
 
 }

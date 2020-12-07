@@ -43,6 +43,11 @@ class ModelImportInterceptor extends FacetInterceptor {
         facetResourceChecks()
         if (actionName == 'save') {
 
+            //TODO (somewhere) check that importing item can import the imported item
+            //i.e. DataModel can import DataType and DataClass
+            //is the imported model finalised and part of the same model collection as the destination
+
+
             if (Utils.parentClassIsAssignableFromChild(SecurableResource, getOwningClass())) {
                 boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(getFacetClass(), getId(), getOwningClass(), getOwningId())
                 return currentUserSecurityPolicyManager.userCanEditResourceId(getFacetClass(), getId(),

@@ -41,16 +41,7 @@ class ModelImportController extends EditLoggingController<ModelImport> {
     @Override
     protected List<ModelImport> listAllReadableResources(Map params) {
         List<ModelImport> modelImports
-        switch (params.type) {
-            case 'source':
-                modelImports = modelImportService.findAllBySourceCatalogueItemId(params.catalogueItemId, params)
-                break
-            case 'imported':
-                modelImports = modelImportService.findAllByTargetCatalogueItemId(params.catalogueItemId, params)
-                break
-            default:
-                modelImports = modelImportService.findAllBySourceOrTargetCatalogueItemId(params.catalogueItemId, params)
-        }
+        modelImports = modelImportService.findAllByCatalogueItemId(params.catalogueItemId, params)
         modelImportService.loadCatalogueItemsIntoModelImports(modelImports)
     }
 
@@ -103,18 +94,16 @@ class ModelImportController extends EditLoggingController<ModelImport> {
     @Transactional
     @Override
     protected boolean validateResource(ModelImport instance, String view) {
-        // Ensure only assignable link types are constructed via the controller
-        /*if (instance.linkType && !instance.linkType.isAssignable) {
-            instance.errors.rejectValue('linkType',
-                                        'semanticlink.linktype.must.be.assignable.message',
-                                        ['linkType', ModelImport, instance.linkType].toArray(),
-                                        'Property [{0}] of class [{1}] with value [{2}] cannot be used')
-        }*/
-        if (instance.hasErrors() || !instance.validate()) {
+        if (instance.hasErrors() 
+        || !instance.validate()
+        || !modelImportService.findCatalogueItemByDomainTypeAndId(instance.importedCatalogueItemDomainType, instance.importedCatalogueItemId)
+        || !modelImportService.catalogueItemDomainTypeImportsDomainType(params.catalogueItemDomainType, instance.importedCatalogueItemDomainType)
+        ) {
             transactionStatus.setRollbackOnly()
             respond instance.errors, view: view // STATUS CODE 422
             return false
         }
+      
         true
     }
 }

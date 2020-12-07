@@ -48,6 +48,9 @@ class ModelImport implements CatalogueItemAware, CreatorAware {
                 return ['invalid.same.property.message', 'importedCatalogueItem']
             }
         }
+
+        importedCatalogueItemId nullable: false, blank: false
+        importedCatalogueItemDomainType nullable: false, blank: false
     }
 
     static mapping = {

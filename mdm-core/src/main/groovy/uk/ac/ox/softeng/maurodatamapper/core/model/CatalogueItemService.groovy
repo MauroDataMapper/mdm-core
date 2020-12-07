@@ -81,6 +81,37 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         false
     }
 
+    /**
+     * What domains does the catalogue item allow to be imported? Override this in sub-classes.
+     */
+    List<Class> importsDomains() {
+        []
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type importedDomainType to be imported?
+     *
+     * @param clazz Domain (Class) that something is trying to import.
+     * @return boolean Is the import of this domain type allowed or not?
+     */
+    boolean importsDomain(Class clazz) {
+        importsDomains().contains(clazz)
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type importedDomainType to be imported?
+     *
+     * @param importedDomainType Domain type (string) of the domain that something is trying to import.
+     * @return boolean Is the import of this domain type allowed or not?
+     */
+    boolean importsDomainType(String importedDomainType) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, importedDomainType)
+        if (!grailsClass) {
+            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
+        }
+        importsDomain(grailsClass.clazz)
+    }
+
     abstract void deleteAll(Collection<K> catalogueItems)
 
     K save(K catalogueItem) {
@@ -226,6 +257,13 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             }
             ReferenceFile.saveAll(catalogueItem.referenceFiles)
         }
+        if (catalogueItem.modelImports) {
+            catalogueItem.modelImports.each {
+                if (!it.isDirty()) it.trackChanges()
+                it.beforeValidate()
+            }
+            ModelImport.saveAll(catalogueItem.modelImports)
+        }        
         catalogueItem.breadcrumbTree?.trackChanges()
         catalogueItem.breadcrumbTree?.beforeValidate()
         catalogueItem.breadcrumbTree?.save(validate: false)
