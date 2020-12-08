@@ -175,4 +175,21 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         service.isImportableByCatalogueItem(catalogueItem, importedCatalogueItem)
     }    
 
+    ModelImport saveResource(User currentUser, ModelImport resource) {
+        loadCatalogueItemsIntoModelImport(resource)
+        resource.save(flush: true, validate: false)
+
+        //Add an association between the ModelImport and CatalogueItem
+        addModelImportToCatalogueItem(resource, resource.catalogueItem)
+
+        //Record the creation against the CatalogueItem belongs
+        addCreatedEditToCatalogueItem(currentUser, resource, resource.catalogueItemDomainType, resource.catalogueItemId)
+
+        //Does the import of this resource require any other things to be imported?
+        CatalogueItemService service = catalogueItemServices.find {it.handles(resource.importedCatalogueItemDomainType)}
+        if (!service) throw new ApiBadRequestException('MIS04', 'Model import loading for catalogue item with no supporting service')
+        service.additionalModelImports(currentUser, resource)
+
+    }    
+
 }

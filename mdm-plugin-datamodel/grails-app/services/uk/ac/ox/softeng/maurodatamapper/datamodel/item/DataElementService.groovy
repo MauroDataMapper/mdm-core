@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -504,5 +506,23 @@ class DataElementService extends ModelItemService<DataElement> {
     @Override
     DataElement findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findDataElement(parentCatalogueItem, label)
+    }
+
+    @Override
+    void additionalModelImports(User currentUser, ModelImport imported) {
+        //When importing a DataElement, we also import its DataType to the DataModel
+
+        DataElement dataElement = imported.importedCatalogueItem
+
+        DataType dataType = dataElement.dataType
+
+        //The DataModel that the DataElement has been imported into
+        DataModel dataModel = dataElement.getModel()
+
+        ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
+                                                          importedCatalogueItem  : dataType,
+                                                          createdByUser          : currentUser)
+        
+        modelImportService.saveResource(currentUser, modelImportDataType)                                                  
     }
 }

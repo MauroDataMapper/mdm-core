@@ -107,7 +107,7 @@ class DataModelService extends ModelService<DataModel> {
      */
     @Override
     List<Class> importsDomains() {
-        [DataType, DataClass]
+        [DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]
     }
 
     /**

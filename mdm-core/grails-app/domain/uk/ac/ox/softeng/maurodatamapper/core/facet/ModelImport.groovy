@@ -81,7 +81,11 @@ class ModelImport implements CatalogueItemAware, CreatorAware {
         "ModelImport:${importedCatalogueItemDomainType}:${importedCatalogueItemId}"
     }
 
-    void setTargetCatalogueItem(CatalogueItem catalogueItem) {
+    void setImportedCatalogueItem(CatalogueItem catalogueItem) {
+        if (!catalogueItem) {
+            return
+        }
+        
         importedCatalogueItem = catalogueItem
         importedCatalogueItemDomainType = catalogueItem.domainType
         importedCatalogueItemId = catalogueItem.id

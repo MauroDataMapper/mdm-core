@@ -67,14 +67,7 @@ class ModelImportController extends EditLoggingController<ModelImport> {
 
     @Override
     protected ModelImport saveResource(ModelImport resource) {
-        modelImportService.loadCatalogueItemsIntoModelImport(resource)
-        resource.save flush: true, validate: false
-
-        //Add an association between the ModelImport and CatalogueItem
-        modelImportService.addModelImportToCatalogueItem(resource, resource.catalogueItem)
-
-        //Record the creation against the CatalogueItem belongs
-        modelImportService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        modelImportService.saveResource(currentUser, resource)
     }
 
     @Override
@@ -94,24 +87,10 @@ class ModelImportController extends EditLoggingController<ModelImport> {
     @Transactional
     @Override
     protected boolean validateResource(ModelImport instance, String view) {
-        boolean valid = true
-        
-        if (valid) {
-            valid = !instance.hasErrors()  && instance.validate()
-        }
 
-
-        /*if (instance.hasErrors() 
-        || !instance.validate()
-        || !modelImportService.findCatalogueItemByDomainTypeAndId(instance.importedCatalogueItemDomainType, instance.importedCatalogueItemId)
-        || !modelImportService.catalogueItemDomainTypeImportsDomainType(params.catalogueItemDomainType, instance.importedCatalogueItemDomainType)
-        || !modelImportService.catalogueItemIsImportableByCatalogueItem(instance.catalogueItem, instance.importedCatalogueItem)
-        ) {
-            transactionStatus.setRollbackOnly()
-            respond instance.errors, view: view // STATUS CODE 422
-            return false
-        }*/
-
+        boolean valid = !instance.hasErrors()  && instance.validate()
+      
+        //TODO rejection messages
         if (valid) {
             instance.importedCatalogueItem = modelImportService.findCatalogueItemByDomainTypeAndId(instance.importedCatalogueItemDomainType, instance.importedCatalogueItemId)
             if (!instance.importedCatalogueItem) {

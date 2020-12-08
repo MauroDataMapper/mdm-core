@@ -44,12 +44,6 @@ abstract class CatalogueItemModelImportFunctionalSpec extends CatalogueItemFacet
         'modelImports'
     }
 
-    @Override
-    void verifyR4UpdateResponse() {
-        super.verifyR4UpdateResponse()
-        response.body().value == 'ftv.update'
-    }
-
     void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
         verifyResponse(HttpStatus.CREATED, response)
     }
@@ -64,6 +58,16 @@ abstract class CatalogueItemModelImportFunctionalSpec extends CatalogueItemFacet
         assert response.body().count == 1
         assert response.body().items.size() == 1
     }
+
+    @Override
+    void verifyR4UpdateResponse() {
+        verifyResponse(HttpStatus.NOT_FOUND, response)
+    }   
+
+    @Override
+    void verifyR4InvalidUpdateResponse() {
+        verifyResponse(HttpStatus.NOT_FOUND, response)
+    }     
 
     void 'CIF01 : Test facet copied with catalogue item'() {
         given: 'Create new facet on catalogue item'
