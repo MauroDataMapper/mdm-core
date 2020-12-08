@@ -94,16 +94,61 @@ class ModelImportController extends EditLoggingController<ModelImport> {
     @Transactional
     @Override
     protected boolean validateResource(ModelImport instance, String view) {
-        if (instance.hasErrors() 
+        boolean valid = true
+        
+        if (valid) {
+            valid = !instance.hasErrors()  && instance.validate()
+        }
+
+
+        /*if (instance.hasErrors() 
         || !instance.validate()
         || !modelImportService.findCatalogueItemByDomainTypeAndId(instance.importedCatalogueItemDomainType, instance.importedCatalogueItemId)
         || !modelImportService.catalogueItemDomainTypeImportsDomainType(params.catalogueItemDomainType, instance.importedCatalogueItemDomainType)
+        || !modelImportService.catalogueItemIsImportableByCatalogueItem(instance.catalogueItem, instance.importedCatalogueItem)
         ) {
             transactionStatus.setRollbackOnly()
             respond instance.errors, view: view // STATUS CODE 422
             return false
+        }*/
+
+        if (valid) {
+            instance.importedCatalogueItem = modelImportService.findCatalogueItemByDomainTypeAndId(instance.importedCatalogueItemDomainType, instance.importedCatalogueItemId)
+            if (!instance.importedCatalogueItem) {
+                valid = false
+                instance.errors.rejectValue('importedCatalogueItemId',
+                                            'semanticlink.linktype.must.be.assignable.message',
+                                            ['importedCatalogueItemId', ModelImport, instance.importedCatalogueItemId].toArray(),
+                                            'Property [{0}] of class [{1}] with value [{2}] cannot be used')
+            }
         }
-      
+
+        if (valid) {
+            if (!modelImportService.catalogueItemDomainTypeImportsDomainType(params.catalogueItemDomainType, instance.importedCatalogueItemDomainType)) {
+                valid = false
+                instance.errors.rejectValue('importedCatalogueItemDomainType',
+                                            'semanticlink.linktype.must.be.assignable.message',
+                                            ['importedCatalogueItemDomainType', ModelImport, instance.importedCatalogueItemDomainType].toArray(),
+                                            'Property [{0}] of class [{1}] with value [{2}] cannot be used')
+            }
+        }
+
+        if (valid) {
+            if (!modelImportService.catalogueItemIsImportableByCatalogueItem(instance.catalogueItem, instance.importedCatalogueItem)) {
+                valid = false
+                instance.errors.rejectValue('importedCatalogueItemDomainType',
+                                            'semanticlink.linktype.must.be.assignable.message',
+                                            ['importedCatalogueItemDomainType', ModelImport, instance.importedCatalogueItemDomainType].toArray(),
+                                            'Property [{0}] of class [{1}] with value [{2}] cannot be used')                
+            }
+        }
+
+        if (!valid) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
+        }
+       
         true
     }
 }

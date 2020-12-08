@@ -114,6 +114,19 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         importsDomain(grailsClass.clazz)
     }
 
+    /**
+     * Does the importedModelItem belong to a DataModel which is finalised, or does it belong to the same
+     * collection as the importing DataModel?
+     *
+     * @param importingDataModel The DataModel which is importing the importedModelItem
+     * @param importedModelItem The ModelItem which is being imported into importingDataModel
+     *
+     * @return boolean Is this import allowed by domain specific rules?
+     */
+    boolean isImportableByCatalogueItem(CatalogueItem importingCatalogueItem, CatalogueItem importedCatalogueItem) {
+        false
+    }
+
     abstract void deleteAll(Collection<K> catalogueItems)
 
     K save(K catalogueItem) {

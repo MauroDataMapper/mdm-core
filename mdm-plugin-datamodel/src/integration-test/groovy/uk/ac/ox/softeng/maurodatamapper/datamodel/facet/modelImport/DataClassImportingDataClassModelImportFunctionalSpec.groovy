@@ -58,9 +58,6 @@ class DataClassImportingDataClassModelImportFunctionalSpec extends CatalogueItem
     @Shared
     DataModel destinationDataModel    
 
-    //@Shared
-    //DataClass destinationDataClass
-
     String getCatalogueItemCopyPath() {
         "dataModels/${destinationDataModelId}/dataClasses/${sourceDataModelId}/${sourceDataClassId}"
     }
@@ -85,11 +82,6 @@ class DataClassImportingDataClassModelImportFunctionalSpec extends CatalogueItem
         DataModel.findByLabel('Destination DataModel').id.toString()
     }    
 
-    /*@Transactional
-    String getDestinationDataClassId() {
-        DataClass.findByLabel('Destination DataClass').id.toString()
-    } */    
-
     @Transactional
     String getSourceDataModelId() {
         getImportingDataModelId()
@@ -104,7 +96,8 @@ class DataClassImportingDataClassModelImportFunctionalSpec extends CatalogueItem
     @Transactional
     def checkAndSetupData() {
         importedDataModel = new DataModel(label: 'Imported DataModel', createdBy: 'functionalTest@test.com',
-                                          folder: folder, authority: testAuthority).save(flush: true)
+                                          folder: folder, authority: testAuthority,
+                                          finalised: true, modelVersion: '1.0.0').save(flush: true)
 
         importedParentDataClass = new DataClass(label: 'Imported Parent DataClass', createdBy: 'functionalTest@test.com',
                                                 dataModel: importedDataModel).save(flush: true)
@@ -120,9 +113,7 @@ class DataClassImportingDataClassModelImportFunctionalSpec extends CatalogueItem
 
         destinationDataModel = new DataModel(label: 'Destination DataModel', createdBy: 'functionalTest@test.com',
                                              folder: folder, authority: testAuthority).save(flush: true)
-
-        //destinationDataClass = new DataClass(label: 'Destination DataClass', createdBy: 'functionalTest@test.com',
-        //                                     dataModel: destinationDataModel, authority: testAuthority).save(flush: true)                                                                                                                                                                  
+                                                                                                                                                                
         sessionFactory.currentSession.flush()
     }
 
@@ -200,20 +191,5 @@ class DataClassImportingDataClassModelImportFunctionalSpec extends CatalogueItem
   }
 }'''
     }    
-
-    /*@Override
-    void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
-        // Metadata only copied for new doc version
-    }
-
-    @Override
-    HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
-        /// Metadata only copied for new doc version
-    }
-
-    @Override
-    void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
-        // Metadata only copied for new doc version
-    }*/
 
 }

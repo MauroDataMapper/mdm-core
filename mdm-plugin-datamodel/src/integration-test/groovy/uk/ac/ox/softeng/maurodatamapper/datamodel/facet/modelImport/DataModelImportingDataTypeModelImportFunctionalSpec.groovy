@@ -80,7 +80,8 @@ class DataModelImportingDataTypeModelImportFunctionalSpec extends CatalogueItemM
     @Transactional
     def checkAndSetupData() {
         importedDataModel = new DataModel(label: 'Imported DataModel', createdBy: 'functionalTest@test.com',
-                                          folder: folder, authority: testAuthority).save(flush: true)
+                                          folder: folder, authority: testAuthority,
+                                          finalised: true, modelVersion: '1.0.0').save(flush: true)
 
         importedDataType = new PrimitiveType(label: 'Imported DataType', createdBy: 'functionalTest@test.com',
                                              dataModel: importedDataModel).save(flush: true)
@@ -158,17 +159,17 @@ class DataModelImportingDataTypeModelImportFunctionalSpec extends CatalogueItemM
 
     @Override
     void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {
-        // Metadata only copied for new doc version
+        // Only copied for new doc version
     }
 
     @Override
     HttpResponse requestCIF01CopiedCatalogueItemFacet(HttpResponse response) {
-        /// Metadata only copied for new doc version
+        /// Only copied for new doc version
     }
 
     @Override
     void verifyCIF01CopiedFacetSuccessfully(HttpResponse response) {
-        // Metadata only copied for new doc version
+        // Only copied for new doc version
     }
 
 }

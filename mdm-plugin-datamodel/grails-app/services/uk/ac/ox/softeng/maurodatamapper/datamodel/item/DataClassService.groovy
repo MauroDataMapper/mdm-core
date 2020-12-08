@@ -90,6 +90,25 @@ class DataClassService extends ModelItemService<DataClass> {
         [DataElement, DataClass]
     }    
 
+    /**
+     * Does the importedModelItem belong to a DataClass belonging to a DataModel which is either finalised
+     * or in the same collection as the importing DataModel?
+     *
+     * @param importingDataClass The DataClass which is importing the importedModelItem
+     * @param importedModelItem The ModelItem which is being imported into importingDataClass
+     *
+     * @return boolean Is this import allowed by domain specific rules?
+     */
+    @Override
+    boolean isImportableByCatalogueItem(CatalogueItem importingDataClass, CatalogueItem importedModelItem) {
+        //DataModel importingDataModel = importingDataClass.getModel()
+        DataModel importedFromDataModel = importedModelItem.getModel()
+
+        importedFromDataModel.finalised
+
+        //TODO add OR importedFromModel is in the same collection as importingDataModel
+    }     
+
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = proxyHandler.unwrapIfProxy(dataClass.dataModel)

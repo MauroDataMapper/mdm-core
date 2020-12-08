@@ -154,10 +154,25 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         ModelImport.withFilter(ModelImport.byAnyCatalogueItemId(catalogueItemId), paginate).list(paginate)
     }
 
+    /**
+     * Validate that the domain type of the imported catalogue item can be imported by the domain type
+     * of the importing catalogue item.
+     *
+     */
     boolean catalogueItemDomainTypeImportsDomainType(String catalogueItemDomainType, String importedCatalogueItemDomainType) {
         CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItemDomainType)}
         if (!service) throw new ApiBadRequestException('MIS03', 'Model import loading for catalogue item with no supporting service')
         service.importsDomainType(importedCatalogueItemDomainType)
     }
+
+    /**
+     * Validate that the importing and imported catalogue items pass domain specific checks for enabling of imports.
+     *
+     */
+    boolean catalogueItemIsImportableByCatalogueItem(CatalogueItem catalogueItem, CatalogueItem importedCatalogueItem) {
+        CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItem.class)}
+        if (!service) throw new ApiBadRequestException('MIS04', 'Model import loading for catalogue item with no supporting service')
+        service.isImportableByCatalogueItem(catalogueItem, importedCatalogueItem)
+    }    
 
 }
