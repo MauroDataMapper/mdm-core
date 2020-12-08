@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemModelImportFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -30,6 +31,9 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Shared
+
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 /**
  * Where facet owner is a DataModel and it imports a DataClass
@@ -82,8 +86,13 @@ class DataModelImportingDataClassModelImportFunctionalSpec extends CatalogueItem
     @Transactional
     def checkAndSetupData() {
         importedDataModel = new DataModel(label: 'Imported DataModel', createdBy: 'functionalTest@test.com',
-                                          folder: folder, authority: testAuthority,
-                                          finalised: true, modelVersion: '1.0.0').save(flush: true)
+                                          folder: folder, authority: testAuthority).save(flush: true)
+
+        importedDataModel.finalised = true
+        importedDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        importedDataModel.breadcrumbTree.finalise()
+        importedDataModel.modelVersion = Version.from('1.0.0')
+        importedDataModel.save(flush: true)                                            
 
         importedDataClass = new DataClass(label: 'Imported DataClass', createdBy: 'functionalTest@test.com',
                                           dataModel: importedDataModel).save(flush: true)
@@ -153,7 +162,7 @@ class DataModelImportingDataClassModelImportFunctionalSpec extends CatalogueItem
         "id": "${json-unit.matches:id}",
         "label": "Imported DataModel",
         "domainType": "DataModel",
-        "finalised": false
+        "finalised": true
       }
     ]
   }
