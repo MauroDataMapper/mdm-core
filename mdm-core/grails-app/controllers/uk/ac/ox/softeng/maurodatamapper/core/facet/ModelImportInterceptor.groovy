@@ -41,29 +41,6 @@ class ModelImportInterceptor extends FacetInterceptor {
 
     boolean before() {
         facetResourceChecks()
-        if (actionName == 'save') {
-
-            //TODO (somewhere) check that importing item can import the imported item
-            //i.e. DataModel can import DataType and DataClass
-            //is the imported model finalised and part of the same model collection as the destination
-
-
-            if (Utils.parentClassIsAssignableFromChild(SecurableResource, getOwningClass())) {
-                boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(getFacetClass(), getId(), getOwningClass(), getOwningId())
-                return currentUserSecurityPolicyManager.userCanEditResourceId(getFacetClass(), getId(),
-                        getOwningClass(),getOwningId()) ?:
-                        forbiddenOrNotFound(canRead, getId() ? getFacetClass() : getOwningClass(), getId() ?: getOwningId())
-
-            }
-
-            Model model = proxyHandler.unwrapIfProxy(getOwningModel())
-            boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(getFacetClass(), getId(), getOwningClass(), getOwningId())
-            return currentUserSecurityPolicyManager.userCanEditResourceId(getFacetClass(), getId(),
-                    model.class,getOwningId()) ?:
-                    forbiddenOrNotFound(canRead, getId() ? getFacetClass() : model.class, getId() ?: getOwningId())
-        }
-
         checkActionAllowedOnFacet()
-
     }
 }

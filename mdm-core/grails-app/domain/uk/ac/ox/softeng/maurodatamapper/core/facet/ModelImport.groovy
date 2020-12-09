@@ -40,16 +40,13 @@ class ModelImport implements CatalogueItemAware, CreatorAware {
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-
-        //TODO don't allow same import twice on one catalogue item
         catalogueItemId nullable: true, validator: {val, obj ->
-            if (!val && !obj.catalogueItem) return ['default.null.message']
-            if (val == obj.importedCatalogueItemId && obj.catalogueItemDomainType == obj.importedCatalogueItemDomainType) {
-                return ['invalid.same.property.message', 'importedCatalogueItem']
-            }
+            if (val) return true
+            if (!val && obj.catalogueItem && !obj.catalogueItem.ident()) return true
+            ['default.null.message']
         }
-
-        importedCatalogueItemId nullable: false, blank: false
+        catalogueItemDomainType nullable: false, blank: false
+        importedCatalogueItemId nullable: false
         importedCatalogueItemDomainType nullable: false, blank: false
     }
 

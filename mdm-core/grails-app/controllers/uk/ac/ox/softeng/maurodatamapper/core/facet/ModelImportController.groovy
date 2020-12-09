@@ -71,15 +71,6 @@ class ModelImportController extends EditLoggingController<ModelImport> {
     }
 
     @Override
-    protected ModelImport updateResource(ModelImport resource) {
-        modelImportService.loadCatalogueItemsIntoModelImport(resource)
-        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        resource.save flush: true, validate: false
-        modelImportService.
-            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
-    }
-
-    @Override
     protected void deleteResource(ModelImport resource) {
         serviceDeleteResource(resource)
     }
@@ -90,15 +81,14 @@ class ModelImportController extends EditLoggingController<ModelImport> {
 
         boolean valid = !instance.hasErrors()  && instance.validate()
       
-        //TODO rejection messages
         if (valid) {
             instance.importedCatalogueItem = modelImportService.findCatalogueItemByDomainTypeAndId(instance.importedCatalogueItemDomainType, instance.importedCatalogueItemId)
             if (!instance.importedCatalogueItem) {
                 valid = false
                 instance.errors.rejectValue('importedCatalogueItemId',
-                                            'semanticlink.linktype.must.be.assignable.message',
-                                            ['importedCatalogueItemId', ModelImport, instance.importedCatalogueItemId].toArray(),
-                                            'Property [{0}] of class [{1}] with value [{2}] cannot be used')
+                                            'modelimport.imported.catalogue.item.not.found',
+                                            [instance.importedCatalogueItemId, instance.importedCatalogueItemDomainType].toArray(),
+                                            'Imported catalogue item [{0}] of type [{1}] cannot be found')
             }
         }
 
@@ -106,19 +96,19 @@ class ModelImportController extends EditLoggingController<ModelImport> {
             if (!modelImportService.catalogueItemDomainTypeImportsDomainType(params.catalogueItemDomainType, instance.importedCatalogueItemDomainType)) {
                 valid = false
                 instance.errors.rejectValue('importedCatalogueItemDomainType',
-                                            'semanticlink.linktype.must.be.assignable.message',
-                                            ['importedCatalogueItemDomainType', ModelImport, instance.importedCatalogueItemDomainType].toArray(),
-                                            'Property [{0}] of class [{1}] with value [{2}] cannot be used')
+                                            'modelimport.domain.does.not.import.domain',
+                                            [params.catalogueItemDomainType, instance.importedCatalogueItemDomainType].toArray(),
+                                            'Domain type [{0}] does not import domain type [{1}]')
             }
         }
 
         if (valid) {
             if (!modelImportService.catalogueItemIsImportableByCatalogueItem(instance.catalogueItem, instance.importedCatalogueItem)) {
                 valid = false
-                instance.errors.rejectValue('importedCatalogueItemDomainType',
-                                            'semanticlink.linktype.must.be.assignable.message',
-                                            ['importedCatalogueItemDomainType', ModelImport, instance.importedCatalogueItemDomainType].toArray(),
-                                            'Property [{0}] of class [{1}] with value [{2}] cannot be used')                
+                instance.errors.rejectValue('importedCatalogueItemId',
+                                            'modelimport.imported.catalogue.item.cannot.be.used',
+                                            [instance.importedCatalogueItemId, instance.importedCatalogueItemDomainType].toArray(),
+                                            'Imported catalogue item [{0}] of type [{1}] cannot be used')                
             }
         }
 
