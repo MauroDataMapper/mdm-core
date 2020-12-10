@@ -25,6 +25,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -73,6 +75,10 @@ class DataModelService extends ModelService<DataModel> {
     DataTypeService dataTypeService
     DataClassService dataClassService
     DataElementService dataElementService
+    MessageSource messageSource
+    ModelImportService modelImportService    
+    VersionLinkService versionLinkService
+    EditService editService
     AuthorityService authorityService
     SummaryMetadataService summaryMetadataService
 
@@ -219,6 +225,13 @@ class DataModelService extends ModelService<DataModel> {
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
+        if (catalogueItem.modelImports) {
+            catalogueItem.modelImports.each {
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            ModelImport.saveAll(catalogueItem.modelImports)
+        }          
         catalogueItem
     }
 
@@ -656,6 +669,12 @@ class DataModelService extends ModelService<DataModel> {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
+
+        modelImportService.findAllByCatalogueItemId(original.id).each { 
+            copy.addToModelImports(it.importedCatalogueItemDomainType,
+                                   it.importedCatalogueItemId,
+                                   copier) 
+        }        
         copy
     }
 

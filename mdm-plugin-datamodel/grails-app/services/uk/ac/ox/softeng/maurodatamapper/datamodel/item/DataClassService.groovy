@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -52,6 +54,7 @@ class DataClassService extends ModelItemService<DataClass> {
     DataElementService dataElementService
     DataTypeService dataTypeService
     MessageSource messageSource
+    ModelImportService modelImportService    
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
 
@@ -179,6 +182,13 @@ class DataClassService extends ModelItemService<DataClass> {
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
+        if (catalogueItem.modelImports) {
+            catalogueItem.modelImports.each {
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            ModelImport.saveAll(catalogueItem.modelImports)
+        }          
         catalogueItem
     }
 
@@ -597,6 +607,12 @@ class DataClassService extends ModelItemService<DataClass> {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
+
+        modelImportService.findAllByCatalogueItemId(original.id).each { 
+            copy.addToModelImports(it.importedCatalogueItemDomainType,
+                                   it.importedCatalogueItemId,
+                                   copier) 
+        }        
         copy
     }
 

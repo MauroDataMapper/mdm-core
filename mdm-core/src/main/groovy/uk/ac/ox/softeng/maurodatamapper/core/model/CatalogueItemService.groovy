@@ -25,7 +25,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -222,12 +221,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        modelImportService.findAllByCatalogueItemId(original.id).each { 
-            copy.addToModelImports(it.importedCatalogueItemDomainType,
-                                   it.importedCatalogueItemId,
-                                   copier) 
-        }
-
         semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
@@ -277,14 +270,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                 it.beforeValidate()
             }
             ReferenceFile.saveAll(catalogueItem.referenceFiles)
-        }
-        if (catalogueItem.modelImports) {
-            catalogueItem.modelImports.each {
-                if (!it.isDirty()) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
-            }
-            ModelImport.saveAll(catalogueItem.modelImports)
-        }        
+        }      
         catalogueItem.breadcrumbTree?.trackChanges()
         catalogueItem.breadcrumbTree?.beforeValidate()
         catalogueItem.breadcrumbTree?.save(validate: false)

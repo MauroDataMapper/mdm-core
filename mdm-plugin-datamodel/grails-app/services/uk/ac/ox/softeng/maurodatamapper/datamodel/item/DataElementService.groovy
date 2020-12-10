@@ -55,6 +55,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     DataClassService dataClassService
     DataTypeService dataTypeService
+    ModelImportService modelImportService   
     SummaryMetadataService summaryMetadataService
 
     @Override
