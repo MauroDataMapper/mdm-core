@@ -28,16 +28,21 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import org.springframework.context.MessageSource
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+
 class BootstrapModels {
 
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
+    public static final String FINALISED_SIMPLE_DATAMODEL_NAME = 'Finalised Simple Test DataModel'
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
@@ -163,4 +168,28 @@ class BootstrapModels {
 
         dataModel
     }
+
+    static DataModel buildAndSaveFinalisedSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: FINALISED_SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
+
+
+        checkAndSave(messageSource, simpleDataModel)
+        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'simple')
+
+        simpleDataModel
+        .addToDataClasses(dataClass)
+        .addToDataTypes(new PrimitiveType(createdBy: DEVELOPMENT, label: 'string'))
+
+        checkAndSave(messageSource, simpleDataModel)
+
+        simpleDataModel.finalised = true
+        simpleDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        simpleDataModel.breadcrumbTree.finalise()
+        simpleDataModel.modelVersion = Version.from('1.0.0')     
+
+        checkAndSave(messageSource, simpleDataModel)   
+
+
+        simpleDataModel
+    }    
 }

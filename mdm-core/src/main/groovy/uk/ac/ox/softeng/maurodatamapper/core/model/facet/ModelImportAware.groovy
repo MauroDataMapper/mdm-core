@@ -46,15 +46,13 @@ trait ModelImportAware {
         removeFrom('modelImports', modelImports)
     }
 
-    def addToModelImports(String catalogueItemDomainType, UUID catalogueItemId, String importedCatalogueItemDomainType, UUID importedCatalogueItemId, User createdBy)  {
-        addToModelImports(catalogueItemDomainType, catalogueItemId, importedCatalogueItemDomainType, importedCatalogueItemId, createdBy.emailAddress)
+    def addToModelImports(String importedCatalogueItemDomainType, UUID importedCatalogueItemId, User createdBy)  {
+        addToModelImports(importedCatalogueItemDomainType, importedCatalogueItemId, createdBy.emailAddress)
     }
 
-    def addToModelImports(String catalogueItemDomainType, UUID catalogueItemId, String importedCatalogueItemDomainType, UUID importedCatalogueItemId, String createdBy)  {
-        addToModelImports(new ModelImport(catalogueItemDomainType: catalogueItemDomainType,
-                                          catalogueItemId: catalogueItemId,
-                                          importedCatalogueItemDomainType: importedCatalogueItemDomainType, 
+    def addToModelImports(String importedCatalogueItemDomainType, UUID importedCatalogueItemId, String createdBy)  {
+        addToModelImports(new ModelImport(importedCatalogueItemDomainType: importedCatalogueItemDomainType, 
                                           importedCatalogueItemId: importedCatalogueItemId,
                                           createdBy: createdBy))
-    }
+    }    
 }

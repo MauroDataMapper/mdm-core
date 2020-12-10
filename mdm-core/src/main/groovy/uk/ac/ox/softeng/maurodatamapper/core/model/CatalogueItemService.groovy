@@ -223,9 +223,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         }
 
         modelImportService.findAllByCatalogueItemId(original.id).each { 
-            copy.addToModelImports(it.catalogueItemDomainType,
-                                   it.catalogueItemId,
-                                   it.importedCatalogueItemDomainType,
+            copy.addToModelImports(it.importedCatalogueItemDomainType,
                                    it.importedCatalogueItemId,
                                    copier) 
         }

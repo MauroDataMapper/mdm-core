@@ -29,11 +29,13 @@ import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class ModelImport implements CatalogueItemAware, CreatorAware {
 
     UUID id
-
     CatalogueItem importedCatalogueItem
     UUID importedCatalogueItemId
     String importedCatalogueItemDomainType
@@ -46,7 +48,36 @@ class ModelImport implements CatalogueItemAware, CreatorAware {
             ['default.null.message']
         }
         catalogueItemDomainType nullable: false, blank: false
-        importedCatalogueItemId nullable: false
+
+        /**
+         * Custom constraint validation on the importedCatalogueItemId to prevent duplicate imports.
+         * A duplicate is defined as two records having the same catalogueItemId and importedCatalogueItemId.
+         * Using a unique constraint did not work as it fails in cases where the catalogueItem has not yet been created
+         * (which occurs when copying a catalogue item and its facets).
+         * So only when dealing with an already existing catalogue item the valdiator checks for an already
+         * existing ModelImport.
+         */
+        importedCatalogueItemId nullable: false, validator: {UUID importedCatalogueItemId, ModelImport instance ->
+            //If the catalogue item does not yet have an ID then this is a new catalogue item, 
+            //so duplication is not possible
+            if (!instance.catalogueItem.ident()) return true
+            
+            //Else this is an existing catalogue item, in which case check that the import does not
+            //already exist
+            def alreadyImported = ModelImport.withCriteria() {
+                if (instance.id) {
+                    ne('id', instance.id)
+                }
+                eq('catalogueItemId', instance.catalogueItemId)
+                eq('importedCatalogueItemId', instance.importedCatalogueItemId)
+            }
+
+            if (alreadyImported) {
+                return ['default.not.unique.message']
+            } else {
+                return true
+            }
+        }        
         importedCatalogueItemDomainType nullable: false, blank: false
     }
 
@@ -100,8 +131,9 @@ class ModelImport implements CatalogueItemAware, CreatorAware {
         byCatalogueItemId(catalogueItemId).idEq(Utils.toUuid(resourceId))
     }
 
-    static DetachedCriteria<ModelImport> byTargetCatalogueItemId(Serializable catalogueItemId) {
-        by().eq('importedCatalogueItemId', Utils.toUuid(catalogueItemId))
+    static DetachedCriteria<ModelImport> byCatalogueItemIdAndImportedCatalogueItemId(Serializable catalogueItemId, Serializable importedCatalogueItemId) {
+        byCatalogueItemId(catalogueItemId)
+        .eq('importedCatalogueItemId', Utils.toUuid(importedCatalogueItemId))
     }
 
     static DetachedCriteria<ModelImport> byAnyCatalogueItemId(Serializable catalogueItemId) {

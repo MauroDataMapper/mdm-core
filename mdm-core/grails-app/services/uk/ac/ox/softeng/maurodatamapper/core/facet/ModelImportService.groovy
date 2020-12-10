@@ -64,10 +64,6 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         catalogueItem.removeFromModelImports(modelImport)
     }     
 
-    ModelImport save(ModelImport modelImport) {
-        modelImport.save(flush: true)
-    }
-
     void delete(ModelImport modelImport, CatalogueItem) {
         if (!modelImport) return
 
@@ -136,14 +132,6 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         modelImports
     }
 
-    ModelImport createModelImport(User createdBy, CatalogueItem source, CatalogueItem imported) {
-        new ModelImport(createdBy: createdBy.emailAddress).with {
-            setCatalogueItem(source)
-            setTargetCatalogueItem(imported)
-            it
-        }
-    }
-
     @Override
     ModelImport findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
         ModelImport.byCatalogueItemIdAndId(catalogueItemId, id).get()
@@ -175,21 +163,39 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         service.isImportableByCatalogueItem(catalogueItem, importedCatalogueItem)
     }    
 
-    ModelImport saveResource(User currentUser, ModelImport resource) {
+    /**
+     * Save a ModelImport resource with edit logs, and handle any consequential imports.
+     *
+     * @param currentUser The user doing the import
+     * @param resource The ModelImport
+     * @param isAdditional Is this the principal import initiated by a user (in which case false), or an additional
+     *                     import in consequence of the principal (in which case true). An example is: when user 
+     *                     initiates an import of DataElement into a DataClass (the principal), the service also
+     *                     needs to import the relevant DataType into the DataModel (additional).
+     *
+     */
+    ModelImport saveResource(User currentUser, ModelImport resource, boolean isAdditional = false) {
         loadCatalogueItemsIntoModelImport(resource)
-        resource.save(flush: true, validate: false)
 
-        //Add an association between the ModelImport and CatalogueItem
-        addModelImportToCatalogueItem(resource, resource.catalogueItem)
+        //Don't save the resource if it is additional and already exists (in our example, the user may already have imported the DataType
+        //into the DataModel. If so, continue silently without saving this additional import)
+        boolean doSave = !isAdditional || (isAdditional && !ModelImport.findByCatalogueItemIdAndImportedCatalogueItemId(resource.catalogueItemId, resource.importedCatalogueItemId))
+        if (doSave) {
+            resource.save(flush: true, validate: false)
 
-        //Record the creation against the CatalogueItem belongs
-        addCreatedEditToCatalogueItem(currentUser, resource, resource.catalogueItemDomainType, resource.catalogueItemId)
+            //Add an association between the ModelImport and CatalogueItem
+            addModelImportToCatalogueItem(resource, resource.catalogueItem)
+
+            //Record the creation against the CatalogueItem belongs
+            addCreatedEditToCatalogueItem(currentUser, resource, resource.catalogueItemDomainType, resource.catalogueItemId)
+        }
 
         //Does the import of this resource require any other things to be imported?
         CatalogueItemService service = catalogueItemServices.find {it.handles(resource.importedCatalogueItemDomainType)}
         if (!service) throw new ApiBadRequestException('MIS04', 'Model import loading for catalogue item with no supporting service')
         service.additionalModelImports(currentUser, resource)
-
-    }    
+  
+        resource
+    }     
 
 }

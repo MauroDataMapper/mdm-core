@@ -111,6 +111,7 @@ class BootStrap implements SecurityDefinition {
                     Authority authority = authorityService.getDefaultAuthority()
                     DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
+                    DataModelBootstrapModels.buildAndSaveFinalisedSimpleDataModel(messageSource, folder, authority)
                     TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)

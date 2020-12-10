@@ -508,21 +508,36 @@ class DataElementService extends ModelItemService<DataElement> {
         findDataElement(parentCatalogueItem, label)
     }
 
+    /**
+     * When a DataElement is imported into a DataClass, we also want to import the DataElement's
+     * DataType into the DataModel to which the importing DataClass belongs.
+     *
+     * @param currentUser The user doing the import
+     * @param imported The resource that was imported
+     *
+     */
     @Override
     void additionalModelImports(User currentUser, ModelImport imported) {
-        //When importing a DataElement, we also import its DataType to the DataModel
 
+        //The DataElement that was imported
         DataElement dataElement = imported.importedCatalogueItem
-
+        
+        //The DataType of that DataElement
         DataType dataType = dataElement.dataType
 
-        //The DataModel that the DataElement has been imported into
-        DataModel dataModel = dataElement.getModel()
+        //The CatalogueItem (which will be a DataClass) into which the DataElement was imported
+        CatalogueItem catalogueItem = imported.catalogueItem
 
+        //The DataModel to which that DataClass belongs
+        DataModel dataModel = catalogueItem.getModel()
+
+        //Create a new ModelImport for the DataType into DataModel
         ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
                                                           importedCatalogueItem  : dataType,
                                                           createdByUser          : currentUser)
         
-        modelImportService.saveResource(currentUser, modelImportDataType)                                                  
+        //Save the additional model import, indicating that this is an additional rather than
+        //principal import and so should fail silently if it already exists.
+        modelImportService.saveResource(currentUser, modelImportDataType, true)                                                  
     }
 }
