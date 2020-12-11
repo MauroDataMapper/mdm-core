@@ -130,6 +130,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
     @Override
     protected List<DataClass> listAllReadableResources(Map params) {
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
+        params.imported = params.boolean('imported', false)
         if (params.dataClassId) {
             if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
                 notFound(params.dataClassId)
@@ -139,11 +140,11 @@ class DataClassController extends CatalogueItemController<DataClass> {
         }
         if (((GrailsParameterMap) params).boolean('all', false)) {
             if (params.search) {
-                return dataClassService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(params.dataModelId, params.search, params)
+                return dataClassService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(params.dataModelId, params.search, params, params.imported)
             }
-            return dataClassService.findAllByDataModelId(params.dataModelId, params)
+            return dataClassService.findAllByDataModelId(params.dataModelId, params, params.imported)
         }
-        return dataClassService.findAllWhereRootDataClassOfDataModelId(params.dataModelId, params)
+        return dataClassService.findAllWhereRootDataClassOfDataModelId(params.dataModelId, params, params.imported)
     }
 
     @Override
