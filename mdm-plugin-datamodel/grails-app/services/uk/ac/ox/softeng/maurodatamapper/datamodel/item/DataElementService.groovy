@@ -287,12 +287,12 @@ class DataElementService extends ModelItemService<DataElement> {
         DataElement.byDataTypeIdAndId(dataTypeId, id).find()
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:]) {
-        findAllByDataClassId(dataClassId, pagination, pagination)
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:], boolean includeImported = false) {
+        findAllByDataClassId(dataClassId, pagination, pagination, includeImported)
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination) {
-        DataElement.withFilter(DataElement.byDataClassId(dataClassId), filter).list(pagination)
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination, boolean includeImported = false) {
+        DataElement.withFilter(DataElement.byDataClassId(dataClassId, includeImported), filter).list(pagination)
     }
 
     List<DataElement> findAllByDataClassIdJoinDataType(Serializable dataClassId) {

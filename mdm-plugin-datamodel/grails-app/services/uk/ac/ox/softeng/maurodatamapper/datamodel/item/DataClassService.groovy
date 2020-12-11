@@ -405,8 +405,8 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId), paginate).list(paginate)
     }
 
-    def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId), paginate).list(paginate)
+    def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:], boolean includeImported = false) {
+        DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId, includeImported), paginate).list(paginate)
     }
 
     List<ModelItem> findAllContentOfDataClassIdInDataModelId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
@@ -420,12 +420,12 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.byDataModelId(dataModelId).count()
     }
 
-    def findAllByDataModelId(UUID dataModelId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byDataModelId(dataModelId), paginate).list(paginate)
+    def findAllByDataModelId(UUID dataModelId, Map paginate = [:], boolean includeImported = false) {
+        DataClass.withFilter(DataClass.byDataModelId(dataModelId, includeImported), paginate).list(paginate)
     }
 
-    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:]) {
-        DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:], boolean includeImported = false) {
+        DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm, includeImported).list(paginate)
     }
 
     private CatalogueItem findCommonParent(DataClass leftDataClass, DataClass rightDataClass) {

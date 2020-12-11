@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -201,9 +202,33 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         byDataTypeId(dataTypeId).idEq(Utils.toUuid(resourceId))
     }
 
-    static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId) {
+    /*static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId) {
         new DetachedCriteria<DataElement>(DataElement).eq('dataClass.id', Utils.toUuid(dataClassId))
-    }
+    }*/
+    /**
+     * If we want to include imported DataTypes then do a logical OR on imported and directly owned DataTypes.
+     *
+     * @param dataModelId The ID of the DataModel we are looking at
+     * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
+     *                        addition to DataTypes directly belonging to the DataModel)?
+     * @return DetachedCriteria<DataElement>    
+     */
+    static DetachedCriteria<DataType> byDataClassId(Serializable dataClassId, boolean includeImported = false) {
+        DetachedCriteria criteria = new DetachedCriteria<DataElement>(DataElement)
+
+        if (includeImported) {
+            criteria
+            .or {
+                inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
+                eq('dataClass.id', Utils.toUuid(dataClassId))                
+            }
+        } else {
+            criteria
+            .eq('dataClass.id', Utils.toUuid(dataClassId))
+        }
+        
+        criteria
+    }    
 
     static DetachedCriteria<DataElement> byDataClass(DataClass dataClass) {
         new DetachedCriteria<DataElement>(DataElement).eq('dataClass', dataClass)

@@ -18,10 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
 
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -46,7 +48,7 @@ import io.micronaut.http.HttpStatus
  */
 @Integration
 @Slf4j
-class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalSpec {
+class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec {
 
     @Override
     String getResourcePath() {
@@ -139,6 +141,63 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         ]
     }
 
+    @Transactional
+    @Override
+    String getImportedCatalogueItemId() {
+        String dataClassId = DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id, 'simple').get().id.toString()
+        DataElement.byDataClassIdAndLabel(dataClassId, 'data element 1').get().id.toString()
+    }
+
+    @Override
+    String getImportedCatalogueItemDomainType() {
+        DataElement.simpleName
+    } 
+    
+    @Override
+    String getModelImportPath() {
+        "dataClasses/${getContentDataClassId()}/modelImports"
+    }
+
+    @Override
+    String getExpectedModelImportJson() {
+      '''{
+  "id": "${json-unit.matches:id}",
+  "catalogueItem": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "content",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Complex Test DataModel",
+        "domainType": "DataModel",
+        "finalised": false
+      }
+    ]
+  },
+  "importedCatalogueItem": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataElement",
+    "label": "data element 1",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Finalised Simple Test DataModel",
+        "domainType": "DataModel",
+        "finalised": true
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "simple",
+        "domainType": "DataClass"
+      }
+    ]
+  }
+}'''
+    }        
+
     @Override
     String getEditorIndexJson() {
         '''{
@@ -219,6 +278,123 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
   ]
 }'''
     }
+
+@Override
+    String getEditorIndexJsonWithImported() {
+        '''{
+  "count": 3,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataElement",
+      "label": "ele1",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "content",
+          "domainType": "DataClass"
+        }
+      ],
+      "dataClass": "${json-unit.matches:id}",
+      "dataType": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "PrimitiveType",
+        "label": "string",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
+          }
+        ]
+      },
+      "maxMultiplicity": 20,
+      "minMultiplicity": 0
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataElement",
+      "label": "element2",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "content",
+          "domainType": "DataClass"
+        }
+      ],
+      "dataClass": "${json-unit.matches:id}",
+      "dataType": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "PrimitiveType",
+        "label": "integer",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
+          }
+        ]
+      },
+      "maxMultiplicity": 1,
+      "minMultiplicity": 1
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataElement",
+      "label": "data element 1",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Finalised Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": true
+        },
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "simple",
+          "domainType": "DataClass"
+        }
+      ],
+      "dataClass": "${json-unit.matches:id}",
+      "dataType": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "PrimitiveType",
+        "label": "string",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Finalised Simple Test DataModel",
+            "domainType": "DataModel",
+            "finalised": true
+          }
+        ]
+      },
+      "maxMultiplicity": 1,
+      "minMultiplicity": 1
+    }
+  ]
+}'''
+    }    
 
     @Override
     String getShowJson() {

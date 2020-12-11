@@ -82,8 +82,8 @@ abstract class UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec exte
      * Import a CatalogueItem.
      * Note that we are not testing here that ModelImports are done/not done for different logins -
      * that is done by separate facet tests.
-     * Check that it appears in relevant endpoints when the ?imported query parameter is used.
-     * Check that it does not appear when the ?imported query parameter is not used.
+     * Check that the imported item appears in relevant endpoints when the ?imported query parameter is used.
+     * Check that the imported item does not appear when the ?imported query parameter is not used.
      */
     void "MI01: import CatalogueItem and check it is listed in its Endpoints"() {
         given:

@@ -17,8 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -46,7 +48,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalSpec {
+class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec {
 
     @Override
     String getResourcePath() {
@@ -89,6 +91,48 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
             description: 'Adding a description to the DataClass'
         ]
     }
+
+    @Transactional
+    @Override
+    String getImportedCatalogueItemId() {
+        DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id, 'simple').get().id.toString()
+    }
+
+    @Override
+    String getImportedCatalogueItemDomainType() {
+        DataClass.simpleName
+    } 
+    
+    @Override
+    String getModelImportPath() {
+        "dataModels/${getComplexDataModelId()}/modelImports"
+    }
+
+    @Override
+    String getExpectedModelImportJson() {
+      '''{
+  "id": "${json-unit.matches:id}",
+  "catalogueItem": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataModel",
+    "label": "Complex Test DataModel"
+  },
+  "importedCatalogueItem": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "simple",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Finalised Simple Test DataModel",
+        "domainType": "DataModel",
+        "finalised": true
+      }
+    ]
+  }
+}'''
+    }    
 
     @Override
     String getShowJson() {
@@ -173,6 +217,77 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
   ]
 }'''
     }
+
+    @Override
+    String getEditorIndexJsonWithImported() {
+        '''{
+  "count": 4,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "emptyclass",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "description": "dataclass with desc"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "parent",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "maxMultiplicity": -1,
+      "minMultiplicity": 1
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "content",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "description": "A dataclass with elements",
+      "maxMultiplicity": 1,
+      "minMultiplicity": 0
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataClass",
+      "label": "simple",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Finalised Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": true
+        }
+      ]
+    }
+  ]
+}'''
+    }    
 
     @Override
     void verifyCopiedResponseBody(HttpResponse<Map> response) {

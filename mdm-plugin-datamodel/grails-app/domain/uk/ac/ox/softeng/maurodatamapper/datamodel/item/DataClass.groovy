@@ -228,17 +228,49 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         "${buildLabelPath(dataClass.parentDataClass)}|${dataClass.label}"
     }
 
-
-    static DetachedCriteria<DataClass> byDataModelId(UUID dataModelId) {
-        new DetachedCriteria<DataClass>(DataClass).eq('dataModel.id', dataModelId)
+    /**
+     * Where the DataClass has been imported into the specified DataModel. Use this method if you want only those 
+     * DataClasses which have been imported into a DataModel i.e. excluding DataClasses owned directly by the DataModel.
+     *
+     * @param ID of DataModel which has imported other catalogue items
+     * @return DetachedCriteria<DataClass> for id in IDs of catalogue items which have been imported into the DataModel
+     */
+    static DetachedCriteria<DataClass> importedByDataModelId(Serializable dataModelId) {
+        new DetachedCriteria<DataClass>(DataClass)
+        .in('id', ModelImport.importedByCatalogueItemId(dataModelId))
     }
 
     static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId) {
         byDataModelId(dataModelId).eq('parentDataClass.id', dataClassId)
     }
 
-    static DetachedCriteria<DataClass> byRootDataClassOfDataModelId(UUID dataModelId) {
-        byDataModelId(dataModelId).isNull('parentDataClass')
+    /**
+     * If we want to include imported DataClasses then do a logical OR on imported and directly owned DataClasses.
+     *
+     * @param dataModelId The ID of the DataModel we are looking at
+     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in 
+     *                        addition to DataClasses directly belonging to the DataModel)?
+     * @return DetachedCriteria<DataClass>    
+     */
+    static DetachedCriteria<DataClass> byDataModelId(Serializable dataModelId, boolean includeImported = false) {
+        DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
+
+        if (includeImported) {
+            criteria
+            .or {
+                inList('id', ModelImport.importedByCatalogueItemId(dataModelId))
+                eq('dataModel.id', Utils.toUuid(dataModelId))                
+            }
+        } else {
+            criteria
+            .eq('dataModel.id', Utils.toUuid(dataModelId))
+        }
+        
+        criteria
+    }     
+
+    static DetachedCriteria<DataClass> byRootDataClassOfDataModelId(UUID dataModelId, boolean includeImported = false) {
+        byDataModelId(dataModelId, includeImported).isNull('parentDataClass')
     }
 
     static DetachedCriteria<DataClass> byDataModelIdAndChildOfDataClassId(UUID dataModelId, UUID dataClassId) {
@@ -253,8 +285,17 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         byDataModelId(dataModelId).eq('label', label)
     }
 
-    static DetachedCriteria<DataClass> byDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm) {
-        byDataModelId(dataModelId).or {
+    /**
+     * Get DataClasses for a DataModel by the DataModel id and a search string, including imported data classes if required.
+     *
+     * @param dataModelId The ID of the DataModel we are looking at
+     * @param searchTerm Search string which is applied against the label and description of the DataClass
+     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in 
+     *                        addition to DataClasses directly belonging to the DataModel)?
+     * @return DetachedCriteria<DataClass>      
+     */
+    static DetachedCriteria<DataClass> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, boolean includeImported = false) {
+        byDataModelId(dataModelId, includeImported).or {
             ilike('label', "%${searchTerm}%")
             ilike('description', "%${searchTerm}%")
         }

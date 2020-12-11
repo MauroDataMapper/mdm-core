@@ -174,11 +174,19 @@ class BootstrapModels {
 
 
         checkAndSave(messageSource, simpleDataModel)
+
+        PrimitiveType primitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+        DataElement dataElement1 = new DataElement(createdBy: DEVELOPMENT, label: 'data element 1', minMultiplicity: 1, maxMultiplicity: 1, dataType: primitiveType1)         
         DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'simple')
+
+        dataClass.addToDataElements(dataElement1)
+
+       
 
         simpleDataModel
         .addToDataClasses(dataClass)
-        .addToDataTypes(new PrimitiveType(createdBy: DEVELOPMENT, label: 'string'))
+        .addToDataTypes(primitiveType1)
+        
 
         checkAndSave(messageSource, simpleDataModel)
 
