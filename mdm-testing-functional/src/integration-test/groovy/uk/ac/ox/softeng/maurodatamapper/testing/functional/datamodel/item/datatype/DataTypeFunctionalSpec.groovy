@@ -18,9 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item.datatype
 
 
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -44,7 +46,7 @@ import io.micronaut.http.HttpStatus
  */
 @Integration
 @Slf4j
-class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalSpec {
+class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec {
 
     @Override
     String getResourcePath() {
@@ -69,6 +71,48 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     @Transactional
     String getReferenceDataClassId() {
         DataClass.byDataModelIdAndLabel(Utils.toUuid(getComplexDataModelId()), 'parent').get().id.toString()
+    }
+
+    @Transactional
+    @Override
+    String getImportedCatalogueItemId() {
+        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id, 'string').get().id.toString()
+    }
+
+    @Override
+    String getImportedCatalogueItemDomainType() {
+        DataType.simpleName
+    } 
+    
+    @Override
+    String getModelImportPath() {
+        "dataModels/${getComplexDataModelId()}/modelImports"
+    }
+
+    @Override
+    String getExpectedModelImportJson() {
+      '''{
+  "id": "${json-unit.matches:id}",
+  "catalogueItem": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataModel",
+    "label": "Complex Test DataModel"
+  },
+  "importedCatalogueItem": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "PrimitiveType",
+    "label": "string",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Finalised Simple Test DataModel",
+        "domainType": "DataModel",
+        "finalised": true
+      }
+    ]
+  }
+}'''
     }
 
     @Override
@@ -207,6 +251,129 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
   ]
 }'''
     }
+
+    //Same as getEditorIndexJson but with one extra imported DataType
+    @Override
+    String getEditorIndexJsonWithImported() {
+        '''{
+  "count": 5,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "integer",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "EnumerationType",
+      "label": "yesnounknown",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "enumerationValues": [
+        {
+          "index": 0,
+          "id": "${json-unit.matches:id}",
+          "key": "Y",
+          "value": "Yes",
+          "category": null
+        },
+        {
+          "index": 2,
+          "id": "${json-unit.matches:id}",
+          "key": "U",
+          "value": "Unknown",
+          "category": null
+        },
+        {
+          "index": 1,
+          "id": "${json-unit.matches:id}",
+          "key": "N",
+          "value": "No",
+          "category": null
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceType",
+      "label": "child",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "referenceClass": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataClass",
+        "label": "child",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "parent",
+            "domainType": "DataClass"
+          }
+        ],
+        "parentDataClass": "${json-unit.matches:id}"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Finalised Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": true
+        }
+      ]
+    }
+  ]
+}'''
+    }    
 
     @Override
     String getShowJson() {
