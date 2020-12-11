@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 
 import groovy.util.logging.Slf4j
@@ -28,6 +27,13 @@ import groovy.util.logging.Slf4j
 @Slf4j
 trait IndexedSiblingAware {
 
+    void fullSortOfChildren(Collection<? extends ModelItem> children) {
+        if (!children) return
+        children.sort().eachWithIndex { ModelItem mi, int i ->
+            if (mi.idx != i) mi.idx = i
+        }
+    }
+
     /**
      * Given a CatalogueItem which has been updated, re-index its siblings.
      *
@@ -35,63 +41,85 @@ trait IndexedSiblingAware {
      * @param Set <ModelItem>  siblings   The siblings of the updated item
      * @param int oldIndex                  The index of the updated item before it was updated     
      */
+    @Deprecated
     void updateSiblingIndexes(ModelItem updated, Collection<ModelItem> siblings, Integer oldIndex) {
-        log.trace('Updating sibling indexes {}:{}, siblings size {}, oldIndex {}, currentIndex {}', updated.domainType, updated.label,
+        updateSiblingIndexes(updated, siblings)
+    }
+
+    /**
+     * Given a CatalogueItem which has been updated, re-index its siblings.
+     *
+     * @param ModelItem updated         The item which has been updated
+     * @param Set <ModelItem>  siblings   The siblings of the updated item
+     */
+    void updateSiblingIndexes(ModelItem updated, Collection<ModelItem> siblings) {
+        log.trace('Updating sibling indexes {}:{}, siblings size {}, currentIndex {}, indexChanged {}, original value {}',
+                  updated.domainType,
+                  updated.label,
                   siblings.size(),
-                  oldIndex,
-                  updated.idx)
+                  updated.idx,
+                  updated.hasChanged('idx'),
+                  updated.getOriginalValue('idx'))
         //If the updated item does not currently have an index then add it to the end of the indexed list
         if (updated.idx == null) {
-            if (siblings) {
-                updated.idx = siblings.size() - 1
-            } else {
-                updated.idx = 0
-            }
+            log.trace('>> No idx')
+            updated.idx = siblings ? siblings.size() - 1 : 0
             return
         }
 
         //If the update did not actually change the index then do nothing
-        if (updated.idx == oldIndex) {
+        if (!updated.hasChanged('idx')) {
+            log.trace('>> IDX hasnt changed')
             return
         }
 
         //If there are no siblings then they do not need to be reordered
         if (!siblings) {
+            log.trace('>> No siblings')
             return
         }
 
         log.trace('>> Sorting and reordering idxes')
 
-        //Imagine a list (vertical) of all the items. If the new value of the updated.idx is less than
-        //the old value then updated is being moved up, in which case it pushes down the item that was
-        //previously at position updated.idx
-        boolean movingUp = updated.idx < oldIndex
+        sortAndReorderAllIndexes(updated, siblings)
+    }
 
-        List<ModelItem> sorted = siblings.sort()
-        sorted.eachWithIndex { ModelItem mi, int i ->
+    void sortAndReorderAllIndexes(ModelItem updated, Collection<ModelItem> siblings) {
+        int updatedIndex = updated.idx
+        int maxIndex = siblings.size() - 1
+        siblings.sort().eachWithIndex { ModelItem mi, int i ->
+            //EV is the updated one, skipping any changes
             if (mi == updated) {
-                //do nothing
-            } else {
-                // Make sure all values have trackChanges turned on
-                if (!mi.isDirty()) mi.trackChanges()
-
-                if (mi.idx == updated.idx) {
-                    if (movingUp) {
-                        mi.idx += 1
-                    } else {
-                        mi.idx -= 1
-                    }
-                } else {
-                    mi.idx = i
+                // Make sure updated value is not ordered larger than the actual size of the collection
+                if (mi.idx > maxIndex) {
+                    mi.idx = maxIndex
                 }
+                return
             }
+
+            // Make sure all values have trackChanges turned on
+            if (!mi.isDirty()) mi.trackChanges()
+
+            log.trace('Before >> MI {} has idx {} sorted to {}', mi.label, mi.idx, i)
+            // Reorder the index which matches the one we just added
+            if (i == updatedIndex) {
+                if (i == maxIndex) {
+                    // If at end of list then move the current value back one to ensure the updated value is at then end of the list
+                    mi.idx = i - 1
+                } else {
+                    // Otherwise alphabetical sorting has placed the elements in the wrong order so shift the value by 1
+                    mi.idx = i + 1
+                }
+            } else if (mi.idx != i) {
+                // Sorting has got the order right so make sure the idx is set correctly
+                mi.idx = i
+            }
+            // If the idx has changed and the mi has previously been saved then we need to save it into the session
+            if (mi.hasChanged('idx') && mi.id) {
+                mi.save(flush: false, validate: false)
+            }
+            log.trace('After >> EV {} has idx {} (Dirty: {})', mi.label, mi.idx, mi.isDirty())
         }
     }
 
-    void fullSortOfChildren(Collection<? extends ModelItem> children) {
-        if (!children) return
-        children.sort().eachWithIndex { ModelItem mi, int i ->
-            if (mi.idx != i) mi.idx = i
-        }
-    }
 }
