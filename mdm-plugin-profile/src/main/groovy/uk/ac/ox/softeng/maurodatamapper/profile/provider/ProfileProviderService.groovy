@@ -109,4 +109,9 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
         if (clazz instanceof ParameterizedType) return clazz
         getParameterizedTypeSuperClass(clazz.genericSuperclass)
     }
+
+    List<String> profileApplicableForDomains() {
+        return []
+    }
+
 }

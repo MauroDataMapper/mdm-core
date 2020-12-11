@@ -104,4 +104,14 @@ class ProfileService {
         if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${domainType}] with no supporting service")
         service.get(catalogueItemId)
     }
+
+    List<String> getUsedNamespaces(CatalogueItem catalogueItem) {
+        catalogueItem.metadata.collect {it.namespace }
+    }
+
+    Set<ProfileProviderService> getUsedProfileServices(CatalogueItem catalogueItem) {
+        List<String> usedNamespaces = getUsedNamespaces(catalogueItem)
+        profileProviderServices.findAll {usedNamespaces.contains(it.getMetadataNamespace())}
+    }
+
 }

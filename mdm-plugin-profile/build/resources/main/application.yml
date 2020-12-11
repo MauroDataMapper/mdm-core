@@ -18,7 +18,7 @@ maurodatamapper:
 grails:
     profile: rest-api-plugin
     codegen:
-        defaultPackage: uk.ac.ox.softeng.maurodatamapper.plugins.profile
+        defaultPackage: uk.ac.ox.softeng.maurodatamapper.profile
     gorm:
         reactor:
             # Whether to translate GORM events into Reactor events
@@ -30,7 +30,7 @@ grails:
 info:
     app:
         name: 'mdm-plugin-profile'
-        version: '1.0.0-SNAPSHOT'
+        version: '4.0.0-SNAPSHOT'
         grailsVersion: '4.0.3'
 spring:
     jmx:
@@ -142,7 +142,11 @@ hibernate:
 dataSource:
     pooled: true
     jmxExport: true
+    driverClassName: org.postgresql.Driver
+    dialect: org.hibernate.dialect.PostgreSQL10Dialect
     formatSql: true
+    url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
+    dbCreate: none
 ---
 environments:
     test:
@@ -159,10 +163,7 @@ environments:
             url: 'jdbc:h2:mem:${database.name};LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;INIT=${database.creation}'
     development:
         dataSource:
-            driverClassName: org.postgresql.Driver
-            dialect: org.hibernate.dialect.PostgreSQL10Dialect
             username: maurodatamapper
             password: MauroDataMapper1234
-            dbCreate: none
-            url: 'jdbc:postgresql://${database.host}:${database.port}/${database.name}'
+
 ---

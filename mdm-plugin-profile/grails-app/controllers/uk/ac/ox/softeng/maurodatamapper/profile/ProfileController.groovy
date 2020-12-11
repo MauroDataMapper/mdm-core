@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -41,11 +43,39 @@ class ProfileController implements ResourcelessMdmController {
 
     ProfileService profileService
 
+    MetadataService metadataService
+
     @Autowired
     SearchService mdmPluginProfileSearchService
 
     def profileProviders() {
         respond providers: profileService.profileProviderServices
+    }
+
+    def profiles() {
+        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        def usedProfiles = profileService.getUsedProfileServices(catalogueItem)
+        render(view: "/profile/profileProviders", model: [providers: usedProfiles])
+    }
+
+    def unusedProfiles() {
+        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
+        Set<ProfileProviderService> allProfiles = profileService.getProfileProviderServices().findAll() {
+            it.profileApplicableForDomains().size() == 0 ||
+                it.profileApplicableForDomains().contains(params.catalogueItemDomainType)
+        }
+        Set<ProfileProviderService> unusedProfiles = new HashSet<ProfileProviderService>(allProfiles)
+        unusedProfiles.removeAll(usedProfiles)
+        render(view: "/profile/profileProviders", model: [providers: unusedProfiles])
+    }
+
+    def otherMetadata() {
+        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
+        Set<String> profileNamespaces = usedProfiles.collect{it.metadataNamespace}
+        render(view: "/metadata/index",
+               model: [metadataList: metadataService.findAllByCatalogueItemIdAndNotNamespaces(catalogueItem.id, profileNamespaces.asList(), params)])
     }
 
     def show() {
@@ -62,7 +92,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.createProfile(profileProviderService, catalogueItem)
+        respond profileService.createProfile(profileProviderService, catalogueItem).getContents()
 
     }
 

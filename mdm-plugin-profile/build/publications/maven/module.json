@@ -1,0 +1,355 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "uk.ac.ox.softeng.maurodatamapper",
+    "module": "mdm-plugin-profile",
+    "version": "4.0.0-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.5",
+      "buildId": "ka7xjjrcbngcbbgvrpvrra2moy"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 12,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.glassfish.web",
+          "module": "el-impl",
+          "version": {
+            "requires": "2.1.2-b03"
+          }
+        },
+        {
+          "group": "org.apache.tomcat",
+          "module": "tomcat-jdbc"
+        },
+        {
+          "group": "javax.xml.bind",
+          "module": "jaxb-api",
+          "version": {
+            "requires": "2.3.1"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-logging"
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-autoconfigure"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-core"
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-actuator"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-url-mappings"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-rest"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-codecs"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-interceptors"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-services"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-datasource"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-databinding"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-web-boot"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-logging"
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "cache",
+          "excludes": [
+            {
+              "group": "org.codehaus.groovy",
+              "module": "groovy-all"
+            }
+          ]
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "async"
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "hibernate5",
+          "version": {
+            "requires": "7.0.2"
+          }
+        },
+        {
+          "group": "org.hibernate",
+          "module": "hibernate-core"
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "views-json",
+          "version": {
+            "requires": "2.0.0"
+          }
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "views-json-templates",
+          "version": {
+            "requires": "2.0.0"
+          }
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "views-markup",
+          "version": {
+            "requires": "2.0.0"
+          }
+        },
+        {
+          "group": "uk.ac.ox.softeng.maurodatamapper",
+          "module": "mdm-core",
+          "version": {
+            "requires": "4.0.0-SNAPSHOT"
+          }
+        },
+        {
+          "group": "uk.ac.ox.softeng.maurodatamapper",
+          "module": "mdm-plugin-datamodel",
+          "version": {
+            "requires": "4.0.0-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-tomcat"
+        }
+      ],
+      "files": [
+        {
+          "name": "mdm-plugin-profile-4.0.0-SNAPSHOT.jar",
+          "url": "mdm-plugin-profile-4.0.0-SNAPSHOT.jar",
+          "size": 207363,
+          "sha512": "047783418d56537f046b56f462083c9344b589a388d746d583ddb8f1c15dc6b6d622a3c776a550966315967d2ba85a22ffd253f6c01007237ada1f3c4d66bb97",
+          "sha256": "94144e25b331940fe644885e9fa0b90860ebb9388feff3697928bb84ff4d0af1",
+          "sha1": "a8a5c8e171f072db94c8ff2d7d735c3f8b72e036",
+          "md5": "c97766c3694767502a858e6531f809d7"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 12,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-logging"
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-autoconfigure"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-core"
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-actuator"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-url-mappings"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-rest"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-codecs"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-interceptors"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-services"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-datasource"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-plugin-databinding"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-web-boot"
+        },
+        {
+          "group": "org.grails",
+          "module": "grails-logging"
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "cache",
+          "excludes": [
+            {
+              "group": "org.codehaus.groovy",
+              "module": "groovy-all"
+            }
+          ]
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "async"
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "hibernate5",
+          "version": {
+            "requires": "7.0.2"
+          }
+        },
+        {
+          "group": "org.hibernate",
+          "module": "hibernate-core"
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "views-json",
+          "version": {
+            "requires": "2.0.0"
+          }
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "views-json-templates",
+          "version": {
+            "requires": "2.0.0"
+          }
+        },
+        {
+          "group": "org.grails.plugins",
+          "module": "views-markup",
+          "version": {
+            "requires": "2.0.0"
+          }
+        },
+        {
+          "group": "uk.ac.ox.softeng.maurodatamapper",
+          "module": "mdm-core",
+          "version": {
+            "requires": "4.0.0-SNAPSHOT"
+          }
+        },
+        {
+          "group": "uk.ac.ox.softeng.maurodatamapper",
+          "module": "mdm-plugin-datamodel",
+          "version": {
+            "requires": "4.0.0-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-tomcat"
+        },
+        {
+          "group": "io.methvin",
+          "module": "directory-watcher",
+          "excludes": [
+            {
+              "group": "com.google.guava",
+              "module": "guava"
+            }
+          ]
+        },
+        {
+          "group": "org.hibernate",
+          "module": "hibernate-jcache"
+        },
+        {
+          "group": "org.ehcache",
+          "module": "ehcache"
+        },
+        {
+          "group": "org.postgresql",
+          "module": "postgresql"
+        },
+        {
+          "group": "org.glassfish.web",
+          "module": "el-impl",
+          "version": {
+            "requires": "2.1.2-b03"
+          }
+        },
+        {
+          "group": "org.apache.tomcat",
+          "module": "tomcat-jdbc"
+        },
+        {
+          "group": "javax.xml.bind",
+          "module": "jaxb-api",
+          "version": {
+            "requires": "2.3.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "mdm-plugin-profile-4.0.0-SNAPSHOT.jar",
+          "url": "mdm-plugin-profile-4.0.0-SNAPSHOT.jar",
+          "size": 207363,
+          "sha512": "047783418d56537f046b56f462083c9344b589a388d746d583ddb8f1c15dc6b6d622a3c776a550966315967d2ba85a22ffd253f6c01007237ada1f3c4d66bb97",
+          "sha256": "94144e25b331940fe644885e9fa0b90860ebb9388feff3697928bb84ff4d0af1",
+          "sha1": "a8a5c8e171f072db94c8ff2d7d735c3f8b72e036",
+          "md5": "c97766c3694767502a858e6531f809d7"
+        }
+      ]
+    }
+  ]
+}

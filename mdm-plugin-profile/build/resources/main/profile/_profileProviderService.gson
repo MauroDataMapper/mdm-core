@@ -1,4 +1,3 @@
-package profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 
 inherits template: '/mauroDataMapperServiceProvider/mauroDataMapperService', model: [mauroDataMapperService: profileProviderService]
