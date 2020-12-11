@@ -20,17 +20,16 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
-import java.nio.charset.Charset
-
 @Slf4j
-class TerminologyJsonImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> {
+class TerminologyJsonImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> 
+    implements JsonImportMapping {
 
     @Override
     String getDisplayName() {
@@ -47,8 +46,8 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
-        log.debug('Parsing in file content using JsonSlurper')
-        def result = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
+        def result = slurpAndClean(content)
+
         Map terminology = result.terminology
         if (!terminology) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology is not present')
 

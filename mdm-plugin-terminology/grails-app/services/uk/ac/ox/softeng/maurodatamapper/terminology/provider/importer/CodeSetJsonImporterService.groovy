@@ -20,17 +20,16 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
-import java.nio.charset.Charset
-
 @Slf4j
-class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<CodeSetFileImporterProviderServiceParameters> {
+class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<CodeSetFileImporterProviderServiceParameters> 
+    implements JsonImportMapping {
 
     @Override
     String getDisplayName() {
@@ -48,7 +47,7 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
         log.debug('Parsing in file content using JsonSlurper')
-        def result = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
+        def result = slurpAndClean(content)
         Map codeSet = result.codeSet
         if (!codeSet) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet is not present')
 
