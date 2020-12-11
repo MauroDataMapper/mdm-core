@@ -40,6 +40,8 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
 
     static allowedMethods = [patch: [], edit: [], create: []]
 
+    public static final DEFAULT_SAVE_ARGS = [flush: true, validate: false]
+
     EditLoggingController(Class<T> resource) {
         super(resource)
     }

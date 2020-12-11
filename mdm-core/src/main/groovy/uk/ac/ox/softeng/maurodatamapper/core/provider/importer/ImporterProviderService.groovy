@@ -37,6 +37,10 @@ abstract class ImporterProviderService<D extends GormEntity, T extends ImporterP
 
     abstract Boolean canImportMultipleDomains()
 
+    List<String> getImportBlacklistedProperties() {
+        ['id', 'domainType', 'lastUpdated']
+    }
+
     Class<T> getImporterProviderServiceParametersClass() {
         (Class<T>) GenericTypeResolver.resolveTypeArguments(getClass(), ImporterProviderService).last()
     }

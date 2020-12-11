@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
 
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+
 import grails.validation.Validateable
 
 /**
@@ -28,5 +30,5 @@ class CreateNewVersionData implements Validateable {
     boolean moveDataFlows = false
     boolean copyDataFlows = false
     String label
-    String branchName = 'main'
+    String branchName = VersionAwareConstraints.DEFAULT_BRANCH_NAME
 }

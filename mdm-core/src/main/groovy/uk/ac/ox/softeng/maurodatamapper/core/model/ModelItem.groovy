@@ -62,6 +62,9 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
         CatalogueItem indexedWithin = getIndexedWithin()
         if (indexedWithin) {
             indexedWithin.updateChildIndexes(this, oldIndex)
+        } else if (idx == null) {
+            // If idx is not set and there's no parent object then make sure its set
+            idx = Ordered.LOWEST_PRECEDENCE
         }
     }
 
@@ -90,7 +93,6 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
         //Update indices.
         //If index is null and this is a thing whose siblings are ordered, add this to the end of the list.
         //If this is a thing which is not ordered, then no action will be taken.
-        if (idx == null) idx = Ordered.LOWEST_PRECEDENCE
         updateIndices(idx)
         buildPath()
         beforeValidateCatalogueItem()

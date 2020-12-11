@@ -71,7 +71,8 @@ class BreadcrumbTree {
     static mapping = {
         treeString type: 'text'
         label type: 'text'
-        parent cascade: 'none'
+        parent cascade: 'none', cascadeValidate: 'none'
+        children cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [

@@ -18,13 +18,13 @@
 package uk.ac.ox.softeng.maurodatamapper.core.controller
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -312,7 +312,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        if (instance.branchName != 'main') return METHOD_NOT_ALLOWED
+        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
 
         instance = modelService.finaliseModel(instance, currentUser,
                                               finaliseData.version, finaliseData.versionChangeType,
@@ -345,10 +345,14 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!validateResource(copy, 'create')) return
 
-        params.editable = true
-        saveResource copy
+        Model savedCopy = modelService.saveModelWithContent(copy)
+        savedCopy.addCreatedEdit(currentUser)
 
-        saveResponse copy
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, currentUser, savedCopy.label)
+        }
+
+        saveResponse savedCopy
     }
 
     @Transactional
@@ -370,10 +374,14 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!validateResource(copy, 'create')) return
 
-        params.editable = true
-        saveResource copy
+        Model savedCopy = modelService.saveModelWithContent(copy)
+        savedCopy.addCreatedEdit(currentUser)
 
-        saveResponse copy
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, currentUser, savedCopy.label)
+        }
+
+        saveResponse savedCopy
     }
 
     @Transactional
@@ -392,22 +400,19 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             createNewVersionData.copyPermissions = false
         }
 
-        try {
-            T copy = getModelService().createNewForkModel(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
-                                                          currentUserSecurityPolicyManager) as T
+        T copy = getModelService().createNewForkModel(createNewVersionData.label, instance, currentUser, createNewVersionData.copyPermissions,
+                                                      currentUserSecurityPolicyManager) as T
 
-            if (!validateResource(copy, 'create')) return
+        if (!validateResource(copy, 'create')) return
 
-            params.editable = true
-            saveResource copy
+        Model savedCopy = modelService.saveModelWithContent(copy)
+        savedCopy.addCreatedEdit(currentUser)
 
-            saveResponse copy
-
-        } catch (ApiInvalidModelException ex) {
-            transactionStatus.setRollbackOnly()
-            respond ex.errors, view: 'create' // STATUS CODE 422
-            return
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, currentUser, savedCopy.label)
         }
+
+        saveResponse savedCopy
     }
 
     def exportModel() {
@@ -514,20 +519,20 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         log.debug('No errors in imported model')
 
-        getModelService().saveWithBatching(model)
+        Model savedModel = getModelService().saveModelWithContent(model)
 
         log.debug('Saved model')
 
         if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(model, currentUser, model.label)
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
         }
 
         log.info('Single Model Import complete')
 
         if (params.boolean('returnList')) {
-            respond([model], status: CREATED, view: 'index')
+            respond([savedModel], status: CREATED, view: 'index')
         } else {
-            respond model, status: CREATED, view: 'show'
+            respond savedModel, status: CREATED, view: 'show'
         }
     }
 
@@ -594,17 +599,23 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         log.debug('No errors in imported models')
-        result.each {
-            getModelService().saveWithBatching(it)
+        List<Model> savedModels = result.collect {
+            Model saved = getModelService().saveModelWithContent(it)
             if (securityPolicyManagerService) {
-                currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(it, currentUser, it.label)
+                currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(saved, currentUser, saved.label)
             }
+            saved
         }
         log.debug('Saved all models')
         log.info('Multi-Model Import complete')
 
-        respond result, status: CREATED, view: 'index'
+        respond savedModels, status: CREATED, view: 'index'
 
+    }
+
+    @Override
+    protected T queryForResource(Serializable id) {
+        getModelService().get(id)
     }
 
     @Override
@@ -631,7 +642,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     @Override
     protected void serviceInsertResource(T resource) {
-        T model = getModelService().save(flush: true, resource) as T
+        T model = getModelService().save(DEFAULT_SAVE_ARGS, resource) as T
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(model, currentUser, model.label)
         }

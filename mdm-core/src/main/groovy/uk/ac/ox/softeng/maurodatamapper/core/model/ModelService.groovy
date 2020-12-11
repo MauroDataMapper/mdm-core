@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -29,9 +30,12 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
+
+    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     @Autowired(required = false)
     Set<ModelItemService> modelItemServices
@@ -72,7 +76,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract K validate(K model)
 
-    abstract K saveWithBatching(K model)
+    abstract K saveModelWithContent(K model)
+
+    abstract K saveModelNewContentOnly(K model)
 
     abstract K softDeleteModel(K model)
 
@@ -210,7 +216,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K currentMainBranch(K model) {
-        modelClass.byLabelAndBranchNameAndNotFinalised(model.label, 'main').get()
+        modelClass.byLabelAndBranchNameAndNotFinalised(model.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
     }
 
     List<K> availableBranches(String label) {
