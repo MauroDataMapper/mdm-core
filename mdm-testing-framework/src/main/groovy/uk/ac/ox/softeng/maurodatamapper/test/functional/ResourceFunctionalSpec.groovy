@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional
 
-import grails.gorm.transactions.Rollback
+
 import grails.gorm.transactions.Transactional
 import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
@@ -45,13 +45,15 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'json').toAbsolutePath()
     }
 
-    @Rollback
+    @Transactional
     @OnceBefore
     def checkResourceCount() {
         log.debug('Check resource count is {}', getExpectedInitialResourceCount())
         sessionFactory.currentSession.flush()
         if (getResource().count() != getExpectedInitialResourceCount()) {
             log.error('{} {} resources left over from previous test', [getResource().count(), getResource().simpleName].toArray())
+            getResource().deleteAll(getResource().list())
+            sessionFactory.currentSession.flush()
             assert getResource().count() == getExpectedInitialResourceCount()
         }
     }

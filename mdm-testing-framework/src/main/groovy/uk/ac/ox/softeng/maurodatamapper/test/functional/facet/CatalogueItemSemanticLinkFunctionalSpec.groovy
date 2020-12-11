@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 
+import grails.gorm.transactions.Transactional
+import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -50,6 +52,17 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends CatalogueItemFace
     abstract String getSourceDataModelId()
 
     abstract String getDestinationDataModelId()
+
+    @OnceBefore
+    @Transactional
+    def cleanUpSemanticLinksBefore() {
+        SemanticLink.deleteAll(SemanticLink.list())
+        sessionFactory.currentSession.flush()
+    }
+
+    String getCatalogueItemCopyPath() {
+        "dataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"
+    }
 
     @Override
     String getFacetResourcePath() {

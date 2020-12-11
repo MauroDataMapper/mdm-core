@@ -58,6 +58,7 @@ abstract class ModelItemSpec<K extends ModelItem> extends CatalogueItemSpec<K> {
         given:
         setValidDomainValues()
         wipeModel()
+        // Expected field errors >> nullable model, nullable breadcrumbTree.parent
         int expectedErrors = modelFieldName ? 2 : 1
         expectedErrors += expectedBaseConstrainedErrorCount
 
