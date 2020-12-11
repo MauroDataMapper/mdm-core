@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.object
 
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
+
 import groovy.transform.CompileStatic
 
 @CompileStatic
@@ -55,4 +57,7 @@ abstract class Profile implements Comparable<Profile> {
         }
         result
     }
+
+    abstract List<ProfileSection> getContents()
+
 }

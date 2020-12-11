@@ -31,9 +31,6 @@ apply plugin: 'ox.softeng.ox-brc-artifactory'
 
 repositories {
     mavenLocal()
-    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
-    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
-    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot-local"}
     maven {url "https://repo.grails.org/grails/core"}
 }
 

@@ -48,6 +48,12 @@ class ProfileController implements ResourcelessMdmController {
         respond providers: profileService.profileProviderServices
     }
 
+    def profiles() {
+        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        def usedProfiles = profileService.getUsedProfileServices(catalogueItem)
+        render(view: "/profile/profileProviders", model: [providers: usedProfiles])
+    }
+
     def show() {
 
         CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
@@ -62,7 +68,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.createProfile(profileProviderService, catalogueItem)
+        respond profileService.createProfile(profileProviderService, catalogueItem).getContents()
 
     }
 

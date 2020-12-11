@@ -17,6 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.object
 
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
+
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
@@ -62,5 +65,16 @@ abstract class MapBasedProfile extends Profile {
 
     Map<String, Object> getMap() {
         contents
+    }
+
+    // Expect this to be overridden
+    @Override
+    List<ProfileSection> getContents() {
+        ProfileSection profileSection = new ProfileSection(sectionName: this.class.name, sectionDescription: "")
+        contents.each {
+            ProfileField profileField = new ProfileField(fieldName: it.key, currentValue: it.value.toString())
+            profileSection.fields.add(profileField)
+        }
+        return [profileSection]
     }
 }

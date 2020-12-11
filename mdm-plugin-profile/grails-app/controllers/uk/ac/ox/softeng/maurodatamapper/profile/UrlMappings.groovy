@@ -42,6 +42,7 @@ class UrlMappings {
 
             // Provide multiple ways to obtain profile of a catalogue item
             group "/${catalogueItemDomainType}/${catalogueItemId}", {
+                get '/profiles'(controller: 'profile', action: 'profiles')
                 get "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'show')
                 post "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'save')
             }
