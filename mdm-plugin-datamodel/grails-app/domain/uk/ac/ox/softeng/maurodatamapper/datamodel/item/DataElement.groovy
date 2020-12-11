@@ -131,6 +131,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         if (dataType && !dataType.ident() && getModel().id) {
             dataType.dataModel = model
             dataType.createdBy = createdBy
+            dataType.beforeValidate()
         }
         log.trace('DE before validate {} took {}', this.label, Utils.timeTaken(st))
     }

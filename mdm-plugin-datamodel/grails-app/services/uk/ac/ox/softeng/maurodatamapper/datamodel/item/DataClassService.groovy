@@ -75,6 +75,10 @@ class DataClassService extends ModelItemService<DataClass> {
         pathPrefix == "dc"
     }
 
+    void delete(UUID id) {
+        delete(get(id))
+    }
+
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = proxyHandler.unwrapIfProxy(dataClass.dataModel)
@@ -120,7 +124,13 @@ class DataClassService extends ModelItemService<DataClass> {
         true
     }
 
-    private Collection<DataElement> saveAllAndGetDataElements(Collection<DataClass> dataClasses) {
+    Collection<DataElement> saveAllAndGetDataElements(Collection<DataClass> dataClasses) {
+
+        List<Classifier> classifiers = dataClasses.collectMany { it.classifiers ?: [] } as List<Classifier>
+        if (classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
+        }
 
         Collection<DataClass> alreadySaved = dataClasses.findAll { it.ident() && it.isDirty() }
         Collection<DataClass> notSaved = dataClasses.findAll { !it.ident() }
@@ -136,50 +146,33 @@ class DataClassService extends ModelItemService<DataClass> {
             log.trace('Batch saving {} new DataClasses in batches of {}', notSaved.size(), DataClass.BATCH_SIZE)
             List batch = []
             int count = 0
-            notSaved.each { dc ->
-                dataElements.addAll dc.dataElements ?: []
 
-                dc.dataClasses?.clear()
-                dc.dataElements?.clear()
-                dc.referenceTypes?.clear()
+            // Find all DCs which are either top level or have their parent DC already saved
+            Collection<DataClass> parentIsSaved = notSaved.findAll { !it.parentDataClass || it.parentDataClass.id }
+            log.trace('Ready to save on first run {}', parentIsSaved.size())
+            while (parentIsSaved) {
+                parentIsSaved.each { dc ->
+                    dataElements.addAll dc.dataElements ?: []
 
-                batch.add dc
-                count++
-                if (count % DataClass.BATCH_SIZE == 0) {
-                    batchSave(batch)
-                    batch.clear()
+                    dc.dataClasses?.clear()
+                    dc.dataElements?.clear()
+                    dc.referenceTypes?.clear()
+
+                    batch.add dc
+                    count++
+                    if (count % DataClass.BATCH_SIZE == 0) {
+                        batchSave(batch)
+                        batch.clear()
+                    }
                 }
+                batchSave(batch)
+                batch.clear()
+                // Find all DCs which have a saved parent DC
+                notSaved.removeAll(parentIsSaved)
+                parentIsSaved = notSaved.findAll { it.parentDataClass && it.parentDataClass.id }
+                log.trace('Ready to save on subsequent run {}', parentIsSaved.size())
             }
-            batchSave(batch)
-            batch.clear()
         }
-        dataElements
-    }
-
-    Collection<DataElement> hierarchySaveAllAndGetDataElements(Collection<DataClass> dataClasses) {
-
-        List<Classifier> classifiers = dataClasses.collectMany { it.classifiers ?: [] } as List<Classifier>
-        if (classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
-        }
-
-        Collection<DataElement> dataElements = []
-
-        // No parent
-        List<DataClass> parents = dataClasses.findAll { !it.parentDataClass }
-        dataElements.addAll(saveAllAndGetDataElements(parents))
-
-        while (parents) {
-
-            List<DataClass> children = dataClasses.findAll { it.parentDataClass in parents }
-            if (children) {
-                dataElements.addAll(saveAllAndGetDataElements(children))
-            }
-            parents = children
-
-        }
-
         dataElements
     }
 
@@ -320,6 +313,10 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.byParentDataClassId(dataClassId).idEq(id).find()
     }
 
+    DataClass findByDataModelIdAndLabel(UUID dataModelId, String label) {
+        DataClass.byDataModelId(dataModelId).eq('label', label).find()
+    }
+
     DataClass findWhereRootDataClassOfDataModelIdAndId(Serializable dataModelId, Serializable id) {
         DataClass.byRootDataClassOfDataModelId(dataModelId).idEq(id).find()
     }
@@ -408,7 +405,7 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     DataClass findOrCreateDataClassByPath(DataModel dataModel, List<String> pathLabels, String description, User createdBy,
-                                                  Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
+                                          Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
         if (pathLabels.size() == 1) {
             return findOrCreateDataClass(dataModel, pathLabels[0], description, createdBy, minMultiplicity, maxMultiplicity)
         }
@@ -420,7 +417,7 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     DataClass findOrCreateDataClassByPath(DataClass parentDataClass, List<String> pathLabels, String description, User createdBy,
-                                                  Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
+                                          Integer minMultiplicity = 1, Integer maxMultiplicity = 1) {
         if (pathLabels.size() == 1) {
             return findOrCreateDataClass(parentDataClass, pathLabels[0], description, createdBy, minMultiplicity, maxMultiplicity)
         }
@@ -496,14 +493,11 @@ class DataClassService extends ModelItemService<DataClass> {
             get(parentDataClassId).addToDataClasses(copy)
         }
 
-        if (copy.validate()) save(validate: false, copy)
-        else throw new ApiInvalidModelException('DCS01', 'Copied DataClass is invalid', copy.errors, messageSource)
-
-        copy.trackChanges()
-        // Assuming DC is valid then we can start adding all its components
+        if (!copy.validate()) //save(validate: false, copy) else
+            throw new ApiInvalidModelException('DCS01', 'Copied DataClass is invalid', copy.errors, messageSource)
 
         original.referenceTypes.each { refType ->
-            ReferenceType referenceType = copiedDataModel.findDataTypeByLabel(refType.label) as ReferenceType
+            ReferenceType referenceType = copiedDataModel.referenceTypes.find { it.label == refType.label }
             if (!referenceType) {
                 referenceType = new ReferenceType(createdBy: copier.emailAddress, label: refType.label)
                 copiedDataModel.addToDataTypes(referenceType)
@@ -573,9 +567,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
 
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {
-        dataModel.dataTypes.findAll {
-            it.instanceOf(ReferenceType) && !(it as ReferenceType).referenceClass
-        } as Set<ReferenceType>
+        dataModel.referenceTypes.findAll { !(it as ReferenceType).referenceClass } as Set<ReferenceType>
     }
 
 

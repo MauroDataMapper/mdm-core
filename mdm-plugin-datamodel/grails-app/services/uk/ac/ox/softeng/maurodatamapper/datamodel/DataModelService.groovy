@@ -17,18 +17,19 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -43,6 +44,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
@@ -56,8 +59,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.validation.ValidationErrors
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
+import org.springframework.validation.Errors
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -114,6 +119,17 @@ class DataModelService extends ModelService<DataModel> {
         log.trace('Validating DataModel')
         long st = System.currentTimeMillis()
         dataModel.validate()
+        if (dataModel.hasErrors()) {
+            Errors existingErrors = dataModel.errors
+            Errors cleanedErrors = new ValidationErrors(dataModel)
+            existingErrors.fieldErrors.each { fe ->
+                if (!fe.field.contains('dataModel')) {
+                    cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
+                }
+                true
+            }
+            dataModel.errors = cleanedErrors
+        }
         log.debug('Validated DataModel in {}', Utils.timeTaken(st))
         dataModel
     }
@@ -183,13 +199,21 @@ class DataModelService extends ModelService<DataModel> {
         catalogueItem
     }
 
-    DataModel saveWithBatching(DataModel dataModel) {
-        log.debug('Saving {} using batching', dataModel.label)
+    DataModel saveModelWithContent(DataModel dataModel) {
+
+        if (dataModel.dataTypes.any { it.id } || dataModel.dataClasses.any { it.id }) {
+            throw new ApiInternalException('DMSXX', 'Cannot use saveWithBatching method to save DataModel',
+                                           new IllegalStateException('DataModel has previously saved content'))
+        }
+
+        log.debug('Saving {} complete datamodel', dataModel.label)
+
         long start = System.currentTimeMillis()
-        Collection<DataType> dataTypes = []
+        Collection<EnumerationType> enumerationTypes = []
+        Collection<PrimitiveType> primitiveTypes = []
+        Collection<ModelDataType> modelDataTypes = []
         Collection<ReferenceType> referenceTypes = []
         Collection<DataClass> dataClasses = []
-        Collection<BreadcrumbTree> breadcrumbTrees = []
 
         if (dataModel.classifiers) {
             log.trace('Saving {} classifiers')
@@ -197,11 +221,14 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         if (dataModel.dataTypes) {
-            dataTypes.addAll dataModel.dataTypes.findAll {
-                !it.instanceOf(ReferenceType)
-            }
-            referenceTypes.addAll dataModel.dataTypes.findAll { it.instanceOf(ReferenceType) }
-            dataModel.dataTypes.clear()
+            enumerationTypes.addAll dataModel.enumerationTypes
+            primitiveTypes.addAll dataModel.primitiveTypes
+            modelDataTypes.addAll dataModel.modelDataTypes
+            referenceTypes.addAll dataModel.referenceTypes
+            dataModel.enumerationTypes.clear()
+            dataModel.primitiveTypes.clear()
+            dataModel.modelDataTypes.clear()
+            dataModel.referenceTypes.clear()
         }
 
         if (dataModel.dataClasses) {
@@ -210,40 +237,85 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         if (dataModel.breadcrumbTree.children) {
-            breadcrumbTrees.addAll dataModel.breadcrumbTree.children
-            dataModel.breadcrumbTree.children.clear()
+            dataModel.breadcrumbTree.children.each { it.skipValidation(true) }
         }
 
         save(dataModel)
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
 
-        log.trace('Disabling validation on contents')
-        breadcrumbTrees.each { it.skipValidation(true) }
-        dataTypes.each { dt ->
-            dt.skipValidation(true)
-            if (dt.instanceOf(EnumerationType)) {
-                (dt as EnumerationType).enumerationValues.each { ev -> ev.skipValidation(true) }
-            }
+        sessionFactory.currentSession.flush()
+
+        saveContent(dataModel, enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses)
+        log.debug('Complete save of DataModel complete in {}', Utils.timeTaken(start))
+        // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
+        get(dataModel.id)
+    }
+
+    @Override
+    DataModel saveModelNewContentOnly(DataModel dataModel) {
+
+        long start = System.currentTimeMillis()
+        Collection<EnumerationType> enumerationTypes = []
+        Collection<PrimitiveType> primitiveTypes = []
+        Collection<ModelDataType> modelDataTypes = []
+        Collection<ReferenceType> referenceTypes = []
+        Collection<DataClass> dataClasses = []
+        Set<DataElement> dataElements = [] as HashSet
+
+        if (dataModel.classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(dataModel.classifiers)
         }
+
+        if (dataModel.dataTypes) {
+            enumerationTypes.addAll dataModel.enumerationTypes.findAll { !it.id }
+            primitiveTypes.addAll dataModel.primitiveTypes.findAll { !it.id }
+            modelDataTypes.addAll dataModel.modelDataTypes.findAll { !it.id }
+            referenceTypes.addAll dataModel.referenceTypes.findAll { !it.id }
+        }
+
+        if (dataModel.dataClasses) {
+            dataClasses.addAll dataModel.dataClasses.findAll { !it.id }
+            dataElements.addAll dataModel.dataClasses.collectMany { it.dataElements.findAll { !it.id } }
+        }
+
+        saveContent(dataModel, enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses, dataElements)
+        log.debug('Complete save of DataModel complete in {}', Utils.timeTaken(start))
+        // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
+        get(dataModel.id)
+    }
+
+    void saveContent(DataModel dataModel, Collection<EnumerationType> enumerationTypes,
+                     Collection<PrimitiveType> primitiveTypes,
+                     Collection<ReferenceType> referenceTypes,
+                     Collection<ModelDataType> modelDataTypes,
+                     Collection<DataClass> dataClasses,
+                     Set<DataElement> dataElements = []) {
+
+        sessionFactory.currentSession.clear()
+        long start = System.currentTimeMillis()
+        log.trace('Disabling validation on contents')
+        enumerationTypes.each { dt ->
+            dt.skipValidation(true)
+            dt.enumerationValues.each { ev -> ev.skipValidation(true) }
+        }
+        primitiveTypes.each { it.skipValidation(true) }
+        referenceTypes.each { it.skipValidation(true) }
+        modelDataTypes.each { it.skipValidation(true) }
         dataClasses.each { dc ->
             dc.skipValidation(true)
             dc.dataElements.each { de -> de.skipValidation(true) }
         }
         referenceTypes.each { it.skipValidation(true) }
 
-        log.trace('Starting saving contents')
         long subStart = System.currentTimeMillis()
-        BreadcrumbTree.saveAll(breadcrumbTrees)
-        sessionFactory.currentSession.flush()
-        log.trace('Saved {} breadcrumb trees in {}', breadcrumbTrees.size(), Utils.timeTaken(subStart))
+        dataTypeService.saveAll(enumerationTypes)
+        dataTypeService.saveAll(primitiveTypes)
+        dataTypeService.saveAll(modelDataTypes)
+        int totalDts = enumerationTypes.size() + primitiveTypes.size() + modelDataTypes.size()
+        log.trace('Saved {} dataTypes in {}', totalDts, Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
-        dataTypeService.saveAll(dataTypes)
-        log.trace('Saved {} dataTypes in {}', dataTypes.size(), Utils.timeTaken(subStart))
-
-        subStart = System.currentTimeMillis()
-        Collection<DataElement> dataElements = dataClassService.hierarchySaveAllAndGetDataElements(dataClasses)
+        dataElements.addAll dataClassService.saveAllAndGetDataElements(dataClasses)
         log.trace('Saved {} dataClasses in {}', dataClasses.size(), Utils.timeTaken(subStart))
 
         subStart = System.currentTimeMillis()
@@ -254,8 +326,7 @@ class DataModelService extends ModelService<DataModel> {
         dataElementService.saveAll(dataElements)
         log.trace('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
-        log.debug('Batch save of DataModel complete in {}', Utils.timeTaken(start))
-        dataModel
+        log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))
     }
 
     @Override
@@ -469,18 +540,18 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, 'main') > 0
+        boolean draftModelOnMainBranchForLabel =
+            countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
 
-        DataModel newMainBranchModelVersion
         if (!draftModelOnMainBranchForLabel) {
-            newMainBranchModelVersion = copyDataModel(dataModel,
-                                                      user,
-                                                      copyPermissions,
-                                                      dataModel.label,
-                                                      'main',
-                                                      additionalArguments.throwErrors as boolean,
-                                                      userSecurityPolicyManager,
-                                                      true)
+            DataModel newMainBranchModelVersion = copyDataModel(dataModel,
+                                                                user,
+                                                                copyPermissions,
+                                                                dataModel.label,
+                                                                VersionAwareConstraints.DEFAULT_BRANCH_NAME,
+                                                                additionalArguments.throwErrors as boolean,
+                                                                userSecurityPolicyManager,
+                                                                true)
             setDataModelIsNewBranchModelVersionOfDataModel(newMainBranchModelVersion, dataModel, user)
 
             if (additionalArguments.moveDataFlows) {
@@ -488,30 +559,33 @@ class DataModelService extends ModelService<DataModel> {
                 //            moveTargetDataFlows(dataModel, newMainBranchModelVersion)
             }
 
-            if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
-        }
-        DataModel newBranchModelVersion
-        if (branchName != 'main') {
-            newBranchModelVersion = copyDataModel(dataModel,
-                                                  user,
-                                                  copyPermissions,
-                                                  dataModel.label,
-                                                  branchName,
-                                                  additionalArguments.throwErrors as boolean,
-                                                  userSecurityPolicyManager,
-                                                  true)
-
-            setDataModelIsNewBranchModelVersionOfDataModel(newBranchModelVersion, dataModel, user)
-
-            if (additionalArguments.moveDataFlows) {
-                throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
-                //            moveTargetDataFlows(dataModel, newBranchModelVersion)
+            // If the branch name isn't main and the main branch doesnt exist then we need to validate and save it
+            // otherwise return the new model
+            if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                return newMainBranchModelVersion
+            } else {
+                if (newMainBranchModelVersion.validate()) saveModelWithContent(newMainBranchModelVersion)
+                else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) DataModel is invalid',
+                                                        newMainBranchModelVersion.errors, messageSource)
             }
-
-            if (newBranchModelVersion.validate()) save(newBranchModelVersion, flush: true, validate: false)
         }
 
-        newBranchModelVersion ?: newMainBranchModelVersion
+        DataModel newBranchModelVersion = copyDataModel(dataModel,
+                                                        user,
+                                                        copyPermissions,
+                                                        dataModel.label,
+                                                        branchName,
+                                                        additionalArguments.throwErrors as boolean,
+                                                        userSecurityPolicyManager,
+                                                        true)
+
+        setDataModelIsNewBranchModelVersionOfDataModel(newBranchModelVersion, dataModel, user)
+
+        if (additionalArguments.moveDataFlows) {
+            throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
+            //            moveTargetDataFlows(dataModel, newBranchModelVersion)
+        }
+        newBranchModelVersion
     }
 
     @Override
@@ -533,8 +607,6 @@ class DataModelService extends ModelService<DataModel> {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
             //            moveTargetDataFlows(dataModel, newDocVersion)
         }
-
-        if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
         newDocVersion
     }
 
@@ -551,8 +623,6 @@ class DataModelService extends ModelService<DataModel> {
             throw new ApiNotYetImplementedException('DMSXX', 'DataModel copying of DataFlows')
             //copyTargetDataFlows(dataModel, newForkModel, user)
         }
-
-        if (newForkModel.validate()) newForkModel.save(flush: true, validate: false)
         newForkModel
     }
 
@@ -571,8 +641,9 @@ class DataModelService extends ModelService<DataModel> {
     DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
                             boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
 
+        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
-                                       deleted: false, documentationVersion: copyDocVersion, folder: original.folder, authority: original.authority,
+                                       deleted: false, documentationVersion: copyDocVersion, folder: folder, authority: original.authority,
                                        branchName: branchName
         )
 

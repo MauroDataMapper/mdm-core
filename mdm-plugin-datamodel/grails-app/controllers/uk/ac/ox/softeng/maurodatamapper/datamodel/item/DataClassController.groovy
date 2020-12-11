@@ -103,12 +103,16 @@ class DataClassController extends CatalogueItemController<DataClass> {
             return
         }
 
+        if (!validateResource(copy, 'create')) return
+
         dataModelService.validate(dataModel)
         if (dataModel.hasErrors()) {
             transactionStatus.setRollbackOnly()
             respond dataModel.errors, view: 'create' // STATUS CODE 422
             return
         }
+
+        dataModelService.saveModelNewContentOnly(dataModel)
 
         saveResource copy
 
@@ -145,7 +149,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
 
     @Override
     protected void serviceInsertResource(DataClass resource) {
-        dataClassService.save(flush: true, resource)
+        dataClassService.save(DEFAULT_SAVE_ARGS, resource)
     }
 
     @Override

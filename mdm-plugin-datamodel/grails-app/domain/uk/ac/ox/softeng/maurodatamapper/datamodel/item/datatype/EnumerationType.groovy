@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
+import io.micronaut.core.order.Ordered
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
@@ -61,7 +62,7 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
         super.beforeValidate()
         if (enumerationValues) {
             // If model exists and this is a new ET then sort children
-            if (model.id && !id) fullSortOfChildren(enumerationValues)
+            if (model?.id && !id) fullSortOfChildren(enumerationValues)
             enumerationValues.each { ev ->
                 ev.createdBy = ev.createdBy ?: createdBy
                 ev.beforeValidate()
@@ -105,7 +106,7 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
             valueToAdd.enumerationType = this
             addTo('enumerationValues', valueToAdd)
         }
-        updateChildIndexes(valueToAdd, valueToAdd.getOrder())
+        updateChildIndexes(valueToAdd, Ordered.LOWEST_PRECEDENCE)
         this
     }
 }

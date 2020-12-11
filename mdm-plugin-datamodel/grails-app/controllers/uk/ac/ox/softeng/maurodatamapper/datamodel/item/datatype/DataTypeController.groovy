@@ -63,7 +63,6 @@ class DataTypeController extends CatalogueItemController<DataType> {
         }
 
         DataModel dataModel = dataModelService.get(params.dataModelId)
-        DataModel originalDataModel = dataModelService.get(params.otherDataModelId)
         DataType original = dataTypeService.findByDataModelIdAndId(params.otherDataModelId, params.dataTypeId)
 
         if (!original) return notFound(params.dataTypeId)
@@ -79,6 +78,8 @@ class DataTypeController extends CatalogueItemController<DataType> {
             throw new ApiBadRequestException('DTCXX', 'Copying of ReferenceType DataTypes is not possible')
         }
         dataModelService.get(params.dataModelId)?.addToDataTypes(copy)
+
+        if (!validateResource(copy, 'create')) return
 
         dataModelService.validate(dataModel)
         if (dataModel.hasErrors()) {
@@ -138,7 +139,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
 
     @Override
     protected void serviceInsertResource(DataType resource) {
-        dataTypeService.save(flush: true, resource)
+        dataTypeService.save(DEFAULT_SAVE_ARGS, resource)
     }
 
     @Override

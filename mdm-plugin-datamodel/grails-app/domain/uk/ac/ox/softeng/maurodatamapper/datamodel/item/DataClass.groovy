@@ -90,7 +90,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         dataClasses cascade: 'all-delete-orphan'
         referenceTypes cascade: 'none'
         summaryMetadata cascade: 'all-delete-orphan'
-        dataModel index: 'data_class_data_model_idx', cascade: 'none'
+        dataModel index: 'data_class_data_model_idx' //, cascade: 'none', cascadeValidate: 'none'
         parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update'
     }
 
@@ -195,9 +195,9 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     @Override
     void updateChildIndexes(ModelItem updated, Integer oldIndex) {
         if (updated.instanceOf(DataClass)) {
-            updateSiblingIndexes(updated, dataClasses, oldIndex)
+            updateSiblingIndexes(updated, dataClasses ?: [])
         } else if (updated.instanceOf(DataElement)) {
-            updateSiblingIndexes(updated, dataElements, oldIndex)
+            updateSiblingIndexes(updated, dataElements ?: [])
         }
     }
 
@@ -210,7 +210,12 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     int countDataElementsByLabel(String label) {
-        dataElements?.count {it.label == label} ?: 0
+        dataElements?.count { it.label == label } ?: 0
+    }
+
+    Set<DataClass> getAllUnsavedChildren() {
+        Set<DataClass> children = dataClasses.findAll { !it.id }
+        children + children.collectMany { it.getAllUnsavedChildren() }
     }
 
     static String buildLabelPath(DataClass dataClass) {

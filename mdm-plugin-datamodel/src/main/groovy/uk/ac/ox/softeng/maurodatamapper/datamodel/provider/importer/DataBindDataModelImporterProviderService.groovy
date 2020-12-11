@@ -86,7 +86,7 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
 
         DataModel dataModel = new DataModel()
         log.debug('Binding map to new DataModel instance')
-        DataBindingUtils.bindObjectToInstance(dataModel, dataModelMap, null, ['id', 'domainType', 'lastUpdated'], null)
+        DataBindingUtils.bindObjectToInstance(dataModel, dataModelMap, null, getImportBlacklistedProperties(), null)
 
         log.debug('Fixing bound DataModel')
         dataModelService.checkImportedDataModelAssociations(currentUser, dataModel, dataModelMap)

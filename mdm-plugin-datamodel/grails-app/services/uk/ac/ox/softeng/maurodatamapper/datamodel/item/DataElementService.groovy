@@ -220,7 +220,6 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
-        if (dataModel.dataTypes == null) dataModel.dataTypes = [] as HashSet
         if (dataElements) {
             log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
             def grouped = dataElements.groupBy { it.dataType.label }.sort { a, b ->
@@ -348,7 +347,7 @@ class DataElementService extends ModelItemService<DataElement> {
                                                     userSecurityPolicyManager)
         }
 
-        copy.dataType = dataType
+        dataType.addToDataElements(copy)
 
         copy
     }

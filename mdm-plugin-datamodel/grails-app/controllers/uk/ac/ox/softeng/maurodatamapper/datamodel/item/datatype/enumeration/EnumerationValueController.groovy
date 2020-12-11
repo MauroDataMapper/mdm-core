@@ -49,7 +49,7 @@ class EnumerationValueController extends CatalogueItemController<EnumerationValu
 
     @Override
     protected void serviceInsertResource(EnumerationValue resource) {
-        enumerationValueService.save(flush: true, resource)
+        enumerationValueService.save(DEFAULT_SAVE_ARGS, resource)
     }
 
     @Override
