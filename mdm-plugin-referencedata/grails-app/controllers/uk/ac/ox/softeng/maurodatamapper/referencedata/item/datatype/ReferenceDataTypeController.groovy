@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
@@ -135,7 +134,7 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
 
     @Override
     protected void serviceInsertResource(ReferenceDataType resource) {
-        referenceDataTypeService.save(flush: true, resource)
+        referenceDataTypeService.save(DEFAULT_SAVE_ARGS, resource)
     }
 
     @Override

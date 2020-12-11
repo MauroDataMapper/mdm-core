@@ -48,7 +48,7 @@ class TermRelationshipTypeController extends CatalogueItemController<TermRelatio
 
     @Override
     protected void serviceInsertResource(TermRelationshipType resource) {
-        termRelationshipTypeService.save(flush: true, resource)
+        termRelationshipTypeService.save(DEFAULT_SAVE_ARGS, resource)
     }
 
     @Override
