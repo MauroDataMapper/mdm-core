@@ -26,7 +26,7 @@ import groovy.xml.Namespace
 class ReferenceDataModelExportModel extends ExportModel {
 
     public static String getCurrentVersion(boolean isXml) {
-        isXml ? new XmlExporterService().version : new JsonExporterService().version
+        isXml ? new ReferenceDataXmlExporterService().version : new ReferenceDataJsonExporterService().version
     }
 
     ReferenceDataModelExportModel(ReferenceDataModel referenceDataModel, ExportMetadata exportMetadata, boolean isXml) {

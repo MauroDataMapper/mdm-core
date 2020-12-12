@@ -171,7 +171,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         catalogueItem
     }
 
-    ReferenceDataModel saveWithBatching(ReferenceDataModel referenceDataModel) {
+    ReferenceDataModel saveModelWithContent(ReferenceDataModel referenceDataModel) {
         log.debug('Saving {} using batching', referenceDataModel.label)
         Collection<ReferenceDataType> referenceDataTypes = []
         Collection<ReferenceDataElement> referenceDataElements = []
@@ -193,16 +193,42 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
         save(referenceDataModel)
         sessionFactory.currentSession.flush()
+
+        saveContent(referenceDataTypes, referenceDataElements)
+
+        get(referenceDataModel.id)
+    }
+
+    ReferenceDataModel saveModelNewContentOnly(ReferenceDataModel referenceDataModel) {
+        log.debug('Saving {} using batching', referenceDataModel.label)
+        Collection<ReferenceDataType> referenceDataTypes = []
+        Collection<ReferenceDataElement> referenceDataElements = []
+
+        if (referenceDataModel.classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(referenceDataModel.classifiers)
+        }
+
+        if (referenceDataModel.referenceDataTypes) {
+            referenceDataTypes.addAll referenceDataModel.referenceDataTypes.findAll { !it.id }
+        }
+
+        if (referenceDataModel.referenceDataElements) {
+            referenceDataElements.addAll referenceDataModel.referenceDataElements.findAll { !it.id }
+        }
+
+        saveContent(referenceDataTypes, referenceDataElements)
+
+        get(referenceDataModel.id)
+    }
+
+    void saveContent(Collection<ReferenceDataType> referenceDataTypes, Collection<ReferenceDataElement> referenceDataElements) {
         sessionFactory.currentSession.clear()
-
-
         log.trace('Saving {} referenceDataTypes', referenceDataTypes.size())
         referenceDataTypeService.saveAll(referenceDataTypes)
 
         log.trace('Saving {} referenceDataElements ', referenceDataElements.size())
         referenceDataElementService.saveAll(referenceDataElements)
-
-        referenceDataModel
     }
 
     @Override

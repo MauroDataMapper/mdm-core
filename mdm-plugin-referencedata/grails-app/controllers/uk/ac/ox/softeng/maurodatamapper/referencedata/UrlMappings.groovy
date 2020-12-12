@@ -40,8 +40,10 @@ class UrlMappings {
                 Version Control
                  */
                 get "/commonAncestor/$otherModelId"(controller: 'referenceDataModel', action: 'commonAncestor')
-                get '/latestVersion'(controller: 'referenceDataModel', action: 'latestVersion')
+                get '/latestFinalisedModel'(controller: 'referenceDataModel', action: 'latestFinalisedModel')
+                get '/latestModelVersion'(controller: 'referenceDataModel', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'referenceDataModel', action: 'mergeDiff')
+                put "/mergeInto/$otherModelId"(controller: 'referenceDataModel', action: 'mergeInto')
 
                 get '/currentMainBranch'(controller: 'referenceDataModel', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'referenceDataModel', action: 'availableBranches')

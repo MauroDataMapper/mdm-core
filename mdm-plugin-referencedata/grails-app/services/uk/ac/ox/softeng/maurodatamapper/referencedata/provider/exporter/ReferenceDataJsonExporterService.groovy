@@ -24,27 +24,27 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExpo
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import grails.plugin.markup.view.MarkupViewTemplateEngine
+import grails.plugin.json.view.JsonViewTemplateEngine
 import org.springframework.beans.factory.annotation.Autowired
 
-class XmlExporterService extends ReferenceDataModelExporterProviderService implements TemplateBasedExporter {
+class ReferenceDataJsonExporterService extends ReferenceDataModelExporterProviderService implements TemplateBasedExporter {
 
     @Autowired
-    MarkupViewTemplateEngine templateEngine
+    JsonViewTemplateEngine templateEngine
 
     @Override
     String getFileExtension() {
-        'xml'
+        'json'
     }
 
     @Override
     String getFileType() {
-        'text/xml'
+        'text/json'
     }
 
     @Override
     String getDisplayName() {
-        'XML Reference Data Exporter'
+        'JSON Reference Data Exporter'
     }
 
     @Override
@@ -55,21 +55,11 @@ class XmlExporterService extends ReferenceDataModelExporterProviderService imple
     @Override
     ByteArrayOutputStream exportReferenceDataModel(User currentUser, ReferenceDataModel referenceDataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        ReferenceDataModelExportModel export = new ReferenceDataModelExportModel(referenceDataModel, exportMetadata, true)
-        exportModel(export, fileType)
+        exportModel new ReferenceDataModelExportModel(referenceDataModel, exportMetadata, false), fileType
     }
 
     @Override
     ByteArrayOutputStream exportReferenceDataModels(User currentUser, List<ReferenceDataModel> referenceDataModels) throws ApiException {
-        throw new ApiBadRequestException('XES01', "${getName()} cannot export multiple ReferenceDataModels")
+        throw new ApiBadRequestException('JES01', "${getName()} cannot export multiple ReferenceDataModels")
     }
-
-    /**
-     * Necessary to override the view path because using '/exportModel/export' across more than one plugin results
-     * in path resolution problems i.e. grails can pick up the template from a different plugin.
-     */
-    @Override
-    String getExportViewPath() {
-        '/exportModel/exportReferenceData'
-    }    
 }
