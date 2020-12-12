@@ -17,12 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import io.micronaut.core.type.Argument
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+
+import java.net.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -964,4 +968,115 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(source)
         cleanUpRoles(id)
     }
+
+    void 'Test getting versionTreeModel (as editor)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
+        verifyResponse CREATED, response
+        String forkId = responseBody().id
+        PUT("$id/newBranchModelVersion", [ : ])
+        verifyResponse CREATED, response
+        String mainBranchId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$forkId/finalise", [versionChangeType: VersionChangeType.MINOR])
+        verifyResponse OK, response
+        PUT("$forkId/newDocumentationVersion",[ : ])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        io.micronaut.http.HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body()
+        localResponse.body().size() == 5
+
+
+        Map sourceMap = localResponse.body().find { it.modelId == id }
+        sourceMap
+        sourceMap == [branchName             : "main",
+                         label                  : "Functional Test " + getModelType(),
+                         modelId                : id,
+                         newBranchModelVersion  : false,
+                         newDocumentationVersion: false,
+                         newFork                : false,
+                         targets                : [[
+                                                            modelId: forkId,
+                                                            description: VersionLinkType.NEW_FORK_OF.label
+                                                   ],
+                                                   [
+                                                           modelId: mainBranchId,
+                                                           description: VersionLinkType.NEW_MODEL_VERSION_OF.label
+                                                   ],
+                                                   [
+                                                            modelId: newBranchId,
+                                                            description: VersionLinkType.NEW_MODEL_VERSION_OF.label
+                                                   ]]
+                ]
+
+        Map forkMap = localResponse.body().find { it.modelId == forkId }
+        forkMap
+        forkMap ==    [branchName            : "main",
+                      label                  : "Functional Test " + getModelType() + " v2",
+                      modelId                : forkId,
+                      newBranchModelVersion  : false,
+                      newDocumentationVersion: false,
+                      newFork                : true,
+                      targets                : [[
+                                                        modelId: latestDraftId,
+                                                        description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
+                                                ]]
+                ]
+
+        Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
+        mainBranchMap
+        mainBranchMap == [branchName             : "main",
+                         label                  : "Functional Test " + getModelType(),
+                         modelId                : mainBranchId,
+                         newBranchModelVersion  : true,
+                         newDocumentationVersion: false,
+                         newFork                : false,
+                         targets                : []]
+
+        Map newBranchMap = localResponse.body().find { it.modelId == newBranchId }
+        newBranchMap
+        newBranchMap == [branchName             : "newBranch",
+                         label                  : "Functional Test " + getModelType(),
+                         modelId                : newBranchId,
+                         newBranchModelVersion  : true,
+                         newDocumentationVersion: false,
+                         newFork                : false,
+                         targets                : []]
+
+        Map latestDraftMap = localResponse.body().find { it.modelId == latestDraftId }
+        latestDraftMap
+        latestDraftMap == [branchName           : "main",
+                         label                  : "Functional Test " + getModelType() + " v2",
+                         modelId                : latestDraftId,
+                         newBranchModelVersion  : false,
+                         newDocumentationVersion: true,
+                         newFork                : false,
+                         targets                : []]
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(forkId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(forkId)
+        cleanUpRoles(latestDraftId)
+    }
+
 }
