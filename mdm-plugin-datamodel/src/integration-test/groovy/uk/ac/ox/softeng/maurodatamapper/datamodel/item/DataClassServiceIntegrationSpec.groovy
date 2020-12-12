@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
@@ -36,6 +37,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     DataClassService dataClassService
     UserSecurityPolicyManager userSecurityPolicyManager
+    DataModelService dataModelService
 
     @Override
     void setupDomainData() {
@@ -356,18 +358,25 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataClass complex = dataModel.dataClasses.find { it.label == 'Integration grandparent' }
         DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
-        //copyModel.addToDataTypes(new ReferenceType(createdByUser:editor, label: 'dataclass'))
+        dataModelService.updateFacetsAfterInsertingCatalogueItem(copyModel)
+        sessionFactory.currentSession.flush()
         dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find { it.label == 'dc1' }, editor, userSecurityPolicyManager)
 
         expect:
-        checkAndSave(copyModel)
+        check(copyModel)
+        dataModelService.saveModelNewContentOnly(copyModel)
+
 
         when:
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+        copyModel = dataModelService.get(copyModel.id)
         DataClass original = dataClassService.get(complex.id)
         DataClass copy = dataClassService.copyDataClass(copyModel, original, editor, userSecurityPolicyManager)
 
         then:
-        checkAndSave(copyModel)
+        check(copyModel)
+        dataModelService.saveModelNewContentOnly(copyModel)
 
         when:
         original = dataClassService.get(complex.id)
@@ -390,7 +399,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.referenceTypes
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        SemanticLink.findByTargetCatalogueItemIdAndCatalogueItemIdAndLinkType(original.id, copy.id, SemanticLinkType.REFINES)
 
         when:
         DataClass copiedParent = copy.dataClasses.first()

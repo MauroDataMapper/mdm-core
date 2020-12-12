@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeItemData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
@@ -36,12 +37,14 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.spockframework.util.Assert
 import spock.lang.PendingFeature
+import spock.lang.Stepwise
 
 @Slf4j
 @Integration
 @Rollback
-//@Stepwise
+@Stepwise
 class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     DataModel complexDataModel
@@ -75,6 +78,34 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel1)
 
         id = dataModel1.id
+    }
+
+    protected DataModel checkAndSaveNewVersion(DataModel dataModel) {
+        check(dataModel)
+        dataModelService.saveModelWithContent(dataModel)
+    }
+
+    protected DataModel getAndFinaliseDataModel(UUID idToFinalise = id) {
+        DataModel dataModel = dataModelService.get(idToFinalise)
+        dataModelService.finaliseModel(dataModel, admin, null, null)
+        checkAndSave(dataModel)
+        dataModel
+    }
+
+    protected UUID createAndSaveNewBranchModel(String branchName, DataModel base) {
+        DataModel dataModel = dataModelService.createNewBranchModelVersion(branchName, base, admin, false, adminSecurityPolicyManager)
+        if (dataModel.hasErrors()) {
+            GormUtils.outputDomainErrors(messageSource, dataModel)
+            Assert.fail('Could not create new branch version')
+        }
+        check(dataModel)
+        dataModelService.saveModelWithContent(dataModel)
+        dataModel.id
+    }
+
+    protected DataModel createSaveAndGetNewBranchModel(String branchName, DataModel base) {
+        UUID id = createAndSaveNewBranchModel(branchName, base)
+        dataModelService.get(id)
     }
 
     void "test get"() {
@@ -215,16 +246,14 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when: 'finalising model and then creating a new doc version is allowed'
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        DataModel dataModel = getAndFinaliseDataModel()
         def result = dataModelService.createNewDocumentationVersion(dataModel, editor, false, editorSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
 
         then:
-        checkAndSave(result)
+        checkAndSaveNewVersion(result)
 
         when: 'load from DB to make sure everything is saved'
         dataModel = dataModelService.get(id)
@@ -255,7 +284,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
+        newDocVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
         dataModel.dataTypes.every { odt ->
@@ -284,16 +313,14 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when: 'finalising model and then creating a new doc version is allowed'
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        DataModel dataModel = getAndFinaliseDataModel()
         def result = dataModelService.createNewDocumentationVersion(dataModel, editor, true, editorSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
         ])
 
         then:
-        checkAndSave(result)
+        checkAndSaveNewVersion(result)
 
         when: 'load from DB to make sure everything is saved'
         dataModel = dataModelService.get(id)
@@ -324,7 +351,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
+        newDocVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
         dataModel.dataTypes.every { odt ->
@@ -353,13 +380,12 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when: 'creating new doc version'
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, editor, null, null)
+        DataModel dataModel = getAndFinaliseDataModel()
         def newDocVersion = dataModelService.
             createNewDocumentationVersion(dataModel, editor, false, editorSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
-        checkAndSave(newDocVersion)
+        checkAndSaveNewVersion(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
         def result = dataModelService.
@@ -370,30 +396,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
-    @PendingFeature(reason = 'DataModel permission copying')
-    void 'DMSC05 : test creating a new documentation version on finalised superseded model with permission copying'() {
-        given:
-        setupData()
-
-        when: 'creating new doc version'
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, editor, null, null)
-        def newDocVersion = dataModelService.
-            createNewDocumentationVersion(dataModel, editor, true, editorSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
-
-        then:
-        checkAndSave(newDocVersion)
-
-        when: 'trying to create a new doc version on the old datamodel'
-        def result = dataModelService.
-            createNewDocumentationVersion(dataModel, editor, true, editorSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
-
-        then:
-        result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
-    }
-
-    void 'DMSC06 : test creating a new model version on draft model'() {
+    void 'DMSC05 : test creating a new fork version on draft model'() {
         given:
         setupData()
 
@@ -409,20 +412,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         }
     }
 
-    void 'DMSC07 : test creating a new model version on finalised model'() {
+    void 'DMSC06 : test creating a new fork version on finalised model'() {
         given:
         setupData()
 
         when: 'finalising model and then creating a new version is allowed'
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        DataModel dataModel = getAndFinaliseDataModel()
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, editorSecurityPolicyManager,
                                                          [copyDataFlows: false, throwErrors: true])
 
         then:
-        result.instanceOf(DataModel)
-        checkAndSave(result)
+        checkAndSaveNewVersion(result)
 
         when: 'load from DB to make sure everything is saved'
         dataModel = dataModelService.get(id)
@@ -455,7 +455,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         and: 'link between old and new version'
         newVersion.versionLinks.any {
-            it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF
+            it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF
         }
 
         and:
@@ -480,20 +480,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     }
 
     @PendingFeature(reason = 'DataModel permission copying')
-    void 'DMSC08 : test creating a new model version on finalised model with permission copying'() {
+    void 'DMSC07 : test creating a new fork version on finalised model with permission copying'() {
         given:
         setupData()
 
         when: 'finalising model and then creating a new version is allowed'
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        DataModel dataModel = getAndFinaliseDataModel()
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, editorSecurityPolicyManager,
                                                          [copyDataFlows: false, throwErrors: true])
 
         then:
-        result.instanceOf(DataModel)
-        checkAndSave(result)
+        checkAndSaveNewVersion(result)
 
         when: 'load from DB to make sure everything is saved'
         dataModel = dataModelService.get(id)
@@ -525,7 +522,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
+        newVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
         dataModel.dataTypes.every { odt ->
@@ -548,18 +545,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         }
     }
 
-    void 'DMSC09 : test creating a new model version on finalised superseded model'() {
+    void 'DMSC08 : test creating a new fork version on finalised superseded model'() {
         given:
         setupData()
 
         when: 'creating new version'
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, editor, null, null)
+        DataModel dataModel = getAndFinaliseDataModel()
         def newVersion = dataModelService.
             createNewDocumentationVersion(dataModel, editor, false, editorSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
-        checkAndSave(newVersion)
+        checkAndSaveNewVersion(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
         def result = dataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, editorSecurityPolicyManager,
@@ -570,25 +566,226 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
     }
 
-    void 'DMSICA01 : test finding common ancestor of two datamodels'() {
+    void 'DMSC09 : test creating a new branch model version on draft model'() {
+        given:
+        setupData()
+
+        when: 'creating new model version on draft model is not allowed'
+        DataModel dataModel = dataModelService.get(id)
+        def result = dataModelService.
+            createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false, editorSecurityPolicyManager, [
+                moveDataFlows: false,
+                throwErrors  : true
+            ])
+
+        then:
+        result.errors.allErrors.size() == 1
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.not.finalised.message' }
+    }
+
+    void 'DMSC10 : test creating a new branch model version on finalised model'() {
+        given:
+        setupData()
+
+        when: 'finalising model and then creating a new doc version is allowed'
+        DataModel dataModel = getAndFinaliseDataModel()
+        def result = dataModelService.
+            createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false, editorSecurityPolicyManager, [
+                moveDataFlows: false,
+                throwErrors  : true
+            ])
+
+        then:
+        checkAndSaveNewVersion(result)
+
+        when: 'load from DB to make sure everything is saved'
+        dataModel = dataModelService.get(id)
+        DataModel newBranch = dataModelService.get(result.id)
+
+        then: 'old model is finalised and superseded'
+        dataModel.finalised
+        dataModel.dateFinalised
+        dataModel.documentationVersion == Version.from('1')
+        dataModel.modelVersion == Version.from('1')
+
+        and: 'new branch version model is draft v2'
+        newBranch.documentationVersion == Version.from('1')
+        !newBranch.modelVersion
+        !newBranch.finalised
+        !newBranch.dateFinalised
+
+        and: 'new branch version model matches old model'
+        newBranch.label == dataModel.label
+        newBranch.description == dataModel.description
+        newBranch.author == dataModel.author
+        newBranch.organisation == dataModel.organisation
+        newBranch.modelType == dataModel.modelType
+
+        newBranch.dataTypes.size() == dataModel.dataTypes.size()
+        newBranch.dataClasses.size() == dataModel.dataClasses.size()
+
+        and: 'annotations and edits are not copied'
+        !newBranch.annotations
+        newBranch.edits.size() == 1
+
+        and: 'new version of link between old and new version'
+        newBranch.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+
+        and:
+        dataModel.dataTypes.every { odt ->
+            newBranch.dataTypes.any {
+                it.label == odt.label &&
+                it.id != odt.id &&
+                it.domainType == odt.domainType
+            }
+        }
+        def missing = dataModel.dataClasses.findAll { odc ->
+            !newBranch.dataClasses.find {
+                int idcs = it.dataClasses?.size() ?: 0
+                int odcs = odc.dataClasses?.size() ?: 0
+                int ides = it.dataElements?.size() ?: 0
+                int odes = odc.dataElements?.size() ?: 0
+                it.label == odc.label &&
+                idcs == odcs &&
+                ides == odes
+            }
+        }
+        !missing
+    }
+
+    @PendingFeature(reason = 'DataModel permission copying')
+    void 'DMSC11 : test creating a new branch model version on finalised model with permission copying'() {
+        given:
+        setupData()
+
+        when: 'finalising model and then creating a new doc version is allowed'
+        DataModel dataModel = getAndFinaliseDataModel()
+        def result = dataModelService.createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, true,
+                                                                  editorSecurityPolicyManager, [
+                                                                      moveDataFlows: false,
+                                                                      throwErrors  : true
+                                                                  ])
+
+        then:
+        checkAndSaveNewVersion(result)
+
+        when: 'load from DB to make sure everything is saved'
+        dataModel = dataModelService.get(id)
+        DataModel newBranch = dataModelService.get(result.id)
+
+        then: 'old model is finalised and superseded'
+        dataModel.finalised
+        dataModel.dateFinalised
+        dataModel.documentationVersion == Version.from('1')
+        dataModel.modelVersion == Version.from('1')
+
+        and: 'new branch version model is draft v2'
+        newBranch.documentationVersion == Version.from('1')
+        !newBranch.modelVersion
+        !newBranch.finalised
+        !newBranch.dateFinalised
+
+        and: 'new branch version model matches old model'
+        newBranch.label == dataModel.label
+        newBranch.description == dataModel.description
+        newBranch.author == dataModel.author
+        newBranch.organisation == dataModel.organisation
+        newBranch.modelType == dataModel.modelType
+
+        newBranch.dataTypes.size() == dataModel.dataTypes.size()
+        newBranch.dataClasses.size() == dataModel.dataClasses.size()
+
+        and: 'annotations and edits are not copied'
+        !newBranch.annotations
+        newBranch.edits.size() == 1
+
+        and: 'new version of link between old and new version'
+        newBranch.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+
+        and:
+        dataModel.dataTypes.every { odt ->
+            newBranch.dataTypes.any {
+                it.label == odt.label &&
+                it.id != odt.id &&
+                it.domainType == odt.domainType
+            }
+        }
+        dataModel.dataClasses.every { odc ->
+            newBranch.dataClasses.any {
+                int idcs = it.dataClasses?.size() ?: 0
+                int odcs = odc.dataClasses?.size() ?: 0
+                int ides = it.dataElements?.size() ?: 0
+                int odes = odc.dataElements?.size() ?: 0
+                it.label == odc.label &&
+                idcs == odcs &&
+                ides == odes
+            }
+        }
+    }
+
+    void 'DMSC12 : test creating a new branch model version on finalised superseded model'() {
+        given:
+        setupData()
+
+        when: 'creating new doc version'
+        DataModel dataModel = getAndFinaliseDataModel()
+        def newDocVersion = dataModelService.
+            createNewDocumentationVersion(dataModel, editor, false, editorSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
+
+        then:
+        checkAndSaveNewVersion(newDocVersion)
+
+        when: 'trying to create a new branch version on the old datamodel'
+        def result = dataModelService.
+            createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false, editorSecurityPolicyManager,
+                                        [moveDataFlows: false, throwErrors: true])
+
+        then:
+        result.errors.allErrors.size() == 1
+        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
+    }
+
+    void 'DMSC13 : test creating a new branch model version using main branch name when it already exists'() {
         given:
         setupData()
 
         when:
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        DataModel dataModel = getAndFinaliseDataModel()
+        def mainBranch = dataModelService.createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false,
+                                                                      editorSecurityPolicyManager, [
+                                                                          moveDataFlows: false,
+                                                                          throwErrors  : true
+                                                                      ])
 
         then:
-        dataModel.branchName == 'main'
+        checkAndSaveNewVersion(mainBranch)
+
+
+        when: 'trying to create a new branch version on the old datamodel'
+        def result = dataModelService.
+            createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false, editorSecurityPolicyManager,
+                                        [moveDataFlows: false, throwErrors: true])
+
+        then:
+        result.errors.allErrors.size() == 1
+        result.errors.allErrors.find { it.code == 'model.label.branch.name.already.exists' }
+    }
+
+    void 'DMSF01 : test finding common ancestor of two datamodels'() {
+        given:
+        setupData()
 
         when:
-        def left = dataModelService.createNewBranchModelVersion('left', dataModel, admin, false, adminSecurityPolicyManager)
-        def right = dataModelService.createNewBranchModelVersion('right', dataModel, admin, false, adminSecurityPolicyManager)
+        DataModel dataModel = getAndFinaliseDataModel()
 
         then:
-        checkAndSave(left)
-        checkAndSave(right)
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when:
+        def left = createSaveAndGetNewBranchModel('left', dataModel)
+        def right = createSaveAndGetNewBranchModel('right', dataModel)
+
+        then:
         left.modelVersion == null
         left.branchName == 'left'
         right.modelVersion == null
@@ -599,11 +796,11 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         commonAncestor.id == id
-        commonAncestor.branchName == 'main'
+        commonAncestor.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         commonAncestor.modelVersion == Version.from('1')
     }
 
-    void 'DMSILV01 : test finding latest finalised model version of a datamodel'() {
+    void 'DMSF02 : test finding latest finalised model version of a datamodel'() {
         /*
         dataModel (finalised) -- expectedModel (finalised) -- draftModel (draft)
           \_ testModel (draft)
@@ -612,37 +809,32 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         setupData()
 
         when:
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        DataModel dataModel = getAndFinaliseDataModel()
 
         then:
-        dataModel.branchName == 'main'
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def expectedModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, adminSecurityPolicyManager)
-        def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, adminSecurityPolicyManager)
-        dataModelService.finaliseModel(expectedModel, admin, null, null)
-        checkAndSave(
-            expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, adminSecurityPolicyManager)
+        DataModel expectedModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
+        DataModel testModel = createSaveAndGetNewBranchModel('test', dataModel)
+
+        expectedModel = getAndFinaliseDataModel(expectedModel.id)
+        DataModel draftModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, expectedModel)
 
         then:
-        checkAndSave(testModel)
-        checkAndSave(draftModel)
         testModel.modelVersion == null
         testModel.branchName == 'test'
         expectedModel.modelVersion == Version.from('2')
-        expectedModel.branchName == 'main'
+        expectedModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         draftModel.modelVersion == null
-        draftModel.branchName == 'main'
+        draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
         def latestVersion = dataModelService.latestFinalisedModel(testModel.label)
 
         then:
         latestVersion.id == expectedModel.id
-        latestVersion.branchName == 'main'
+        latestVersion.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         latestVersion.modelVersion == Version.from('2')
 
         when:
@@ -650,7 +842,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         latestVersion.id == expectedModel.id
-        latestVersion.branchName == 'main'
+        latestVersion.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         latestVersion.modelVersion == Version.from('2')
 
         when:
@@ -666,7 +858,83 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         latestVersion == Version.from('2')
     }
 
-    void 'DMSIMD01 : test finding merge difference between two datamodels'() {
+    void 'DMSF03 : test getting current draft model on main branch from side branch'() {
+        /*
+        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
+        given:
+        setupData()
+
+        when:
+        DataModel dataModel = getAndFinaliseDataModel()
+
+        then:
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when:
+        def finalisedModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
+        def testModel = createSaveAndGetNewBranchModel('test', dataModel)
+        finalisedModel = getAndFinaliseDataModel(finalisedModel.id)
+        def draftModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, finalisedModel)
+
+        then:
+        testModel.modelVersion == null
+        testModel.branchName == 'test'
+        finalisedModel.modelVersion == Version.from('2')
+        finalisedModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        draftModel.modelVersion == null
+        draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when:
+        def currentMainBranch = dataModelService.currentMainBranch(testModel)
+
+        then:
+        currentMainBranch.id == draftModel.id
+        currentMainBranch.label == testModel.label
+        currentMainBranch.modelVersion == null
+        currentMainBranch.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+    }
+
+    void 'DMSF04 : test getting all draft models'() {
+        /*
+        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
+        given:
+        setupData()
+
+        when:
+        DataModel dataModel = getAndFinaliseDataModel()
+
+        then:
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when:
+        def finalisedModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
+        def testModel = createSaveAndGetNewBranchModel('test', dataModel)
+        finalisedModel = getAndFinaliseDataModel(finalisedModel.id)
+        def draftModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, finalisedModel)
+
+        then:
+        testModel.modelVersion == null
+        testModel.branchName == 'test'
+        finalisedModel.modelVersion == Version.from('2')
+        finalisedModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        draftModel.modelVersion == null
+        draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when:
+        def availableBranches = dataModelService.availableBranches(dataModel.label)
+
+        then:
+        availableBranches.size() == 2
+        availableBranches.each { it.id in [draftModel.id, testModel.id] }
+        availableBranches.each { it.label == dataModel.label }
+    }
+
+
+    void 'DMSM01 : test finding merge difference between two datamodels'() {
         given:
         setupData()
 
@@ -681,62 +949,93 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
             .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndDelete'))
             .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndModifyReturningNoDifference'))
             .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndModifyReturningDifference'))
-        def existingClass = new DataClass(createdByUser: admin, label: 'existingClass')
-        def deleteLeftOnlyFromExistingClass = new DataClass(createdByUser: admin, label: 'deleteLeftOnlyFromExistingClass')
-        def deleteRightOnlyFromExistingClass = new DataClass(createdByUser: admin, label: 'deleteRightOnlyFromExistingClass')
-        dataModel.addToDataClasses(existingClass.addToDataClasses(deleteLeftOnlyFromExistingClass)
-                                       .addToDataClasses(deleteRightOnlyFromExistingClass))
+        dataModel.addToDataClasses(
+            new DataClass(createdByUser: admin, label: 'existingClass')
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteLeftOnlyFromExistingClass'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteRightOnlyFromExistingClass'))
+        )
         dataModelService.finaliseModel(dataModel, admin, null, null)
         checkAndSave(dataModel)
 
         then:
-        dataModel.branchName == 'main'
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def draft = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, adminSecurityPolicyManager)
-        def test = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, adminSecurityPolicyManager)
+        UUID draftId = createAndSaveNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
 
-        dataClassService.delete(test.dataClasses.find { it.label == 'deleteLeftOnlyFromExistingClass' } as DataClass)
-        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteLeftOnly' })
-        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteAndDelete' })
-        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteAndModify' })
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'deleteRightOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'deleteRightOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'deleteAndDelete'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'modifyAndDelete'))
 
-        test.childDataClasses.find { it.label == 'modifyLeftOnly' }.description = 'Description'
-        test.childDataClasses.find { it.label == 'modifyAndDelete' }.description = 'Description'
-        test.childDataClasses.find { it.label == 'modifyAndModifyReturningNoDifference' }.description = 'Description'
-        test.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionLeft'
+        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'modifyRightOnly').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'deleteAndModify').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'modifyAndModifyReturningNoDifference').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'modifyAndModifyReturningDifference').tap {
+            description = 'DescriptionRight'
+        }
 
-        test.childDataClasses.find { it.label == 'existingClass' }
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftToExistingClass'))
-        def leftParentDataClass = (new DataClass(createdByUser: admin, label: 'leftParentDataClass'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass'))
-        test.addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left'))
-            .addToDataClasses(leftParentDataClass)
-        //test.description = 'DescriptionLeft'
-        checkAndSave(test)
+        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'existingClass')
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
 
-        dataClassService.delete(draft.dataClasses.find { it.label == 'deleteRightOnlyFromExistingClass' } as DataClass)
-        dataClassService.delete(draft.childDataClasses.find { it.label == 'deleteRightOnly' })
-        dataClassService.delete(draft.childDataClasses.find { it.label == 'deleteAndDelete' })
-        dataClassService.delete(draft.childDataClasses.find { it.label == 'modifyAndDelete' })
+        DataModel draftModel = dataModelService.get(draftId)
 
-        draft.childDataClasses.find { it.label == 'modifyRightOnly' }.description = 'Description'
-        draft.childDataClasses.find { it.label == 'deleteAndModify' }.description = 'Description'
-        draft.childDataClasses.find { it.label == 'modifyAndModifyReturningNoDifference' }.description = 'Description'
-        draft.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionRight'
+        checkAndSave new DataClass(createdByUser: admin, label: 'rightParentDataClass', dataModel: draftModel)
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'rightChildDataClass', dataModel: draftModel))
+        checkAndSave new DataClass(createdByUser: admin, label: 'addRightOnly', dataModel: draftModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference', dataModel: draftModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right', dataModel: draftModel)
 
-        draft.childDataClasses.find { it.label == 'existingClass' }
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
-        def rightParentDataClass = (new DataClass(createdByUser: admin, label: 'rightParentDataClass'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'rightChildDataClass'))
-        draft.addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right'))
-            .addToDataClasses(rightParentDataClass)
-        draft.description = 'DescriptionRight'
-        checkAndSave(draft)
+        checkAndSave dataModelService.get(draftId).tap {
+            description = 'DescriptionRight'
+        }
+
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        UUID testId = createAndSaveNewBranchModel('test', dataModel)
+
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteLeftOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteLeftOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteAndDelete'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteAndModify'))
+
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyLeftOnly').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyAndDelete').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyAndModifyReturningNoDifference').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyAndModifyReturningDifference').tap {
+            description = 'DescriptionLeft'
+        }
+
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'existingClass')
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftToExistingClass'))
+
+        DataModel testModel = dataModelService.get(testId)
+
+        checkAndSave new DataClass(createdByUser: admin, label: 'leftParentDataClass', dataModel: testModel)
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass', dataModel: testModel))
+
+        checkAndSave new DataClass(createdByUser: admin, label: 'addLeftOnly', dataModel: testModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference', dataModel: testModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left', dataModel: testModel)
+
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        DataModel draft = dataModelService.get(draftId)
+        DataModel test = dataModelService.get(testId)
 
         def mergeDiff = dataModelService.mergeDiff(test, draft)
 
@@ -746,7 +1045,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergeDiff.numberOfDiffs == 11
         mergeDiff.diffs.fieldName as Set == ['branchName', 'dataClasses'] as Set
         def branchNameDiff = mergeDiff.diffs.find { it.fieldName == 'branchName' }
-        branchNameDiff.left == 'main'
+        branchNameDiff.left == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         branchNameDiff.right == 'test'
         !branchNameDiff.isMergeConflict
         def dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' }
@@ -788,7 +1087,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].commonAncestorValue
     }
 
-    void 'DMSIMI01 : test merging diff into draft model'() {
+    void 'DMSM02 : test merging diff into draft model'() {
         given:
         setupData()
 
@@ -811,45 +1110,69 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         checkAndSave(dataModel)
 
         then:
-        dataModel.branchName == 'main'
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def draft = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, adminSecurityPolicyManager)
-        def test = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, adminSecurityPolicyManager)
+        UUID draftId = createAndSaveNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
 
-        dataClassService.delete(test.dataClasses.find { it.label == 'deleteLeftOnlyFromExistingClass' } as DataClass)
-        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteLeftOnly' })
-        dataClassService.delete(test.childDataClasses.find { it.label == 'deleteAndModify' })
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'modifyAndDelete'))
 
-        test.childDataClasses.find { it.label == 'modifyLeftOnly' }.description = 'Description'
-        test.childDataClasses.find { it.label == 'modifyAndDelete' }.description = 'Description'
-        test.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionLeft'
+        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'deleteAndModify').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'modifyAndModifyReturningDifference').tap {
+            description = 'DescriptionRight'
+        }
 
-        def addLeftToExistingClass = new DataClass(createdByUser: admin, label: 'addLeftToExistingClass')
-        test.childDataClasses.find { it.label == 'existingClass' }
-            .addToDataClasses(addLeftToExistingClass)
-        def leftParentDataClass = (new DataClass(createdByUser: admin, label: 'leftParentDataClass'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass'))
-        def addLeftOnly = new DataClass(createdByUser: admin, label: 'addLeftOnly')
-        test.addToDataClasses(addLeftOnly)
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left'))
-            .addToDataClasses(leftParentDataClass)
-        def modelDescriptionLeft = 'DescriptionLeft'
-        test.description = modelDescriptionLeft
-        checkAndSave(test)
+        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'existingClass')
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
 
-        dataClassService.delete(draft.childDataClasses.find { it.label == 'modifyAndDelete' })
+        DataModel draftModel = dataModelService.get(draftId)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right', dataModel: draftModel)
 
-        draft.childDataClasses.find { it.label == 'deleteAndModify' }.description = 'Description'
-        draft.childDataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description = 'DescriptionRight'
+        checkAndSave dataModelService.get(draftId).tap {
+            description = 'DescriptionRight'
+        }
 
-        draft.childDataClasses.find { it.label == 'existingClass' }
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
-        def addAndAddReturningDifference = new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right')
-        draft.addToDataClasses(addAndAddReturningDifference)
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
 
-        draft.description = 'DescriptionRight'
-        checkAndSave(draft)
+        UUID testId = createAndSaveNewBranchModel('test', dataModel)
+
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteLeftOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteLeftOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteAndModify'))
+
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyLeftOnly').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyAndDelete').tap {
+            description = 'Description'
+        }
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyAndModifyReturningDifference').tap {
+            description = 'DescriptionLeft'
+        }
+
+        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'existingClass')
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftToExistingClass'))
+
+        DataModel testModel = dataModelService.get(testId)
+
+        checkAndSave new DataClass(createdByUser: admin, label: 'leftParentDataClass', dataModel: testModel)
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass', dataModel: testModel))
+
+        checkAndSave new DataClass(createdByUser: admin, label: 'addLeftOnly', dataModel: testModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left', dataModel: testModel)
+
+        checkAndSave dataModelService.get(testId).tap {
+            description = 'DescriptionLeft'
+        }
+
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        DataModel draft = dataModelService.get(draftId)
+        DataModel test = dataModelService.get(testId)
 
         def mergeDiff = dataModelService.mergeDiff(test, draft)
 
@@ -859,7 +1182,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergeDiff.numberOfDiffs == 12
         mergeDiff.diffs.fieldName as Set == ['branchName', 'dataClasses', 'description'] as Set
         def branchNameDiff = mergeDiff.diffs.find { it.fieldName == 'branchName' }
-        branchNameDiff.left == 'main'
+        branchNameDiff.left == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         branchNameDiff.right == 'test'
         !branchNameDiff.isMergeConflict
         def dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' }
@@ -901,13 +1224,16 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].commonAncestorValue
 
         when:
+        DataClass addLeftOnly = dataClassService.findByDataModelIdAndLabel(testId, 'addLeftOnly')
+        DataClass addAndAddReturningDifference = dataClassService.findByDataModelIdAndLabel(testId, 'addAndAddReturningDifference')
+        DataClass addLeftToExistingClass = dataClassService.findByDataModelIdAndLabel(testId, 'addLeftToExistingClass')
         def patch = new MergeObjectDiffData(
             leftId: draft.id,
             rightId: test.id,
             diffs: [
                 new MergeFieldDiffData(
                     fieldName: 'description',
-                    value: modelDescriptionLeft
+                    value: 'DescriptionLeft'
                 ),
                 new MergeFieldDiffData(
                     fieldName: 'dataClasses',
@@ -996,102 +1322,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def mergedModel = dataModelService.mergeInto(test, draft, patch, adminSecurityPolicyManager)
 
         then:
-        mergedModel.description == modelDescriptionLeft
-        mergedModel.dataClasses.size() == 8
+        mergedModel.description == 'DescriptionLeft'
+        mergedModel.dataClasses.size() == 9
         mergedModel.dataClasses.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly', 'sdmclass',
-                                                 'addAndAddReturningDifference', 'addLeftOnly', 'modifyAndDelete', 'addLeftToExistingClass'] as Set
+                                                 'addAndAddReturningDifference', 'addLeftOnly', 'modifyAndDelete', 'addLeftToExistingClass',
+                                                 'addRightToExistingClass'] as Set
         mergedModel.dataClasses.find { it.label == 'existingClass' }.dataClasses.label as Set == ['addRightToExistingClass',
                                                                                                   'addLeftToExistingClass'] as Set
         mergedModel.dataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
         mergedModel.dataClasses.find { it.label == 'modifyLeftOnly' }.description == 'Description'
     }
 
-    void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
-        /*
-        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
-          \_ testModel (draft)
-        */
-        given:
-        setupData()
-
-        when:
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-
-        then:
-        dataModel.branchName == 'main'
-
-        when:
-        def finalisedModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, adminSecurityPolicyManager)
-        def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, adminSecurityPolicyManager)
-        dataModelService.finaliseModel(finalisedModel, admin, null, null)
-        checkAndSave(
-            finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, adminSecurityPolicyManager)
-
-        then:
-        checkAndSave(testModel)
-        checkAndSave(draftModel)
-        testModel.modelVersion == null
-        testModel.branchName == 'test'
-        finalisedModel.modelVersion == Version.from('2')
-        finalisedModel.branchName == 'main'
-        draftModel.modelVersion == null
-        draftModel.branchName == 'main'
-
-        when:
-        def currentMainBranch = dataModelService.currentMainBranch(testModel)
-
-        then:
-        currentMainBranch.id == draftModel.id
-        currentMainBranch.label == testModel.label
-        currentMainBranch.modelVersion == null
-        currentMainBranch.branchName == 'main'
-    }
-
-    void 'DMSIAB01 : test getting all draft models'() {
-        /*
-        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
-          \_ testModel (draft)
-        */
-        given:
-        setupData()
-
-        when:
-        DataModel dataModel = dataModelService.get(id)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-
-        then:
-        dataModel.branchName == 'main'
-
-        when:
-        def finalisedModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, adminSecurityPolicyManager)
-        def testModel = dataModelService.createNewBranchModelVersion('test', dataModel, admin, false, adminSecurityPolicyManager)
-        dataModelService.finaliseModel(finalisedModel, admin, null, null)
-        checkAndSave(
-            finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = dataModelService.createNewBranchModelVersion('main', dataModel, admin, false, adminSecurityPolicyManager)
-
-        then:
-        checkAndSave(testModel)
-        checkAndSave(draftModel)
-        testModel.modelVersion == null
-        testModel.branchName == 'test'
-        finalisedModel.modelVersion == Version.from('2')
-        finalisedModel.branchName == 'main'
-        draftModel.modelVersion == null
-        draftModel.branchName == 'main'
-
-        when:
-        def availableBranches = dataModelService.availableBranches(dataModel.label)
-
-        then:
-        availableBranches.size() == 2
-        availableBranches.each { it.id in [draftModel.id, testModel.id] }
-        availableBranches.each { it.label == dataModel.label }
-    }
 
     void 'DMSV01 : test validation on valid model'() {
         given:
@@ -1136,7 +1377,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('dataTypes[0].label')
+        invalid.errors.getFieldError('primitiveTypes[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1157,7 +1398,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].label')
+        invalid.errors.getFieldError('dataClasses[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1180,7 +1421,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 2
-        invalid.errors.getFieldError('childDataClasses[0].dataElements[0].label')
+        invalid.errors.getFieldError('dataClasses[0].dataElements[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1203,7 +1444,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('dataTypes[0].referenceClass')
+        invalid.errors.getFieldError('referenceTypes[0].referenceClass')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1223,11 +1464,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 2
+        invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
-        invalid.errors.fieldErrors.any { it.field == 'dataTypes[0].referenceClass.label' }
-        invalid.errors.fieldErrors.any { it.field == 'childDataClasses[0].label' }
+        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrors.any { it.field == 'dataClasses[0].label' }
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1251,7 +1491,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].label')
+        invalid.errors.getFieldError('dataClasses[0].dataClasses[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1277,7 +1517,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].dataElements[0].dataType')
+        invalid.errors.getFieldError('dataClasses[0].dataClasses[0].dataElements[0].dataType')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1303,7 +1543,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].dataClasses[0].label')
+        invalid.errors.getFieldError('dataClasses[0].dataClasses[0].dataClasses[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1331,7 +1571,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].dataClasses[0].dataElements[0].dataType')
+        invalid.errors.getFieldError('dataClasses[0].dataClasses[0].dataClasses[0].dataElements[0].dataType')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1370,5 +1610,6 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         ele2Res
         ele2Res.size() == 0
     }
+
 }
 

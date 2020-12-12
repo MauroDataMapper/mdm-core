@@ -201,8 +201,10 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
 
         and:
         copy.createdBy == editor.emailAddress
-        copy.metadata?.size() == original.metadata?.size()
-        copy.classifiers == original.classifiers
+        !copy.metadata
+        !original.metadata
+        !copy.classifiers
+        !original.classifiers
 
         and:
         copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
@@ -236,8 +238,10 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
 
         and:
         copy.createdBy == editor.emailAddress
-        copy.metadata?.size() == original.metadata?.size()
-        copy.classifiers == original.classifiers
+        !copy.metadata
+        !original.metadata
+        !copy.classifiers
+        !original.classifiers
 
         and:
         copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
@@ -259,7 +263,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         thrown(InternalSpockError)
 
         and:
-        copyModel.errors.getFieldError('dataTypes[0].referenceClass').code == 'nullable'
+        copyModel.errors.getFieldError('referenceTypes[0].referenceClass').code == 'nullable'
 
         and:
         copy.label == original.label

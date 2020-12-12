@@ -92,13 +92,15 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
         checkAndSave(dataSet)
 
         when: 'adding data type with same label to existing'
-        dataSet.addToDataTypes(createValidDomain(domain.label))
-        checkAndSave(dataSet)
+        DataType addtl = createValidDomain(domain.label)
+        dataSet.addToDataTypes(addtl)
+        // dataset is saved so validation happens at DT level
+        checkAndSave(addtl)
 
         then: 'datamodel should not be valid'
         thrown(InternalSpockError)
-        dataSet.errors.allErrors.size() >= 3
-        dataSet.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
+        addtl.errors.allErrors.size() >= 1
+        addtl.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
     }
 
     void 'DT02 : test unique label naming across datamodels'() {
@@ -109,14 +111,14 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
         expect: 'domain is currently valid'
         checkAndSave(domain)
         checkAndSave(dataSet)
-        checkAndSave(dataModel)
+        check(dataModel)
 
         when: 'adding data type with same label as existing to different model'
         dataModel.addToDataTypes(createValidDomain(domain.label))
 
         then:
         checkAndSave(dataSet)
-        checkAndSave(dataModel)
+        check(dataModel)
 
         when: 'adding multiple data types with same label'
         dataModel.addToDataTypes(createValidDomain('a'))
@@ -131,10 +133,8 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
 
         then:
         thrown(InternalSpockError)
-        dataModel.errors.allErrors.size() == 3
+        dataModel.errors.allErrors.size() == 1
         dataModel.errors.fieldErrors.any {it.field.contains('dataTypes') && it.code.contains('unique')}
-        dataModel.errors.fieldErrors.any {it.field.contains('dataTypes[1].label') && it.code.contains('unique')}
-        dataModel.errors.fieldErrors.any {it.field.contains('dataTypes[3].label') && it.code.contains('unique')}
     }
 
     private Class<K> getDomainUnderTest() {

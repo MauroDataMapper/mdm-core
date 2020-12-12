@@ -57,6 +57,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
+        checkAndSave(dataModel)
 
         DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
         DataElement element = new DataElement(createdByUser: admin, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))

@@ -85,7 +85,7 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
         setValidDomainValues()
 
         when:
-        EnumerationValue ev = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key3', value: 'val3', index: 0)
+        EnumerationValue ev = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key3', value: 'val3', idx: 0)
         domain.addToEnumerationValues(ev)
         checkAndSave(domain)
 
@@ -109,7 +109,7 @@ class EnumerationTypeSpec extends DataTypeSpec<EnumerationType> implements Domai
         setValidDomainValues()
 
         when:
-        EnumerationValue ev = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key3', value: 'val3', index: 1)
+        EnumerationValue ev = new EnumerationValue(createdByUser: admin, label: 'ev1', key: 'key3', value: 'val3', idx: 1)
         domain.addToEnumerationValues(ev)
         checkAndSave(domain)
 

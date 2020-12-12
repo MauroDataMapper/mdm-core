@@ -62,7 +62,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         log.debug('Check and save imported model')
         importerService.checkImport(admin, imported, false, false)
         check(imported)
-        dataModelService.saveWithBatching(imported)
+        dataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
         assert dataModelService.count() == 3
         log.debug('DataModel saved')
@@ -71,7 +71,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         dm
     }
 
-    void 'test empty data import'() {
+    void 'I01 : test empty data import'() {
         given:
         setupData()
 
@@ -84,7 +84,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test simple data import'() {
+    void 'I02 : test simple data import'() {
         given:
         setupData()
 
@@ -103,7 +103,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc classifiers import'() {
+    void 'I03 : test inc classifiers import'() {
         given:
         setupData()
 
@@ -120,9 +120,9 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !dm.dataTypes
         !dm.dataClasses
 
-    }    
+    }
 
-    void 'test importing aliases'() {
+    void 'I04 : test importing aliases'() {
 
         given:
         setupData()
@@ -139,7 +139,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         'wobble' in dm.aliases
     }
 
-    void 'test inc metadata data import'() {
+    void 'I05 : test inc metadata data import'() {
         given:
         setupData()
 
@@ -168,7 +168,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.catalogueItemId == dm.id
     }
 
-    void 'test inc annotation data import'() {
+    void 'I06 : test inc annotation data import'() {
         given:
         setupData()
 
@@ -196,7 +196,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         ann.catalogueItemId == dm.id
     }
 
-    void 'test inc single primitive type data import'() {
+    void 'I07 : test inc single primitive type data import'() {
         given:
         setupData()
 
@@ -226,7 +226,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc single primitive type with metadata data import'() {
+    void 'I08 : test inc single primitive type with metadata data import'() {
         given:
         setupData()
 
@@ -266,7 +266,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc single primitive type with annotation data import'() {
+    void 'I09 : test inc single primitive type with annotation data import'() {
         given:
         setupData()
 
@@ -305,7 +305,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc single enumeration type data import'() {
+    void 'I10 : test inc single enumeration type data import'() {
         given:
         setupData()
 
@@ -353,7 +353,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc single enumeration type with metadata data import'() {
+    void 'I11 : test inc single enumeration type with metadata data import'() {
         given:
         setupData()
 
@@ -410,7 +410,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         !val2.annotations
     }
 
-    void 'test inc single empty dataclass data import'() {
+    void 'I12 : test inc single empty dataclass data import'() {
         given:
         setupData()
 
@@ -444,7 +444,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc single empty dataclass with metadata data import'() {
+    void 'I13 : test inc single empty dataclass with metadata data import'() {
         given:
         setupData()
 
@@ -491,7 +491,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc single empty dataclass with annotation data import'() {
+    void 'I14 : test inc single empty dataclass with annotation data import'() {
         given:
         setupData()
 
@@ -537,7 +537,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc single dataclass with empty child dataclass data import'() {
+    void 'I15 : test inc single dataclass with empty child dataclass data import'() {
         given:
         setupData()
 
@@ -590,7 +590,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc single dataclass with data element type data import'() {
+    void 'I16 : test inc single dataclass with data element type data import'() {
         given:
         setupData()
 
@@ -663,7 +663,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test inc dataclass with data element and reference datatype data import'() {
+    void 'I17 : test inc dataclass with data element and reference datatype data import'() {
         given:
         setupData()
 
@@ -747,7 +747,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
-    void 'test load datamodel with datatypes'() {
+    void 'I18 : test load datamodel with datatypes'() {
         given:
         setupData()
 
@@ -784,7 +784,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         EnumerationValue.count() == 20
     }
 
-    void 'test load complete exported datamodel from cancer audit dataloader'() {
+    void 'I19 : test load complete exported datamodel from cancer audit dataloader'() {
         given:
         setupData()
 

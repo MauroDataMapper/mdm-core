@@ -82,19 +82,19 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
 
     @Override
     String getModelFieldName() {
-        null
+        'dataClass'
     }
 
     @Override
     void setModel(DataElement domain, Model model) {
+        domain.dataClass = dataClass
         domain.dataClass.dataModel = model as DataModel
     }
 
     @Override
     void wipeModel() {
         domain.breadcrumbTree = null
-        domain.dataClass.dataModel = null
-        domain.dataClass.breadcrumbTree = null
+        domain.dataClass = null
     }
 
     void 'test unique label naming'() {
