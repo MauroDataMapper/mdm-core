@@ -86,16 +86,19 @@ class DataElementComponentSpec extends ModelItemSpec<DataElementComponent> imple
     }
 
     @Override
+    int getExpectedBaseConstrainedErrorCount() {
+        1
+    }
+
+    @Override
     void wipeModel() {
         domain.breadcrumbTree = null
-        domain.dataClassComponent.breadcrumbTree = null
-        domain.dataClassComponent.dataFlow.target = null
-        domain.dataClassComponent.dataFlow.breadcrumbTree = null
+        domain.dataClassComponent = null
     }
 
     @Override
     void setModel(DataElementComponent domain, Model model) {
-        domain.dataClassComponent.dataFlow.target = model as DataModel
+        domain.dataClassComponent = dataClassComponent
     }
 
     @Override

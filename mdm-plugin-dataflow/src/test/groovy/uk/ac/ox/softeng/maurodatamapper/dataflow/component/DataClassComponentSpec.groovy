@@ -80,15 +80,19 @@ class DataClassComponentSpec extends ModelItemSpec<DataClassComponent> implement
     }
 
     @Override
+    int getExpectedBaseConstrainedErrorCount() {
+        1
+    }
+
+    @Override
     void wipeModel() {
         domain.breadcrumbTree = null
-        domain.dataFlow.target = null
-        domain.dataFlow.breadcrumbTree = null
+        domain.dataFlow = null
     }
 
     @Override
     void setModel(DataClassComponent domain, Model model) {
-        domain.dataFlow.target = model as DataModel
+        domain.dataFlow = dataFlow
     }
 
     @Override
