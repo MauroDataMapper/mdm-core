@@ -132,12 +132,15 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
     }
 
     @Override
+    ReferenceEnumerationType getIndexedWithin() {
+        referenceEnumerationType
+    }
+
+    @Override
     void updateIndices(Integer oldIndex) {
-        //TODO the if statement is a work around for a test failure in ReferenceEnumerationValue.MI01
-        //Code for managing indices should be replaced with that made under mc-9218
-        if (referenceEnumerationType) {
-            referenceEnumerationType.updateReferenceEnumerationValueIndexes(this)
-        }
+        // If adding to an existing ET then we should update indices
+        // Otherwise this will have been done at DM or ET level
+        if (referenceEnumerationType?.id) referenceEnumerationType.updateChildIndexes(this, oldIndex)
     }
 
     ObjectDiff<ReferenceEnumerationValue> diff(ReferenceEnumerationValue otherEnumerationValue) {

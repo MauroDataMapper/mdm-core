@@ -23,10 +23,9 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.core.order.Ordered
 import io.micronaut.core.type.Argument
+import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.OK
-
-import spock.lang.PendingFeature
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderController* Controller: mauroDataMapperServiceProvider
@@ -110,7 +109,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "XmlImporterService",
+    "name": "ReferenceDataXmlImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "XML Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
@@ -119,11 +118,12 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
       
     ],
     "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   },
   {
-    "name": "CsvImporterService",
+    "name": "ReferenceDataCsvImporterService",
     "version": "3.0",
     "displayName": "CSV Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
@@ -132,11 +132,12 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
       
     ],
     "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   },
   {
-    "name": "JsonImporterService",
+    "name": "ReferenceDataJsonImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
@@ -145,7 +146,8 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
       
     ],
     "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   }
 ]''')

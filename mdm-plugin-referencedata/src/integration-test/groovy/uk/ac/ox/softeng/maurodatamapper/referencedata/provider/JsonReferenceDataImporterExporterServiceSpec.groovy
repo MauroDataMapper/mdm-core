@@ -22,10 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataXmlExporterService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataXmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
-import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
+import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
 import com.google.common.base.CaseFormat
 import grails.gorm.transactions.Rollback
@@ -47,7 +47,7 @@ import java.nio.file.Paths
 @Integration
 @Rollback
 @Slf4j
-class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSpec implements XmlValidator {
+class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSpec implements JsonComparer {
 
     @Shared
     Path resourcesPath
@@ -58,19 +58,19 @@ class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSp
     @Shared
     UUID secondExampleReferenceDataModelId
 
-    ReferenceDataXmlImporterService xmlImporterService
-    ReferenceDataXmlExporterService xmlExporterService
+    ReferenceDataJsonImporterService referenceDataJsonImporterService
+    ReferenceDataJsonExporterService referenceDataJsonExporterService
 
     String getImportType() {
-        'xml'
+        'json'
     }
 
-    ReferenceDataXmlImporterService getImporterService() {
-        xmlImporterService
+    ReferenceDataJsonImporterService getImporterService() {
+        referenceDataJsonImporterService
     }
 
-    ReferenceDataXmlExporterService getExporterService() {
-        xmlExporterService
+    ReferenceDataJsonExporterService getExporterService() {
+        referenceDataJsonExporterService
     }
 
     String exportModel(UUID referenceDataModelId) {
@@ -99,7 +99,7 @@ class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSp
         importerService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
-        assert referenceDataModelService.saveWithBatching(imported)
+        assert referenceDataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
         assert referenceDataModelService.count() == 3
 
@@ -128,20 +128,17 @@ class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSp
         secondExampleReferenceDataModelId = buildSecondExampleReferenceDataModel().id
     }    
 
-    void validateExportedModel(String testName, String exportedModel, Map exclude = [:]) {
+    void validateExportedModel(String testName, String exportedModel) {
         assert exportedModel, 'There must be an exported model string'
 
-        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.xml")
+        Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, testName)}.${importType}")
         if (!Files.exists(expectedPath)) {
-            Files.writeString(expectedPath, (prettyPrint(exportedModel)))
+            Files.write(expectedPath, exportedModel.bytes)
             Assert.fail("Expected export file ${expectedPath} does not exist")
         }
-        //validateAndCompareXml(Files.readString(expectedPath), exportedModel.replace(/Mauro Data Mapper/, 'Test Authority'), 'export', exporterService.version)
 
-        String expected = Files.readString(expectedPath)
-        String actual = exportedModel
-          
-        validateAndCompareXml(expected, actual, 'export', exporterService.version)
+        String expectedJson = replaceContentWithMatchers(Files.readString(expectedPath)).replace(/Test Authority/, 'Mauro Data Mapper')
+        verifyJson(expectedJson, exportedModel)
     }
 
     void 'RDM01: test that trying to export when specifying a null referenceDataModelId fails with an exception'() {
@@ -167,7 +164,7 @@ class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSp
         String exported = exportModel(exampleReferenceDataModelId)
 
         then:
-        validateExportedModel('bootstrapExample', exported)
+        validateExportedModel('bootstrapExample', exported.replace(/Test Authority/, 'Mauro Data Mapper'))
 
         //note: importing does not actually save
         when:
@@ -189,7 +186,7 @@ class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSp
         diff.objectsAreIdentical()
     }
 
-    void 'RDM03: test empty data import'() {
+void 'RDM03: test empty data import'() {
         given:
         setupData()
 
@@ -434,11 +431,11 @@ class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSp
         //Reference Data Values (100 rows of 2 columns)
         rdm.referenceDataValues.size() == 200
          
+
         when:
         String exported = exportModel(rdm.id)
 
-        //Note: unable to make Xml copmparison work reliably, so validate only.
         then:
-        validateXml('export', exporterService.version, exported)
-    }
+        validateExportedModel('importReferenceDataModel', exported)
+    }    
 }
