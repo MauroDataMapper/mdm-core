@@ -55,6 +55,10 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
         "dataModels/${getComplexDataModelId()}/dataClasses/${getContentDataClassId()}/dataElements"
     }
 
+    String getDataTypeResourcePath() {
+        "dataModels/${getComplexDataModelId()}/dataTypes"
+    }    
+
     @Override
     String getCopyPath(String fromId) {
         "dataModels/${getSimpleDataModelId()}/dataClasses/${getSimpleDataClassId()}/${getCatalogueItemDomainType()}/" +
@@ -104,6 +108,16 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
     }
 
     @Transactional
+    String getFinalisedSimpleDataModelId() {
+        DataModel.byLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).get().id.toString()
+    }
+
+    @Transactional
+    String getImportedStringDataTypeId() {
+        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getFinalisedSimpleDataModelId()), 'string').get().id.toString()
+    }    
+
+    @Transactional
     String getSimpleDataClassId() {
         DataClass.byDataModelIdAndLabel(Utils.toUuid(simpleDataModelId), 'simple').get().id.toString()
     }
@@ -117,6 +131,15 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
             dataType       : [id: getStringDataTypeId()]
         ]
     }
+
+    Map getValidJsonWithImportedDataType() {
+        [
+            label          : 'Functional Test DataElement With Imported DataType',
+            maxMultiplicity: 1,
+            minMultiplicity: 1,
+            dataType       : [id: getImportedStringDataTypeId()]
+        ]
+    }    
 
     @Override
     Map getInvalidJson() {
@@ -279,7 +302,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
 }'''
     }
 
-@Override
+    @Override
     String getEditorIndexJsonWithImported() {
         '''{
   "count": 3,
@@ -442,6 +465,54 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
     "comment",
     "editDescription"
   ]
+}'''
+    }
+
+    String getExpectedDataElementWithImportedDataTypeJson() {
+      '''{
+  "id": "${json-unit.matches:id}",
+  "domainType": "DataElement",
+  "label": "Functional Test DataElement With Imported DataType",
+  "model": "${json-unit.matches:id}",
+  "breadcrumbs": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Complex Test DataModel",
+      "domainType": "DataModel",
+      "finalised": false
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "content",
+      "domainType": "DataClass"
+    }
+  ],
+  "availableActions": [
+    "show",
+    "comment",
+    "editDescription",
+    "update",
+    "save",
+    "delete"
+  ],
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "dataClass": "${json-unit.matches:id}",
+  "dataType": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "PrimitiveType",
+    "label": "string",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Finalised Simple Test DataModel",
+        "domainType": "DataModel",
+        "finalised": true
+      }
+    ]
+  },
+  "maxMultiplicity": 1,
+  "minMultiplicity": 1
 }'''
     }
 
@@ -1109,4 +1180,294 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
 '''
     }
 */
+    /**
+     * Import a DataElement into a DataClass and check that a DataType import is also created.
+     * Note that we are not testing here that ModelImports are done/not done for different logins -
+     * that is done by separate facet tests.
+     * Check that the imported item appears in relevant endpoints when the ?imported query parameter is used.
+     * Check that the imported item does not appear when the ?imported query parameter is not used.
+     */
+    void "MI02: import DataElement and check that its DataType is listed in the DataType Endpoint"() {
+        given:
+        loginEditor()
+
+        when: "List the resources on the endpoint"
+        GET(getResourcePath(), STRING_ARG, true)
+
+        then: "The correct resources are listed"
+        verifyJsonResponse HttpStatus.OK, getEditorIndexJson()
+    
+        when: "The save action is executed with valid data"
+        POST(getModelImportPath(), getModelImportJson(), MAP_ARG, true)
+
+        then: "The response is correct"
+        verifyResponse HttpStatus.CREATED, response
+        String id = responseBody().id
+        assert responseBody().catalogueItem
+        assert responseBody().importedCatalogueItem
+
+        when: "The ModelImport is requested"
+        GET("${getModelImportPath()}/${id}", STRING_ARG, true)        
+
+        then: "The response is correct"
+        verifyJsonResponse HttpStatus.OK, getExpectedModelImportJson()
+
+        when: "List the resources on the DataType endpoint without showing imported resources"
+        GET(getDataTypeResourcePath(), STRING_ARG, true)
+
+        then: "The correct resources are listed"
+        verifyJsonResponse HttpStatus.OK, getExpectedDataTypeIndexJson()        
+
+        when: "List the resources on the DataType endpoint showing imported resources"
+        GET("${getDataTypeResourcePath()}?imported=true", STRING_ARG, true)
+
+        then: "The correct resources are listed"
+        verifyJsonResponse HttpStatus.OK, getExpectedDataTypeIndexJsonWithImported()       
+
+        when: "Create a new DataElement with the imported DataType"    
+        POST(getResourcePath(), getValidJsonWithImportedDataType(), MAP_ARG, true)
+
+        then: "DataElement is created correctly"
+        verifyResponse HttpStatus.CREATED, response
+        String newDataElementId = responseBody().id
+
+        when: "Get the DataElement created with the imported DataType"
+        GET("${getResourcePath()}/${newDataElementId}", STRING_ARG, true)
+
+        then: "The DataElement is shown correctly"
+        verifyJsonResponse HttpStatus.OK, getExpectedDataElementWithImportedDataTypeJson()  
+
+        cleanup:
+        DELETE("${getModelImportPath()}/${id}", MAP_ARG, true) 
+        verifyResponse HttpStatus.NO_CONTENT, response
+    }    
+
+    String getExpectedDataTypeIndexJson() {
+      '''{
+  "count": 4,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "integer",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceType",
+      "label": "child",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "referenceClass": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataClass",
+        "label": "child",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "parent",
+            "domainType": "DataClass"
+          }
+        ],
+        "parentDataClass": "${json-unit.matches:id}"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "EnumerationType",
+      "label": "yesnounknown",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "enumerationValues": [
+        {
+          "index": 2,
+          "id": "${json-unit.matches:id}",
+          "key": "U",
+          "value": "Unknown",
+          "category": null
+        },
+        {
+          "index": 0,
+          "id": "${json-unit.matches:id}",
+          "key": "Y",
+          "value": "Yes",
+          "category": null
+        },
+        {
+          "index": 1,
+          "id": "${json-unit.matches:id}",
+          "key": "N",
+          "value": "No",
+          "category": null
+        }
+      ]
+    }
+  ]
+}'''
+    }
+
+    String getExpectedDataTypeIndexJsonWithImported() {
+      '''{
+  "count": 5,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "integer",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceType",
+      "label": "child",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "referenceClass": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataClass",
+        "label": "child",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "parent",
+            "domainType": "DataClass"
+          }
+        ],
+        "parentDataClass": "${json-unit.matches:id}"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "EnumerationType",
+      "label": "yesnounknown",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "enumerationValues": [
+        {
+          "index": 2,
+          "id": "${json-unit.matches:id}",
+          "key": "U",
+          "value": "Unknown",
+          "category": null
+        },
+        {
+          "index": 0,
+          "id": "${json-unit.matches:id}",
+          "key": "Y",
+          "value": "Yes",
+          "category": null
+        },
+        {
+          "index": 1,
+          "id": "${json-unit.matches:id}",
+          "key": "N",
+          "value": "No",
+          "category": null
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Finalised Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": true
+        }
+      ]
+    }
+  ]
+}'''
+    }    
+
 }
