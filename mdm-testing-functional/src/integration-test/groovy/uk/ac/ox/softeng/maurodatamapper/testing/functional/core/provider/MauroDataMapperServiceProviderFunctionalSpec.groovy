@@ -162,7 +162,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "XmlExporterService",
+    "name": "ReferenceDataXmlExporterService",
     "version": "3.0",
     "displayName": "XML Reference Data Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
@@ -176,7 +176,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "JsonExporterService",
+    "name": "ReferenceDataJsonExporterService",
     "version": "3.0",
     "displayName": "JSON Reference Data Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
@@ -222,7 +222,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "XmlImporterService",
+    "name": "ReferenceDataXmlImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "XML Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
@@ -231,11 +231,12 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
       
     ],
     "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   },
   {
-    "name": "JsonImporterService",
+    "name": "ReferenceDataJsonImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
@@ -244,11 +245,12 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
       
     ],
     "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   },  
   {
-    "name": "CsvImporterService",
+    "name": "ReferenceDataCsvImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "CSV Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
@@ -257,7 +259,8 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
       
     ],
     "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   },          
   {
