@@ -89,6 +89,21 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
         "dataModels/${getComplexDataModelId()}/modelImports"
     }
 
+    @Transactional
+    String getImportedDataClassId() {
+        DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id, 'simple').get().id.toString()
+    }   
+
+    @Transactional
+    String getImportedDataModelId() {
+        DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id.toString()
+    }     
+
+    @Transactional
+    String getResourcePathForFinalisedSimpleDataModel() {
+        "dataModels/${getImportedDataModelId()}/dataTypes"
+    }     
+
     @Override
     String getExpectedModelImportJson() {
       '''{
@@ -423,7 +438,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
         assert body.lastUpdated
     }
 
-    void "E03 : Test the save action correctly persists an instance for enumeration type (as editor)"() {
+    void "E03a: Test the save action correctly persists an instance for enumeration type (as editor)"() {
         given:
         loginEditor()
         Map validJson = [
@@ -489,7 +504,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
         removeValidIdObject(id)
     }
 
-    void "E03 : Test the save action correctly persists an instance for reference type (as editor)"() {
+    void "E03b: Test the save action correctly persists an instance for reference type (as editor)"() {
         given:
         loginEditor()
 
@@ -552,7 +567,254 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
         removeValidIdObject(id)
     }
 
-    void "E03 : Test the save action correctly persists an instance for model data type (as editor)"() {
+    void "E03c: Test the save action correctly persists an instance for reference type when the DataClass is imported (as editor)"() {
+        given:
+        loginEditor()
+
+        
+        //TODO Currently this test fails because the ReferenceType is created. Add a check so that ReferenceType can only
+        //be created on a DataClass which is directly owned by or imported into the DataModel
+        //when: "The save action is executed using valid data with the imported DataClass which has not yet been imported"
+        //POST('', [
+        //    domainType    : 'ReferenceType',
+        //    label         : 'Functional Reference Type on Imported DataClass',
+        //    referenceClass: getImportedDataClassId()
+        //])
+
+        //then: "The response is correct"
+        //verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
+
+        when: "A DataClass is imported into the DataModel"
+        POST(getModelImportPath(), [
+            importedCatalogueItemDomainType: "DataClass",
+            importedCatalogueItemId: getImportedDataClassId()
+        ], MAP_ARG, true)
+
+        then: "The response is correct"
+        verifyResponse HttpStatus.CREATED, response
+        String modelImportId = responseBody().id
+
+        when: "The save action is executed using valid data with the imported DataClass"
+        POST('', [
+            domainType    : 'ReferenceType',
+            label         : 'Functional Reference Type on Imported DataClass',
+            referenceClass: getImportedDataClassId()
+        ])
+
+        then: "The response is correct"
+        verifyResponse HttpStatus.CREATED, response
+        String id = responseBody().id
+        assert responseBody().domainType == 'ReferenceType'
+        assert responseBody().label == 'Functional Reference Type on Imported DataClass'
+        assert responseBody().referenceClass.id == getImportedDataClassId()
+
+        when:
+        GET(id, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, '''{
+  "id": "${json-unit.matches:id}",
+  "domainType": "ReferenceType",
+  "label": "Functional Reference Type on Imported DataClass",
+  "model": "${json-unit.matches:id}",
+  "breadcrumbs": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Complex Test DataModel",
+      "domainType": "DataModel",
+      "finalised": false
+    }
+  ],
+  "availableActions": [
+    "show",
+    "comment",
+    "editDescription",
+    "update",
+    "save",
+    "delete"
+  ],
+  "lastUpdated": "${json-unit.matches:offsetDateTime}",
+  "referenceClass": {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "simple",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "Finalised Simple Test DataModel",
+        "domainType": "DataModel",
+        "finalised": true
+      }
+    ]
+  }
+}'''
+
+        when: "List the DataTypes on the importing DataModel"
+        GET("${getResourcePath()}", STRING_ARG, true)
+
+        then: "The ReferenceType is included in the list"
+        verifyJsonResponse HttpStatus.OK, '''{
+  "count": 5,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "integer",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceType",
+      "label": "child",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "referenceClass": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataClass",
+        "label": "child",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test DataModel",
+            "domainType": "DataModel",
+            "finalised": false
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "parent",
+            "domainType": "DataClass"
+          }
+        ],
+        "parentDataClass": "${json-unit.matches:id}"
+      }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "EnumerationType",
+      "label": "yesnounknown",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "enumerationValues": [
+        {
+          "index": 2,
+          "id": "${json-unit.matches:id}",
+          "key": "U",
+          "value": "Unknown",
+          "category": null
+        },
+        {
+          "index": 1,
+          "id": "${json-unit.matches:id}",
+          "key": "N",
+          "value": "No",
+          "category": null
+        },
+        {
+          "index": 0,
+          "id": "${json-unit.matches:id}",
+          "key": "Y",
+          "value": "Yes",
+          "category": null
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "ReferenceType",
+      "label": "Functional Reference Type on Imported DataClass",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test DataModel",
+          "domainType": "DataModel",
+          "finalised": false
+        }
+      ],
+      "referenceClass": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataClass",
+        "label": "simple",
+        "model": "${json-unit.matches:id}",
+        "breadcrumbs": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "Finalised Simple Test DataModel",
+            "domainType": "DataModel",
+            "finalised": true
+          }
+        ]
+      }
+    }
+  ]
+}'''
+
+        when: "List the DataTypes on the DataModel from which the DataClass was imported"
+        GET("${getResourcePathForFinalisedSimpleDataModel()}?imported=true", STRING_ARG, true)
+
+        then: "The ReferenceType is not unintentionally included in the list"
+        verifyJsonResponse HttpStatus.OK, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Finalised Simple Test DataModel",
+          "domainType": "DataModel",
+          "finalised": true
+        }
+      ]
+    }
+  ]
+}'''
+        cleanup:     
+        removeValidIdObject(id)
+    }    
+
+    void "E03d: Test the save action correctly persists an instance for model data type (as editor)"() {
         given:
         UUID modelId = UUID.randomUUID()
         loginEditor()
