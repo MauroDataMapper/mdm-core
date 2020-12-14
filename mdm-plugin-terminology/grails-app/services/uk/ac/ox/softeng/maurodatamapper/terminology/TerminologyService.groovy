@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -150,19 +151,19 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    Terminology saveWithBatching(Terminology terminology) {
+    Terminology saveModelWithContent(Terminology terminology) {
         log.debug('Saving {} using batching', terminology.label)
 
         if (terminology.classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(terminology.classifiers)
         }
+        save(failOnError: true, validate: false, flush: true, terminology)
+    }
 
-        save(terminology)
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        terminology
+    @Override
+    Terminology saveModelNewContentOnly(Terminology model) {
+        save(failOnError: true, validate: false, flush: true, model)
     }
 
     @Override
@@ -270,18 +271,18 @@ class TerminologyService extends ModelService<Terminology> {
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(terminology.label, 'main') > 0
+        boolean draftModelOnMainBranchForLabel =
+            countAllByLabelAndBranchNameAndNotFinalised(terminology.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
 
-        Terminology newMainBranchModelVersion
         if (!draftModelOnMainBranchForLabel) {
-            newMainBranchModelVersion = copyTerminology(terminology,
-                                                        user,
-                                                        copyPermissions,
-                                                        terminology.label,
-                                                        'main',
-                                                        additionalArguments.throwErrors as boolean,
-                                                        userSecurityPolicyManager,
-                                                        true)
+            Terminology newMainBranchModelVersion = copyTerminology(terminology,
+                                                                    user,
+                                                                    copyPermissions,
+                                                                    terminology.label,
+                                                                    VersionAwareConstraints.DEFAULT_BRANCH_NAME,
+                                                                    additionalArguments.throwErrors as boolean,
+                                                                    userSecurityPolicyManager,
+                                                                    true)
             setTerminologyIsNewBranchModelVersionOfTerminology(newMainBranchModelVersion, terminology, user)
 
             if (additionalArguments.moveDataFlows) {
@@ -289,30 +290,33 @@ class TerminologyService extends ModelService<Terminology> {
                 //            moveTargetDataFlows(terminology, newMainBranchModelVersion)
             }
 
-            if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
-        }
-        Terminology newBranchModelVersion
-        if (branchName != 'main') {
-            newBranchModelVersion = copyTerminology(terminology,
-                                                    user,
-                                                    copyPermissions,
-                                                    terminology.label,
-                                                    branchName,
-                                                    additionalArguments.throwErrors as boolean,
-                                                    userSecurityPolicyManager,
-                                                    true)
-
-            setTerminologyIsNewBranchModelVersionOfTerminology(newBranchModelVersion, terminology, user)
-
-            if (additionalArguments.moveDataFlows) {
-                throw new ApiNotYetImplementedException('DMSXX', 'Terminology moving of DataFlows')
-                //            moveTargetDataFlows(terminology, newBranchModelVersion)
+            // If the branch name isn't main and the main branch doesnt exist then we need to validate and save it
+            // otherwise return the new model
+            if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                return newMainBranchModelVersion
+            } else {
+                if (newMainBranchModelVersion.validate()) saveModelWithContent(newMainBranchModelVersion)
+                else throw new ApiInvalidModelException('TSXX', 'Copied (newMainBranchModelVersion) Terminology is invalid',
+                                                        newMainBranchModelVersion.errors, messageSource)
             }
+        }
+        Terminology newBranchModelVersion = copyTerminology(terminology,
+                                                            user,
+                                                            copyPermissions,
+                                                            terminology.label,
+                                                            branchName,
+                                                            additionalArguments.throwErrors as boolean,
+                                                            userSecurityPolicyManager,
+                                                            true)
 
-            if (newBranchModelVersion.validate()) save(newBranchModelVersion, flush: true, validate: false)
+        setTerminologyIsNewBranchModelVersionOfTerminology(newBranchModelVersion, terminology, user)
+
+        if (additionalArguments.moveDataFlows) {
+            throw new ApiNotYetImplementedException('DMSXX', 'Terminology moving of DataFlows')
+            //            moveTargetDataFlows(terminology, newBranchModelVersion)
         }
 
-        newBranchModelVersion ?: newMainBranchModelVersion
+        newBranchModelVersion
     }
 
     @Override
@@ -325,8 +329,6 @@ class TerminologyService extends ModelService<Terminology> {
                                                     Version.nextMajorVersion(terminology.documentationVersion), terminology.branchName,
                                                     additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setTerminologyIsNewDocumentationVersionOfTerminology(newDocVersion, terminology, user)
-
-        if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
         newDocVersion
     }
 
@@ -339,8 +341,6 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology newForkModel =
             copyTerminology(terminology, user, copyPermissions, label, additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setTerminologyIsNewForkModelOfTerminology(newForkModel, terminology, user)
-
-        if (newForkModel.validate()) newForkModel.save(flush: true, validate: false)
         newForkModel
     }
 
@@ -356,10 +356,11 @@ class TerminologyService extends ModelService<Terminology> {
 
     Terminology copyTerminology(Terminology original, User copier, boolean copyPermissions, String label, Version copyVersion, String branchName,
                                 boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         Terminology copy = new Terminology(author: original.author,
                                            organisation: original.organisation,
                                            finalised: false, deleted: false, documentationVersion: copyVersion,
-                                           folder: original.folder, authority: original.authority, branchName: branchName
+                                           folder: folder, authority: original.authority, branchName: branchName
         )
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label
@@ -697,23 +698,24 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     /**
-    * When importing a terminology, do checks and setting of required values as follows:
-    * (1) Set the createdBy of the terminology to be the importing user
-    * (2) Always set authority to the default authority, overriding any authority that is set in the import data
-    * (3) Check facets
-    * (4) For each terminologyRelationshipType, set the terminology and if not provided the createdBy
-    * (5) For each term, if not provided set the createdBy
-    * (6) For each termRelationship, if not provided set the createdBy
-    *
-    * @param importingUser The importing user, who will be used to set createdBy
-    * @param terminology   The terminology to be imported
-    */
+     * When importing a terminology, do checks and setting of required values as follows:
+     * (1) Set the createdBy of the terminology to be the importing user
+     * (2) Always set authority to the default authority, overriding any authority that is set in the import data
+     * (3) Check facets
+     * (4) For each terminologyRelationshipType, set the terminology and if not provided the createdBy
+     * (5) For each term, if not provided set the createdBy
+     * (6) For each termRelationship, if not provided set the createdBy
+     *
+     * @param importingUser The importing user, who will be used to set createdBy
+     * @param terminology The terminology to be imported
+     */
     void checkImportedTerminologyAssociations(User importingUser, Terminology terminology) {
         terminology.createdBy = importingUser.emailAddress
 
-        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the import.
+        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the
+        // import.
         terminology.authority = authorityService.getDefaultAuthority()
-        
+
         checkFacetsAfterImportingCatalogueItem(terminology)
 
         if (terminology.termRelationshipTypes) {
@@ -731,8 +733,8 @@ class TerminologyService extends ModelService<Terminology> {
 
         terminology.getAllTermRelationships().each { tr ->
             tr.createdBy = tr.createdBy ?: terminology.createdBy
-        } 
+        }
 
         log.debug("Terminology associations checked")
-    }    
+    }
 }

@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyImporterProviderService
 
+import org.springframework.beans.factory.annotation.Autowired
+
 class TerminologyController extends ModelController<Terminology> {
 
     static responseFormats = ['json', 'xml']
@@ -30,7 +32,7 @@ class TerminologyController extends ModelController<Terminology> {
 
     @Autowired(required = false)
     Set<TerminologyExporterProviderService> exporterProviderServices
-    
+
     @Autowired(required = false)
     Set<TerminologyImporterProviderService> importerProviderServices
 

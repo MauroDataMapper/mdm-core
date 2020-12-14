@@ -74,6 +74,7 @@ class Terminology implements Model<Terminology> {
         documentationVersion type: VersionUserType
         modelVersion type: VersionUserType
         folder cascade: 'none'
+        authority fetch: 'join'
         terms cascade: 'all-delete-orphan'
         termRelationshipTypes cascade: 'all-delete-orphan'
     }
