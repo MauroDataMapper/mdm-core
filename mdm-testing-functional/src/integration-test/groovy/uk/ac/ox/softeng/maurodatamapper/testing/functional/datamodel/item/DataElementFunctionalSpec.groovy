@@ -1196,6 +1196,14 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
 
         then: "The correct resources are listed"
         verifyJsonResponse HttpStatus.OK, getEditorIndexJson()
+
+        //TODO Prevent a DataElement being created with a DataType that is neither imported into or directly 
+        //owned by the DataModel to which the DataElement is being saved.
+        //when: "Create a new DataElement with the DataType from another model which has not been imported"    
+        //POST(getResourcePath(), getValidJsonWithImportedDataType(), MAP_ARG, true)
+
+        //then: "DataElement is created correctly"
+        //verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response          
     
         when: "The save action is executed with valid data"
         POST(getModelImportPath(), getModelImportJson(), MAP_ARG, true)
