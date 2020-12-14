@@ -35,13 +35,12 @@ import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
+import spock.lang.Shared
 
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
-import spock.lang.Shared
 
 /**
  * @since 17/09/2020
@@ -122,7 +121,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         codeSetImporterService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
-        assert codeSetService.saveWithBatching(imported)
+        assert codeSetService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
         assert codeSetService.count() == 2
 
