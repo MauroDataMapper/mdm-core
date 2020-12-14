@@ -169,7 +169,19 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "CodeSet"
-      }
+      },
+      {
+        "domainType": "DataModel",
+        "label": "Finalised Example Test DataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard",
+        "modelVersion": "1.0.0"
+      }      
     ]
   }
 ]'''
@@ -310,7 +322,19 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "CodeSet"
-      }
+      },
+      {
+        "domainType": "DataModel",
+        "label": "Finalised Example Test DataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard",
+        "modelVersion": "1.0.0"
+      }      
     ]
   },
   {

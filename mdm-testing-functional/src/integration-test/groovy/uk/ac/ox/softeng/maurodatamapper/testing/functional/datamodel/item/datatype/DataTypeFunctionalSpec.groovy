@@ -76,7 +76,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     @Transactional
     @Override
     String getImportedCatalogueItemId() {
-        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id, 'string').get().id.toString()
+        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, 'string').get().id.toString()
     }
 
     @Override
@@ -91,12 +91,12 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
 
     @Transactional
     String getImportedDataClassId() {
-        DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id, 'simple').get().id.toString()
+        DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, BootstrapModels.FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL).get().id.toString()
     }   
 
     @Transactional
     String getImportedDataModelId() {
-        DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id.toString()
+        DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id.toString()
     }     
 
     @Transactional
@@ -121,7 +121,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     "breadcrumbs": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "Finalised Simple Test DataModel",
+        "label": "Finalised Example Test DataModel",
         "domainType": "DataModel",
         "finalised": true
       }
@@ -380,7 +380,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
       "breadcrumbs": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "Finalised Simple Test DataModel",
+          "label": "Finalised Example Test DataModel",
           "domainType": "DataModel",
           "finalised": true
         }
@@ -637,12 +637,12 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
   "referenceClass": {
     "id": "${json-unit.matches:id}",
     "domainType": "DataClass",
-    "label": "simple",
+    "label": "first class on example finalised model",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "Finalised Simple Test DataModel",
+        "label": "Finalised Example Test DataModel",
         "domainType": "DataModel",
         "finalised": true
       }
@@ -772,12 +772,12 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
       "referenceClass": {
         "id": "${json-unit.matches:id}",
         "domainType": "DataClass",
-        "label": "simple",
+        "label": "first class on example finalised model",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
             "id": "${json-unit.matches:id}",
-            "label": "Finalised Simple Test DataModel",
+            "label": "Finalised Example Test DataModel",
             "domainType": "DataModel",
             "finalised": true
           }
@@ -802,7 +802,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
       "breadcrumbs": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "Finalised Simple Test DataModel",
+          "label": "Finalised Example Test DataModel",
           "domainType": "DataModel",
           "finalised": true
         }

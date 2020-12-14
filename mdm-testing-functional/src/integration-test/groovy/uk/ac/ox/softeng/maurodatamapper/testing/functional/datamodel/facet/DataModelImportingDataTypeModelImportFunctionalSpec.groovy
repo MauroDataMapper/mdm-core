@@ -51,12 +51,12 @@ class DataModelImportingDataTypeModelImportFunctionalSpec extends CatalogueItemM
 
     @Transactional
     String getImportedDataModelId() {
-        DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).id.toString()
+        DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id.toString()
     }
 
     @Transactional
     String getImportedDataTypeId() {
-        DataModel.findByLabel(BootstrapModels.FINALISED_SIMPLE_DATAMODEL_NAME).findDataTypeByLabel('string').id.toString()
+        DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).findDataTypeByLabel('string').id.toString()
     }   
 
     @Transactional
@@ -108,7 +108,7 @@ class DataModelImportingDataTypeModelImportFunctionalSpec extends CatalogueItemM
     "breadcrumbs": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "Finalised Simple Test DataModel",
+        "label": "Finalised Example Test DataModel",
         "domainType": "DataModel",
         "finalised": true
       }

@@ -42,7 +42,8 @@ class BootstrapModels {
 
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
-    public static final String FINALISED_SIMPLE_DATAMODEL_NAME = 'Finalised Simple Test DataModel'
+    public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
+    public static final String FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL = 'first class on example finalised model'
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
@@ -170,14 +171,14 @@ class BootstrapModels {
     }
 
     static DataModel buildAndSaveFinalisedSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
-        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: FINALISED_SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
+        DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: FINALISED_EXAMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
 
 
         checkAndSave(messageSource, simpleDataModel)
 
         PrimitiveType primitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
         DataElement dataElement1 = new DataElement(createdBy: DEVELOPMENT, label: 'data element 1', minMultiplicity: 1, maxMultiplicity: 1, dataType: primitiveType1)         
-        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'simple')
+        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL)
 
         dataClass.addToDataElements(dataElement1)
 

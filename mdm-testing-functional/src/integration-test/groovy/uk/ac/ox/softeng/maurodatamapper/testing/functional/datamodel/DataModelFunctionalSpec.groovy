@@ -218,7 +218,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 4,
+  "count": 5,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -272,7 +272,16 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
       "type": "Data Asset",
       "branchName": "main",
       "documentationVersion": "1.0.0"
-    }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Finalised Example Test DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "modelVersion": "1.0.0"
+    }    
   ]
 }'''
     }
