@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.test.functional
 
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemFacetFunctionalSpec
 
 import groovy.util.logging.Slf4j
@@ -55,7 +55,7 @@ abstract class CatalogueItemReferenceSummaryMetadataFunctionalSpec extends Catal
     Map getValidJson() {
         [
             label              : 'Some interesting summary',
-            summaryMetadataType: SummaryMetadataType.NUMBER
+            summaryMetadataType: ReferenceSummaryMetadataType.NUMBER
         ]
     }
 

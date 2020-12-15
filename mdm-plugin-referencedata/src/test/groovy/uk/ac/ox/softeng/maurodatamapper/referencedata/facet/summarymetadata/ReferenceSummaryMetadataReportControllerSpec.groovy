@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -52,7 +52,7 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
         dateTime = OffsetDateTime.now()
 
         referenceSummaryMetadata = new ReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3',
-                                              summaryMetadataType: SummaryMetadataType.STRING)
+                                                                summaryMetadataType: ReferenceSummaryMetadataType.STRING)
         domain.createdBy = StandardEmailAddress.UNIT_TEST
         domain.reportValue = 'a report value'
         domain.reportDate = dateTime

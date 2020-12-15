@@ -42,7 +42,7 @@ class ReferenceSummaryMetadataSpec extends CreatorAwareSpec<ReferenceSummaryMeta
 
     void 'test no catalogue item'() {
         given:
-        domain.summaryMetadataType = SummaryMetadataType.NUMBER
+        domain.summaryMetadataType = ReferenceSummaryMetadataType.NUMBER
         domain.createdBy = StandardEmailAddress.UNIT_TEST
 
         when:
@@ -57,14 +57,14 @@ class ReferenceSummaryMetadataSpec extends CreatorAwareSpec<ReferenceSummaryMeta
 
     @Override
     void setValidDomainOtherValues() {
-        domain.summaryMetadataType = SummaryMetadataType.NUMBER
+        domain.summaryMetadataType = ReferenceSummaryMetadataType.NUMBER
         domain.label = 'test'
         domain.catalogueItem = db
     }
 
     @Override
     void verifyDomainOtherConstraints(ReferenceSummaryMetadata domain) {
-        assert domain.summaryMetadataType == SummaryMetadataType.NUMBER
+        assert domain.summaryMetadataType == ReferenceSummaryMetadataType.NUMBER
         assert domain.catalogueItem.id
         assert domain.catalogueItemDomainType == ReferenceDataModel.simpleName
         assert domain.catalogueItem.id == db.id

@@ -63,12 +63,16 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
         checkAndSave(referenceDataModel)
 
         referenceDataModel.
-            addToReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 1', summaryMetadataType: SummaryMetadataType.MAP)
+            addToReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 1',
+                                          summaryMetadataType: ReferenceSummaryMetadataType.MAP)
 
         referenceDataModel.
-            addToReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description', summaryMetadataType: SummaryMetadataType.NUMBER)
-        
-        ReferenceSummaryMetadata referenceSummaryMetadata = new ReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3', summaryMetadataType: SummaryMetadataType.STRING)
+            addToReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 2', description: 'a description',
+                                          summaryMetadataType: ReferenceSummaryMetadataType.NUMBER)
+
+        ReferenceSummaryMetadata referenceSummaryMetadata = new ReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST,
+                                                                                         label: 'summary metadata 3',
+                                                                                         summaryMetadataType: ReferenceSummaryMetadataType.STRING)
             .addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST, reportDate: OffsetDateTime.now(), reportValue: 'some value')
         
         referenceDataModel.addToReferenceSummaryMetadata(referenceSummaryMetadata)

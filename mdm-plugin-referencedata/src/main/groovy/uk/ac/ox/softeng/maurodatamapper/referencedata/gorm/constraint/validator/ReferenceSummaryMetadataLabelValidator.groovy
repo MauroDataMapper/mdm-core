@@ -17,26 +17,28 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator
 
-
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringValidator
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 
 /**
- * @since 27/02/2020
+ * @since 19/04/2018
  */
-class EnumerationValueKeyValidator extends UniqueStringValidator<ReferenceEnumerationValue> {
+class ReferenceSummaryMetadataLabelValidator extends UniqueStringValidator<ReferenceSummaryMetadata> {
 
-    EnumerationValueKeyValidator(ReferenceEnumerationValue object) {
+    ReferenceSummaryMetadataLabelValidator(ReferenceSummaryMetadata object) {
         super(object)
     }
 
     @Override
     boolean objectParentIsNotSaved() {
-        !object.referenceEnumerationType?.ident()
+        !object.catalogueItemId
     }
 
     @Override
     boolean valueIsNotUnique(String value) {
-        object.referenceEnumerationType.countReferenceEnumerationValuesByKey(value) > 1
+        if (object.catalogueItem?.referenceSummaryMetadata) {
+            if (object.catalogueItem.referenceSummaryMetadata.count {it.label == value} > 1) return true
+        }
+        false
     }
 }

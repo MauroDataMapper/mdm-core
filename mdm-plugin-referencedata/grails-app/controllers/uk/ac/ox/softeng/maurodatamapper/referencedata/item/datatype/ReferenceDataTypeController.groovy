@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters.DataTypeValueConverter
+import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.converters.ReferenceModelDataTypeValueConverter
 
 import grails.gorm.transactions.Transactional
 import grails.web.http.HttpHeaders
@@ -141,7 +141,7 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
     @Transactional
     protected ReferenceDataType createResource() {
         try {
-            DataTypeValueConverter converter = new DataTypeValueConverter()
+            ReferenceModelDataTypeValueConverter converter = new ReferenceModelDataTypeValueConverter()
             def body = getObjectToBind()
             if (converter.canConvert(body)) {
                 ReferenceDataType resource = converter.convert(body)

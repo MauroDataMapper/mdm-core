@@ -29,7 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.EnumerationValueKeyValidator
+import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.ReferenceEnumerationValueKeyValidator
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -61,7 +61,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
-        key blank: false, validator: {val, obj -> new EnumerationValueKeyValidator(obj).isValid(val)}
+        key blank: false, validator: { val, obj -> new ReferenceEnumerationValueKeyValidator(obj).isValid(val) }
         value blank: false
         category nullable: true, blank: false
     }

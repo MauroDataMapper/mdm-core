@@ -1,7 +1,7 @@
-import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 
 model {
-    List<DataElementSimilarityResult> dataElementSimilarityResultList
+    List<ReferenceDataElementSimilarityResult> dataElementSimilarityResultList
 }
 json {
     links tmpl.'/similarityResult/similarityResult'(dataElementSimilarityResultList)

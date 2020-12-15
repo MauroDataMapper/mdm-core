@@ -42,7 +42,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDat
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
-import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -618,26 +618,27 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         )
     }
 
-    List<DataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel, ReferenceDataModel otherReferenceDataModel,
-                                                                int maxResults) {
+    List<ReferenceDataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel,
+                                                                         ReferenceDataModel otherReferenceDataModel,
+                                                                         int maxResults) {
         referenceDataModel.referenceDataElements.collect { de ->
             referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(otherReferenceDataModel, de, maxResults)
         }
     }
 
 
-/*    Map<UUID, Long> obtainChildKnowledge(List<ReferenceDataModel> parents) {
-        if (!parents) return [:]
-        DetachedCriteria<ReferenceDataModel> criteria = new DetachedCriteria<DataClass>(DataClass)
-            .isNull('parentDataClass')
-            .inList('dataModel', parents)
-            .projections {
-                groupProperty('dataModel.id')
-                count()
-            }.order('dataModel')
-        criteria.list().collectEntries { [it[0], it[1]] }
-    }
-*/
+    /*    Map<UUID, Long> obtainChildKnowledge(List<ReferenceDataModel> parents) {
+            if (!parents) return [:]
+            DetachedCriteria<ReferenceDataModel> criteria = new DetachedCriteria<DataClass>(DataClass)
+                .isNull('parentDataClass')
+                .inList('dataModel', parents)
+                .projections {
+                    groupProperty('dataModel.id')
+                    count()
+                }.order('dataModel')
+            criteria.list().collectEntries { [it[0], it[1]] }
+        }
+    */
 
     @Override
     boolean hasTreeTypeModelItems(ReferenceDataModel dataModel, boolean forDiff) {

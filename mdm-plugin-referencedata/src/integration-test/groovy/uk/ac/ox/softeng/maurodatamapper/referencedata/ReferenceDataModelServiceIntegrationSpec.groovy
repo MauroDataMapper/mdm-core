@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -812,14 +812,14 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         ReferenceDataModel dataModel = referenceDataModelService.get(id)
 
         when:
-        List<DataElementSimilarityResult> results = referenceDataModelService.suggestLinksBetweenModels(referenceDataModel, dataModel, 5)
+        List<ReferenceDataElementSimilarityResult> results = referenceDataModelService.suggestLinksBetweenModels(referenceDataModel, dataModel, 5)
 
         then:
         results.size() == 2
 
         when:
-        DataElementSimilarityResult ele1Res = results.find { it.source.label == 'Organisation name' }
-        DataElementSimilarityResult ele2Res = results.find { it.source.label == 'Organisation code' }
+        ReferenceDataElementSimilarityResult ele1Res = results.find { it.source.label == 'Organisation name' }
+        ReferenceDataElementSimilarityResult ele2Res = results.find { it.source.label == 'Organisation code' }
 
         then:
         ele1Res

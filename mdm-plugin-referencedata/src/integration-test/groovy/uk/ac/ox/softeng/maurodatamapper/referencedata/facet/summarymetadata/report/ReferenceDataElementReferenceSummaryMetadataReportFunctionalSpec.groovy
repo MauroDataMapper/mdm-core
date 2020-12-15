@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -82,7 +82,8 @@ class ReferenceDataElementReferenceSummaryMetadataReportFunctionalSpec extends C
         referenceDataElement = new ReferenceDataElement(label: 'Functional Test DataElement', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                       referenceDataModel: referenceDataModel, referenceDataType: referenceDataType).save(flush: true)
         summaryMetadata = new ReferenceSummaryMetadata(label: 'Functional Test Summary Metadata', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                              catalogueItem: referenceDataElement, summaryMetadataType: SummaryMetadataType.NUMBER).save(flush: true)
+                                                       catalogueItem: referenceDataElement, summaryMetadataType: ReferenceSummaryMetadataType.NUMBER).
+            save(flush: true)
         sessionFactory.currentSession.flush()
     }
 

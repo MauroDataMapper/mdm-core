@@ -29,7 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.DataTypeBindingHelper
+import uk.ac.ox.softeng.maurodatamapper.referencedata.databinding.ReferenceModelDataTypeBindingHelper
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.ReferenceDataElementLabelValidator
@@ -56,7 +56,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
 
     ReferenceDataModel referenceDataModel
     @BindUsing({ obj, source ->
-        new DataTypeBindingHelper().getPropertyValue(obj, 'referenceDataType', source)
+        new ReferenceModelDataTypeBindingHelper().getPropertyValue(obj, 'referenceDataType', source)
     })
     ReferenceDataType referenceDataType
 

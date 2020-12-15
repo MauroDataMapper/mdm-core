@@ -17,28 +17,28 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringValidator
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 
 /**
  * @since 19/04/2018
  */
-class SummaryMetadataLabelValidator extends UniqueStringValidator<ReferenceSummaryMetadata> {
+class ReferenceDataTypeLabelValidator extends UniqueStringValidator<ReferenceDataType> {
 
-    SummaryMetadataLabelValidator(ReferenceSummaryMetadata object) {
+    ReferenceDataTypeLabelValidator(ReferenceDataType object) {
         super(object)
     }
 
     @Override
     boolean objectParentIsNotSaved() {
-        !object.catalogueItemId
+        !object.referenceDataModel?.ident()
     }
 
     @Override
     boolean valueIsNotUnique(String value) {
-        if (object.catalogueItem?.referenceSummaryMetadata) {
-            if (object.catalogueItem.referenceSummaryMetadata.count {it.label == value} > 1) return true
-        }
-        false
+        // We can expect multiple DTs to be added at the same time to an already saved DM,
+        // therefore we have to take the hit of getting all DTs and doing an in memory search
+        object.referenceDataModel.countReferenceDataTypesByLabel(value) > 1
     }
 }

@@ -19,26 +19,24 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator
 
 
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringValidator
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 
 /**
- * @since 19/04/2018
+ * @since 27/02/2020
  */
-class DataTypeLabelValidator extends UniqueStringValidator<ReferenceDataType> {
+class ReferenceEnumerationValueKeyValidator extends UniqueStringValidator<ReferenceEnumerationValue> {
 
-    DataTypeLabelValidator(ReferenceDataType object) {
+    ReferenceEnumerationValueKeyValidator(ReferenceEnumerationValue object) {
         super(object)
     }
 
     @Override
     boolean objectParentIsNotSaved() {
-        !object.referenceDataModel?.ident()
+        !object.referenceEnumerationType?.ident()
     }
 
     @Override
     boolean valueIsNotUnique(String value) {
-        // We can expect multiple DTs to be added at the same time to an already saved DM,
-        // therefore we have to take the hit of getting all DTs and doing an in memory search
-        object.referenceDataModel.countReferenceDataTypesByLabel(value) > 1
+        object.referenceEnumerationType.countReferenceEnumerationValuesByKey(value) > 1
     }
 }

@@ -29,7 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMeta
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -334,7 +334,9 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         copy
     }
 
-    DataElementSimilarityResult findAllSimilarReferenceDataElementsInReferenceDataModel(ReferenceDataModel referenceDataModelToSearch, ReferenceDataElement referenceDataElementToCompare, maxResults = 5) {
+    ReferenceDataElementSimilarityResult findAllSimilarReferenceDataElementsInReferenceDataModel(ReferenceDataModel referenceDataModelToSearch,
+                                                                                                 ReferenceDataElement referenceDataElementToCompare,
+                                                                                                 maxResults = 5) {
 
         EntityManager entityManager = sessionFactory.createEntityManager()
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager)
@@ -357,7 +359,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
             )
             .createQuery()
 
-        SimilarityResult similarityResult = new DataElementSimilarityResult(referenceDataElementToCompare)
+        SimilarityResult similarityResult = new ReferenceDataElementSimilarityResult(referenceDataElementToCompare)
 
         FullTextQuery query = fullTextEntityManager
             .createFullTextQuery(moreLikeThisQuery, ReferenceDataElement)
