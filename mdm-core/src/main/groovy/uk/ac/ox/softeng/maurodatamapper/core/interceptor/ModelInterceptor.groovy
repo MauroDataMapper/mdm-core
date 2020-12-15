@@ -72,7 +72,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             if (actionName == 'changeFolder') {
                 boolean canReadModel = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())
 
-                if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(getSecuredClass(), getId())) {
+                if (!currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName)) {
                     return forbiddenOrNotFound(canReadModel, getSecuredClass(), getId())
                 }
 

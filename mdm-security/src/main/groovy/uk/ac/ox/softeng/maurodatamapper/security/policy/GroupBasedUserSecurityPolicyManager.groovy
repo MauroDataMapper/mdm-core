@@ -42,6 +42,7 @@ import groovy.util.logging.Slf4j
 
 import java.util.function.Predicate
 
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CHANGE_FOLDER_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_CONTAINER_ADMIN_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.CONTAINER_EDITOR_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.DELETE_ACTION
@@ -321,6 +322,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                 case UPDATE_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
                     return role ? !role.isFinalisedModel() : false
+                case CHANGE_FOLDER_ACTION:
+                    //Changing folder is like an update, but without checking if the model is finalised
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)                
                 case MERGE_INTO_ACTION:
                 case SAVE_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
