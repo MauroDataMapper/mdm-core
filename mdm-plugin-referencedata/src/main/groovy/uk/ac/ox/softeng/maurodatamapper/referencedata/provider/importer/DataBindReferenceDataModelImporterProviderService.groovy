@@ -19,9 +19,9 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
-import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -88,7 +88,7 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
 
         ReferenceDataModel referenceDataModel = new ReferenceDataModel()
         log.debug('Binding map to new ReferenceDataModel instance')
-        DataBindingUtils.bindObjectToInstance(referenceDataModel, referenceDataModelMap, null, ['id', 'domainType', 'lastUpdated'], null)
+        DataBindingUtils.bindObjectToInstance(referenceDataModel, referenceDataModelMap, null, getImportBlacklistedProperties(), null)
 
         /**
          * Bind each Reference Data Value. Somehow the JsonSluper and XmlSlurper produce different results. For Json, it is sufficient to do
@@ -99,10 +99,10 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
          */
         mappedReferenceDataValues.each { rdv ->
             ReferenceDataElement referenceDataElement = new ReferenceDataElement()
-            DataBindingUtils.bindObjectToInstance(referenceDataElement, rdv.referenceDataElement, null, ['id', 'domainType', 'lastUpdated'], null)
+            DataBindingUtils.bindObjectToInstance(referenceDataElement, rdv.referenceDataElement, null, getImportBlacklistedProperties(), null)
 
             ReferenceDataValue referenceDataValue = new ReferenceDataValue()
-            DataBindingUtils.bindObjectToInstance(referenceDataValue, rdv, null, ['id', 'domainType', 'lastUpdated'], null)
+            DataBindingUtils.bindObjectToInstance(referenceDataValue, rdv, null, getImportBlacklistedProperties(), null)
             referenceDataValue.referenceDataElement = referenceDataElement
 
             referenceDataModel.addToReferenceDataValues(referenceDataValue)

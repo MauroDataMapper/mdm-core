@@ -19,11 +19,9 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.web.databinding.DataBindingUtils
 import groovy.util.logging.Slf4j
@@ -78,7 +76,7 @@ abstract class DataBindCodeSetImporterProviderService<T extends CodeSetFileImpor
 
         CodeSet codeSet = new CodeSet()
         log.debug('Binding map to new CodeSet instance')
-        DataBindingUtils.bindObjectToInstance(codeSet, codeSetMap, null, ['id', 'domainType', 'lastUpdated'], null)
+        DataBindingUtils.bindObjectToInstance(codeSet, codeSetMap, null, getImportBlacklistedProperties(), null)
 
         codeSetService.checkImportedCodeSetAssociations(currentUser, codeSet, codeSetMap)
 

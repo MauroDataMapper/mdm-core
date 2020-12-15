@@ -19,11 +19,11 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.web.databinding.DataBindingUtils
 import groovy.util.logging.Slf4j
@@ -78,7 +78,7 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
 
         Terminology terminology = new Terminology()
         log.debug('Binding map to new Terminology instance')
-        DataBindingUtils.bindObjectToInstance(terminology, terminologyMap, null, ['id', 'domainType', 'lastUpdated'], null)
+        DataBindingUtils.bindObjectToInstance(terminology, terminologyMap, null, getImportBlacklistedProperties(), null)
 
         bindTermRelationships(terminology, terminologyMap.termRelationships)
 
