@@ -9,6 +9,6 @@ json {
 
     name rule.name
     if (rule.description) description rule.description
-
     lastUpdated rule.lastUpdated
+    if (rule.ruleRepresentations) ruleRepresentations g.render(rule.ruleRepresentations)
 }

@@ -31,6 +31,7 @@ import io.micronaut.http.HttpResponse
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
@@ -80,6 +81,10 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     String getResourcePath() {
         "${getCatalogueItemDomainType()}/${getCatalogueItemId()}/rules/${getRuleId()}/representations"
     }
+
+    String getRuleResourcePath() {
+        "${getCatalogueItemDomainType()}/${getCatalogueItemId()}/rules"
+    }    
 
     @Override
     String getEditsFullPath(String id) {
@@ -135,6 +140,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
         verifyForbidden response
     }
 
+    @Override
     void verifySameValidDataCreationResponse() {
         verifyResponse CREATED, response
     }
@@ -189,4 +195,47 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
     } 
+
+    String getRuleShowJson() {
+        '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "name": "Functional Test Rule",
+      "description": "Functional Test Description",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "ruleRepresentations": [
+        {
+          "id": "${json-unit.matches:id}",
+          "language": "sql",
+          "representation": "A > 0 AND A < 5",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ]
+    }
+  ]
+}'''
+    }
+
+    void 'A03a: Test the Rule endpoint also lists rule representations'() {
+        given:
+        loginAdmin()
+
+        when:
+        POST(getSavePath(), validJson, MAP_ARG, true)
+
+        then:
+        verifyResponse CREATED, response
+        String ruleRepresentationId = response.body().id
+
+        when: 'Get rules'
+        GET(getRuleResourcePath(), STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, getRuleShowJson()
+
+        cleanup:
+        removeValidIdObject(ruleRepresentationId)
+    }    
 }
