@@ -16,12 +16,12 @@ include(
     'mdm-plugin-referencedata',
     )
 
-if(hasProperty('isJenkins')) {
-    logger.quiet('Setting local build cache')
-    buildCache {
-        local {
-            directory = new File(rootDir, 'build-cache')
-            removeUnusedEntriesAfterDays = 30
-        }
-    }
-}
+//if(hasProperty('isJenkins')) {
+//    logger.quiet('Setting local build cache')
+//    buildCache {
+//        local {
+//            directory = new File(rootDir, 'build-cache')
+//            removeUnusedEntriesAfterDays = 30
+//        }
+//    }
+//}
