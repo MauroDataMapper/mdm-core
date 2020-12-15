@@ -84,7 +84,7 @@ class RuleRepresentation implements CreatorAware, Diffable<RuleRepresentation>, 
 
     @Override
     String getEditLabel() {
-        "RuleRepresentation:${language}:${representation} on Rule ${rule.getEditLabel()}"
+        "RuleRepresentation:${language} on Rule ${rule.getEditLabel()}"
     }
 
     @Override

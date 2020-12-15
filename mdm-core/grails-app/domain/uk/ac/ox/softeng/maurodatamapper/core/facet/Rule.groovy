@@ -82,7 +82,7 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
 
     @Override
     String getEditLabel() {
-        "Rule:${name}:${description}"
+        "Rule:${name}"
     }
 
     @Override
