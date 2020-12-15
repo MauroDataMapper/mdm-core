@@ -34,7 +34,6 @@ import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
-import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import java.nio.charset.Charset
@@ -186,7 +185,6 @@ class JsonTerminologyImporterExporterServiceSpec extends BaseTerminologyIntegrat
         diff.objectsAreIdentical()
     }
 
-    @PendingFeature(reason = 'Need to check the importing changes around relationships')
     void 'test exporting and reimporting the complex bootstrapped terminology'() {
         given:
         setupData()

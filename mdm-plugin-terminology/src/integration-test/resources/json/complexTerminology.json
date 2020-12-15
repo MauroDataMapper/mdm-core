@@ -40,19 +40,19 @@
     ],
     "annotations": [
       {
-          "id": "${json-unit.matches:id}",
-          "createdBy": "development@test.com",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "label": "test annotation 1"
+        "id": "${json-unit.matches:id}",
+        "createdBy": "development@test.com",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "label": "test annotation 1"
       },
       {
-          "id": "${json-unit.matches:id}",
-          "createdBy": "development@test.com",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "label": "test annotation 2",
-          "description": "with description"
+        "id": "${json-unit.matches:id}",
+        "createdBy": "development@test.com",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "label": "test annotation 2",
+        "description": "with description"
       }
-  ],
+    ],
     "author": "Complex Terminology Author",
     "organisation": "Complex Terminology Organisation",
     "documentationVersion": "1.0.0",
@@ -64,12 +64,12 @@
     },
     "termRelationshipTypes": [
       {
-          "id": "${json-unit.matches:id}",
-          "label": "broaderThan",
-          "displayLabel": "Broader Than",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "parentalRelationship": true,
-          "childRelationship": false
+        "id": "${json-unit.matches:id}",
+        "label": "broaderThan",
+        "displayLabel": "Broader Than",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "parentalRelationship": true,
+        "childRelationship": false
       },
       {
         "id": "${json-unit.matches:id}",
@@ -94,7 +94,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "parentalRelationship": false,
         "childRelationship": false
-      }      
+      }
     ],
     "terms": [
       {
@@ -104,6 +104,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT00",
         "definition": "Complex Test Term 00",
+        "depth": 1,
         "url": "https://example.com/ctt00"
       },
       {
@@ -113,6 +114,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT01",
         "definition": "Complex Test Term 01",
+        "depth": 1,
         "url": "https://example.com/ctt01"
       },
       {
@@ -122,6 +124,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT02",
         "definition": "Complex Test Term 02",
+        "depth": 1,
         "url": "https://example.com/ctt02"
       },
       {
@@ -131,6 +134,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT03",
         "definition": "Complex Test Term 03",
+        "depth": 1,
         "url": "https://example.com/ctt03"
       }
     ],
@@ -144,7 +148,7 @@
         "relationshipType": "broaderThan",
         "sourceTerm": "CTT02",
         "targetTerm": "CTT03"
-      }    
+      }
     ]
   },
   "exportMetadata": {

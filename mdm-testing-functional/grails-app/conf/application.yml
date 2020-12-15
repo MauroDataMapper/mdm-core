@@ -127,7 +127,7 @@ grails:
 hibernate:
     search:
         default.indexBase: '/tmp/lucene/testing/functional'
-    generate_statistics: true
+#    generate_statistics: true
 
 ---
 dataSource:
