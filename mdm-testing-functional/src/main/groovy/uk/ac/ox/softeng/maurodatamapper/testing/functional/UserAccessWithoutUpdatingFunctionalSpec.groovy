@@ -650,10 +650,13 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
         then:
         verifySameValidDataCreationResponse()
+        String id2 = response.body()?.id
 
         cleanup:
         removeValidIdObject(id1)
-        removeValidIdObject(response.body()?.id) // not expecting anything, but just in case
+        if (id2) {
+            removeValidIdObject(id2) // not expecting anything, but just in case
+        }
     }
 
     void 'A04 : Test the delete action correctly deletes an instance (as admin)'() {
