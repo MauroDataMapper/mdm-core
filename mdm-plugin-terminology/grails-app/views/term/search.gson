@@ -6,5 +6,5 @@ model {
 }
 json {
     count paginatedLuceneResult.count
-    items tmpl.'/catalogueItem/catalogueItem'(paginatedLuceneResult.results ?: [])
+    items tmpl.term(paginatedLuceneResult.results ?: [])
 }
