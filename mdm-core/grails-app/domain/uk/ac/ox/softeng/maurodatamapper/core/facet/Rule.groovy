@@ -110,6 +110,11 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
     static DetachedCriteria<Metadata> withFilter(DetachedCriteria<Rule> criteria, Map filters) {
         if (filters.name) criteria = criteria.ilike('name', "%${filters.name}%")
         if (filters.description) criteria = criteria.ilike('description', "%${filters.description}%")
+        if (filters.language) criteria = criteria.where {
+            ruleRepresentations {
+                ilike('language', "%${filters.language}%")
+            }
+        }        
         criteria
     }
 }
