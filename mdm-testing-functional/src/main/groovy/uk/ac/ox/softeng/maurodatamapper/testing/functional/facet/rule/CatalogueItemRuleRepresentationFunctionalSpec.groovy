@@ -147,12 +147,12 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
 
     @Override
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[RuleRepresentation:sql:A > 0 AND A < 5 on Rule Rule:Functional Test Rule:Functional Test Description] added to component \[.+?]/
+        ~/\[RuleRepresentation:sql on Rule Rule:Functional Test Rule] added to component \[.+?]/
     }
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[RuleRepresentation:sql:A > 0 AND A < 6 on Rule Rule:Functional Test Rule:Functional Test Description] changed properties \[representation]/
+        ~/\[RuleRepresentation:sql on Rule Rule:Functional Test Rule] changed properties \[representation]/
     }
 
     @Override

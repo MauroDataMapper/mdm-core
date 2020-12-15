@@ -113,12 +113,12 @@ abstract class CatalogueItemRuleFunctionalSpec extends UserAccessFunctionalSpec 
 
     @Override
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[Rule:Functional Test Rule Name:Functional Test Rule Description] added to component \[.+?]/
+        ~/\[Rule:Functional Test Rule Name] added to component \[.+?]/
     }
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[Rule:Functional Test Rule Name:Functional Test Rule Description Updated] changed properties \[description]/
+        ~/\[Rule:Functional Test Rule Name] changed properties \[description]/
     }
 
     @Override
