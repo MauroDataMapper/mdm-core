@@ -61,7 +61,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         importerService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
-        assert dataModelService.saveWithBatching(imported)
+        assert dataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
         assert dataModelService.count() == 3
 

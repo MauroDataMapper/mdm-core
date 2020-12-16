@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
 import grails.testing.mixin.integration.Integration
@@ -92,18 +93,9 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         response.status() in [NO_CONTENT, NOT_FOUND]
     }
 
-    boolean skipE21() {
-        return false;
+    boolean mergingIsNotAvailable() {
+        false
     }
-
-    boolean skipE22() {
-        return false;
-    }    
-
-    boolean skipE24() {
-        return false;
-    }
-
 
     void 'L16 : Test finalising Model (as not logged in)'() {
         given:
@@ -445,7 +437,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
-        responseBody().branchName == 'main'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         !responseBody().modelVersion
 
         when:
@@ -518,7 +510,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse OK, response
-        responseBody().branchName == 'main'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         !responseBody().modelVersion
 
         cleanup:
@@ -576,7 +568,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         when: 'logged in as editor'
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
 
         then:
         verifyResponse CREATED, response
@@ -664,9 +656,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     }
 
     void 'E21 : test finding latest version of a Model<T> (as editor)'() {
-        if (skipE21()) {
-            return
-        }
         /*
         id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -674,7 +663,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         given:
         String id = getValidFinalisedId()
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String expectedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
@@ -682,7 +671,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String newBranchId = responseBody().id
         PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -737,9 +726,10 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     }
 
     void 'E22 : test finding merge difference of two Model<T> (as editor)'() {
-        if (skipE22()) {
+        if (mergingIsNotAvailable()) {
             return
-        }        
+        }
+
         given:
         String id = getValidFinalisedId()
         loginEditor()
@@ -796,7 +786,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         given:
         String id = getValidFinalisedId()
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String finalisedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
@@ -804,7 +794,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String newBranchId = responseBody().id
         PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$finalisedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -828,9 +818,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     }
 
     void 'E24 : test getting all draft models (as editor)'() {
-        if (skipE24()) {
-            return
-        }        
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -838,7 +825,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         given:
         String id = getValidFinalisedId()
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String finalisedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
@@ -846,7 +833,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String newBranchId = responseBody().id
         PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$finalisedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -875,7 +862,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         // a source and draft main branch
         String id = getValidFinalisedId()
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -901,11 +888,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
     }
 
     void 'E25 : test merging object diff into a draft main model'() {
+        if (mergingIsNotAvailable()) {
+            return
+        }
+
         given:
         // a source and draft main branch
         String id = getValidFinalisedId()
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -934,7 +925,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         verifyResponse OK, response
         responseBody()
         responseBody().id == target
-        responseBody().branchName == 'main'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         responseBody().description == 'modifiedDescriptionSource'
 
         when:
@@ -946,7 +937,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         verifyResponse OK, response
         responseBody()
         responseBody().id == target
-        responseBody().branchName == 'main'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         responseBody().description == 'modifiedDescriptionSource'
 
         when:

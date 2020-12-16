@@ -597,7 +597,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('dataTypes[0].label')
+        invalid.errors.getFieldError('primitiveTypes[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -617,7 +617,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].label')
+        invalid.errors.getFieldError('dataClasses[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -639,7 +639,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 2
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 2
-        invalid.errors.getFieldError('childDataClasses[0].dataElements[0].label')
+        invalid.errors.getFieldError('dataClasses[0].dataElements[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -661,7 +661,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('dataTypes[0].referenceClass')
+        invalid.errors.getFieldError('referenceTypes[0].referenceClass')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -680,11 +680,10 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         invalid.hasErrors()
-        invalid.errors.errorCount == 2
+        invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
-        invalid.errors.fieldErrorCount == 2
-        invalid.errors.fieldErrors.any { it.field == 'dataTypes[0].referenceClass.label' }
-        invalid.errors.fieldErrors.any { it.field == 'childDataClasses[0].label' }
+        invalid.errors.fieldErrorCount == 1
+        invalid.errors.fieldErrors.any { it.field == 'dataClasses[0].label' }
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -707,7 +706,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].label')
+        invalid.errors.getFieldError('dataClasses[0].dataClasses[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -732,7 +731,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[1].dataClasses[0].dataElements[0].dataType')
+        invalid.errors.getFieldError('dataClasses[0].dataClasses[0].dataElements[0].dataType')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -757,7 +756,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].dataClasses[0].label')
+        invalid.errors.getFieldError('dataClasses[0].dataClasses[0].dataClasses[0].label')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -784,7 +783,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.getFieldError('childDataClasses[0].dataClasses[0].dataClasses[0].dataElements[0].dataType')
+        invalid.errors.getFieldError('dataClasses[0].dataClasses[0].dataClasses[0].dataElements[0].dataType')
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)

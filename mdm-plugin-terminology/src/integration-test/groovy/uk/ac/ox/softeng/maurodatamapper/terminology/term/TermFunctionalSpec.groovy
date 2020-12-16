@@ -332,7 +332,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT1",
+      "definition": "Complex Test Term 1"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -346,7 +348,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT10",
+      "definition": "Complex Test Term 10"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -360,9 +364,11 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT100",
+      "definition": "Complex Test Term 100"
     },
-   {
+    {
       "id": "${json-unit.matches:id}",
       "domainType": "Term",
       "label": "CTT11: Complex Test Term 11",
@@ -374,7 +380,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT11",
+      "definition": "Complex Test Term 11"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -388,7 +396,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT12",
+      "definition": "Complex Test Term 12"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -402,7 +412,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT13",
+      "definition": "Complex Test Term 13"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -416,7 +428,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT14",
+      "definition": "Complex Test Term 14"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -430,7 +444,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT15",
+      "definition": "Complex Test Term 15"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -444,7 +460,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT16",
+      "definition": "Complex Test Term 16"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -458,7 +476,9 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
           "domainType": "Terminology",
           "finalised": false
         }
-      ]
+      ],
+      "code": "CTT17",
+      "definition": "Complex Test Term 17"
     }
   ]
 }'''

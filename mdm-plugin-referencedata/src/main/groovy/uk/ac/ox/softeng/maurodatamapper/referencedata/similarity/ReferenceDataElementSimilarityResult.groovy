@@ -15,23 +15,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
+package uk.ac.ox.softeng.maurodatamapper.referencedata.similarity
 
-enum SummaryMetadataType {
+import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 
-    MAP,
-    NUMBER,
-    STRING
+/**
+ * @since 07/04/2020
+ */
+class ReferenceDataElementSimilarityResult extends SimilarityResult<ReferenceDataElement> {
 
-    /*
-    static SummaryMetadataType findForLabel(String label) {
-        values().find {it.label.equalsIgnoreCase(label)}
+    ReferenceDataElementSimilarityResult(ReferenceDataElement source) {
+        super(source)
     }
-
-    static SummaryMetadataType findFromMap(Map map) {
-        map['summaryMetadataType'] instanceof SummaryMetadataType ? map['summaryMetadataType'] as SummaryMetadataType
-                                                                  : findForLabel(map['summaryMetadataType'] as String)
-    }
-
-     */
 }

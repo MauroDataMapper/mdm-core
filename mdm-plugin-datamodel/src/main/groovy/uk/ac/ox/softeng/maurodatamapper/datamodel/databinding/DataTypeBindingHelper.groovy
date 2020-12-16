@@ -34,9 +34,13 @@ class DataTypeBindingHelper implements BindingHelper<DataType> {
 
     @Override
     DataType getPropertyValue(Object obj, String propertyName, DataBindingSource source) {
-        if (converter.canConvert(source.getPropertyValue(propertyName))) {
-            return converter.convert(source.getPropertyValue(propertyName)) as DataType
+        getPropertyValue(source.getPropertyValue(propertyName))
+    }
+
+    DataType getPropertyValue(Object sourceToBind) {
+        if (converter.canConvert(sourceToBind)) {
+            return converter.convert(sourceToBind) as DataType
         }
-        source.getPropertyValue(propertyName) as DataType
+        sourceToBind as DataType
     }
 }

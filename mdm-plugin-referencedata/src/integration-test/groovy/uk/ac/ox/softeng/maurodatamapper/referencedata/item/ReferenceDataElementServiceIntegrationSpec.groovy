@@ -17,12 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
@@ -258,7 +257,8 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         ReferenceDataElement original = referenceDataElementService.get(id)
 
         when:
-        DataElementSimilarityResult result = referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(complexReferenceDataModel, original)
+        ReferenceDataElementSimilarityResult result =
+            referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(complexReferenceDataModel, original)
 
         then:
         result.size() == 3

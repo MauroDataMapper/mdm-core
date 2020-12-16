@@ -17,14 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyXmlImporterService
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
@@ -35,13 +34,12 @@ import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import org.junit.Assert
+import spock.lang.Shared
 
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
-import spock.lang.Shared
 
 /**
  * @since 18/09/2020
@@ -120,7 +118,7 @@ class XmlTerminologyImporterExporterServiceSpec extends BaseTerminologyIntegrati
         terminologyImporterService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
-        assert terminologyService.saveWithBatching(imported)
+        assert terminologyService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
         assert terminologyService.count() == 3
 

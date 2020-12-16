@@ -44,7 +44,7 @@
         <exp:exportedOn>2020-10-30T10:38:11.274761Z</exp:exportedOn>
         <exp:exporter>
             <exp:namespace>uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter</exp:namespace>
-            <exp:name>XmlExporterService</exp:name>
+            <exp:name>ReferenceDataXmlExporterService</exp:name>
             <exp:version>3.0</exp:version>
         </exp:exporter>
     </exp:exportMetadata>

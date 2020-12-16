@@ -147,7 +147,7 @@ class PrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<P
     void "test list"() {
 
         when:
-        List<PrimitiveType> primitiveTypeList = service.list(max: 2, offset: 1)
+        List<PrimitiveType> primitiveTypeList = service.list(max: 2, offset: 1, sort: 'label')
 
         then:
         primitiveTypeList.size() == 2
@@ -156,7 +156,7 @@ class PrimitiveTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<P
         primitiveTypeList[0].label == 'string'
 
         and:
-        primitiveTypeList[1].label == 'integer'
+        primitiveTypeList[1].label == 'varchar'
     }
 
     void "test count"() {

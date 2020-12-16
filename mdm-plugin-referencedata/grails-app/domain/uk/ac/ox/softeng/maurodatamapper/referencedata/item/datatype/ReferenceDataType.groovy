@@ -31,7 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataAware
-import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.DataTypeLabelValidator
+import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.ReferenceDataTypeLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -70,7 +70,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
-        label validator: {val, obj -> new DataTypeLabelValidator(obj).isValid(val)}
+        label validator: { val, obj -> new ReferenceDataTypeLabelValidator(obj).isValid(val) }
         domainType size: 1..30
     }
 

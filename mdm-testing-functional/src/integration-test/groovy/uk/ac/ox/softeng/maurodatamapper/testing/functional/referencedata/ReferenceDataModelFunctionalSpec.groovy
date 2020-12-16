@@ -233,19 +233,9 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     }
 
     @Override
-    boolean skipE21() {
-        return true;
+    boolean mergingIsNotAvailable() {
+        true
     }
-
-    @Override
-    boolean skipE22() {
-        return true;
-    }    
-
-    @Override
-    boolean skipE24() {
-        return true;
-    }    
 
     @Override
     String getEditorIndexJson() {
@@ -257,6 +247,8 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
       "domainType": "ReferenceDataModel",
       "label": "Second Simple Reference Data Model",
       "type": "ReferenceDataModel",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
@@ -270,6 +262,8 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
       "domainType": "ReferenceDataModel",
       "label": "Simple Reference Data Model",
       "type": "ReferenceDataModel",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
@@ -279,7 +273,8 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
       ]
     }
   ]
-}'''
+}
+'''
     }
 
     @Override
@@ -322,32 +317,32 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         then:
         verifyJsonResponse OK, '''[
   {
-    "providerType": "ReferenceDataModelExporter",
+    "name": "ReferenceDataJsonExporterService",
+    "version": "3.0",
+    "displayName": "JSON Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+    "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "displayName": "XML Reference Data Exporter",
-    "fileExtension": "xml",
-    "name": "XmlExporterService",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
-    "allowsExtraMetadataKeys": true,
-    "canExportMultipleDomains": false,
-    "version": "${json-unit.matches:version}",
-    "fileType": "text/xml"
+    "providerType": "ReferenceDataModelExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
+    "canExportMultipleDomains": false
   },
   {
-    "providerType": "ReferenceDataModelExporter",
+    "name": "ReferenceDataXmlExporterService",
+    "version": "3.0",
+    "displayName": "XML Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+    "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "displayName": "JSON Reference Data Exporter",
-    "fileExtension": "json",
-    "name": "JsonExporterService",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
-    "allowsExtraMetadataKeys": true,
-    "canExportMultipleDomains": false,
-    "version": "${json-unit.matches:version}",
-    "fileType": "text/json"
+    "providerType": "ReferenceDataModelExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
+    "canExportMultipleDomains": false
   }
 ]'''
     }
@@ -367,33 +362,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         then: 'The response is Unauth'
         verifyJsonResponse OK, '''[
   {
-    "name": "XmlImporterService",
-    "version": "3.0",
-    "displayName": "XML Reference Data Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
-  },
-  {
-    "name": "CsvImporterService",
-    "version": "3.0",
-    "displayName": "CSV Reference Data Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
-    "allowsExtraMetadataKeys": false,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
-  },
-  {
-    "name": "JsonImporterService",
+    "name": "ReferenceDataJsonImporterService",
     "version": "3.0",
     "displayName": "JSON Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
@@ -402,7 +371,36 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
       
     ],
     "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "ReferenceDataXmlImporterService",
+    "version": "3.0",
+    "displayName": "XML Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "ReferenceDataCsvImporterService",
+    "version": "3.0",
+    "displayName": "CSV Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   }
 ]'''
@@ -415,7 +413,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         String id = getValidId()
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0")
 
         then:
         verifyNotFound response, id
@@ -430,7 +428,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginAuthenticated()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0")
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0")
 
         then:
         verifyNotFound response, id
@@ -445,7 +443,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -467,7 +465,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
-      "name": "JsonExporterService",
+      "name": "ReferenceDataJsonExporterService",
       "version": "3.0"
     }
   }
@@ -482,7 +480,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0',
              [referenceDataModelIds: [id, getSimpleDataModelId()]]
         )
 
@@ -498,7 +496,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         String id = getValidId()
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0',
              [referenceDataModelIds: [id, getSimpleDataModelId()]]
         )
 
@@ -515,7 +513,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginReader()
-        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0',
              [referenceDataModelIds: [id, getSimpleDataModelId()]], STRING_ARG
         )
 
@@ -539,7 +537,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
-      "name": "JsonExporterService",
+      "name": "ReferenceDataJsonExporterService",
       "version": "3.0"
     }
   }
@@ -553,7 +551,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -562,7 +560,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -585,7 +583,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -595,7 +593,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginAuthenticated()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -618,7 +616,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -628,7 +626,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginReader()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -651,7 +649,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -661,7 +659,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/3.0', [
             finalised                      : false,
             modelName                      : 'Functional Test Import',
             folderId                       : testFolderId.toString(),
@@ -691,7 +689,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         given:
         String id = getValidId()
         loginReader()
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
         logout()
@@ -701,7 +699,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
         when:
         loginEditor()
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/JsonImporterService/3.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataJsonImporterService/3.0', [
             finalised                      : false,
             folderId                       : testFolderId.toString(),
             importAsNewDocumentationVersion: true,
@@ -744,12 +742,12 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         loginEditor()
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/CsvImporterService/3.0', [
-            finalised                       : true,
-            folderId                        : testFolderId.toString(),
-            modelName                       : 'FT Test Reference Data Model',
-            importAsNewDocumentationVersion : false,
-            importFile                      : [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer/ReferenceDataCsvImporterService/3.0', [
+            finalised                      : true,
+            folderId                       : testFolderId.toString(),
+            modelName                      : 'FT Test Reference Data Model',
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
                 fileName    : 'FT Import',
                 fileType    : 'CSV',
                 fileContents: loadTestFile('simpleReferenceData.csv').toList()
@@ -762,7 +760,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/JsonExporterService/3.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter/ReferenceDataJsonExporterService/3.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, new String(loadTestFile('expectedExport.json'))

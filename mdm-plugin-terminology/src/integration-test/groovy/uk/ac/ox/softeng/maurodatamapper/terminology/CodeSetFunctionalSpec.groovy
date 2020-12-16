@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -880,7 +881,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: "Major"])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String expectedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
@@ -888,7 +889,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String newBranchId = responseBody().id
         PUT("$expectedId/finalise", [versionChangeType: "Major"])
         verifyResponse OK, response
-        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -927,7 +928,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: "Major"])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String expectedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
@@ -935,7 +936,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         String newBranchId = responseBody().id
         PUT("$expectedId/finalise", [versionChangeType: "Major"])
         verifyResponse OK, response
-        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -1012,7 +1013,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -1039,7 +1040,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -1107,7 +1108,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         PUT("terminologies/$baseTerminology/finalise", [versionChangeType: 'Major'], MAP_ARG, true)
         verifyResponse OK, response
-        PUT("terminologies/$baseTerminology/newBranchModelVersion", [branchName: 'main'], MAP_ARG, true)
+        PUT("terminologies/$baseTerminology/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME], MAP_ARG, true)
         verifyResponse CREATED, response
         String targetTerminology = responseBody().id
         PUT("terminologies/$baseTerminology/newBranchModelVersion", [branchName: 'source'], MAP_ARG, true)
@@ -1127,7 +1128,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         PUT("$baseCodeSet/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$baseCodeSet/newBranchModelVersion", [branchName: 'main'])
+        PUT("$baseCodeSet/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$baseCodeSet/newBranchModelVersion", [branchName: 'source'])

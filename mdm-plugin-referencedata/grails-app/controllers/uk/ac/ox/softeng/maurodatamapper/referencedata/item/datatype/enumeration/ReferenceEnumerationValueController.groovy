@@ -49,7 +49,7 @@ class ReferenceEnumerationValueController extends CatalogueItemController<Refere
 
     @Override
     protected void serviceInsertResource(ReferenceEnumerationValue resource) {
-        referenceEnumerationValueService.save(flush: true, resource)
+        referenceEnumerationValueService.save(DEFAULT_SAVE_ARGS, resource)
     }
 
     @Override

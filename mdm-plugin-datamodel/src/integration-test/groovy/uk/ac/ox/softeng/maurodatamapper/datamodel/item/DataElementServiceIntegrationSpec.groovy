@@ -57,11 +57,13 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: admin, label: 'string'))
         dataModel.addToDataTypes(new PrimitiveType(createdByUser: editor, label: 'integer'))
+        checkAndSave(dataModel)
 
         DataClass simple = new DataClass(createdByUser: admin, label: 'dc1')
         DataElement element = new DataElement(createdByUser: admin, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))
         simple.addToDataElements(element)
         dataModel.addToDataClasses(simple)
+        checkAndSave(dataModel)
 
         DataClass content = new DataClass(createdByUser: editor, label: 'content', description: 'A dataclass with elements')
         content.addToDataElements(createdByUser: editor, label: 'ele1', dataType: dataModel.findDataTypeByLabel('string'))

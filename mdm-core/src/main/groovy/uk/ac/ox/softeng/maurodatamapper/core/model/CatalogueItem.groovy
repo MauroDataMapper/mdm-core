@@ -85,6 +85,10 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         label
     }
 
+    void updateChildIndexes(ModelItem updated, Integer oldIndex) {
+        // no-op
+    }
+
     static <T extends CatalogueItem> ObjectDiff catalogueItemDiffBuilder(Class<T> diffClass, T lhs, T rhs) {
         String lhsId = lhs.id ?: "Left:Unsaved_${lhs.domainType}"
         String rhsId = rhs.id ?: "Right:Unsaved_${rhs.domainType}"

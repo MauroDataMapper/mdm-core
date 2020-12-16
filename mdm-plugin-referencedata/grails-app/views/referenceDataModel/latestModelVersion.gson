@@ -1,0 +1,8 @@
+import uk.ac.ox.softeng.maurodatamapper.util.Version
+
+model {
+    Version version
+}
+json {
+    modelVersion version.toString()
+}

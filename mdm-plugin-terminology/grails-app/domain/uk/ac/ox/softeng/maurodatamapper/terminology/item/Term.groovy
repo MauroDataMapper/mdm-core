@@ -155,6 +155,8 @@ class Term implements ModelItem<Term, Terminology> {
 
     ObjectDiff<Term> diff(Term otherTerm) {
         catalogueItemDiffBuilder(Term, this, otherTerm)
+            .appendList(TermRelationship, 'sourceTermRelationships', this.sourceTermRelationships, otherTerm.sourceTermRelationships)
+            .appendList(TermRelationship, 'targetTermRelationships', this.targetTermRelationships, otherTerm.targetTermRelationships)
             .appendString('code', this.code, otherTerm.code)
             .appendString('definition', this.definition, otherTerm.definition)
             .appendString('url', this.url, otherTerm.url)

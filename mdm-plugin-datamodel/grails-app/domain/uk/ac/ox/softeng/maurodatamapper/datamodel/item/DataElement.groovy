@@ -84,8 +84,8 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     static mapping = {
         summaryMetadata cascade: 'all-delete-orphan'
-        dataClass index: 'data_element_data_class_idx' //, cascade: 'none'
-        dataType index: 'data_element_data_type_idx', cascade: 'save-update', fetch: 'join'
+        dataClass index: 'data_element_data_class_idx', cascade: 'none'
+        dataType index: 'data_element_data_type_idx', cascade: 'none', fetch: 'join', cascadeValidate: 'dirty'
         model cascade: 'none'
     }
 
@@ -120,16 +120,20 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     @Override
     def beforeValidate() {
+        long st = System.currentTimeMillis()
         beforeValidateModelItem()
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
             it.catalogueItem = this
         }
-        if (dataType && !dataType.ident()) {
+        // If datatype is newly created with dataelement and the datamodel is not new
+        // If the DM is new then DT validation will happen at the DM level
+        if (dataType && !dataType.ident() && getModel().id) {
             dataType.dataModel = model
             dataType.createdBy = createdBy
             dataType.beforeValidate()
         }
+        log.trace('DE before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
     @Override
@@ -160,6 +164,14 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     @Override
     Boolean hasChildren() {
         false
+    }
+
+    /**
+     * A DataElement is indexed within the DataClass to which it belongs
+     */
+    @Override
+    DataClass getIndexedWithin() {
+        dataClass
     }
 
     ObjectDiff<DataElement> diff(DataElement otherDataElement) {
@@ -227,13 +239,5 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
             }
         }
         criteria
-    }
-
-    /**
-     * A DataElement is indexed within the DataClass to which it belongs
-     */
-    @Override
-    DataClass getIndexedWithin() {
-        dataClass
     }
 }

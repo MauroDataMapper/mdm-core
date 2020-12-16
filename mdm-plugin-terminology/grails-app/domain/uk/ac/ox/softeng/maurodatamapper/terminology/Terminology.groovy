@@ -74,6 +74,7 @@ class Terminology implements Model<Terminology> {
         documentationVersion type: VersionUserType
         modelVersion type: VersionUserType
         folder cascade: 'none'
+        authority fetch: 'join'
         terms cascade: 'all-delete-orphan'
         termRelationshipTypes cascade: 'all-delete-orphan'
     }
@@ -112,9 +113,6 @@ class Terminology implements Model<Terminology> {
         modelDiffBuilder(Terminology, this, otherTerminology)
             .appendList(Term, 'terms', this.terms, otherTerminology.terms)
             .appendList(TermRelationshipType, 'termRelationshipTypes', this.termRelationshipTypes, otherTerminology.termRelationshipTypes)
-            .appendList(TermRelationship, 'termRelationships',
-                        this.terms?.sourceTermRelationships?.flatten()?.findAll(),
-                        otherTerminology.terms?.sourceTermRelationships?.flatten()?.findAll())
     }
 
     def beforeValidate() {

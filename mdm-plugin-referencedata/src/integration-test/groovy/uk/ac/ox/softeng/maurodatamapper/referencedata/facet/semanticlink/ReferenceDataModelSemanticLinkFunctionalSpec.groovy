@@ -31,6 +31,7 @@ import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+import spock.lang.PendingFeature
 import spock.lang.Shared
 
 /**
@@ -151,6 +152,7 @@ class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemantic
         // Semantic link only copied for new doc version
     }
 
+    @PendingFeature(reason = 'Not yet implemented')
     def 'test confirm semantic link'() {
         given: 'Create Semantic Link'
         String id = createNewItem(validJson)

@@ -17,24 +17,25 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
+import groovy.util.slurpersupport.GPathResult
 
 import java.nio.charset.Charset
 
 @Slf4j
-class JsonImporterService extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> {
+class ReferenceDataXmlImporterService
+    extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> implements XmlImportMapping {
 
     @Override
     String getDisplayName() {
-        'JSON Reference Data Importer'
+        'XML Reference Data Importer'
     }
 
     @Override
@@ -43,16 +44,23 @@ class JsonImporterService extends DataBindReferenceDataModelImporterProviderServ
     }
 
     @Override
-    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
-        if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
-        if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
+    Boolean canImportMultipleDomains() {
+        false
+    }
 
-        log.debug('Parsing in file content using JsonSlurper')
-        def result = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
-        Map referenceDataModel = result.referenceDataModel
-        if (!referenceDataModel) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as referenceDataModel is not present')
+    @Override
+    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
+        if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
+        if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
+
+        String xml = new String(content, Charset.defaultCharset())
+
+        log.debug('Parsing in file content using XmlSlurper')
+        GPathResult result = new XmlSlurper().parseText(xml)
+
+        Map map = convertToMap(result)
 
         log.debug('Importing ReferenceDataModel map')
-        bindMapToReferenceDataModel currentUser, new HashMap(referenceDataModel)
+        bindMapToReferenceDataModel currentUser, new HashMap(map.referenceDataModel)
     }
 }

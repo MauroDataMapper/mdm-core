@@ -62,6 +62,10 @@ abstract class CatalogueItemReferenceSummaryMetadataReportFunctionalSpec extends
         "${catalogueItemDomainResourcePath}/${copyId}/${facetResourcePath}"
     }
 
+    String getCatalogueItemCopyPath() {
+        "dataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"
+    }
+
     @Override
     Map getValidJson() {
         [

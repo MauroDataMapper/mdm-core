@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -1189,7 +1190,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String expectedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
@@ -1197,7 +1198,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String newBranchId = responseBody().id
         PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -1235,7 +1236,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String id = createNewItem(validJson)
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String expectedId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
@@ -1243,7 +1244,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String newBranchId = responseBody().id
         PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$expectedId/newBranchModelVersion", [branchName: 'main'])
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -1346,7 +1347,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -1494,7 +1495,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -1521,7 +1522,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -1591,7 +1592,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -1864,7 +1865,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         PUT("$id/finalise", [versionChangeType: 'Major'])
         verifyResponse OK, response
-        PUT("$id/newBranchModelVersion", [branchName: 'main'])
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
         verifyResponse CREATED, response
         String target = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'source'])
@@ -2325,7 +2326,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().count == 4
         responseBody().diffs.size() == 2
         responseBody().diffs.first().branchName.left == 'test'
-        responseBody().diffs.first().branchName.right == 'main'
+        responseBody().diffs.first().branchName.right == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         and:
         Map dataClassesDiffs = responseBody().diffs[1].dataClasses
@@ -2719,7 +2720,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test getting simple DataModel hierarchy'() {
+    void 'H01 : test getting simple DataModel hierarchy'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
@@ -2792,7 +2793,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test getting complex DataModel hierarchy'() {
+    void 'H02 : test getting complex DataModel hierarchy'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
@@ -3675,7 +3676,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     }
 
 
-    void 'test get link suggestions for a model with no data elements in the target'() {
+    void 'LS01 : test get link suggestions for a model with no data elements in the target'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
@@ -3719,7 +3720,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(simpleDataModelId)
     }
 
-    void 'test get link suggestions for a model'() {
+    void 'LS02 : test get link suggestions for a model'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,

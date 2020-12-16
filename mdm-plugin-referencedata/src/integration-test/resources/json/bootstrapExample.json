@@ -7287,7 +7287,7 @@
         "exportedOn": "2020-10-30T12:01:02.099Z",
         "exporter": {
             "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
-            "name": "JsonExporterService",
+            "name": "ReferenceDataJsonExporterService",
             "version": "3.0"
         }
     }

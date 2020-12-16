@@ -19,13 +19,16 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
+import io.micronaut.core.order.Ordered
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
@@ -37,7 +40,7 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
     ]
 
     static constraints = {
-        enumerationValues minSize: 1, validator: {val, obj -> new UniqueValuesValidator('key').isValid(val)}
+        enumerationValues minSize: 1, validator: { val, obj -> new UniqueValuesValidator('key').isValid(val) }
     }
 
     static mapping = {
@@ -49,15 +52,23 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
     }
 
     @Override
+    void updateChildIndexes(ModelItem updated, Integer oldIndex) {
+        updateSiblingIndexes(updated, enumerationValues, oldIndex)
+    }
+
+    @Override
     def beforeValidate() {
+        long st = System.currentTimeMillis()
         super.beforeValidate()
         if (enumerationValues) {
-            enumerationValues.sort().eachWithIndex {ev, i ->
+            // If model exists and this is a new ET then sort children
+            if (model?.id && !id) fullSortOfChildren(enumerationValues)
+            enumerationValues.each { ev ->
                 ev.createdBy = ev.createdBy ?: createdBy
-                if (ev.getOrder() != i) ev.idx = i
                 ev.beforeValidate()
             }
         }
+        log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
     ObjectDiff<EnumerationType> diff(EnumerationType otherDataType) {
@@ -66,11 +77,11 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
     }
 
     int countEnumerationValuesByKey(String key) {
-        enumerationValues?.count {it.key == key} ?: 0
+        enumerationValues?.count { it.key == key } ?: 0
     }
 
     EnumerationValue findEnumerationValueByKey(String key) {
-        enumerationValues?.find {it.key == key}
+        enumerationValues?.find { it.key == key }
     }
 
     EnumerationType addToEnumerationValues(Map args) {
@@ -95,18 +106,7 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
             valueToAdd.enumerationType = this
             addTo('enumerationValues', valueToAdd)
         }
-        updateChildIndexes(valueToAdd)
+        updateChildIndexes(valueToAdd, Ordered.LOWEST_PRECEDENCE)
         this
-    }
-
-
-    /*
-     * Update the index property of the EnumerationValues which belong to this EnumerationType, and which are siblings of an updated EnumerationValue
-     *
-     * @param EnumerationValue updated An EnumerationValue, which belongs to this EnumerationType, and which has been updated.
-     * @param int oldIndex             The index of a value before it was updated.
-     */
-    void updateChildIndexes(EnumerationValue updated, int oldIndex = Integer.MAX_VALUE) {
-        updateSiblingIndexes(updated, enumerationValues, oldIndex)
     }
 }

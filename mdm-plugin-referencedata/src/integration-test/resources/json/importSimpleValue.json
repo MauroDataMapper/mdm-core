@@ -160,9 +160,9 @@
         "exportedBy": "Admin User",
         "exportedOn": "${json-unit.matches:offsetDateTime}",
         "exporter": {
-            "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
-            "name": "JsonExporterService",
-            "version": "3.0"
+          "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+          "name": "ReferenceDataJsonExporterService",
+          "version": "3.0"
         }
     }
 }

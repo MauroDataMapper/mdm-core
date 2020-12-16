@@ -28,18 +28,14 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePri
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-
-import java.nio.charset.Charset
-
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
-import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.CSVRecord
 
 @Slf4j
-class CsvImporterService extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> {
+class ReferenceDataCsvImporterService
+    extends DataBindReferenceDataModelImporterProviderService<ReferenceDataModelFileImporterProviderServiceParameters> {
 
     AuthorityService authorityService
 

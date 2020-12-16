@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.tree
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
@@ -75,6 +76,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
                                          folder: folder, authority: testAuthority).save(flush: true).id
 
         PrimitiveType string = new PrimitiveType(createdBy: FUNCTIONAL_TEST, label: 'string')
+        dataModel.addToDataTypes(string).save(flush: true)
 
         DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST, dataModel: dataModel)
             .addToDataElements(label: 'Functional Test DataElement', createdBy: FUNCTIONAL_TEST, dataType: string).save(flush: true)
@@ -83,7 +85,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         Classifier classifier = new Classifier(label: 'Functional Test Classifier', createdBy: FUNCTIONAL_TEST).save(flush: true)
         new Classifier(label: 'Functional Test Classifier 2', createdBy: FUNCTIONAL_TEST).save(flush: true)
-        dataModel.addToClassifiers(classifier).addToDataTypes(string).save(flush: true)
+        dataModel.addToClassifiers(classifier).save(flush: true)
 
         sessionFactory.currentSession.flush()
     }
@@ -368,7 +370,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
             it.label == 'Functional Test Model model superseded' &&
             it.documentationVersion == '1.0.0' &&
             !it.modelVersion &&
-            it.branchName == 'main' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
             !it.finalised
         }
         // Finalised model version is in the tree

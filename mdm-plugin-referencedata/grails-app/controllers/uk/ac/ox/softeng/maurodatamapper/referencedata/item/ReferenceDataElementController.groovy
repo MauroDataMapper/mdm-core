@@ -20,9 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 
 import grails.gorm.transactions.Transactional
-import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 
 class ReferenceDataElementController extends CatalogueItemController<ReferenceDataElement> {
     static responseFormats = ['json', 'xml']
@@ -109,7 +109,7 @@ class ReferenceDataElementController extends CatalogueItemController<ReferenceDa
 
     @Override
     protected void serviceInsertResource(ReferenceDataElement resource) {
-        referenceDataElementService.save(flush: true, resource)
+        referenceDataElementService.save(DEFAULT_SAVE_ARGS, resource)
     }
 
     @Override

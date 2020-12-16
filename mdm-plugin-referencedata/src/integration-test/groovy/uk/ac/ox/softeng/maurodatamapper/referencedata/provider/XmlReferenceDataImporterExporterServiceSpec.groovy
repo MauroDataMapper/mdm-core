@@ -21,29 +21,25 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.XmlExporterService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.XmlImporterService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataXmlExporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataXmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
 import com.google.common.base.CaseFormat
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
+import grails.util.BuildSettings
+import groovy.util.logging.Slf4j
+import org.junit.Assert
+import spock.lang.Shared
 
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
-import grails.gorm.transactions.Rollback
-import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
-import grails.util.BuildSettings
-
-import groovy.util.logging.Slf4j
-
-import org.junit.Assert
-
-import spock.lang.Shared
 
 /**
  * @since 17/09/2020
@@ -51,7 +47,7 @@ import spock.lang.Shared
 @Integration
 @Rollback
 @Slf4j
-class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSpec implements XmlValidator {
+class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSpec implements XmlValidator {
 
     @Shared
     Path resourcesPath
@@ -60,21 +56,21 @@ class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSp
     UUID exampleReferenceDataModelId
 
     @Shared
-    UUID secondExampleReferenceDataModelId    
+    UUID secondExampleReferenceDataModelId
 
-    XmlImporterService xmlImporterService
-    XmlExporterService xmlExporterService
+    ReferenceDataXmlImporterService referenceDataXmlImporterService
+    ReferenceDataXmlExporterService referenceDataXmlExporterService
 
     String getImportType() {
         'xml'
     }
 
-    XmlImporterService getImporterService() {
-        xmlImporterService
+    ReferenceDataXmlImporterService getImporterService() {
+        referenceDataXmlImporterService
     }
 
-    XmlExporterService getExporterService() {
-        xmlExporterService
+    ReferenceDataXmlExporterService getExporterService() {
+        referenceDataXmlExporterService
     }
 
     String exportModel(UUID referenceDataModelId) {
@@ -103,7 +99,7 @@ class XmlImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSp
         importerService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
-        assert referenceDataModelService.saveWithBatching(imported)
+        assert referenceDataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
         assert referenceDataModelService.count() == 3
 

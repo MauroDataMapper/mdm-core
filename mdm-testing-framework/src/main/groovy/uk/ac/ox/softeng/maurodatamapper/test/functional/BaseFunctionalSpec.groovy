@@ -74,6 +74,8 @@ import java.time.OffsetDateTime
 @Slf4j
 abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseComparer, RestClientInterface {
 
+    public static final List<String> REATTEMPT_EXCEPTIONS = ['StaleObjectStateException', 'StaleStateException']
+
     @Shared
     String baseUrl
 
@@ -152,8 +154,8 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
         if (bodyType.type == String) jsonCapableResponse = localResponse as HttpResponse<String>
         else if (bodyType.type == Map) {
             response = localResponse as HttpResponse<Map>
-            if (response?.body()?.exception?.type == 'StaleObjectStateException') {
-                response = exchange(HttpRequest.PUT(getUrl(resourceEndpoint, cleanEndpoint), body), bodyType) as HttpResponse<Map>
+            if (response?.body()?.exception?.type in REATTEMPT_EXCEPTIONS) {
+                PUT(resourceEndpoint, body, bodyType, cleanEndpoint)
             }
         }
         localResponse
@@ -164,8 +166,8 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
         if (bodyType.type == String) jsonCapableResponse = localResponse as HttpResponse<String>
         else if (bodyType.type == Map) {
             response = localResponse as HttpResponse<Map>
-            if (response?.body()?.exception?.type == 'StaleObjectStateException') {
-                response = exchange(HttpRequest.DELETE(getUrl(resourceEndpoint, cleanEndpoint)), bodyType) as HttpResponse<Map>
+            if (response?.body()?.exception?.type in REATTEMPT_EXCEPTIONS) {
+                return DELETE(resourceEndpoint, bodyType, cleanEndpoint) as HttpResponse<O>
             }
         }
         localResponse
@@ -174,7 +176,12 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
     def <O> HttpResponse<O> DELETE(String resourceEndpoint, Map body, Argument<O> bodyType = MAP_ARG) {
         HttpResponse<O> localResponse = exchange(HttpRequest.DELETE(getUrl(resourceEndpoint), body), bodyType)
         if (bodyType.type == String) jsonCapableResponse = localResponse as HttpResponse<String>
-        else if (bodyType.type == Map) response = localResponse as HttpResponse<Map>
+        else if (bodyType.type == Map) {
+            response = localResponse as HttpResponse<Map>
+            if (response?.body()?.exception?.type in REATTEMPT_EXCEPTIONS) {
+                return DELETE(resourceEndpoint, body, bodyType) as HttpResponse<O>
+            }
+        }
         localResponse
     }
 

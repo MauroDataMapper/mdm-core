@@ -321,8 +321,6 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         copiedParent.dataClasses.size() == 1
         copiedParent.dataClasses.find { it.label == 'Unit child' }
         copiedParent.dataElements.size() == 1
-        copiedParent.referenceTypes.size() == 1
-        copiedParent.referenceTypes.find { it.label == 'Unit parent' }
 
         when:
         ReferenceType referenceType = copyModel.dataTypes.find { it.label == 'Unit parent' } as ReferenceType

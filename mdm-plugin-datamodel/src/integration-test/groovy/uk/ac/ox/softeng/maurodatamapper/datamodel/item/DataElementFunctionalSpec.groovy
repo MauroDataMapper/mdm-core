@@ -250,7 +250,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         response.body().description == 'adding a description'
     }
 
-    void 'test copying from dataclass to other dataclass with existing datatype'() {
+    void 'CC01 test copying from dataclass to other dataclass with existing datatype'() {
         given:
         POST('', validJson)
         String id = response.body().id
@@ -280,7 +280,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         response.body().dataType.id == otherDataTypeId.toString()
     }
 
-    void 'test copying from dataclass to other dataclass with unknown datatype'() {
+    void 'CC02 test copying from dataclass to other dataclass with unknown datatype'() {
         given:
         POST('', [
             label          : 'Functional Test DataElement',
@@ -326,6 +326,11 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         response.body().items.size() == 1
         response.body().items[0].id == id
         response.body().items[0].label == validJson.label
+    }
+
+    @Transactional
+    void cleanupCreatedDataTypes(String label) {
+        DataType.findByLabel(label).delete()
     }
 
     void 'test creation of DataType alongside saving DataElement'() {
@@ -382,6 +387,9 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
   ]
 }'''
 
+        cleanup:
+        cleanupCreatedDataTypes('Functional Test DataType')
+
     }
 
     void 'test creation of DataType alongside updating DataElement'() {
@@ -437,6 +445,9 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     }
   ]
 }'''
+
+        cleanup:
+        cleanupCreatedDataTypes('Functional Test DataType 2')
 
     }
 
@@ -509,17 +520,20 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
   ]
 }'''
 
+        cleanup:
+        cleanupCreatedDataTypes('Functional Test DataType 3')
+
     }
 
-    void 'test copying reference type DataElement'() {
+    void 'CC03 test copying reference type DataElement'() {
         given:
         POST('',
              [
-                 label          : 'Functional Test Reference Type DataElement',
+                 label          : 'Functional Test Reference Type DataElement To Copy',
                  maxMultiplicity: 2,
                  minMultiplicity: 1,
                  dataType       : [
-                     label         : 'Reference Test DataType',
+                     label         : 'Reference Test DataType To Copy',
                      domainType    : DataType.REFERENCE_DOMAIN_TYPE,
                      referenceClass: dataClassId.toString()
                  ]
@@ -539,7 +553,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         then:
         response.status() == CREATED
         response.body().id != id
-        response.body().label == 'Functional Test Reference Type DataElement'
+        response.body().label == 'Functional Test Reference Type DataElement To Copy'
         response.body().availableActions == ['delete', 'show', 'update']
         response.body().model == otherDataModelId.toString()
         response.body().breadcrumbs.size() == 2
@@ -548,7 +562,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         response.body().dataType.id != otherDataTypeId.toString()
         response.body().dataType.id != differentDataTypeId.toString()
         response.body().dataType.id != dtId
-        response.body().dataType.label == 'Reference Test DataType'
+        response.body().dataType.label == 'Reference Test DataType To Copy'
     }
 
 

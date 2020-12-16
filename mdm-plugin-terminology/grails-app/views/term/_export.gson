@@ -9,5 +9,6 @@ model {
 json {
     code term.getCode()
     definition term.getDefinition()
+    if (term.depth) depth term.getDepth()
     if (term.url) url term.getUrl()
 }

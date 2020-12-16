@@ -41,17 +41,17 @@ class DataElementController extends CatalogueItemController<DataElement> {
             return
         }
 
-        DataModel dataModel = dataModelService.get(params.dataModelId)
-        DataClass dataClass = dataClassService.get(params.dataClassId)
-        DataElement original = dataElementService.findByDataClassIdAndId(params.otherDataClassId, params.dataElementId)
-        DataModel originalDataModel = dataModelService.get(params.otherDataModelId)
+        DataModel destinationDataModel = dataModelService.get(params.dataModelId)
+        DataClass destinationDataClass = dataClassService.get(params.dataClassId)
+        DataElement originalDataElement = dataElementService.findByDataClassIdAndId(params.otherDataClassId, params.dataElementId)
+        DataModel sourceDataModel = dataModelService.get(params.otherDataModelId)
 
-        if (!original) return notFound(params.dataElementId)
+        if (!originalDataElement) return notFound(params.dataElementId)
         DataElement copy
         try {
-            copy = dataElementService.copyDataElement(dataModel, original, currentUser, currentUserSecurityPolicyManager)
-            dataClass.addToDataElements(copy)
-            dataClassService.matchUpAndAddMissingReferenceTypeClasses(dataModel, dataModelService.get(params.otherDataModelId), currentUser,
+            copy = dataElementService.copyDataElement(destinationDataModel, originalDataElement, currentUser, currentUserSecurityPolicyManager)
+            destinationDataClass.addToDataElements(copy)
+            dataClassService.matchUpAndAddMissingReferenceTypeClasses(destinationDataModel, sourceDataModel, currentUser,
                                                                       currentUserSecurityPolicyManager)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
@@ -59,12 +59,16 @@ class DataElementController extends CatalogueItemController<DataElement> {
             return
         }
 
-        dataModelService.validate(dataModel)
-        if (dataModel.hasErrors()) {
+        if (!validateResource(copy, 'create')) return
+
+        dataModelService.validate(destinationDataModel)
+        if (destinationDataModel.hasErrors()) {
             transactionStatus.setRollbackOnly()
-            respond dataModel.errors, view: 'create' // STATUS CODE 422
+            respond destinationDataModel.errors, view: 'create' // STATUS CODE 422
             return
         }
+
+        dataModelService.saveModelNewContentOnly(destinationDataModel)
 
         saveResource copy
 
@@ -114,7 +118,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
 
     @Override
     protected void serviceInsertResource(DataElement resource) {
-        dataElementService.save(flush: true, resource)
+        dataElementService.save(DEFAULT_SAVE_ARGS, resource)
     }
 
     @Override

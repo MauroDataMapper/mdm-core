@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.SummaryMetadataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataType
 import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 
 import grails.testing.gorm.DomainUnitTest
@@ -42,11 +42,12 @@ class ReferenceSummaryMetadataReportSpec extends CreatorAwareSpec<ReferenceSumma
         checkAndSave(misc)
 
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
-        db = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc, authority: Authority.findByLabel('Test Authority'))
-        
+        db = new ReferenceDataModel(createdBy: StandardEmailAddress.UNIT_TEST, label: 'test', folder: misc,
+                                    authority: Authority.findByLabel('Test Authority'))
+
         checkAndSave(db)
-        referenceSummaryMetadata = new ReferenceSummaryMetadata(summaryMetadataType: SummaryMetadataType.NUMBER, label: 'test',
-                                              createdBy: StandardEmailAddress.UNIT_TEST, catalogueItem: db)
+        referenceSummaryMetadata = new ReferenceSummaryMetadata(summaryMetadataType: ReferenceSummaryMetadataType.NUMBER, label: 'test',
+                                                                createdBy: StandardEmailAddress.UNIT_TEST, catalogueItem: db)
         checkAndSave(referenceSummaryMetadata)
         dateTime = OffsetDateTime.now()
     }

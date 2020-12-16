@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -36,16 +37,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
-import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
-import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
@@ -158,8 +158,13 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet saveWithBatching(CodeSet model) {
-        save(model)
+    CodeSet saveModelWithContent(CodeSet model) {
+        save(failOnError: true, validate: false, flush: true, model)
+    }
+
+    @Override
+    CodeSet saveModelNewContentOnly(CodeSet model) {
+        save(failOnError: true, validate: false, flush: true, model)
     }
 
     @Override
@@ -324,18 +329,18 @@ class CodeSetService extends ModelService<CodeSet> {
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(codeSet.label, 'main') > 0
+        boolean draftModelOnMainBranchForLabel =
+            countAllByLabelAndBranchNameAndNotFinalised(codeSet.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
 
-        CodeSet newMainBranchModelVersion
         if (!draftModelOnMainBranchForLabel) {
-            newMainBranchModelVersion = copyCodeSet(codeSet,
-                                                    user,
-                                                    copyPermissions,
-                                                    codeSet.label,
-                                                    'main',
-                                                    additionalArguments.throwErrors as boolean,
-                                                    userSecurityPolicyManager,
-                                                    true)
+            CodeSet newMainBranchModelVersion = copyCodeSet(codeSet,
+                                                            user,
+                                                            copyPermissions,
+                                                            codeSet.label,
+                                                            VersionAwareConstraints.DEFAULT_BRANCH_NAME,
+                                                            additionalArguments.throwErrors as boolean,
+                                                            userSecurityPolicyManager,
+                                                            true)
             setCodeSetIsNewBranchModelVersionOfCodeSet(newMainBranchModelVersion, codeSet, user)
 
             if (additionalArguments.moveDataFlows) {
@@ -343,30 +348,33 @@ class CodeSetService extends ModelService<CodeSet> {
                 //            moveTargetDataFlows(codeSet, newMainBranchModelVersion)
             }
 
-            if (newMainBranchModelVersion.validate()) save(newMainBranchModelVersion, flush: true, validate: false)
-        }
-        CodeSet newBranchModelVersion
-        if (branchName != 'main') {
-            newBranchModelVersion = copyCodeSet(codeSet,
-                                                user,
-                                                copyPermissions,
-                                                codeSet.label,
-                                                branchName,
-                                                additionalArguments.throwErrors as boolean,
-                                                userSecurityPolicyManager,
-                                                true)
-
-            setCodeSetIsNewBranchModelVersionOfCodeSet(newBranchModelVersion, codeSet, user)
-
-            if (additionalArguments.moveDataFlows) {
-                throw new ApiNotYetImplementedException('DMSXX', 'CodeSet moving of DataFlows')
-                //            moveTargetDataFlows(codeSet, newBranchModelVersion)
+            // If the branch name isn't main and the main branch doesnt exist then we need to validate and save it
+            // otherwise return the new model
+            if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                return newMainBranchModelVersion
+            } else {
+                if (newMainBranchModelVersion.validate()) saveModelWithContent(newMainBranchModelVersion)
+                else throw new ApiInvalidModelException('CSSXX', 'Copied (newMainBranchModelVersion) CodeSet is invalid',
+                                                        newMainBranchModelVersion.errors, messageSource)
             }
+        }
+        CodeSet newBranchModelVersion = copyCodeSet(codeSet,
+                                                    user,
+                                                    copyPermissions,
+                                                    codeSet.label,
+                                                    branchName,
+                                                    additionalArguments.throwErrors as boolean,
+                                                    userSecurityPolicyManager,
+                                                    true)
 
-            if (newBranchModelVersion.validate()) save(newBranchModelVersion, flush: true, validate: false)
+        setCodeSetIsNewBranchModelVersionOfCodeSet(newBranchModelVersion, codeSet, user)
+
+        if (additionalArguments.moveDataFlows) {
+            throw new ApiNotYetImplementedException('DMSXX', 'CodeSet moving of DataFlows')
+            //            moveTargetDataFlows(codeSet, newBranchModelVersion)
         }
 
-        newBranchModelVersion ?: newMainBranchModelVersion
+        newBranchModelVersion
     }
 
     @Override
@@ -379,8 +387,6 @@ class CodeSetService extends ModelService<CodeSet> {
                                             Version.nextMajorVersion(codeSet.documentationVersion), codeSet.branchName,
                                             additionalArguments.throwErrors as boolean, userSecurityPolicyManager)
         setCodeSetIsNewDocumentationVersionOfCodeSet(newDocVersion, codeSet, user)
-
-        if (newDocVersion.validate()) newDocVersion.save(flush: true, validate: false)
         newDocVersion
     }
 
@@ -393,8 +399,6 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet newForkModel = copyCodeSet(codeSet, user, copyPermissions, label, additionalArguments.throwErrors as boolean,
                                            userSecurityPolicyManager)
         setCodeSetIsNewForkModelOfCodeSet(newForkModel, codeSet, user)
-
-        if (newForkModel.validate()) save(newForkModel)
         newForkModel
     }
 
@@ -410,10 +414,11 @@ class CodeSetService extends ModelService<CodeSet> {
 
     CodeSet copyCodeSet(CodeSet original, User copier, boolean copyPermissions, String label, Version copyVersion, String branchName,
                         boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
                                    finalised: false, deleted: false, documentationVersion: copyVersion,
-                                   folder: original.folder, authority: original.authority, branchName: branchName
+                                   folder: folder, authority: original.authority, branchName: branchName
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
@@ -701,20 +706,21 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     /**
-    * When importing a codeSet, do checks and setting of required values as follows:
-    * (1) Set the createdBy of the codeSeT to be the importing user
-    * (2) Always set authority to the default authority, overriding any authority that is set in the import data
-    * (3) Check facets
-    * (4) Check that terms exist
-    *
-    * @param importingUser The importing user, who will be used to set createdBy
-    * @param codeSet   The codeSet to be imported
-    * @param bindingMap The binding map, which is necessary for looking up terms
-    */
+     * When importing a codeSet, do checks and setting of required values as follows:
+     * (1) Set the createdBy of the codeSeT to be the importing user
+     * (2) Always set authority to the default authority, overriding any authority that is set in the import data
+     * (3) Check facets
+     * (4) Check that terms exist
+     *
+     * @param importingUser The importing user, who will be used to set createdBy
+     * @param codeSet The codeSet to be imported
+     * @param bindingMap The binding map, which is necessary for looking up terms
+     */
     void checkImportedCodeSetAssociations(User importingUser, CodeSet codeSet, Map bindingMap = [:]) {
         codeSet.createdBy = importingUser.emailAddress
 
-        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the import.
+        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the
+        // import.
         codeSet.authority = authorityService.getDefaultAuthority()
 
         checkFacetsAfterImportingCatalogueItem(codeSet)

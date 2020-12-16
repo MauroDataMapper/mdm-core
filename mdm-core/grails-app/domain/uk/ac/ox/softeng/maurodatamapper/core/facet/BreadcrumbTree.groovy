@@ -21,14 +21,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.Breadcrumb
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.compiler.GrailsCompileStatic
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEntity
 
 @Slf4j
 @GrailsCompileStatic
@@ -42,11 +40,10 @@ class BreadcrumbTree {
     Breadcrumb breadcrumb
     Boolean topBreadcrumbTree
     CatalogueItem domainEntity
-    BreadcrumbTree parent
 
     String treeString
 
-    static belongsTo = [BreadcrumbTree]
+    static belongsTo = [parent: BreadcrumbTree]
 
     static hasMany = [
         children: BreadcrumbTree
@@ -55,16 +52,16 @@ class BreadcrumbTree {
     static constraints = {
         finalised nullable: true
         domainType blank: false
-        label blank: false, nullable: true, validator: {String val, BreadcrumbTree obj ->
+        label blank: false, nullable: true, validator: { String val, BreadcrumbTree obj ->
             if (val) return true
             if (!val && obj.domainEntity && !obj.domainEntity.label) return true
             ['default.null.message']
         }
         treeString blank: true
-        parent nullable: true, validator: {BreadcrumbTree val, BreadcrumbTree obj ->
+        parent nullable: true, validator: { BreadcrumbTree val, BreadcrumbTree obj ->
             obj.topBreadcrumbTree || val ? true : ['default.null.message']
         }
-        domainId nullable: true, unique: true, validator: {UUID val, BreadcrumbTree obj ->
+        domainId nullable: true, unique: true, validator: { UUID val, BreadcrumbTree obj ->
             if (val) return true
             if (!val && obj.domainEntity && !obj.domainEntity.ident()) return true
             ['default.null.message']
@@ -74,12 +71,13 @@ class BreadcrumbTree {
     static mapping = {
         treeString type: 'text'
         label type: 'text'
-        parent cascade: 'save-update'
+        parent cascade: 'none', cascadeValidate: 'none'
+        children cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [
         domainEntity: 'none',
-        children    : 'parent'
+        //        children    : 'parent'
     ]
 
     static transients = ['breadcrumb', 'domainEntity']
@@ -139,17 +137,18 @@ class BreadcrumbTree {
 
     void updateTree() {
         buildTree()
-        children?.each {it.updateTree()}
+        children?.each { it.updateTree() }
     }
 
     void buildTree() {
+        String oldTreeString = treeString
         String newTreeString = ''
         if (parent) {
             newTreeString += "${parent.getTree()}\n"
         }
         newTreeString += getBreadcrumb().toString()
         setTreeString(newTreeString)
-        log.trace('Tree string for {}:{} ==> {}', domainType, domainId, treeString)
+        log.trace('Updated Tree string for {}:{} from {} ==> {}', domainType, domainId, oldTreeString, treeString)
     }
 
     void removeFromParent() {
@@ -175,7 +174,7 @@ class BreadcrumbTree {
 
         if (!path) return breadcrumbs.size() == 1
 
-        List<UUID> pathIds = path.split('/').findAll().collect {Utils.toUuid(it)}
+        List<UUID> pathIds = path.split('/').findAll().collect { Utils.toUuid(it) }
         if (pathIds.size() + 1 != breadcrumbs.size()) return false
 
 
@@ -228,7 +227,7 @@ class BreadcrumbTree {
     }
 
     static List<Breadcrumb> getBreadcrumbsFromTree(String treeString) {
-        treeString.split('\n').collect {new Breadcrumb(it)}
+        treeString.split('\n').collect { new Breadcrumb(it) }
     }
 
     static BreadcrumbTree findByCatalogueItem(CatalogueItem catalogueItem) {

@@ -42,7 +42,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDat
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
-import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -171,7 +171,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         catalogueItem
     }
 
-    ReferenceDataModel saveWithBatching(ReferenceDataModel referenceDataModel) {
+    ReferenceDataModel saveModelWithContent(ReferenceDataModel referenceDataModel) {
         log.debug('Saving {} using batching', referenceDataModel.label)
         Collection<ReferenceDataType> referenceDataTypes = []
         Collection<ReferenceDataElement> referenceDataElements = []
@@ -193,16 +193,42 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
         save(referenceDataModel)
         sessionFactory.currentSession.flush()
+
+        saveContent(referenceDataTypes, referenceDataElements)
+
+        get(referenceDataModel.id)
+    }
+
+    ReferenceDataModel saveModelNewContentOnly(ReferenceDataModel referenceDataModel) {
+        log.debug('Saving {} using batching', referenceDataModel.label)
+        Collection<ReferenceDataType> referenceDataTypes = []
+        Collection<ReferenceDataElement> referenceDataElements = []
+
+        if (referenceDataModel.classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(referenceDataModel.classifiers)
+        }
+
+        if (referenceDataModel.referenceDataTypes) {
+            referenceDataTypes.addAll referenceDataModel.referenceDataTypes.findAll { !it.id }
+        }
+
+        if (referenceDataModel.referenceDataElements) {
+            referenceDataElements.addAll referenceDataModel.referenceDataElements.findAll { !it.id }
+        }
+
+        saveContent(referenceDataTypes, referenceDataElements)
+
+        get(referenceDataModel.id)
+    }
+
+    void saveContent(Collection<ReferenceDataType> referenceDataTypes, Collection<ReferenceDataElement> referenceDataElements) {
         sessionFactory.currentSession.clear()
-
-
         log.trace('Saving {} referenceDataTypes', referenceDataTypes.size())
         referenceDataTypeService.saveAll(referenceDataTypes)
 
         log.trace('Saving {} referenceDataElements ', referenceDataElements.size())
         referenceDataElementService.saveAll(referenceDataElements)
-
-        referenceDataModel
     }
 
     @Override
@@ -592,26 +618,27 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         )
     }
 
-    List<DataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel, ReferenceDataModel otherReferenceDataModel,
-                                                                int maxResults) {
+    List<ReferenceDataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel,
+                                                                         ReferenceDataModel otherReferenceDataModel,
+                                                                         int maxResults) {
         referenceDataModel.referenceDataElements.collect { de ->
             referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(otherReferenceDataModel, de, maxResults)
         }
     }
 
 
-/*    Map<UUID, Long> obtainChildKnowledge(List<ReferenceDataModel> parents) {
-        if (!parents) return [:]
-        DetachedCriteria<ReferenceDataModel> criteria = new DetachedCriteria<DataClass>(DataClass)
-            .isNull('parentDataClass')
-            .inList('dataModel', parents)
-            .projections {
-                groupProperty('dataModel.id')
-                count()
-            }.order('dataModel')
-        criteria.list().collectEntries { [it[0], it[1]] }
-    }
-*/
+    /*    Map<UUID, Long> obtainChildKnowledge(List<ReferenceDataModel> parents) {
+            if (!parents) return [:]
+            DetachedCriteria<ReferenceDataModel> criteria = new DetachedCriteria<DataClass>(DataClass)
+                .isNull('parentDataClass')
+                .inList('dataModel', parents)
+                .projections {
+                    groupProperty('dataModel.id')
+                    count()
+                }.order('dataModel')
+            criteria.list().collectEntries { [it[0], it[1]] }
+        }
+    */
 
     @Override
     boolean hasTreeTypeModelItems(ReferenceDataModel dataModel, boolean forDiff) {

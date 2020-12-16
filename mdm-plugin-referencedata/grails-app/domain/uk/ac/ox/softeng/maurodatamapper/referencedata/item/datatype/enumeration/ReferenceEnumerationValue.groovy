@@ -26,11 +26,11 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
-import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.EnumerationValueKeyValidator
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.ReferenceEnumerationValueKeyValidator
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -61,7 +61,7 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
-        key blank: false, validator: {val, obj -> new EnumerationValueKeyValidator(obj).isValid(val)}
+        key blank: false, validator: { val, obj -> new ReferenceEnumerationValueKeyValidator(obj).isValid(val) }
         value blank: false
         category nullable: true, blank: false
     }
@@ -132,12 +132,15 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
     }
 
     @Override
-    void updateIndices(int index) {
-        //TODO the if statement is a work around for a test failure in ReferenceEnumerationValue.MI01
-        //Code for managing indices should be replaced with that made under mc-9218
-        if (referenceEnumerationType) {
-            referenceEnumerationType.updateReferenceEnumerationValueIndexes(this)
-        }
+    ReferenceEnumerationType getIndexedWithin() {
+        referenceEnumerationType
+    }
+
+    @Override
+    void updateIndices(Integer oldIndex) {
+        // If adding to an existing ET then we should update indices
+        // Otherwise this will have been done at DM or ET level
+        if (referenceEnumerationType?.id) referenceEnumerationType.updateChildIndexes(this, oldIndex)
     }
 
     ObjectDiff<ReferenceEnumerationValue> diff(ReferenceEnumerationValue otherEnumerationValue) {

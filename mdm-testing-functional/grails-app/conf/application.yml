@@ -125,18 +125,9 @@ grails:
             autoNewLine: false
 ---
 hibernate:
-    cache:
-        queries: false
-        use_second_level_cache: true
-        use_query_cache: true
-        region:
-            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
-    javax:
-        cache:
-            provider: org.ehcache.jsr107.EhcacheCachingProvider
-            missing_cache_strategy: create
     search:
         default.indexBase: '/tmp/lucene/testing/functional'
+#    generate_statistics: true
 
 ---
 dataSource:

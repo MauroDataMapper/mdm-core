@@ -38,7 +38,7 @@ import org.springframework.validation.ObjectError
  */
 @Slf4j
 @CompileStatic
-class DataTypeValueConverter implements ValueConverter {
+class ReferenceModelDataTypeValueConverter implements ValueConverter {
     @Override
     boolean canConvert(Object value) {
         value instanceof Map || value instanceof DataBindingSource || (value instanceof Serializable && Utils.toUuid(value))

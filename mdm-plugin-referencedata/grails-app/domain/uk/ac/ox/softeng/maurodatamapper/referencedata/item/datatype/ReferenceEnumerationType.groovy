@@ -19,24 +19,28 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
+import io.micronaut.core.order.Ordered
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationType> {
+class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationType> implements IndexedSiblingAware {
 
     static hasMany = [
-            referenceEnumerationValues: ReferenceEnumerationValue
+        referenceEnumerationValues: ReferenceEnumerationValue
     ]
 
     static constraints = {
-        referenceEnumerationValues minSize: 1, validator: { val, obj -> new UniqueValuesValidator('key').isValid(val)}
+        referenceEnumerationValues minSize: 1, validator: { val, obj -> new UniqueValuesValidator('key').isValid(val) }
     }
 
     static mapping = {
@@ -48,15 +52,23 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
     }
 
     @Override
+    void updateChildIndexes(ModelItem updated, Integer oldIndex) {
+        updateSiblingIndexes(updated, referenceEnumerationValues, oldIndex)
+    }
+
+    @Override
     def beforeValidate() {
+        long st = System.currentTimeMillis()
         super.beforeValidate()
-        if (this.referenceEnumerationValues) {
-            this.referenceEnumerationValues.sort().eachWithIndex { ev, i ->
+        if (referenceEnumerationValues) {
+            // If model exists and this is a new ET then sort children
+            if (model?.id && !id) fullSortOfChildren(referenceEnumerationValues)
+            referenceEnumerationValues.each { ev ->
                 ev.createdBy = ev.createdBy ?: createdBy
-                if (ev.getOrder() != i) ev.idx = i
                 ev.beforeValidate()
             }
         }
+        log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
     }
 
     ObjectDiff<ReferenceEnumerationType> diff(ReferenceEnumerationType otherDataType) {
@@ -94,42 +106,7 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
             valueToAdd.referenceEnumerationType = this
             addTo('referenceEnumerationValues', valueToAdd)
         }
-        updateReferenceEnumerationValueIndexes(valueToAdd)
+        updateChildIndexes(valueToAdd, Ordered.LOWEST_PRECEDENCE)
         this
-    }
-
-    void updateReferenceEnumerationValueIndexes(ReferenceEnumerationValue updated) {
-        List<ReferenceEnumerationValue> sorted = this.referenceEnumerationValues.sort()
-        int updatedIndex = updated.getOrder()
-        int maxIndex = sorted.size() - 1
-        sorted.eachWithIndex { ReferenceEnumerationValue ev, int i ->
-            //EV is the updated one, skipping any changes
-            if (ev == updated) {
-                // Make sure updated value is not ordered larger than the actual size of the collection
-                if (ev.getOrder() > maxIndex) {
-                    ev.idx = maxIndex
-                }
-                return
-            }
-
-            // Make sure all values have trackChanges turned on
-            if (!ev.isDirty()) ev.trackChanges()
-
-            log.trace('Before >> EV {} has order {} sorted to {}', ev.key, ev.order)
-            // Reorder the index which matches the one we just added
-            if (i == updatedIndex) {
-                if (i == maxIndex) {
-                    // If at end of list then move the current value back one to ensure the updated value is at then end of the list
-                    ev.idx = i - 1
-                } else {
-                    // Otherwise alphabetical sorting has placed the elements in the wrong order so shift the value by 1
-                    ev.idx = i + 1
-                }
-            } else if (ev.getOrder() != i) {
-                // Sorting has got the order right so make sure the idx is set correctly
-                ev.idx = i
-            }
-            log.trace('After >> EV {} has order {} (Dirty: {})', ev.key, i, ev.isDirty())
-        }
     }
 }

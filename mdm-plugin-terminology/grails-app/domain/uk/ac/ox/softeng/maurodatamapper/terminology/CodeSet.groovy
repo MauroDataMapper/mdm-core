@@ -68,6 +68,7 @@ class CodeSet implements Model<CodeSet> {
         modelVersion type: VersionUserType
         documentationVersion type: VersionUserType
         folder cascade: 'none', cascadeValidate: CascadeValidateType.NONE
+        authority fetch: 'join'
         terms cascade: 'none', cascadeValidate: CascadeValidateType.NONE, index: 'jcstt_term_idx', joinTable: [
             name  : 'join_codeset_to_term',
             key   : 'codeSet_id',

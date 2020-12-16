@@ -21,29 +21,25 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.JsonExporterService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.JsonImporterService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
 import com.google.common.base.CaseFormat
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
+import grails.util.BuildSettings
+import groovy.util.logging.Slf4j
+import org.junit.Assert
+import spock.lang.Shared
 
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
-import grails.gorm.transactions.Rollback
-import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
-import grails.util.BuildSettings
-
-import groovy.util.logging.Slf4j
-
-import org.junit.Assert
-
-import spock.lang.Shared
 
 /**
  * @since 17/09/2020
@@ -51,7 +47,7 @@ import spock.lang.Shared
 @Integration
 @Rollback
 @Slf4j
-class JsonImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSpec implements JsonComparer {
+class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationSpec implements JsonComparer {
 
     @Shared
     Path resourcesPath
@@ -60,21 +56,21 @@ class JsonImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationS
     UUID exampleReferenceDataModelId
 
     @Shared
-    UUID secondExampleReferenceDataModelId    
+    UUID secondExampleReferenceDataModelId
 
-    JsonImporterService jsonImporterService
-    JsonExporterService jsonExporterService
+    ReferenceDataJsonImporterService referenceDataJsonImporterService
+    ReferenceDataJsonExporterService referenceDataJsonExporterService
 
     String getImportType() {
         'json'
     }
 
-    JsonImporterService getImporterService() {
-        jsonImporterService
+    ReferenceDataJsonImporterService getImporterService() {
+        referenceDataJsonImporterService
     }
 
-    JsonExporterService getExporterService() {
-        jsonExporterService
+    ReferenceDataJsonExporterService getExporterService() {
+        referenceDataJsonExporterService
     }
 
     String exportModel(UUID referenceDataModelId) {
@@ -103,7 +99,7 @@ class JsonImporterExporterServiceSpec extends BaseReferenceDataModelIntegrationS
         importerService.checkImport(admin, imported, false, false)
         check(imported)
         log.info('Saving imported model')
-        assert referenceDataModelService.saveWithBatching(imported)
+        assert referenceDataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
         assert referenceDataModelService.count() == 3
 

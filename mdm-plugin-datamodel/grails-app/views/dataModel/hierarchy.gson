@@ -1,4 +1,5 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 inherits template: '/dataModel/fullDataModel', model: [dataModel                : dataModel,
@@ -9,13 +10,15 @@ model {
     UserSecurityPolicyManager userSecurityPolicyManager
 }
 
+List<DataClass> dataClasses = dataModel.getChildDataClasses()
+
 json {
     dataTypes tmpl.'/dataType/fullDataType'('dataType',
                                             dataModel.getSortedDataTypes(),
                                             [userSecurityPolicyManager: userSecurityPolicyManager]
     )
     childDataClasses tmpl.'/dataClass/deepDataClass'(
-        dataModel.getChildDataClasses(),
+        dataClasses,
         [userSecurityPolicyManager: userSecurityPolicyManager]
     )
 }

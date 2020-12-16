@@ -42,6 +42,10 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends CatalogueItemF
 
     abstract String getDestinationDataModelId()
 
+    String getCatalogueItemCopyPath() {
+        "dataModels/${destinationDataModelId}/${catalogueItemDomainResourcePath}/${sourceDataModelId}/${catalogueItemId}"
+    }
+
     @Override
     String getFacetResourcePath() {
         'summaryMetadata'

@@ -20,10 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
-import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.SummaryMetadataLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
+import uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator.ReferenceSummaryMetadataLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -36,7 +36,7 @@ class ReferenceSummaryMetadata implements CatalogueItemAware, InformationAware, 
     public final static Integer BATCH_SIZE = 5000
 
     UUID id
-    SummaryMetadataType summaryMetadataType
+    ReferenceSummaryMetadataType summaryMetadataType
 
     static hasMany = [
         summaryMetadataReports: ReferenceSummaryMetadataReport
@@ -52,7 +52,7 @@ class ReferenceSummaryMetadata implements CatalogueItemAware, InformationAware, 
             if (!val && obj.catalogueItem && !obj.catalogueItem.ident()) return true
             ['default.null.message']
         }
-        label validator: {val, obj -> new SummaryMetadataLabelValidator(obj).isValid(val)}
+        label validator: { val, obj -> new ReferenceSummaryMetadataLabelValidator(obj).isValid(val) }
     }
 
     static mapping = {

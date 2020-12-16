@@ -36,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import org.grails.datastore.gorm.GormEntity
+import org.springframework.core.Ordered
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
@@ -134,7 +135,19 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
     @Override
     EnumerationType getIndexedWithin() {
         enumerationType
-    }    
+    }
+
+    @Override
+    void updateIndices(Integer oldIndex) {
+        // If adding to an existing ET then we should update indices
+        // Otherwise this will have been done at DM or ET level
+        if (enumerationType) {
+            if (enumerationType.id) enumerationType.updateChildIndexes(this, oldIndex)
+        } else if (idx == null) {
+            // If idx is not set and there's no parent object then make sure its set
+            idx = Ordered.LOWEST_PRECEDENCE
+        }
+    }
 
     ObjectDiff<EnumerationValue> diff(EnumerationValue otherEnumerationValue) {
         catalogueItemDiffBuilder(EnumerationValue, this, otherEnumerationValue)
