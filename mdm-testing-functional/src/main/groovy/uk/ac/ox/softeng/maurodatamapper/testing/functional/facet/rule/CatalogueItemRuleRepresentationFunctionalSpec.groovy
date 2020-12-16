@@ -34,6 +34,7 @@ import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
+import spock.lang.Shared
 /**
  * <pre>
  * Controller: ruleRepresentation
@@ -53,6 +54,9 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     abstract CatalogueItem getCatalogueItem()
     
     abstract String getCatalogueItemDomainType()
+
+    @Shared
+    Rule rule
     
     String getModelId() {
         getModel().id.toString()
@@ -60,21 +64,22 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
 
     String getCatalogueItemId() {
         getCatalogueItem().id.toString()
-    }
+    } 
 
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         // Make a Rule on the CatalogueItem being tested
-        getCatalogueItem().addToRules(name: 'Functional Test Rule', 
-                                      description: 'Functional Test Description',
-                                      createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
+        rule = new Rule(name: "Functional Test Rule", 
+                        description: 'Functional Test Description',
+                        createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
+        getCatalogueItem().addToRules(rule)
     }
 
     @Transactional
     String getRuleId() {
-        Rule.findByCatalogueItemIdAndName(getCatalogueItemId(), 'Functional Test Rule').id.toString()
+        Rule.findByCatalogueItemIdAndName(getCatalogueItemId(), "Functional Test Rule").id.toString()
     }      
 
     @Override
@@ -94,10 +99,8 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     @Transactional
     @Override
     def cleanupSpec() {
-        log.info('Removing functional test rule representation')
-        RuleRepresentation.deleteAll()
-        log.info('Removing functional test rule')
-        Rule.deleteAll()        
+        log.info('Removing functional test rule') 
+        getCatalogueItem().removeFromRules(rule)     
     }
 
     @Override
@@ -158,7 +161,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     @Override
     Map getValidJson() {
         [
-            language       : 'sql',
+            language       : "sql",
             representation : 'A > 0 AND A < 5'
         ]
     }
