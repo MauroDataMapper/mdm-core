@@ -252,7 +252,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             // It should not be used to perform cleanp of these roles and resources
             List<SecurableResourceGroupRole> rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
             if (rolesLeftOver) {
-                log.warn('Roles not cleaned up : {}', rolesLeftOver.count())
+                log.warn('Roles not cleaned up : {}', rolesLeftOver.size())
                 rolesLeftOver.each { role ->
                     log.warn('Left over role resource {}:{}', role.securableResourceDomainType, role.securableResourceId)
                 }
