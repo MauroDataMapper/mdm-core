@@ -47,7 +47,6 @@ class CodeSetRuleRepresentationFunctionalSpec extends CatalogueItemRuleRepresent
         CodeSet.findByLabel(BootstrapModels.UNFINALISED_CODESET_NAME)
     }
 
-    @Transactional
     @Override
     CatalogueItem getCatalogueItem() {
         getModel()

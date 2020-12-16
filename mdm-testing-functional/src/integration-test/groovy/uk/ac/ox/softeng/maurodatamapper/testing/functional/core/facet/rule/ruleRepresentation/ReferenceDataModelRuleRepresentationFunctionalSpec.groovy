@@ -47,7 +47,6 @@ class ReferenceDataModelRuleRepresentationFunctionalSpec extends CatalogueItemRu
         ReferenceDataModel.findByLabel(BootstrapModels.SIMPLE_REFERENCE_MODEL_NAME)
     }
 
-    @Transactional
     @Override
     CatalogueItem getCatalogueItem() {
         getModel()

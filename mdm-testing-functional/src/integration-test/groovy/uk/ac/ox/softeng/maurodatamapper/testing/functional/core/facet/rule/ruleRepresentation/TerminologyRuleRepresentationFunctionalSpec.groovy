@@ -47,7 +47,6 @@ class TerminologyRuleRepresentationFunctionalSpec extends CatalogueItemRuleRepre
         Terminology.findByLabel(BootstrapModels.COMPLEX_TERMINOLOGY_NAME)
     }
 
-    @Transactional
     @Override
     CatalogueItem getCatalogueItem() {
         getModel()

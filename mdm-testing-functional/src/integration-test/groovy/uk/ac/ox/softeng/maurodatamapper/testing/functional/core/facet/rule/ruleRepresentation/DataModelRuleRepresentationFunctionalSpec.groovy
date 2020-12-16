@@ -47,7 +47,6 @@ class DataModelRuleRepresentationFunctionalSpec extends CatalogueItemRuleReprese
         DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME)
     }
 
-    @Transactional
     @Override
     CatalogueItem getCatalogueItem() {
         getModel()
