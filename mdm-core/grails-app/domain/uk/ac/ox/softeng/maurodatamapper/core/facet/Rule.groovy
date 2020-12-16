@@ -117,4 +117,8 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
         }        
         criteria
     }
+
+    static DetachedCriteria<Rule> byName(String name) {
+        new DetachedCriteria<Rule>(Rule).eq('name', name)
+    }    
 }

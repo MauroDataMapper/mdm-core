@@ -64,7 +64,7 @@ abstract class CatalogueItemRuleFunctionalSpec extends UserAccessFunctionalSpec 
     @Override
     def cleanupSpec() {
         log.info('Removing functional test rule')
-        Rule.deleteAll()
+        Rule.byName('Functional Test Rule Name').deleteAll()
     }
 
     @Override
