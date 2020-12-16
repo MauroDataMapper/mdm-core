@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
@@ -49,8 +48,7 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
         annotations   : Annotation,
         semanticLinks : SemanticLink,
         versionLinks  : VersionLink,
-        referenceFiles: ReferenceFile,
-        rules         : Rule
+        referenceFiles: ReferenceFile
     ]
 
     static constraints = {
