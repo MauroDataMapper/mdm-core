@@ -1,0 +1,170 @@
+2020-11-29 21:44:52,407 [est worker] INFO  i.m.context.env.DefaultEnvironment       : Established active environments: [test]
+2020-11-29 21:44:53,477 [est worker] INFO  grails.boot.GrailsApp                    : Started Micronaut Parent Application Context in 1186ms
+2020-11-29 21:44:53,522 [est worker] INFO  u.a.o.s.m.profile.ProfileFunctionalSpec  : The following profiles are active: test
+2020-11-29 21:44:55,816 [est worker] WARN  grails.util.Environment                  : Found spring-loaded on classpath but JVM is not 1.8 - skipping
+2020-11-29 21:44:56,913 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Attempting to load [0] user defined plugins
+2020-11-29 21:44:56,914 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [i18n] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,915 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [restResponder] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,916 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [eventBus] with version [SNAPSHOT] loaded successfully
+2020-11-29 21:44:56,917 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [jsonView] with version [2.0.0] loaded successfully
+2020-11-29 21:44:56,918 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [markupView] with version [2.0.0] loaded successfully
+2020-11-29 21:44:56,918 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [core] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,919 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [dataSource] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,932 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [urlMappings] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,934 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [groovyPages] with version [4.0.0] loaded successfully
+2020-11-29 21:44:56,935 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [codecs] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,938 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [controllers] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,939 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [assetPipeline] with version [3.0.11] loaded successfully
+2020-11-29 21:44:56,943 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [domainClass] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,944 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [controllersAsync] with version [SNAPSHOT] loaded successfully
+2020-11-29 21:44:56,946 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [converters] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,949 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [hibernate] with version [7.0.2] loaded successfully
+2020-11-29 21:44:56,950 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [hibernateSearch] with version [2.3.0] loaded successfully
+2020-11-29 21:44:56,951 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [services] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,953 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [interceptors] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,957 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [mdmCore] with version [4.0.0-SNAPSHOT] loaded successfully
+2020-11-29 21:44:56,958 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [cache] with version [4.0.3] loaded successfully
+2020-11-29 21:44:56,960 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [mdmPluginDatamodel] with version [4.0.0-SNAPSHOT] loaded successfully
+2020-11-29 21:44:56,962 [est worker] INFO  g.plugins.DefaultGrailsPluginManager     : Grails plug-in [mdmPluginProfile] with version [1.0.0-SNAPSHOT] loaded successfully
+2020-11-29 21:44:58,705 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : Hibernate Configuration override but delegated to class uk.ac.ox.softeng.maurodatamapper.core.hibernate.MauroDataMapperHibernateMappingContextConfiguration
+2020-11-29 21:44:58,731 [est worker] WARN  u.a.o.s.m.core.MdmCoreGrailsPlugin       : Running in public access mode. All actions will be available to any user
+2020-11-29 21:45:01,355 [est worker] INFO  org.hibernate.Version                    : HHH000412: Hibernate Core {5.4.4.Final}
+2020-11-29 21:45:01,511 [est worker] DEBUG pperHibernateMappingContextConfiguration : Instantiating Mauro Data Mapper Hibernate mapping
+2020-11-29 21:45:01,624 [est worker] DEBUG pperHibernateMappingContextConfiguration : Loaded 15 dynamic mapping contexts
+2020-11-29 21:45:01,625 [est worker] INFO  bernateSearchMappingContextConfiguration : Created delegate Hibernate Configuration on class uk.ac.ox.softeng.maurodatamapper.core.hibernate.MauroDataMapperHibernateMappingContextConfiguration
+2020-11-29 21:45:01,664 [est worker] INFO  o.h.v.internal.engine.ConfigurationImpl  : HV000002: Ignoring XML configuration.
+2020-11-29 21:45:01,765 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * Metadata is indexed
+2020-11-29 21:45:01,816 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * VersionedFolder is indexed
+2020-11-29 21:45:01,845 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * Folder is indexed
+2020-11-29 21:45:01,847 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * Classifier is indexed
+2020-11-29 21:45:01,850 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * EnumerationValue is indexed
+2020-11-29 21:45:01,877 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * ReferenceType is indexed
+2020-11-29 21:45:01,881 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * PrimitiveType is indexed
+2020-11-29 21:45:01,885 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * ModelDataType is indexed
+2020-11-29 21:45:01,889 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * EnumerationType is indexed
+2020-11-29 21:45:01,893 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * DataType is indexed
+2020-11-29 21:45:01,895 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * DataElement is indexed
+2020-11-29 21:45:01,897 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * DataClass is indexed
+2020-11-29 21:45:01,900 [est worker] INFO  g.p.h.s.HibernateSearchGrailsPlugin      : * DataModel is indexed
+2020-11-29 21:45:01,924 [est worker] DEBUG pperHibernateMappingContextConfiguration : Dynamically configuring mapping context before session factory is built for 25 persistent entities
+2020-11-29 21:45:02,150 [est worker] INFO  o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.0.Final}
+2020-11-29 21:45:02,294 [est worker] INFO  org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.H2Dialect
+2020-11-29 21:45:03,033 [est worker] INFO  org.ehcache.core.EhcacheManager          : Cache 'default-update-timestamps-region' created in EhcacheManager.
+2020-11-29 21:45:03,054 [est worker] INFO  org.ehcache.core.EhcacheManager          : Cache 'default-query-results-region' created in EhcacheManager.
+2020-11-29 21:45:03,852 [est worker] INFO  org.hibernate.search.engine.Version      : HSEARCH000034: Hibernate Search 5.11.2.Final
+2020-11-29 21:45:07,376 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile'
+2020-11-29 21:45:07,378 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue'
+2020-11-29 21:45:07,665 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType'
+2020-11-29 21:45:07,713 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel'
+2020-11-29 21:45:07,796 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.core.container.Folder'
+2020-11-29 21:45:07,827 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata'
+2020-11-29 21:45:07,853 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType'
+2020-11-29 21:45:07,878 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.core.container.Classifier'
+2020-11-29 21:45:07,902 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass'
+2020-11-29 21:45:07,930 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement'
+2020-11-29 21:45:07,982 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType'
+2020-11-29 21:45:08,012 [est worker] INFO  o.h.s.s.impl.DirectoryProviderHelper     : HSEARCH000041: Index directory not found, creating: '/tmp/lucene/plugin/profile/uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType'
+2020-11-29 21:45:08,153 [est worker] INFO  o.h.v.internal.engine.ConfigurationImpl  : HV000002: Ignoring XML configuration.
+2020-11-29 21:45:08,330 [est worker] INFO  o.h.v.internal.engine.ConfigurationImpl  : HV000002: Ignoring XML configuration.
+2020-11-29 21:45:08,339 [est worker] INFO  o.h.v.internal.engine.ConfigurationImpl  : HV000002: Ignoring XML configuration.
+2020-11-29 21:45:09,067 [est worker] INFO  o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 0 (http)
+2020-11-29 21:45:09,091 [est worker] INFO  o.a.coyote.http11.Http11NioProtocol      : Initializing ProtocolHandler ["http-nio-auto-1"]
+2020-11-29 21:45:09,106 [est worker] INFO  o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2020-11-29 21:45:09,107 [est worker] INFO  org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.27]
+2020-11-29 21:45:09,286 [est worker] INFO  o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2020-11-29 21:45:09,287 [est worker] INFO  o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 15733 ms
+2020-11-29 21:45:11,794 [est worker] DEBUG grails.artefact.Interceptor              : Computed interceptor execution order:
+2020-11-29 21:45:11,801 [est worker] DEBUG grails.artefact.Interceptor              : - session (order: -2147481648) 
+2020-11-29 21:45:11,802 [est worker] DEBUG grails.artefact.Interceptor              : - folder (order: 0) 
+2020-11-29 21:45:11,802 [est worker] DEBUG grails.artefact.Interceptor              : - search (order: 0) 
+2020-11-29 21:45:11,802 [est worker] DEBUG grails.artefact.Interceptor              : - mauroDataMapperServiceProvider (order: 0) 
+2020-11-29 21:45:11,802 [est worker] DEBUG grails.artefact.Interceptor              : - mauroDataMapperProvider (order: 0) 
+2020-11-29 21:45:11,802 [est worker] DEBUG grails.artefact.Interceptor              : - referenceFile (order: 0) 
+2020-11-29 21:45:11,803 [est worker] DEBUG grails.artefact.Interceptor              : - versionLink (order: 0) 
+2020-11-29 21:45:11,803 [est worker] DEBUG grails.artefact.Interceptor              : - importer (order: 0) 
+2020-11-29 21:45:11,803 [est worker] DEBUG grails.artefact.Interceptor              : - summaryMetadata (order: 0) 
+2020-11-29 21:45:11,803 [est worker] DEBUG grails.artefact.Interceptor              : - metadata (order: 0) 
+2020-11-29 21:45:11,803 [est worker] DEBUG grails.artefact.Interceptor              : - profile (order: 0) 
+2020-11-29 21:45:11,804 [est worker] DEBUG grails.artefact.Interceptor              : - edit (order: 0) 
+2020-11-29 21:45:11,804 [est worker] DEBUG grails.artefact.Interceptor              : - admin (order: 0) 
+2020-11-29 21:45:11,804 [est worker] DEBUG grails.artefact.Interceptor              : - semanticLink (order: 0) 
+2020-11-29 21:45:11,804 [est worker] DEBUG grails.artefact.Interceptor              : - dataModel (order: 0) 
+2020-11-29 21:45:11,805 [est worker] DEBUG grails.artefact.Interceptor              : - email (order: 0) 
+2020-11-29 21:45:11,805 [est worker] DEBUG grails.artefact.Interceptor              : - treeItem (order: 0) 
+2020-11-29 21:45:11,806 [est worker] DEBUG grails.artefact.Interceptor              : - enumerationValue (order: 0) 
+2020-11-29 21:45:11,806 [est worker] DEBUG grails.artefact.Interceptor              : - versionedFolder (order: 0) 
+2020-11-29 21:45:11,806 [est worker] DEBUG grails.artefact.Interceptor              : - authority (order: 0) 
+2020-11-29 21:45:11,806 [est worker] DEBUG grails.artefact.Interceptor              : - summaryMetadataReport (order: 0) 
+2020-11-29 21:45:11,806 [est worker] DEBUG grails.artefact.Interceptor              : - dataType (order: 0) 
+2020-11-29 21:45:11,807 [est worker] DEBUG grails.artefact.Interceptor              : - path (order: 0) 
+2020-11-29 21:45:11,807 [est worker] DEBUG grails.artefact.Interceptor              : - dataClass (order: 0) 
+2020-11-29 21:45:11,807 [est worker] DEBUG grails.artefact.Interceptor              : - annotation (order: 0) 
+2020-11-29 21:45:11,808 [est worker] DEBUG grails.artefact.Interceptor              : - classifier (order: 0) 
+2020-11-29 21:45:11,808 [est worker] DEBUG grails.artefact.Interceptor              : - dataElement (order: 0) 
+2020-11-29 21:45:11,808 [est worker] DEBUG grails.artefact.Interceptor              : - userImageFile (order: 2147483647) 
+2020-11-29 21:45:12,735 [est worker] INFO  o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoint(s) beneath base path '/actuator'
+2020-11-29 21:45:14,455 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : Running with JVM args : 32
+2020-11-29 21:45:14,458 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Dgrails.env=test
+2020-11-29 21:45:14,458 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Dgrails.full.stacktrace
+2020-11-29 21:45:14,459 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Dinfo.app.grailsVersion=4.0.3
+2020-11-29 21:45:14,459 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Dinfo.app.name=mdm-plugin-profile
+2020-11-29 21:45:14,459 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Dinfo.app.version=1.0.0-SNAPSHOT
+2020-11-29 21:45:14,460 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Dspring.output.ansi.enabled=always
+2020-11-29 21:45:14,460 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -XX:+TieredCompilation
+2020-11-29 21:45:14,460 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -XX:+UseCompressedOops
+2020-11-29 21:45:14,461 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -XX:+UseConcMarkSweepGC
+2020-11-29 21:45:14,461 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -XX:+UseStringDeduplication
+2020-11-29 21:45:14,462 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -XX:CICompilerCount=3
+2020-11-29 21:45:14,462 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -XX:TieredStopAtLevel=1
+2020-11-29 21:45:14,463 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Xjcl:jclse29
+2020-11-29 21:45:14,463 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Xlockword:mode=default,noLockword
+2020-11-29 21:45:14,463 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Xms128m
+2020-11-29 21:45:14,464 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Xmx8g
+2020-11-29 21:45:14,465 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : -Xoptionsfile=/Users/james/.sdkman/candidates/java/12.0.2.j9-adpt/lib/options.default
+2020-11-29 21:45:14,465 [est worker] DEBUG u.a.o.s.maurodatamapper.core.BootStrap   : Grails Environment: test (mdm.env property : )
+2020-11-29 21:45:14,466 [est worker] WARN  u.a.o.s.maurodatamapper.core.BootStrap   : Full public access is turned on
+2020-11-29 21:45:14,474 [est worker] INFO  u.a.o.s.maurodatamapper.core.BootStrap   : Deployment tmp dir: /tmp/test/
+2020-11-29 21:45:14,493 [est worker] INFO  u.a.o.s.m.core.ApiPropertyService        : Loading default API properties
+2020-11-29 21:45:14,864 [est worker] DEBUG u.a.o.s.m.core.ApiPropertyService        : Found 15 new default Api properties
+2020-11-29 21:45:15,017 [est worker] DEBUG u.a.o.s.m.core.ApiPropertyService        : No legacy file exists
+2020-11-29 21:45:15,193 [est worker] INFO  u.a.o.s.maurodatamapper.core.BootStrap   : Configuring emailers
+2020-11-29 21:45:15,200 [est worker] DEBUG u.a.o.s.maurodatamapper.core.BootStrap   : Configuring emailer: uk.ac.ox.softeng.maurodatamapper.core.provider.email/BasicEmailProviderService
+2020-11-29 21:45:15,300 [est worker] INFO  u.a.o.s.maurodatamapper.core.BootStrap   : Using lucene index directory of: /tmp/lucene/plugin/profile
+2020-11-29 21:45:15,301 [est worker] DEBUG u.a.o.s.maurodatamapper.core.BootStrap   : Main bootstrap complete
+2020-11-29 21:45:15,305 [est worker] DEBUG u.a.o.s.m.datamodel.BootStrap            : Main bootstrap complete
+2020-11-29 21:45:16,740 [ner.Folder] INFO  o.h.s.b.i.l.works.IndexUpdateVisitor     : HSEARCH000249: Cannot do fast deletes on index 'uk.ac.ox.softeng.maurodatamapper.core.container.Folder'. Entities in this index are conflicting or the index can accept unknown entities.
+2020-11-29 21:45:16,793 [est worker] INFO  o.a.coyote.http11.Http11NioProtocol      : Starting ProtocolHandler ["http-nio-auto-1"]
+2020-11-29 21:45:16,825 [est worker] INFO  o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring GrailsDispatcherServlet 'grailsDispatcherServlet'
+2020-11-29 21:45:16,825 [est worker] INFO  o.g.w.s.mvc.GrailsDispatcherServlet      : Initializing Servlet 'grailsDispatcherServlet'
+2020-11-29 21:45:16,845 [est worker] INFO  o.g.w.s.mvc.GrailsDispatcherServlet      : Completed initialization in 19 ms
+2020-11-29 21:45:16,846 [est worker] INFO  o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 50340 (http) with context path ''
+2020-11-29 21:45:16,854 [est worker] INFO  u.a.o.s.m.profile.ProfileFunctionalSpec  : Started ProfileFunctionalSpec in 25.848 seconds (JVM running for 30.648)
+2020-11-29 21:45:16,872 [est worker] INFO  grails.boot.GrailsApp                    : Application starting in environment: test
+2020-11-29 21:45:17,131 [est worker] DEBUG u.a.o.s.m.test.MdmSpecification          : Setup User Ids
+2020-11-29 21:45:17,132 [est worker] WARN  u.a.o.s.m.test.MdmSpecification          : --- ProfileFunctionalSpec --- test getting profile providers ---
+2020-11-29 21:45:17,132 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Initialise HttpClient
+2020-11-29 21:45:17,776 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Set start time for test
+2020-11-29 21:45:20,040 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Cleanup BaseFunctionalSpec
+2020-11-29 21:45:20,063 [est worker] WARN  u.a.o.s.m.test.MdmSpecification          : --- ProfileFunctionalSpec --- test get all models in profile which doesnt exist ---
+2020-11-29 21:45:20,064 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Set start time for test
+2020-11-29 21:45:20,358 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Cleanup BaseFunctionalSpec
+2020-11-29 21:45:20,372 [est worker] WARN  u.a.o.s.m.test.MdmSpecification          : --- ProfileFunctionalSpec --- test get all models values in profile which doesnt exist ---
+2020-11-29 21:45:20,373 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Set start time for test
+2020-11-29 21:45:20,389 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Cleanup BaseFunctionalSpec
+2020-11-29 21:45:20,404 [est worker] WARN  u.a.o.s.m.test.MdmSpecification          : --- ProfileFunctionalSpec --- test searching in profile which doesnt exist ---
+2020-11-29 21:45:20,405 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Set start time for test
+2020-11-29 21:45:20,506 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Cleanup BaseFunctionalSpec
+2020-11-29 21:45:20,522 [est worker] WARN  u.a.o.s.m.test.MdmSpecification          : --- ProfileFunctionalSpec --- test get profile for model which doesnt exist ---
+2020-11-29 21:45:20,523 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Set start time for test
+2020-11-29 21:45:20,563 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Cleanup BaseFunctionalSpec
+2020-11-29 21:45:20,576 [est worker] WARN  u.a.o.s.m.test.MdmSpecification          : --- ProfileFunctionalSpec --- test get profile for model when profile doesnt exist ---
+2020-11-29 21:45:20,576 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Set start time for test
+2020-11-29 21:45:20,626 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Cleanup BaseFunctionalSpec
+2020-11-29 21:45:20,638 [est worker] WARN  u.a.o.s.m.test.MdmSpecification          : --- ProfileFunctionalSpec --- test save profile for model which doesnt exist ---
+2020-11-29 21:45:20,638 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Set start time for test
+2020-11-29 21:45:20,664 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Cleanup BaseFunctionalSpec
+2020-11-29 21:45:20,677 [est worker] WARN  u.a.o.s.m.test.MdmSpecification          : --- ProfileFunctionalSpec --- test save profile for model when profile doesnt exist ---
+2020-11-29 21:45:20,678 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Set start time for test
+2020-11-29 21:45:20,706 [est worker] DEBUG u.a.o.s.m.t.f.BaseFunctionalSpec         : Cleanup BaseFunctionalSpec
+2020-11-29 21:45:21,213 [ Thread-14] INFO  org.ehcache.core.EhcacheManager          : Cache 'default-query-results-region' removed from EhcacheManager.
+2020-11-29 21:45:21,660 [ Thread-14] INFO  org.ehcache.core.EhcacheManager          : Cache 'default-update-timestamps-region' removed from EhcacheManager.
