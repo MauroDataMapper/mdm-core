@@ -112,6 +112,12 @@ class BootstrapModels {
         checkAndSave(messageSource, classifier1)
         checkAndSave(messageSource, terminology)
 
+        terminology.addToRules(name: "Bootstrapped Functional Test Rule", 
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT) 
+        
+        checkAndSave(messageSource, terminology)                                       
+
         terminology.addToClassifiers(classifier)
             .addToClassifiers(classifier1)
             .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk1', value: 'mdv1')
@@ -136,7 +142,7 @@ class BootstrapModels {
         TermRelationshipType broaderThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'broaderThan', displayLabel: 'Broader Than',
                                                                     parentalRelationship: true)
         TermRelationshipType narrowerThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'narrowerThan', displayLabel: 'Narrower Than')
-
+    
         terminology.addToTermRelationshipTypes(is)
             .addToTermRelationshipTypes(isPartOf)
             .addToTermRelationshipTypes(broaderThan)
@@ -174,6 +180,19 @@ class BootstrapModels {
         }
         checkAndSave(messageSource, terminology)
 
+        narrowerThan.addToRules(name: "Bootstrapped Functional Test Rule", 
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT)    
+        terminology.findTermByCode('CTT1').addToRules(name: "Bootstrapped Functional Test Rule", 
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT)    
+        terminology.findTermByCode('CTT1').sourceTermRelationships[0]
+                   .addToRules(name: "Bootstrapped Functional Test Rule", 
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT)                                  
+        
+        checkAndSave(messageSource, terminology)                                        
+
         terminology
     }
 
@@ -195,6 +214,12 @@ class BootstrapModels {
         }
 
         checkAndSave(messageSource, codeSet)
+
+        codeSet.addToRules(name: "Bootstrapped Functional Test Rule", 
+                           description: 'Functional Test Description',
+                           createdBy: DEVELOPMENT) 
+
+        checkAndSave(messageSource, codeSet)          
 
         codeSet
     }    

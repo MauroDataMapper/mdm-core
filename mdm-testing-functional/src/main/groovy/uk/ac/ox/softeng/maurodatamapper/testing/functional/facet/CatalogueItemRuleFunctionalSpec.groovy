@@ -147,8 +147,15 @@ abstract class CatalogueItemRuleFunctionalSpec extends UserAccessFunctionalSpec 
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 0,
-  "items": []
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "name": "Bootstrapped Functional Test Rule",
+      "description": "Functional Test Description",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}"
+    }
+  ]
 }'''
     }
 

@@ -66,20 +66,9 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
         getCatalogueItem().id.toString()
     } 
 
-    @OnceBefore
-    @Transactional
-    def checkAndSetupData() {
-        log.debug('Check and setup test data')
-        // Make a Rule on the CatalogueItem being tested
-        rule = new Rule(name: "Functional Test Rule", 
-                        description: 'Functional Test Description',
-                        createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
-        getCatalogueItem().addToRules(rule)
-    }
-
     @Transactional
     String getRuleId() {
-        Rule.findByCatalogueItemIdAndName(getCatalogueItemId(), "Functional Test Rule").id.toString()
+        Rule.findByCatalogueItemIdAndName(getCatalogueItemId(), "Bootstrapped Functional Test Rule").id.toString()
     }      
 
     @Override
@@ -94,13 +83,6 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
     @Override
     String getEditsFullPath(String id) {
         "${getCatalogueItemDomainType()}/${getCatalogueItemId()}"
-    }
-
-    @Transactional
-    @Override
-    def cleanupSpec() {
-        log.info('Removing functional test rule') 
-        getCatalogueItem().removeFromRules(rule)     
     }
 
     @Override
@@ -150,12 +132,12 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
 
     @Override
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[RuleRepresentation:sql on Rule Rule:Functional Test Rule] added to component \[.+?]/
+        ~/\[RuleRepresentation:sql on Rule Rule:Bootstrapped Functional Test Rule] added to component \[.+?]/
     }
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[RuleRepresentation:sql on Rule Rule:Functional Test Rule] changed properties \[representation]/
+        ~/\[RuleRepresentation:sql on Rule Rule:Bootstrapped Functional Test Rule] changed properties \[representation]/
     }
 
     @Override
@@ -205,7 +187,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
   "items": [
     {
       "id": "${json-unit.matches:id}",
-      "name": "Functional Test Rule",
+      "name": "Bootstrapped Functional Test Rule",
       "description": "Functional Test Description",
       "lastUpdated": "${json-unit.matches:offsetDateTime}",
       "ruleRepresentations": [
