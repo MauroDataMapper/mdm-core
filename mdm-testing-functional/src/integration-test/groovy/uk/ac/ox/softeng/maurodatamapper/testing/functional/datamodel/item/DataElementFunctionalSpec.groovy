@@ -114,7 +114,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
 
     @Transactional
     String getImportedStringDataTypeId() {
-        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getFinalisedSimpleDataModelId()), 'string').get().id.toString()
+        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getFinalisedSimpleDataModelId()), 'string on finalised simple data model').get().id.toString()
     }    
 
     @Transactional
@@ -401,7 +401,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
       "dataType": {
         "id": "${json-unit.matches:id}",
         "domainType": "PrimitiveType",
-        "label": "string",
+        "label": "string on finalised simple data model",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -500,7 +500,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
   "dataType": {
     "id": "${json-unit.matches:id}",
     "domainType": "PrimitiveType",
-    "label": "string",
+    "label": "string on finalised simple data model",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -1221,13 +1221,13 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
         verifyJsonResponse HttpStatus.OK, getExpectedModelImportJson()
 
         when: "List the resources on the DataType endpoint without showing imported resources"
-        GET(getDataTypeResourcePath(), STRING_ARG, true)
+        GET("${getDataTypeResourcePath()}?imported=false", STRING_ARG, true)
 
         then: "The correct resources are listed"
         verifyJsonResponse HttpStatus.OK, getExpectedDataTypeIndexJson()        
 
         when: "List the resources on the DataType endpoint showing imported resources"
-        GET("${getDataTypeResourcePath()}?imported=true", STRING_ARG, true)
+        GET(getDataTypeResourcePath(), STRING_ARG, true)
 
         then: "The correct resources are listed"
         verifyJsonResponse HttpStatus.OK, getExpectedDataTypeIndexJsonWithImported()       
@@ -1463,7 +1463,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
     {
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
-      "label": "string",
+      "label": "string on finalised simple data model",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

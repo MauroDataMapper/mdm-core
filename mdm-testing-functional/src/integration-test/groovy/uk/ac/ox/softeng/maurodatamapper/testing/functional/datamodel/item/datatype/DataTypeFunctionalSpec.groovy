@@ -76,7 +76,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     @Transactional
     @Override
     String getImportedCatalogueItemId() {
-        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, 'string').get().id.toString()
+        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, 'string on finalised simple data model').get().id.toString()
     }
 
     @Override
@@ -116,7 +116,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
   "importedCatalogueItem": {
     "id": "${json-unit.matches:id}",
     "domainType": "PrimitiveType",
-    "label": "string",
+    "label": "string on finalised simple data model",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -375,7 +375,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     {
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
-      "label": "string",
+      "label": "string on finalised simple data model",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -653,9 +653,9 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
         when: "List the DataTypes on the importing DataModel"
         GET("${getResourcePath()}", STRING_ARG, true)
 
-        then: "The ReferenceType is included in the list"
+        then: "The ReferenceType is included in the list as the imported primitive type"
         verifyJsonResponse HttpStatus.OK, '''{
-  "count": 5,
+  "count": 6,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -783,12 +783,26 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
           }
         ]
       }
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "PrimitiveType",
+      "label": "string on finalised simple data model",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Finalised Example Test DataModel",
+          "domainType": "DataModel",
+          "finalised": true
+        }
+      ]
     }
   ]
 }'''
 
         when: "List the DataTypes on the DataModel from which the DataClass was imported"
-        GET("${getResourcePathForFinalisedSimpleDataModel()}?imported=true", STRING_ARG, true)
+        GET(getResourcePathForFinalisedSimpleDataModel(), STRING_ARG, true)
 
         then: "The ReferenceType is not unintentionally included in the list"
         verifyJsonResponse HttpStatus.OK, '''{
@@ -797,7 +811,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     {
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
-      "label": "string",
+      "label": "string on finalised simple data model",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

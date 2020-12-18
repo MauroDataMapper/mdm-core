@@ -130,7 +130,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
     @Override
     protected List<DataClass> listAllReadableResources(Map params) {
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
-        params.imported = params.boolean('imported', false)
+        params.imported = params.boolean('imported', true)
         if (params.dataClassId) {
             if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
                 notFound(params.dataClassId)

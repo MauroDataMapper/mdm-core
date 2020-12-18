@@ -532,13 +532,15 @@ class DataElementService extends ModelItemService<DataElement> {
         //The DataModel to which that DataClass belongs
         DataModel dataModel = catalogueItem.getModel()
 
-        //Create a new ModelImport for the DataType into DataModel
-        ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
-                                                          importedCatalogueItem  : dataType,
-                                                          createdByUser          : currentUser)
+        if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
+            //Create a new ModelImport for the DataType into DataModel
+            ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
+                                                              importedCatalogueItem  : dataType,
+                                                              createdByUser          : currentUser)
         
-        //Save the additional model import, indicating that this is an additional rather than
-        //principal import and so should fail silently if it already exists.
-        modelImportService.saveResource(currentUser, modelImportDataType, true)                                                  
+            //Save the additional model import, indicating that this is an additional rather than
+            //principal import and so should fail silently if it already exists.
+            modelImportService.saveResource(currentUser, modelImportDataType, true)                                                  
+        }
     }
 }

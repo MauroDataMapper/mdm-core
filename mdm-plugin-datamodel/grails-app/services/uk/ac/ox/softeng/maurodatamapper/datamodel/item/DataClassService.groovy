@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
@@ -773,5 +774,47 @@ class DataClassService extends ModelItemService<DataClass> {
      */
     DataClass findByLabel(String label) {
         DataClass.findByLabel(label)
+    }
+
+    /**
+     * When a DataClass is imported into a DataClass or DataModel, we also want to import any DataTypes
+     * belonging to the DataElements of the imported DataClass.
+     *
+     * @param currentUser The user doing the import
+     * @param imported The resource that was imported
+     *
+     */
+    @Override
+    void additionalModelImports(User currentUser, ModelImport imported) {
+
+        //The DataClass that was imported
+        DataClass dataClass = imported.importedCatalogueItem
+        
+        dataClass.dataElements.each {dataElement ->
+            DataType dataType = dataElement.dataType
+
+            //The CatalogueItem (which will be a DataClass) into which the DataElement was imported
+            CatalogueItem catalogueItem = imported.catalogueItem
+
+            //The DataModel to which that DataClass belongs
+            DataModel dataModel
+            if (catalogueItem instanceof ModelItem) {
+                dataModel = catalogueItem.getModel()
+            } else {
+                dataModel = catalogueItem
+            }
+
+            if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
+                //Create a new ModelImport for the DataType into DataModel
+                ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
+                                                                  importedCatalogueItem  : dataType,
+                                                                  createdByUser          : currentUser)
+        
+                //Save the additional model import, indicating that this is an additional rather than
+                //principal import and so should fail silently if it already exists.
+                modelImportService.saveResource(currentUser, modelImportDataType, true) 
+            }
+        }
+                                                 
     }
 }

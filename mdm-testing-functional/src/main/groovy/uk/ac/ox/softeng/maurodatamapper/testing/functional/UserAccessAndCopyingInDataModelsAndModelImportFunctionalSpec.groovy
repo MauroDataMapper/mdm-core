@@ -111,13 +111,13 @@ abstract class UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec exte
         verifyJsonResponse HttpStatus.OK, getExpectedModelImportJson()
 
         when: "List the resources on the endpoint without showing imported resources"
-        GET(getResourcePath(), STRING_ARG, true)
+        GET("${getResourcePath()}?imported=false", STRING_ARG, true)
 
         then: "The correct resources are listed"
         verifyJsonResponse HttpStatus.OK, getEditorIndexJson()        
 
         when: "List the resources on the endpoint showing imported resources"
-        GET("${getResourcePath()}?imported=true", STRING_ARG, true)
+        GET(getResourcePath(), STRING_ARG, true)
 
         then: "The correct resources are listed"
         verifyJsonResponse HttpStatus.OK, getEditorIndexJsonWithImported()           

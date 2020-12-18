@@ -176,7 +176,7 @@ class BootstrapModels {
 
         checkAndSave(messageSource, simpleDataModel)
 
-        PrimitiveType primitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+        PrimitiveType primitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string on finalised simple data model')
         DataElement dataElement1 = new DataElement(createdBy: DEVELOPMENT, label: 'data element 1', minMultiplicity: 1, maxMultiplicity: 1, dataType: primitiveType1)         
         DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL)
 
