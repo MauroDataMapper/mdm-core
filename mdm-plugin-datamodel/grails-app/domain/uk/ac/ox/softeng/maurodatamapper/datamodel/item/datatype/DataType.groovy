@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -66,7 +67,8 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         semanticLinks  : SemanticLink,
         referenceFiles : ReferenceFile,
         dataElements   : DataElement,
-        summaryMetadata: SummaryMetadata
+        summaryMetadata: SummaryMetadata,
+        rules          : Rule
     ]
 
     static belongsTo = [dataModel: DataModel]

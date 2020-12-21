@@ -80,6 +80,8 @@ class BootstrapModels {
         checkAndSave(messageSource, classifier)
         checkAndSave(messageSource, classifier1)
 
+        PrimitiveType stringPrimitive = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+
         dataModel.addToClassifiers(classifier)
             .addToClassifiers(classifier1)
 
@@ -92,7 +94,7 @@ class BootstrapModels {
 
             .addToAnnotations(createdBy: DEVELOPMENT, label: 'test annotation 2', description: 'with description')
 
-            .addToDataTypes(new PrimitiveType(createdBy: DEVELOPMENT, label: 'string'))
+            .addToDataTypes(stringPrimitive)
 
             .addToDataTypes(new PrimitiveType(createdBy: DEVELOPMENT, label: 'integer'))
 
@@ -108,8 +110,21 @@ class BootstrapModels {
         parent.addToDataClasses(child)
         dataModel.addToDataClasses(child)
         dataModel.addToDataClasses(parent)
-
         checkAndSave(messageSource, dataModel)
+
+        parent.addToRules(name: "Bootstrapped Functional Test Rule", 
+                          description: 'Functional Test Description',
+                          createdBy: DEVELOPMENT)     
+
+        dataModel.addToRules(name: "Bootstrapped Functional Test Rule", 
+                             description: 'Functional Test Description',
+                             createdBy: DEVELOPMENT)   
+        
+        stringPrimitive.addToRules(name: "Bootstrapped Functional Test Rule", 
+                                   description: 'Functional Test Description',
+                                   createdBy: DEVELOPMENT)                               
+
+        checkAndSave(messageSource, dataModel)                                                        
 
         ReferenceType refType = new ReferenceType(createdBy: DEVELOPMENT, label: 'child')
         child.addToReferenceTypes(refType)
@@ -132,6 +147,12 @@ class BootstrapModels {
         dataModel.addToDataClasses(content)
 
         checkAndSave(messageSource, dataModel)
+
+        el2.addToRules(name: "Bootstrapped Functional Test Rule", 
+                       description: 'Functional Test Description',
+                       createdBy: DEVELOPMENT)
+
+        checkAndSave(messageSource, dataModel)                                 
 
         SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: DEVELOPMENT,
                                              targetCatalogueItem: DataClass.findByLabel('parent'))

@@ -152,6 +152,13 @@ class UrlMappings {
                 Get Catalogue Item by path where is ID of top Catalogue Item is provided
                  */
                 get "/path/$path"(controller: 'path', action: 'show')
+
+                /*
+                Rules
+                */
+                '/rules'(resources: 'rule', excludes: DEFAULT_EXCLUDES) {
+                    '/representations'(resources: 'ruleRepresentation', excludes: DEFAULT_EXCLUDES)
+                }
             }
 
             /*

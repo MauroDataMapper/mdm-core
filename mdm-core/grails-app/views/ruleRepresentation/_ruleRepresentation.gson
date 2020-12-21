@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
+
+model {
+    RuleRepresentation ruleRepresentation
+}
+
+json {
+    id ruleRepresentation.id
+
+    if (ruleRepresentation.language) language ruleRepresentation.language
+    if (ruleRepresentation.representation) representation ruleRepresentation.representation
+
+    lastUpdated ruleRepresentation.lastUpdated
+}

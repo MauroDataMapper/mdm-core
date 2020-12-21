@@ -75,6 +75,20 @@ class BootstrapModels {
 
         checkAndSave(messageSource, referenceDataModel)
 
+        referenceDataModel.addToRules(name: "Bootstrapped Functional Test Rule", 
+                                      description: 'Functional Test Description',
+                                      createdBy: DEVELOPMENT)  
+
+        organisationName.addToRules(name: "Bootstrapped Functional Test Rule", 
+                                    description: 'Functional Test Description',
+                                    createdBy: DEVELOPMENT)  
+
+        stringDataType.addToRules(name: "Bootstrapped Functional Test Rule", 
+                                  description: 'Functional Test Description',
+                                  createdBy: DEVELOPMENT)                                                                          
+
+        checkAndSave(messageSource, referenceDataModel)                                              
+
         referenceDataModel
     }
 

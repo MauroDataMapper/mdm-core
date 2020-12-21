@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -52,7 +53,8 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
         semanticLinks     : SemanticLink,
         referenceFiles    : ReferenceFile,
         sourceDataElements: DataElement,
-        targetDataElements: DataElement
+        targetDataElements: DataElement,
+        rules             : Rule
     ]
 
     static transients = ['aliases', 'model']

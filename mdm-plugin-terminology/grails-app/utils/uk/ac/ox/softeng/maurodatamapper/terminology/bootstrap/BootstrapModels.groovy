@@ -42,6 +42,7 @@ class BootstrapModels {
     public static final String COMPLEX_TERMINOLOGY_NAME = 'Complex Test Terminology'
     public static final String SIMPLE_TERMINOLOGY_NAME = 'Simple Test Terminology'
     public static final String SIMPLE_CODESET_NAME = 'Simple Test CodeSet'
+    public static final String UNFINALISED_CODESET_NAME = 'Unfinalised Simple Test CodeSet'
 
     static Terminology buildAndSaveSimpleTerminology(MessageSource messageSource, Folder folder, Authority authority) {
         Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: SIMPLE_TERMINOLOGY_NAME, folder: folder,
@@ -111,6 +112,12 @@ class BootstrapModels {
         checkAndSave(messageSource, classifier1)
         checkAndSave(messageSource, terminology)
 
+        terminology.addToRules(name: "Bootstrapped Functional Test Rule", 
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT) 
+        
+        checkAndSave(messageSource, terminology)                                       
+
         terminology.addToClassifiers(classifier)
             .addToClassifiers(classifier1)
             .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk1', value: 'mdv1')
@@ -135,7 +142,7 @@ class BootstrapModels {
         TermRelationshipType broaderThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'broaderThan', displayLabel: 'Broader Than',
                                                                     parentalRelationship: true)
         TermRelationshipType narrowerThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'narrowerThan', displayLabel: 'Narrower Than')
-
+    
         terminology.addToTermRelationshipTypes(is)
             .addToTermRelationshipTypes(isPartOf)
             .addToTermRelationshipTypes(broaderThan)
@@ -173,6 +180,47 @@ class BootstrapModels {
         }
         checkAndSave(messageSource, terminology)
 
+        narrowerThan.addToRules(name: "Bootstrapped Functional Test Rule", 
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT)    
+        terminology.findTermByCode('CTT1').addToRules(name: "Bootstrapped Functional Test Rule", 
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT)    
+        terminology.findTermByCode('CTT1').sourceTermRelationships[0]
+                   .addToRules(name: "Bootstrapped Functional Test Rule", 
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT)                                  
+        
+        checkAndSave(messageSource, terminology)                                        
+
         terminology
     }
+
+    static CodeSet buildAndSaveUnfinalisedCodeSet(MessageSource messageSource, Folder folder, Authority authority) {
+
+        CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: UNFINALISED_CODESET_NAME, folder: folder,
+                                      author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
+
+        checkAndSave(messageSource, codeSet)
+
+        Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
+
+        if (!simpleTestTerminology) {
+            simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
+        }
+
+        simpleTestTerminology.terms.each {
+            codeSet.addToTerms(it)
+        }
+
+        checkAndSave(messageSource, codeSet)
+
+        codeSet.addToRules(name: "Bootstrapped Functional Test Rule", 
+                           description: 'Functional Test Description',
+                           createdBy: DEVELOPMENT) 
+
+        checkAndSave(messageSource, codeSet)          
+
+        codeSet
+    }    
 }

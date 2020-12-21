@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -53,6 +54,7 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
         annotations   : Annotation,
         semanticLinks : SemanticLink,
         referenceFiles: ReferenceFile,
+        rules         : Rule
     ]    
 
     static constraints = {

@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.InformationAwar
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.MetadataAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.PathAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ReferenceFileAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.RuleAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.SemanticLinkAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.VersionLinkAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
@@ -166,6 +167,7 @@ This is basically the backend API.
             annotationAwareMappingContext AnnotationAwareMappingContext
             metadataAwareMappingContext MetadataAwareMappingContext
             referenceFileAwareMappingContext ReferenceFileAwareMappingContext
+            ruleAwareMappingContext RuleAwareMappingContext
             semanticLinkAwareMappingContext SemanticLinkAwareMappingContext
             versionLinkAwareMappingContext VersionLinkAwareMappingContext
             catalogueItemMappingContext CatalogueItemMappingContext

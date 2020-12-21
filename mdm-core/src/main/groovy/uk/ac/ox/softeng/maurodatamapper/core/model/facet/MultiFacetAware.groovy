@@ -26,5 +26,6 @@ import org.grails.datastore.gorm.GormEntity
 trait MultiFacetAware implements MetadataAware,
     AnnotationAware,
     SemanticLinkAware,
-    ReferenceFileAware {
+    ReferenceFileAware,
+    RuleAware {
 }

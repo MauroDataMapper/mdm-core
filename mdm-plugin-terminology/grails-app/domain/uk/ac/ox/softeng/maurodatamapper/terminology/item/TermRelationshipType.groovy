@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -55,7 +56,8 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
         annotations      : Annotation,
         semanticLinks    : SemanticLink,
         referenceFiles   : ReferenceFile,
-        termRelationships: TermRelationship
+        termRelationships: TermRelationship,
+        rules            : Rule
     ]
 
     static constraints = {

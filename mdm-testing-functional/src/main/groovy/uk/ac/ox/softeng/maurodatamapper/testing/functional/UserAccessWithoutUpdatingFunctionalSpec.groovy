@@ -252,7 +252,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             // It should not be used to perform cleanp of these roles and resources
             List<SecurableResourceGroupRole> rolesLeftOver = SecurableResourceGroupRole.byUserGroupIds(groupsToDelete*.id).list()
             if (rolesLeftOver) {
-                log.warn('Roles not cleaned up : {}', rolesLeftOver.count())
+                log.warn('Roles not cleaned up : {}', rolesLeftOver.size())
                 rolesLeftOver.each { role ->
                     log.warn('Left over role resource {}:{}', role.securableResourceDomainType, role.securableResourceId)
                 }
@@ -650,10 +650,13 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
         then:
         verifySameValidDataCreationResponse()
+        String id2 = response.body()?.id
 
         cleanup:
         removeValidIdObject(id1)
-        removeValidIdObject(response.body()?.id) // not expecting anything, but just in case
+        if (id2) {
+            removeValidIdObject(id2) // not expecting anything, but just in case
+        }
     }
 
     void 'A04 : Test the delete action correctly deletes an instance (as admin)'() {

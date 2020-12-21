@@ -24,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
@@ -44,6 +46,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
 
     ClassifierService classifierService
     MetadataService metadataService
+    RuleService ruleService
     SemanticLinkService semanticLinkService
     SessionFactory sessionFactory
 
@@ -148,6 +151,15 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
 
         classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
         metadataService.findAllByCatalogueItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
+        ruleService.findAllByCatalogueItemId(original.id).each { rule ->
+            Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
+            rule.ruleRepresentations.each { ruleRepresentation ->
+                copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
+                                                    representation: ruleRepresentation.representation,
+                                                    createdBy: copier.emailAddress)
+            }            
+            copy.addToRules(copiedRule)
+        }
 
         semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
@@ -171,6 +183,13 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
             }
             Metadata.saveAll(catalogueItem.metadata)
         }
+        if (catalogueItem.rules) {
+            catalogueItem.rules.each {
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            Rule.saveAll(catalogueItem.rules)
+        }        
         if (catalogueItem.annotations) {
             catalogueItem.annotations.each {
                 if (!it.isDirty('catalogueItemId')) it.trackChanges()
@@ -205,6 +224,12 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
                 it.createdBy = it.createdBy ?: catalogueItem.createdBy
             }
         }
+        if (catalogueItem.rules) {
+            catalogueItem.rules.each {
+                it.catalogueItem = catalogueItem
+                it.createdBy = it.createdBy ?: catalogueItem.createdBy
+            }
+        }        
         if (catalogueItem.annotations) {
             catalogueItem.annotations.each {
                 it.catalogueItem = catalogueItem
