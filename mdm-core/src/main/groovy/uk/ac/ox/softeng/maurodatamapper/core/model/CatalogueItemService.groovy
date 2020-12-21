@@ -157,9 +157,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff)
+    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff, boolean includeImported)
 
-    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false)
+    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false, boolean includeImported = false)
 
     abstract K findByIdJoinClassifiers(UUID id)
 

@@ -269,6 +269,30 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         criteria
     }     
 
+    /**
+     * If we want to include imported DataClasses then do a logical OR on imported and directly owned DataClasses.
+     *
+     * @param dataClassId The ID of the DataClass we are looking at
+     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataClass (in 
+     *                        addition to DataClasses directly belonging to the DataClass)?
+     * @return DetachedCriteria<DataClass>    
+     */
+    static DetachedCriteria<DataClass> byParentDataClassId(UUID dataClassId, boolean includeImported = false) {
+        DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
+
+        if (includeImported) {
+            criteria
+            .or {
+                inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
+                criteria.eq('parentDataClass.id', dataClassId)               
+            }
+        } else {
+            criteria.eq('parentDataClass.id', dataClassId)
+        }
+        
+        criteria
+    }    
+
     static DetachedCriteria<DataClass> byRootDataClassOfDataModelId(UUID dataModelId, boolean includeImported = false) {
         byDataModelId(dataModelId, includeImported).isNull('parentDataClass')
     }

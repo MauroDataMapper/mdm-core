@@ -408,7 +408,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
     def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:], boolean includeImported = false) {
         DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId, includeImported), paginate).list(paginate)
-    }
+    }   
 
     List<ModelItem> findAllContentOfDataClassIdInDataModelId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
         List<ModelItem> content = []
@@ -666,12 +666,13 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataClass dataClass, boolean forDiff) {
-        dataClass.dataClasses || (dataClass.dataElements && forDiff)
+    boolean hasTreeTypeModelItems(DataClass dataClass, boolean forDiff, boolean includeImported = false) {
+        dataClass.dataClasses || (dataClass.dataElements && forDiff) || (dataClass.modelImports && includeImported)
     }
 
+    //TODO is it merged correctly?
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean forDiff = false, boolean includeImported = false) {
         (DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id).list() +
          (forDiff ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
     }

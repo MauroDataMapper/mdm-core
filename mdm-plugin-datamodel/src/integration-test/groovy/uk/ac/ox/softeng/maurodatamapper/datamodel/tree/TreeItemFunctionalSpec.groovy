@@ -59,6 +59,21 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     @Shared
     Folder folder
 
+    @Shared
+    Folder importTestFolder
+
+    @Shared
+    UUID importingDataModelId
+
+    @Shared
+    UUID importingParentDataClassId    
+
+    @Shared
+    UUID importedParentDataClassId       
+
+    @Shared
+    UUID importedDataModelId    
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -86,6 +101,71 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         Classifier classifier = new Classifier(label: 'Functional Test Classifier', createdBy: FUNCTIONAL_TEST).save(flush: true)
         new Classifier(label: 'Functional Test Classifier 2', createdBy: FUNCTIONAL_TEST).save(flush: true)
         dataModel.addToClassifiers(classifier).save(flush: true)
+
+
+        /**
+         * Set up another folder with data models, classes and imports which looks like this:
+         *
+         * Folder: Functional Test Import Test Folder
+         *     - Data Model: Functional Test Importing DataModel
+         *         - Data Class: Functional Test Importing Parent DataClass (directly owned)
+         *             - Data Class: Functional Test Imported Child DataClass (imported)
+         *         - Data Class: Functional Test Imported Parent DataClass (imported)
+         *     - Data Model: Functional Test Imported DataModel
+         *         - Data Class: Functional Test Imported Parent DataClass (directly owned)
+         *             - Data Class: Functional Test Imported Child DataClass (directly owned)         
+         */
+        importTestFolder = new Folder(label: 'Functional Test Import Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(importTestFolder)
+
+        DataModel importingDataModel = new DataModel(label: 'Functional Test Importing DataModel', createdBy: FUNCTIONAL_TEST,
+                                            folder: importTestFolder, authority: testAuthority).save(flush: true)
+        importingDataModelId = importingDataModel.id
+
+        DataClass importingParentDataClass = new DataClass(label: 'Functional Test Importing Parent DataClass', 
+                                                           createdBy: FUNCTIONAL_TEST,
+                                                           dataModel: importingDataModel)
+                                                          .save(flush: true)
+
+        importingParentDataClassId = importingParentDataClass.id                                                          
+
+        importingDataModel
+        .addToDataClasses(importingParentDataClass)                                                          
+
+        DataModel importedDataModel = new DataModel(label: 'Functional Test Imported DataModel', createdBy: FUNCTIONAL_TEST,
+                                            folder: importTestFolder, authority: testAuthority).save(flush: true)
+        importedDataModelId = importedDataModel.id
+
+        DataClass importedParentDataClass = new DataClass(label: 'Functional Test Imported Parent DataClass', 
+                                                          createdBy: FUNCTIONAL_TEST,
+                                                          dataModel: importedDataModel)
+                                                         .save(flush: true)
+
+        importedParentDataClassId = importedParentDataClass.id                                                           
+                                                      
+
+        DataClass importedChildDataClass = new DataClass(label: 'Functional Test Imported Child DataClass', 
+                                                          createdBy: FUNCTIONAL_TEST,
+                                                          dataModel: importedDataModel)
+                                                         .save(flush: true)                                                        
+        
+        importedParentDataClass
+        .addToDataClasses(importedChildDataClass)
+        
+        importedDataModel
+        .addToDataClasses(importedParentDataClass)
+
+        checkAndSave(importedDataModel)
+
+        importingDataModel.
+        addToModelImports('DataClass', importedParentDataClass.id, FUNCTIONAL_TEST)
+
+        checkAndSave(importingDataModel)
+
+        importingParentDataClass
+        .addToModelImports('DataClass', importedChildDataClass.id, FUNCTIONAL_TEST)
+
+        checkAndSave(importingDataModel)
 
         sessionFactory.currentSession.flush()
     }
@@ -132,6 +212,39 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "DataModel",
         "label": "Functional Test DataModel 2",
         "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard"
+      }
+    ]
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Import Test Folder",
+    "hasChildren": true,
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Imported DataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Functional Test Importing DataModel",
+        "hasChildren": true,
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -216,7 +329,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         HttpResponse<List> localResponse = GET('folders', Argument.of(List, Map))
 
         then:
-        localResponse.body().size() == 1
+        localResponse.body().size() == 2
         localResponse.body().first().children.size() == 3
 
         when:
@@ -269,7 +382,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         HttpResponse<List> localResponse = GET('folders', Argument.of(List, Map))
 
         then: 'We should have the finalised version and the new branch'
-        localResponse.body().size() == 1
+        localResponse.body().size() == 2
         localResponse.body().first().children.size() == 4
 
         when:
@@ -303,7 +416,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         localResponse = GET('folders', Argument.of(List, Map))
 
         then: 'We should have the second finalised version only'
-        localResponse.body().size() == 1
+        localResponse.body().size() == 2
         localResponse.body().first().children.size() == 3
 
         when:
@@ -356,7 +469,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         HttpResponse<List> localResponse = GET('folders', Argument.of(List, Map))
 
         then: 'We should have the finalised version and the new branches'
-        localResponse.body().size() == 1
+        localResponse.body().size() == 2
         localResponse.body().first().children.size() == 5
 
         when:
@@ -615,6 +728,70 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanUpData(firstId)
         cleanUpData(secondId)
     }
+
+    void 'TMI01 : test tree for datamodel with imports, showing those imports'() {
+        when:
+        GET("folders/dataModels/${importingDataModelId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "Functional Test Importing Parent DataClass",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "Functional Test Imported Parent DataClass",
+    "hasChildren": true,
+    "modelId": "${json-unit.matches:id}"
+  }
+]''')
+    }
+
+    void 'TMI02 : test tree for datamodel with imports, not showing those imports'() {
+        when:
+        GET("folders/dataModels/${importingDataModelId}/?imported=false", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "Functional Test Importing Parent DataClass",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  }
+]''')
+    }      
+
+    void 'TMI03 : test tree for datamodel classes with imports, showing those imports'() {
+        when:
+        GET("folders/dataClasses/${importingParentDataClassId}", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "Functional Test Imported Child DataClass",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}",
+    "parentId": "${json-unit.matches:id}"
+  }
+]''')
+    }    
+
+    void 'TMI04 : test tree for datamodel classes with imports, not showing those imports'() {
+        when:
+        GET("folders/dataClasses/${importingParentDataClassId}/?imported=false", STRING_ARG)
+
+        then:
+        verifyJsonResponse(OK, '''[]''')
+    }     
 
     @Override
     void cleanUpData(String id) {

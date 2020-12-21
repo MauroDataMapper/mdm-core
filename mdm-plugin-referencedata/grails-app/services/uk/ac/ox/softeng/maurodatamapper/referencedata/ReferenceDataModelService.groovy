@@ -543,12 +543,12 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     */
 
     @Override
-    boolean hasTreeTypeModelItems(ReferenceDataModel dataModel, boolean forDiff) {
+    boolean hasTreeTypeModelItems(ReferenceDataModel dataModel, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataModel catalogueItem, boolean forDiff) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataModel catalogueItem, boolean forDiff, boolean includeImported = false) {
         []
     }
 

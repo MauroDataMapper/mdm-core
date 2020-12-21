@@ -142,12 +142,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 
