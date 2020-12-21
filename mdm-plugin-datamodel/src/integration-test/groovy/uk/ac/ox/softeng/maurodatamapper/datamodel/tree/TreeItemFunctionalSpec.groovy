@@ -139,23 +139,20 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         DataClass importedParentDataClass = new DataClass(label: 'Functional Test Imported Parent DataClass', 
                                                           createdBy: FUNCTIONAL_TEST,
                                                           dataModel: importedDataModel)
-                                                         .save(flush: true)
 
         importedParentDataClassId = importedParentDataClass.id                                                           
-                                                      
-
+        
         DataClass importedChildDataClass = new DataClass(label: 'Functional Test Imported Child DataClass', 
-                                                          createdBy: FUNCTIONAL_TEST,
-                                                          dataModel: importedDataModel)
-                                                         .save(flush: true)                                                        
-        
+                                                         createdBy: FUNCTIONAL_TEST)
+
         importedParentDataClass
-        .addToDataClasses(importedChildDataClass)
-        
+        .addToDataClasses(importedChildDataClass)   
+
         importedDataModel
+        .addToDataClasses(importedChildDataClass)
         .addToDataClasses(importedParentDataClass)
 
-        checkAndSave(importedDataModel)
+        checkAndSave(importedDataModel)  
 
         importingDataModel.
         addToModelImports('DataClass', importedParentDataClass.id, FUNCTIONAL_TEST)

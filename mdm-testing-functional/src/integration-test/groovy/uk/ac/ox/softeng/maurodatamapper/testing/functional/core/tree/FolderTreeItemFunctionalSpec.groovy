@@ -171,6 +171,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "type": "CodeSet"
       },
       {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Finalised Example Test DataModel",
         "hasChildren": true,
@@ -324,6 +325,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "type": "CodeSet"
       },
       {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Finalised Example Test DataModel",
         "hasChildren": true,
