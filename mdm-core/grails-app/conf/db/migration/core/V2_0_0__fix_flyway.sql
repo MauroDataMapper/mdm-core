@@ -93,7 +93,7 @@ $$
         IF already_exists = 1
         THEN ALTER SCHEMA referencedatamodel RENAME TO referencedata;
         ELSE
-            CREATE SCHEMA IF NOT EXISTS dataflow;
+            CREATE SCHEMA IF NOT EXISTS referencedata;
         END IF;
     END;
 $$;
@@ -185,13 +185,15 @@ $$
 $$;
 
 -- Add all of the migrations which have been applied under the version 1 into the correct history table
+-- DataModel
 INSERT INTO datamodel.flyway_schema_history(installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time,
                                             success)
 SELECT *
 FROM core.flyway_schema_history
 WHERE version IS NOT NULL AND
-      version IN ('1.1.0', '1.5.1', '1.6.0', '1.9.0', '1.11.0');
+      version IN ('1.1.0', '1.5.1', '1.6.0', '1.9.0', '1.11.0', '1.15.1');
 
+-- Security
 INSERT INTO security.flyway_schema_history(installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time,
                                            success)
 SELECT *
@@ -199,38 +201,41 @@ FROM core.flyway_schema_history
 WHERE version IS NOT NULL AND
       version IN ('1.2.0', '1.8.0', '1.10.0');
 
+-- Terminology
 INSERT INTO terminology.flyway_schema_history(installed_rank, version, description, type, script, checksum, installed_by, installed_on,
                                               execution_time,
                                               success)
 SELECT *
 FROM core.flyway_schema_history
 WHERE version IS NOT NULL AND
-      version IN ('1.3.0', '1.5.2', '1.6.1');
+      version IN ('1.3.0', '1.5.2', '1.6.1', '1.15.2');
 
+-- DataFlow
 INSERT INTO dataflow.flyway_schema_history(installed_rank, version, description, type, script, checksum, installed_by, installed_on, execution_time,
                                            success)
 SELECT *
 FROM core.flyway_schema_history
 WHERE version IS NOT NULL AND
-      version IN ('1.4.0');
+      version IN ('1.4.0', '1.15.4');
 
+-- ReferenceData
 INSERT INTO referencedata.flyway_schema_history(installed_rank, version, description, type, script, checksum, installed_by, installed_on,
                                                 execution_time,
                                                 success)
 SELECT *
 FROM core.flyway_schema_history
 WHERE version IS NOT NULL AND
-      version IN ('1.12.0', '1.14.0');
+      version IN ('1.12.0', '1.14.0', '1.15.3');
 
 -- Remove all the non-core migrations
 DELETE
 FROM core.flyway_schema_history
 WHERE version IS NOT NULL AND
-      version IN ('1.1.0', '1.5.1', '1.6.0', '1.9.0', '1.11.0',
+      version IN ('1.1.0', '1.5.1', '1.6.0', '1.9.0', '1.11.0', '1.15.1',
                   '1.2.0', '1.8.0', '1.10.0',
-                  '1.3.0', '1.5.2', '1.6.1',
-                  '1.4.0',
-                  '1.12.0', '1.14.0'
+                  '1.3.0', '1.5.2', '1.6.1', '1.15.2',
+                  '1.4.0', '1.15.4',
+                  '1.12.0', '1.14.0', '1.15.3'
           );
 -- Set the core to have a schema statement of just core
 UPDATE core.flyway_schema_history
