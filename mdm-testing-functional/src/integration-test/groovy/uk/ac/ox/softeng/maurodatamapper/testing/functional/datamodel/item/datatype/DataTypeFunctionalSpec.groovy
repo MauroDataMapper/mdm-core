@@ -76,7 +76,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     @Transactional
     @Override
     String getImportedCatalogueItemId() {
-        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, 'string on finalised simple data model').get().id.toString()
+        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, 'gnirts on finalised example data model').get().id.toString()
     }
 
     @Override
@@ -116,7 +116,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
   "importedCatalogueItem": {
     "id": "${json-unit.matches:id}",
     "domainType": "PrimitiveType",
-    "label": "string on finalised simple data model",
+    "label": "gnirts on finalised example data model",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -375,7 +375,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     {
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
-      "label": "string on finalised simple data model",
+      "label": "gnirts on finalised example data model",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -787,7 +787,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     {
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
-      "label": "string on finalised simple data model",
+      "label": "gnirts on finalised example data model",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -811,7 +811,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
     {
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
-      "label": "string on finalised simple data model",
+      "label": "gnirts on finalised example data model",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {

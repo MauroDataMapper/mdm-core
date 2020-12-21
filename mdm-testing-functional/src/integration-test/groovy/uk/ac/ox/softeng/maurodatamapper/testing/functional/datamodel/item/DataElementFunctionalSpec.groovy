@@ -114,7 +114,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
 
     @Transactional
     String getImportedStringDataTypeId() {
-        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getFinalisedSimpleDataModelId()), 'string on finalised simple data model').get().id.toString()
+        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getFinalisedSimpleDataModelId()), 'gnirts on finalised example data model').get().id.toString()
     }    
 
     @Transactional
@@ -401,7 +401,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
       "dataType": {
         "id": "${json-unit.matches:id}",
         "domainType": "PrimitiveType",
-        "label": "string on finalised simple data model",
+        "label": "gnirts on finalised example data model",
         "model": "${json-unit.matches:id}",
         "breadcrumbs": [
           {
@@ -500,7 +500,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
   "dataType": {
     "id": "${json-unit.matches:id}",
     "domainType": "PrimitiveType",
-    "label": "string on finalised simple data model",
+    "label": "gnirts on finalised example data model",
     "model": "${json-unit.matches:id}",
     "breadcrumbs": [
       {
@@ -1463,7 +1463,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
     {
       "id": "${json-unit.matches:id}",
       "domainType": "PrimitiveType",
-      "label": "string on finalised simple data model",
+      "label": "gnirts on finalised example data model",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
