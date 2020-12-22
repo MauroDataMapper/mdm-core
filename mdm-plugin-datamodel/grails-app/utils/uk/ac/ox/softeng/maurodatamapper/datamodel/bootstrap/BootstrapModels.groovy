@@ -42,6 +42,9 @@ class BootstrapModels {
 
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
+    public static final String IMPORTING_DATAMODEL_NAME_1 = 'First Importing DataModel'
+    public static final String IMPORTING_DATAMODEL_NAME_2 = 'Second Importing DataModel'
+    public static final String IMPORTING_DATAMODEL_NAME_3 = 'Third Importing DataModel'
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
     public static final String FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL = 'first class on example finalised model'
 
@@ -73,6 +76,48 @@ class BootstrapModels {
 
         simpleDataModel
     }
+
+    static DataModel buildAndSaveFirstImportingDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: IMPORTING_DATAMODEL_NAME_1, folder: folder, authority: authority)
+
+        checkAndSave(messageSource, dataModel)
+
+        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'importing class 1')
+
+        dataModel.addToDataClasses(dataClass)
+
+        checkAndSave(messageSource, dataModel)
+
+        dataModel
+    }    
+
+    static DataModel buildAndSaveSecondImportingDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: IMPORTING_DATAMODEL_NAME_2, folder: folder, authority: authority)
+
+        checkAndSave(messageSource, dataModel)
+
+        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'importing class 2')
+
+        dataModel.addToDataClasses(dataClass)
+
+        checkAndSave(messageSource, dataModel)
+
+        dataModel
+    }   
+
+    static DataModel buildAndSaveThirdImportingDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: IMPORTING_DATAMODEL_NAME_3, folder: folder, authority: authority)
+
+        checkAndSave(messageSource, dataModel)
+
+        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'importing class 3')
+
+        dataModel.addToDataClasses(dataClass)
+
+        checkAndSave(messageSource, dataModel)
+
+        dataModel
+    }        
 
     static DataModel buildAndSaveComplexDataModel(MessageSource messageSource, Folder folder, Authority authority) {
 

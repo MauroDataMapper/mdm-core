@@ -37,7 +37,11 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Stepwise
 @Slf4j
-abstract class UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalSpec {
+abstract class ModelImportFunctionalSpec extends FunctionalSpec {
+
+    abstract String getResourcePath()
+
+    abstract String getEditorIndexJson()
 
     /**
      * The endpoint (without ID) used for ModelImport
@@ -75,7 +79,6 @@ abstract class UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec exte
      *
      */
     abstract String getEditorIndexJsonWithImported()
-
 
     Map getModelImportJson() {
         [
