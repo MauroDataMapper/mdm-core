@@ -1,8 +1,0 @@
-import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
-
-model {
-    Iterable<ProfileProviderService> providers
-}
-
-json tmpl.profileProviderService(providers ?: [])
-

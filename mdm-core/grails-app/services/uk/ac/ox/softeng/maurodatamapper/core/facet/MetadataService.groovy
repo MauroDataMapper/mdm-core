@@ -141,6 +141,9 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
     }
 
     List<Metadata> findAllByCatalogueItemIdAndNotNamespaces(UUID catalogueItemId, List<String> namespaces, Map pagination = [:]) {
+        if(!namespaces || namespaces.size() == 0) {
+            return []
+        }
         Metadata.byCatalogueItemIdAndNotNamespaces(catalogueItemId, namespaces).list(pagination)
     }
 
