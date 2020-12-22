@@ -182,6 +182,11 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModel
     }
 
     @Override
+    List getAdditionalModelImportPaths() {
+        ["dataModels/${getComplexDataModelId()}/modelImports"]
+    }    
+
+    @Override
     String getExpectedModelImportJson() {
       '''{
   "id": "${json-unit.matches:id}",

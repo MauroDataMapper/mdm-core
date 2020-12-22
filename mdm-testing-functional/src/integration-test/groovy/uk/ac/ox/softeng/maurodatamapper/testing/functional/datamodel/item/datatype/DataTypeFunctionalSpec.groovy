@@ -89,6 +89,11 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsAndModelImp
         "dataModels/${getComplexDataModelId()}/modelImports"
     }
 
+    @Override
+    List getAdditionalModelImportPaths() {
+        []
+    }     
+
     @Transactional
     String getImportedDataClassId() {
         DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, BootstrapModels.FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL).get().id.toString()

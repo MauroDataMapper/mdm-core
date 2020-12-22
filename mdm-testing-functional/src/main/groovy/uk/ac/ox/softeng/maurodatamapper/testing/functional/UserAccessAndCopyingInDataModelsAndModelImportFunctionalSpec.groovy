@@ -46,6 +46,12 @@ abstract class UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec exte
     abstract String getModelImportPath()
 
     /**
+     * Endpoints for additional model imports which should be cleaned up
+     *
+     */
+    abstract List getAdditionalModelImportPaths()    
+
+    /**
      * ID of the CatalogueItem which is going to be imported
      *
      */
@@ -123,7 +129,21 @@ abstract class UserAccessAndCopyingInDataModelsAndModelImportFunctionalSpec exte
         verifyJsonResponse HttpStatus.OK, getEditorIndexJsonWithImported()           
 
         cleanup:
-        DELETE("${getModelImportPath()}/${id}", MAP_ARG, true) 
-        verifyResponse HttpStatus.NO_CONTENT, response
+        GET("${getModelImportPath()}", MAP_ARG, true)
+        verifyResponse HttpStatus.OK, response
+        responseBody().items.each { item ->
+            log.debug("Deleting model import {}", item.id)
+            DELETE("${getModelImportPath()}/${item.id}", MAP_ARG, true) 
+            verifyResponse HttpStatus.NO_CONTENT, response
+        }
+
+        getAdditionalModelImportPaths().each { path ->
+            GET("${path}", MAP_ARG, true)
+            responseBody().items.each { item ->
+                log.debug("Deleting additional model import {}", item.id)
+                DELETE("${path}/${item.id}", MAP_ARG, true) 
+                verifyResponse HttpStatus.NO_CONTENT, response
+            }
+        }
     }     
 }
