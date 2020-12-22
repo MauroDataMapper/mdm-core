@@ -128,6 +128,10 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         Metadata.byCatalogueItemIdAndNamespace(catalogueItemId, namespace).list(pagination)
     }
 
+    List<Metadata> findAllByCatalogueItemIdAndNotNamespaces(UUID catalogueItemId, List<String> namespaces, Map pagination = [:]) {
+        Metadata.byCatalogueItemIdAndNotNamespaces(catalogueItemId, namespaces).list(pagination)
+    }
+
     List<NamespaceKeys> findNamespaceKeysIlikeNamespace(String namespacePrefix) {
 
         Set<NamespaceKeys> listOfNamespaceKeys = new HashSet<>()

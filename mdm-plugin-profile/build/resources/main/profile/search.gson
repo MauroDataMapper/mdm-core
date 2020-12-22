@@ -1,4 +1,3 @@
-package profile
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 
