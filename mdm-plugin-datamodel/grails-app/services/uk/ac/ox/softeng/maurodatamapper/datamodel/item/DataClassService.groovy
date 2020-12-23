@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -55,6 +57,7 @@ class DataClassService extends ModelItemService<DataClass> {
     DataElementService dataElementService
     DataTypeService dataTypeService
     MessageSource messageSource
+    ModelExtendService modelExtendService 
     ModelImportService modelImportService    
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
@@ -111,7 +114,36 @@ class DataClassService extends ModelItemService<DataClass> {
         importedFromDataModel.finalised
 
         //TODO add OR importedFromModel is in the same collection as importingDataModel
-    }     
+    }
+
+    /**
+     * DataClass can extend DataClass
+     */
+    @Override
+    List<Class> extendsDomains() {
+        [DataClass]
+    }    
+
+    /**
+     * Does the extendedDataClass meet domain specific rules for extension?
+     *
+     * @param extendingDataClass The DataClass which is extending the extendedDataClass
+     * @param extendedDataClass The DataClass which is being extended by extendingDataClass
+     *
+     * @return boolean Is this extend allowed by domain specific rules?
+     */
+    @Override
+    boolean isExtendableByCatalogueItem(CatalogueItem extendingDataClass, CatalogueItem extendedDataClass) {
+        //TODO add the following rules
+        //1. The extended DataClass must directly belong to the same DataModel as the extending DataClass
+        //or
+        //2. The extended DataClass is imported into the same DataModel as the extending DataClass
+        //or
+        //3. The two DataClasses belong to the same collection
+        //or
+        //4. The extended DataClass belongs to a DataModel which is finalised
+        true
+    }      
 
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
@@ -189,7 +221,14 @@ class DataClassService extends ModelItemService<DataClass> {
                 it.catalogueItemId = catalogueItem.getId()
             }
             ModelImport.saveAll(catalogueItem.modelImports)
-        }          
+        }   
+        if (catalogueItem.modelExtends) {
+            catalogueItem.modelExtends.each {
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            ModelExtend.saveAll(catalogueItem.modelExtends)
+        }                 
         catalogueItem
     }
 
@@ -613,7 +652,13 @@ class DataClassService extends ModelItemService<DataClass> {
             copy.addToModelImports(it.importedCatalogueItemDomainType,
                                    it.importedCatalogueItemId,
                                    copier) 
-        }        
+        }       
+
+        modelExtendService.findAllByCatalogueItemId(original.id).each { 
+            copy.addToModelExtends(it.extendedCatalogueItemDomainType,
+                                   it.extendedCatalogueItemId,
+                                   copier) 
+        }                
         copy
     }
 

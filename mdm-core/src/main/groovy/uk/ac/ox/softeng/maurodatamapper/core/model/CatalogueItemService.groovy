@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
@@ -127,6 +128,49 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         false
     }
 
+    /**
+     * What domains can the catalogue item extend? Override this in sub-classes.
+     */
+    List<Class> extendsDomains() {
+        []
+    }
+
+    /**
+     * Can the catalogue item extend a catalogue item of type extendedDomainType?
+     *
+     * @param clazz Domain (Class) that something is trying to extend.
+     * @return boolean Is the extend of this domain type allowed or not?
+     */
+    boolean extendsDomain(Class clazz) {
+        extendsDomains().contains(clazz)
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type extendedDomainType to be extended?
+     *
+     * @param extendedDomainType Domain type (string) of the domain that something is trying to extend.
+     * @return boolean Is the extend of this domain type allowed or not?
+     */
+    boolean extendsDomainType(String extendedDomainType) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, extendedDomainType)
+        if (!grailsClass) {
+            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
+        }
+        extendsDomain(grailsClass.clazz)
+    }
+
+    /**
+     * Does the extendeModelItem pass domain specific rules for extension?
+     *
+     * @param extendingCatalogueItem The CatalogueItem which is extending the extendedCatalogueItem
+     * @param extendedCatalogueItem The CatalogueItem which is being extended by extendingCatalogueItem
+     *
+     * @return boolean Is this extend allowed by domain specific rules?
+     */
+    boolean isExtendableByCatalogueItem(CatalogueItem extendingCatalogueItem, CatalogueItem extendedCatalogueItem) {
+        false
+    }    
+
     abstract void deleteAll(Collection<K> catalogueItems)
 
     K save(K catalogueItem) {
@@ -192,6 +236,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     void removeSemanticLinkFromCatalogueItem(UUID catalogueItemId, SemanticLink semanticLink) {
         removeFacetFromDomain(catalogueItemId, semanticLink.id, 'semanticLinks')
     }
+
+    void removeModelExtendFromCatalogueItem(UUID catalogueItemId, ModelExtend modelExtend) {
+        get(catalogueItemId).removeFromModelExtends(modelExtend)
+    }      
 
     void removeModelImportFromCatalogueItem(UUID catalogueItemId, ModelImport modelImport) {
         get(catalogueItemId).removeFromModelImports(modelImport)

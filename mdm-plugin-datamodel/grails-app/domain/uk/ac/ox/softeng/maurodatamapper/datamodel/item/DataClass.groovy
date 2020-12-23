@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -28,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.ModelExtendAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.ModelImportAware
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
@@ -54,7 +56,7 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware, IndexedSiblingAware, ModelImportAware {
+class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware, IndexedSiblingAware, ModelImportAware, ModelExtendAware {
 
     public final static Integer BATCH_SIZE = 1000
 
@@ -73,7 +75,8 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         referenceTypes : ReferenceType,
         summaryMetadata: SummaryMetadata,
         rules          : Rule,
-        modelImports   : ModelImport        
+        modelImports   : ModelImport,
+        modelExtends   : ModelExtend    
     ]
 
     static belongsTo = [DataClass, DataModel]

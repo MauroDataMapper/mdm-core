@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<ModelExtend> modelExtendList
+}
+
+json {
+    count modelExtendList instanceof PagedResultList ? ((PagedResultList) modelExtendList).getTotalCount() : modelExtendList?.size() ?: 0
+    items tmpl.modelExtend(modelExtendList ?: [])
+}
