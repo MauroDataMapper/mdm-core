@@ -23,10 +23,12 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 import uk.ac.ox.softeng.maurodatamapper.test.unit.JsonWebUnitSpec
 
 import grails.testing.web.controllers.ControllerUnitTest
+import groovy.util.logging.Slf4j
 import io.micronaut.core.order.Ordered
 
 import static io.micronaut.http.HttpStatus.OK
 
+@Slf4j
 class MauroDataMapperServiceProviderControllerSpec extends BaseUnitSpec
     implements ControllerUnitTest<MauroDataMapperServiceProviderController>, JsonWebUnitSpec {
 

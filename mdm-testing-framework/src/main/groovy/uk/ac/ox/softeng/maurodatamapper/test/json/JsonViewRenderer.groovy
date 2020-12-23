@@ -18,12 +18,19 @@
 package uk.ac.ox.softeng.maurodatamapper.test.json
 
 import grails.plugin.json.view.test.JsonRenderResult
-import grails.plugin.json.view.test.JsonViewTest
+import grails.views.json.test.JsonViewUnitTest
+import org.grails.testing.GrailsApplicationBuilder
 
 /**
  * @since 20/10/2017
  */
-class JsonViewRenderer implements JsonViewTest {
+class JsonViewRenderer implements JsonViewUnitTest {
+
+    @Override
+    Set<String> getIncludePlugins() {
+        GrailsApplicationBuilder.DEFAULT_INCLUDED_PLUGINS + ['i18n', 'urlMappings', 'markupView', 'jsonView'].toSet()
+    }
+
 
     JsonRenderResult renderEmpty() {
         JsonRenderResult result = new JsonRenderResult()

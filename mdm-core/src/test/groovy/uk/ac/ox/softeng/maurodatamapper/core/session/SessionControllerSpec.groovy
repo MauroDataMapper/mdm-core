@@ -39,8 +39,8 @@ class SessionControllerSpec extends BaseUnitSpec implements ControllerUnitTest<S
         controller.isAuthenticatedSession()
 
         then:
-        response.status == OK.value()
-        response.json.authenticatedSession == false
+        status == OK.value()
+        model.authenticatedSession == false
     }
 
     void 'test isAuthenticatedSession'() {
@@ -53,8 +53,8 @@ class SessionControllerSpec extends BaseUnitSpec implements ControllerUnitTest<S
         controller.isAuthenticatedSession()
 
         then:
-        response.status == OK.value()
-        response.json.authenticatedSession == true
+        status == OK.value()
+        model.authenticatedSession == true
     }
 
     void 'test isApplicationAdministrationSession'() {
@@ -67,7 +67,7 @@ class SessionControllerSpec extends BaseUnitSpec implements ControllerUnitTest<S
         controller.isApplicationAdministrationSession()
 
         then:
-        response.status == OK.value()
-        response.json.applicationAdministrationSession == true
+        status == OK.value()
+        model.applicationAdministrationSession == true
     }
 }
