@@ -107,6 +107,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
     protected List<DataElement> listAllReadableResources(Map params) {
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
         params.imported = params.boolean('imported', true)
+        params.extended = params.boolean('extended', true)
         if (params.dataTypeId) {
             if (!dataTypeService.findByDataModelIdAndId(params.dataModelId, params.dataTypeId)) {
                 notFound(params.dataTypeId)
@@ -120,7 +121,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
             notFound(params.dataClassId)
             return null
         }
-        return dataElementService.findAllByDataClassId(params.dataClassId, params, params.imported)
+        return dataElementService.findAllByDataClassId(params.dataClassId, params, params.imported, params.extended)
     }
 
     @Override

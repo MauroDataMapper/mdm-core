@@ -148,7 +148,7 @@ class ModelExtend implements CatalogueItemAware, CreatorAware {
     }
 
     /**
-     * Select the distinct IDs of catalogue items which are extended into the catalogue item with the specified ID.
+     * Select the distinct IDs of catalogue items which are extended by the catalogue item with the specified ID.
      * Used by other domains to select which of themselves have been extended into a particular model.
      * Will do a query like 'DISTINCT(extended_catalogue_item_id) FROM core.model_extend WHERE catalogue_item_id = catalogueItemId'
      *

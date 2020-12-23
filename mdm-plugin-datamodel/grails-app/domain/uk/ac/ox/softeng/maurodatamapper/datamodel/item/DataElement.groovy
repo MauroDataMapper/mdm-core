@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -211,20 +212,21 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
      * @param dataModelId The ID of the DataModel we are looking at
      * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
      *                        addition to DataTypes directly belonging to the DataModel)?
+     * @param includeExtends  Do we want to retrieve DataElements belonging to classes which are extended?
      * @return DetachedCriteria<DataElement>    
      */
-    static DetachedCriteria<DataType> byDataClassId(Serializable dataClassId, boolean includeImported = false) {
+    static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId, boolean includeImported = false, boolean includeExtended = false) {
         DetachedCriteria criteria = new DetachedCriteria<DataElement>(DataElement)
 
-        if (includeImported) {
-            criteria
-            .or {
+        criteria
+        .or {
+            eq('dataClass.id', Utils.toUuid(dataClassId)) 
+            if (includeImported) {
                 inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
-                eq('dataClass.id', Utils.toUuid(dataClassId))                
             }
-        } else {
-            criteria
-            .eq('dataClass.id', Utils.toUuid(dataClassId))
+            if (includeExtended) {
+                inList('id', ModelExtend.extendedByCatalogueItemId(dataClassId))
+            }
         }
         
         criteria
