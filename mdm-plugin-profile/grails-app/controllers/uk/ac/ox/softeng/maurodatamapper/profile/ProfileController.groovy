@@ -54,12 +54,18 @@ class ProfileController implements ResourcelessMdmController {
 
     def profiles() {
         CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        if (!catalogueItem) {
+            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        }
         def usedProfiles = profileService.getUsedProfileServices(catalogueItem)
         render(view: "/profile/profileProviders", model: [providers: usedProfiles])
     }
 
     def unusedProfiles() {
         CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        if (!catalogueItem) {
+            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        }
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
         Set<ProfileProviderService> allProfiles = profileService.getProfileProviderServices().findAll() {
             it.profileApplicableForDomains().size() == 0 ||
@@ -72,10 +78,32 @@ class ProfileController implements ResourcelessMdmController {
 
     def otherMetadata() {
         CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        if (!catalogueItem) {
+            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        }
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
         Set<String> profileNamespaces = usedProfiles.collect{it.metadataNamespace}
         render(view: "/metadata/index",
                model: [metadataList: metadataService.findAllByCatalogueItemIdAndNotNamespaces(catalogueItem.id, profileNamespaces.asList(), params)])
+    }
+
+    @Transactional
+    def deleteProfile() {
+        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        if (!catalogueItem) {
+            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        }
+
+        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
+                                                                                                  params.profileVersion)
+        if (!profileProviderService) {
+            return notFound(ProfileProviderService, getProfileProviderServiceId(params))
+        }
+        catalogueItem.metadata
+            .findAll{ it.namespace == profileProviderService.metadataNamespace }
+            .each {md ->
+                metadataService.delete(md, true)
+                metadataService.addDeletedEditToCatalogueItem(currentUser, md, params.catalogueItemDomainType, params.catalogueItemId)}
     }
 
     def show() {

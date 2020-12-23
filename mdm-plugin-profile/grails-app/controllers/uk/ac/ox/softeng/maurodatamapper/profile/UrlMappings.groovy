@@ -46,6 +46,7 @@ class UrlMappings {
                 get '/profiles/unused'(controller: 'profile', action: 'unusedProfiles')
                 get '/profiles/otherMetadata'(controller: 'profile', action: 'otherMetadata')
                 get "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'show')
+                delete "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'deleteProfile')
                 post "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'save')
             }
         }
