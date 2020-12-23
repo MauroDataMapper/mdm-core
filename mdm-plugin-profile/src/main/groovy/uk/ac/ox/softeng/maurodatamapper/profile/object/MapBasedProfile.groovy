@@ -71,7 +71,7 @@ abstract class MapBasedProfile extends Profile {
     @Override
     List<ProfileSection> getContents() {
         ProfileSection profileSection = new ProfileSection(sectionName: this.class.name, sectionDescription: "")
-        contents.each {
+        contents.sort {it.key }.each {
             ProfileField profileField = new ProfileField(fieldName: it.key, currentValue: it.value.toString())
             profileSection.fields.add(profileField)
         }
