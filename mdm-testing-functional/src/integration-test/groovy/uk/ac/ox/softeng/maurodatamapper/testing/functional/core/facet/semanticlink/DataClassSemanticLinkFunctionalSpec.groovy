@@ -19,14 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.semanticl
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.test.junit.TroubleTest
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.CatalogueItemSemanticLinkFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import org.junit.experimental.categories.Category
 
 /**
  * <pre>
@@ -41,7 +39,7 @@ import org.junit.experimental.categories.Category
  */
 @Integration
 @Slf4j
-@Category(TroubleTest)
+//@Category(TroubleTest)
 class DataClassSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunctionalSpec {
 
     @Transactional
@@ -88,6 +86,7 @@ class DataClassSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
       "id": "${json-unit.matches:id}",
       "linkType": "Does Not Refine",
       "domainType": "SemanticLink",
+      "unconfirmed": false,
       "sourceCatalogueItem": {
         "id": "${json-unit.matches:id}",
         "domainType": "DataClass",

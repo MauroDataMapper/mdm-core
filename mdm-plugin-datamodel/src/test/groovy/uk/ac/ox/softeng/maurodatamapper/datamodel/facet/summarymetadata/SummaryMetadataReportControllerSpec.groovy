@@ -32,6 +32,7 @@ import grails.testing.web.controllers.ControllerUnitTest
 import groovy.util.logging.Slf4j
 
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoField
 
 @Slf4j
 class SummaryMetadataReportControllerSpec extends ResourceControllerSpec<SummaryMetadataReport> implements
@@ -50,7 +51,8 @@ class SummaryMetadataReportControllerSpec extends ResourceControllerSpec<Summary
         dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
                                   authority: Authority.findByLabel('Test Authority'))
         checkAndSave dataModel
-        dateTime = OffsetDateTime.now()
+        // Need to make sure this never gets set to anything which is less than 3 digits when formatted as then the test fails
+        dateTime = OffsetDateTime.now().with(ChronoField.MILLI_OF_SECOND, 414)
 
         summaryMetadata = new SummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3',
                                               summaryMetadataType: SummaryMetadataType.STRING)

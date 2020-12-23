@@ -419,7 +419,7 @@ pipeline {
         /*
         E2E Functional Tests
         */
-        stage('Core Functional Test') {
+        stage('E2E Core Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=core test-app"
@@ -433,7 +433,7 @@ pipeline {
                 }
             }
         }
-        stage('Security Functional Test') {
+        stage('E2E Security Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=security test-app"
@@ -447,7 +447,7 @@ pipeline {
                 }
             }
         }
-        stage('Authentication Functional Test') {
+        stage('E2E Authentication Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=authentication test-app"
@@ -461,7 +461,7 @@ pipeline {
                 }
             }
         }
-        stage('DataModel Functional Test') {
+        stage('E2E DataModel Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=datamodel test-app"
@@ -475,7 +475,7 @@ pipeline {
                 }
             }
         }
-        stage('Terminology Functional Test') {
+        stage('E2E Terminology Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=terminology test-app"
@@ -489,7 +489,7 @@ pipeline {
                 }
             }
         }
-        stage('DataFlow Functional Test') {
+        stage('E2E DataFlow Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=dataflow test-app"
@@ -503,7 +503,7 @@ pipeline {
                 }
             }
         }
-        stage('ReferenceData Functional Test') {
+        stage('E2E ReferenceData Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=referencedata test-app"
@@ -517,20 +517,20 @@ pipeline {
                 }
             }
         }
-        stage('Trouble Functional Test') {
-            steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
-                }
-            }
-            post {
-                always {
-                    dir('mc-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
-                    }
-                }
-            }
-        }
+//        stage('E2E Trouble Functional Test') {
+//            steps {
+//                dir('mdm-testing-functional') {
+//                    sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
+//                }
+//            }
+//            post {
+//                always {
+//                    dir('mdm-testing-functional') {
+//                        junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
+//                    }
+//                }
+//            }
+//        }
 
         stage('Deploy to Artifactory') {
             when {

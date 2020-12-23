@@ -31,6 +31,7 @@ import grails.testing.web.controllers.ControllerUnitTest
 import groovy.util.logging.Slf4j
 
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoField
 
 @Slf4j
 class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpec<ReferenceSummaryMetadataReport> implements
@@ -49,7 +50,7 @@ class ReferenceSummaryMetadataReportControllerSpec extends ResourceControllerSpe
         referenceDataModel = new ReferenceDataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
                                   authority: Authority.findByLabel('Test Authority'))
         checkAndSave referenceDataModel
-        dateTime = OffsetDateTime.now()
+        dateTime = OffsetDateTime.now().with(ChronoField.MILLI_OF_SECOND, 414)
 
         referenceSummaryMetadata = new ReferenceSummaryMetadata(createdBy: StandardEmailAddress.UNIT_TEST, label: 'summary metadata 3',
                                                                 summaryMetadataType: ReferenceSummaryMetadataType.STRING)
