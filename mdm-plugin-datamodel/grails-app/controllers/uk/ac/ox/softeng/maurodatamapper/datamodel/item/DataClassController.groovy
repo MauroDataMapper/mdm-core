@@ -131,12 +131,14 @@ class DataClassController extends CatalogueItemController<DataClass> {
     protected List<DataClass> listAllReadableResources(Map params) {
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
         params.imported = params.boolean('imported', true)
+        params.extended = params.boolean('extended', true)
         if (params.dataClassId) {
             if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
                 notFound(params.dataClassId)
                 return null
             }
-            return dataClassService.findAllByDataModelIdAndParentDataClassId(params.dataModelId, params.dataClassId, params)
+            //TODO change of method name in the merge
+            return dataClassService.findAllByDataModelIdAndParentDataClassId(params.dataModelId, params.dataClassId, params, params.imported, params.extended)
         }
         if (((GrailsParameterMap) params).boolean('all', false)) {
             if (params.search) {

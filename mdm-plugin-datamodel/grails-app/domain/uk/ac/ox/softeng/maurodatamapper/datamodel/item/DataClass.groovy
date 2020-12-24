@@ -280,19 +280,25 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      *                        addition to DataClasses directly belonging to the DataClass)?
      * @return DetachedCriteria<DataClass>    
      */
-    static DetachedCriteria<DataClass> byParentDataClassId(UUID dataClassId, boolean includeImported = false) {
+    static DetachedCriteria<DataClass> byParentDataClassId(UUID dataClassId, boolean includeImported = false, boolean includeExtends = false) {
         DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
 
-        if (includeImported) {
-            criteria
-            .or {
+        criteria
+        .or {
+            //DataClasses whose parent DataClass is dataClassId
+            criteria.eq('parentDataClass.id', dataClassId)   
+
+            //DataClasses which have been imported into dataClassId
+            if (includeImported) {
                 inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
-                criteria.eq('parentDataClass.id', dataClassId)               
             }
-        } else {
-            criteria.eq('parentDataClass.id', dataClassId)
+
+            //DataClasses whose parent is extended by dataClassId
+            if (includeExtends) {
+                inList('parentDataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))
+            }           
         }
-        
+
         criteria
     }    
 

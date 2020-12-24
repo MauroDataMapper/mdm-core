@@ -203,11 +203,8 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         byDataTypeId(dataTypeId).idEq(Utils.toUuid(resourceId))
     }
 
-    /*static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId) {
-        new DetachedCriteria<DataElement>(DataElement).eq('dataClass.id', Utils.toUuid(dataClassId))
-    }*/
     /**
-     * If we want to include imported DataTypes then do a logical OR on imported and directly owned DataTypes.
+     * List DataElements belonging to a DataClass either directly, by import, or by extension
      *
      * @param dataModelId The ID of the DataModel we are looking at
      * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
@@ -217,15 +214,17 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
      */
     static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId, boolean includeImported = false, boolean includeExtended = false) {
         DetachedCriteria criteria = new DetachedCriteria<DataElement>(DataElement)
-
         criteria
         .or {
+            //DataElements belonging directly to dataClassIs
             eq('dataClass.id', Utils.toUuid(dataClassId)) 
             if (includeImported) {
+                //DataElements which have been imported into dataClassId
                 inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
             }
             if (includeExtended) {
-                inList('id', ModelExtend.extendedByCatalogueItemId(dataClassId))
+                //DataElements belonging to a DataClass which has been extended by dataClassId
+                inList('dataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))
             }
         }
         

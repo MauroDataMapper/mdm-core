@@ -46,7 +46,11 @@ class BootstrapModels {
     public static final String IMPORTING_DATAMODEL_NAME_2 = 'Second Importing DataModel'
     public static final String IMPORTING_DATAMODEL_NAME_3 = 'Third Importing DataModel'
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
+    public static final String FINALISED_EXTENDABLE_DATAMODEL_NAME = 'Extendable DataM0del'
+    public static final String EXTENDING_DATAMODEL_NAME_1 = 'Xtending DataM0del 1'
+    public static final String EXTENDING_DATAMODEL_NAME_2 = 'Xtending DataM0del 2'
     public static final String FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL = 'first class on example finalised model'
+    public static final String FIRST_CLASS_LABEL_ON_FINALISED_EXTENDABLE_DATAMODEL = 'extendable class on extendable data m0del'
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
@@ -246,4 +250,78 @@ class BootstrapModels {
 
         simpleDataModel
     }    
+
+    static DataModel buildAndSaveFinalisedExtendableDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: FINALISED_EXTENDABLE_DATAMODEL_NAME, folder: folder, authority: authority)
+
+        checkAndSave(messageSource, dataModel)
+
+        PrimitiveType primitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT, label: 'primitive type on extendable data m0del')
+        DataElement dataElement1 = new DataElement(createdBy: DEVELOPMENT, label: 'data element 1', minMultiplicity: 1, maxMultiplicity: 1, dataType: primitiveType1)         
+        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: FIRST_CLASS_LABEL_ON_FINALISED_EXTENDABLE_DATAMODEL)
+
+        DataClass childDataClass = new DataClass(createdBy: DEVELOPMENT, label: 'i am a child class')
+
+        dataClass
+        .addToDataElements(dataElement1)
+        .addToDataClasses(childDataClass)
+
+        dataModel
+        .addToDataClasses(dataClass)
+        .addToDataTypes(primitiveType1)
+        
+
+        checkAndSave(messageSource, dataModel)
+
+        dataModel.finalised = true
+        dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        dataModel.breadcrumbTree.finalise()
+        dataModel.modelVersion = Version.from('1.0.0')     
+
+        checkAndSave(messageSource, dataModel)   
+
+        dataModel
+    }     
+
+    static DataModel buildAndSaveFirstExtendingDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: EXTENDING_DATAMODEL_NAME_1, folder: folder, authority: authority)
+
+        checkAndSave(messageSource, dataModel)
+
+        PrimitiveType primitiveType = new PrimitiveType(createdBy: DEVELOPMENT, label: 'an example primitive type')
+        dataModel.addToDataTypes(primitiveType)
+        checkAndSave(messageSource, dataModel)
+
+        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'extending class 1')
+
+        dataModel.addToDataClasses(dataClass)
+
+        DataElement dataElement = new DataElement(createdBy: DEVELOPMENT, label: 'on extending class 1', minMultiplicity: 1, maxMultiplicity: 1, dataType: primitiveType)
+        dataClass.addToDataElements(dataElement)
+
+        checkAndSave(messageSource, dataModel)
+
+        dataModel
+    }      
+
+    static DataModel buildAndSaveSecondExtendingDataModel(MessageSource messageSource, Folder folder, Authority authority) {
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: EXTENDING_DATAMODEL_NAME_2, folder: folder, authority: authority)
+
+        checkAndSave(messageSource, dataModel)
+
+        PrimitiveType primitiveType = new PrimitiveType(createdBy: DEVELOPMENT, label: 'an example primitive type')
+        dataModel.addToDataTypes(primitiveType)
+        checkAndSave(messageSource, dataModel)
+
+        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'extending class 1')
+
+        dataModel.addToDataClasses(dataClass)
+
+        DataElement dataElement = new DataElement(createdBy: DEVELOPMENT, label: 'on extending class 1', minMultiplicity: 1, maxMultiplicity: 1, dataType: primitiveType)
+        dataClass.addToDataElements(dataElement)
+
+        checkAndSave(messageSource, dataModel)
+
+        dataModel
+    }     
 }

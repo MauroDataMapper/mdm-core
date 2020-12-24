@@ -441,7 +441,8 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.byRootDataClassOfDataModelId(dataModelId).idEq(id).count() == 1
     }
 
-    def findAllByDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
+    //TODO mergin difficulty becasue this was findAllByParentDataClassId
+    def findAllByDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, Map paginate = [:], boolean includeImported = false, boolean includeExtends = false) {
         DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId), paginate).list(paginate)
     }
 
