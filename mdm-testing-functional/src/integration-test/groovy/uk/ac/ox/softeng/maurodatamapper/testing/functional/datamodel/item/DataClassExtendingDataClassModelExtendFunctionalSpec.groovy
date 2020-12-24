@@ -61,12 +61,12 @@ class DataClassExtendingDataClassModelExtendFunctionalSpec extends CatalogueItem
 
     @Transactional
     String getExtendingDataModelId() {
-        DataModel.findByLabel(BootstrapModels.EXTENDING_DATAMODEL_NAME_2).id.toString()
+        DataModel.findByLabel(BootstrapModels.EXTENDING_DATAMODEL_NAME_1).id.toString()
     }     
 
     @Transactional
     String getExtendingDataClassId() {
-        DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.EXTENDING_DATAMODEL_NAME_2).id, 'extending class 1').get().id.toString()
+        DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.EXTENDING_DATAMODEL_NAME_1).id, 'extending class 1').get().id.toString()
     }     
 
     @Override
@@ -108,7 +108,7 @@ class DataClassExtendingDataClassModelExtendFunctionalSpec extends CatalogueItem
     "breadcrumbs": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "Xtending DataM0del 2",
+        "label": "Xtending DataM0del 1",
         "domainType": "DataModel",
         "finalised": false
       }

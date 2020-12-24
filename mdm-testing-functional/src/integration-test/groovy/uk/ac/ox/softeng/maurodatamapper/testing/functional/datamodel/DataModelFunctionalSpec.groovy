@@ -317,10 +317,11 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
-      "label": "Xtending DataM0del 2",
+      "label": "Extendable DataM0del",
       "type": "Data Standard",
       "branchName": "main",
-      "documentationVersion": "1.0.0"
+      "documentationVersion": "1.0.0",
+      "modelVersion": "1.0.0"
     }
   ]
 }'''

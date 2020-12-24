@@ -304,24 +304,4 @@ class BootstrapModels {
         dataModel
     }      
 
-    static DataModel buildAndSaveSecondExtendingDataModel(MessageSource messageSource, Folder folder, Authority authority) {
-        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: EXTENDING_DATAMODEL_NAME_2, folder: folder, authority: authority)
-
-        checkAndSave(messageSource, dataModel)
-
-        PrimitiveType primitiveType = new PrimitiveType(createdBy: DEVELOPMENT, label: 'an example primitive type')
-        dataModel.addToDataTypes(primitiveType)
-        checkAndSave(messageSource, dataModel)
-
-        DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'extending class 1')
-
-        dataModel.addToDataClasses(dataClass)
-
-        DataElement dataElement = new DataElement(createdBy: DEVELOPMENT, label: 'on extending class 1', minMultiplicity: 1, maxMultiplicity: 1, dataType: primitiveType)
-        dataClass.addToDataElements(dataElement)
-
-        checkAndSave(messageSource, dataModel)
-
-        dataModel
-    }     
 }

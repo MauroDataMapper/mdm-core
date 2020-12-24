@@ -117,7 +117,6 @@ class BootStrap implements SecurityDefinition {
                     DataModelBootstrapModels.buildAndSaveThirdImportingDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveFinalisedExtendableDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveFirstExtendingDataModel(messageSource, folder, authority)
-                    DataModelBootstrapModels.buildAndSaveSecondExtendingDataModel(messageSource, folder, authority)
                     TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)
