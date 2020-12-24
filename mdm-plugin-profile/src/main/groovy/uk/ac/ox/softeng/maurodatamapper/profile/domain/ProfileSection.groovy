@@ -7,6 +7,8 @@ class ProfileSection {
 
     String sectionName
     String sectionDescription
-    List<ProfileField> fields = []
+    List<ProfileField> fields = [].withLazyDefault {
+        new ProfileField()
+    }
 
 }

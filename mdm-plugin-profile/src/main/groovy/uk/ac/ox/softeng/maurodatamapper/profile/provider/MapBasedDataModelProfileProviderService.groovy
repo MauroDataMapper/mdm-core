@@ -74,7 +74,7 @@ abstract class MapBasedDataModelProfileProviderService<P extends MapBasedProfile
 
     @Override
     void storeProfileInEntity(DataModel entity, P profile, String userEmailAddress) {
-
+        System.err.println("Storing profile...")
         profile.each { fieldName, value ->
             if (value) {
                 entity.addToMetadata(metadataNamespace, fieldName, value.toString(), userEmailAddress)
@@ -93,6 +93,17 @@ abstract class MapBasedDataModelProfileProviderService<P extends MapBasedProfile
             }
         }
         entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
+        entity.metadata.findAll {it.key == 'doi' }.each {
+            System.err.println("Before saving..." + it.value)
+        }
+
         dataModelService.save(entity)
+        entity.metadata.findAll {it.key == 'doi' }.each {
+            System.err.println("After saving..." + it.value)
+        }
+        DataModel dm = dataModelService.get(entity.id)
+        dm.metadata.findAll {it.key == 'doi' }.each {
+            System.err.println("After saving 2 ..." + it.value)
+        }
     }
 }

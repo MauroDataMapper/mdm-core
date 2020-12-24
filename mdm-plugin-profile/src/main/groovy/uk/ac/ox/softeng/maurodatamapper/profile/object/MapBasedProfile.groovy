@@ -27,7 +27,7 @@ import groovy.transform.stc.FromString
 @CompileStatic
 abstract class MapBasedProfile extends Profile {
 
-    private Map<String, Object> contents
+    private Map<String, Object> contents = [:]
 
     MapBasedProfile() {
         contents = new HashMap<>()
@@ -69,7 +69,7 @@ abstract class MapBasedProfile extends Profile {
 
     // Expect this to be overridden
     @Override
-    List<ProfileSection> getContents() {
+    List<ProfileSection> getSections() {
         ProfileSection profileSection = new ProfileSection(sectionName: this.class.name, sectionDescription: "")
         contents.sort {it.key }.each {
             ProfileField profileField = new ProfileField(fieldName: it.key, currentValue: it.value.toString())
@@ -77,4 +77,23 @@ abstract class MapBasedProfile extends Profile {
         }
         return [profileSection]
     }
+
+    @Override
+    void fromSections(List<ProfileSection> profileSections) {
+        profileSections.each {profileSection ->
+            profileSection.fields.each {field ->
+                String fieldName = knownFields.find { it.toLowerCase() == field.fieldName.toLowerCase().replaceAll(" ", "")}
+                if(fieldName) {
+                    System.err.println(fieldName)
+                    System.err.println(field)
+                    System.err.println(contents)
+                    System.err.println(field.currentValue)
+                    setField(fieldName, field.currentValue)
+                } else {
+                    System.err.println("Cannot match: " + fieldName)
+                }
+            }
+        }
+    }
+
 }

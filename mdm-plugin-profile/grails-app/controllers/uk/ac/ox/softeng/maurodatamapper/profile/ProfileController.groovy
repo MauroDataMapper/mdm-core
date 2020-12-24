@@ -120,7 +120,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.createProfile(profileProviderService, catalogueItem).getContents()
+        respond profileService.createProfile(profileProviderService, catalogueItem).getSections()
 
     }
 
@@ -140,12 +140,24 @@ class ProfileController implements ResourcelessMdmController {
         }
 
         profileService.storeProfile(profileProviderService, catalogueItem, request, currentUser)
+        catalogueItem.metadata.each {
+            System.err.println(it.key + " -1:- " + it.value)
+        }
 
         // Flush the profile before we create as the create method retrieves whatever is stored in the database
         sessionFactory.currentSession.flush()
+        catalogueItem.metadata.each {
+            System.err.println(it.key + " -2:- " + it.value)
+        }
+
+        def x = profileService.createProfile(profileProviderService, catalogueItem)
+
+        catalogueItem.metadata.each {
+            System.err.println(it.key + " -3:- " + it.value)
+        }
 
         // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
-        respond profileService.createProfile(profileProviderService, catalogueItem)
+        respond x
     }
 
     def listModelsInProfile() {

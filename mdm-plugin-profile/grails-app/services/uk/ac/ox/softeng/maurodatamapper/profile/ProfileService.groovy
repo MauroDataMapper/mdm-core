@@ -23,6 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -32,6 +34,7 @@ import grails.core.GrailsApplication
 import grails.databinding.DataBindingSource
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBindingUtils
+import groovy.json.JsonSlurper
 import org.springframework.beans.factory.annotation.Autowired
 
 import javax.servlet.http.HttpServletRequest
@@ -71,11 +74,24 @@ class ProfileService {
 
     void storeProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem, HttpServletRequest request, User user) {
         Profile profile = profileProviderService.getNewProfile()
-        final DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, profile.getClass(), request)
+        //System.err.println(request.getJSON())
+        List<ProfileSection> profileSections = []
+        request.getJSON().each { it ->
+            ProfileSection profileSection = new ProfileSection(it)
+            profileSection.fields = []
+            it['fields'].each { field ->
+                profileSection.fields.add(new ProfileField(field))
+            }
+            profileSections.add(profileSection)
+        }
+
+        profile.fromSections(profileSections)
+
+        /*final DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, profile.getClass(), request)
         bindingSource.propertyNames.each { propertyName ->
             profile.setField(propertyName, bindingSource[propertyName])
         }
-
+        */
         profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
     }
 

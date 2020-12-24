@@ -58,6 +58,8 @@ abstract class Profile implements Comparable<Profile> {
         result
     }
 
-    abstract List<ProfileSection> getContents()
+    abstract List<ProfileSection> getSections()
+
+    abstract void fromSections(List<ProfileSection> profileSections)
 
 }
