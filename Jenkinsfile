@@ -52,14 +52,14 @@ pipeline {
         stage('Test cleanup & Compile') {
             steps {
                 sh "./gradlew jenkinsClean"
-                sh './gradlew compile'
+                sh './gradlew --build-cache compile'
             }
         }
 
         stage('License Header Check') {
             steps {
                 warnError('Missing License Headers') {
-                    sh './gradlew license'
+                    sh './gradlew --build-cache license'
                 }
             }
         }
@@ -77,7 +77,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh "./gradlew artifactoryPublish"
+                    sh "./gradlew --build-cache artifactoryPublish"
                 }
             }
         }
@@ -428,7 +428,7 @@ pipeline {
             post {
                 always {
                     dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/**/*.xml'
+                        junit allowEmptyResults: true, testResults: 'build/test-results/core/*.xml'
                     }
                 }
             }
@@ -442,7 +442,7 @@ pipeline {
             post {
                 always {
                     dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/core/*.xml'
+                        junit allowEmptyResults: true, testResults: 'build/test-results/security/*.xml'
                     }
                 }
             }
@@ -512,7 +512,7 @@ pipeline {
             post {
                 always {
                     dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/dataflow/*.xml'
+                        junit allowEmptyResults: true, testResults: 'build/test-results/referencedata/*.xml'
                     }
                 }
             }
@@ -532,7 +532,26 @@ pipeline {
 //            }
 //        }
 
-        stage('Deploy to Artifactory') {
+        stage('Compile complete Test Report'){
+            steps {
+                sh "./gradlew --build-cache rootTestReport"
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing         : false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll              : true,
+                        reportDir            : 'build/reports/tests',
+                        reportFiles          : 'index.html',
+                        reportName           : 'Complete Test Report',
+                        reportTitles         : 'Test'
+                    ])
+                }
+            }
+        }
+
+        stage('Deploy master to Artifactory') {
             when {
                 allOf {
                     branch 'master'
@@ -543,27 +562,13 @@ pipeline {
             }
             steps {
                 script {
-                    sh "./gradlew artifactoryPublish"
+                    sh "./gradlew --build-cache artifactoryPublish"
                 }
             }
         }
     }
 
     post {
-        unstable {
-            script {
-                sh "./gradlew rootTestReport"
-            }
-            publishHTML([
-                allowMissing         : false,
-                alwaysLinkToLastBuild: true,
-                keepAll              : true,
-                reportDir            : 'build/reports/tests',
-                reportFiles          : 'index.html',
-                reportName           : 'Complete Test Report',
-                reportTitles         : 'Test'
-            ])
-        }
         always {
             outputTestResults()
             jacoco execPattern: '**/build/jacoco/*.exec'

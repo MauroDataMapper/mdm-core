@@ -79,28 +79,14 @@ task('jvmArgs') {
     }
 }
 
+task('jenkinsClean') {
+    group 'clean'
+    delete 'build'
+}
 
 logger.quiet(
     "Available processors ${Runtime.runtime.availableProcessors()}. Max Unit Test Parallel Forks " +
     "${Runtime.runtime.availableProcessors().intdiv(2) ?: 1}")
-
-subprojects {
-    tasks.register("bomProperties") {
-        group = 'Introspection'
-        description = 'Print properties from all BOMs'
-        doLast {
-            if (project.hasProperty('dependencyManagement')) {
-                Map imported = dependencyManagement.importedProperties
-                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect { k, v -> "$k:$v" }.sort().join('\n  ')
-            }
-        }
-    }
-    afterEvaluate {
-        project.tasks.withType(Test) {
-            ignoreFailures = System.getenv().containsKey('JENKINS')
-        }
-    }
-}
 
 /*
 Task to archive up all reports that exist in the project and sub-project
@@ -167,14 +153,29 @@ subprojects {
         }
     }
 
+    tasks.register("bomProperties") {
+        group = 'Introspection'
+        description = 'Print properties from all BOMs'
+        doLast {
+            if (project.hasProperty('dependencyManagement')) {
+                Map imported = dependencyManagement.importedProperties
+                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect { k, v -> "$k:$v" }.sort().join('\n  ')
+            }
+        }
+    }
+
+    tasks.register('copyTestResultsToRoot', Copy){
+        from file("${project.buildDir}/test-results")
+        into file("${rootProject.buildDir}/test-results/${project.name}")
+        doFirst{
+            logger.quiet("Copying ${file("${project.buildDir}/test-results")} to ${file("${rootProject.buildDir}/test-results/${project.name}")}")
+        }
+        rootProject.rootTestReport.dependsOn it
+    }
+
     afterEvaluate {
         project.tasks.withType(Test) { testTask ->
-            doLast {
-                copy {
-                    from project.file("${project.buildDir}/test-results")
-                    into rootProject.file("${rootProject.buildDir}/test-results/${project.name}")
-                }
-            }
+            ignoreFailures = System.getenv().containsKey('JENKINS')
         }
 
         Set<Project> dependencyProjects = collectProjectDependencies(project)
