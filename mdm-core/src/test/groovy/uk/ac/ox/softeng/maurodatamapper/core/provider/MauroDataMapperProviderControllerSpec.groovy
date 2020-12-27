@@ -35,11 +35,11 @@ class MauroDataMapperProviderControllerSpec extends BaseUnitSpec implements Cont
         controller.modules()
 
         then:
-        response.json
-        response.json[0].name == 'test'
-        response.json[0].version == '1.0'
-        response.json[1].name == 'test2'
-        response.json[1].version == '0.2'
+        model
+        model.modules[0].name == 'test'
+        model.modules[0].version == '1.0'
+        model.modules[1].name == 'test2'
+        model.modules[1].version == '0.2'
     }
 
 }

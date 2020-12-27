@@ -1,0 +1,2 @@
+ALTER TABLE semantic_link
+    ADD unconfirmed BOOLEAN DEFAULT FALSE NOT NULL;

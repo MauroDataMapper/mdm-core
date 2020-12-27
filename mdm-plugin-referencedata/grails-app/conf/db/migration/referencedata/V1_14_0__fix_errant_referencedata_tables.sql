@@ -1,0 +1,32 @@
+ALTER TABLE referencedata.join_referenceDataElement_to_facet
+    ADD COLUMN reference_summary_metadata_id UUID;
+ALTER TABLE referencedata.join_referenceDataModel_to_facet
+    ADD COLUMN reference_summary_metadata_id UUID;
+ALTER TABLE referencedata.join_referenceDataType_to_facet
+    ADD COLUMN reference_summary_metadata_id UUID;
+
+ALTER TABLE IF EXISTS referencedata.join_referenceDataElement_to_facet
+    ADD CONSTRAINT FKetu75lbeuhiookwn6qawi4coq FOREIGN KEY (reference_summary_metadata_id) REFERENCES referencedata.reference_summary_metadata;
+ALTER TABLE IF EXISTS referencedata.join_referenceDataModel_to_facet
+    ADD CONSTRAINT FKmn7qjcevpmoeq4rtudux34by FOREIGN KEY (reference_summary_metadata_id) REFERENCES referencedata.reference_summary_metadata;
+ALTER TABLE IF EXISTS referencedata.join_referenceDataType_to_facet
+    ADD CONSTRAINT FKqaa9kx536h4hsp7prrv01ouay FOREIGN KEY (reference_summary_metadata_id) REFERENCES referencedata.reference_summary_metadata;
+
+INSERT INTO referencedata.join_referencedataelement_to_facet(referencedataelement_id, reference_summary_metadata_id)
+SELECT reference_data_element_reference_summary_metadata_id,
+       reference_summary_metadata_id
+FROM referencedata.reference_data_element_reference_summary_metadata;
+
+INSERT INTO referencedata.join_referencedatamodel_to_facet(referencedatamodel_id, reference_summary_metadata_id)
+SELECT reference_data_model_reference_summary_metadata_id,
+       reference_summary_metadata_id
+FROM referencedata.reference_data_model_reference_summary_metadata;
+
+INSERT INTO referencedata.join_referencedatatype_to_facet(referencedatatype_id, reference_summary_metadata_id)
+SELECT reference_data_type_reference_summary_metadata_id,
+       reference_summary_metadata_id
+FROM referencedata.reference_data_type_reference_summary_metadata;
+
+DROP TABLE referencedata.reference_data_type_reference_summary_metadata;
+DROP TABLE referencedata.reference_data_model_reference_summary_metadata;
+DROP TABLE referencedata.reference_data_element_reference_summary_metadata;

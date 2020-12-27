@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -41,6 +42,11 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
     @Autowired
     ClassifierService classifierService
 
+    abstract DataModel importDataModel(User currentUser, T params)
+
+    abstract List<DataModel> importDataModels(User currentUser, T params)
+
+    @CompileDynamic
     @Override
     DataModel importDomain(User currentUser, T params) {
         DataModel dataModel = importDataModel(currentUser, params)
@@ -49,15 +55,12 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         checkImport(currentUser, dataModel, params.finalised, params.importAsNewDocumentationVersion)
     }
 
+    @CompileDynamic
     @Override
     List<DataModel> importDomains(User currentUser, T params) {
         List<DataModel> dataModels = importDataModels(currentUser, params)
         dataModels?.collect { checkImport(currentUser, it, params.finalised, params.importAsNewDocumentationVersion) }
     }
-
-    abstract DataModel importDataModel(User currentUser, T params)
-
-    abstract List<DataModel> importDataModels(User currentUser, T params)
 
     @Override
     String getProviderType() {

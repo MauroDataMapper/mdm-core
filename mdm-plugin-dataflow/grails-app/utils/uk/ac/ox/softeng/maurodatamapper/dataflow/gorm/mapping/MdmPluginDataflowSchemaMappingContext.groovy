@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.PluginSchemaHibernateM
 import groovy.util.logging.Slf4j
 
 /**
- * Maps all domains in the mdm DataModel plugin into the core schema
+ * Maps all domains in the mdm DataFlow plugin into the core schema
  * @since 01/11/2019
  */
 @Slf4j
@@ -38,5 +38,10 @@ class MdmPluginDataflowSchemaMappingContext extends PluginSchemaHibernateMapping
     @Override
     String getSchemaName() {
         'dataflow'
+    }
+
+    @Override
+    int getOrder() {
+        100 // Must happen after DataModel which defaults to 0
     }
 }

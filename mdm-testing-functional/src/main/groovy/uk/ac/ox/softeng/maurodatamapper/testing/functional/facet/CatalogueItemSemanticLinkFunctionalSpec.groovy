@@ -179,6 +179,7 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends UserAccessFunctio
   "id": "${json-unit.matches:id}",
   "linkType": "Refines",
   "domainType": "SemanticLink",
+  "unconfirmed": false,
   "sourceCatalogueItem": ''' + getCatalogueItemJsonString() + ''',
   "targetCatalogueItem": ''' + getTargetCatalogueItemJsonString() + '''
 }'''

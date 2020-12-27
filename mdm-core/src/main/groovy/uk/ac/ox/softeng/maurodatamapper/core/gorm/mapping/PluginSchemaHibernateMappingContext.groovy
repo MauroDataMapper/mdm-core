@@ -33,6 +33,10 @@ abstract class PluginSchemaHibernateMappingContext extends DynamicHibernateMappi
 
     abstract String getSchemaName()
 
+    String[] getFlywayLocations() {
+        ["classpath:db/migration/${getSchemaName()}"].toArray(String[])
+    }
+
     @Override
     boolean handlesDomainClass(Class domainClass) {
         GrailsPlugin annotation = domainClass.getAnnotation(GrailsPlugin) as GrailsPlugin

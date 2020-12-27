@@ -89,6 +89,7 @@ dependencies {
     testCompile "org.mockito:mockito-core"
     testCompile "io.micronaut:micronaut-http-client"
     testCompile "org.grails:grails-web-testing-support"
+    testCompile "org.grails:views-json-testing-support"
 }
 
 bootRun {
@@ -158,7 +159,7 @@ integrationTest {
         }
         mergeTestReports.reportOn(file("${project.testResultsDir}/${testPackage}/binary"))
 
-        systemProperty('mdm.logFileName', "e2e-${testPackage}.log")
+        systemProperty('mdm.logFileName', "e2e-${testPackage}")
     }
 
     if(testCategory){

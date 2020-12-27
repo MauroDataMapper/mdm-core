@@ -32,6 +32,24 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
         super(ReferenceDataValue)
     }
 
+    @Override
+    def index(Integer max) {
+        params.max = Math.min(max ?: 10, 100)
+        def res = listAllResources(params)
+        if (response.isCommitted()) return
+        if (params.asRows) {
+            respond res, [
+                model: [
+                    numberOfRows     : referenceDataValueService.countRowsByReferenceDataModelId(params.referenceDataModelId),
+                    referenceDataRows: res,
+                ],
+                view : 'indexAsRows'
+            ]
+            return
+        }
+        respond res, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'index']
+    }
+
     def search(SearchParams searchParams) {
         if (params.all) removePaginationParameters()
 
@@ -43,17 +61,18 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
         params.offset = params.offset ?: searchParams.offset ?: 0
 
         String searchTerm = params.search ?: searchParams.searchTerm ?: ""
-  
 
         if (params.asRows) {
             List referenceDataRows = []
 
             //Get distinct rowNumbers which have a value matching the searchTerm
-            List rowNumbers = referenceDataValueService.findDistinctRowNumbersByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchTerm)
+            List rowNumbers =
+                referenceDataValueService.findDistinctRowNumbersByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchTerm)
 
             if (rowNumbers.size() > 0) {
-                //Make a list of referenceDataValues WHERE reference_data_model_id = params.referenceDataModelId AND rowNumber IN [rowNumbers] and convert this into rows
-                
+                //Make a list of referenceDataValues WHERE reference_data_model_id = params.referenceDataModelId AND rowNumber IN [rowNumbers] and
+                // convert this into rows
+
                 //Do our own pagination by choosing the relevant n items from our distinct rowNumbers
                 int fromRow = params.offset
                 if (fromRow > rowNumbers.size() - 1) {
@@ -65,17 +84,21 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
                     toRow = rowNumbers.size() - 1
                 }
                 List rowNumbersToFetch = rowNumbers[fromRow..toRow]
-                referenceDataRows = rowify(referenceDataValueService.findAllByReferenceDataModelIdAndRowNumberIn(params.referenceDataModelId, rowNumbersToFetch))
+                referenceDataRows =
+                    rowify(referenceDataValueService.findAllByReferenceDataModelIdAndRowNumberIn(params.referenceDataModelId, rowNumbersToFetch))
             }
 
-            respond referenceDataRows, [model: [numberOfRows: rowNumbers.size(), referenceDataRows: referenceDataRows, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'searchAsRows']
+            respond referenceDataRows, [model: [numberOfRows: rowNumbers.size(), referenceDataRows:
+                referenceDataRows, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'searchAsRows']
 
         } else {
             //Make a list of referenceDataValues which have a value matching the search term
-            List referenceDataValues = referenceDataValueService.findAllByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchTerm, params)
+            List referenceDataValues =
+                referenceDataValueService.findAllByReferenceDataModelIdAndValueIlike(params.referenceDataModelId, searchTerm, params)
 
-            respond referenceDataValues, [model: [referenceDataValues: referenceDataValues, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'search']
-        }     
+            respond referenceDataValues,
+                    [model: [referenceDataValues: referenceDataValues, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'search']
+        }
     }
 
     /**
@@ -87,7 +110,7 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
     @Override
     protected List<ReferenceDataValue> listAllReadableResources(Map params) {
         if (params.all) removePaginationParameters()
-        
+
         //Always sort by rowNumber
         params.sortBy = 'rowNumber'
         if (params.asRows) {
@@ -106,14 +129,13 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
             //Now, we don't want to do normal pagination
             removePaginationParameters()
 
-            //Make a list of referenceDataValues WHERE reference_data_model_id = params.referenceDataModelId AND rowNumber >= fromRowNumber AND rowNumber < toRowNumber
-            List referenceDataValues = referenceDataValueService.findAllByReferenceDataModelIdAndRowNumber(params.referenceDataModelId, fromRowNumber, toRowNumber, params)
-            
-            List referenceDataRows = rowify(referenceDataValues)
-            respond referenceDataRows, [model: [numberOfRows: referenceDataValueService.countRowsByReferenceDataModelId(params.referenceDataModelId), referenceDataRows: referenceDataRows, userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'indexAsRows']
-        } else {            
-            return referenceDataValueService.findAllByReferenceDataModelId(params.referenceDataModelId, params)
+            //Make a list of referenceDataValues WHERE reference_data_model_id = params.referenceDataModelId AND rowNumber >= fromRowNumber AND
+            // rowNumber < toRowNumber
+            List referenceDataValues =
+                referenceDataValueService.findAllByReferenceDataModelIdAndRowNumber(params.referenceDataModelId, fromRowNumber, toRowNumber, params)
+            return rowify(referenceDataValues)
         }
+        referenceDataValueService.findAllByReferenceDataModelId(params.referenceDataModelId, params)
     }
 
     @Override
@@ -131,7 +153,7 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
      */
     private List rowify(List<ReferenceDataValue> referenceDataValues) {
         //Sort the list by rowNumber ascending
-        referenceDataValues.sort{it.getProperty(params.sortBy)}
+        referenceDataValues.sort { it.getProperty(params.sortBy) }
 
         //Make a list of row numbers
         List rowNumbers = []

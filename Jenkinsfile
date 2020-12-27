@@ -52,14 +52,14 @@ pipeline {
         stage('Test cleanup & Compile') {
             steps {
                 sh "./gradlew jenkinsClean"
-                sh './gradlew compile'
+                sh './gradlew --build-cache compile'
             }
         }
 
         stage('License Header Check') {
             steps {
                 warnError('Missing License Headers') {
-                    sh './gradlew license'
+                    sh './gradlew --build-cache license'
                 }
             }
         }
@@ -77,7 +77,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh "./gradlew artifactoryPublish"
+                    sh "./gradlew --build-cache artifactoryPublish"
                 }
             }
         }
@@ -419,24 +419,10 @@ pipeline {
         /*
         E2E Functional Tests
         */
-        stage('Core Functional Test') {
+        stage('E2E Core Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=core test-app"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/**/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Security Functional Test') {
-            steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=security test-app"
                 }
             }
             post {
@@ -447,7 +433,21 @@ pipeline {
                 }
             }
         }
-        stage('Authentication Functional Test') {
+        stage('E2E Security Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=security test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/security/*.xml'
+                    }
+                }
+            }
+        }
+        stage('E2E Authentication Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=authentication test-app"
@@ -461,7 +461,7 @@ pipeline {
                 }
             }
         }
-        stage('DataModel Functional Test') {
+        stage('E2E DataModel Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=datamodel test-app"
@@ -475,7 +475,7 @@ pipeline {
                 }
             }
         }
-        stage('Terminology Functional Test') {
+        stage('E2E Terminology Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=terminology test-app"
@@ -489,7 +489,7 @@ pipeline {
                 }
             }
         }
-        stage('DataFlow Functional Test') {
+        stage('E2E DataFlow Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=dataflow test-app"
@@ -503,7 +503,7 @@ pipeline {
                 }
             }
         }
-        stage('ReferenceData Functional Test') {
+        stage('E2E ReferenceData Functional Test') {
             steps {
                 dir('mdm-testing-functional') {
                     sh "./grailsw -Dgrails.test.package=referencedata test-app"
@@ -512,27 +512,46 @@ pipeline {
             post {
                 always {
                     dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/dataflow/*.xml'
+                        junit allowEmptyResults: true, testResults: 'build/test-results/referencedata/*.xml'
                     }
                 }
             }
         }
-        stage('Trouble Functional Test') {
+//        stage('E2E Trouble Functional Test') {
+//            steps {
+//                dir('mdm-testing-functional') {
+//                    sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
+//                }
+//            }
+//            post {
+//                always {
+//                    dir('mdm-testing-functional') {
+//                        junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
+//                    }
+//                }
+//            }
+//        }
+
+        stage('Compile complete Test Report'){
             steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
-                }
+                sh "./gradlew --build-cache rootTestReport"
             }
             post {
                 always {
-                    dir('mc-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
-                    }
+                    publishHTML([
+                        allowMissing         : false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll              : true,
+                        reportDir            : 'build/reports/tests',
+                        reportFiles          : 'index.html',
+                        reportName           : 'Complete Test Report',
+                        reportTitles         : 'Test'
+                    ])
                 }
             }
         }
 
-        stage('Deploy to Artifactory') {
+        stage('Deploy master to Artifactory') {
             when {
                 allOf {
                     branch 'master'
@@ -543,27 +562,13 @@ pipeline {
             }
             steps {
                 script {
-                    sh "./gradlew artifactoryPublish"
+                    sh "./gradlew --build-cache artifactoryPublish"
                 }
             }
         }
     }
 
     post {
-        unstable {
-            script {
-                sh "./gradlew rootTestReport"
-            }
-            publishHTML([
-                allowMissing         : false,
-                alwaysLinkToLastBuild: true,
-                keepAll              : true,
-                reportDir            : 'build/reports/tests',
-                reportFiles          : 'index.html',
-                reportName           : 'Complete Test Report',
-                reportTitles         : 'Test'
-            ])
-        }
         always {
             outputTestResults()
             jacoco execPattern: '**/build/jacoco/*.exec'

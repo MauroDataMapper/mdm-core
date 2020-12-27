@@ -46,10 +46,6 @@ if (tasks.findByName('integrationTest')) {
     if (integrationTests && !functionalTests) {
         logger.log(LogLevel.WARN, '<<>> Running integration tests only <<>>')
         integrationTest {
-            //            useJUnit {
-            //                includeCategories 'uk.ac.ox.softeng.maurodatamapper.test.junit.IntegrationTest'
-            //                excludeCategories 'uk.ac.ox.softeng.maurodatamapper.test.junit.FunctionalTest'
-            //            }
             filter{
                 excludeTestsMatching '*FunctionalSpec'
             }
@@ -58,10 +54,6 @@ if (tasks.findByName('integrationTest')) {
         logger.log(LogLevel.WARN, '<<>> Running functional tests only <<>>')
         integrationTest {
             binaryResultsDirectory.set(file("${project.testResultsDir}/functionalTest/binary"))
-            //            useJUnit {
-            //                excludeCategories 'uk.ac.ox.softeng.maurodatamapper.test.junit.IntegrationTest'
-            //                includeCategories 'uk.ac.ox.softeng.maurodatamapper.test.junit.FunctionalTest'
-            //            }
             filter{
                 includeTestsMatching '*FunctionalSpec'
             }

@@ -265,8 +265,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanup:
         removeValidIdObjectUsingTransaction(forkId)
         removeValidIdObjectUsingTransaction(id)
-        cleanUpRoles(forkId)
-        cleanUpRoles(id)
+        cleanUpRoles(forkId, id)
     }
 
     void 'E17 : test creating a new fork model of a Model<T> (as editor)'() {
@@ -298,8 +297,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanup:
         removeValidIdObjectUsingTransaction(forkId)
         removeValidIdObjectUsingTransaction(id)
-        cleanUpRoles(forkId)
-        cleanUpRoles(id)
+        cleanUpRoles(forkId, id)
     }
 
     void 'L18 : test creating a new documentation version of a Model<T> (as not logged in)'() {
@@ -376,8 +374,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(docId)
-        cleanUpRoles(id)
-        cleanUpRoles(docId)
+        cleanUpRoles(id, docId)
     }
 
     void 'L19 : test creating a new branch model version of a Model<T> (as not logged in)'() {
@@ -456,8 +453,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(branchId)
-        cleanUpRoles(id)
-        cleanUpRoles(branchId)
+        cleanUpRoles(id, branchId)
     }
 
     void 'E19b : test creating a new branch model version of a Model<T> (as editor)'() {
@@ -517,9 +513,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(branchId)
         removeValidIdObjectUsingTransaction(mainBranchId)
-        cleanUpRoles(id)
-        cleanUpRoles(branchId)
-        cleanUpRoles(mainBranchId)
+        cleanUpRoles(id, branchId, mainBranchId)
     }
 
     void 'E19c : test creating a new model version of a Model<T> and finalising (as editor)'() {
@@ -557,8 +551,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanup:
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(branchId)
-        cleanUpRoles(id)
-        cleanUpRoles(branchId)
+        cleanUpRoles(id, branchId)
     }
 
     @PendingFeature(reason = 'Finalise needs to be removed from available actions after model is finalised')
@@ -604,9 +597,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObjectUsingTransaction(branchId)
         removeValidIdObjectUsingTransaction(mainBranchId)
-        cleanUpRoles(id)
-        cleanUpRoles(branchId)
-        cleanUpRoles(mainBranchId)
+        cleanUpRoles(id, branchId, mainBranchId)
     }
 
     void 'E20 : test finding common ancestor of two Model<T> (as editor)'() {
@@ -649,10 +640,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
         removeValidIdObjectUsingTransaction(mainBranchId)
-        cleanUpRoles(id)
-        cleanUpRoles(leftId)
-        cleanUpRoles(rightId)
-        cleanUpRoles(mainBranchId)
+        cleanUpRoles(id, leftId, rightId, mainBranchId)
     }
 
     void 'E21 : test finding latest version of a Model<T> (as editor)'() {
@@ -719,10 +707,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(newBranchId)
         removeValidIdObjectUsingTransaction(expectedId)
         removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(expectedId)
-        cleanUpRoles(latestDraftId)
+        cleanUpRoles(id, newBranchId, expectedId, latestDraftId)
     }
 
     void 'E22 : test finding merge difference of two Model<T> (as editor)'() {
@@ -772,10 +757,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(leftId)
         removeValidIdObjectUsingTransaction(rightId)
         removeValidIdObjectUsingTransaction(id)
-        cleanUpRoles(mainId)
-        cleanUpRoles(leftId)
-        cleanUpRoles(rightId)
-        cleanUpRoles(id)
+        cleanUpRoles(mainId, leftId, rightId, id)
     }
 
     void 'E23 : test getting current draft model on main branch from side branch (as editor)'() {
@@ -811,10 +793,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(newBranchId)
         removeValidIdObjectUsingTransaction(finalisedId)
         removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(finalisedId)
-        cleanUpRoles(latestDraftId)
+        cleanUpRoles(id, newBranchId, finalisedId, latestDraftId)
     }
 
     void 'E24 : test getting all draft models (as editor)'() {
@@ -851,10 +830,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(newBranchId)
         removeValidIdObjectUsingTransaction(finalisedId)
         removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(finalisedId)
-        cleanUpRoles(latestDraftId)
+        cleanUpRoles(id, newBranchId, finalisedId, latestDraftId)
     }
 
     void 'R25 : test merging object diff into a draft main model'() {
@@ -882,9 +858,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(target)
         removeValidIdObjectUsingTransaction(source)
         removeValidIdObjectUsingTransaction(id)
-        cleanUpRoles(target)
-        cleanUpRoles(source)
-        cleanUpRoles(id)
+        cleanUpRoles(target, source, id)
     }
 
     void 'E25 : test merging object diff into a draft main model'() {
@@ -951,8 +925,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(target)
         removeValidIdObjectUsingTransaction(source)
         removeValidIdObjectUsingTransaction(id)
-        cleanUpRoles(target)
-        cleanUpRoles(source)
-        cleanUpRoles(id)
+        cleanUpRoles(target, source, id)
     }
 }

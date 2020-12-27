@@ -37,6 +37,6 @@ class MdmPluginReferenceDataSchemaMappingContext extends PluginSchemaHibernateMa
 
     @Override
     String getSchemaName() {
-        'referencedatamodel'
+        'referencedata'
     }
 }

@@ -18,13 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.semanticlink
 
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.test.junit.TroubleTest
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.CatalogueItemSemanticLinkFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import org.junit.experimental.categories.Category
 
 /**
  * <pre>
@@ -39,7 +37,7 @@ import org.junit.experimental.categories.Category
  */
 @Integration
 @Slf4j
-@Category(TroubleTest)
+//@Category(TroubleTest)
 class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunctionalSpec {
 
     @Transactional

@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 
-import grails.artefact.controller.support.ResponseRedirector
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -31,7 +30,7 @@ import static org.springframework.http.HttpStatus.CONFLICT
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 @Slf4j
-class AuthenticatingController implements ResourcelessMdmController, ResponseRedirector {
+class AuthenticatingController implements ResourcelessMdmController {
 
     static responseFormats = ['json', 'xml']
 
@@ -46,7 +45,7 @@ class AuthenticatingController implements ResourcelessMdmController, ResponseRed
         def loginResponse = loginProcess(credentials)
 
         // Any errors will be commited into the response so dont continue any further
-        if (response.isCommitted()) return
+        if (!loginResponse) return
 
         respond loginResponse
     }
@@ -57,11 +56,8 @@ class AuthenticatingController implements ResourcelessMdmController, ResponseRed
     }
 
     def activeSessionsWithCredentials(UserCredentials credentials) {
-
-        loginProcess(credentials)
-
         // Any errors will be commited into the response so dont continue any further
-        if (response.isCommitted()) return
+        if (!loginProcess(credentials)) return
 
         if (currentUserSecurityPolicyManager.isApplicationAdministrator()) {
             // Once logged in call to the normal active sessions call
@@ -73,7 +69,8 @@ class AuthenticatingController implements ResourcelessMdmController, ResponseRed
     private def loginProcess(UserCredentials credentials) {
         if (!credentials || !credentials.username) {
             log.warn("Login attempt with no username or password")
-            return errorResponse(BAD_REQUEST, "Username and/or password not provided")
+            errorResponse(BAD_REQUEST, "Username and/or password not provided")
+            return false
         }
 
         String username = credentials.getUsername()?.trim()
@@ -81,7 +78,8 @@ class AuthenticatingController implements ResourcelessMdmController, ResponseRed
 
         if (authenticatingService.isAuthenticatedSession(session)) {
             log.warn("Login attempt for '${username}' while a user currently logged in")
-            return errorResponse(CONFLICT, 'A user is already logged in, logout first')
+            errorResponse(CONFLICT, 'A user is already logged in, logout first')
+            return false
         }
 
         CatalogueUser user = authenticatingService.authenticateAndObtainUser(username, password, params.scheme)

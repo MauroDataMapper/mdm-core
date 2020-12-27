@@ -87,7 +87,7 @@ class AdminFunctionalSpec extends FunctionalSpec {
         'GET'  | 'status'               | null                                       || OK           | '''
 {
   "Mauro Data Mapper Version": "${json-unit.matches:version}",
-  "Grails Version": "4.0.3",
+  "Grails Version": "4.0.6",
   "Java Version": "12.0.2",
   "Java Vendor": "${json-unit.any-string}",
   "OS Name": "${json-unit.any-string}",

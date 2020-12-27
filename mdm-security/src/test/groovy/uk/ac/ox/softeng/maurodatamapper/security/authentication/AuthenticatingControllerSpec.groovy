@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.test.SecurityUsers
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.JsonWebUnitSpec
 
 import grails.testing.web.controllers.ControllerUnitTest
 
@@ -40,7 +41,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.OK
 import static org.springframework.http.HttpStatus.UNAUTHORIZED
 
-class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUnitTest<AuthenticatingController>, SecurityUsers {
+class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUnitTest<AuthenticatingController>, SecurityUsers, JsonWebUnitSpec {
     SessionService sessionService
 
     def setup() {
@@ -131,6 +132,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         then:
         response.status == OK.value()
+        renderModelUsingView()
         response.json.emailAddress == admin.emailAddress
         !response.json.password
 

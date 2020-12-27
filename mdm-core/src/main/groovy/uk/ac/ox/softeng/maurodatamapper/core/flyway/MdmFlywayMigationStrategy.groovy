@@ -17,26 +17,34 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.flyway
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.PluginSchemaHibernateMappingContext
 
 import groovy.util.logging.Slf4j
+import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy
 
 @Slf4j
-class CustomFlywayConfiguration implements FlywayConfigurationCustomizer {
+class MdmFlywayMigationStrategy implements FlywayMigrationStrategy {
 
     @Autowired
     Collection<PluginSchemaHibernateMappingContext> pluginSchemaHibernateMappingContexts
 
     @Override
-    void customize(FluentConfiguration configuration) {
-
-        log.info('Updating list of flyway schemas')
-        List<String> schemas = pluginSchemaHibernateMappingContexts.sort().collect {it.schemaName}
-        configuration.schemas(schemas.toArray() as String[])
-        log.warn('Flyway now controls the following schemas: {}', schemas)
+    void migrate(Flyway flyway) {
+        log.debug('Migrating Flyway')
+        pluginSchemaHibernateMappingContexts.sort().each { schemaContext ->
+            log.debug('Migrating flyway for plugin {} using locations {} for schema {}', schemaContext.pluginName,
+                      schemaContext.flywayLocations,
+                      schemaContext.schemaName)
+            new FluentConfiguration()
+                .configuration(flyway.getConfiguration())
+                .locations(schemaContext.getFlywayLocations())
+                .schemas(schemaContext.schemaName)
+                .load()
+                .migrate()
+            log.info('Flyway now controls the following schema: {}', schemaContext.schemaName)
+        }
     }
 }

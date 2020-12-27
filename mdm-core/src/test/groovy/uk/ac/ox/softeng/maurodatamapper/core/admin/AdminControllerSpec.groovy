@@ -80,8 +80,8 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         controller.apiProperties()
 
         then:
-        response.json
-        ApiPropertyEnum.values().findAll {it != ApiPropertyEnum.SITE_URL}.every {response.json."${it}"}
+        model.apiPropertyList
+        ApiPropertyEnum.values().findAll { it != ApiPropertyEnum.SITE_URL }.every { ape -> model.apiPropertyList.any { it.key == ape.key } }
     }
 
     void 'test editProperties'() {
@@ -93,11 +93,11 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         controller.editApiProperties()
 
         then:
-        response.status == HttpStatus.OK.code
+        status == HttpStatus.OK.code
 
         and: 'response has updated properties'
-        response.json
-        response.json."${ApiPropertyEnum.EMAIL_FROM_ADDRESS}" == admin.emailAddress
+        model.apiPropertyList
+        model.apiPropertyList.find { it.key == ApiPropertyEnum.EMAIL_FROM_ADDRESS.key }.value == admin.emailAddress
 
         and: 'properties loaded from servlet context has the updated property'
         ApiProperty.findByKey(ApiPropertyEnum.EMAIL_FROM_ADDRESS.key).value == admin.emailAddress
@@ -113,10 +113,10 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         controller.rebuildLuceneIndexes(indexParameters)
 
         then:
-        response.status == HttpStatus.OK.code
-        response.json.user == 'unlogged_user@mdm-core.com'
-        response.json.indexed
-        response.json.timeTakenMilliseconds
-        response.json.timeTaken
+        status == HttpStatus.OK.code
+        model.user == 'unlogged_user@mdm-core.com'
+        model.indexed
+        model.timeTakenMilliseconds
+        model.timeTaken
     }
 }

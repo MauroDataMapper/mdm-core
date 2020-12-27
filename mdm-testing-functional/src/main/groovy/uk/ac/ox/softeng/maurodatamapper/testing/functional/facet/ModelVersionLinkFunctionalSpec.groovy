@@ -114,7 +114,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     void verifyE03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
-        assert response.body().linkType == 'New Model Version Of'
+        assert response.body().linkType == 'New Fork Of'
         assert response.body().domainType == 'VersionLink'
         assert response.body().sourceModel.id == getModelId()
         assert response.body().targetModel.id == getTargetModelId()
@@ -170,7 +170,7 @@ abstract class ModelVersionLinkFunctionalSpec extends UserAccessFunctionalSpec {
     String getShowJson() {
         '''{
   "id": "${json-unit.matches:id}",
-  "linkType": "New Model Version Of",
+  "linkType": "New Fork Of",
   "domainType": "VersionLink",
   "sourceModel": ''' + getModelJsonString() + ''',
   "targetModel": ''' + getTargetModelJsonString() + '''
