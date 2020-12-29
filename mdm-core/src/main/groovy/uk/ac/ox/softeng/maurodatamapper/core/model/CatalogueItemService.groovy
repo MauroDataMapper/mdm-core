@@ -167,7 +167,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      *
      * @return boolean Is this extend allowed by domain specific rules?
      */
-    boolean isExtendableByCatalogueItem(CatalogueItem extendingCatalogueItem, CatalogueItem extendedCatalogueItem) {
+    boolean isExtendableByCatalogueItem(K extendingCatalogueItem, K extendedCatalogueItem) {
         false
     }    
 

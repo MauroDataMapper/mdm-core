@@ -133,16 +133,15 @@ class DataClassService extends ModelItemService<DataClass> {
      * @return boolean Is this extend allowed by domain specific rules?
      */
     @Override
-    boolean isExtendableByCatalogueItem(CatalogueItem extendingDataClass, CatalogueItem extendedDataClass) {
-        //TODO add the following rules
-        //1. The extended DataClass must directly belong to the same DataModel as the extending DataClass
-        //or
-        //2. The extended DataClass is imported into the same DataModel as the extending DataClass
-        //or
-        //3. The two DataClasses belong to the same collection
-        //or
-        //4. The extended DataClass belongs to a DataModel which is finalised
-        true
+    boolean isExtendableByCatalogueItem(DataClass extendingDataClass, DataClass extendedDataClass) {
+        //1. The extended DataClass must directly belong to the same DataModel as the extending DataClass, or
+        (extendingDataClass.dataModelId == extendedDataClass.dataModelId) ||
+        //2. the extended DataClass is imported into the same DataModel as owns the extending DataClass, or
+        (extendingDataClass.dataModel.modelImports.any {it.catalogueItemId == extendedDataClass.dataModelId}) ||
+        //3. TODO the two DataClasses belong to the same collection, or
+        //
+        //4. the extended DataClass belongs to a DataModel which is finalised
+        (extendedDataClass.dataModel.finalised)
     }      
 
     void delete(DataClass dataClass, boolean flush = false) {
