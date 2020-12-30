@@ -95,6 +95,20 @@ pipeline {
                 }
             }
         }
+        stage('Unit Test: mdm-plugin-profile') {
+            steps {
+                dir('mdm-plugin-profile') {
+                    sh "./grailsw test-app -unit"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-plugin-profile') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+                    }
+                }
+            }
+        }
 
         /*
         Integration Tests
@@ -183,6 +197,23 @@ pipeline {
                 }
             }
         }
+        stage('Integration Test: mdm-plugin-profile') {
+            steps {
+                dir('mdm-plugin-profile') {
+                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-plugin-profile') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
+                    }
+                }
+            }
+        }
+        /*
+        Functional Tests
+         */
         stage('Functional Test: mdm-plugin-terminology') {
             steps {
                 sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-terminology:integrationTest"
@@ -200,6 +231,20 @@ pipeline {
             post {
                 always {
                     junit allowEmptyResults: true, testResults: 'mdm-security/build/test-results/functionalTest/*.xml'
+                }
+            }
+        }
+        stage('Functional Test: mdm-plugin-profile') {
+            steps {
+                dir('mdm-plugin-profile') {
+                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-plugin-profile') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
+                    }
                 }
             }
         }
@@ -277,6 +322,20 @@ pipeline {
                 }
             }
         }
+//        stage('E2E Trouble Functional Test') {
+//            steps {
+//                dir('mdm-testing-functional') {
+//                    sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
+//                }
+//            }
+//            post {
+//                always {
+//                    dir('mdm-testing-functional') {
+//                        junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
+//                    }
+//                }
+//            }
+//        }
 
         stage('Compile complete Test Report') {
             steps {
