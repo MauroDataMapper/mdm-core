@@ -98,7 +98,7 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
   },
   { "name": "PluginProfile",
     "version": "${json-unit.matches:version}"
-  }
+  },
   {
     "name": "grails.assetPipeline",
      "version": "${json-unit.matches:version}"

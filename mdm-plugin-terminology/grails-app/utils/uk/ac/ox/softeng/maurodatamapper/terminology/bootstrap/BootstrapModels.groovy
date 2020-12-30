@@ -45,7 +45,7 @@ class BootstrapModels {
     public static final String UNFINALISED_CODESET_NAME = 'Unfinalised Simple Test CodeSet'
 
     static Terminology buildAndSaveSimpleTerminology(MessageSource messageSource, Folder folder, Authority authority) {
-        Terminology terminology = Terminology.findByLabel(COMPLEX_TERMINOLOGY_NAME)
+        Terminology terminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
         if(!terminology) {
 
             terminology = new Terminology(createdBy: DEVELOPMENT, label: SIMPLE_TERMINOLOGY_NAME, folder: folder,
