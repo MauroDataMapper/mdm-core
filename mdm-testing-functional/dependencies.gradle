@@ -2,7 +2,6 @@ dependencies {
     // Has to be compile not implementation to work with the old grails level compile
     compile project(':mdm-testing-framework')
 
-    compile(group: 'uk.ac.ox.softeng.maurodatamapper.plugins', name: 'mdm-plugin-profile-schema-org', version: '1.0.0-SNAPSHOT')
 
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'

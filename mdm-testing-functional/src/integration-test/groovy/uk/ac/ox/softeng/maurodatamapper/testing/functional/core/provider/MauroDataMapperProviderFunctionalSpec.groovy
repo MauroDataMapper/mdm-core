@@ -96,6 +96,9 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
     "name": "mdm.security",
      "version": "${json-unit.matches:version}"
   },
+  { "name": "PluginProfile",
+    "version": "${json-unit.matches:version}"
+  }
   {
     "name": "grails.assetPipeline",
      "version": "${json-unit.matches:version}"

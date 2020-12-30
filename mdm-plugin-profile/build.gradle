@@ -132,6 +132,7 @@ grails {
     plugins {
         compile project(':mdm-core')
         compile project(':mdm-plugin-datamodel')
+        compile project(':mdm-security')
     }
 }
 

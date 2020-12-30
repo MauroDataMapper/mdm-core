@@ -39,100 +39,103 @@ class BootstrapModels {
     static String SECOND_SIMPLE_REFERENCE_MODEL_NAME = "Second Simple Reference Data Model"
 
     static ReferenceDataModel buildAndSaveExampleReferenceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SIMPLE_REFERENCE_MODEL_NAME, folder: folder, authority: authority)
+        ReferenceDataModel referenceDataModel = ReferenceDataModel.findByLabel(SIMPLE_REFERENCE_MODEL_NAME)
+        if(!referenceDataModel) {
+            referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SIMPLE_REFERENCE_MODEL_NAME,
+                                   folder: folder, authority: authority)
+
+            Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
+                    readableByAuthenticatedUsers: true)
+            checkAndSave(messageSource, classifier)
+            referenceDataModel.addToClassifiers(classifier)
+            checkAndSave(messageSource, referenceDataModel)
 
 
+            ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+            ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
+            referenceDataModel
+                    .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk1', value: 'mdv1')
+                    .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk2', value: 'mdv2')
+                    .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk3', value: 'mdv3')
+                    .addToReferenceDataTypes(stringDataType)
+                    .addToReferenceDataTypes(integerDataType)
 
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
-                readableByAuthenticatedUsers: true)
-        checkAndSave(messageSource, classifier)
-        referenceDataModel.addToClassifiers(classifier)
-        checkAndSave(messageSource, referenceDataModel)
+            checkAndSave(messageSource, referenceDataModel)
 
+            ReferenceDataElement organisationName = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT)
+            ReferenceDataElement organisationCode = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT)
+            referenceDataModel.addToReferenceDataElements(organisationName)
+            referenceDataModel.addToReferenceDataElements(organisationCode)
 
-        ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
-        ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
-        referenceDataModel
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk1', value: 'mdv1')
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk2', value: 'mdv2')
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk3', value: 'mdv3')
-                .addToReferenceDataTypes(stringDataType)
-                .addToReferenceDataTypes(integerDataType)
+            checkAndSave(messageSource, referenceDataModel)
 
-        checkAndSave(messageSource, referenceDataModel)
+            (1..100).each {
+                referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: organisationName, value: "Organisation ${it}", rowNumber: it, createdBy: DEVELOPMENT))
+                referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: organisationCode, value: "ORG${it}", rowNumber: it, createdBy: DEVELOPMENT))
+            }
 
-        ReferenceDataElement organisationName = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation name", createdBy: DEVELOPMENT)
-        ReferenceDataElement organisationCode = new ReferenceDataElement(referenceDataType: stringDataType, label: "Organisation code", createdBy: DEVELOPMENT)
-        referenceDataModel.addToReferenceDataElements(organisationName)
-        referenceDataModel.addToReferenceDataElements(organisationCode)
+            checkAndSave(messageSource, referenceDataModel)
 
-        checkAndSave(messageSource, referenceDataModel)
+            referenceDataModel.addToRules(name: "Bootstrapped Functional Test Rule",
+                                          description: 'Functional Test Description',
+                                          createdBy: DEVELOPMENT)
 
-        (1..100).each {
-            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: organisationName, value: "Organisation ${it}", rowNumber: it, createdBy: DEVELOPMENT))
-            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: organisationCode, value: "ORG${it}", rowNumber: it, createdBy: DEVELOPMENT))
-        }
+            organisationName.addToRules(name: "Bootstrapped Functional Test Rule",
+                                        description: 'Functional Test Description',
+                                        createdBy: DEVELOPMENT)
 
-        checkAndSave(messageSource, referenceDataModel)
-
-        referenceDataModel.addToRules(name: "Bootstrapped Functional Test Rule", 
+            stringDataType.addToRules(name: "Bootstrapped Functional Test Rule",
                                       description: 'Functional Test Description',
-                                      createdBy: DEVELOPMENT)  
+                                      createdBy: DEVELOPMENT)
 
-        organisationName.addToRules(name: "Bootstrapped Functional Test Rule", 
-                                    description: 'Functional Test Description',
-                                    createdBy: DEVELOPMENT)  
+            checkAndSave(messageSource, referenceDataModel)
 
-        stringDataType.addToRules(name: "Bootstrapped Functional Test Rule", 
-                                  description: 'Functional Test Description',
-                                  createdBy: DEVELOPMENT)                                                                          
-
-        checkAndSave(messageSource, referenceDataModel)                                              
-
+        }
         referenceDataModel
     }
 
     static ReferenceDataModel buildAndSaveSecondExampleReferenceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SECOND_SIMPLE_REFERENCE_MODEL_NAME, folder: folder, authority: authority)
+        ReferenceDataModel referenceDataModel = ReferenceDataModel.findByLabel(SECOND_SIMPLE_REFERENCE_MODEL_NAME)
+        if(!referenceDataModel) {
+            referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SECOND_SIMPLE_REFERENCE_MODEL_NAME, folder: folder, authority: authority)
+
+            Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
+                    readableByAuthenticatedUsers: true)
+            checkAndSave(messageSource, classifier)
+            referenceDataModel.addToClassifiers(classifier)
+            checkAndSave(messageSource, referenceDataModel)
 
 
+            ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+            ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
+            referenceDataModel
+                    .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk1', value: 'mdv1')
+                    .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk2', value: 'mdv2')
+                    .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk3', value: 'mdv3')
+                    .addToReferenceDataTypes(stringDataType)
+                    .addToReferenceDataTypes(integerDataType)
 
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
-                readableByAuthenticatedUsers: true)
-        checkAndSave(messageSource, classifier)
-        referenceDataModel.addToClassifiers(classifier)
-        checkAndSave(messageSource, referenceDataModel)
+            checkAndSave(messageSource, referenceDataModel)
 
+            ReferenceDataElement a = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column A", createdBy: DEVELOPMENT)
+            ReferenceDataElement b = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column B", createdBy: DEVELOPMENT)
+            ReferenceDataElement c = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column C", createdBy: DEVELOPMENT)
+            referenceDataModel.addToReferenceDataElements(a)
+            referenceDataModel.addToReferenceDataElements(b)
+            referenceDataModel.addToReferenceDataElements(c)
 
-        ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
-        ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
-        referenceDataModel
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk1', value: 'mdv1')
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk2', value: 'mdv2')
-                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk3', value: 'mdv3')
-                .addToReferenceDataTypes(stringDataType)
-                .addToReferenceDataTypes(integerDataType)
+            checkAndSave(messageSource, referenceDataModel)
 
-        checkAndSave(messageSource, referenceDataModel)
+            (1..25).each {
+                referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: a, value: "A ${it}", rowNumber: it, createdBy: DEVELOPMENT))
+                referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: b, value: "B ${it}", rowNumber: it, createdBy: DEVELOPMENT))
+                referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: c, value: "C ${it}", rowNumber: it, createdBy: DEVELOPMENT))
+            }
 
-        ReferenceDataElement a = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column A", createdBy: DEVELOPMENT)
-        ReferenceDataElement b = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column B", createdBy: DEVELOPMENT)
-        ReferenceDataElement c = new ReferenceDataElement(referenceDataType: stringDataType, label: "Column C", createdBy: DEVELOPMENT)
-        referenceDataModel.addToReferenceDataElements(a)
-        referenceDataModel.addToReferenceDataElements(b)
-        referenceDataModel.addToReferenceDataElements(c)
+            checkAndSave(messageSource, referenceDataModel)
 
-        checkAndSave(messageSource, referenceDataModel)
-
-        (1..25).each {
-            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: a, value: "A ${it}", rowNumber: it, createdBy: DEVELOPMENT))
-            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: b, value: "B ${it}", rowNumber: it, createdBy: DEVELOPMENT))
-            referenceDataModel.addToReferenceDataValues(new ReferenceDataValue(referenceDataElement: c, value: "C ${it}", rowNumber: it, createdBy: DEVELOPMENT))
         }
-
-        checkAndSave(messageSource, referenceDataModel)
-
         referenceDataModel
-    }    
+    }
 
 }

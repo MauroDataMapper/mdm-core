@@ -66,11 +66,18 @@ class BootStrap implements SecurityDefinition {
                     createBasicGroups('functionalTest', false)
                     checkAndSave(messageSource, editors, readers)
 
-                    folder = new Folder(label: 'Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
-                    checkAndSave(messageSource, folder)
-
-                    folder2 = new Folder(label: 'Functional Test Folder 2', createdBy: userEmailAddresses.functionalTest)
-                    checkAndSave(messageSource, folder2)
+                    folder = Folder.findByLabel('Functional Test Folder')
+                    if(!folder)
+                    {
+                        folder = new Folder(label: 'Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
+                        checkAndSave(messageSource, folder)
+                    }
+                    folder2 = Folder.findByLabel('Functional Test Folder 2')
+                    if(!folder2)
+                    {
+                        folder2 = new Folder(label: 'Functional Test Folder 2', createdBy: userEmailAddresses.functionalTest)
+                        checkAndSave(messageSource, folder2)
+                    }
 
                     // Make editors container admin (existing permissions) of the test folder
                     checkAndSave(messageSource, new SecurableResourceGroupRole(

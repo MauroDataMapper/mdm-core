@@ -21,14 +21,16 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
-class BootStrap {
+class BootStrap implements SecurityDefinition {
 
     @Autowired
     MessageSource messageSource
@@ -39,11 +41,21 @@ class BootStrap {
         environments {
             test {
                 Folder.withNewTransaction {
-                    Folder folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.FUNCTIONAL_TEST)
-                    checkAndSave(messageSource, folder)
+
+
+                    Folder folder = Folder.findByLabel('Functional Test Folder')
+                    if(!folder)
+                    {
+                        folder = new Folder(label: 'Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
+                        checkAndSave(messageSource, folder)
+                    }
                     Authority authority = authorityService.getDefaultAuthority()
-                    BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
-                    BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
+                    if (DataModel.countByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME) == 0) {
+                        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
+                    }
+                    if (DataModel.countByLabel(BootstrapModels.SIMPLE_DATAMODEL_NAME) == 0) {
+                        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
+                    }
                 }
             }
         }
