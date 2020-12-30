@@ -23,14 +23,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityDefinition
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
-class BootStrap implements SecurityDefinition {
+class BootStrap {
 
     @Autowired
     MessageSource messageSource
@@ -46,7 +45,7 @@ class BootStrap implements SecurityDefinition {
                     Folder folder = Folder.findByLabel('Functional Test Folder')
                     if(!folder)
                     {
-                        folder = new Folder(label: 'Functional Test Folder', createdBy: userEmailAddresses.functionalTest)
+                        folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.getFUNCTIONAL_TEST())
                         checkAndSave(messageSource, folder)
                     }
                     Authority authority = authorityService.getDefaultAuthority()

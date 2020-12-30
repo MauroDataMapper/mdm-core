@@ -147,8 +147,8 @@ class BootstrapModels {
             dataFlow.addToDataClassComponents(
                 new DataClassComponent(label: 'aToD', createdBy: DEVELOPMENT,
                                        definition: '''SELECT * 
-    INTO TargetFlowDataModel.tableD 
-    FROM SourceFlowDataModel.tableA''')
+INTO TargetFlowDataModel.tableD 
+FROM SourceFlowDataModel.tableA''')
                     .addToSourceDataClasses(sourceDataClasses.tableA)
                     .addToTargetDataClasses(targetDataClasses.tableD)
                     .addToDataElementComponents(
@@ -175,18 +175,18 @@ class BootstrapModels {
                 .addToDataClassComponents(
                     new DataClassComponent(label: 'bAndCToE', createdBy: DEVELOPMENT,
                                            definition: '''INSERT INTO TargetFlowDataModel.tableE
-    SELECT  
-        b.columnE1                                      AS columnE,
-        b.columnF                                       AS columnR,
-        CONCAT(b.columnG,'_',c.columnJ)                 AS columnS,
-        CASE
-            WHEN b.columnH IS NULL THEN b.columnI
-            ELSE b.columnH
-        END                                             AS columnT,
-        TRIM(c.columnJ)                                 AS columnU,
-        CONCAT(c.columnL,' ',c.columnM,'--',b.columnG)  AS columnV
-    FROM SourceFlowDataModel.tableB b
-    INNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2''')
+SELECT  
+    b.columnE1                                      AS columnE,
+    b.columnF                                       AS columnR,
+    CONCAT(b.columnG,'_',c.columnJ)                 AS columnS,
+    CASE
+        WHEN b.columnH IS NULL THEN b.columnI
+        ELSE b.columnH
+    END                                             AS columnT,
+    TRIM(c.columnJ)                                 AS columnU,
+    CONCAT(c.columnL,' ',c.columnM,'--',b.columnG)  AS columnV
+FROM SourceFlowDataModel.tableB b
+INNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2''')
                         .addToSourceDataClasses(sourceDataClasses.tableB)
                         .addToSourceDataClasses(sourceDataClasses.tableC)
                         .addToTargetDataClasses(targetDataClasses.tableE)
@@ -209,10 +209,10 @@ class BootstrapModels {
                         )
                         .addToDataElementComponents(
                             new DataElementComponent(label: 'CASE', createdBy: DEVELOPMENT, definition: '''
-    CASE
-        WHEN b.columnH IS NULL THEN b.columnI
-        ELSE b.columnH
-    END''')
+CASE
+    WHEN b.columnH IS NULL THEN b.columnI
+    ELSE b.columnH
+END''')
                                 .addToSourceDataElements(sourceDataElements.columnH)
                                 .addToSourceDataElements(sourceDataElements.columnI)
                                 .addToTargetDataElements(targetDataElements.columnT)
