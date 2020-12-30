@@ -197,7 +197,7 @@ pipeline {
                 }
             }
         }
-        stage('Integration Test: mdm-plugin-profile') {
+/*        stage('Integration Test: mdm-plugin-profile') {
             steps {
                 dir('mdm-plugin-profile') {
                     sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
@@ -211,6 +211,7 @@ pipeline {
                 }
             }
         }
+*/
         /*
         Functional Tests
          */
@@ -318,10 +319,27 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/referencedata/*.xml'
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/referencedata/*.xml'
+                    }
                 }
             }
         }
+ /*       stage('E2E Profile Functional Test') {
+            steps {
+                dir('mdm-testing-functional') {
+                    sh "./grailsw -Dgrails.test.package=profile test-app"
+                }
+            }
+            post {
+                always {
+                    dir('mdm-testing-functional') {
+                        junit allowEmptyResults: true, testResults: 'build/test-results/profile/*.xml'
+                    }
+                }
+            }
+        }
+*/
 //        stage('E2E Trouble Functional Test') {
 //            steps {
 //                dir('mdm-testing-functional') {
