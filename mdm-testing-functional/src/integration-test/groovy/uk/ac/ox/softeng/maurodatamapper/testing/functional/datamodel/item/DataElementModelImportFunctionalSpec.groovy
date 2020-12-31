@@ -264,7 +264,7 @@ class DataElementModelImportFunctionalSpec extends ModelImportFunctionalSpec {
   "maxMultiplicity": 1,
   "minMultiplicity": 1
 }'''
-    }    
+    }
 
     /**
      * Import a DataElement into a DataClass and check that a DataType import is also created.

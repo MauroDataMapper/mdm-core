@@ -96,7 +96,7 @@ class DataClassModelExtendFunctionalSpec extends FunctionalSpec {
     @Transactional
     String getExtendedDataModelId() {
         DataModel.findByLabel(BootstrapModels.FINALISED_EXTENDABLE_DATAMODEL_NAME).id.toString()
-    }     
+    }
   
    /**
      * Extend a DataClass.

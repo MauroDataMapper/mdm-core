@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import grails.gorm.DetachedCriteria
 import grails.util.Pair
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -53,6 +54,11 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
     void delete(UUID id) {
         delete(get(id))
     }
+
+    @Override
+    DetachedCriteria<ModelImport> getBaseDeleteCriteria() {
+        ModelImport.by()
+    }        
 
     //Ensure a row is inserted into the _facet table
     void addModelImportToCatalogueItem(ModelImport modelImport, CatalogueItem catalogueItem) {
