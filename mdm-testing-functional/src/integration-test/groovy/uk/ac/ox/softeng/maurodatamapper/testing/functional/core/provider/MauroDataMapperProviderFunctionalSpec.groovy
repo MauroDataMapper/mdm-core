@@ -69,6 +69,10 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
      "version": "${json-unit.matches:version}"
   },
   {
+    "name": "PluginAuthenticationApiKey",
+    "version": "${json-unit.matches:version}"
+  },
+  {
     "name": "PluginAuthenticationBasic",
      "version": "${json-unit.matches:version}"
   },

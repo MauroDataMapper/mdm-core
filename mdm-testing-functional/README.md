@@ -36,10 +36,22 @@ Controller: annotation
  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/annotations/${id}                                                                                                             | Action: delete
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/annotations/${id}                                                                                                             | Action: show
 
+Controller: apiKey
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/apiKeys/${apiKeyId}/enable                                                                                                                | Action: enableApiKey
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/apiKeys/${apiKeyId}/disable                                                                                                               | Action: disableApiKey
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/apiKeys/${apiKeyId}/refresh/${expiresInDays}                                                                                              | Action: refreshApiKey
+ |   POST   | /api/catalogueUsers/${catalogueUserId}/apiKeys                                                                                                                                   | Action: save
+ |   GET    | /api/catalogueUsers/${catalogueUserId}/apiKeys                                                                                                                                   | Action: index
+ |  DELETE  | /api/catalogueUsers/${catalogueUserId}/apiKeys/${id}                                                                                                                             | Action: delete
+
 Controller: authenticating
  |    *     | /api/authentication/logout                                                                                                                                                       | Action: logout
  |   POST   | /api/authentication/login                                                                                                                                                        | Action: login
  |   POST   | /api/admin/activeSessions                                                                                                                                                        | Action: activeSessionsWithCredentials
+
+Controller: authority
+ |   GET    | /api/authorities                                                                                                                                                                 | Action: index
+ |   GET    | /api/authorities/${id}                                                                                                                                                           | Action: show
 
 Controller: catalogueUser
  |   POST   | /api/admin/catalogueUsers/adminRegister                                                                                                                                          | Action: adminRegister
@@ -94,8 +106,13 @@ Controller: codeSet
  |   PUT    | /api/codeSets/${codeSetId}/readByAuthenticated                                                                                                                                   | Action: readByAuthenticated
  |  DELETE  | /api/codeSets/${codeSetId}/readByEveryone                                                                                                                                        | Action: readByEveryone
  |   PUT    | /api/codeSets/${codeSetId}/readByEveryone                                                                                                                                        | Action: readByEveryone
- |   PUT    | /api/codeSets/${codeSetId}/newForkModel                                                                                                                                       | Action: newForkModel
+ |   GET    | /api/codeSets/${codeSetId}/availableBranches                                                                                                                                     | Action: availableBranches
+ |   GET    | /api/codeSets/${codeSetId}/currentMainBranch                                                                                                                                     | Action: currentMainBranch
+ |   GET    | /api/codeSets/${codeSetId}/latestModelVersion                                                                                                                                    | Action: latestModelVersion
+ |   GET    | /api/codeSets/${codeSetId}/latestFinalisedModel                                                                                                                                  | Action: latestFinalisedModel
+ |   PUT    | /api/codeSets/${codeSetId}/newForkModel                                                                                                                                          | Action: newForkModel
  |   PUT    | /api/codeSets/${codeSetId}/newDocumentationVersion                                                                                                                               | Action: newDocumentationVersion
+ |   PUT    | /api/codeSets/${codeSetId}/newBranchModelVersion                                                                                                                                 | Action: newBranchModelVersion
  |   PUT    | /api/codeSets/${codeSetId}/finalise                                                                                                                                              | Action: finalise
  |   POST   | /api/folders/${folderId}/codeSets                                                                                                                                                | Action: save
  |   GET    | /api/folders/${folderId}/codeSets                                                                                                                                                | Action: index
@@ -103,6 +120,9 @@ Controller: codeSet
  |   PUT    | /api/codeSets/${codeSetId}/terms/${termId}                                                                                                                                       | Action: alterTerms
  |   PUT    | /api/codeSets/${codeSetId}/folder/${folderId}                                                                                                                                    | Action: changeFolder
  |   GET    | /api/codeSets/${codeSetId}/diff/${otherModelId}                                                                                                                                  | Action: diff
+ |   PUT    | /api/codeSets/${codeSetId}/mergeInto/${otherModelId}                                                                                                                             | Action: mergeInto
+ |   GET    | /api/codeSets/${codeSetId}/mergeDiff/${otherModelId}                                                                                                                             | Action: mergeDiff
+ |   GET    | /api/codeSets/${codeSetId}/commonAncestor/${otherModelId}                                                                                                                        | Action: commonAncestor
  |   PUT    | /api/folders/${folderId}/codeSets/${codeSetId}                                                                                                                                   | Action: changeFolder
  |   GET    | /api/codeSets/${codeSetId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}                                                                                        | Action: exportModel
  |   GET    | /api/codeSets                                                                                                                                                                    | Action: index
@@ -146,7 +166,10 @@ Controller: dataElement
  |  DELETE  | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${id}                                                                                                     | Action: delete
  |   PUT    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${id}                                                                                                     | Action: update
  |   GET    | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${id}                                                                                                     | Action: show
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements/${referenceDataElementId}/suggestLinks/${otherDataModelId}                                                | Action: suggestLinks
  |   POST   | /api/dataModels/${dataModelId}/dataClasses/${dataClassId}/dataElements/${otherDataModelId}/${otherDataClassId}/${dataElementId}                                                  | Action: copyDataElement
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/search                                                                                                                          | Action: search
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/search                                                                                                                          | Action: search
 
 Controller: dataElementComponent
  |   POST   | /api/dataModels/${dataModelId}/dataFlows/${dataFlowId}/dataClassComponents/${dataClassComponentId}/dataElementComponents                                                         | Action: save
@@ -188,14 +211,22 @@ Controller: dataModel
  |   GET    | /api/dataModels/${dataModelId}/search                                                                                                                                            | Action: search
  |   POST   | /api/dataModels/${dataModelId}/search                                                                                                                                            | Action: search
  |   GET    | /api/dataModels/${dataModelId}/hierarchy                                                                                                                                         | Action: hierarchy
- |   PUT    | /api/dataModels/${dataModelId}/newForkModel                                                                                                                                   | Action: newForkModel
+ |   GET    | /api/dataModels/${dataModelId}/availableBranches                                                                                                                                 | Action: availableBranches
+ |   GET    | /api/dataModels/${dataModelId}/currentMainBranch                                                                                                                                 | Action: currentMainBranch
+ |   GET    | /api/dataModels/${dataModelId}/latestModelVersion                                                                                                                                | Action: latestModelVersion
+ |   GET    | /api/dataModels/${dataModelId}/latestFinalisedModel                                                                                                                              | Action: latestFinalisedModel
+ |   PUT    | /api/dataModels/${dataModelId}/newForkModel                                                                                                                                      | Action: newForkModel
  |   PUT    | /api/dataModels/${dataModelId}/newDocumentationVersion                                                                                                                           | Action: newDocumentationVersion
+ |   PUT    | /api/dataModels/${dataModelId}/newBranchModelVersion                                                                                                                             | Action: newBranchModelVersion
  |   PUT    | /api/dataModels/${dataModelId}/finalise                                                                                                                                          | Action: finalise
  |   POST   | /api/folders/${folderId}/dataModels                                                                                                                                              | Action: save
  |   PUT    | /api/folders/${folderId}/dataModels/${dataModelId}                                                                                                                               | Action: changeFolder
  |   PUT    | /api/dataModels/${dataModelId}/folder/${folderId}                                                                                                                                | Action: changeFolder
  |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherModelId}                                                                                                                      | Action: suggestLinks
  |   GET    | /api/dataModels/${dataModelId}/diff/${otherModelId}                                                                                                                              | Action: diff
+ |   PUT    | /api/dataModels/${dataModelId}/mergeInto/${otherModelId}                                                                                                                         | Action: mergeInto
+ |   GET    | /api/dataModels/${dataModelId}/mergeDiff/${otherModelId}                                                                                                                         | Action: mergeDiff
+ |   GET    | /api/dataModels/${dataModelId}/commonAncestor/${otherModelId}                                                                                                                    | Action: commonAncestor
  |   GET    | /api/dataModels/${dataModelId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}                                                                                    | Action: exportModel
  |   GET    | /api/dataModels                                                                                                                                                                  | Action: index
  |  DELETE  | /api/dataModels                                                                                                                                                                  | Action: deleteAll
@@ -230,12 +261,19 @@ Controller: enumerationValue
  |   GET    | /api/dataModels/${dataModelId}/dataTypes/${dataTypeId}/enumerationValues/${id}                                                                                                   | Action: show
 
 Controller: folder
+ |   POST   | /api/versionedFolders/${versionedFolderId}/folders                                                                                                                               | Action: save
+ |   GET    | /api/versionedFolders/${versionedFolderId}/folders                                                                                                                               | Action: index
  |   POST   | /api/folders/${folderId}/folders                                                                                                                                                 | Action: save
  |   GET    | /api/folders/${folderId}/folders                                                                                                                                                 | Action: index
+ |   GET    | /api/folders/${folderId}/search                                                                                                                                                  | Action: search
+ |   POST   | /api/folders/${folderId}/search                                                                                                                                                  | Action: search
  |  DELETE  | /api/folders/${folderId}/readByAuthenticated                                                                                                                                     | Action: readByAuthenticated
  |   PUT    | /api/folders/${folderId}/readByAuthenticated                                                                                                                                     | Action: readByAuthenticated
  |  DELETE  | /api/folders/${folderId}/readByEveryone                                                                                                                                          | Action: readByEveryone
  |   PUT    | /api/folders/${folderId}/readByEveryone                                                                                                                                          | Action: readByEveryone
+ |  DELETE  | /api/versionedFolders/${versionedFolderId}/folders/${id}                                                                                                                         | Action: delete
+ |   PUT    | /api/versionedFolders/${versionedFolderId}/folders/${id}                                                                                                                         | Action: update
+ |   GET    | /api/versionedFolders/${versionedFolderId}/folders/${id}                                                                                                                         | Action: show
  |  DELETE  | /api/folders/${folderId}/folders/${id}                                                                                                                                           | Action: delete
  |   PUT    | /api/folders/${folderId}/folders/${id}                                                                                                                                           | Action: update
  |   GET    | /api/folders/${folderId}/folders/${id}                                                                                                                                           | Action: show
@@ -275,8 +313,87 @@ Controller: metadata
  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/metadata/${id}                                                                                                                | Action: update
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/metadata/${id}                                                                                                                | Action: show
 
+Controller: path
+ |   GET    | /api/${catalogueItemDomainType}/path/${path}                                                                                                                                     | Action: show
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/path/${path}                                                                                                                  | Action: show
+
 Controller: permissions
- |    *     | /api/${securableResourceDomainType}/${securableResourceId}/permissions                                                                                                           | Action: permissions
+ |   GET    | /api/${securableResourceDomainType}/${securableResourceId}/permissions                                                                                                           | Action: permissions
+
+Controller: referenceDataElement
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${referenceDataTypeId}/referenceDataElements                                                                 | Action: index
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements                                                                                                           | Action: save
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements                                                                                                           | Action: index
+ |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements/${id}                                                                                                     | Action: delete
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements/${id}                                                                                                     | Action: update
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements/${id}                                                                                                     | Action: show
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataElements/${otherReferenceDataModelId}/${referenceDataElementId}                                                    | Action: copyReferenceDataElement
+
+Controller: referenceDataModel
+ |   GET    | /api/referenceDataModels/providers/defaultReferenceDataTypeProviders                                                                                                             | Action: defaultReferenceDataTypeProviders
+ |   GET    | /api/referenceDataModels/providers/importers                                                                                                                                     | Action: importerProviders
+ |   GET    | /api/referenceDataModels/providers/exporters                                                                                                                                     | Action: exporterProviders
+ |   POST   | /api/referenceDataModels/import/${importerNamespace}/${importerName}/${importerVersion}                                                                                          | Action: importModels
+ |   POST   | /api/referenceDataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                                                                                          | Action: exportModels
+ |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/clean                                                                                                        | Action: deleteAllUnusedReferenceDataTypes
+ |   GET    | /api/folders/${folderId}/referenceDataModels                                                                                                                                     | Action: index
+ |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/readByAuthenticated                                                                                                             | Action: readByAuthenticated
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/readByAuthenticated                                                                                                             | Action: readByAuthenticated
+ |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/readByEveryone                                                                                                                  | Action: readByEveryone
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/readByEveryone                                                                                                                  | Action: readByEveryone
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/search                                                                                                                          | Action: search
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/search                                                                                                                          | Action: search
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/hierarchy                                                                                                                       | Action: hierarchy
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/availableBranches                                                                                                               | Action: availableBranches
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/currentMainBranch                                                                                                               | Action: currentMainBranch
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/latestModelVersion                                                                                                              | Action: latestModelVersion
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/latestFinalisedModel                                                                                                            | Action: latestFinalisedModel
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/newForkModel                                                                                                                    | Action: newForkModel
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/newDocumentationVersion                                                                                                         | Action: newDocumentationVersion
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/newBranchModelVersion                                                                                                           | Action: newBranchModelVersion
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/finalise                                                                                                                        | Action: finalise
+ |   POST   | /api/folders/${folderId}/referenceDataModels                                                                                                                                     | Action: save
+ |   PUT    | /api/folders/${folderId}/referenceDataModels/${referenceDataModelId}                                                                                                             | Action: changeFolder
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/folder/${folderId}                                                                                                              | Action: changeFolder
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/suggestLinks/${otherModelId}                                                                                                    | Action: suggestLinks
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/diff/${otherModelId}                                                                                                            | Action: diff
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/mergeInto/${otherModelId}                                                                                                       | Action: mergeInto
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/mergeDiff/${otherModelId}                                                                                                       | Action: mergeDiff
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/commonAncestor/${otherModelId}                                                                                                  | Action: commonAncestor
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}                                                                  | Action: exportModel
+ |   GET    | /api/referenceDataModels                                                                                                                                                         | Action: index
+ |  DELETE  | /api/referenceDataModels                                                                                                                                                         | Action: deleteAll
+ |  DELETE  | /api/referenceDataModels/${id}                                                                                                                                                   | Action: delete
+ |   PUT    | /api/referenceDataModels/${id}                                                                                                                                                   | Action: update
+ |   GET    | /api/referenceDataModels/${id}                                                                                                                                                   | Action: show
+
+Controller: referenceDataType
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes                                                                                                              | Action: save
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes                                                                                                              | Action: index
+ |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${id}                                                                                                        | Action: delete
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${id}                                                                                                        | Action: update
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${id}                                                                                                        | Action: show
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${otherReferenceDataModelId}/${referenceDataTypeId}                                                          | Action: copyReferenceDataType
+
+Controller: referenceDataValue
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataValues/search                                                                                                      | Action: search
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataValues/search                                                                                                      | Action: search
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataValues                                                                                                             | Action: index
+ |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/referenceDataValues/${id}                                                                                                       | Action: delete
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/referenceDataValues/${id}                                                                                                       | Action: update
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataValues/${id}                                                                                                       | Action: show
+
+Controller: referenceEnumerationValue
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues                                              | Action: save
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues                                              | Action: index
+ |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${referenceDataTypeId}/referenceEnumerationValues                                                            | Action: save
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${referenceDataTypeId}/referenceEnumerationValues                                                            | Action: index
+ |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues/${id}                                        | Action: delete
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues/${id}                                        | Action: update
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceEnumerationTypes/${referenceEnumerationTypeId}/referenceEnumerationValues/${id}                                        | Action: show
+ |  DELETE  | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${referenceDataTypeId}/referenceEnumerationValues/${id}                                                      | Action: delete
+ |   PUT    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${referenceDataTypeId}/referenceEnumerationValues/${id}                                                      | Action: update
+ |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes/${referenceDataTypeId}/referenceEnumerationValues/${id}                                                      | Action: show
 
 Controller: referenceFile
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles                                                                                                                | Action: save
@@ -284,6 +401,38 @@ Controller: referenceFile
  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}                                                                                                          | Action: delete
  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}                                                                                                          | Action: update
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceFiles/${id}                                                                                                          | Action: show
+
+Controller: referenceSummaryMetadata
+ |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata                                                                                                      | Action: save
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata                                                                                                      | Action: index
+ |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${id}                                                                                                | Action: delete
+ |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${id}                                                                                                | Action: update
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${id}                                                                                                | Action: show
+
+Controller: referenceSummaryMetadataReport
+ |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${referenceSummaryMetadataId}/summaryMetadataReports                                                 | Action: save
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${referenceSummaryMetadataId}/summaryMetadataReports                                                 | Action: index
+ |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${referenceSummaryMetadataId}/summaryMetadataReports/${id}                                           | Action: delete
+ |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${referenceSummaryMetadataId}/summaryMetadataReports/${id}                                           | Action: update
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/referenceSummaryMetadata/${referenceSummaryMetadataId}/summaryMetadataReports/${id}                                           | Action: show
+
+Controller: rule
+ |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/rules                                                                                                                         | Action: save
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules                                                                                                                         | Action: index
+ |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}                                                                                                                   | Action: delete
+ |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}                                                                                                                   | Action: update
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${id}                                                                                                                   | Action: show
+
+Controller: ruleRepresentation
+ |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations                                                                                               | Action: save
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations                                                                                               | Action: index
+ |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id}                                                                                         | Action: delete
+ |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id}                                                                                         | Action: update
+ |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/rules/${ruleId}/representations/${id}                                                                                         | Action: show
+
+Controller: search
+ |   GET    | /api/catalogueItems/search                                                                                                                                                       | Action: search
+ |   POST   | /api/catalogueItems/search                                                                                                                                                       | Action: search
 
 Controller: securableResourceGroupRole
  |   POST   | /api/userGroups/${userGroupId}/securableResourceGroupRoles                                                                                                                       | Action: save
@@ -301,6 +450,7 @@ Controller: securableResourceGroupRole
  |   GET    | /api/${securableResourceDomainType}/${securableResourceId}/groupRoles/${groupRoleId}                                                                                             | Action: index
 
 Controller: semanticLink
+ |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks/${semanticLinkId}/confirm                                                                                       | Action: confirm
  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks                                                                                                                 | Action: save
  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks                                                                                                                 | Action: index
  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/semanticLinks/${id}                                                                                                           | Action: delete
@@ -363,13 +513,21 @@ Controller: terminology
  |   PUT    | /api/terminologies/${terminologyId}/readByAuthenticated                                                                                                                          | Action: readByAuthenticated
  |  DELETE  | /api/terminologies/${terminologyId}/readByEveryone                                                                                                                               | Action: readByEveryone
  |   PUT    | /api/terminologies/${terminologyId}/readByEveryone                                                                                                                               | Action: readByEveryone
- |   PUT    | /api/terminologies/${terminologyId}/newForkModel                                                                                                                              | Action: newForkModel
+ |   GET    | /api/terminologies/${terminologyId}/availableBranches                                                                                                                            | Action: availableBranches
+ |   GET    | /api/terminologies/${terminologyId}/currentMainBranch                                                                                                                            | Action: currentMainBranch
+ |   GET    | /api/terminologies/${terminologyId}/latestModelVersion                                                                                                                           | Action: latestModelVersion
+ |   GET    | /api/terminologies/${terminologyId}/latestFinalisedModel                                                                                                                         | Action: latestFinalisedModel
+ |   PUT    | /api/terminologies/${terminologyId}/newForkModel                                                                                                                                 | Action: newForkModel
  |   PUT    | /api/terminologies/${terminologyId}/newDocumentationVersion                                                                                                                      | Action: newDocumentationVersion
+ |   PUT    | /api/terminologies/${terminologyId}/newBranchModelVersion                                                                                                                        | Action: newBranchModelVersion
  |   PUT    | /api/terminologies/${terminologyId}/finalise                                                                                                                                     | Action: finalise
  |   POST   | /api/folders/${folderId}/terminologies                                                                                                                                           | Action: save
  |   GET    | /api/folders/${folderId}/terminologies                                                                                                                                           | Action: index
  |   PUT    | /api/terminologies/${terminologyId}/folder/${folderId}                                                                                                                           | Action: changeFolder
  |   GET    | /api/terminologies/${terminologyId}/diff/${otherModelId}                                                                                                                         | Action: diff
+ |   PUT    | /api/terminologies/${terminologyId}/mergeInto/${otherModelId}                                                                                                                    | Action: mergeInto
+ |   GET    | /api/terminologies/${terminologyId}/mergeDiff/${otherModelId}                                                                                                                    | Action: mergeDiff
+ |   GET    | /api/terminologies/${terminologyId}/commonAncestor/${otherModelId}                                                                                                               | Action: commonAncestor
  |   PUT    | /api/folders/${folderId}/terminologies/${terminologyId}                                                                                                                          | Action: changeFolder
  |   GET    | /api/terminologies/${terminologyId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}                                                                               | Action: exportModel
  |   GET    | /api/terminologies                                                                                                                                                               | Action: index
@@ -419,4 +577,27 @@ Controller: versionLink
  |  DELETE  | /api/${modelDomainType}/${modelId}/versionLinks/${id}                                                                                                                            | Action: delete
  |   PUT    | /api/${modelDomainType}/${modelId}/versionLinks/${id}                                                                                                                            | Action: update
  |   GET    | /api/${modelDomainType}/${modelId}/versionLinks/${id}                                                                                                                            | Action: show
+
+Controller: versionedFolder
+ |   POST   | /api/versionedFolders/${versionedFolderId}/versionedFolders                                                                                                                      | Action: save
+ |   GET    | /api/versionedFolders/${versionedFolderId}/versionedFolders                                                                                                                      | Action: index
+ |   POST   | /api/folders/${folderId}/versionedFolders                                                                                                                                        | Action: save
+ |   GET    | /api/folders/${folderId}/versionedFolders                                                                                                                                        | Action: index
+ |   GET    | /api/versionedFolders/${versionedFolderId}/search                                                                                                                                | Action: search
+ |   POST   | /api/versionedFolders/${versionedFolderId}/search                                                                                                                                | Action: search
+ |  DELETE  | /api/versionedFolders/${versionedFolderId}/readByAuthenticated                                                                                                                   | Action: readByAuthenticated
+ |   PUT    | /api/versionedFolders/${versionedFolderId}/readByAuthenticated                                                                                                                   | Action: readByAuthenticated
+ |  DELETE  | /api/versionedFolders/${versionedFolderId}/readByEveryone                                                                                                                        | Action: readByEveryone
+ |   PUT    | /api/versionedFolders/${versionedFolderId}/readByEveryone                                                                                                                        | Action: readByEveryone
+ |  DELETE  | /api/versionedFolders/${versionedFolderId}/versionedFolders/${id}                                                                                                                | Action: delete
+ |   PUT    | /api/versionedFolders/${versionedFolderId}/versionedFolders/${id}                                                                                                                | Action: update
+ |   GET    | /api/versionedFolders/${versionedFolderId}/versionedFolders/${id}                                                                                                                | Action: show
+ |  DELETE  | /api/folders/${folderId}/versionedFolders/${id}                                                                                                                                  | Action: delete
+ |   PUT    | /api/folders/${folderId}/versionedFolders/${id}                                                                                                                                  | Action: update
+ |   GET    | /api/folders/${folderId}/versionedFolders/${id}                                                                                                                                  | Action: show
+ |   POST   | /api/versionedFolders                                                                                                                                                            | Action: save
+ |   GET    | /api/versionedFolders                                                                                                                                                            | Action: index
+ |  DELETE  | /api/versionedFolders/${id}                                                                                                                                                      | Action: delete
+ |   PUT    | /api/versionedFolders/${id}                                                                                                                                                      | Action: update
+ |   GET    | /api/versionedFolders/${id}                                                                                                                                                      | Action: show               
 ```

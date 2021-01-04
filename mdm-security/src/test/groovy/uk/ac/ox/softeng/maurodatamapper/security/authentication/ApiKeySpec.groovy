@@ -26,23 +26,23 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 import grails.testing.gorm.DomainUnitTest
 import groovy.util.logging.Slf4j
 
-import java.time.OffsetDateTime
+import java.time.LocalDate
 
 @Slf4j
 class ApiKeySpec extends CreatorAwareSpec<ApiKey> implements DomainUnitTest<ApiKey>, SecurityUsers {
 
-    OffsetDateTime expiry
+    LocalDate expiry
 
     def setup() {
         log.debug('Setting up ApiKeySpec')
         mockDomains(Edit, CatalogueUser)
         implementSecurityUsers('unitTest')
-        expiry = OffsetDateTime.now()
+        expiry = LocalDate.now()
     }
 
     @Override
     void setValidDomainOtherValues() {
-        domain.expiryDateTime = expiry
+        domain.expiryDate = expiry
         domain.name = 'Global Access'
         domain.catalogueUser = editor
     }
@@ -50,7 +50,7 @@ class ApiKeySpec extends CreatorAwareSpec<ApiKey> implements DomainUnitTest<ApiK
     @Override
     void verifyDomainOtherConstraints(ApiKey domain) {
         domain.name == 'Global Access'
-        domain.expiryDateTime == expiry
+        domain.expiryDate == expiry
         !domain.refreshable
         !domain.expired
     }
@@ -59,6 +59,7 @@ class ApiKeySpec extends CreatorAwareSpec<ApiKey> implements DomainUnitTest<ApiK
     void 'test expiry'() {
         given:
         setValidDomainValues()
+        domain.expiryDate = expiry.minusDays(1)
 
         expect:
         domain.isExpired()

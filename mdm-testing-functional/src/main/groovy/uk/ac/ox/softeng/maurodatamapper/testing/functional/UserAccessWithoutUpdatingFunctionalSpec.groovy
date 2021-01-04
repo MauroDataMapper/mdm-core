@@ -121,15 +121,31 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
         verifyForbidden response
     }
 
+    void verifyR03NoContentResponse(HttpResponse<Map> response) {
+        verifyForbidden response
+    }
+
+    void verifyR03InvalidContentResponse(HttpResponse<Map> response) {
+        verifyForbidden response
+    }
+
+    void verifyR03ValidContentResponse(HttpResponse<Map> response) {
+        verifyForbidden response
+    }
+
     void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
         verifyNotFound response, id
     }
 
+    void verifyR04KnownIdResponse(HttpResponse<Map> response, String id) {
+        verifyForbidden response
+    }
+
     void verifyE03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
-        validJson.each {k, v ->
+        validJson.each { k, v ->
             if (v instanceof Map) {
-                v.each {k1, v1 ->
+                v.each { k1, v1 ->
                     assert response.body()[k][k1] == v1
                 }
             } else {
@@ -590,19 +606,19 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             POST(getSavePath(), noContent, MAP_ARG, true)
 
             then:
-            verifyForbidden response
+            verifyR03NoContentResponse(response)
 
             when: 'The save action is executed with invalid data'
             POST(getSavePath(), invalidJson, MAP_ARG, true)
 
             then: 'The response is correct'
-            verifyForbidden response
+            verifyR03InvalidContentResponse(response)
 
             when: 'The save action is executed with valid data'
             POST(getSavePath(), validJson, MAP_ARG, true)
 
             then:
-            verifyForbidden response
+            verifyR03ValidContentResponse(response)
         }
     }
 
@@ -622,7 +638,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
         DELETE("$id")
 
         then: 'The response is correct'
-        verifyForbidden response
+        verifyR04KnownIdResponse response, id
 
         cleanup:
         removeValidIdObject(id)

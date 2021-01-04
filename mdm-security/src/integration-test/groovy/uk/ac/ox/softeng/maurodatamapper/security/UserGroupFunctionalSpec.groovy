@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security
 
 import uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.security.basic.UnloggedUser
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedUserSecurityPolicyManager
@@ -68,17 +69,18 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         sessionFactory.currentSession.flush()
-        assert CatalogueUser.count() == 2
         assert UserGroup.count() == 1
+        assert CatalogueUser.count() == 2 // Unlogged user & admin user
         implementSecurityUsers('functionalTest')
         assert CatalogueUser.count() == 9
-        sessionFactory.currentSession.flush()
     }
 
     @Transactional
     def cleanupSpec() {
-        CatalogueUser.list().findAll {it.emailAddress != UnloggedUser.instance.emailAddress}.each {it.delete(flush: true)}
-        if (CatalogueUser.count() != 1) {
+        CatalogueUser.list().findAll {
+            !(it.emailAddress in [UnloggedUser.UNLOGGED_EMAIL_ADDRESS, StandardEmailAddress.ADMIN])
+        }.each { it.delete(flush: true) }
+        if (CatalogueUser.count() != 2) {
             Assert.fail("Resource Class ${CatalogueUser.simpleName} has not been emptied")
         }
         cleanUpResources(UserGroup)

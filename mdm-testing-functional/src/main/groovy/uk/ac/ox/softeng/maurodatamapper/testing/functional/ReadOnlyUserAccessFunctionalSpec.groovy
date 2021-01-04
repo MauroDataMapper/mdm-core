@@ -69,6 +69,12 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
         response.body().id == id
     }
 
+    void verifyR01Response(HttpResponse<Map> response) {
+        verifyResponse OK, response
+        assert response.body().count
+        assert response.body().items
+    }
+
     void verifyR02Response(HttpResponse<Map> response, String id) {
         verifyResponse OK, response
         response.body().id == id
@@ -181,11 +187,19 @@ abstract class ReadOnlyUserAccessFunctionalSpec extends FunctionalSpec {
         given:
         loginReader()
 
-        when: 'The index action is requested'
-        GET('', STRING_ARG)
+        if (getReaderIndexJson()) {
+            when: 'The index action is requested'
+            GET('', STRING_ARG)
 
-        then: 'The response is correct'
-        verifyJsonResponse OK, getReaderIndexJson()
+            then: 'The response is correct'
+            verifyJsonResponse OK, getReaderIndexJson()
+        } else {
+            when: 'The index action is requested'
+            GET('')
+
+            then: 'The response is correct'
+            verifyR01Response(response)
+        }
     }
 
     void 'R02 : Test the show action correctly renders an instance (as reader)'() {
