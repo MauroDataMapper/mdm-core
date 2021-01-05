@@ -19,9 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.render
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 
+import grails.converters.XML
+import grails.rest.Link
 import grails.rest.render.atom.AtomRenderer
 import grails.rest.render.RenderContext
 import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.web.xml.XMLStreamWriter
 
 import groovy.util.logging.Slf4j
 
@@ -67,6 +70,42 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
 
         if (model.description) {
             writeDomainProperty(model.description, 'summary', writer)
+        }
+    }
+
+    /**
+     * Override the base method in HalXmlRenderer, only writing the 'self' link and removing the contentType
+     * attribute from this link. (The base method writes something like
+     *
+     *  <link rel="self" href="http://localhost:8080/api/terminologies/3472b192-ac49-4495-85cd-f00db153e595" hreflang="c.u" type="application/atom+xml" />
+     *  <link rel="alternate" href="http://localhost:8080/api/terminologies/3472b192-ac49-4495-85cd-f00db153e595" hreflang="c.u" />
+     *
+     * but a type of application/atom+xml on the self link is not correct)
+     *
+     * Copied from https://github.com/grails/grails-core/blob/master/grails-plugin-rest/src/main/groovy/grails/rest/render/hal/HalXmlRenderer.groovy
+     * with minor changes.
+     */
+    @Override
+    void writeLink(Link link, Locale locale, writerObject) {
+        if (link.rel == "self") {
+            XMLStreamWriter writer = ((XML) writerObject).getWriter()
+            writer.startNode(LINK_TAG)
+                .attribute(RELATIONSHIP_ATTRIBUTE, link.rel)
+                .attribute(HREF_ATTRIBUTE, link.href)
+                .attribute(HREFLANG_ATTRIBUTE, (link.hreflang ?: locale).language)
+
+            final title = link.title
+            if (title) {
+                writer.attribute(TITLE_ATTRIBUTE, title)
+            }
+
+            if (link.templated) {
+                writer.attribute(TEMPLATED_ATTRIBUTE,"true")
+            }
+            if (link.deprecated) {
+                writer.attribute(DEPRECATED_ATTRIBUTE,"true")
+            }
+            writer.end()
         }
     }
 
