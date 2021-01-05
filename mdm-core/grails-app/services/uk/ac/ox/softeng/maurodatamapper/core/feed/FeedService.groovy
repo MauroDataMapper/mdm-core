@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.feed
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -31,12 +32,12 @@ class FeedService {
     @Autowired(required = false)
     List<ModelService> modelServices
 
-    List<Model> findModels() {
+    List<Model> findModels(UserSecurityPolicyManager userSecurityPolicyManager) {
 
         List<Model> models = []
 
         modelServices.each {
-            models += it.list(['all':true])
+            models += it.findAllReadableModels(userSecurityPolicyManager, false, false, false)
         }
         
         models

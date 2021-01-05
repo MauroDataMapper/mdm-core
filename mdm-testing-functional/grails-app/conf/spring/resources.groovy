@@ -15,9 +15,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmAtomModelCollectionRenderer
 beans = {
-    halModelListRenderer(MdmAtomModelCollectionRenderer) {
+    halModelListRenderer(MdmAtomModelCollectionRenderer, Model) {
         includes = []
     }
 }

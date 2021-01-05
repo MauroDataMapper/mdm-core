@@ -29,8 +29,8 @@ class MdmAtomModelCollectionRenderer extends MdmAtomModelRenderer implements Con
 
     final Class componentType
 
-    MdmAtomModelCollectionRenderer() {
+    MdmAtomModelCollectionRenderer(Class componentType) {
         super(Collection)
-        this.componentType = Model
+        this.componentType = componentType
     }
 }
