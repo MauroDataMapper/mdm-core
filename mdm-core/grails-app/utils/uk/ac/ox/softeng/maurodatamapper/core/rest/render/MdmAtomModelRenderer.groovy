@@ -87,7 +87,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
      */
     @Override
     void writeLink(Link link, Locale locale, writerObject) {
-        if (link.rel == "self") {
+        if (link.rel == RELATIONSHIP_SELF) {
             XMLStreamWriter writer = ((XML) writerObject).getWriter()
             writer.startNode(LINK_TAG)
                 .attribute(RELATIONSHIP_ATTRIBUTE, link.rel)
