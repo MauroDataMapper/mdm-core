@@ -33,10 +33,11 @@ import static org.springframework.http.HttpStatus.OK
 /**
  * Produce an ATOM feed of all Models. Only respond in ATOM format. To render the response in ATOM,
  * a bean needs to be configured in grails-app/conf/spring/resources.groovy as follows:
+ * import uk.ac.ox.softeng.maurodatamapper.core.model.Model
  * import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmAtomModelCollectionRenderer
  * beans = {
- *   halModelListRenderer(MdmAtomModelCollectionRenderer) {
- *       includes = []
+ *   halModelListRenderer(MdmAtomModelCollectionRenderer, Model) {
+ *     includes = []
  *   }
  * }
  * 

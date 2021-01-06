@@ -31,7 +31,8 @@ import groovy.util.logging.Slf4j
 import java.time.OffsetDateTime
 
 /**
- * Extend AtomRenderer, dealing with OffsetDateTimes and adding a summary tag
+ * Extend AtomRenderer, dealing with OffsetDateTimes, adding a summary tag and overriding writeLink in order to deal
+ * with links in a slightly different way to the base class.
  * @since 04/01/2021
  * @see https://github.com/grails/grails-core/blob/master/grails-plugin-rest/src/main/groovy/grails/rest/render/atom/AtomRenderer.groovy
  * for inspiration. 
