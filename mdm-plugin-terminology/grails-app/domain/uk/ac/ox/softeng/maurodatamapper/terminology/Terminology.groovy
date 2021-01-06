@@ -180,48 +180,12 @@ class Terminology implements Model<Terminology> {
         new DetachedCriteria<Terminology>(Terminology)
     }
 
-    static DetachedCriteria<Terminology> byFolderId(UUID folderId) {
-        by().eq('folder.id', folderId)
-    }
-
-    static DetachedCriteria<Terminology> byClassifierId(UUID classifierId) {
-        where {
-            classifiers {
-                eq 'id', classifierId
-            }
-        }
-    }
-
     static DetachedCriteria<Terminology> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItemId'))
     }
 
     static DetachedCriteria<Terminology> byMetadataNamespace(String metadataNamespace) {
         by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItemId'))
-    }
-
-    static DetachedCriteria<Terminology> byDeleted() {
-        by().eq('deleted', true)
-    }
-
-    static DetachedCriteria<Terminology> byIdInList(Collection<UUID> ids) {
-        by().inList('id', ids.toList())
-    }
-
-    static DetachedCriteria<Terminology> byLabel(String label) {
-        by().eq('label', label)
-    }
-
-    static DetachedCriteria<Terminology> byLabelAndFinalisedAndLatestModelVersion(String label) {
-        byLabel(label).eq('finalised', true).order('modelVersion', 'desc')
-    }
-
-    static DetachedCriteria<Terminology> byLabelAndNotFinalised(String label) {
-        byLabel(label).eq('finalised', false)
-    }
-
-    static DetachedCriteria<Terminology> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        byLabelAndNotFinalised(label).eq('branchName', branchName)
     }
 
     static DetachedCriteria<Terminology> withFilter(DetachedCriteria<Terminology> criteria, Map filters) {

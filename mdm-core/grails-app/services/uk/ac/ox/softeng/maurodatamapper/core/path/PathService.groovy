@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.PathNode
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -60,6 +61,11 @@ class PathService {
                 } else {
                     if (service.handlesPathPrefix(node.typePrefix) && node.label) {
                         catalogueItem = service.findByLabel(node.label)
+                        if (service instanceof ModelService) {
+                            catalogueItem = service.latest(node.label)
+                        } else {
+                            catalogueItem = service.findByLabel(node.label)
+                        }
                     }
                 }
 

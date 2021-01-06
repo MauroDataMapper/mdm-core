@@ -143,48 +143,12 @@ class CodeSet implements Model<CodeSet> {
         new DetachedCriteria<CodeSet>(CodeSet)
     }
 
-    static DetachedCriteria<CodeSet> byFolderId(UUID folderId) {
-        by().eq('folder.id', folderId)
-    }
-
     static DetachedCriteria<CodeSet> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('terminologyId'))
     }
 
     static DetachedCriteria<CodeSet> byMetadataNamespace(String metadataNamespace) {
         by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItemId'))
-    }
-
-    static DetachedCriteria<CodeSet> byDeleted() {
-        by().eq('deleted', true)
-    }
-
-    static DetachedCriteria<CodeSet> byIdInList(Collection<UUID> ids) {
-        by().inList('id', ids.toList())
-    }
-
-    static DetachedCriteria<CodeSet> byClassifierId(UUID classifierId) {
-        where {
-            classifiers {
-                eq 'id', classifierId
-            }
-        }
-    }
-
-    static DetachedCriteria<CodeSet> byLabel(String label) {
-        by().eq('label', label)
-    }
-
-    static DetachedCriteria<CodeSet> byLabelAndFinalisedAndLatestModelVersion(String label) {
-        byLabel(label).eq('finalised', true).order('modelVersion', 'desc')
-    }
-
-    static DetachedCriteria<CodeSet> byLabelAndNotFinalised(String label) {
-        byLabel(label).eq('finalised', false)
-    }
-
-    static DetachedCriteria<CodeSet> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        byLabelAndNotFinalised(label).eq('branchName', branchName)
     }
 
     static DetachedCriteria<CodeSet> withFilter(DetachedCriteria<CodeSet> criteria, Map filters) {
