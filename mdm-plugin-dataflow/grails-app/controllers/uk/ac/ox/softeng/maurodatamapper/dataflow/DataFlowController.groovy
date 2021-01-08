@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter.DataFlowExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 
@@ -43,18 +43,14 @@ class DataFlowController extends EditLoggingController<DataFlow> {
 
     DataModelService dataModelService
 
-    //    @Autowired(required = false)
-    //    Set<DataFlowExporterProviderService> exporterProviderServices
+    @Autowired(required = false)
+    Set<DataFlowExporterProviderService> exporterProviderServices
     //
     //    @Autowired(required = false)
     //    Set<DataFlowImporterProviderService> importerProviderServices
 
     DataFlowController() {
         super(DataFlow)
-    }
-
-    Set<ExporterProviderService> getExporterProviderServices() {
-        [] as Set
     }
 
     Set<ImporterProviderService> getImporterProviderServices() {
@@ -76,12 +72,12 @@ class DataFlowController extends EditLoggingController<DataFlow> {
     }
 
     def exportDataFlow() {
-        ExporterProviderService exporter = mauroDataMapperServiceProviderService.findExporterProvider(
+        DataFlowExporterProviderService exporter = mauroDataMapperServiceProviderService.findExporterProvider(
             params.exporterNamespace, params.exporterName, params.exporterVersion
         )
 
         if (!exporter) {
-            return notFound(ExporterProviderService, "${params.exporterNamespace}:${params.exporterName}:${params.exporterVersion}")
+            return notFound(DataFlowExporterProviderService, "${params.exporterNamespace}:${params.exporterName}:${params.exporterVersion}")
         }
 
         DataFlow instance = queryForResource params.dataFlowId
@@ -98,10 +94,10 @@ class DataFlowController extends EditLoggingController<DataFlow> {
     }
 
     def exportDataFlows() {
-        ExporterProviderService exporter = mauroDataMapperServiceProviderService.findExporterProvider(params.exporterNamespace, params.exporterName,
+        DataFlowExporterProviderService exporter = mauroDataMapperServiceProviderService.findExporterProvider(params.exporterNamespace, params.exporterName,
                                                                                                       params.exporterVersion)
         if (!exporter) {
-            return notFound(ExporterProviderService, "${params.exporterNamespace}:${params.exporterName}:${params.exporterVersion}")
+            return notFound(DataFlowExporterProviderService, "${params.exporterNamespace}:${params.exporterName}:${params.exporterVersion}")
         }
 
         def json = request.getJSON()

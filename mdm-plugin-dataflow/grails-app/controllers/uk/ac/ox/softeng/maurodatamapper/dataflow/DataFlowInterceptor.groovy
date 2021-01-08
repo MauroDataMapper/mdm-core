@@ -35,11 +35,12 @@ class DataFlowInterceptor extends DataModelSecuredInterceptor {
     }
 
     boolean before() {
-        performChecks()
 
         if (actionName in ['exporterProviders']) {
             return true
         }
+            
+        performChecks()
 
         if (actionName in ['importerProviders']) {
             return currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToNotAuthenticated()
