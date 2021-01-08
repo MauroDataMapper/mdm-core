@@ -50,7 +50,7 @@ class ApiKeyAuthenticationInterceptor implements SecurityPolicyManagerIntercepto
             CatalogueUser authenticatedUser = apiKeyAuthenticatingService.authenticateAndObtainUserUsingApiKey(apikeyHeader)
 
             // Api Key hasn't authenticated against anything so just proceed as if a normal request
-        if (!authenticatedUser) return true
+            if (!authenticatedUser) return true
 
             UserSecurityPolicyManager userSecurityPolicyManager =
                 apiKeyAuthenticatingService.retrieveOrBuildUserSecurityPolicyManager(authenticatedUser, session)

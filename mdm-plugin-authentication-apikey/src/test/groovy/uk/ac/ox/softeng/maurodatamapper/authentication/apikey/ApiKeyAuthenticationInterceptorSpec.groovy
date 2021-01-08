@@ -17,23 +17,103 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.authentication.apikey
 
+import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
+
 import grails.testing.web.interceptor.InterceptorUnitTest
+import groovy.util.logging.Slf4j
 import spock.lang.Specification
 
-class ApiKeyAuthenticationInterceptorSpec extends Specification implements InterceptorUnitTest<ApiKeyAuthenticationInterceptor> {
+@Slf4j
+class ApiKeyAuthenticationInterceptorSpec extends BaseUnitSpec implements InterceptorUnitTest<ApiKeyAuthenticationInterceptor> {
 
-    def setup() {
-    }
-
-    def cleanup() {
-
-    }
-
-    void "Test apiKeyAuthentication interceptor matching"() {
-        when: "A request matches the interceptor"
-        withRequest(controller: "apiKeyAuthentication")
+    void "Test interceptor matching"() {
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/api/dataModels')
 
         then: "The interceptor does match"
         interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/oxfordbrc/api/dataModels')
+
+        then: "The interceptor does match"
+        interceptor.doesMatch()
+    }
+
+    void "Test interceptor non-matching"() {
+
+        when: "A request sent to the interceptor"
+        withRequest(controller: 'authenticating', action: 'login')
+
+        then: "The interceptor does match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(controller: 'authenticating', action: 'logout')
+
+        then: "The interceptor does match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/api/authentication/logout')
+
+        then: "The interceptor does match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/api/authentication/logout')
+
+        then: "The interceptor does match"
+        !interceptor.doesMatch()
+
+
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/oxfordbrc/')
+
+        then: "The interceptor does not match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/')
+
+        then: "The interceptor does not match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/oxfordbrc')
+
+        then: "The interceptor does not match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/views/home.html')
+
+        then: "The interceptor does not match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/scripts/services/jointDiagramService3.js')
+
+        then: "The interceptor does not match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/bower_components/angular-tree-control/css/tree-control.css')
+
+        then: "The interceptor does not match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/oxfordbrc/styles/vendor.5a20e16f.css')
+
+        then: "The interceptor does not match"
+        !interceptor.doesMatch()
+
+        when: "A request sent to the interceptor"
+        withRequest(uri: '/oxfordbrc/scripts/scripts.91b6fb8f.js')
+
+        then: "The interceptor does not match"
+        !interceptor.doesMatch()
     }
 }
