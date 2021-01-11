@@ -17,16 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
-import groovy.transform.AutoClone
+enum ProfileFieldDataType {
+    BOOLEAN,
+    STRING,
+    TEXT,
+    INT,
+    DECIMAL,
+    DATE,
+    DATETIME,
+    TIME,
+    FOLDER,
+    MODEL
 
-@AutoClone
-class ProfileField {
-
-    String fieldName
-    String metadataPropertyName
-    String description
-    Integer maxMultiplicity
-    Integer minMultiplicity
-    ProfileFieldDataType dataType
-    String currentValue
 }

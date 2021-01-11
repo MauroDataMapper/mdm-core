@@ -23,7 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
+import groovy.util.logging.Slf4j
 
+@Slf4j
 @CompileStatic
 abstract class MapBasedProfile extends Profile {
 
@@ -82,7 +84,7 @@ abstract class MapBasedProfile extends Profile {
     void fromSections(List<ProfileSection> profileSections) {
         profileSections.each {profileSection ->
             profileSection.fields.each {field ->
-                String fieldName = knownFields.find { it.toLowerCase() == field.fieldName.toLowerCase().replaceAll(" ", "")}
+                String fieldName = knownFields.find { it == field.metadataPropertyName}
                 if(fieldName) {
                     System.err.println(fieldName)
                     System.err.println(field)
@@ -90,7 +92,7 @@ abstract class MapBasedProfile extends Profile {
                     System.err.println(field.currentValue)
                     setField(fieldName, field.currentValue)
                 } else {
-                    System.err.println("Cannot match: " + fieldName)
+                    log.error("Cannot match field: " + fieldName)
                 }
             }
         }

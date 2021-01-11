@@ -224,4 +224,31 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
     }
 
+    def saveAll(Collection<Metadata> metadata) {
+        Collection<Metadata> alreadySaved = metadata.findAll { it.ident() && it.isDirty() }
+        Collection<Metadata> notSaved = metadata.findAll { !it.ident() }
+        if (alreadySaved) {
+            log.debug('Straight saving {} metadata', alreadySaved.size())
+            Metadata.saveAll(alreadySaved)
+        }
+
+        if (notSaved) {
+            log.debug('Batch saving {} metadata', notSaved.size())
+            List batch = []
+            int count = 0
+
+            notSaved.each { de ->
+
+                batch += de
+                count++
+                if (count % Metadata.BATCH_SIZE == 0) {
+                    batchSave(batch)
+                    batch.clear()
+                }
+            }
+            batchSave(batch)
+            batch.clear()
+        }
+    }
+
 }

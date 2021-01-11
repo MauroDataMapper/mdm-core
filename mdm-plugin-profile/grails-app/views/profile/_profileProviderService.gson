@@ -8,4 +8,5 @@ model {
 
 json {
     metadataNamespace profileProviderService.metadataNamespace
+    domains profileProviderService.profileApplicableForDomains()
 }
