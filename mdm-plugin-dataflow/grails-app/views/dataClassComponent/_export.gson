@@ -9,7 +9,7 @@ model {
 json {
     definition dataClassComponent.definition
     dataFlow dataClassComponent.dataFlow.id
-    sourceDataClasses tmpl.'/dataClass/export'(dataClassComponent.sourceDataClasses)
-    targetDataClasses tmpl.'/dataClass/export'(dataClassComponent.targetDataClasses)
+    sourceDataClasses tmpl.exportDataClass(dataClassComponent.sourceDataClasses)
+    targetDataClasses tmpl.exportDataClass(dataClassComponent.targetDataClasses)
     dataElementComponents tmpl.'/dataElementComponent/export'(dataClassComponent.dataElementComponents)
 }

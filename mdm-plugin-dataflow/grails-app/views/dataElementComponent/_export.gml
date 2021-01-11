@@ -10,7 +10,7 @@ DataElementComponent dec = dataElementComponent as DataElementComponent
     if (dec.sourceDataElements) {
         'mdm:sourceDataElements' {
             dec.sourceDataElements.each {de ->
-                layout '/dataElement/export.gml', dataElement: de
+                layout '/dataElementComponent/_exportDataElement.gml', dataElement: de
             }
         }
     }
@@ -18,7 +18,7 @@ DataElementComponent dec = dataElementComponent as DataElementComponent
     if (dec.targetDataElements) {
         'mdm:targetDataElements' {
             dec.targetDataElements.each {de ->
-                layout '/dataElement/export.gml', dataElement: de
+                layout '/dataElementComponent/_exportDataElement.gml', dataElement: de
             }
         }
     }    

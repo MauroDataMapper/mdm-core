@@ -1,15 +1,8 @@
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 
-inherits template: '/catalogueItem/export', model: [addContents: addContents]
 model {
-    List<DataClass> exports
-    Boolean addContents = true
+    DataClass exportDataClass
 }
 json {
-    if (addContents) {
-        if (export.maxMultiplicity != null) maxMultiplicity export.maxMultiplicity
-        if (export.minMultiplicity != null) minMultiplicity export.minMultiplicity
-        if (export.dataClasses) dataClasses tmpl.'/dataClass/export'(export.dataClasses)
-        if (export.dataElements) dataElements tmpl.'/dataElement/export'(export.dataElements)
-    } else dataClassPath DataClass.buildLabelPath(export)
+    label exportDataClass.label
 }
