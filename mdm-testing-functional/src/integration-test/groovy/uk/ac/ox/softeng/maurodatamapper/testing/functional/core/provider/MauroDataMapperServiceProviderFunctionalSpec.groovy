@@ -189,6 +189,34 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "fileExtension": "xml",
     "fileType": "text/xml",
     "canExportMultipleDomains": false
+  },
+  {
+    "name": "DataFlowJsonExporterService",
+    "version": "3.0",
+    "displayName": "JSON DataFlow Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
+    "canExportMultipleDomains": false
+  },  
+  {
+    "name": "DataFlowXmlExporterService",
+    "version": "3.0",
+    "displayName": "XML DataFlow Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
+    "canExportMultipleDomains": false
   }
 ]''')
     }
