@@ -38,6 +38,6 @@ class DataFlowExportModel extends ExportModel {
         modelExportTemplatePath = isXml ? '/dataFlow/export.gml' : '/dataFlow/export'
         modelExportMap = [export: dataFlow, dataFlow: dataFlow]
         this.exportMetadata = exportMetadata
-        modelXmlNamespace = new Namespace("http://maurodatamapper.com/dataModel/${getCurrentVersion(isXml)}", 'xmlns:mdm')
+        modelXmlNamespace = new Namespace("http://maurodatamapper.com/dataFlow/${getCurrentVersion(isXml)}", 'xmlns:mdm')
     }
 }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2020 University of Oxford
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    SPDX-License-Identifier: Apache-2.0
+
+-->
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.0" xmlns:mdm="http://maurodatamapper.com/dataFlow/3.0">
+  <mdm:dataFlow>
+    <mdm:id>33ac687c-1e96-4037-9906-93b7ca2f346b</mdm:id>
+    <mdm:label>My DataFlow label</mdm:label>
+    <mdm:type>Data Asset</mdm:type>
+  </mdm:dataFlow>
+  <exp:exportMetadata>
+    <exp:exportedBy>Admin User</exp:exportedBy>
+    <exp:exportedOn>2017-11-21T13:17:00.559Z</exp:exportedOn>
+    <exp:exporter>
+      <exp:namespace>uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter</exp:namespace>
+      <exp:name>DataFlowXmlExporterService</exp:name>
+      <exp:version>3.0</exp:version>
+    </exp:exporter>
+  </exp:exportMetadata>
+</exp:exportModel>
