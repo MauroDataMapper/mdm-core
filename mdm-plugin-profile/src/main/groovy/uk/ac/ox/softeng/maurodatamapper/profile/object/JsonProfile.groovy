@@ -28,6 +28,8 @@ class JsonProfile extends MapBasedProfile {
     UUID catalogueItemId
     String catalogueItemDomainType
 
+    // Empty constructor used for deserialization from Json
+    JsonProfile() { }
 
     JsonProfile(List<ProfileSection> sections) {
         this.sections = sections
