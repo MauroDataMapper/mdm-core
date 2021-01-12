@@ -99,7 +99,9 @@ class DataFlowXmlExporterServiceSpec extends DataBindImportAndDefaultExporterSer
             'IncAliases',
             'IncMetadata',
             'IncAnnotation',
-            'IncClassifiers'
+            'IncClassifiers',
+            'IncSourceAndTarget',
+            'IncDataClassComponents'
         ]
     }
 }
