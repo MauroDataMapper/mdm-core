@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlowService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.DataBindDataFlowImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
@@ -53,24 +54,23 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
     abstract void validateExportedModel(String testName, String exportedModel)
 
     DataFlow importAndConfirm(byte[] bytes) {
-        /*def imported = importerService.importDataModel(admin, bytes)
+        def imported = dataFlowImporterService.importDataFlow(admin, bytes)
 
         assert imported
-        imported.folder = testFolder
-        log.info('Checking imported model')
-        importerService.checkImport(admin, imported, false, false)
+        log.info('Checking imported DataFlow')
+        dataFlowImporterService.checkImport(admin, imported, false, false)
         check(imported)
-        log.info('Saving imported model')
-        assert dataModelService.saveModelWithContent(imported)
+        log.info('Saving imported DataFlow')
+        assert dataFlowService.save(imported)
         sessionFactory.currentSession.flush()
-        assert dataModelService.count() == 3
+        assert dataFlowService.count() == 2
 
-        DataModel dm = DataModel.listOrderByDateCreated().last()
+        DataFlow df = DataFlow.listOrderByDateCreated().last()
 
-        log.info('Confirming imported model')
+        log.info('Confirming imported DataFlow')
 
-        confirmDataModel(dm)
-        dm*/
+        confirmDataFlow(df)
+        df
     }
 
     String exportModel(UUID dataFlowId) {
@@ -97,21 +97,23 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
     }
 
-    /*@Unroll
-    void 'test "#testName" data export'() {
+    @Unroll
+    void 'XX001: test "#testName" data export'() {
         given:
         setupData()
 
         expect:
         DataModel.count() == 2
+        DataFlow.count() == 1
 
         when:
         String exported = importAndExport(loadTestFile(testName))
 
         then:
-        validateExportedModel(testName, exported.replace(/Mauro Data Mapper/, 'Test Authority'))
+        //validateExportedModel(testName, exported.replace(/Mauro Data Mapper/, 'Test Authority'))
+        validateExportedModel(testName, exported)
 
-        where:
+        /*where:
         testName << [
             'simple',
             'incClassifiers',
@@ -129,8 +131,12 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
             'incDataClassWithChild',
             'incDataClassWithDataElement',
             'incDataClassWithChildAndSingleReferenceDataType'
+        ]*/
+        where:
+        testName << [
+            'incSourceAndTarget'
         ]
-    }*/
+    }
 
     /*@Unroll
     void 'test load datamodel with datatypes - #version'() {

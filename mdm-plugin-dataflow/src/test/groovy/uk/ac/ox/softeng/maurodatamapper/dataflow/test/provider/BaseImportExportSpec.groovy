@@ -43,15 +43,6 @@ abstract class BaseImportExportSpec extends BaseDataFlowIntegrationSpec {
     @Shared
     UUID dataFlowId
 
-    //@Shared
-    //UUID complexDataModelId
-
-    //@Shared
-    //UUID simpleDataModelId
-
-    //public static final String DATAMODEL_WITH_DATATYPES_FILENAME = 'export_with_datatypes_only'
-    //public static final String COMPLETE_DATAMODEL_EXPORT_FILENAME = 'export_cancer_audits'
-
     abstract ImporterProviderService getDataFlowImporterService()
 
     abstract String getImportType()
@@ -67,8 +58,6 @@ abstract class BaseImportExportSpec extends BaseDataFlowIntegrationSpec {
         log.debug('Setting up DataFlowServiceSpec unit')
 
         dataFlowId = dataFlow.id
-        //complexDataModelId = buildComplexDataModel().id
-        //simpleDataModelId = buildSimpleDataModel().id
     }
 
     byte[] loadTestFile(String filename) {
@@ -78,8 +67,9 @@ abstract class BaseImportExportSpec extends BaseDataFlowIntegrationSpec {
     }
 
     void confirmDataFlow(DataFlow dataFlow) {
-        /*assert dataModel
-        assert dataModel.label == 'National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery'
+        assert dataFlow
+        //TODO add confirmations for DataFlow
+        /* assert dataModel.label == 'National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery'
         assert dataModel.modelType == DataModelType.DATA_STANDARD.label
         assert dataModel.createdBy == admin.emailAddress
         assert !dataModel.description
