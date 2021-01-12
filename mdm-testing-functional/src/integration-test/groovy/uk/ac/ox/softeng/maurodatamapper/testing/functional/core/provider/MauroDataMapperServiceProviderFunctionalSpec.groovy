@@ -369,6 +369,32 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "providerType": "TerminologyImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
+  },
+  {
+    "name": "DataFlowJsonImporterService",
+    "version": "2.0",
+    "displayName": "JSON DataFlow Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "DataFlowXmlImporterService",
+    "version": "3.0",
+    "displayName": "XML DataFlow Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": true
   }
 ]''')
     }
