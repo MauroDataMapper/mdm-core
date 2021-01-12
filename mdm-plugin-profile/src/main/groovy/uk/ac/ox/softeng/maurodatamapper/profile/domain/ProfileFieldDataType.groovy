@@ -18,15 +18,42 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
 enum ProfileFieldDataType {
-    BOOLEAN,
-    STRING,
-    TEXT,
-    INT,
-    DECIMAL,
-    DATE,
-    DATETIME,
-    TIME,
-    FOLDER,
-    MODEL
+    BOOLEAN('boolean'),
+    STRING('string'),
+    TEXT('text'),
+    INT('int'),
+    DECIMAL('decimal'),
+    DATE('date'),
+    DATETIME('decimal'),
+    TIME('time'),
+    FOLDER('folder'),
+    MODEL('model')
+
+    String label
+
+    ProfileFieldDataType(String name) {
+        this.label = name
+    }
+
+    String toString() {
+        label
+    }
+
+    static ProfileFieldDataType findForLabel(String label) {
+        values().find { it.label.equalsIgnoreCase(label) }
+    }
+
+    static ProfileFieldDataType findFor(String value) {
+        value ? findForLabel(value) ?: valueOf(value) : null
+    }
+
+    static List<String> labels() {
+        values().collect { it.label }.sort()
+    }
+
+    static ProfileFieldDataType findFromMap(def map) {
+        map['dataType'] instanceof ProfileFieldDataType ? map['dataType'] as ProfileFieldDataType : findForLabel(map['dataType'] as String)
+    }
+
 
 }

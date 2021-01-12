@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
 abstract class JsonProfileProviderService extends ProfileProviderService<JsonProfile, CatalogueItem> {
@@ -49,17 +51,24 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
 
     @Override
     void storeProfileInEntity(CatalogueItem catalogueItem, JsonProfile jsonProfile, String userEmailAddress) {
-        jsonProfile.sections.each {section ->
-            section.fields.each {field ->
-                if(field.currentValue && field.metadataPropertyName) {
-                    catalogueItem.addToMetadata(metadataNamespace, field.metadataPropertyName, field.currentValue, userEmailAddress)
-                } else if(!field.metadataPropertyName) {
-                    log.error("No metadataPropertyName set for field: " + field.fieldName)
+        JsonProfile emptyJsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
+
+        emptyJsonProfile.sections.each {section ->
+            ProfileSection submittedSection = jsonProfile.sections.find{it.sectionName == section.sectionName }
+            if(submittedSection) {
+                section.fields.each {field ->
+                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName }
+                    if(submittedField) {
+                        if(submittedField.currentValue && submittedField.metadataPropertyName) {
+                            catalogueItem.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
+                        } else if(!field.metadataPropertyName) {
+                            log.error("No metadataPropertyName set for field: " + field.fieldName)
+                        }
+                    }
                 }
             }
         }
         catalogueItem.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
-
 
         metadataService.saveAll(catalogueItem.metadata)
     }

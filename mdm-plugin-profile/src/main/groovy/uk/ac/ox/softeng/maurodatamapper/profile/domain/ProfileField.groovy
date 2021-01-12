@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
+import grails.rest.Resource
 import groovy.transform.AutoClone
 
 @AutoClone
+@Resource(readOnly = false, formats = ['json', 'xml'])
 class ProfileField {
 
     String fieldName
@@ -27,6 +29,17 @@ class ProfileField {
     String description
     Integer maxMultiplicity
     Integer minMultiplicity
+
     ProfileFieldDataType dataType
+
     String currentValue
+
+    void setDataType(ProfileFieldDataType type) {
+        dataType = type
+    }
+
+    void setDataType(String type) {
+        dataType = ProfileFieldDataType.findForLabel(type)
+    }
+
 }

@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
+
+model {
+    JsonProfile jsonProfile
+}
+
+json {
+    sections jsonProfile.sections
+    catalogueItemId jsonProfile.catalogueItemId
+    catalogueItemDomainType jsonProfile.catalogueItemDomainType
+
+}

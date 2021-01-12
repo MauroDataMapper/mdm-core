@@ -32,7 +32,7 @@ class UrlMappings {
                     // New URL replaces /api/dataModels/profile/namespace/name/version
                     get '/models'(controller: 'profile', action: 'listModelsInProfile')
                     // New URL replaces /api/dataModels/profile/values/namespace/name/version
-                    get '/models/values'(controller: 'profile', action: 'listValuesInProfile')
+                    get '/values'(controller: 'profile', action: 'listValuesInProfile')
 
                     // Provide multiple ways to obtain profile of a catalogue item
                     get "/${catalogueItemDomainType}/${catalogueItemId}"(controller: 'profile', action: 'show')

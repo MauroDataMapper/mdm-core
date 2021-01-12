@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
+import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -73,25 +74,35 @@ class ProfileService {
     }
 
     void storeProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem, HttpServletRequest request, User user) {
+
         Profile profile = profileProviderService.getNewProfile()
         //System.err.println(request.getJSON())
         List<ProfileSection> profileSections = []
-        request.getJSON().each { it ->
+        request.getJSON().sections.each { it ->
             ProfileSection profileSection = new ProfileSection(it)
             profileSection.fields = []
             it['fields'].each { field ->
                 profileSection.fields.add(new ProfileField(field))
             }
-            profileSections.add(profileSection)
+            if(profileProviderService.isJsonProfileService()) {
+                ((JsonProfile)profile).sections.add(profileSection)
+
+            } else {
+                profileSections.add(profileSection)
+            }
         }
 
-        profile.fromSections(profileSections)
-
-        /*final DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, profile.getClass(), request)
-        bindingSource.propertyNames.each { propertyName ->
-            profile.setField(propertyName, bindingSource[propertyName])
+        if(!profileProviderService.isJsonProfileService()) {
+            profile.fromSections(profileSections)
         }
-        */
+
+            /*final DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, profile.getClass(), request)
+             bindingSource.propertyNames.each { propertyName ->
+                 profile.setField(propertyName, bindingSource[propertyName])
+             }
+
+              */
+
         profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
     }
 

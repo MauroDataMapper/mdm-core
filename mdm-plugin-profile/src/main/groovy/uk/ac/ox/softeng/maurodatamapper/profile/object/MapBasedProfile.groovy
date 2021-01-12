@@ -74,7 +74,7 @@ abstract class MapBasedProfile extends Profile {
     List<ProfileSection> getSections() {
         ProfileSection profileSection = new ProfileSection(sectionName: this.class.name, sectionDescription: "")
         contents.sort {it.key }.each {
-            ProfileField profileField = new ProfileField(fieldName: it.key, currentValue: it.value.toString())
+            ProfileField profileField = new ProfileField(fieldName: it.key, currentValue: it.value.toString(), metadataPropertyName: it.key)
             profileSection.fields.add(profileField)
         }
         return [profileSection]
@@ -92,7 +92,7 @@ abstract class MapBasedProfile extends Profile {
                     System.err.println(field.currentValue)
                     setField(fieldName, field.currentValue)
                 } else {
-                    log.error("Cannot match field: " + fieldName)
+                    log.error("Cannot match field: " + field.fieldName)
                 }
             }
         }

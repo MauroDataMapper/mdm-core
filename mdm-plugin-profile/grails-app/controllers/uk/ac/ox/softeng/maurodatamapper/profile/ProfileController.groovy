@@ -120,7 +120,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.createProfile(profileProviderService, catalogueItem).getSections()
+        respond profileService.createProfile(profileProviderService, catalogueItem)
 
     }
 
@@ -206,7 +206,6 @@ class ProfileController implements ResourcelessMdmController {
         } else {
             profiledResults = profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params)
         }
-
         respond excludes: 'knownFields', profileProviderService.getAllProfileFieldValues(params, profiledResults)
     }
 

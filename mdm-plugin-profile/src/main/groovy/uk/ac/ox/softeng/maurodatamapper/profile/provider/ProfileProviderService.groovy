@@ -41,6 +41,8 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
 
     abstract String getMetadataNamespace()
 
+    boolean isJsonProfileService() { return true }
+
     @Override
     String getProviderType() {
         'ProfileProvider'
@@ -75,7 +77,6 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
         profiles.each { profile ->
 
             returnProfile.getKnownFields().each { profileFieldName ->
-
                 if (profileFieldName in filters && profile[profileFieldName]) {
 
                     Set returnValue = returnProfile[profileFieldName] as Set
