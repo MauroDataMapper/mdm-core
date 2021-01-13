@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.path
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
@@ -27,15 +28,21 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.test.unit.service.CatalogueItemServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
 import spock.lang.Stepwise
 
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+
 @Slf4j
 @Stepwise
 class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements ServiceUnitTest<PathService> {
     
+    UserSecurityPolicyManager userSecurityPolicyManager
+
     Terminology terminology1
     Term terminology1_term1
     Term terminology1_term2
@@ -43,6 +50,15 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
     Terminology terminology2
     Term terminology2_term1
     Term terminology2_term2
+
+    Terminology terminology3main
+    Terminology terminology3draft
+
+    Terminology terminology4finalised
+    Terminology terminology4notFinalised
+
+    Terminology terminology5first
+    Terminology terminology5second    
 
     CodeSet codeSet1
 
@@ -58,6 +74,15 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
     "terminology 2"
            ->     "terminology 2 term 1"
            ->     "terminology 2 term 2"
+
+    "terminology 3" (branch "main")
+    "terminology 3" (branch "draft")
+
+    "terminology 4" (finalised)
+    "terminology 4" (not finalised)
+
+    "terminology 5" (finalised version 1.0.0)
+    "terminology 5" (finalised version 2.0.0)        
 
     "code set 1"
            ->     "terminology 1 term 1"
@@ -92,6 +117,39 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         terminology2_term2 = new Term(createdByUser: admin, code: 'c4', definition: 'terminology 2 term 2')
         terminology2.addToTerms(terminology2_term2)
         checkAndSave(terminology2)
+
+        terminology3main = new Terminology(createdByUser: admin, label: 'terminology 3', description: 'terminology 3 on main', folder: testFolder, authority: testAuthority)
+        checkAndSave(terminology3main)
+
+        terminology3draft = new Terminology(createdByUser: admin, label: 'terminology 3', description: 'terminology 3 on draft', folder: testFolder, authority: testAuthority, branchName: 'draft')
+        checkAndSave(terminology3draft)
+
+        terminology4finalised = new Terminology(createdByUser: admin, label: 'terminology 4', description: 'terminology 4 finalised', folder: testFolder, authority: testAuthority)
+        checkAndSave(terminology4finalised)
+        terminology4finalised.finalised = true
+        terminology4finalised.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        terminology4finalised.breadcrumbTree.finalise()
+        terminology4finalised.modelVersion = Version.from('1.0.0')
+        checkAndSave(terminology4finalised)
+
+        terminology4notFinalised = new Terminology(createdByUser: admin, label: 'terminology 4', description: 'terminology 4 not finalised', folder: testFolder, authority: testAuthority)
+        checkAndSave(terminology4notFinalised)    
+
+        terminology5first = new Terminology(createdByUser: admin, label: 'terminology 5', description: 'terminology 5 1.0.0', folder: testFolder, authority: testAuthority)
+        checkAndSave(terminology5first)
+        terminology5first.finalised = true
+        terminology5first.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        terminology5first.breadcrumbTree.finalise()
+        terminology5first.modelVersion = Version.from('1.0.0')
+        checkAndSave(terminology5first)
+
+        terminology5second = new Terminology(createdByUser: admin, label: 'terminology 5', description: 'terminology 5 2.0.0', folder: testFolder, authority: testAuthority)
+        checkAndSave(terminology5second)
+        terminology5second.finalised = true
+        terminology5second.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        terminology5second.breadcrumbTree.finalise()
+        terminology5second.modelVersion = Version.from('2.0.0')
+        checkAndSave(terminology5second)                 
 
         codeSet1 = new CodeSet(createdByUser: admin, label: 'codeset 1', folder: testFolder, authority: testAuthority)
         checkAndSave(codeSet1)
@@ -464,5 +522,66 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         then:
         catalogueItem == null
     }
+
+    void "test get Terminology by path when there is a branch"() {
+        Map params
+        CatalogueItem catalogueItem
+        
+        /*
+        Terminology 3 by path. When using the label 'terminology 3' we expect to retrieve the terminology on the 
+        main branch, rather than the one on the draft branch
+        */
+        when:
+        params = ['catalogueItemDomainType': 'terminologies', 'path': "te:terminology 3"]
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+
+        then:
+        catalogueItem.label == 'terminology 3'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id.equals(terminology3main.id)
+        catalogueItem.description.equals(terminology3main.description)
+
+    }
+
+    void "test get Terminology by path when there are finalised and non-finalised versions"() {
+        Map params
+        CatalogueItem catalogueItem
+        
+        /*
+        Terminology 4 by path. When using the label 'terminology 4' we expect to retrieve the
+        non-finalised version.
+        */
+        when:
+        params = ['catalogueItemDomainType': 'terminologies', 'path': "te:terminology 4"]
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+
+        then:
+        catalogueItem.label == 'terminology 4'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id.equals(terminology4notFinalised.id)
+        catalogueItem.description.equals(terminology4notFinalised.description)
+
+    }    
+
+    void "test get Terminology by path when there are two finalised versions"() {
+        Map params
+        CatalogueItem catalogueItem
+        
+        /*
+        Terminology 5 by path. When using the label 'terminology 5' we expect to retrieve the
+        finalised version 2.0.0.
+        */
+        when:
+        params = ['catalogueItemDomainType': 'terminologies', 'path': "te:terminology 5"]
+        catalogueItem = service.findCatalogueItemByPath(PublicAccessSecurityPolicyManager.instance, params)
+
+        then:
+        catalogueItem.label == 'terminology 5'
+        catalogueItem.domainType == "Terminology"
+        catalogueItem.id.equals(terminology5second.id)
+        catalogueItem.description.equals(terminology5second.description)
+        catalogueItem.modelVersion.toString() == '2.0.0'
+
+    }      
 
 }

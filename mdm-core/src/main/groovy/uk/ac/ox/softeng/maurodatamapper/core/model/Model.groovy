@@ -98,4 +98,58 @@ trait Model<D extends Diffable> extends CatalogueItem<D> implements SecurableRes
         }
 
     }
+
+    static <T extends Model> DetachedCriteria<T> byFolderId(UUID folderId) {
+        by()
+        .eq('folder.id', folderId)
+    }
+
+    static <T extends Model> DetachedCriteria<T> byClassifierId(UUID classifierId) {
+        where {
+            classifiers {
+                eq 'id', classifierId
+            }
+        }
+    }
+
+    static <T extends Model> DetachedCriteria<T> byDeleted() {
+        by()
+        .eq('deleted', true)
+    }
+
+    static <T extends Model> DetachedCriteria<T> byIdInList(Collection<UUID> ids) {
+        by()
+        .inList('id', ids.toList())
+    }
+
+    static <T extends Model> DetachedCriteria<T> byLabel(String label) {
+        by()
+        .eq('label', label)
+    }
+
+    static <T extends Model> DetachedCriteria<T> byLabelAndFinalisedAndLatestModelVersion(String label) {
+        byLabel(label)
+        .eq('finalised', true)
+        .order('modelVersion', 'desc')
+    }
+
+    static <T extends Model> DetachedCriteria<T> byLabelAndBranchNameAndFinalisedAndLatestModelVersion(String label, String branchName) {
+        byLabelAndFinalisedAndLatestModelVersion(label)
+        .eq('branchName', branchName)
+    }    
+
+    static <T extends Model> DetachedCriteria<T> byLabelAndNotFinalised(String label) {
+        byLabel(label)
+        .eq('finalised', false)
+    }
+
+    static <T extends Model> DetachedCriteria<T> byLabelAndNotFinalisedAndIdNotEqual(String label, UUID id) {
+        byLabelAndNotFinalised()
+        .ne('id', id)
+    }
+
+    static <T extends Model> DetachedCriteria<T> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        byLabelAndNotFinalised(label)
+        .eq('branchName', branchName)
+    }       
 }

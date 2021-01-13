@@ -303,52 +303,12 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         new DetachedCriteria<DataModel>(DataModel)
     }
 
-    static DetachedCriteria<DataModel> byFolderId(UUID folderId) {
-        by().eq('folder.id', folderId)
-    }
-
-    static DetachedCriteria<DataModel> byClassifierId(UUID classifierId) {
-        where {
-            classifiers {
-                eq 'id', classifierId
-            }
-        }
-    }
-
     static DetachedCriteria<DataModel> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItemId'))
     }
 
     static DetachedCriteria<DataModel> byMetadataNamespace(String metadataNamespace) {
         by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItemId'))
-    }
-
-    static DetachedCriteria<DataModel> byDeleted() {
-        by().eq('deleted', true)
-    }
-
-    static DetachedCriteria<DataModel> byIdInList(Collection<UUID> ids) {
-        by().inList('id', ids.toList())
-    }
-
-    static DetachedCriteria<DataModel> byLabel(String label) {
-        by().eq('label', label)
-    }
-
-    static DetachedCriteria<DataModel> byLabelAndFinalisedAndLatestModelVersion(String label) {
-        byLabel(label).eq('finalised', true).order('modelVersion', 'desc')
-    }
-
-    static DetachedCriteria<DataModel> byLabelAndNotFinalised(String label) {
-        byLabel(label).eq('finalised', false)
-    }
-
-    static DetachedCriteria<DataModel> byLabelAndNotFinalisedAndIdNotEqual(String label, UUID id) {
-        byLabelAndNotFinalised().ne('id', id)
-    }
-
-    static DetachedCriteria<DataModel> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        byLabelAndNotFinalised(label).eq('branchName', branchName)
     }
 
     static DetachedCriteria<DataModel> withFilter(DetachedCriteria<DataModel> criteria, Map filters) {

@@ -201,6 +201,25 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         modelClass.byLabelAndFinalisedAndLatestModelVersion(label).get()
     }
 
+    /*
+     * Find latest model, defined as:
+     * - branchName == 'main'
+     * - AND
+     * - if (a non-finalised version exists) then (that model)
+     * - else (the latest finalised version)
+     *
+     * Used by pathService when seeking the latest model by label.
+     */
+    K latest(String label) {
+        Model latestModel = null
+        latestModel = modelClass.byLabelAndBranchNameAndNotFinalised(label, "main").get()
+        if (!latestModel) {
+            latestModel = modelClass.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, "main").get()
+        }
+
+        latestModel
+    }    
+
     Version latestModelVersion(String label) {
         latestFinalisedModel(label)?.modelVersion ?: Version.from('0.0.0')
     }

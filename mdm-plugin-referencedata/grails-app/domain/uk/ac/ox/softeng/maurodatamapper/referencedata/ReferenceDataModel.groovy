@@ -327,48 +327,12 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         new DetachedCriteria<ReferenceDataModel>(ReferenceDataModel)
     }
 
-    static DetachedCriteria<ReferenceDataModel> byFolderId(UUID folderId) {
-        by().eq('folder.id', folderId)
-    }
-
-    static DetachedCriteria<ReferenceDataModel> byClassifierId(UUID classifierId) {
-        where {
-            classifiers {
-                eq 'id', classifierId
-            }
-        }
-    }
-
     static DetachedCriteria<ReferenceDataModel> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItem'))
     }
 
     static DetachedCriteria<ReferenceDataModel> byMetadataNamespace(String metadataNamespace) {
         by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItem'))
-    }
-
-    static DetachedCriteria<ReferenceDataModel> byDeleted() {
-        by().eq('deleted', true)
-    }
-
-    static DetachedCriteria<ReferenceDataModel> byIdInList(Collection<UUID> ids) {
-        by().inList('id', ids.toList())
-    }
-
-    static DetachedCriteria<ReferenceDataModel> byLabel(String label) {
-        by().eq('label', label)
-    }
-
-    static DetachedCriteria<ReferenceDataModel> byLabelAndFinalisedAndLatestModelVersion(String label) {
-        byLabel(label).eq('finalised', true).order('modelVersion', 'desc')
-    }
-
-    static DetachedCriteria<ReferenceDataModel> byLabelAndNotFinalised(String label) {
-        byLabel(label).eq('finalised', false)
-    }
-
-    static DetachedCriteria<ReferenceDataModel> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        byLabelAndNotFinalised(label).eq('branchName', branchName)
     }
 
     static DetachedCriteria<ReferenceDataModel> withFilter(DetachedCriteria<ReferenceDataModel> criteria, Map filters) {
