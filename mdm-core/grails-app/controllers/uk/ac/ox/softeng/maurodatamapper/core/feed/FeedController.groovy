@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.feed
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmAtomModelCollectionRenderer
-import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 
 import grails.artefact.Controller
 import grails.rest.render.Renderer
@@ -43,7 +43,7 @@ import static org.springframework.http.HttpStatus.OK
  * 
  * @since 04/01/2021
  */
-class FeedController extends RestfulController<Model> implements MdmController {
+class FeedController extends RestfulController<Model> implements ResourcelessMdmController {
 
     @Autowired(required = false)
     RendererRegistry rendererRegistry
