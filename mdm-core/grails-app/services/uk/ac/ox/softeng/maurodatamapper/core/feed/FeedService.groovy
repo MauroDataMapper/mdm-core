@@ -37,7 +37,7 @@ class FeedService {
         List<Model> models = []
 
         modelServices.each {
-            models += it.findAllReadableModels(userSecurityPolicyManager, false, false, false)
+            models.addAll(it.findAllReadableModels(userSecurityPolicyManager, false, false, false))
         }
         
         models
