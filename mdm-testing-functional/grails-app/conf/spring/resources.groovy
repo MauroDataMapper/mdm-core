@@ -18,7 +18,10 @@
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmAtomModelCollectionRenderer
 beans = {
-    halModelListRenderer(MdmAtomModelCollectionRenderer, Model) {
+    halModelListRenderer(MdmAtomModelCollectionRenderer, Collection) {
+        includes = []
+    }
+    halModelRenderer(MdmAtomModelCollectionRenderer, Model) {
         includes = []
     }
 }
