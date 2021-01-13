@@ -34,7 +34,7 @@ class BootStrap {
 
     AuthorityService authorityService
 
-    def init = { servletContext ->
+    def init = {servletContext ->
 
         log.debug('Main bootstrap complete')
 
@@ -51,7 +51,7 @@ class BootStrap {
                     }
                     if (DataModel.countByAuthorityIsNull() != 0) {
                         log.warn('DataModels missing authority, updating with default authority')
-                        DataModel.findAllByAuthorityIsNull().each {
+                        DataModel.findAllByAuthorityIsNull([fetch: [authority: 'lazy']]).each {
                             it.authority = authority
                             log.debug('Saving {}', it.label)
                             it.save(validate: false, flush: true)

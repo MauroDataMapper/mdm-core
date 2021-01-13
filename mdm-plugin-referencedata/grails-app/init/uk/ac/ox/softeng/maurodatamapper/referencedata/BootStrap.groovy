@@ -48,7 +48,7 @@ class BootStrap {
                     }
                     if (ReferenceDataModel.countByAuthorityIsNull() != 0) {
                         log.warn('ReferenceDataModels missing authority, updating with default authority')
-                        ReferenceDataModel.findAllByAuthorityIsNull().each {
+                        ReferenceDataModel.findAllByAuthorityIsNull([fetch: [authority: 'lazy']]).each {
                             it.authority = authority
                             log.debug('Saving {}', it.label)
                             it.save(validate: false, flush: true)

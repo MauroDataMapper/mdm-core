@@ -59,7 +59,7 @@ class BootStrap {
 
                     if (Terminology.countByAuthorityIsNull() != 0) {
                         log.warn('Terminologies missing authority, updating with default authority')
-                        Terminology.findAllByAuthorityIsNull().each {
+                        Terminology.findAllByAuthorityIsNull([fetch: [authority: 'lazy']]).each {
                             it.authority = authority
                             log.debug('Saving {}', it.label)
                             it.save(validate: false, flush: true)
@@ -67,7 +67,7 @@ class BootStrap {
                     }
                     if (CodeSet.countByAuthorityIsNull() != 0) {
                         log.warn('CodeSets missing authority, updating with default authority')
-                        CodeSet.findAllByAuthorityIsNull().each {
+                        CodeSet.findAllByAuthorityIsNull([fetch: [authority: 'lazy']]).each {
                             it.authority = authority
                             log.debug('Saving {}', it.label)
                             it.save(validate: false, flush: true)
