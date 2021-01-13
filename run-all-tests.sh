@@ -35,6 +35,9 @@ popd
 pushd mdm-plugin-authentication-basic
 ./grailsw test-app -unit
 popd
+pushd mdm-plugin-authentication-apikey
+./grailsw test-app -unit
+popd
 pushd mdm-plugin-dataflow
 ./grailsw test-app -unit
 popd

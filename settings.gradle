@@ -11,6 +11,7 @@ include(
     'mdm-plugin-email-proxy',
     'mdm-plugin-datamodel',
     'mdm-plugin-authentication-basic',
+    'mdm-plugin-authentication-apikey',
     'mdm-plugin-terminology',
     'mdm-plugin-dataflow',
     'mdm-plugin-referencedata',

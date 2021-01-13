@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<ApiKey> apiKeyList
+}
+
+json {
+    count apiKeyList instanceof PagedResultList ? ((PagedResultList) apiKeyList).getTotalCount() : apiKeyList?.size() ?: 0
+    items tmpl.apiKey(apiKeyList ?: [])
+}

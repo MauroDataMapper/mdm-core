@@ -6,6 +6,14 @@ See `mdm-core/README.md` for the base list of URLs.
 This is a list of the additional URLs available.
 
 ```
+Controller: apiKey
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/apiKeys/${apiKeyId}/enable                                                   | Action: enableApiKey
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/apiKeys/${apiKeyId}/disable                                                  | Action: disableApiKey
+ |   PUT    | /api/catalogueUsers/${catalogueUserId}/apiKeys/${apiKeyId}/refresh/${expiresInDays}                                 | Action: refreshApiKey
+ |   POST   | /api/catalogueUsers/${catalogueUserId}/apiKeys                                                                      | Action: save
+ |   GET    | /api/catalogueUsers/${catalogueUserId}/apiKeys                                                                      | Action: index
+ |  DELETE  | /api/catalogueUsers/${catalogueUserId}/apiKeys/${id}                                                                | Action: delete
+ 
 Controller: authenticating
  |    *     | /api/authentication/logout                                                                                          | Action: logout
  |   POST   | /api/authentication/login                                                                                           | Action: login

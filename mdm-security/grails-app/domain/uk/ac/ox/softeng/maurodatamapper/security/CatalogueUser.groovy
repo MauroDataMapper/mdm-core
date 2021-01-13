@@ -17,14 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecureRandomStringGenerator
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 
 import grails.databinding.BindUsing
 import grails.gorm.DetachedCriteria
@@ -59,7 +59,8 @@ class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
     static belongsTo = UserGroup
 
     static hasMany = [
-        groups: UserGroup
+        groups : UserGroup,
+        apiKeys: ApiKey
     ]
 
     static constraints = {
@@ -77,6 +78,7 @@ class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
         lastLogin nullable: true
         disabled nullable: false
         resetToken nullable: true
+        apiKeys minSize: 0
     }
 
     static mapping = {

@@ -113,6 +113,7 @@ grails {
     plugins {
         compile project(':mdm-core')
         compile project(':mdm-plugin-authentication-basic')
+        compile project(':mdm-plugin-authentication-apikey')
         compile project(':mdm-plugin-datamodel')
         compile project(':mdm-plugin-terminology')
         compile project(':mdm-plugin-referencedata')

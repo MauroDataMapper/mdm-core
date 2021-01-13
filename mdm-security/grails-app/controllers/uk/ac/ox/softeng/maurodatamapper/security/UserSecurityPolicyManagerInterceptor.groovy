@@ -18,20 +18,18 @@
 package uk.ac.ox.softeng.maurodatamapper.security
 
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+import uk.ac.ox.softeng.maurodatamapper.security.interceptor.SecurityPolicyManagerInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 
 import groovy.util.logging.Slf4j
 import org.springframework.core.Ordered
-
-import javax.servlet.http.HttpSession
 
 /**
  * This should intercept to load the user's security policy manager into the parameters object to allow downstream interceptors and controllers
  * access to it
  */
 @Slf4j
-class UserSecurityPolicyManagerInterceptor implements MdmInterceptor {
+class UserSecurityPolicyManagerInterceptor implements SecurityPolicyManagerInterceptor {
 
     public static final Integer ORDER = Ordered.HIGHEST_PRECEDENCE + 1000
 
@@ -45,27 +43,15 @@ class UserSecurityPolicyManagerInterceptor implements MdmInterceptor {
     }
 
     boolean before() {
-        // Get the session without using the grails wrapper
-        // If we use 'session' it sets the session variable and we cannot change it
-        HttpSession localSession = getRequest().getSession()
-        // Check if its invalid (this is only likely to happen when running in dev mode and we shut down the backend and then
-        // make another request on startup with the old session in the request
-        // Can be tested easily enough with postman)
-        // Validity is tested by existence in the known session id map, which is updated whenever tomcat creates a new session
-        boolean invalid = sessionService.isInvalidatedSession(localSession)
+        checkSessionIsValid()
 
-        // If invalid then invalidate the local session and force the request to create a new one
-        // Upon creation of new session the session will be added to the map and all subsequent checks will come back as a valid but new session
-        if (invalid) {
-            localSession.invalidate()
-            getRequest().getSession(true)
-        }
+        if (!securityPolicyManagerIsSet()) {
+            if (sessionService.isAuthenticatedSession(session, session.id)) {
+                UserSecurityPolicyManager userSecurityPolicyManager =
+                    groupBasedSecurityPolicyManagerService.retrieveUserSecurityPolicyManager(sessionService.getSessionEmailAddress(session))
 
-        if (sessionService.isAuthenticatedSession(session, session.id)) {
-            UserSecurityPolicyManager userSecurityPolicyManager =
-                groupBasedSecurityPolicyManagerService.retrieveUserSecurityPolicyManager(sessionService.getSessionEmailAddress(session))
-
-            setCurrentUserSecurityPolicyManager(userSecurityPolicyManager)
+                setCurrentUserSecurityPolicyManager(userSecurityPolicyManager)
+            }
         }
         true
     }

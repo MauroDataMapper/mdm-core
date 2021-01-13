@@ -140,7 +140,7 @@ class FolderController extends EditLoggingController<Folder> {
     @Override
     protected Folder createResource() {
         //Explicitly set the exclude map to empty so that the transient property Folder.userGroups is bound (if present) from the request
-        Folder resource = super.createResource([exclude:[]]) as Folder
+        Folder resource = super.createResource([exclude: []]) as Folder
         if (params.folderId) {
             resource.parentFolder = folderService.get(params.folderId)
         }

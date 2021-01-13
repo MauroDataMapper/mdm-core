@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
+
+model {
+    ApiKey apiKey
+}
+
+json {
+    id apiKey.id
+    apiKey apiKey.id
+    name apiKey.name
+    expiryDate apiKey.expiryDate
+    expired apiKey.expired
+    disabled apiKey.disabled
+    refreshable apiKey.refreshable
+    createdDate apiKey.dateCreated.toLocalDate()
+}

@@ -199,13 +199,24 @@ abstract class BaseFunctionalSpec extends MdmSpecification implements ResponseCo
         resourcePath ? "$resourcePath/${resourceEndpoint}" : resourceEndpoint
     }
 
+    /**
+     * Allows for overriding of basic requests with additional information such as headers.
+     * This is called after the cookie is set, and passed directly to the client exchange.
+     *
+     * @param request
+     * @return
+     */
+    MutableHttpRequest augmentRequest(MutableHttpRequest request) {
+        request
+    }
+
     def <O> HttpResponse<O> exchange(MutableHttpRequest request, Argument<O> bodyType = MAP_ARG) {
         response = null
         jsonCapableResponse = null
         try {
             // IIf there's a cookie saved then add it to the request
             if (currentCookie) request.cookie(currentCookie)
-            HttpResponse<O> httpResponse = client.toBlocking().exchange(request, bodyType)
+            HttpResponse<O> httpResponse = client.toBlocking().exchange(augmentRequest(request), bodyType)
 
             // Preserve the JSESSIONID cookie returned from the server
             if (httpResponse.header(HttpHeaderNames.SET_COOKIE)) {
