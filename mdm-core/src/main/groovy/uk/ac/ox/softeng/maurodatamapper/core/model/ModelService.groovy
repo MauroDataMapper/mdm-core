@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -85,6 +85,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract K softDeleteModel(K model)
 
     abstract void permanentDeleteModel(K model)
+
+    void deleteModelAndContent(K model) {
+        throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
+    }
 
     /**
      * Merges changes made to {@code leftModel} in {@code mergeObjectDiff} into {@code rightModel}. {@code mergeObjectDiff} is based on the return

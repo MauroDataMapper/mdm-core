@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+
 abstract class ModelItemService<K extends ModelItem> extends CatalogueItemService<K> {
 
     @Override
@@ -25,4 +27,8 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     }
 
     abstract Class<K> getModelItemClass()
+
+    void deleteAllByModelId(UUID modelId) {
+        throw new ApiNotYetImplementedException('MISXX', "deleteAllByModelId for ${getModelItemClass().simpleName}")
+    }
 }
