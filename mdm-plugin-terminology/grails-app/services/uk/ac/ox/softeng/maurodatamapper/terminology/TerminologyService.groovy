@@ -115,11 +115,13 @@ class TerminologyService extends ModelService<Terminology> {
     void delete(Terminology terminology, boolean permanent, boolean flush = true) {
         if (!terminology) return
         if (permanent) {
-            terminology.folder = null
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(terminology, null)
             }
-            terminology.delete(flush: flush)
+            log.debug('Deleting Terminology')
+            long start = System.currentTimeMillis()
+            deleteModelAndContent(terminology)
+            log.debug('Terminology deleted. Took {}', Utils.timeTaken(start))
         } else delete(terminology)
     }
 
@@ -164,6 +166,43 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     Terminology saveModelNewContentOnly(Terminology model) {
         save(failOnError: true, validate: false, flush: true, model)
+    }
+
+    void deleteModelAndContent(Terminology model) {
+
+        sessionFactory
+            .currentSession
+            .createSQLQuery('SET session_replication_role = replica;')
+            .executeUpdate()
+
+        log.trace('Removing Terms in Terminology')
+        termService.deleteAllByModelId(model.id)
+
+        log.trace('Removing TermRelationshipTypes in Terminology')
+        termRelationshipTypeService.deleteAllByModelId(model.id)
+
+        log.trace('Removing facets')
+        deleteAllFacetsByCatalogueItemId(model.id, 'delete from terminology.join_terminology_to_facet where terminology_id=:id')
+
+        log.trace('Content removed')
+        sessionFactory.currentSession
+            .createSQLQuery('delete from terminology.terminology where id = :id')
+            .setParameter('id', model.id)
+            .executeUpdate()
+
+        log.trace('Terminology removed')
+
+        sessionFactory.currentSession
+            .createSQLQuery('delete from core.breadcrumb_tree where domain_id = :id')
+            .setParameter('id', model.id)
+            .executeUpdate()
+
+        log.trace('Breadcrumb tree removed')
+
+        sessionFactory
+            .currentSession
+            .createSQLQuery('SET session_replication_role = DEFAULT;')
+            .executeUpdate()
     }
 
     @Override

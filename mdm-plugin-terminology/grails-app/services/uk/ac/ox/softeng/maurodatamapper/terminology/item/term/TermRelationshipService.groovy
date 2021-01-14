@@ -17,9 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -66,6 +65,33 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     void deleteAll(Collection<TermRelationship> termRelationships) {
         termRelationships.each {
             delete(it)
+        }
+    }
+
+    @Override
+    void deleteAllByModelId(UUID modelId) {
+        List<UUID> termRelationshipIds = TermRelationship.by().or {
+            sourceTerm {
+                eq('terminology.id', modelId)
+            }
+            targetTerm {
+                eq('terminology.id', modelId)
+            }
+        }.id().list() as List<UUID>
+
+        if (termRelationshipIds) {
+
+            log.trace('Removing facets for {} TermRelationships', termRelationshipIds.size())
+            deleteAllFacetsByCatalogueItemIds(termRelationshipIds,
+                                              'delete from terminology.join_term_to_facet where term_id in :ids')
+
+            log.trace('Removing {} TermRelationships', termRelationshipIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from terminology.term_relationship where id in :ids')
+                .setParameter('ids', termRelationshipIds)
+                .executeUpdate()
+
+            log.trace('TermRelationships removed')
         }
     }
 
