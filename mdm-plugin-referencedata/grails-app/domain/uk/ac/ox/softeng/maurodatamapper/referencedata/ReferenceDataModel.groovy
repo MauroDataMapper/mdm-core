@@ -162,11 +162,11 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
     }
 
     static DetachedCriteria<ReferenceDataModel> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
-        by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItem'))
+        by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItemId'))
     }
 
     static DetachedCriteria<ReferenceDataModel> byMetadataNamespace(String metadataNamespace) {
-        by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItem'))
+        by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItemId'))
     }
 
     static DetachedCriteria<ReferenceDataModel> withFilter(DetachedCriteria<ReferenceDataModel> criteria, Map filters) {
