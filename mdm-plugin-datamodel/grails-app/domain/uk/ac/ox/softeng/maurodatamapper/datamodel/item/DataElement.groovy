@@ -185,6 +185,10 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     }
 
+    static DetachedCriteria<DataElement> by() {
+        new DetachedCriteria<DataElement>(DataElement)
+    }
+
     static DetachedCriteria<DataElement> byDataClassIdAndId(Serializable dataClassId, Serializable resourceId) {
         byDataClassId(dataClassId).idEq(Utils.toUuid(resourceId))
     }

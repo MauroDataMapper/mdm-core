@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DefaultDataType
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -52,6 +53,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     EnumerationTypeService enumerationTypeService
     ModelDataTypeService modelDataTypeService
     SummaryMetadataService summaryMetadataService
+    EnumerationValueService enumerationValueService
 
     @Override
     DataType get(Serializable id) {
@@ -103,6 +105,35 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             case DataType.MODEL_DATA_DOMAIN_TYPE:
                 modelDataTypeService.delete(dataType as ModelDataType, flush)
         }
+    }
+
+    void deleteAllByModelId(UUID dataModelId) {
+        //Assume DataElements gone by this point
+
+        List<UUID> dataTypeIds = DataType.byDataModelId(dataModelId).id().list() as List<UUID>
+
+        if (dataTypeIds) {
+            enumerationValueService.deleteAllByModelId(dataModelId)
+
+            log.trace('Removing facets for {} DataTypes', dataTypeIds.size())
+
+            deleteAllFacetsByCatalogueItemIds(dataTypeIds, 'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
+
+            log.trace('Removing {} DataTypes', dataTypeIds.size())
+
+            sessionFactory.currentSession
+                .createSQLQuery('delete from datamodel.data_type where data_model_id = :id')
+                .setParameter('id', dataModelId)
+                .executeUpdate()
+
+            log.trace('DataTypes removed')
+        }
+    }
+
+    @Override
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 
     @Override
@@ -445,6 +476,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
      * @param parentCatalogueItem The DataModel which is the parent of the DataType being sought
      * @param label The label of the DataType being sought
      */
+
     @Override
     DataType findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findDataType(parentCatalogueItem, label)

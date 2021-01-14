@@ -151,11 +151,13 @@ class DataModelService extends ModelService<DataModel> {
     void delete(DataModel dm, boolean permanent, boolean flush = true) {
         if (!dm) return
         if (permanent) {
-            dm.folder = null
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
             }
-            dm.delete(flush: flush)
+            long start = System.currentTimeMillis()
+            log.debug('Deleting DataModel')
+            deleteModelAndContent(dm)
+            log.debug('DataModel deleted. Took {}', Utils.timeTaken(start))
         } else delete(dm)
     }
 
@@ -327,6 +329,49 @@ class DataModelService extends ModelService<DataModel> {
         log.trace('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
         log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))
+    }
+
+    void deleteModelAndContent(DataModel dataModel) {
+
+        sessionFactory
+            .currentSession
+            .createSQLQuery('SET session_replication_role = replica;')
+            .executeUpdate()
+
+        log.trace('Removing DataClasses in DataModel')
+        dataClassService.deleteAllByModelId(dataModel.id)
+
+        log.trace('Removing DataTypes in DataModel')
+        dataTypeService.deleteAllByModelId(dataModel.id)
+
+        log.trace('Removing facets')
+        deleteAllFacetsByCatalogueItemId(dataModel.id, 'delete from datamodel.join_datamodel_to_facet where datamodel_id=:id')
+
+        log.trace('Content removed')
+        sessionFactory.currentSession
+            .createSQLQuery('delete from datamodel.data_model where id = :id')
+            .setParameter('id', dataModel.id)
+            .executeUpdate()
+
+        log.trace('DataModel removed')
+
+        sessionFactory.currentSession
+            .createSQLQuery('delete from core.breadcrumb_tree where domain_id = :id')
+            .setParameter('id', dataModel.id)
+            .executeUpdate()
+
+        log.trace('Breadcrumb tree removed')
+
+        sessionFactory
+            .currentSession
+            .createSQLQuery('SET session_replication_role = DEFAULT;')
+            .executeUpdate()
+    }
+
+    @Override
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 
     @Override

@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -30,6 +30,8 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 class EnumerationValueService extends ModelItemService<EnumerationValue> {
+
+    SummaryMetadataService summaryMetadataService
 
     @Override
     EnumerationValue get(Serializable id) {
@@ -60,6 +62,36 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
         if (resource) {
             resource.delete(flush: true)
         }
+    }
+
+    void deleteAllByModelId(UUID dataModelId) {
+        //Assume DataElements gone by this point
+        List<UUID> enumerationValueIds = EnumerationValue.by().where {
+            enumerationType {
+                eq('dataModel.id', dataModelId)
+            }
+        }.id().list() as List<UUID>
+
+        if (enumerationValueIds) {
+
+            log.trace('Removing facets for {} Enumeration Values', enumerationValueIds.size())
+            deleteAllFacetsByCatalogueItemIds(enumerationValueIds,
+                                              'delete from datamodel.join_enumerationvalue_to_facet where enumerationvalue_id in :ids')
+
+            log.trace('Removing {} EnumerationValues', enumerationValueIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from datamodel.enumeration_value where id in :ids')
+                .setParameter('ids', enumerationValueIds)
+                .executeUpdate()
+
+            log.trace('EnumerationValues removed')
+        }
+    }
+
+    @Override
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 
     @Override
