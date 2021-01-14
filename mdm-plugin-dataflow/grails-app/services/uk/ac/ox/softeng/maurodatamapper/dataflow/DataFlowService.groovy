@@ -17,10 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
@@ -29,8 +28,12 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
+@Slf4j
+@Transactional
 class DataFlowService extends ModelItemService<DataFlow> {
 
     DataClassComponentService dataClassComponentService
@@ -83,6 +86,29 @@ class DataFlowService extends ModelItemService<DataFlow> {
     void deleteAll(Collection<DataFlow> dataFlows) {
         dataFlows.each {
             delete(it)
+        }
+    }
+
+    void deleteAllByModelId(UUID modelId) {
+
+        List<UUID> dataFlowIds = DataFlow.byDataModelId(modelId).id().list() as List<UUID>
+
+        if (dataFlowIds) {
+
+            log.trace('Removing DataClassComponent in {} DataFlows', dataFlowIds.size())
+            dataClassComponentService.deleteAllByModelId(modelId)
+
+            log.trace('Removing facets for {} DataFlows', dataFlowIds.size())
+            deleteAllFacetsByCatalogueItemIds(dataFlowIds,
+                                              'delete from dataflow.join_dataflow_to_facet where dataflow_id in :ids')
+
+            log.trace('Removing {} DataFlows', dataFlowIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from dataflow.data_flow where source_id = :id or target_id = :id')
+                .setParameter('id', modelId)
+                .executeUpdate()
+
+            log.trace('DataFlows removed')
         }
     }
 

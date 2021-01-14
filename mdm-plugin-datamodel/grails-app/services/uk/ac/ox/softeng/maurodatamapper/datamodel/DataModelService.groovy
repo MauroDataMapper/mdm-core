@@ -47,6 +47,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
@@ -337,6 +338,17 @@ class DataModelService extends ModelService<DataModel> {
             .currentSession
             .createSQLQuery('SET session_replication_role = replica;')
             .executeUpdate()
+
+        log.trace('Removing other ModelItems in DataModel')
+        modelItemServices.findAll {
+            !(it.modelItemClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
+                                    ReferenceType, EnumerationValue])
+        }.each { modelItemService ->
+            try {
+                modelItemService.deleteAllByModelId(dataModel.id)
+            } catch (ApiNotYetImplementedException ignored) {
+            }
+        }
 
         log.trace('Removing DataClasses in DataModel')
         dataClassService.deleteAllByModelId(dataModel.id)
