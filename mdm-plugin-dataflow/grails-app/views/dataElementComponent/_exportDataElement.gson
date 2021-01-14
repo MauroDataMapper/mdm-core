@@ -5,6 +5,5 @@ model {
 }
 json {
     label exportDataElement.label
-    dataClass exportDataElement.dataClass.label
-    dataType exportDataElement.dataType.label
+    dataClass tmpl.'/dataClassComponent/exportDataClass'(exportDataClass: exportDataElement.dataClass) 
 }

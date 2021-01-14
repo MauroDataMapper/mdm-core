@@ -4,6 +4,7 @@ model {
     DataModel export
 }
 json {
+    id export.id
     label export.label
     type export.modelType
 }

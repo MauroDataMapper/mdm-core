@@ -8,7 +8,6 @@ model {
 
 json {
     definition dataElementComponent.definition
-    dataClassComponent dataElementComponent.dataClassComponent.id
     sourceDataElements tmpl.exportDataElement(dataElementComponent.sourceDataElements)
     targetDataElements tmpl.exportDataElement(dataElementComponent.targetDataElements)
 }

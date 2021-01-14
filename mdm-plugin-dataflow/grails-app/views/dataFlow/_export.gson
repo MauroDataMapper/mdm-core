@@ -7,7 +7,16 @@ model {
 }
 json {
     type export.modelType
-    source tmpl.shortDataModel(export: export.source)
-    target tmpl.shortDataModel(export: export.target)
-    dataClassComponents tmpl.'/dataClassComponent/export'(export.dataClassComponents)
+    
+    if (export.source) {
+        source tmpl.shortDataModel(export: export.source)
+    }
+    
+    if (export.target) {
+        target tmpl.shortDataModel(export: export.target)
+    }
+    
+    if (export.dataClassComponents) {
+        dataClassComponents tmpl.'/dataClassComponent/export'(export.dataClassComponents)
+    }
 }
