@@ -72,8 +72,16 @@ class ReferenceSummaryMetadata implements CatalogueItemAware, InformationAware, 
         "Reference Summary Metadata:${label}"
     }
 
+    static DetachedCriteria<ReferenceSummaryMetadata> by() {
+        new DetachedCriteria<ReferenceSummaryMetadata>(ReferenceSummaryMetadata)
+    }
+
     static DetachedCriteria<ReferenceSummaryMetadata> byCatalogueItemId(Serializable catalogueItemId) {
         new DetachedCriteria<ReferenceSummaryMetadata>(ReferenceSummaryMetadata).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    }
+
+    static DetachedCriteria<ReferenceSummaryMetadata> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
+        new DetachedCriteria<ReferenceSummaryMetadata>(ReferenceSummaryMetadata).inList('catalogueItemId', catalogueItemIds)
     }
 
     static DetachedCriteria<ReferenceSummaryMetadata> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {

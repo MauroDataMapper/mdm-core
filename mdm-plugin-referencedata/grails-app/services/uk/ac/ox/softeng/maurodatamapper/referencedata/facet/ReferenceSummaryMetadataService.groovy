@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 
+import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -69,4 +70,8 @@ class ReferenceSummaryMetadataService implements CatalogueItemAwareService<Refer
         ReferenceSummaryMetadata.byCatalogueItemId(catalogueItemId).list(pagination)
     }
 
+    @Override
+    DetachedCriteria<ReferenceSummaryMetadata> getBaseDeleteCriteria() {
+        ReferenceSummaryMetadata.by()
+    }
 }
