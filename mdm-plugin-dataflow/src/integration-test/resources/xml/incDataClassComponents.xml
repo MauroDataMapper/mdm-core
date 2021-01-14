@@ -22,33 +22,74 @@
   <mdm:dataFlow>
     <mdm:id>33ac687c-1e96-4037-9906-93b7ca2f346b</mdm:id>
     <mdm:label>My DataFlow label</mdm:label>
+    <mdm:lastUpdated>2021-01-12T16:29:51.179Z</mdm:lastUpdated>
     <mdm:type>Data Asset</mdm:type>
+    <mdm:source>
+      <mdm:id>12bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
+      <mdm:label>SourceFlowDataModel</mdm:label>
+      <mdm:type>Data Asset</mdm:type>
+    </mdm:source>
+    <mdm:target>
+      <mdm:id>58bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
+      <mdm:label>TargetFlowDataModel</mdm:label>
+      <mdm:type>Data Asset</mdm:type>
+    </mdm:target>      
     <mdm:dataClassComponents>
       <mdm:dataClassComponent>
         <mdm:id>99dc687c-1e96-4037-9906-93b7ca2f346b</mdm:id>
         <mdm:label>Label of data class component</mdm:label>
+        <mdm:lastUpdated>2021-01-12T16:29:51.179Z</mdm:lastUpdated>
         <mdm:definition>Definition of data class component</mdm:definition>
         <mdm:sourceDataClasses>
           <mdm:dataClass>
-            <mdm:label>First source data class</mdm:label>
+            <mdm:label>tableA</mdm:label>
           </mdm:dataClass>
           <mdm:dataClass>
-            <mdm:label>Second source data class</mdm:label>
+            <mdm:label>tableB</mdm:label>
           </mdm:dataClass>        
         </mdm:sourceDataClasses>
         <mdm:targetDataClasses>
           <mdm:dataClass>
-            <mdm:label>First target data class</mdm:label>
+            <mdm:label>tableD</mdm:label>
           </mdm:dataClass>
           <mdm:dataClass>
-            <mdm:label>Second target data class</mdm:label>
+            <mdm:label>tableE</mdm:label>
           </mdm:dataClass>        
         </mdm:targetDataClasses>  
         <mdm:dataElementComponents>
           <mdm:dataElementComponent>
             <mdm:id>33ac687c-1e96-4037-9906-93b7ca2f346b</mdm:id>
             <mdm:label>First data element component label</mdm:label>
+            <mdm:lastUpdated>2021-01-12T16:29:51.179Z</mdm:lastUpdated>
             <mdm:definition>First data element component definition</mdm:definition>
+            <mdm:sourceDataElements>
+              <mdm:dataElement>
+                <mdm:label>columnA</mdm:label>
+                <mdm:dataClass>
+                  <mdm:label>tableA</mdm:label>
+                </mdm:dataClass>
+              </mdm:dataElement>
+              <mdm:dataElement>
+                <mdm:label>columnB</mdm:label>
+                <mdm:dataClass>
+                  <mdm:label>tableA</mdm:label>
+                </mdm:dataClass>
+              </mdm:dataElement>       
+              <mdm:dataElement>
+                <mdm:label>columnE2</mdm:label>
+                <mdm:dataClass>
+                  <mdm:label>tableC</mdm:label>
+                </mdm:dataClass>
+              </mdm:dataElement>                         
+            </mdm:sourceDataElements>
+            <mdm:targetDataElements>
+              <mdm:dataElement>
+                <mdm:label>columnN</mdm:label>
+                <mdm:dataClass>
+                  <mdm:label>tableD</mdm:label>
+                </mdm:dataClass>
+              </mdm:dataElement>                             
+            </mdm:targetDataElements>            
           </mdm:dataElementComponent>     
         </mdm:dataElementComponents>  
       </mdm:dataClassComponent>         
