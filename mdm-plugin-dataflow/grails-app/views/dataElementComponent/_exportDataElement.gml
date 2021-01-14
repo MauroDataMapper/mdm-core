@@ -3,7 +3,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 DataElement de = dataElement as DataElement
 
 'mdm:dataElement' {
-    label de.label
-    dataClass de.dataClass.label
-    dataType de.dataType.label
+    'mdm:label' de.label
+    //dataClass de.dataClass.label
+    layout '/dataClassComponent/_exportDataClass.gml', dataClass: de.dataClass, ns: 'mdm'
+    //dataType de.dataType.label
 }

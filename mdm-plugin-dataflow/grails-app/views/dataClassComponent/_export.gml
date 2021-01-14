@@ -5,8 +5,7 @@ DataClassComponent dcc = dataClassComponent as DataClassComponent
 'mdm:dataClassComponent' {
     layout '/catalogueItem/_export.gml', catalogueItem: dcc
 
-    //label(dcc.label)
-    definition(dcc.definition)
+    'mdm:definition' dcc.definition
     
     if (dcc.sourceDataClasses) {
         'mdm:sourceDataClasses' {

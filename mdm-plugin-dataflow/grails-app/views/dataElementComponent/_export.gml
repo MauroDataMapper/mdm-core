@@ -5,7 +5,7 @@ DataElementComponent dec = dataElementComponent as DataElementComponent
 'mdm:dataElementComponent' {
     layout '/catalogueItem/_export.gml', catalogueItem: dec
 
-    definition(dec.definition)
+    'mdm:definition' dec.definition
 
     if (dec.sourceDataElements) {
         'mdm:sourceDataElements' {

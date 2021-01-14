@@ -191,14 +191,9 @@
   <xs:complexType name="dataElementType">
     <xs:sequence>
       <xs:element name="label" type="mdm:mandatoryString" />
-      <xs:element name="dataClass" type="mdm:mandatoryString">
+      <xs:element name="dataClass" type="mdm:dataClassType">
         <xs:annotation>
           <xs:documentation>The label of the DataClass</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="dataType" type="mdm:mandatoryString">
-        <xs:annotation>
-          <xs:documentation>The label of the DataType</xs:documentation>
         </xs:annotation>
       </xs:element>
     </xs:sequence>
