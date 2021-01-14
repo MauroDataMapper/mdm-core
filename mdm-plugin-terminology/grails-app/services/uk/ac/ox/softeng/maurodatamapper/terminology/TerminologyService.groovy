@@ -40,12 +40,14 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -170,10 +172,7 @@ class TerminologyService extends ModelService<Terminology> {
 
     void deleteModelAndContent(Terminology model) {
 
-        sessionFactory
-            .currentSession
-            .createSQLQuery('SET session_replication_role = replica;')
-            .executeUpdate()
+        GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
 
         log.trace('Removing Terms in Terminology')
         termService.deleteAllByModelId(model.id)
@@ -199,10 +198,7 @@ class TerminologyService extends ModelService<Terminology> {
 
         log.trace('Breadcrumb tree removed')
 
-        sessionFactory
-            .currentSession
-            .createSQLQuery('SET session_replication_role = DEFAULT;')
-            .executeUpdate()
+        GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
 
     @Override

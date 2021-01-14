@@ -53,6 +53,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilari
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
@@ -61,6 +62,7 @@ import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.validation.ValidationErrors
+import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.validation.Errors
@@ -334,10 +336,7 @@ class DataModelService extends ModelService<DataModel> {
 
     void deleteModelAndContent(DataModel dataModel) {
 
-        sessionFactory
-            .currentSession
-            .createSQLQuery('SET session_replication_role = replica;')
-            .executeUpdate()
+        GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
 
         log.trace('Removing other ModelItems in DataModel')
         modelItemServices.findAll {
@@ -374,10 +373,7 @@ class DataModelService extends ModelService<DataModel> {
 
         log.trace('Breadcrumb tree removed')
 
-        sessionFactory
-            .currentSession
-            .createSQLQuery('SET session_replication_role = DEFAULT;')
-            .executeUpdate()
+        GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
 
     @Override
