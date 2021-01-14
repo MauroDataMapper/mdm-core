@@ -303,6 +303,10 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         new DetachedCriteria<DataModel>(DataModel)
     }
 
+    static DetachedCriteria<DataModel> byIds(List<UUID> ids) {
+        by().inList('id', ids)
+    }
+
     static DetachedCriteria<DataModel> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
         by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItemId'))
     }

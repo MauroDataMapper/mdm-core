@@ -990,7 +990,7 @@ class DataModelService extends ModelService<DataModel> {
      */
     List<DataModel> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
-        ids ? DataModel.findAllByIdInList(ids, pagination) : []
+        ids ? DataModel.byIds(ids).list(pagination) : []
     }
 
     void checkDocumentationVersion(DataModel dataModel, boolean importAsNewDocumentationVersion, User catalogueUser) {
