@@ -81,10 +81,6 @@ abstract class DataBindDataFlowImporterProviderService<T extends DataFlowFileImp
     DataFlow bindMapToDataFlow(User currentUser, Map dataFlowMap) {
         if (!dataFlowMap) throw new ApiBadRequestException('FBIP03', 'No DataFlowMap supplied to import')
 
-        //TODO review if this is necessary
-        log.debug('Setting map dataClassComponents')
-        dataFlowMap.dataClassComponents = dataFlowMap.remove('dataClassComponents')
-
         DataFlow dataFlow = new DataFlow()
         log.debug('Binding map to new DataFlow instance')
         DataBindingUtils.bindObjectToInstance(dataFlow, dataFlowMap, null, getImportBlacklistedProperties(), null)

@@ -110,31 +110,12 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         String exported = importAndExport(loadTestFile(testName))
 
         then:
-        //validateExportedModel(testName, exported.replace(/Mauro Data Mapper/, 'Test Authority'))
         validateExportedModel(testName, exported)
 
-        /*where:
-        testName << [
-            'simple',
-            'incClassifiers',
-            'incAliases',
-            'incMetadata',
-            'incAnnotation',
-            'incSinglePrimitiveType',
-            'incSinglePrimitiveTypeAndMetadata',
-            'incSinglePrimitiveTypeAndAnnotation',
-            'incSingleEnumerationType',
-            'incSingleEnumerationTypeAndMetadata',
-            'incEmptyDataClass',
-            'incEmptyDataClassAndMetadata',
-            'incEmptyDataClassAndAnnotation',
-            'incDataClassWithChild',
-            'incDataClassWithDataElement',
-            'incDataClassWithChildAndSingleReferenceDataType'
-        ]*/
         where:
         testName << [
-            'incSourceAndTarget'
+            'incSourceAndTarget',
+            'incDataClassComponents'
         ]
     }
 
