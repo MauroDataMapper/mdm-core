@@ -63,8 +63,16 @@ class ReferenceFile implements CatalogueFile, CatalogueItemAware {
         "${domainType}:${fileName}"
     }
 
+    static DetachedCriteria<ReferenceFile> by() {
+        new DetachedCriteria<ReferenceFile>(ReferenceFile)
+    }
+
     static DetachedCriteria<ReferenceFile> byCatalogueItemId(Serializable catalogueItemId) {
         new DetachedCriteria<ReferenceFile>(ReferenceFile).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    }
+
+    static DetachedCriteria<ReferenceFile> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
+        new DetachedCriteria<ReferenceFile>(ReferenceFile).inList('catalogueItemId', catalogueItemIds)
     }
 
     static DetachedCriteria<ReferenceFile> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable id) {

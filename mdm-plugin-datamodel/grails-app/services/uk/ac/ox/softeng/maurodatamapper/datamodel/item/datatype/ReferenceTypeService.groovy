@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -34,6 +34,8 @@ import groovy.util.logging.Slf4j
 @Slf4j
 @Transactional
 class ReferenceTypeService extends ModelItemService<ReferenceType> {
+
+    SummaryMetadataService summaryMetadataService
 
     @Override
     ReferenceType get(Serializable id) {
@@ -67,6 +69,35 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     void delete(ReferenceType dataType, boolean flush) {
         dataType.referenceClass.removeFromReferenceTypes(dataType)
         dataType.delete(flush: flush)
+    }
+
+    void deleteAllByModelId(UUID dataModelId) {
+        List<UUID> referenceTypeIds = ReferenceType.by()
+            .where {
+                referenceClass {
+                    eq('dataModel.id', dataModelId)
+                }
+            }.id().list() as List<UUID>
+
+        if (referenceTypeIds) {
+            log.trace('Removing facets for {} ReferenceTypes', referenceTypeIds.size())
+            deleteAllFacetsByCatalogueItemIds(referenceTypeIds,
+                                              'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
+
+            log.trace('Removing {} ReferenceTypes', referenceTypeIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from datamodel.data_type where id in :ids')
+                .setParameter('ids', referenceTypeIds)
+                .executeUpdate()
+
+            log.trace('ReferenceTypes removed')
+        }
+    }
+
+    @Override
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 
     @Override

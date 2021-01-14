@@ -23,29 +23,24 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class RuleRepresentation implements CreatorAware, Diffable<RuleRepresentation>, EditHistoryAware {
+class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAware {
 
     UUID id
 
     String language
     String representation
 
-    static belongsTo = [rule: Rule]   
+    static belongsTo = [rule: Rule]
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-        ruleId nullable: false, validator: {val, obj ->
-            if (val) return true
-            if (!val && obj.rule && !obj.rule.ident()) return true
-            ['default.null.message']
-        }
+        rule nullable: false
         language blank: false, nullable: false
         representation blank: false, nullable: false
     }
@@ -53,7 +48,7 @@ class RuleRepresentation implements CreatorAware, Diffable<RuleRepresentation>, 
     static mapping = {
         language type: 'text'
         representation type: 'text'
-        rule index: 'rule_representation_rule_idx', fetch: 'join'
+        rule index: 'rule_representation_rule_idx'
     }
 
     static search = {
@@ -68,14 +63,13 @@ class RuleRepresentation implements CreatorAware, Diffable<RuleRepresentation>, 
      * Force language to be trimmed and lower case so that e.g. 'SQL' and ' sql' are treated as the same. 
      */
     void setLanguage(String language) {
-        this.language = language?.trim().toLowerCase()
+        this.language = language?.trim()?.toLowerCase()
     }
 
     @Override
     String getDomainType() {
         RuleRepresentation.simpleName
     }
-
 
     @Override
     String toString() {
@@ -101,8 +95,16 @@ class RuleRepresentation implements CreatorAware, Diffable<RuleRepresentation>, 
         "${this.language}.${this.representation}"
     }
 
+    static DetachedCriteria<RuleRepresentation> by() {
+        new DetachedCriteria<RuleRepresentation>(RuleRepresentation)
+    }
+
     static DetachedCriteria<RuleRepresentation> byRuleId(Serializable ruleId) {
-        new DetachedCriteria<RuleRepresentation>(RuleRepresentation).eq('rule.id', Utils.toUuid(ruleId))
+        by().eq('rule.id', Utils.toUuid(ruleId))
+    }
+
+    static DetachedCriteria<RuleRepresentation> byRules(List<Rule> rules) {
+        by().inList('rule', rules)
     }
 
     static DetachedCriteria<RuleRepresentation> byRuleIdAndId(Serializable ruleId, Serializable resourceId) {

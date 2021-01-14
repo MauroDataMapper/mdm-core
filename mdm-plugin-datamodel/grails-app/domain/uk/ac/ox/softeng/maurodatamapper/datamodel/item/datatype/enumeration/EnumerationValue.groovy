@@ -168,8 +168,12 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
         this.description = value
     }
 
+    static DetachedCriteria<EnumerationValue> by() {
+        new DetachedCriteria<EnumerationValue>(EnumerationValue)
+    }
+
     static DetachedCriteria<EnumerationValue> byEnumerationType(Serializable enumerationTypeId) {
-        new DetachedCriteria<EnumerationValue>(EnumerationValue).eq('enumerationType.id', Utils.toUuid(enumerationTypeId))
+        by().eq('enumerationType.id', Utils.toUuid(enumerationTypeId))
     }
 
     static DetachedCriteria<EnumerationValue> byIdAndEnumerationType(Serializable resourceId, Serializable enumerationTypeId) {

@@ -17,14 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
-
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 
 import javax.transaction.Transactional
 
@@ -53,6 +48,10 @@ class RuleRepresentationService {
         ruleRepresentation.delete(flush: flush)
     }
 
+    void deleteAllByRules(List<Rule> rules) {
+        RuleRepresentation.byRules(rules).deleteAll()
+    }
+
     RuleRepresentation findByRuleIdAndId(UUID ruleId, UUID ruleRepresentationId) {
         RuleRepresentation.byRuleIdAndId(ruleId, ruleRepresentationId).get()
     }
@@ -63,5 +62,5 @@ class RuleRepresentationService {
 
     RuleRepresentation save(RuleRepresentation ruleRepresentation) {
         save(flush: true, validate: true, ruleRepresentation)
-    }  
+    }
 }

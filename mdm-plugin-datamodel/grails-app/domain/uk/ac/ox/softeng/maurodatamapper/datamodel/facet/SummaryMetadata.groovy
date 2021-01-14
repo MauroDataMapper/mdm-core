@@ -72,8 +72,16 @@ class SummaryMetadata implements CatalogueItemAware, InformationAware, CreatorAw
         "Summary Metadata:${label}"
     }
 
+    static DetachedCriteria<SummaryMetadata> by() {
+        new DetachedCriteria<SummaryMetadata>(SummaryMetadata)
+    }
+
     static DetachedCriteria<SummaryMetadata> byCatalogueItemId(Serializable catalogueItemId) {
         new DetachedCriteria<SummaryMetadata>(SummaryMetadata).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    }
+
+    static DetachedCriteria<SummaryMetadata> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
+        new DetachedCriteria<SummaryMetadata>(SummaryMetadata).inList('catalogueItemId', catalogueItemIds)
     }
 
     static DetachedCriteria<SummaryMetadata> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {

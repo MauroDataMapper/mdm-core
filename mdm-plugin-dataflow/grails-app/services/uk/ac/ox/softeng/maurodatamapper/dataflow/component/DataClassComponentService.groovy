@@ -17,10 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
@@ -30,8 +29,10 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
+@Slf4j
 @Transactional
 class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
@@ -91,6 +92,47 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     void deleteAll(Collection<DataClassComponent> dataClassComponents) {
         dataClassComponents.each {
             delete(it)
+        }
+    }
+
+    void deleteAllByModelId(UUID modelId) {
+
+        List<UUID> dataClassComponentIds = DataClassComponent.by().where {
+            dataFlow {
+                or {
+                    eq 'source.id', modelId
+                    eq 'target.id', modelId
+                }
+            }
+        }.id().list() as List<UUID>
+
+        if (dataClassComponentIds) {
+
+            log.trace('Removing DataElementComponents in {} DataClassComponents', dataClassComponentIds.size())
+            dataElementComponentService.deleteAllByModelId(modelId)
+
+            log.trace('Removing links to DataClasses in {} DataClassComponents', dataClassComponentIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from dataflow.join_data_class_component_to_source_data_class where data_class_component_id in :ids')
+                .setParameter('ids', dataClassComponentIds)
+                .executeUpdate()
+
+            sessionFactory.currentSession
+                .createSQLQuery('delete from dataflow.join_data_class_component_to_target_data_class where data_class_component_id in :ids')
+                .setParameter('ids', dataClassComponentIds)
+                .executeUpdate()
+
+            log.trace('Removing facets for {} DataClassComponents', dataClassComponentIds.size())
+            deleteAllFacetsByCatalogueItemIds(dataClassComponentIds,
+                                              'delete from dataflow.join_dataclasscomponent_to_facet where dataclasscomponent_id in :ids')
+
+            log.trace('Removing {} DataClassComponents', dataClassComponentIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from dataflow.data_class_component where id in :ids')
+                .setParameter('ids', dataClassComponentIds)
+                .executeUpdate()
+
+            log.trace('DataClassComponents removed')
         }
     }
 

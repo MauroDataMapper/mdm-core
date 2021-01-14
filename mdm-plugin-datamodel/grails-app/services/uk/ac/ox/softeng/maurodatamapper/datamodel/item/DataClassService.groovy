@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -50,6 +51,7 @@ class DataClassService extends ModelItemService<DataClass> {
     DataTypeService dataTypeService
     MessageSource messageSource
     SummaryMetadataService summaryMetadataService
+    ReferenceTypeService referenceTypeService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -101,6 +103,38 @@ class DataClassService extends ModelItemService<DataClass> {
         dataClasses.each {
             delete(it)
         }
+    }
+
+    void deleteAllByModelId(UUID dataModelId) {
+
+        List<UUID> dataClassIds = DataClass.byDataModelId(dataModelId).id().list() as List<UUID>
+
+        if (dataClassIds) {
+
+            log.trace('Removing DataElements in {} DataClasses', dataClassIds.size())
+            dataElementService.deleteAllByModelId(dataModelId)
+
+            log.trace('Removing ReferenceTypes in {} DataClasses', dataClassIds.size())
+            referenceTypeService.deleteAllByModelId(dataModelId)
+
+            log.trace('Removing facets for {} DataClasses', dataClassIds.size())
+            deleteAllFacetsByCatalogueItemIds(dataClassIds,
+                                              'delete from datamodel.join_dataclass_to_facet where dataclass_id in :ids')
+
+            log.trace('Removing {} DataClasses', dataClassIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from datamodel.data_class where data_model_id = :id')
+                .setParameter('id', dataModelId)
+                .executeUpdate()
+
+            log.trace('DataClasses removed')
+        }
+    }
+
+    @Override
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 
     @Override

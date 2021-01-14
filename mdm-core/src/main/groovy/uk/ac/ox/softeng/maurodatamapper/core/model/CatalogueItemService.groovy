@@ -21,9 +21,11 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -49,6 +51,8 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
     RuleService ruleService
     SemanticLinkService semanticLinkService
     SessionFactory sessionFactory
+    AnnotationService annotationService
+    ReferenceFileService referenceFileService
 
     abstract Class<K> getCatalogueItemClass()
 
@@ -157,7 +161,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
-            }            
+            }
             copy.addToRules(copiedRule)
         }
 
@@ -189,7 +193,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
                 it.catalogueItemId = catalogueItem.getId()
             }
             Rule.saveAll(catalogueItem.rules)
-        }        
+        }
         if (catalogueItem.annotations) {
             catalogueItem.annotations.each {
                 if (!it.isDirty('catalogueItemId')) it.trackChanges()
@@ -229,7 +233,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
                 it.catalogueItem = catalogueItem
                 it.createdBy = it.createdBy ?: catalogueItem.createdBy
             }
-        }        
+        }
         if (catalogueItem.annotations) {
             catalogueItem.annotations.each {
                 it.catalogueItem = catalogueItem
@@ -256,8 +260,34 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
      * @param parentCatalogueItem The CatalogueItem which is the parent of the CatalogueItem being sought
      * @param label The label of the CatalogueItem being sought
      */
+
     K findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
-        CatalogueItem catalogueItem
-        catalogueItem
+        null
+    }
+
+    void deleteAllFacetsByCatalogueItemId(UUID catalogueItemId, String queryToDeleteFromJoinTable) {
+        sessionFactory.currentSession
+            .createSQLQuery(queryToDeleteFromJoinTable)
+            .setParameter('id', catalogueItemId)
+            .executeUpdate()
+
+        deleteAllFacetDataByCatalogueItemIds([catalogueItemId])
+    }
+
+    void deleteAllFacetsByCatalogueItemIds(List<UUID> catalogueItemIds, String queryToDeleteFromJoinTable) {
+        sessionFactory.currentSession
+            .createSQLQuery(queryToDeleteFromJoinTable)
+            .setParameter('ids', catalogueItemIds)
+            .executeUpdate()
+
+        deleteAllFacetDataByCatalogueItemIds catalogueItemIds
+    }
+
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        annotationService.deleteAllByCatalogueItemIds(catalogueItemIds)
+        metadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+        referenceFileService.deleteAllByCatalogueItemIds(catalogueItemIds)
+        ruleService.deleteAllByCatalogueItemIds(catalogueItemIds)
+        semanticLinkService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 }

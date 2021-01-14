@@ -47,11 +47,13 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
@@ -60,6 +62,7 @@ import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.validation.ValidationErrors
+import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.validation.Errors
@@ -151,11 +154,13 @@ class DataModelService extends ModelService<DataModel> {
     void delete(DataModel dm, boolean permanent, boolean flush = true) {
         if (!dm) return
         if (permanent) {
-            dm.folder = null
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(dm, null)
             }
-            dm.delete(flush: flush)
+            long start = System.currentTimeMillis()
+            log.debug('Deleting DataModel')
+            deleteModelAndContent(dm)
+            log.debug('DataModel deleted. Took {}', Utils.timeTaken(start))
         } else delete(dm)
     }
 
@@ -327,6 +332,54 @@ class DataModelService extends ModelService<DataModel> {
         log.trace('Saved {} dataElements in {}', dataElements.size(), Utils.timeTaken(subStart))
 
         log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))
+    }
+
+    void deleteModelAndContent(DataModel dataModel) {
+
+        GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+
+        log.trace('Removing other ModelItems in DataModel')
+        modelItemServices.findAll {
+            !(it.modelItemClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
+                                    ReferenceType, EnumerationValue])
+        }.each { modelItemService ->
+            try {
+                modelItemService.deleteAllByModelId(dataModel.id)
+            } catch (ApiNotYetImplementedException ignored) {
+            }
+        }
+
+        log.trace('Removing DataClasses in DataModel')
+        dataClassService.deleteAllByModelId(dataModel.id)
+
+        log.trace('Removing DataTypes in DataModel')
+        dataTypeService.deleteAllByModelId(dataModel.id)
+
+        log.trace('Removing facets')
+        deleteAllFacetsByCatalogueItemId(dataModel.id, 'delete from datamodel.join_datamodel_to_facet where datamodel_id=:id')
+
+        log.trace('Content removed')
+        sessionFactory.currentSession
+            .createSQLQuery('delete from datamodel.data_model where id = :id')
+            .setParameter('id', dataModel.id)
+            .executeUpdate()
+
+        log.trace('DataModel removed')
+
+        sessionFactory.currentSession
+            .createSQLQuery('delete from core.breadcrumb_tree where domain_id = :id')
+            .setParameter('id', dataModel.id)
+            .executeUpdate()
+
+        log.trace('Breadcrumb tree removed')
+
+        GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+    }
+
+    @Override
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 
     @Override
@@ -945,7 +998,7 @@ class DataModelService extends ModelService<DataModel> {
      */
     List<DataModel> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
-        ids ? DataModel.findAllByIdInList(ids, pagination) : []
+        ids ? DataModel.byIds(ids).list(pagination) : []
     }
 
     void checkDocumentationVersion(DataModel dataModel, boolean importAsNewDocumentationVersion, User catalogueUser) {

@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 
+import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
@@ -42,5 +43,10 @@ class ReferenceType extends DataType<ReferenceType> {
         catalogueItemDiffBuilder(ReferenceType, this, otherDataType)
             .appendString('referenceClass.label', this.referenceClass.label, otherDataType.referenceClass.label)
     }
+
+    static DetachedCriteria<ReferenceType> by() {
+        new DetachedCriteria<ReferenceType>(ReferenceType)
+    }
+
 
 }

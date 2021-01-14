@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFileService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import grails.gorm.DetachedCriteria
 import org.springframework.beans.factory.annotation.Autowired
 
 class ReferenceFileService implements CatalogueFileService<ReferenceFile>, CatalogueItemAwareService<ReferenceFile> {
@@ -77,4 +78,10 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Catal
     List<ReferenceFile> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination) {
         ReferenceFile.byCatalogueItemId(catalogueItemId).list(pagination)
     }
+
+    @Override
+    DetachedCriteria<ReferenceFile> getBaseDeleteCriteria() {
+        ReferenceFile.by()
+    }
+
 }

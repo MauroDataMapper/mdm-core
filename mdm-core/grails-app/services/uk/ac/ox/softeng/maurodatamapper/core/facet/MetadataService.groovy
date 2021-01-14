@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -126,6 +127,11 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
 
     List<Metadata> findAllByCatalogueItemIdAndNamespace(UUID catalogueItemId, String namespace, Map pagination = [:]) {
         Metadata.byCatalogueItemIdAndNamespace(catalogueItemId, namespace).list(pagination)
+    }
+
+    @Override
+    DetachedCriteria<Metadata> getBaseDeleteCriteria() {
+        Metadata.by()
     }
 
     List<NamespaceKeys> findNamespaceKeysIlikeNamespace(String namespacePrefix) {

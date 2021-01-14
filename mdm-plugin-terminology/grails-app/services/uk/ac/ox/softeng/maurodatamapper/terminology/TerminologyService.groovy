@@ -40,12 +40,14 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -115,11 +117,13 @@ class TerminologyService extends ModelService<Terminology> {
     void delete(Terminology terminology, boolean permanent, boolean flush = true) {
         if (!terminology) return
         if (permanent) {
-            terminology.folder = null
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(terminology, null)
             }
-            terminology.delete(flush: flush)
+            log.debug('Deleting Terminology')
+            long start = System.currentTimeMillis()
+            deleteModelAndContent(terminology)
+            log.debug('Terminology deleted. Took {}', Utils.timeTaken(start))
         } else delete(terminology)
     }
 
@@ -164,6 +168,37 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     Terminology saveModelNewContentOnly(Terminology model) {
         save(failOnError: true, validate: false, flush: true, model)
+    }
+
+    void deleteModelAndContent(Terminology model) {
+
+        GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+
+        log.trace('Removing Terms in Terminology')
+        termService.deleteAllByModelId(model.id)
+
+        log.trace('Removing TermRelationshipTypes in Terminology')
+        termRelationshipTypeService.deleteAllByModelId(model.id)
+
+        log.trace('Removing facets')
+        deleteAllFacetsByCatalogueItemId(model.id, 'delete from terminology.join_terminology_to_facet where terminology_id=:id')
+
+        log.trace('Content removed')
+        sessionFactory.currentSession
+            .createSQLQuery('delete from terminology.terminology where id = :id')
+            .setParameter('id', model.id)
+            .executeUpdate()
+
+        log.trace('Terminology removed')
+
+        sessionFactory.currentSession
+            .createSQLQuery('delete from core.breadcrumb_tree where domain_id = :id')
+            .setParameter('id', model.id)
+            .executeUpdate()
+
+        log.trace('Breadcrumb tree removed')
+
+        GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
 
     @Override

@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -32,6 +32,8 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
+
+import java.time.OffsetDateTime
 
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
@@ -83,6 +85,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract K softDeleteModel(K model)
 
     abstract void permanentDeleteModel(K model)
+
+    void deleteModelAndContent(K model) {
+        throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
+    }
 
     /**
      * Merges changes made to {@code leftModel} in {@code mergeObjectDiff} into {@code rightModel}. {@code mergeObjectDiff} is based on the return
@@ -174,7 +180,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract K createNewForkModel(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-            userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
+        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
 
     abstract List<K> findAllByMetadataNamespace(String namespace)
 
@@ -210,6 +216,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
      *
      * Used by pathService when seeking the latest model by label.
      */
+
     K latest(String label) {
         Model latestModel = null
         latestModel = modelClass.byLabelAndBranchNameAndNotFinalised(label, "main").get()
@@ -218,7 +225,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         }
 
         latestModel
-    }    
+    }
 
     Version latestModelVersion(String label) {
         latestFinalisedModel(label)?.modelVersion ?: Version.from('0.0.0')
@@ -314,5 +321,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (model.finalised && !model.modelVersion) {
             model.modelVersion = Version.from('1.0.0')
         }
+    }
+
+    @Override
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
+        versionLinkService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 }

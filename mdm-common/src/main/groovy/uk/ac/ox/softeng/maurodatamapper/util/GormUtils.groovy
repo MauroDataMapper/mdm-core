@@ -17,16 +17,58 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.util
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+
 import grails.validation.Validateable
 import grails.validation.ValidationException
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
+import org.hibernate.dialect.Dialect
+import org.hibernate.dialect.H2Dialect
+import org.hibernate.dialect.PostgreSQL10Dialect
+import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.context.MessageSource
 
 @Slf4j
 class GormUtils {
+
+    static final int POSTGRES_MAX_BIND_VARIABLES = 16000
+
+    static void disableDatabaseConstraints(SessionFactoryImplementor sessionFactory) {
+        Dialect dialect = sessionFactory.getJdbcServices().getDialect()
+        if (dialect instanceof H2Dialect) {
+            sessionFactory
+                .currentSession
+                .createSQLQuery('SET REFERENTIAL_INTEGRITY FALSE')
+                .executeUpdate()
+        } else if (dialect instanceof PostgreSQL10Dialect) {
+            sessionFactory
+                .currentSession
+                .createSQLQuery('SET session_replication_role = replica;')
+                .executeUpdate()
+        } else {
+            throw new ApiInternalException('GUXX', "Unrecognised dialect ${dialect.class.simpleName} cannot disable database constraints")
+        }
+    }
+
+    static void enableDatabaseConstraints(SessionFactoryImplementor sessionFactory) {
+        Dialect dialect = sessionFactory.getJdbcServices().getDialect()
+        if (dialect instanceof H2Dialect) {
+            sessionFactory
+                .currentSession
+                .createSQLQuery('SET REFERENTIAL_INTEGRITY TRUE')
+                .executeUpdate()
+        } else if (dialect instanceof PostgreSQL10Dialect) {
+            sessionFactory
+                .currentSession
+                .createSQLQuery('SET session_replication_role = DEFAULT;')
+                .executeUpdate()
+        } else {
+            throw new ApiInternalException('GUXX', "Unrecognised dialect ${dialect.class.simpleName} cannot disable database constraints")
+        }
+    }
 
     static void check(MessageSource messageSource, GormEntity domainObj) throws ValidationException {
         if (!domainObj) throw new ValidationException('No domain object to save', null)
@@ -58,7 +100,7 @@ class GormUtils {
     }
 
     static void checkAndSave(MessageSource messageSource, GormEntity... domainObjs) throws ValidationException {
-        domainObjs.each {checkAndSave(messageSource, it,)}
+        domainObjs.each { checkAndSave(messageSource, it,) }
     }
 
     static def save(GormEntity domainObj) {
@@ -69,7 +111,7 @@ class GormUtils {
     static def outputDomainErrors(MessageSource messageSource, def domainObj) {
         log.error 'Errors validating domain: {}', domainObj.class.simpleName
         System.err.println 'Errors validating domain: ' + domainObj.class.simpleName
-        domainObj.errors.allErrors.each {error ->
+        domainObj.errors.allErrors.each { error ->
 
             String msg = messageSource ? messageSource.getMessage(error, Locale.default) :
                          "${error.defaultMessage} :: ${Arrays.asList(error.arguments)}"

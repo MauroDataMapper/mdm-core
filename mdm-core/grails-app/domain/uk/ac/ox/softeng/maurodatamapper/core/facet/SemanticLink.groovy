@@ -109,6 +109,13 @@ class SemanticLink implements CatalogueItemAware, CreatorAware {
         }
     }
 
+    static DetachedCriteria<SemanticLink> byAnyCatalogueItemIdInList(List<UUID> catalogueItemIds) {
+        by().or {
+            inList 'catalogueItemId', catalogueItemIds
+            inList 'targetCatalogueItemId', catalogueItemIds
+        }
+    }
+
     static DetachedCriteria<SemanticLink> bySourceCatalogueItemAndTargetCatalogueItemAndLinkType(CatalogueItem source, CatalogueItem target,
                                                                                                  SemanticLinkType linkType) {
         by().eq('catalogueItemId', Utils.toUuid(source.id))

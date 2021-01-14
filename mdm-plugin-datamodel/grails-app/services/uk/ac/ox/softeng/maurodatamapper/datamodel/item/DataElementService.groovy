@@ -95,6 +95,33 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement.delete(flush: flush)
     }
 
+    void deleteAllByModelId(UUID dataModelId) {
+        List<UUID> dataElementIds = DataElement.by().where {
+            dataClass {
+                eq('dataModel.id', dataModelId)
+            }
+        }.id().list() as List<UUID>
+
+        if (dataElementIds) {
+            log.trace('Removing facets for {} DataElements', dataElementIds.size())
+            deleteAllFacetsByCatalogueItemIds(dataElementIds,
+                                              'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
+
+            log.trace('Removing {} DataElements', dataElementIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from datamodel.data_element where id in :ids')
+                .setParameter('ids', dataElementIds)
+                .executeUpdate()
+        }
+        log.trace('DataElements removed')
+    }
+
+    @Override
+    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    }
+
     @Override
     DataElement save(Map args, DataElement dataElement) {
         if (!dataElement.dataType.ident()) {

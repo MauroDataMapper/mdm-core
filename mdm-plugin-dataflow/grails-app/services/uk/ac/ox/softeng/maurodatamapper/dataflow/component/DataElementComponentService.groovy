@@ -17,10 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -28,8 +27,10 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
+@Slf4j
 @Transactional
 class DataElementComponentService extends ModelItemService<DataElementComponent> {
 
@@ -82,6 +83,47 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
     void deleteAll(Collection<DataElementComponent> dataElementComponents) {
         dataElementComponents.each {
             delete(it)
+        }
+    }
+
+    void deleteAllByModelId(UUID modelId) {
+
+        List<UUID> dataElementComponentIds = DataElementComponent.by().where {
+            dataClassComponent {
+                dataFlow {
+                    or {
+                        eq 'source.id', modelId
+                        eq 'target.id', modelId
+                    }
+                }
+            }
+        }.id().list() as List<UUID>
+
+
+        if (dataElementComponentIds) {
+
+            log.trace('Removing links to DataElements in {} DataElementComponents', dataElementComponentIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from dataflow.join_data_element_component_to_source_data_element where data_element_component_id in :ids')
+                .setParameter('ids', dataElementComponentIds)
+                .executeUpdate()
+
+            sessionFactory.currentSession
+                .createSQLQuery('delete from dataflow.join_data_element_component_to_target_data_element where data_element_component_id in :ids')
+                .setParameter('ids', dataElementComponentIds)
+                .executeUpdate()
+
+            log.trace('Removing facets for {} DataElementComponents', dataElementComponentIds.size())
+            deleteAllFacetsByCatalogueItemIds(dataElementComponentIds,
+                                              'delete from dataflow.join_dataelementcomponent_to_facet where dataelementcomponent_id in :ids')
+
+            log.trace('Removing {} DataElementComponents', dataElementComponentIds.size())
+            sessionFactory.currentSession
+                .createSQLQuery('delete from dataflow.data_element_component where id in :ids')
+                .setParameter('ids', dataElementComponentIds)
+                .executeUpdate()
+
+            log.trace('DataElementComponents removed')
         }
     }
 

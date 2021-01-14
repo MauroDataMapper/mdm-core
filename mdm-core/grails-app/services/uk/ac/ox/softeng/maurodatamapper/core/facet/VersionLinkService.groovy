@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareSe
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.DetachedCriteria
 import grails.util.Pair
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -147,6 +148,18 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     @Override
     List<VersionLink> findAllByCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
         findAllBySourceOrTargetModelId(catalogueItemId, paginate)
+    }
+
+    @Override
+    DetachedCriteria<VersionLink> getBaseDeleteCriteria() {
+        VersionLink.by()
+    }
+
+    @Override
+    void performDeletion(List<UUID> batch) {
+        long start = System.currentTimeMillis()
+        VersionLink.byAnyModelIdInList(batch).deleteAll()
+        log.trace('{} removed took {}', VersionLink.simpleName, Utils.timeTaken(start))
     }
 
     VersionLink findBySourceModelIdAndId(UUID modelId, Serializable id) {

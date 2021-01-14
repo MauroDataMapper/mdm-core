@@ -21,10 +21,16 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
+import grails.gorm.DetachedCriteria
+import groovy.util.logging.Slf4j
 
 /**
  * @since 31/01/2020
  */
+@Slf4j
 trait CatalogueItemAwareService<K> {
 
     abstract List<CatalogueItemService> getCatalogueItemServices()
@@ -32,6 +38,8 @@ trait CatalogueItemAwareService<K> {
     abstract K findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id)
 
     abstract List<K> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination)
+
+    abstract DetachedCriteria<K> getBaseDeleteCriteria()
 
     K addCreatedEditToCatalogueItem(User creator, K domain, String catalogueItemDomainType, UUID catalogueItemId) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
@@ -52,8 +60,40 @@ trait CatalogueItemAwareService<K> {
     }
 
     CatalogueItem findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
-        CatalogueItemService service = catalogueItemServices.find {it.handles(domainType)}
+        CatalogueItemService service = catalogueItemServices.find { it.handles(domainType) }
         if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${domainType}] with no supporting service")
         service.get(catalogueItemId)
     }
+
+    void deleteAllByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        // Too large a batch will throw an error as too many bind variables in the query
+        if (catalogueItemIds.size() > GormUtils.POSTGRES_MAX_BIND_VARIABLES) {
+            batchDeleteAllByCatalogueItemIds(catalogueItemIds)
+        } else {
+            performDeletion(catalogueItemIds)
+        }
+    }
+
+    void batchDeleteAllByCatalogueItemIds(List<UUID> catalogueItemIds) {
+        int batchSize = GormUtils.POSTGRES_MAX_BIND_VARIABLES
+        List<UUID> batch = new ArrayList<>(batchSize)
+        catalogueItemIds.each { UUID id ->
+            batch << id
+            if (batch.size() % batchSize == 0) {
+                performDeletion(batch)
+                batch.clear()
+            }
+        }
+        if (batch) {
+            performDeletion(batch)
+            batch.clear()
+        }
+    }
+
+    void performDeletion(List<UUID> batch) {
+        long start = System.currentTimeMillis()
+        getBaseDeleteCriteria().inList('catalogueItemId', batch).deleteAll()
+        log.trace('{} removed took {}', getBaseDeleteCriteria().getPersistentClass().simpleName, Utils.timeTaken(start))
+    }
+
 }
