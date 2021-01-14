@@ -70,7 +70,8 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         }
         catalogueItem.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
 
-        metadataService.saveAll(catalogueItem.metadata)
+        Metadata.saveAll(catalogueItem.metadata)
+
     }
 
     @Override
