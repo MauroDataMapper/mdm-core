@@ -99,22 +99,30 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
         "${this.name}.${this.description}"
     }
 
+    static DetachedCriteria<Rule> by() {
+        new DetachedCriteria<Rule>(Rule)
+    }
+
     static DetachedCriteria<Rule> byCatalogueItemId(Serializable catalogueItemId) {
         new DetachedCriteria<Rule>(Rule).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    }
+
+    static DetachedCriteria<Rule> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
+        new DetachedCriteria<Rule>(Rule).inList('catalogueItemId', catalogueItemIds)
     }
 
     static DetachedCriteria<Rule> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {
         byCatalogueItemId(catalogueItemId).idEq(Utils.toUuid(resourceId))
     }
 
-    static DetachedCriteria<Metadata> withFilter(DetachedCriteria<Rule> criteria, Map filters) {
+    static DetachedCriteria<Rule> withFilter(DetachedCriteria<Rule> criteria, Map filters) {
         if (filters.name) criteria = criteria.ilike('name', "%${filters.name}%")
         if (filters.description) criteria = criteria.ilike('description', "%${filters.description}%")
         if (filters.language) criteria = criteria.where {
             ruleRepresentations {
                 ilike('language', "%${filters.language}%")
             }
-        }        
+        }
         criteria
     }
 

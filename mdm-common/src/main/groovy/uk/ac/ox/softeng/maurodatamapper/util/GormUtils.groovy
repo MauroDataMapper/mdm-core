@@ -28,6 +28,8 @@ import org.springframework.context.MessageSource
 @Slf4j
 class GormUtils {
 
+    static final int POSTGRES_MAX_BIND_VARIABLES = 16000
+
     static void check(MessageSource messageSource, GormEntity domainObj) throws ValidationException {
         if (!domainObj) throw new ValidationException('No domain object to save', null)
 

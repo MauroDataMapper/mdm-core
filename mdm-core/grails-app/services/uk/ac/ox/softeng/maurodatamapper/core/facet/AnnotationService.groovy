@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -82,6 +82,11 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
     @Override
     List<Annotation> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination = [:]) {
         Annotation.byCatalogueItemId(catalogueItemId).list(pagination)
+    }
+
+    @Override
+    DetachedCriteria<Annotation> getBaseDeleteCriteria() {
+        Annotation.by()
     }
 
     List<Annotation> findAllWhereRootAnnotationOfCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {

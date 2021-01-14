@@ -122,8 +122,16 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
             .list() as Set<String>
     }
 
+    static DetachedCriteria<Metadata> by() {
+        new DetachedCriteria<Metadata>(Metadata)
+    }
+
     static DetachedCriteria<Metadata> byCatalogueItemId(Serializable catalogueItemId) {
         new DetachedCriteria<Metadata>(Metadata).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    }
+
+    static DetachedCriteria<Metadata> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
+        new DetachedCriteria<Metadata>(Metadata).inList('catalogueItemId', catalogueItemIds)
     }
 
     static DetachedCriteria<Metadata> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {

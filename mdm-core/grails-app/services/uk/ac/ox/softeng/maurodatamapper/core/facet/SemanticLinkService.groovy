@@ -24,7 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.DetachedCriteria
 import grails.util.Pair
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -63,7 +65,7 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
         if (!semanticLink) return
 
         if (cleanFromOwner) {
-            CatalogueItemService service = catalogueItemServices.find {it.handles(semanticLink.catalogueItemDomainType)}
+            CatalogueItemService service = catalogueItemServices.find { it.handles(semanticLink.catalogueItemDomainType) }
             if (!service) throw new ApiBadRequestException('SLS01', 'Semantic link removal for catalogue item with no supporting service')
             service.removeSemanticLinkFromCatalogueItem(semanticLink.catalogueItemId, semanticLink)
         }
@@ -73,7 +75,7 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
 
     void deleteAll(List<SemanticLink> semanticLinks, boolean cleanFromOwner = true) {
         if (cleanFromOwner) {
-            semanticLinks.each {delete(it)}
+            semanticLinks.each { delete(it) }
         } else {
             SemanticLink.deleteAll(semanticLinks)
         }
@@ -96,10 +98,10 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
         Map<String, Set<UUID>> itemIdsMap = [:]
 
         log.debug('Collecting all catalogue items for {} semantic links', semanticLinks.size())
-        semanticLinks.each {sl ->
+        semanticLinks.each { sl ->
 
             itemIdsMap.compute(sl.catalogueItemDomainType, [
-                apply: {String s, Set<UUID> uuids ->
+                apply: { String s, Set<UUID> uuids ->
                     uuids = uuids ?: new HashSet<>()
                     uuids.add(sl.catalogueItemId)
                     uuids
@@ -107,7 +109,7 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
             ] as BiFunction)
 
             itemIdsMap.compute(sl.targetCatalogueItemDomainType, [
-                apply: {String s, Set<UUID> uuids ->
+                apply: { String s, Set<UUID> uuids ->
                     uuids = uuids ?: new HashSet<>()
                     uuids.add(sl.targetCatalogueItemId)
                     uuids
@@ -117,15 +119,15 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
 
         log.debug('Loading required catalogue items from database')
         Map<Pair<String, UUID>, CatalogueItem> itemMap = [:]
-        itemIdsMap.each {domain, ids ->
-            CatalogueItemService service = catalogueItemServices.find {it.handles(domain)}
+        itemIdsMap.each { domain, ids ->
+            CatalogueItemService service = catalogueItemServices.find { it.handles(domain) }
             if (!service) throw new ApiBadRequestException('SLS02', 'Semantic link loading for catalogue item with no supporting service')
             List<CatalogueItem> items = service.getAll(ids)
-            itemMap.putAll(items.collectEntries {i -> [new Pair<String, UUID>(domain, i.id), i]})
+            itemMap.putAll(items.collectEntries { i -> [new Pair<String, UUID>(domain, i.id), i] })
         }
 
         log.debug('Loading {} retrieved catalogue items into semantic links', itemMap.size())
-        semanticLinks.each {sl ->
+        semanticLinks.each { sl ->
             sl.catalogueItem = itemMap.get(new Pair(sl.catalogueItemDomainType, sl.catalogueItemId))
             sl.targetCatalogueItem = itemMap.get(new Pair(sl.targetCatalogueItemDomainType, sl.targetCatalogueItemId))
         }
@@ -155,6 +157,18 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
     @Override
     List<SemanticLink> findAllByCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
         findAllBySourceOrTargetCatalogueItemId(catalogueItemId, paginate)
+    }
+
+    @Override
+    DetachedCriteria<SemanticLink> getBaseDeleteCriteria() {
+        SemanticLink.by()
+    }
+
+    @Override
+    void performDeletion(List<UUID> batch) {
+        long start = System.currentTimeMillis()
+        SemanticLink.byAnyCatalogueItemIdInList(batch).deleteAll()
+        log.trace('{} removed took {}', SemanticLink.simpleName, Utils.timeTaken(start))
     }
 
     SemanticLink findBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(CatalogueItem sourceCatalogueItem, CatalogueItem targetCatalogueItem,

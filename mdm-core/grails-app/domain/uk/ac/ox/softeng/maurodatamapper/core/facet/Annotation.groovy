@@ -125,8 +125,16 @@ class Annotation implements CatalogueItemAware, PathAware, InformationAware, Cre
         this.label
     }
 
+    static DetachedCriteria<Annotation> by() {
+        new DetachedCriteria<Annotation>(Annotation)
+    }
+
     static DetachedCriteria<Annotation> byCatalogueItemId(Serializable catalogueItemId) {
         new DetachedCriteria<Annotation>(Annotation).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    }
+
+    static DetachedCriteria<Annotation> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
+        new DetachedCriteria<Annotation>(Annotation).inList('catalogueItemId', catalogueItemIds)
     }
 
     static DetachedCriteria<Annotation> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {

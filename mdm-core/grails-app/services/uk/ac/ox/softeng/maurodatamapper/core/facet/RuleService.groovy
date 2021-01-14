@@ -17,14 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentationService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -33,6 +34,8 @@ import javax.transaction.Transactional
 @Slf4j
 @Transactional
 class RuleService implements CatalogueItemAwareService<Rule> {
+
+    RuleRepresentationService ruleRepresentationService
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
@@ -66,21 +69,22 @@ class RuleService implements CatalogueItemAwareService<Rule> {
     //Ensure a row is removed from the _facet table
     void removeRuleFromCatalogueItem(Rule rule, CatalogueItem catalogueItem) {
         catalogueItem.removeFromRules(rule)
-    }    
+    }
 
     boolean validate(Rule rule) {
         boolean valid = rule.validate()
         if (!valid) return false
 
         CatalogueItem catalogueItem = rule.catalogueItem ?: findCatalogueItemByDomainTypeAndId(rule.catalogueItemDomainType,
-                                                                                                   rule.catalogueItemId)
+                                                                                               rule.catalogueItemId)
 
         //Ensure name is unique within catalogueItem
-        if (catalogueItem.rules.any {r ->
+        if (catalogueItem.rules.any { r ->
             log.debug("${r} ${rule}")
-            r != rule && r.name == rule.name}) {
+            r != rule && r.name == rule.name
+        }) {
             rule.errors.rejectValue('name', 'default.not.unique.message', ['name', Rule, rule.name].toArray(),
-                                        'Property [{0}] of class [{1}] with value [{2}] must be unique')
+                                    'Property [{0}] of class [{1}] with value [{2}] must be unique')
             return false
         }
         true
@@ -96,24 +100,43 @@ class RuleService implements CatalogueItemAwareService<Rule> {
         Rule.withFilter(Rule.byCatalogueItemId(catalogueItemId), pagination).list(pagination)
     }
 
+    @Override
+    void performDeletion(List<UUID> batch) {
+        long start = System.currentTimeMillis()
+        List<Rule> rules = Rule.byCatalogueItemIdInList(batch).list()
+        if (rules) {
+            ruleRepresentationService.deleteAllByRules(rules)
+            getBaseDeleteCriteria().inList('catalogueItemId', batch).deleteAll()
+        }
+        log.trace('{} removed took {}', Rule.simpleName, Utils.timeTaken(start))
+    }
+
+    @Override
+    DetachedCriteria<Rule> getBaseDeleteCriteria() {
+        Rule.by()
+    }
+
     //This works around the fact the RuleRepresentation is not CatalogueItemAware
-    RuleRepresentation addCreatedEditToCatalogueItemOfRule(User creator, RuleRepresentation domain, String catalogueItemDomainType, UUID catalogueItemId) {
+    RuleRepresentation addCreatedEditToCatalogueItemOfRule(User creator, RuleRepresentation domain, String catalogueItemDomainType,
+                                                           UUID catalogueItemId) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
         catalogueItem.addToEditsTransactionally creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
         domain
     }
 
     //This works around the fact the RuleRepresentation is not CatalogueItemAware
-    RuleRepresentation addUpdatedEditToCatalogueItemOfRule(User editor, RuleRepresentation domain, String catalogueItemDomainType, UUID catalogueItemId, List<String> dirtyPropertyNames) {
+    RuleRepresentation addUpdatedEditToCatalogueItemOfRule(User editor, RuleRepresentation domain, String catalogueItemDomainType,
+                                                           UUID catalogueItemId, List<String> dirtyPropertyNames) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
         catalogueItem.addToEditsTransactionally editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
     //This works around the fact the RuleRepresentation is not CatalogueItemAware
-    RuleRepresentation addDeletedEditToCatalogueItemOfRule(User deleter, RuleRepresentation domain, String catalogueItemDomainType, UUID catalogueItemId) {
+    RuleRepresentation addDeletedEditToCatalogueItemOfRule(User deleter, RuleRepresentation domain, String catalogueItemDomainType,
+                                                           UUID catalogueItemId) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
         catalogueItem.addToEditsTransactionally deleter, "[$domain.editLabel] removed from component [${catalogueItem.editLabel}]"
         domain
-    }    
+    }
 }
