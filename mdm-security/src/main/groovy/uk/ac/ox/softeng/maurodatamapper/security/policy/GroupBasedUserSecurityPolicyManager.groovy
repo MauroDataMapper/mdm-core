@@ -62,6 +62,8 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.M
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_BRANCH_MODEL_VERSION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_DOCUMENTATION_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.NEW_MODEL_VERSION_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.READ_BY_AUTHENTICATED_ACTION
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.READ_BY_EVERYONE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.READ_ONLY_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SAVE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.SOFT_DELETE_ACTION
@@ -182,8 +184,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
         virtualSecurableResourceGroupRoles
-            .findAll { it.domainType == securableResourceClass.simpleName }
-            .collect { it.domainId }
+            .findAll {it.domainType == securableResourceClass.simpleName}
+            .collect {it.domainId}
             .toSet()
             .toList()
     }
@@ -331,7 +333,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     return role ? !role.isFinalisedModel() : false
                 case CHANGE_FOLDER_ACTION:
                     //Changing folder is like an update, but without checking if the model is finalised
-                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)                
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
                 case MERGE_INTO_ACTION:
                 case SAVE_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
@@ -339,6 +341,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                 case FINALISE_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? role.canFinaliseModel() : false
+                case READ_BY_AUTHENTICATED_ACTION:
+                case READ_BY_EVERYONE_ACTION:
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                 default:
                     log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
                     return false
@@ -399,7 +404,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     @Override
     boolean isApplicationAdministrator() {
-        applicationPermittedRoles.any { it.name == APPLICATION_ADMIN_ROLE_NAME }
+        applicationPermittedRoles.any {it.name == APPLICATION_ADMIN_ROLE_NAME}
     }
 
     @Override
@@ -429,7 +434,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             it.securableResourceDomainType == securableResourceDomainType && it.securableResourceId == securableResourceId
         }
         if (!found) return null
-        found.collect { it.groupRole }.sort().first()
+        found.collect {it.groupRole}.sort().first()
     }
 
     boolean hasUserAdminRights() {
@@ -545,7 +550,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     private boolean hasApplicationLevelRole(String rolename) {
-        applicationPermittedRoles.any { it.name == rolename }
+        applicationPermittedRoles.any {it.name == rolename}
     }
 
     private List<String> getStandardActionsWithControlRole(Class<? extends SecurableResource> securableResourceClass, UUID id, String roleName) {

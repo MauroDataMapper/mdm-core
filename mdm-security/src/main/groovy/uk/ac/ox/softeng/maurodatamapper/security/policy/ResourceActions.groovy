@@ -36,9 +36,12 @@ class ResourceActions {
     public static final String NEW_FORK_MODEL_ACTION = 'newForkModel'
     public static final String NEW_MODEL_VERSION_ACTION = 'newModelVersion'
     public static final String MERGE_INTO_ACTION = 'mergeInto'
+    public static final String READ_BY_EVERYONE_ACTION = 'readByEveryone'
+    public static final String READ_BY_AUTHENTICATED_ACTION = 'readByAuthenticated'
 
     public static final List<String> MODEL_READER_VERSIONING_ACTIONS = [CREATE_NEW_VERSIONS_ACTION, NEW_FORK_MODEL_ACTION]
-    public static final List<String> MODEL_EDITOR_VERSIONING_ACTIONS = [NEW_MODEL_VERSION_ACTION, NEW_DOCUMENTATION_ACTION, NEW_BRANCH_MODEL_VERSION_ACTION]
+    public static final List<String> MODEL_EDITOR_VERSIONING_ACTIONS = [NEW_MODEL_VERSION_ACTION, NEW_DOCUMENTATION_ACTION,
+                                                                        NEW_BRANCH_MODEL_VERSION_ACTION]
 
     public static final List<String> READ_ONLY_ACTIONS = [SHOW_ACTION]
     public static final List<String> STANDARD_EDIT_ACTIONS = [SHOW_ACTION, UPDATE_ACTION, DELETE_ACTION]
