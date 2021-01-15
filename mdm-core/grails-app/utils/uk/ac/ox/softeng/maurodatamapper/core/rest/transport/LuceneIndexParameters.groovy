@@ -32,16 +32,30 @@ class LuceneIndexParameters extends UserCredentials {
     Integer idFetchSize
     Integer transactionTimeout
 
+    static constraints = {
+        username nullable: false, email: true
+        password nullable: false
+        typesToIndexInParallel nullable: true, min: 0
+        threadsToLoadObjects nullable: true, min: 0
+        batchSizeToLoadObjects nullable: true, min: 0
+        cacheMode nullable: true
+        optimizeOnFinish nullable: true
+        optimizeAfterPurge nullable: true
+        purgeAllOnStart nullable: true
+        idFetchSize nullable: true, min: 0
+        transactionTimeout nullable: true, min: 0
+    }
+
     void updateFromMap(Map map) {
-        typesToIndexInParallel = typesToIndexInParallel ?: map.typesToIndexInParallel
-        threadsToLoadObjects = threadsToLoadObjects ?: map.threadsToLoadObjects
-        batchSizeToLoadObjects = batchSizeToLoadObjects ?: map.batchSizeToLoadObjects
+        typesToIndexInParallel = typesToIndexInParallel ?: map.typesToIndexInParallel as Integer
+        threadsToLoadObjects = threadsToLoadObjects ?: map.threadsToLoadObjects as Integer
+        batchSizeToLoadObjects = batchSizeToLoadObjects ?: map.batchSizeToLoadObjects as Integer
         cacheMode = cacheMode ?: map.cacheMode
         optimizeOnFinish = optimizeOnFinish ?: map.optimizeOnFinish
         optimizeAfterPurge = optimizeAfterPurge ?: map.optimizeAfterPurge
         purgeAllOnStart = purgeAllOnStart ?: map.purgeAllOnStart
-        idFetchSize = idFetchSize ?: map.idFetchSize
-        transactionTimeout = transactionTimeout ?: map.transactionTimeout
+        idFetchSize = idFetchSize ?: map.idFetchSize as Integer
+        transactionTimeout = transactionTimeout ?: map.transactionTimeout as Integer
     }
 
     @Override
