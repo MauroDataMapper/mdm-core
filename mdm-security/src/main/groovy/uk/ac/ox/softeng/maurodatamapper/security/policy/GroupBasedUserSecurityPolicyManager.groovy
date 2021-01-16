@@ -163,6 +163,11 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         this
     }
 
+    GroupBasedUserSecurityPolicyManager removeVirtualRoles(Collection<VirtualSecurableResourceGroupRole> rolesToRemoved) {
+        virtualSecurableResourceGroupRoles.removeAll(rolesToRemoved)
+        this
+    }
+
     GroupBasedUserSecurityPolicyManager removeAssignedRoleIf(@ClosureParams(value =
         SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole') Closure predicate) {
         securableResourceGroupRoles.removeIf([test: predicate] as Predicate)
@@ -496,7 +501,11 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             }
             return []
         }
-        log.warn('Attempt to gain available actions for unknown secured class {} id {} to {}', securableResourceClass.simpleName, id)
+        if (Utils.parentClassIsAssignableFromChild(GroupRole, securableResourceClass)) {
+            // No actions are allowed directly on GroupRole
+            return READ_ONLY_ACTIONS
+        }
+        log.warn('Attempt to gain available actions for unknown secured class {} id {}', securableResourceClass.simpleName, id)
         []
     }
 

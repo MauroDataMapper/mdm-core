@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -162,6 +163,25 @@ class FolderService extends ContainerService<Folder> {
 
     void generateDefaultFolderLabel(Folder folder) {
         generateDefaultLabel(folder, Folder.DEFAULT_FOLDER_LABEL)
+    }
+
+    @Override
+    List<Folder> findAllWhereDirectParentOfModel(Model model) {
+        List<Folder> folders = []
+        Folder modelFolder = get(model.folder.id)
+        folders << modelFolder
+        folders.addAll(findAllWhereDirectParentOfContainer(modelFolder))
+        folders
+    }
+
+    @Override
+    List<Folder> findAllWhereDirectParentOfContainer(Folder folder) {
+        List<Folder> folders = []
+        if (folder.parentFolder) {
+            folders << get(folder.parentFolder.id)
+            folders.addAll(findAllWhereDirectParentOfContainer(folder.parentFolder))
+        }
+        folders
     }
 
     @Deprecated

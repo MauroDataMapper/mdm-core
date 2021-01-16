@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -118,6 +119,21 @@ class ClassifierService extends ContainerService<Classifier> {
         log.debug('Searching readable classifiers for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
         Classifier.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+    }
+
+    @Override
+    List<Classifier> findAllWhereDirectParentOfModel(Model model) {
+        []
+    }
+
+    @Override
+    List<Classifier> findAllWhereDirectParentOfContainer(Classifier classifier) {
+        List<Classifier> classifiers = []
+        if (classifier.parentClassifier) {
+            classifiers << classifier.parentClassifier
+            classifiers.addAll(findAllWhereDirectParentOfContainer(classifier.parentClassifier))
+        }
+        classifiers
     }
 
     Long count() {

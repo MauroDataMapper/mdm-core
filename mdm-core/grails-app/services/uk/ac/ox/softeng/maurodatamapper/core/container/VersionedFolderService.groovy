@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -106,6 +107,16 @@ class VersionedFolderService extends ContainerService<VersionedFolder> {
     @Override
     List<VersionedFolder> findAllReadableByAuthenticatedUsers() {
         VersionedFolder.findAllByReadableByAuthenticatedUsers(true)
+    }
+
+    @Override
+    List<Folder> findAllWhereDirectParentOfModel(Model model) {
+        folderService.findAllWhereDirectParentOfModel(model)
+    }
+
+    @Override
+    List<Folder> findAllWhereDirectParentOfContainer(VersionedFolder folder) {
+        folderService.findAllWhereDirectParentOfContainer(folder)
     }
 
     VersionedFolder get(Serializable id) {

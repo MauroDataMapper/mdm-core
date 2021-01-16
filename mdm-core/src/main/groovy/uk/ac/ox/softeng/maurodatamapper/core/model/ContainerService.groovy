@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -45,6 +46,10 @@ abstract class ContainerService<K> implements SecurableResourceService<K> {
     abstract List<K> findAllByParentId(UUID parentId, Map pagination)
 
     abstract DetachedCriteria<K> getCriteriaByParent(K domain)
+
+    abstract List<K> findAllWhereDirectParentOfModel(Model model)
+
+    abstract List<K> findAllWhereDirectParentOfContainer(K container)
 
     K findByPath(String path) {
         List<String> paths
