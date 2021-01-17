@@ -32,22 +32,18 @@ trait JsonImportMapping {
     /**
      * Helps with importing json by removing any elements called 'id'
      */
-    def slurpAndClean(byte[] content) {
-        log.debug('Parsing in file content using JsonSlurper')
-        
-        //Make an object by slurping json
-        def slurped = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
-
-        //Serialize the object but without any 'id' elements
+    static def slurpAndClean(byte[] content) {
+        // Declare generator and slurper
         def generator = new JsonGenerator.Options()
             .excludeFieldsByName('id')
             .build()
-        
+        def slurper = new JsonSlurper()
+
+        //Make an object by slurping json
+        def slurped = slurper.parseText(new String(content, Charset.defaultCharset()))
+        //Serialize the object but without any 'id' elements
         def serialized = generator.toJson(slurped)
-
         //Slurp the serialized object. So now we have the same object but without any id elements
-        def result = new JsonSlurper().parseText(serialized)
-
-        result
+        slurper.parseText(serialized)
     }
 }

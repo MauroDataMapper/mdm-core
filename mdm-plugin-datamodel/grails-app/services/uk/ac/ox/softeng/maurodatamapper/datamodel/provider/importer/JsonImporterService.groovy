@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -30,7 +31,8 @@ import groovy.util.logging.Slf4j
 import java.nio.charset.Charset
 
 @Slf4j
-class JsonImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> {
+class JsonImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> 
+    implements JsonImportMapping {
 
     @Override
     String getDisplayName() {
@@ -48,7 +50,7 @@ class JsonImporterService extends DataBindDataModelImporterProviderService<DataM
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
         log.debug('Parsing in file content using JsonSlurper')
-        def result = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
+        def result = slurpAndClean(content)
         Map dataModel = result.dataModel
         if (!dataModel) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
 
