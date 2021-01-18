@@ -176,7 +176,7 @@
     <xs:complexContent>
       <xs:extension base="mdm:catalogueItem">
         <xs:sequence>
-          <xs:element name="definition" type="mdm:mandatoryString" />
+          <xs:element name="definition" minOccurs="0" type="mdm:mandatoryString" />
           <xs:element name="sourceDataElements" minOccurs="0" type="mdm:dataElementsType" />
           <xs:element name="targetDataElements" minOccurs="0" type="mdm:dataElementsType" />
         </xs:sequence>

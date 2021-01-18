@@ -7,7 +7,9 @@ model {
 }
 
 json {
-    definition dataElementComponent.definition
+    if (dataElementComponent.definition) {
+        definition dataElementComponent.definition
+    }
     sourceDataElements tmpl.exportDataElement(dataElementComponent.sourceDataElements)
     targetDataElements tmpl.exportDataElement(dataElementComponent.targetDataElements)
 }

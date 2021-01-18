@@ -20,10 +20,9 @@ DataFlow df = dataFlow as DataFlow
     
     if (df.dataClassComponents) {
         'mdm:dataClassComponents' {
-            df.dataClassComponents.each {dcc ->
+            df.dataClassComponents.sort{it.label}.each {dcc ->
                 layout '/dataClassComponent/_export.gml', dataClassComponent: dcc 
             }
         }
     }
-
 }

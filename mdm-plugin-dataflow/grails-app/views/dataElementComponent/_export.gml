@@ -5,11 +5,13 @@ DataElementComponent dec = dataElementComponent as DataElementComponent
 'mdm:dataElementComponent' {
     layout '/catalogueItem/_export.gml', catalogueItem: dec
 
-    'mdm:definition' dec.definition
+    if (dec.definition) {
+        'mdm:definition' dec.definition
+    }
 
     if (dec.sourceDataElements) {
         'mdm:sourceDataElements' {
-            dec.sourceDataElements.each {de ->
+            dec.sourceDataElements.sort{it.label}.each {de ->
                 layout '/dataElementComponent/_exportDataElement.gml', dataElement: de
             }
         }
@@ -17,7 +19,7 @@ DataElementComponent dec = dataElementComponent as DataElementComponent
 
     if (dec.targetDataElements) {
         'mdm:targetDataElements' {
-            dec.targetDataElements.each {de ->
+            dec.targetDataElements.sort{it.label}.each {de ->
                 layout '/dataElementComponent/_exportDataElement.gml', dataElement: de
             }
         }

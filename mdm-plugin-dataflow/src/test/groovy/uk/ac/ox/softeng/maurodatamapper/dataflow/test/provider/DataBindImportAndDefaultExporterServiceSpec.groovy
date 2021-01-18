@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Stepwise
 import spock.lang.Unroll
 
+import com.google.common.base.CaseFormat
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
@@ -98,7 +99,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
     }
 
     @Unroll
-    void 'XX001: test "#testName" data export'() {
+    void 'test "#testName" data export'() {
         given:
         setupData()
 
@@ -119,135 +120,43 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         ]
     }
 
-    /*@Unroll
-    void 'test load datamodel with datatypes - #version'() {
-        given:
-        setupData()
-        String exported
 
-        expect:
-
-        DataModel.count() == 2
-
-        when:
-        Path testFilePath = resourcesPath.resolve("${DATAMODEL_WITH_DATATYPES_FILENAME}.${version}.$importType")
-        boolean test = Files.exists(testFilePath)
-
-        if (test) {
-            String xml = Files.readString(testFilePath)
-                .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
-                .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
-            exported = importAndExport(xml.bytes)
-        } else log.info('{} does not exist, skipping', testFilePath)
-
-        then:
-        if (test) {
-            validateExportedModel("${DATAMODEL_WITH_DATATYPES_FILENAME}.${exporterService.version}",
-                                  exported.replace(/Mauro Data Mapper/, 'Test Authority'))
-        } else true
-
-        where:
-        version << [
-            '2.0',
-            '3.0',
-            '3.1'
-        ]
-
-    }*/
-
-    /*@Unroll
-    void 'test load complete exported datamodel from cancer audit dataloader - #version'() {
-        given:
-        setupData()
-        String exported
-
-        expect:
-        DataModel.count() == 2
-
-        when:
-        Path testFilePath = resourcesPath.resolve("${COMPLETE_DATAMODEL_EXPORT_FILENAME}.${version}.$importType")
-        boolean test = Files.exists(testFilePath)
-
-        if (test) {
-            String xml = Files.readString(testFilePath)
-                .replaceAll(/"lastUpdated": "\$\{json-unit\.matches:offsetDateTime}"/, '')
-                .replaceAll(/"id": "\$\{json-unit.ignore}",/, '')
-            exported = importAndExport(xml.bytes)
-        } else log.info('{} does not exist, skipping', testFilePath)
-
-        then:
-        if (test) {
-            validateExportedModel("${COMPLETE_DATAMODEL_EXPORT_FILENAME}.${exporterService.version}",
-                                  exported.replace(/Mauro Data Mapper/, 'Test Authority'))
-        } else true
-
-        where:
-        version << [
-            '2.0',
-            '3.0'
-        ]
-    }*/
-
-    /*void 'test export and import complex DataModel'() {
+    void 'Y01: test export and import the bootstrapped DataFlow'() {
         given:
         setupData()
 
         expect:
         DataModel.count() == 2
+        DataFlow.count() == 1
 
         when:
-        String exported = exportModel(complexDataModelId)
+        String exported = exportModel(dataFlowId)
+        //Try comparing the expected result to the expected result
+        //Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, 'sampleDataFlow.xml')}")
+        //if (!Files.exists(expectedPath)) {
+        //    Files.write(expectedPath, exportedModel.bytes)
+        //    Assert.fail("Expected export file ${expectedPath} does not exist")
+        //}
+
+        //String exported = Files.readString(expectedPath)
 
         then:
-        validateExportedModel('complexDataModel', exported)
+        validateExportedModel('sampleDataFlow', exported)
 
         when:
-        DataModel imported = importerService.importDataModel(admin, exported.bytes)
+        DataFlow imported = dataFlowImporterService.importDataFlow(admin, exported.bytes)
 
         then:
         assert imported
 
         when:
-        imported.folder = testFolder
-        ObjectDiff diff = dataModelService.diff(dataModelService.get(complexDataModelId), imported)
+        ObjectDiff diff = dataFlowService.diff(dataFlowService.get(dataFlowId), imported)
 
         then:
         if (!diff.objectsAreIdentical()) {
             log.error('{}', diff.toString())
         }
         diff.objectsAreIdentical()
-    }*/
-
-    /*void 'test export and import simple DataModel'() {
-        given:
-        setupData()
-
-        expect:
-        DataModel.count() == 2
-
-        when:
-        String exported = exportModel(simpleDataModelId)
-
-        then:
-        validateExportedModel('simpleDataModel', exported)
-
-        when:
-        DataModel imported = importerService.importDataModel(admin, exported.bytes)
-
-        then:
-        assert imported
-
-        and:
-        imported.classifiers
-        imported.classifiers.size() == 1
-        imported.classifiers[0].label == 'test classifier simple'
-
-        when:
-        imported.folder = testFolder
-        ObjectDiff diff = dataModelService.diff(dataModelService.get(simpleDataModelId), imported)
-
-        then:
-        diff.objectsAreIdentical()
-    }*/
+    }
 
 }

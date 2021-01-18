@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -30,7 +31,8 @@ import groovy.util.logging.Slf4j
 import java.nio.charset.Charset
 
 @Slf4j
-class DataFlowJsonImporterService extends DataBindDataFlowImporterProviderService<DataFlowFileImporterProviderServiceParameters> {
+class DataFlowJsonImporterService extends DataBindDataFlowImporterProviderService<DataFlowFileImporterProviderServiceParameters> 
+    implements JsonImportMapping {
 
     @Override
     String getDisplayName() {
@@ -47,8 +49,7 @@ class DataFlowJsonImporterService extends DataBindDataFlowImporterProviderServic
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
-        log.debug('Parsing in file content using JsonSlurper')
-        def result = new JsonSlurper().parseText(new String(content, Charset.defaultCharset()))
+        def result = slurpAndClean(content)
         Map dataFlow = result.dataFlow
         if (!dataFlow) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataFlow is not present')
 

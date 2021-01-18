@@ -9,7 +9,7 @@ DataClassComponent dcc = dataClassComponent as DataClassComponent
     
     if (dcc.sourceDataClasses) {
         'mdm:sourceDataClasses' {
-            dcc.sourceDataClasses.each {dc ->
+            dcc.sourceDataClasses.sort{it.label}.each {dc ->
                 layout '/dataClassComponent/_exportDataClass.gml', dataClass: dc
             }
         }
@@ -17,7 +17,7 @@ DataClassComponent dcc = dataClassComponent as DataClassComponent
 
     if (dcc.targetDataClasses) {
         'mdm:targetDataClasses' {
-            dcc.targetDataClasses.each {dc ->
+            dcc.targetDataClasses.sort{it.label}.each {dc ->
                 layout '/dataClassComponent/_exportDataClass.gml', dataClass: dc
             }
         }
@@ -25,7 +25,7 @@ DataClassComponent dcc = dataClassComponent as DataClassComponent
 
     if (dcc.dataElementComponents) {
         'mdm:dataElementComponents' {
-            dcc.dataElementComponents.each {de ->
+            dcc.dataElementComponents.sort{it.label}.each {de ->
                 layout '/dataElementComponent/_export.gml', dataElementComponent: de
             }
         }

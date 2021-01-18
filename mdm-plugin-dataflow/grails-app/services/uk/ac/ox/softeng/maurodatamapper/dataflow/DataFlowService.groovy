@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -300,6 +301,10 @@ class DataFlowService extends ModelItemService<DataFlow> {
     List<DataFlow> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                               String searchTerm, String domainType) {
         []
+    }
+
+    ObjectDiff<DataFlow> diff(DataFlow thisDataFlow, DataFlow otherDataFlow) {
+        thisDataFlow.diff(otherDataFlow)
     }
 
    /**
