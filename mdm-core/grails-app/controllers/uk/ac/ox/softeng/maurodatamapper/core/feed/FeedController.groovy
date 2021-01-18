@@ -24,7 +24,7 @@ import grails.rest.RestfulController
 
 /**
  * Produce an ATOM feed of all Models. Only respond in ATOM format. To render the response in ATOM,
- * a bean needs to be configured in grails-app/conf/spring/resources.groovy as follows:
+ * beans need to be configured in uk.ac.ox.softeng.maurodatamapper.core.MdmCoreGrailsPlugin, like this:
  *
  * import uk.ac.ox.softeng.maurodatamapper.core.model.Model
  * import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmAtomModelCollectionRenderer
