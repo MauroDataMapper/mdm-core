@@ -26,18 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.
 class DataFlowAdditionalImporterProviderServiceParameters extends DataFlowFileImporterProviderServiceParameters {
 
     @ImportParameterConfig(
-        displayName = 'Author',
-        description = 'The author of the file, can be the same as the organisation',
-        optional = true,
-        order = 12,
-        group = @ImportGroupConfig(
-            name = 'DataFlow',
-            order = 0
-        )
-    )
-    String author
-
-    @ImportParameterConfig(
         displayName = 'DataFlow Description',
         description = 'The description of the DataFlow being imported',
         optional = true,
@@ -48,16 +36,4 @@ class DataFlowAdditionalImporterProviderServiceParameters extends DataFlowFileIm
         )
     )
     String description
-
-    @ImportParameterConfig(
-        displayName = 'Organisation',
-        description = 'The organisation which created the XSD',
-        optional = true,
-        order = 13,
-        group = @ImportGroupConfig(
-            name = 'DataFlow',
-            order = 0
-        )
-    )
-    String organisation
 }
