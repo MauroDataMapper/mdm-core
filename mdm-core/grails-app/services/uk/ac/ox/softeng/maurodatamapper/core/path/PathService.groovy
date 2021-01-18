@@ -22,14 +22,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.PathNode
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
-
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
@@ -62,7 +61,7 @@ class PathService {
                     if (service.handlesPathPrefix(node.typePrefix) && node.label) {
                         catalogueItem = service.findByLabel(node.label)
                         if (service instanceof ModelService) {
-                            catalogueItem = service.latest(node.label)
+                            catalogueItem = service.findLatestModelByLabel(node.label)
                         } else {
                             catalogueItem = service.findByLabel(node.label)
                         }

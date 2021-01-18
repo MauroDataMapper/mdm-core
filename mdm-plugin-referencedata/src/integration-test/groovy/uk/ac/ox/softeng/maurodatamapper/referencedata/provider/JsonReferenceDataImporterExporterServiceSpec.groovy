@@ -180,7 +180,7 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = referenceDataModelService.diff(referenceDataModelService.get(exampleReferenceDataModelId), imported)
+        ObjectDiff diff = referenceDataModelService.getDiffForModels(referenceDataModelService.get(exampleReferenceDataModelId), imported)
 
         then:
         diff.objectsAreIdentical()

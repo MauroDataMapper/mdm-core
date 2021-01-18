@@ -207,7 +207,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         right.branchName == 'right'
 
         when:
-        def commonAncestor = terminologyService.commonAncestor(left, right)
+        def commonAncestor = terminologyService.findCommonAncestorBetweenModels(left, right)
 
         then:
         commonAncestor.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
@@ -240,27 +240,27 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def latestVersion = terminologyService.latestFinalisedModel(testModel.label)
+        def latestVersion = terminologyService.findLatestFinalisedModelByLabel(testModel.label)
 
         then:
         latestVersion.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = terminologyService.latestFinalisedModel(draftModel.label)
+        latestVersion = terminologyService.findLatestFinalisedModelByLabel(draftModel.label)
 
         then:
         latestVersion.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = terminologyService.latestModelVersion(testModel.label)
+        latestVersion = terminologyService.getLatestModelVersionByLabel(testModel.label)
 
         then:
         latestVersion == Version.from('2')
 
         when:
-        latestVersion = terminologyService.latestModelVersion(draftModel.label)
+        latestVersion = terminologyService.getLatestModelVersionByLabel(draftModel.label)
 
         then:
         latestVersion == Version.from('2')
@@ -295,7 +295,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def currentMainBranch = terminologyService.currentMainBranch(testModel)
+        def currentMainBranch = terminologyService.findCurrentMainBranchForModel(testModel)
 
         then:
         currentMainBranch.id == draftModel.id
@@ -335,7 +335,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def availableBranches = terminologyService.availableBranches(terminology.label)
+        def availableBranches = terminologyService.findAllAvailableBranchesByLabel(terminology.label)
 
         then:
         availableBranches.size() == 2
@@ -364,7 +364,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         right.branchName == 'right'
 
         when:
-        def mergeDiff = terminologyService.mergeDiff(left, right)
+        def mergeDiff = terminologyService.getMergeDiffForModels(left, right)
 
         then:
         mergeDiff.diffs.size == 1

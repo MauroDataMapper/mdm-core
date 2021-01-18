@@ -207,7 +207,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!thisModel) return notFound(params[alternateParamsIdKey])
         if (!otherModel) return notFound(params.otherModelId)
 
-        ObjectDiff diff = getModelService().diff(thisModel, otherModel)
+        ObjectDiff diff = getModelService().getDiffForModels(thisModel, otherModel)
         respond diff
     }
 
@@ -218,21 +218,21 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T right = queryForResource params.otherModelId
         if (!right) return notFound(params.otherModelId)
 
-        respond modelService.commonAncestor(left, right)
+        respond modelService.findCommonAncestorBetweenModels(left, right)
     }
 
     def latestFinalisedModel() {
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
 
-        respond modelService.latestFinalisedModel(source.label)
+        respond modelService.findLatestFinalisedModelByLabel(source.label)
     }
 
     def latestModelVersion() {
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
 
-        respond modelService.latestModelVersion(source.label)
+        respond modelService.getLatestModelVersionByLabel(source.label)
     }
 
     def mergeDiff() {
@@ -243,7 +243,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T right = queryForResource params.otherModelId
         if (!right) return notFound(params.otherModelId)
 
-        respond modelService.mergeDiff(left, right)
+        respond modelService.getMergeDiffForModels(left, right)
     }
 
     @Transactional
@@ -267,7 +267,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!right) return notFound(params.otherModelId)
 
         T instance =
-            modelService.mergeInto(left, right, mergeIntoData.patch, currentUserSecurityPolicyManager) as T
+            modelService.mergeModelIntoModel(left, right, mergeIntoData.patch, currentUserSecurityPolicyManager) as T
 
         if (!validateResource(instance, 'update')) return
 
@@ -290,14 +290,14 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
 
-        respond modelService.currentMainBranch(source)
+        respond modelService.findCurrentMainBranchForModel(source)
     }
 
     def availableBranches() {
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
 
-        respond modelService.availableBranches(source.label)
+        respond modelService.findAllAvailableBranchesByLabel(source.label)
     }
 
     @Transactional

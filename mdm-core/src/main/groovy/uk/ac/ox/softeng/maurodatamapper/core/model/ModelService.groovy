@@ -100,8 +100,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
      * @param itemService Service which handles catalogueItems of the leftModel and rightModel type.
      * @return The model resulting from the merging of changes.
      */
-    K mergeInto(K leftModel, K rightModel, MergeObjectDiffData mergeObjectDiff,
-                UserSecurityPolicyManager userSecurityPolicyManager, itemService = this) {
+    K mergeModelIntoModel(K leftModel, K rightModel, MergeObjectDiffData mergeObjectDiff,
+                          UserSecurityPolicyManager userSecurityPolicyManager, itemService = this) {
 
         def item = itemService.get(mergeObjectDiff.leftId)
 
@@ -130,9 +130,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                 // for modifications, recursively call this method
                                 mergeFieldDiff.modified.each {
                                     obj ->
-                                        mergeInto(leftModel, rightModel, obj,
-                                                  userSecurityPolicyManager,
-                                                  metadataService)
+                                        mergeModelIntoModel(leftModel, rightModel, obj,
+                                                            userSecurityPolicyManager,
+                                                            metadataService)
                                 }
                             } else {
                                 ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
@@ -157,9 +157,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                     // for modifications, recursively call this method
                                     mergeFieldDiff.modified.each {
                                         obj ->
-                                            mergeInto(leftModel, rightModel, obj,
-                                                      userSecurityPolicyManager,
-                                                      modelItemService)
+                                            mergeModelIntoModel(leftModel, rightModel, obj,
+                                                                userSecurityPolicyManager,
+                                                                modelItemService)
                                     }
                                 }
                             }
@@ -184,11 +184,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract List<K> findAllByMetadataNamespace(String namespace)
 
-    ObjectDiff<K> diff(K thisModel, K otherModel) {
+    ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
         thisModel.diff(otherModel)
     }
 
-    K commonAncestor(K leftModel, K rightModel) {
+    K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
         // If left isnt finalised then get it's finalised parent
         if (!leftModel.finalised) {
             leftModel = get(VersionLinkService.findBySourceModelAndLinkType(leftModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
@@ -203,8 +203,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
     }
 
-    K latestFinalisedModel(String label) {
-        modelClass.byLabelAndFinalisedAndLatestModelVersion(label).get()
+    K findLatestFinalisedModelByLabel(String label) {
+        modelClass.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get() as K
     }
 
     /*
@@ -217,36 +217,40 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
      * Used by pathService when seeking the latest model by label.
      */
 
-    K latest(String label) {
-        Model latestModel = null
-        latestModel = modelClass.byLabelAndBranchNameAndNotFinalised(label, "main").get()
-        if (!latestModel) {
-            latestModel = modelClass.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, "main").get()
-        }
-
-        latestModel
+    K findLatestModelByLabel(String label) {
+        findCurrentMainBranchByLabel(label) ?: findLatestFinalisedModelByLabel(label)
     }
 
-    Version latestModelVersion(String label) {
-        latestFinalisedModel(label)?.modelVersion ?: Version.from('0.0.0')
+    /**
+     * Use findCurrentMainBranchByLabel instead
+     * @param model
+     * @return
+     */
+    @Deprecated
+    K findCurrentMainBranchForModel(K model) {
+        findCurrentMainBranchByLabel(model.label)
     }
 
-    ObjectDiff<K> mergeDiff(K leftModel, K rightModel) {
-        def commonAncestor = commonAncestor(leftModel, rightModel)
+    K findCurrentMainBranchByLabel(String label) {
+        modelClass.byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get() as K
+    }
+
+    List<K> findAllAvailableBranchesByLabel(String label) {
+        modelClass.byLabelAndNotFinalised(label).list() as List<K>
+    }
+
+    Version getLatestModelVersionByLabel(String label) {
+        findLatestFinalisedModelByLabel(label)?.modelVersion ?: Version.from('0.0.0')
+    }
+
+    ObjectDiff<K> getMergeDiffForModels(K leftModel, K rightModel) {
+        def commonAncestor = findCommonAncestorBetweenModels(leftModel, rightModel)
 
         def left = commonAncestor.diff(leftModel)
         def right = commonAncestor.diff(rightModel)
         def top = rightModel.diff(leftModel)
 
         top.mergeDiff(left, right)
-    }
-
-    K currentMainBranch(K model) {
-        modelClass.byLabelAndBranchNameAndNotFinalised(model.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
-    }
-
-    List<K> availableBranches(String label) {
-        modelClass.byLabelAndNotFinalised(label).list()
     }
 
     @Override

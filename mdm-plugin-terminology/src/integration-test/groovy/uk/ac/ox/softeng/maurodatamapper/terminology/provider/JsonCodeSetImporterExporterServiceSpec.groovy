@@ -193,7 +193,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = codeSetService.diff(codeSetService.get(simpleCodeSetId), imported)
+        ObjectDiff diff = codeSetService.getDiffForModels(codeSetService.get(simpleCodeSetId), imported)
 
         then:
         diff.objectsAreIdentical()

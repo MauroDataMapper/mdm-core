@@ -569,7 +569,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         right.branchName == 'right'
 
         when:
-        def commonAncestor = referenceDataModelService.commonAncestor(left, right)
+        def commonAncestor = referenceDataModelService.findCommonAncestorBetweenModels(left, right)
 
         then:
         commonAncestor.id == id
@@ -612,7 +612,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         draftModel.branchName == 'main'
         
         when:
-        def latestVersion = referenceDataModelService.latestFinalisedModel(testModel.label)
+        def latestVersion = referenceDataModelService.findLatestFinalisedModelByLabel(testModel.label)
 
         then:
         latestVersion.id == expectedModel.id
@@ -620,7 +620,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = referenceDataModelService.latestFinalisedModel(draftModel.label)
+        latestVersion = referenceDataModelService.findLatestFinalisedModelByLabel(draftModel.label)
 
         then:
         latestVersion.id == expectedModel.id
@@ -628,13 +628,13 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = referenceDataModelService.latestModelVersion(testModel.label)
+        latestVersion = referenceDataModelService.getLatestModelVersionByLabel(testModel.label)
 
         then:
         latestVersion == Version.from('2')
 
         when:
-        latestVersion = referenceDataModelService.latestModelVersion(draftModel.label)
+        latestVersion = referenceDataModelService.getLatestModelVersionByLabel(draftModel.label)
 
         then:
         latestVersion == Version.from('2')
@@ -706,7 +706,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         draftModel.branchName == 'main'
 
         when:
-        def currentMainBranch = referenceDataModelService.currentMainBranch(testModel)
+        def currentMainBranch = referenceDataModelService.findCurrentMainBranchForModel(testModel)
 
         then:
         currentMainBranch.id == draftModel.id
@@ -750,7 +750,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         draftModel.branchName == 'main'
 
         when:
-        def availableBranches = referenceDataModelService.availableBranches(dataModel.label)
+        def availableBranches = referenceDataModelService.findAllAvailableBranchesByLabel(dataModel.label)
 
         then:
         availableBranches.size() == 2

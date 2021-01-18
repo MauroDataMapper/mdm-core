@@ -222,7 +222,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = dataModelService.diff(dataModelService.get(complexDataModelId), imported)
+        ObjectDiff diff = dataModelService.getDiffForModels(dataModelService.get(complexDataModelId), imported)
 
         then:
         if (!diff.objectsAreIdentical()) {
@@ -257,7 +257,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = dataModelService.diff(dataModelService.get(simpleDataModelId), imported)
+        ObjectDiff diff = dataModelService.getDiffForModels(dataModelService.get(simpleDataModelId), imported)
 
         then:
         diff.objectsAreIdentical()

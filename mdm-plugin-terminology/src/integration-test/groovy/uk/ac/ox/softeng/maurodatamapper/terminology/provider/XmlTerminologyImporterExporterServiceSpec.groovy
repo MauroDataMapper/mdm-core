@@ -178,7 +178,7 @@ class XmlTerminologyImporterExporterServiceSpec extends BaseTerminologyIntegrati
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = terminologyService.diff(terminologyService.get(simpleTerminologyId), imported)
+        ObjectDiff diff = terminologyService.getDiffForModels(terminologyService.get(simpleTerminologyId), imported)
 
         then:
         diff.objectsAreIdentical()
@@ -210,7 +210,7 @@ class XmlTerminologyImporterExporterServiceSpec extends BaseTerminologyIntegrati
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = terminologyService.diff(terminologyService.get(complexTerminologyId), imported)
+        ObjectDiff diff = terminologyService.getDiffForModels(terminologyService.get(complexTerminologyId), imported)
 
         then:
         diff.objectsAreIdentical()
