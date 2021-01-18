@@ -25,12 +25,12 @@
       <xs:extension base="mdm:catalogueItem">
         <xs:sequence>
           <xs:element fixed="Data Asset" name="type" type="mdm:dataModelTypeEnum" />
-          <xs:element name="source" minOccurs="0" type="mdm:dataModelType">
+          <xs:element name="source" minOccurs="1" maxOccurs="1" type="mdm:dataModelType">
             <xs:annotation>
               <xs:documentation>The source DataModel</xs:documentation>
             </xs:annotation>
           </xs:element>
-          <xs:element name="target" minOccurs="0" type="mdm:dataModelType">
+          <xs:element name="target" minOccurs="1" maxOccurs="1" type="mdm:dataModelType">
             <xs:annotation>
               <xs:documentation>The target DataModel</xs:documentation>
             </xs:annotation>
