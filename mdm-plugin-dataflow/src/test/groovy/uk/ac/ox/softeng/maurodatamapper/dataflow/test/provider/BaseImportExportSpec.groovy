@@ -21,6 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow.test.provider
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.test.BaseDataFlowIntegrationSpec
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
 
 import grails.testing.spock.OnceBefore
 import grails.util.BuildSettings
@@ -68,15 +69,11 @@ abstract class BaseImportExportSpec extends BaseDataFlowIntegrationSpec {
 
     void confirmDataFlow(DataFlow dataFlow) {
         assert dataFlow
-        //TODO add confirmations for DataFlow
-        /* assert dataModel.label == 'National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery'
-        assert dataModel.modelType == DataModelType.DATA_STANDARD.label
-        assert dataModel.createdBy == admin.emailAddress
-        assert !dataModel.description
-        assert !dataModel.author
-        assert !dataModel.organisation
-        assert dataModel.breadcrumbTree
-        assert dataModel.breadcrumbTree.domainId == dataModel.id
-        assert dataModel.breadcrumbTree.label == dataModel.label*/
+        assert dataFlow.label == 'My DataFlow label'
+        assert dataFlow.modelType == DataModelType.DATA_ASSET.label
+        assert dataFlow.createdBy == admin.emailAddress
+        assert dataFlow.breadcrumbTree
+        assert dataFlow.breadcrumbTree.domainId == dataFlow.id
+        assert dataFlow.breadcrumbTree.label == dataFlow.label
     }
 }
