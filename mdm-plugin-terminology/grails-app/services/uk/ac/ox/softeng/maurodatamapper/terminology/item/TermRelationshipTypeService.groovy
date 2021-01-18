@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -92,8 +93,9 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
         TermRelationshipType.byTerminologyIdAndId(terminologyId, Utils.toUuid(id)).find()
     }
 
-    TermRelationshipType copy(Terminology copiedTerminology, TermRelationshipType original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTermRelationshipType(copiedTerminology, original, userSecurityPolicyManager.user)
+    @Override
+    TermRelationshipType copy(Model copiedTerminology, TermRelationshipType original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyTermRelationshipType(copiedTerminology as Terminology, original, userSecurityPolicyManager.user)
     }
 
     TermRelationshipType copyTermRelationshipType(Terminology copiedTerminology, TermRelationshipType original, User copier) {

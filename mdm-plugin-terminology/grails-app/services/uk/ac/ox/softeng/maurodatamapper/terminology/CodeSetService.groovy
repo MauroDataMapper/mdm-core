@@ -38,6 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -222,10 +223,10 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet mergeInto(CodeSet leftModel, CodeSet rightModel, MergeObjectDiffData mergeObjectDiff,
-                      UserSecurityPolicyManager userSecurityPolicyManager, CatalogueItemService catalogueItemService = this) {
+    CodeSet mergeModelIntoModel(CodeSet leftModel, CodeSet rightModel, MergeObjectDiffData mergeObjectDiff,
+                                UserSecurityPolicyManager userSecurityPolicyManager, DomainService itemService = this) {
 
-        CatalogueItem catalogueItem = catalogueItemService.catalogueItemClass.findById(mergeObjectDiff.leftId)
+        CatalogueItem catalogueItem = (itemService as CatalogueItemService).get(mergeObjectDiff.leftId)
 
         mergeObjectDiff.diffs.each {
             diff ->
@@ -251,16 +252,16 @@ class CodeSetService extends ModelService<CodeSet> {
                                 // apply deletions of children to target object
                                 mergeFieldDiff.deleted.each {
                                     obj ->
-                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        ModelItem modelItem = modelItemService.get(obj.id) as ModelItem
                                         modelItemService.delete(modelItem)
                                 }
 
-                                def parentId = modelItemService.class == catalogueItemService.class ? mergeObjectDiff.leftId : null
+                                def parentId = modelItemService.class == itemService.class ? mergeObjectDiff.leftId : null
 
                                 // copy additions from source to target object
                                 mergeFieldDiff.created.each {
                                     obj ->
-                                        def modelItem = modelItemService.get(obj.id) as ModelItem
+                                        ModelItem modelItem = modelItemService.get(obj.id) as ModelItem
                                         parentId ?
                                         modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager, parentId) :
                                         modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager)
@@ -268,9 +269,9 @@ class CodeSetService extends ModelService<CodeSet> {
                                 // for modifications, recursively call this method
                                 mergeFieldDiff.modified.each {
                                     obj ->
-                                        mergeInto(leftModel, rightModel, obj,
-                                                  userSecurityPolicyManager,
-                                                  modelItemService)
+                                        mergeModelIntoModel(leftModel, rightModel, obj,
+                                                            userSecurityPolicyManager,
+                                                            modelItemService)
                                 }
                             }
                         }

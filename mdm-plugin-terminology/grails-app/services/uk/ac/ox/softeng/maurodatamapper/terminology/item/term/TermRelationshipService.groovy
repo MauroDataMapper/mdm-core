@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -146,8 +147,8 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         TermRelationship.byTermIdHasHierarchy(termId).count()
     }
 
-    TermRelationship copy(Terminology terminology, TermRelationship original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTermRelationship(terminology, original, userSecurityPolicyManager.user)
+    TermRelationship copy(Model terminology, TermRelationship original, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId = null) {
+        copyTermRelationship(terminology as Terminology, original, userSecurityPolicyManager.user)
     }
 
     TermRelationship copyTermRelationship(Terminology terminology, TermRelationship original, User copier) {

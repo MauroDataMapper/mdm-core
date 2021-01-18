@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -41,7 +42,7 @@ import org.grails.datastore.gorm.GormEntity
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
-abstract class CatalogueItemService<K extends CatalogueItem> {
+abstract class CatalogueItemService<K extends CatalogueItem> implements DomainService<K> {
 
     @Autowired
     GrailsApplication grailsApplication
@@ -74,8 +75,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
 
     abstract void deleteAll(Collection<K> catalogueItems)
 
-    abstract void delete(K catalogueItem)
-
     K save(K catalogueItem) {
         // Default behaviours for save in GormEntity
         save(flush: false, validate: true, catalogueItem)
@@ -94,10 +93,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> {
         }
         catalogueItem
     }
-
-    abstract K get(Serializable id)
-
-    abstract List<K> list(Map args)
 
     /**
      * Use domain.getAll(ids) to retrieve objects from the database.

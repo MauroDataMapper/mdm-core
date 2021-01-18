@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 abstract class ModelItemService<K extends ModelItem> extends CatalogueItemService<K> {
 
@@ -31,4 +32,13 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     void deleteAllByModelId(UUID modelId) {
         throw new ApiNotYetImplementedException('MISXX', "deleteAllByModelId for ${getModelItemClass().simpleName}")
     }
+
+    K copy(Model copiedModel, K original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        throw new ApiNotYetImplementedException('MISXX', "copy [for ModelItem ${getModelItemClass().simpleName}]")
+    }
+
+    K copy(Model copiedModel, K original, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId) {
+        throw new ApiNotYetImplementedException('MISXX', "copy [for ModelItem ${getModelItemClass().simpleName}] (with parent id)")
+    }
+
 }

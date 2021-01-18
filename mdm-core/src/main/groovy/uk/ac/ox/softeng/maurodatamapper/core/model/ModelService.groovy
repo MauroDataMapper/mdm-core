@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -101,7 +102,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
      * @return The model resulting from the merging of changes.
      */
     K mergeModelIntoModel(K leftModel, K rightModel, MergeObjectDiffData mergeObjectDiff,
-                          UserSecurityPolicyManager userSecurityPolicyManager, itemService = this) {
+                          UserSecurityPolicyManager userSecurityPolicyManager, DomainService itemService = this) {
 
         def item = itemService.get(mergeObjectDiff.leftId)
 
@@ -125,7 +126,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                 mergeFieldDiff.created.each {
                                     obj ->
                                         def metadata = metadataService.get(obj.id)
-                                        metadataService.copy(item, metadata, userSecurityPolicyManager)
+                                        metadataService.copy(item as CatalogueItem, metadata, userSecurityPolicyManager)
                                 }
                                 // for modifications, recursively call this method
                                 mergeFieldDiff.modified.each {

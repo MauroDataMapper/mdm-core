@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -503,9 +504,10 @@ class DataClassService extends ModelItemService<DataClass> {
 
     }
 
-    DataClass copy(DataModel copiedDataModel, DataClass original, UserSecurityPolicyManager userSecurityPolicyManager,
-                   Serializable parentDataClassId = null) {
-        copyDataClass(copiedDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager, parentDataClassId)
+    @Override
+    DataClass copy(Model copiedDataModel, DataClass original, UserSecurityPolicyManager userSecurityPolicyManager,
+                   UUID parentDataClassId = null) {
+        copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager, parentDataClassId)
     }
 
     DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier,
