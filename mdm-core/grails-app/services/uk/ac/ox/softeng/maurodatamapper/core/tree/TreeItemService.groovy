@@ -261,21 +261,21 @@ class TreeItemService {
             long start1 = System.currentTimeMillis()
             List<? extends Model> readableModels = service.findAllReadableModels(userSecurityPolicyManager, includeDocumentSuperseded,
                                                                                  includeModelSuperseded, includeDeleted).sort()
-            log.debug('Readable models took: {}', Utils.timeTaken(start1))
+            log.trace('Readable models took: {}', Utils.timeTaken(start1))
 
             long start2 = System.currentTimeMillis()
             List<UUID> modelsWithChildren = service.findAllModelIdsWithTreeChildren(readableModels)
-            log.debug('Identifying models with children took: {}', Utils.timeTaken(start2))
+            log.trace('Identifying models with children took: {}', Utils.timeTaken(start2))
 
             long start3 = System.currentTimeMillis()
             List<UUID> supersededModels = service.findAllSupersededModelIds(readableModels)
-            log.debug('Identifying superseded models took: {}', Utils.timeTaken(start3))
+            log.trace('Identifying superseded models took: {}', Utils.timeTaken(start3))
 
             long start4 = System.currentTimeMillis()
             List<ModelTreeItem> treeItems = readableModels.collect { model ->
                 new ModelTreeItem(model, containerPropertyName, modelsWithChildren.contains(model.ident()), supersededModels.contains(model.ident()))
             }
-            log.debug('Listing tree items took: {}', Utils.timeTaken(start4))
+            log.trace('Listing tree items took: {}', Utils.timeTaken(start4))
 
             // Group by label to determine if branch name should be shown
             Map labelGrouping = treeItems.groupBy { it.label }
@@ -290,7 +290,7 @@ class TreeItemService {
                     grouped.each { it.branchName = null }
                 }
             }
-            log.debug('Branch name determination took: {}', Utils.timeTaken(start4))
+            log.trace('Branch name determination took: {}', Utils.timeTaken(start4))
 
             readableTreeItems.addAll(labelGrouping.collectMany { it.value })
             log.debug('Complete listing of {} took: {}', service.modelClass.simpleName, Utils.timeTaken(start1))
