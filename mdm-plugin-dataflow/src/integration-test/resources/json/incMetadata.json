@@ -6,9 +6,9 @@
         "metadata": [
             {
               "id": "${json-unit.ignore}",
-              "key": "SCTSImport",
-              "namespace": "ox.softeng.maurodatamapper.dataloaders.cancer.audits",
-              "value": "0.1",
+              "key": "Metadata key",
+              "namespace": "Metadata namespace",
+              "value": "Metadata value",
               "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
         ],        

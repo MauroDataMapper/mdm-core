@@ -2,16 +2,18 @@
     "dataFlow": {
         "id": "7d2c95e0-08ec-4e44-8791-87f649e54156",
         "label": "My DataFlow label",
-        "lastUpdated": "2021-01-13T13:09:26.532Z",
-        "annotations": [
+        "classifiers": [
             {
-              "id": "${json-unit.ignore}",
-              "createdBy": "admin@maurodatamapper.com",
-              "lastUpdated": "${json-unit.matches:offsetDateTime}",
-              "label": "Annotation label",
-              "description": "Annotation description"
+              "id": "${json-unit.matches:id}",
+              "label": "test classifier import",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
+            },
+            {
+              "id": "${json-unit.matches:id}",
+              "label": "test classifier import 2",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}"
             }
-        ],
+        ],         
         "type": "Data Asset",
         "source": {
             "id": "1e2c95e0-08ec-4e44-8791-87f649e54156",
