@@ -22,6 +22,7 @@
   <mdm:dataFlow>
     <mdm:id>33ac687c-1e96-4037-9906-93b7ca2f346b</mdm:id>
     <mdm:label>My DataFlow label</mdm:label>
+    <mdm:lastUpdated>2021-01-12T16:29:51.179Z</mdm:lastUpdated>
     <mdm:metadata>
       <mdm:metadata>
         <mdm:id>d8c462c4-fc11-4d88-91b3-301cb2a9357f</mdm:id>
@@ -32,6 +33,16 @@
       </mdm:metadata>
     </mdm:metadata>    
     <mdm:type>Data Asset</mdm:type>
+    <mdm:source>
+      <mdm:id>12bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
+      <mdm:label>SourceFlowDataModel</mdm:label>
+      <mdm:type>Data Asset</mdm:type>
+    </mdm:source>
+    <mdm:target>
+      <mdm:id>58bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
+      <mdm:label>TargetFlowDataModel</mdm:label>
+      <mdm:type>Data Asset</mdm:type>
+    </mdm:target> 
   </mdm:dataFlow>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>

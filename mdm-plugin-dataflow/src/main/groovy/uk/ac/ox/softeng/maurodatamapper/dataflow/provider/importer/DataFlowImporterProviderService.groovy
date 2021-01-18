@@ -68,19 +68,16 @@ abstract class DataFlowImporterProviderService<T extends DataFlowImporterProvide
     }
 
     DataFlow checkImport(User currentUser, DataFlow dataFlow, boolean finalised, boolean importAsNewDocumentationVersion) {
-        //dataFlowService.checkfinaliseModel(dataFlow, finalised)
-        //dataFlowService.checkDocumentationVersion(dataFlow, importAsNewDocumentationVersion, currentUser)
         classifierService.checkClassifiers(currentUser, dataFlow)
 
-        /*dataFlow.dataClasses?.each { dc ->
-            classifierService.checkClassifiers(currentUser, dc)
-            dc.dataElements?.each { de ->
-                classifierService.checkClassifiers(currentUser, de)
+        dataFlow.dataClassComponents?.each { dcc ->
+            classifierService.checkClassifiers(currentUser, dcc)
+
+            dcc.dataElementComponents?.each { dec ->
+                classifierService.checkClassifiers(currentUser, dec)
             }
         }
-        dataFlow.dataTypes?.each { dt ->
-            classifierService.checkClassifiers(currentUser, dt)
-        }*/
+
         dataFlow
     }
 }

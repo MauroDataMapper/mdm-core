@@ -1,0 +1,36 @@
+{
+    "dataFlow": {
+        "id": "7d2c95e0-08ec-4e44-8791-87f649e54156",
+        "label": "My DataFlow label",
+        "lastUpdated": "2021-01-13T13:09:26.532Z",
+        "annotations": [
+            {
+              "id": "${json-unit.ignore}",
+              "createdBy": "admin@maurodatamapper.com",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "label": "Link to NHS Data Dictionary element",
+              "description": "http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1"
+            }
+        ],
+        "type": "Data Asset",
+        "source": {
+            "id": "1e2c95e0-08ec-4e44-8791-87f649e54156",
+            "label": "SourceFlowDataModel",
+            "type": "Data Asset"
+        },
+        "target": {
+            "id": "2d2c95e0-08ec-4e44-8791-87f649e54156",
+            "label": "TargetFlowDataModel",
+            "type": "Data Asset"
+        }
+    },
+    "exportMetadata": {
+        "exportedBy": "Admin User",
+        "exportedOn": "2021-01-14T16:51:54.623Z",
+        "exporter": {
+            "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+            "name": "DataFlowJsonExporterService",
+            "version": "3.0"
+        }
+    }
+}

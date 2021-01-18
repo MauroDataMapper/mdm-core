@@ -116,7 +116,10 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         where:
         testName << [
             'incSourceAndTarget',
-            'incDataClassComponents'
+            'incDataClassComponents',
+            'incDataClassComponentsAndClassifiers',
+            'incMetadata',
+            'incAnnotation'
         ]
     }
 
@@ -131,14 +134,6 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         when:
         String exported = exportModel(dataFlowId)
-        //Try comparing the expected result to the expected result
-        //Path expectedPath = resourcesPath.resolve("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, 'sampleDataFlow.xml')}")
-        //if (!Files.exists(expectedPath)) {
-        //    Files.write(expectedPath, exportedModel.bytes)
-        //    Assert.fail("Expected export file ${expectedPath} does not exist")
-        //}
-
-        //String exported = Files.readString(expectedPath)
 
         then:
         validateExportedModel('sampleDataFlow', exported)

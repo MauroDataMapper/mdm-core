@@ -23,6 +23,16 @@
     <mdm:id>33ac687c-1e96-4037-9906-93b7ca2f346b</mdm:id>
     <mdm:label>My DataFlow label</mdm:label>
     <mdm:type>Data Asset</mdm:type>
+    <mdm:source>
+      <mdm:id>12bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
+      <mdm:label>SourceFlowDataModel</mdm:label>
+      <mdm:type>Data Asset</mdm:type>
+    </mdm:source>
+    <mdm:target>
+      <mdm:id>58bd687c-1e96-7034-9906-93b7ca2f346b</mdm:id>
+      <mdm:label>TargetFlowDataModel</mdm:label>
+      <mdm:type>Data Asset</mdm:type>
+    </mdm:target>        
   </mdm:dataFlow>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>
