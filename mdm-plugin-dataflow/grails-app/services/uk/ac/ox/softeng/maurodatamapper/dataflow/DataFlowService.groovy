@@ -329,31 +329,28 @@ class DataFlowService extends ModelItemService<DataFlow> {
         checkFacetsAfterImportingCatalogueItem(dataFlow)
 
         //source and target data model are imported by use of a path like "dm:my-data-model"
-        if (bindingMap.source && bindingMap.source.label) {
+        String sourcePath = "dm:${bindingMap.source.label}"
+        DataModel sourceDataModel = pathService.findCatalogueItemByPath(
+            PublicAccessSecurityPolicyManager.instance, 
+            [path: sourcePath, catalogueItemDomainType: DataModel.simpleName]
+        )
 
-            DataModel sourceDataModel = pathService.findCatalogueItemByPath(
-                PublicAccessSecurityPolicyManager.instance, 
-                [path: "dm:${bindingMap.source.label}", catalogueItemDomainType: DataModel.simpleName]
-            )
-
-            if (sourceDataModel) {
-                dataFlow.source = sourceDataModel
-            } else {
-                throw new ApiBadRequestException('DFI01', "Source DataModel retrieval for ${bindingMap.source.label} failed")
-            }
+        if (sourceDataModel) {
+            dataFlow.source = sourceDataModel
+        } else {
+            throw new ApiBadRequestException('DFI01', "Source DataModel retrieval for ${sourcePath} failed")
         }
+        
+        String targetPath = "dm:${bindingMap.target.label}"
+        DataModel targetDataModel = pathService.findCatalogueItemByPath(
+            PublicAccessSecurityPolicyManager.instance, 
+            [path: targetPath, catalogueItemDomainType: DataModel.simpleName]
+        )
 
-        if (bindingMap.target && bindingMap.target.label) {
-            DataModel targetDataModel = pathService.findCatalogueItemByPath(
-                PublicAccessSecurityPolicyManager.instance, 
-                [path: "dm:${bindingMap.target.label}", catalogueItemDomainType: DataModel.simpleName]
-            )
-
-            if (targetDataModel) {
-                dataFlow.target = targetDataModel
-            } else {
-                throw new ApiBadRequestException('DFI02', "Target DataModel retrieval for ${bindingMap.target.label} failed")
-            }
+        if (targetDataModel) {
+            dataFlow.target = targetDataModel
+        } else {
+            throw new ApiBadRequestException('DFI02', "Target DataModel retrieval for ${targetPath} failed")
         }
 
         //Check associations for the dataClassComponents

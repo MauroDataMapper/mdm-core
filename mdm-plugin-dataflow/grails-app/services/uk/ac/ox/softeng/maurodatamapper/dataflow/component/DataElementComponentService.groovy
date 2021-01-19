@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -243,7 +244,8 @@ TODO data flow copying
      * @param dataClassComponent The DataClassComponent to be imported
      * @param dataElementComponent The DataElementComponent to be imported
      */
-    void checkImportedDataElementComponentAssociations(User importingUser, DataClassComponent dataClassComponent,
+    void checkImportedDataElementComponentAssociations(User importingUser, DataFlow dataFlow,
+                                                       DataClassComponent dataClassComponent,
                                                        DataElementComponent dataElementComponent) {
 
         dataElementComponent.createdBy = importingUser.emailAddress
@@ -253,10 +255,10 @@ TODO data flow copying
         Set<DataElement> resolvedSourceDataElements = []
 
         rawSourceDataElements.each { sde ->
-            String path = "dc:${sde.dataClass.label}|de:${sde.label}"
+            String path = "dm:${dataFlow.source.label}|dc:${sde.dataClass.label}|de:${sde.label}"
             DataElement sourceDataElement = pathService.findCatalogueItemByPath(
                     PublicAccessSecurityPolicyManager.instance,
-                    [path: path, catalogueItemDomainType: DataClass.simpleName]
+                    [path: path, catalogueItemDomainType: DataModel.simpleName]
             )
 
             if (sourceDataElement) {
@@ -272,10 +274,10 @@ TODO data flow copying
         Set<DataElement> resolvedTargetDataElements = []
 
         rawTargetDataElements.each { tde ->
-            String path = "dc:${tde.dataClass.label}|de:${tde.label}"
+            String path = "dm:${dataFlow.target.label}|dc:${tde.dataClass.label}|de:${tde.label}"
             DataElement targetDataElement = pathService.findCatalogueItemByPath(
                     PublicAccessSecurityPolicyManager.instance,
-                    [path: path, catalogueItemDomainType: DataClass.simpleName]
+                    [path: path, catalogueItemDomainType: DataModel.simpleName]
             )
 
             if (targetDataElement) {

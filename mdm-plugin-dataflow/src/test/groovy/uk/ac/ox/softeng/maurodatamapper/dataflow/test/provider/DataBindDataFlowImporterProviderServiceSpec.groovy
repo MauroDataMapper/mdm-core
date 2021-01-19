@@ -226,4 +226,132 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
 
     }
 
+    void 'I08 : test import with failed pathing on source model'() {
+        given:
+        setupData()
+
+        expect:
+        DataFlow.count() == 1
+
+        when:
+        DataFlow df = importAndConfirm(loadTestFile('invalidSource'))
+
+        then:
+        DataFlow.count() == 1
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('Source DataModel retrieval for dm:Invalid SourceFlowDataModel failed')
+    }
+
+    void 'I09 : test import with failed pathing on target model'() {
+        given:
+        setupData()
+
+        expect:
+        DataFlow.count() == 1
+
+        when:
+        DataFlow df = importAndConfirm(loadTestFile('invalidTarget'))
+
+        then:
+        DataFlow.count() == 1
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('Target DataModel retrieval for dm:Invalid TargetFlowDataModel failed')
+    }    
+
+    void 'I10 : test import with failed pathing on a source dataclass'() {
+        given:
+        setupData()
+
+        expect:
+        DataFlow.count() == 1
+
+        when:
+        DataFlow df = importAndConfirm(loadTestFile('invalidSourceDataClass'))
+
+        then:
+        DataFlow.count() == 1
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('Source DataClass retrieval for dm:SourceFlowDataModel|dc:Invalid tableB failed')
+    }
+
+    void 'I11 : test import with failed pathing on a target dataclass'() {
+        given:
+        setupData()
+
+        expect:
+        DataFlow.count() == 1
+
+        when:
+        DataFlow df = importAndConfirm(loadTestFile('invalidTargetDataClass'))
+
+        then:
+        DataFlow.count() == 1
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('Target DataClass retrieval for dm:TargetFlowDataModel|dc:Invalid tableD failed')
+    }
+
+    void 'I12 : test import with failed pathing on a source dataelement'() {
+        given:
+        setupData()
+
+        expect:
+        DataFlow.count() == 1
+
+        when:
+        DataFlow df = importAndConfirm(loadTestFile('invalidSourceDataElement1'))
+
+        then:
+        DataFlow.count() == 1
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('Source DataElement retrieval for dm:SourceFlowDataModel|dc:tableA|de:Invalid columnA failed')
+    }     
+
+    void 'I13 : test import with failed pathing on a source dataelement when the dataclass label is wrong'() {
+        given:
+        setupData()
+
+        expect:
+        DataFlow.count() == 1
+
+        when:
+        DataFlow df = importAndConfirm(loadTestFile('invalidSourceDataElement2'))
+
+        then:
+        DataFlow.count() == 1
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('Source DataElement retrieval for dm:SourceFlowDataModel|dc:Invalid tableA|de:columnA failed')
+    }   
+
+    void 'I14 : test import with failed pathing on a target dataelement'() {
+        given:
+        setupData()
+
+        expect:
+        DataFlow.count() == 1
+
+        when:
+        DataFlow df = importAndConfirm(loadTestFile('invalidTargetDataElement1'))
+
+        then:
+        DataFlow.count() == 1
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('Target DataElement retrieval for dm:TargetFlowDataModel|dc:tableD|de:Invalid columnN failed')
+    }     
+
+    void 'I15 : test import with failed pathing on a target dataelement when the dataclass label is wrong'() {
+        given:
+        setupData()
+
+        expect:
+        DataFlow.count() == 1
+
+        when:
+        DataFlow df = importAndConfirm(loadTestFile('invalidTargetDataElement2'))
+
+        then:
+        DataFlow.count() == 1
+        ApiBadRequestException exception = thrown(ApiBadRequestException)
+        exception.message.contains('Target DataElement retrieval for dm:TargetFlowDataModel|dc:Invalid tableD|de:columnN failed')
+    }          
+
 }

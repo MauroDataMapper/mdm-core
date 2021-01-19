@@ -264,7 +264,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
         if (dataClassComponent.dataElementComponents) {
             dataClassComponent.dataElementComponents.each { dec ->
-                dataElementComponentService.checkImportedDataElementComponentAssociations(importingUser, dataClassComponent, dec)
+                dataElementComponentService.checkImportedDataElementComponentAssociations(importingUser, dataFlow, dataClassComponent, dec)
             }
         }
     }
