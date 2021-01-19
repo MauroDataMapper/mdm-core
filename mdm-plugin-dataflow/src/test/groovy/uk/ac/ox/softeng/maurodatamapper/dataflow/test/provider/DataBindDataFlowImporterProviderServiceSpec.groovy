@@ -54,7 +54,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         DataFlow imported = dataFlowImporterService.importDataFlow(admin, bytes)
         assert imported
 
-        dataFlowImporterService.checkImport(admin, imported, false, false)
+        dataFlowImporterService.checkImport(admin, imported)
         check(imported)
         
         dataFlowService.save(imported)

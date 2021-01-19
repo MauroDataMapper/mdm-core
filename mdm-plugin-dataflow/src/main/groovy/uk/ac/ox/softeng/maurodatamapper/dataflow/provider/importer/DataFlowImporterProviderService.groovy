@@ -52,14 +52,14 @@ abstract class DataFlowImporterProviderService<T extends DataFlowImporterProvide
         DataFlow dataFlow = importDataFlow(currentUser, params)
         if (!dataFlow) return null
         if (params.modelName) dataFlow.label = params.modelName
-        checkImport(currentUser, dataFlow, params.finalised, params.importAsNewDocumentationVersion)
+        checkImport(currentUser, dataFlow)
     }
 
     @CompileDynamic
     @Override
     List<DataFlow> importDomains(User currentUser, T params) {
         List<DataFlow> dataFlows = importDataFlows(currentUser, params)
-        dataFlows?.collect { checkImport(currentUser, it, params.finalised, params.importAsNewDocumentationVersion) }
+        dataFlows?.collect { checkImport(currentUser, it) }
     }
 
     @Override
@@ -67,7 +67,7 @@ abstract class DataFlowImporterProviderService<T extends DataFlowImporterProvide
         "DataFlow${ProviderType.IMPORTER.name}"
     }
 
-    DataFlow checkImport(User currentUser, DataFlow dataFlow, boolean finalised, boolean importAsNewDocumentationVersion) {
+    DataFlow checkImport(User currentUser, DataFlow dataFlow) {
         classifierService.checkClassifiers(currentUser, dataFlow)
 
         dataFlow.dataClassComponents?.each { dcc ->

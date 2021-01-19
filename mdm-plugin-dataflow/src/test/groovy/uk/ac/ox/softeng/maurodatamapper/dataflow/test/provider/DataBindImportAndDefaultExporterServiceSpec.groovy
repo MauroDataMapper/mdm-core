@@ -59,7 +59,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
 
         assert imported
         log.info('Checking imported DataFlow')
-        dataFlowImporterService.checkImport(admin, imported, false, false)
+        dataFlowImporterService.checkImport(admin, imported)
         check(imported)
         log.info('Saving imported DataFlow')
         assert dataFlowService.save(imported)
