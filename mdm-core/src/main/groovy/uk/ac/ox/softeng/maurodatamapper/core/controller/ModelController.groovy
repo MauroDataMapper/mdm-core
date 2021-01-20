@@ -705,9 +705,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         VersionLinkService versionLinkService = new VersionLinkService()
 
-        List<VersionTreeModel> versionTreeModelList = [new VersionTreeModel(instance, null)]
+        T oldestAncestor = modelService.findOldestAncestor(instance)
 
-        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
+        List<VersionTreeModel> versionTreeModelList = [new VersionTreeModel(oldestAncestor, null)]
+
+        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(oldestAncestor.id)
 
         for (link in versionLinks){
             T linkedModel = queryForResource link.catalogueItemId

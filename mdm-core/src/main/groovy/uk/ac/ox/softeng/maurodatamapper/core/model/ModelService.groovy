@@ -660,4 +660,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     void setModelIsFromModel(K source, K target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
+
+    Model findOldestAncestor(K model){
+        VersionLink versionLink = versionLinkService.findBySourceModel(model)
+        if (!versionLink)
+            return model
+        Model parentModel = get(versionLink.targetModelId)
+        findOldestAncestor(parentModel)
+    }
 }
