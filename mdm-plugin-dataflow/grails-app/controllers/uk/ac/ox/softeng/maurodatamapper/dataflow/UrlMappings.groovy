@@ -30,7 +30,6 @@ class UrlMappings {
             "/dataModels/${dataModelId}/dataFlows"(resources: 'dataFlow', excludes: DEFAULT_EXCLUDES) {
 
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataFlow', action: 'exportDataFlow')
-                post "/import/$importerNamespace/$importerName/$importerVersion"(controller: 'dataFlow', action: 'importDataFlow')
 
                 put '/diagramLayout'(controller: 'dataFlow', action: 'updateDiagramLayout')
 
@@ -55,7 +54,9 @@ class UrlMappings {
                     get '/exporters'(controller: 'dataFlow', action: 'exporterProviders') // new url
                     get '/importers'(controller: 'dataFlow', action: 'importerProviders') // new url
                 }
+            }
 
+            group "/dataModels/${dataModelId}/dataFlows", {
                 post "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataFlow', action: 'exportDataFlows')
                 post "/import/$importerNamespace/$importerName/$importerVersion"(controller: 'dataFlow', action: 'importDataFlows')
             }

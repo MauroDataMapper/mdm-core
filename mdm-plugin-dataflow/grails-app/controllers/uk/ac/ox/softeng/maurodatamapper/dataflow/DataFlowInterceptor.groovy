@@ -39,12 +39,12 @@ class DataFlowInterceptor extends DataModelSecuredInterceptor {
         if (actionName in ['exporterProviders']) {
             return true
         }
-            
-        performChecks()
 
         if (actionName in ['importerProviders']) {
             return currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToNotAuthenticated()
-        }
+        }        
+            
+        performChecks()
 
         boolean canReadDataModel = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.dataModelId)
 

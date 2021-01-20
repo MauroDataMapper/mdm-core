@@ -18,19 +18,33 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter.DataFlowExporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.DataFlowImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
+import grails.web.mime.MimeType
+import grails.gorm.transactions.Transactional
 
 import groovy.util.logging.Slf4j
 import org.grails.web.json.JSONArray
+import org.grails.web.json.JSONObject
 
+import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
+
+import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 @SuppressWarnings('GroovyAssignabilityCheck')
 @Slf4j
 class DataFlowController extends EditLoggingController<DataFlow> {
@@ -45,23 +59,21 @@ class DataFlowController extends EditLoggingController<DataFlow> {
 
     @Autowired(required = false)
     Set<DataFlowExporterProviderService> exporterProviderServices
-    //
-    //    @Autowired(required = false)
-    //    Set<DataFlowImporterProviderService> importerProviderServices
+
+    @Autowired(required = false)
+    Set<DataFlowImporterProviderService> importerProviderServices
 
     DataFlowController() {
         super(DataFlow)
     }
 
-    Set<ImporterProviderService> getImporterProviderServices() {
-        [] as Set
-    }
-
     def exporterProviders() {
+        log.debug("exporterProviders")
         respond exporterProviders: getExporterProviderServices()
     }
 
     def importerProviders() {
+        log.debug("importerProviders")
         respond importerProviders: getImporterProviderServices()
     }
 
@@ -101,13 +113,20 @@ class DataFlowController extends EditLoggingController<DataFlow> {
         }
 
         def json = request.getJSON()
-        List<String> dataFlowIds = []
-        if (json && json instanceof JSONArray) {
-            dataFlowIds = json
+        params.dataFlowIds = []
+        if (json) {
+            if (json instanceof JSONObject) {
+                params.dataFlowIds = json.dataFlowIds.collect {Utils.toUuid(it)}
+            }
+            if (json instanceof JSONArray) {
+                params.dataFlowIds = json.collect {Utils.toUuid(it)}
+            }
         }
 
+        if (!params.dataFlowIds) throw new ApiBadRequestException('DMIXX', 'DataFlowIds must be supplied in the request body')
+
         if (!exporter.canExportMultipleDomains()) {
-            params.dataFlowId = dataFlowIds.first()
+            params.dataFlowId = params.dataFlowIds.first()
             return exportDataFlow()
         }
 
@@ -122,115 +141,133 @@ class DataFlowController extends EditLoggingController<DataFlow> {
         render(file: outputStream.toByteArray(), fileName: "DataFlows.${exporter.fileExtension}", contentType: exporter.fileType)
     }
 
-    /*
-        @Transactional
-        def importDataFlow() throws ApiException {
-            ImporterProviderService importer = mauroDataMapperServiceProviderService.findImporterProvider(
-                params.importerNamespace, params.importerName, params.importerVersion
-            ) as ImporterProviderService
-            if (!importer) {
-                notFound(ImporterProviderService, "${params.importerNamespace}:${params.importerName}:${params.importerVersion}"
-                )
-                return
-            }
+    private findImporter() {
+        DataFlowImporterProviderService importer = mauroDataMapperServiceProviderService.findImporterProvider(
+            params.importerNamespace, params.importerName, params.importerVersion
+        ) as DataFlowImporterProviderService
+    }
 
-            ModelImporterProviderServiceParameters importerProviderServiceParameters
+    private onImporterNotFound() {
+        notFound(DataFlowImporterProviderService, "${params.importerNamespace}:${params.importerName}:${params.importerVersion}")
+    }
 
-            if (request.contentType.startsWith(MimeType.MULTIPART_FORM.name)) {
-                importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(
-                    importer, request as AbstractMultipartHttpServletRequest)
-            } else {
-                importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(importer, request)
-            }
+    @Transactional
+    def importDataFlow() throws ApiException {
+        DataFlowImporterProviderService importer = findImporter()
 
-            def errors = importerService.validateParameters(importerProviderServiceParameters as ModelImporterProviderServiceParameters,
-                                                            importer.importerProviderServiceParametersClass)
-
-            if (errors.hasErrors()) {
-                transactionStatus.setRollbackOnly()
-                respond errors
-                return
-            }
-
-            DataFlow dataFlow = importerService.importDataFlow(currentUser, importer, importerPluginParameters)
-
-            if (!dataFlow) {
-                transactionStatus.setRollbackOnly()
-                return errorResponse(UNPROCESSABLE_ENTITY, 'No DataFlow imported')
-            }
-
-            dataFlow.validate()
-
-            if (dataFlow.hasErrors()) {
-                transactionStatus.setRollbackOnly()
-                respond dataFlow.errors
-                return
-            }
-
-            log.debug('No errors in imported DataFlow')
-
-            dataFlow.save(flush: true, validate: false)
-
-            log.debug('Saved models')
-
-            respond dataFlow, status: CREATED, view: params.boolean('returnList') ? 'index' : 'show'
+        if (!importer) {
+            onImporterNotFound()
+            return
         }
 
-        @Transactional
-        def importDataFlows() throws ApiException {
-            if (!isContextWriteable()) return unauthorised()
+        DataFlowImporterProviderServiceParameters importerProviderServiceParameters
 
-            DataFlowImporterPlugin importer = metadataCataloguePluginService.findDataFlowImporter(params.importerNamespace,
-                                                                                                  params.importerName, params.importerVersion)
-            if (!importer) return notFound("${params.importerNamespace}:${params.importerName}:${params.importerVersion}")
-
-            if (!request.contentType.startsWith(MimeType.MULTIPART_FORM.name)) {
-                return errorResponse(BAD_REQUEST, 'Request is not a multipart/form-data')
-            }
-
-            // Default through to importing single model
-            // This may result in errors due to file containing multiple models, but that should be handled
-            if (!importer.canImportMultipleDomains()) {
-                params.returnList = true
-                return importDataFlow()
-            }
-
-            // Otherwise import multiple models
-            DataFlowImporterPluginParameters importerPluginParameters = importerService.extractImporterPluginParameters(
+        if (request.contentType.startsWith(MimeType.MULTIPART_FORM.name)) {
+            importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(
                 importer, request as AbstractMultipartHttpServletRequest)
-
-            def errors = importerService.validateParameters(importerPluginParameters, importer.importerPluginParametersClass)
-
-            if (errors.hasErrors()) {
-                transactionStatus.setRollbackOnly()
-                respond errors
-                return
-            }
-
-            List<DataFlow> result = importerService.importDataFlows(currentUser, importer, importerPluginParameters)
-
-            if (!result) {
-                transactionStatus.setRollbackOnly()
-                return errorResponse(UNPROCESSABLE_ENTITY, 'No DataFlows imported')
-            }
-
-            result*.validate()
-
-            if (result.any {it.hasErrors()}) {
-                log.debug('Errors found in imported DataFlows')
-                transactionStatus.setRollbackOnly()
-                respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
-                return
-            }
-
-            log.debug('No errors in imported models')
-            result*.save(flush: true, validate: false)
-            log.debug('Saved all models')
-
-            respond result, status: CREATED, view: 'index'
-
+        } else {
+            importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(importer, request)
         }
-    */
+
+        def errors = importerService.validateParameters(importerProviderServiceParameters as DataFlowImporterProviderServiceParameters,
+                                                        importer.importerProviderServiceParametersClass)
+
+        if (errors.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond errors
+            return
+        }
+
+        DataFlow dataFlow = importer.importDomain(currentUser, importerProviderServiceParameters)
+
+        if (!dataFlow) {
+            transactionStatus.setRollbackOnly()
+            return errorResponse(UNPROCESSABLE_ENTITY, 'No dataflow imported')
+        }
+
+        dataFlow.validate()
+
+        if (dataFlow.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond dataFlow.errors
+            return
+        }
+
+        log.debug('No errors in imported dataflow')
+
+        DataFlow savedDataFlow = dataFlowService.save(dataFlow)
+
+        log.info('Single DataFlow Import complete')
+
+        if (params.boolean('returnList')) {
+            respond([savedDataFlow], status: CREATED, view: 'index')
+        } else {
+            respond savedDataFlow, status: CREATED, view: 'show'
+        }
+    }
+
+    @Transactional
+    def importDataFlows() throws ApiException {
+        DataFlowImporterProviderService importer = findImporter()
+
+        if (!importer) {
+            onImporterNotFound()
+            return
+        }
+
+        // Default through to importing single model
+        // This may result in errors due to file containing multiple models, but that should be handled
+        if (!importer.canImportMultipleDomains()) {
+            params.returnList = true
+            return importDataFlow()
+        }
+
+        DataFlowImporterProviderServiceParameters importerProviderServiceParameters
+
+        if (request.contentType.startsWith(MimeType.MULTIPART_FORM.name)) {
+            importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(
+                importer, request as AbstractMultipartHttpServletRequest)
+        } else {
+            importerProviderServiceParameters = importerService.extractImporterProviderServiceParameters(importer, request)
+        }
+
+        def errors = importerService.validateParameters(importerProviderServiceParameters, importer.importerProviderServiceParametersClass)
+
+        if (errors.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond errors
+            return
+        }
+
+        List<DataFlow> result = importerService.importModels(currentUser, importer, importerProviderServiceParameters)
+
+        if (!result) {
+            transactionStatus.setRollbackOnly()
+            return errorResponse(UNPROCESSABLE_ENTITY, 'No data flow imported')
+        }
+
+        result.each { df ->
+            df.validate()
+        }
+
+        if (result.any { it.hasErrors() }) {
+            log.debug('Errors found in imported dataflows')
+            transactionStatus.setRollbackOnly()
+            respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
+            return
+        }
+
+        log.debug('No errors in imported dataflows')
+        List<DataFlow> savedDataFlows = result.collect {
+            DataFlow saved = dataFlowService.save(it)
+            saved
+        }
+        log.debug('Saved all dataflows')
+        log.info('Multi-Dataflow Import complete')
+
+        respond savedDataFlows, status: CREATED, view: 'index'
+
+    }    
 
     protected DataFlow queryForResource(Serializable id) {
         dataFlowService.findByTargetDataModelIdAndId(params.dataModelId, id)

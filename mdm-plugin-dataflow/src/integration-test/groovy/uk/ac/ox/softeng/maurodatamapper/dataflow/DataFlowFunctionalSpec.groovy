@@ -26,11 +26,15 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.ResourceFunctionalSpec
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
+import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
+
+import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.CREATED
 
 /**
  * <pre>
@@ -179,94 +183,228 @@ class DataFlowFunctionalSpec extends ResourceFunctionalSpec<DataFlow> {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    /*
-    TODO importers/exporters
 
-        void 'test exporting DataFlow'() {
-            given:
-            def id = getValidId()
+    void 'test getting DataFlow exporters'() {
+        when:
+        GET('/api/dataFlows/providers/exporters', STRING_ARG, true)
 
-            when: 'not logged in'
-            def response = restGet("$id/export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0")
+        then:
+        verifyJsonResponse OK, '''[
+  {
+    "name": "DataFlowXmlExporterService",
+    "version": "3.0",
+    "displayName": "XML DataFlow Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
+    "canExportMultipleDomains": false
+  },
+  {
+    "name": "DataFlowJsonExporterService",
+    "version": "3.0",
+    "displayName": "JSON DataFlow Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
+    "canExportMultipleDomains": false
+  }
+]'''
+    }    
 
-            then:
-            verifyUnauthorised response
+    void 'test getting DataFlow importers'() {
+        when:
+        GET('/api/dataFlows/providers/importers', STRING_ARG, true)
 
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = restGet("$id/export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0")
+        then:
+        verifyJsonResponse OK, '''[
+  {
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
+    "providerType": "DataFlowImporter",
+    "knownMetadataKeys": [
+      
+    ],
+    "displayName": "XML DataFlow Importer",
+    "name": "DataFlowXmlImporterService",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "canImportMultipleDomains": true,
+    "version": "${json-unit.matches:version}"
+  },
+  {
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
+    "providerType": "DataFlowImporter",
+    "knownMetadataKeys": [
+      
+    ],
+    "displayName": "JSON DataFlow Importer",
+    "name": "DataFlowJsonImporterService",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "canImportMultipleDomains": false,
+    "version": "${json-unit.matches:version}"
+  }
+]'''
+    }    
 
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
+    void 'test export a single DataFlow'() {
+        given:
+        String id = createNewItem(validJson)
 
-            when: 'logged in as writer'
-            loginEditor()
-            response = restGet("$id/export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0")
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
 
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
+        then:
+        verifyJsonResponse OK, '''{
+  "dataFlow": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test DataFlow",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Asset",
+    "source": {
+      "id": "${json-unit.matches:id}",
+      "label": "SourceFlowDataModel",
+      "type": "Data Asset"
+    },
+    "target": {
+      "id": "${json-unit.matches:id}",
+      "label": "TargetFlowDataModel",
+      "type": "Data Asset"
+    }
+  },
+  "exportMetadata": {
+    "exportedBy": "Unlogged User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+      "name": "DataFlowJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}'''
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'test export multiple DataFlows when json only exports first id'() {
+        given:
+        String id = createNewItem(validJson)
+        String id2 = createNewItem([
+            label : 'Functional Test DataFlow 2',
+            source: sourceDataModelId
+        ])
+
+        when:
+        POST("export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0",
+             [dataFlowIds: [id, id2]], STRING_ARG
+        )
+
+        then:
+        verifyJsonResponse OK, '''{
+  "dataFlow": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test DataFlow",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Asset",
+    "source": {
+      "id": "${json-unit.matches:id}",
+      "label": "SourceFlowDataModel",
+      "type": "Data Asset"
+    },
+    "target": {
+      "id": "${json-unit.matches:id}",
+      "label": "TargetFlowDataModel",
+      "type": "Data Asset"
+    }
+  },
+  "exportMetadata": {
+    "exportedBy": "Unlogged User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+      "name": "DataFlowJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}'''
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(id2)
+    }    
+
+
+    void 'test import the sample data flow'() {
+        given:
+        String id = createNewItem(validJson)
+
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+
+        expect:
+        exportedJsonString
+
+        when:
+        POST("import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0", [
+            modelName                      : 'Functional Test Import',
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ], STRING_ARG)    
+
+        then:
+        verifyJsonResponse CREATED, '''{
+  "count": 1,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataFlow",
+      "label": "Functional Test Import",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "TargetFlowDataModel",
+          "domainType": "DataModel",
+          "finalised": false
         }
+      ],
+      "source": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "SourceFlowDataModel",
+        "type": "Data Asset",
+        "branchName": "main",
+        "documentationVersion": "1.0.0"
+      },
+      "target": {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "TargetFlowDataModel",
+        "type": "Data Asset",
+        "branchName": "main",
+        "documentationVersion": "1.0.0"
+      },
+      "diagramLayout": null
+    }
+  ]
+}'''
 
-        void 'test exporting DataFlows'() {
-            given:
-            def id = getValidId()
+        cleanup:
+        cleanUpData(id)
+    }
 
-            when: 'not logged in'
-            def response = post('export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                json([id])
-            }
-
-            then:
-            verifyUnauthorised response
-
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = post('export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                json([id])
-            }
-
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
-
-            when: 'logged in as writer'
-            loginEditor()
-            response = post('export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                json([id])
-            }
-
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
-        }
-
-        void 'test importing DataFlows'() {
-            when: 'not logged in'
-            def response = post('import/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                contentType MimeType.MULTIPART_FORM.name
-                body = ''
-            }
-
-            then:
-            verifyUnauthorised response
-
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = post('import/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                contentType MimeType.MULTIPART_FORM.name
-                body = ''
-            }
-
-            then:
-            verifyUnauthorised response
-
-            when: 'logged in as writer'
-            loginEditor()
-            response = post('import/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                contentType MimeType.MULTIPART_FORM.name
-                body = ''
-            }
-
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
-        }
-    */
 }

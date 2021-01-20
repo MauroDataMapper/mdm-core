@@ -17,10 +17,23 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter
 
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportGroupConfig
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
 
 /**
  * @since 11/01/2021
  */
-class DataFlowImporterProviderServiceParameters extends ModelImporterProviderServiceParameters {
+class DataFlowImporterProviderServiceParameters implements ImporterProviderServiceParameters {
+    @ImportParameterConfig(
+    optional = true,
+    displayName = 'DataFlow name',
+    description = ['Label of the DataFlow. This will override any existing name provided in the imported data.',
+        'Note that if importing multiple DataFlows this will be ignored.'],
+    order = 0,
+    group = @ImportGroupConfig(
+        name = 'Model',
+        order = 0
+    ))
+    String modelName
 }

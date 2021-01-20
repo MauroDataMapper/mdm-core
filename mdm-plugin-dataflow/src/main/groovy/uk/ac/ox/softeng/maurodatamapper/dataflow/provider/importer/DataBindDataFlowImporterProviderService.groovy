@@ -73,7 +73,6 @@ abstract class DataBindDataFlowImporterProviderService<T extends DataFlowFileImp
     }
 
     DataFlow updateImportedModelFromParameters(DataFlow dataFlow, T params, boolean list = false) {
-        if (params.finalised != null) dataFlow.finalised = params.finalised
         if (!list && params.modelName) dataFlow.label = params.modelName
         dataFlow
     }
