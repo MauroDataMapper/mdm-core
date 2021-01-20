@@ -50,7 +50,7 @@ class DataFlowInterceptor extends DataModelSecuredInterceptor {
 
         if (actionName in ['exportDataFlow', 'exportDataFlows']) {
             return currentUserSecurityPolicyManager.userCanReadResourceId(DataFlow, params.id, DataModel, params.dataModelId) ?:
-                   forbiddenOrNotFound(canReadDataModel, DataFlow, params.id)
+                   forbiddenOrNotFound(canReadDataModel, DataFlow, params.dataFlowId)
         }
 
         if (actionName in ['importDataFlow', 'importDataFlows']) {
