@@ -372,7 +372,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
   },
   {
     "name": "DataFlowJsonImporterService",
-    "version": "2.0",
+    "version": "3.0",
     "displayName": "JSON DataFlow Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
     "allowsExtraMetadataKeys": true,
