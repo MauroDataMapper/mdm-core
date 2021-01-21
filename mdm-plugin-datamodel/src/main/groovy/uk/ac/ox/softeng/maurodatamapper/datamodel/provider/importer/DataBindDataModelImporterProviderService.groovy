@@ -72,12 +72,6 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
         updated
     }
 
-    DataModel updateImportedModelFromParameters(DataModel dataModel, T params, boolean list = false) {
-        if (params.finalised != null) dataModel.finalised = params.finalised
-        if (!list && params.modelName) dataModel.label = params.modelName
-        dataModel
-    }
-
     DataModel bindMapToDataModel(User currentUser, Map dataModelMap) {
         if (!dataModelMap) throw new ApiBadRequestException('FBIP03', 'No DataModelMap supplied to import')
 

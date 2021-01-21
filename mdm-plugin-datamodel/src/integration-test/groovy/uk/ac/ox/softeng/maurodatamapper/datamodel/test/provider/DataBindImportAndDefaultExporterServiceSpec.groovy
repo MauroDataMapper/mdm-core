@@ -58,7 +58,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        importerService.checkImport(admin, imported, false, false)
+        importerService.checkImport(admin, imported, false, false, false)
         check(imported)
         log.info('Saving imported model')
         assert dataModelService.saveModelWithContent(imported)

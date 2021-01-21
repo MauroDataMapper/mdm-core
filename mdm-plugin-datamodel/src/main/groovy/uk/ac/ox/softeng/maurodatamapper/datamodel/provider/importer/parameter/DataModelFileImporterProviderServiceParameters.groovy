@@ -33,7 +33,7 @@ class DataModelFileImporterProviderServiceParameters extends DataModelImporterPr
         order = -1,
         group = @ImportGroupConfig(
             name = 'Source',
-            order = 1
+            order = -1
         )
     )
     FileParameter importFile

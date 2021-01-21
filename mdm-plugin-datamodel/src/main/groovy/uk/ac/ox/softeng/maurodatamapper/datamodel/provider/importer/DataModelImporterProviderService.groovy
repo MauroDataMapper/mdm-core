@@ -52,14 +52,16 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         DataModel dataModel = importDataModel(currentUser, params)
         if (!dataModel) return null
         if (params.modelName) dataModel.label = params.modelName
-        checkImport(currentUser, dataModel, params.finalised, params.importAsNewDocumentationVersion)
+        checkImport(currentUser, dataModel, params)
     }
 
     @CompileDynamic
     @Override
     List<DataModel> importDomains(User currentUser, T params) {
         List<DataModel> dataModels = importDataModels(currentUser, params)
-        dataModels?.collect { checkImport(currentUser, it, params.finalised, params.importAsNewDocumentationVersion) }
+        dataModels?.collect {
+            checkImport(currentUser, it, params)
+        }
     }
 
     @Override
@@ -67,9 +69,10 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         "DataModel${ProviderType.IMPORTER.name}"
     }
 
-    DataModel checkImport(User currentUser, DataModel dataModel, boolean finalised, boolean importAsNewDocumentationVersion) {
-        dataModelService.checkfinaliseModel(dataModel, finalised)
-        dataModelService.checkDocumentationVersion(dataModel, importAsNewDocumentationVersion, currentUser)
+    DataModel checkImport(User currentUser, DataModel dataModel, T params) {
+        dataModelService.checkfinaliseModel(dataModel, params.finalised)
+        dataModelService.checkDocumentationVersion(dataModel, params.importAsNewDocumentationVersion, currentUser)
+        dataModelService.checkBranchModelVersion(dataModel, params.importAsNewBranchModelVersion, params.newBranchName, currentUser)
         classifierService.checkClassifiers(currentUser, dataModel)
 
         dataModel.dataClasses?.each { dc ->
@@ -81,6 +84,15 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         dataModel.dataTypes?.each { dt ->
             classifierService.checkClassifiers(currentUser, dt)
         }
+        dataModel
+    }
+
+    DataModel updateImportedModelFromParameters(DataModel dataModel, T params, boolean list = false) {
+        if (params.finalised != null) dataModel.finalised = params.finalised
+        if (!list && params.modelName) dataModel.label = params.modelName
+        if (params.author) dataModel.author = params.author
+        if (params.organisation) dataModel.organisation = params.organisation
+        if (params.description) dataModel.description = params.description
         dataModel
     }
 }

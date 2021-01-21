@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
@@ -1001,7 +1002,7 @@ class DataModelService extends ModelService<DataModel> {
         ids ? DataModel.byIds(ids).list(pagination) : []
     }
 
-    void checkDocumentationVersion(DataModel dataModel, boolean importAsNewDocumentationVersion, User catalogueUser) {
+    void checkDocumentationVersion(DataModel dataModel, Boolean importAsNewDocumentationVersion, User catalogueUser) {
         if (importAsNewDocumentationVersion) {
 
             if (countByLabel(dataModel.label)) {
@@ -1015,6 +1016,25 @@ class DataModelService extends ModelService<DataModel> {
                 dataModel.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing DataModels with label [{}]', dataModel.label)
+        }
+    }
+
+    void checkBranchModelVersion(DataModel dataModel, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser) {
+        if (importAsNewBranchModelVersion) {
+
+            if (countByLabel(dataModel.label)) {
+                DataModel latest = findLatestFinalisedModelByLabel(dataModel.label)
+                if (latest) {
+                    setDataModelIsNewBranchModelVersionOfDataModel(dataModel, latest, catalogueUser)
+                    dataModel.dateFinalised = null
+                    dataModel.finalised = false
+                    dataModel.modelVersion = null
+                    dataModel.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
+                    dataModel.documentationVersion = Version.from('1')
+                } else {
+                    throw new ApiBadRequestException('DMSXX', 'Request to importAsNewBranchModelVersion but no finalised model to use')
+                }
+            } else log.info('Marked as importAsNewBranchModelVersion but no existing DataModels with label [{}]', dataModel.label)
         }
     }
 

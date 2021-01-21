@@ -318,7 +318,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         Version.nextMajorVersion(parentModelVersion)
     }
 
-    void checkfinaliseModel(K model, boolean finalised) {
+    void checkfinaliseModel(K model, Boolean finalised) {
         if (finalised && !model.finalised) {
             model.finalised = finalised
             model.dateFinalised = model.finalised ? OffsetDateTime.now() : null

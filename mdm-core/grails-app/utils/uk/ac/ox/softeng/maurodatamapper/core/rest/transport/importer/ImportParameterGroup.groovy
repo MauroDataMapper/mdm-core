@@ -31,7 +31,7 @@ class ImportParameterGroup implements Comparable<ImportParameterGroup>, Ordered 
     private final Set<ImportParameter> importParameters = [] as HashSet
 
     List<ImportParameter> getSortedImportParameters() {
-        importParameters.sort()
+        importParameters.sort() as List<ImportParameter>
     }
 
     ImportParameterGroup addToImportParameters(ImportParameter importParameter) {

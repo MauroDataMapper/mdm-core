@@ -2352,7 +2352,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(mainId)
     }
 
-    void 'test export a single DataModel'() {
+    void 'E01 : test export a single DataModel'() {
         given:
         String id = createNewItem(validJson)
 
@@ -2389,7 +2389,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test export multiple DataModels (json only exports first id)'() {
+    void 'E02 : test export multiple DataModels (json only exports first id)'() {
         given:
         String id = createNewItem(validJson)
         String id2 = createNewItem([label: 'Functional Test Model 2'])
@@ -2430,7 +2430,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id2)
     }
 
-    void 'test import basic DataModel'() {
+    void 'I01 : test import basic DataModel'() {
         given:
         String id = createNewItem(validJson)
 
@@ -2473,7 +2473,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test import basic DataModel as new documentation version'() {
+    void 'I02 : test import basic DataModel as new documentation version'() {
         given:
         String id = createNewItem([
             label       : 'Functional Test Model',
@@ -2513,6 +2513,153 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                       "branchName": "main",
                       "documentationVersion": "2.0.0",
                       "modelVersion": "1.0.0"
+                    }
+                  ]
+                }'''
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'I03 : test import basic DataModel as new branch model version'() {
+        given:
+        String id = createNewItem([
+            label       : 'Functional Test Model',
+            finalised   : true,
+            modelVersion: Version.from('1.0.0')
+        ])
+
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+
+        expect:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+            finalised                      : true,
+            modelName                      : 'Functional Test Model',
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, '''{
+                  "count": 1,
+                  "items": [
+                    {
+                      "domainType": "DataModel",
+                      "id": "${json-unit.matches:id}",
+                      "label": "Functional Test Model",
+                      "type": "Data Standard",
+                      "branchName": "main",
+                      "documentationVersion": "1.0.0"
+                    }
+                  ]
+                }'''
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+
+    void 'I04 : test import basic DataModel as new main branch model version with another branch version that exists'() {
+        given:
+        String id = createNewItem([
+            label       : 'Functional Test Model',
+            finalised   : true,
+            modelVersion: Version.from('1.0.0')
+        ])
+
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+
+        expect:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+            finalised                      : true,
+            modelName                      : 'Functional Test Model',
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, '''{
+                  "count": 1,
+                  "items": [
+                    {
+                      "domainType": "DataModel",
+                      "id": "${json-unit.matches:id}",
+                      "label": "Functional Test Model",
+                      "type": "Data Standard",
+                      "branchName": "main",
+                      "documentationVersion": "1.0.0"
+                    }
+                  ]
+                }'''
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+            finalised                      : true,
+            modelName                      : 'Functional Test Model',
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().total == 1
+        responseBody().errors[0].message == 'Property [label] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel] with value ' +
+        '[Functional Test Model] must be unique by branch name'
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+            finalised                      : true,
+            modelName                      : 'Functional Test Model',
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true,
+            newBranchName                  : 'functionalTest',
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ], STRING_ARG)
+
+        then:
+        verifyJsonResponse CREATED, '''{
+                  "count": 1,
+                  "items": [
+                    {
+                      "domainType": "DataModel",
+                      "id": "${json-unit.matches:id}",
+                      "label": "Functional Test Model",
+                      "type": "Data Standard",
+                      "branchName": "functionalTest",
+                      "documentationVersion": "1.0.0"
                     }
                   ]
                 }'''
@@ -2590,7 +2737,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse NO_CONTENT, response
     }
 
-    void 'test importing simple test DataModel'() {
+    void 'I05 : test importing simple test DataModel'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : true,
@@ -2612,7 +2759,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test importing complex test DataModel'() {
+    void 'I06 : test importing complex test DataModel'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : true,
@@ -2634,7 +2781,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test importing DataModel with classifiers'() {
+    void 'I07 : test importing DataModel with classifiers'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : true,
@@ -2656,7 +2803,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test export simple DataModel'() {
+    void 'E03 : test export simple DataModel'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,
@@ -2688,7 +2835,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
-    void 'test export complex DataModel'() {
+    void 'E04 : test export complex DataModel'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
             finalised                      : false,

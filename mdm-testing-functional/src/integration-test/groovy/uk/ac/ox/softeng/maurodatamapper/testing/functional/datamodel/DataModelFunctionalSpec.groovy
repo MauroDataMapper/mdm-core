@@ -1658,6 +1658,59 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         removeValidIdObject(id, NOT_FOUND)
     }
 
+    void 'E36C : test import basic DataModel as new branch model version (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginReader()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        verifyResponse OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        expect:
+        exportedJsonString
+
+        when:
+        loginEditor()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+            finalised                      : false,
+            folderId                       : testFolderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importAsNewBranchModelVersion  : true,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().count == 1
+        response.body().items.first().label == 'Functional Test DataModel'
+        response.body().items.first().branchName == 'main'
+        !response.body().items.first().modelVersion
+        response.body().items.first().id != id
+
+        when:
+        String newId = response.body().items.first().id
+        GET("$newId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        response.body().count == 1
+        response.body().items.first().domainType == 'VersionLink'
+        response.body().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        response.body().items.first().sourceModel.id == newId
+        response.body().items.first().targetModel.id == id
+        response.body().items.first().sourceModel.domainType == response.body().items.first().targetModel.domainType
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(newId)
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObject(newId, NOT_FOUND)
+        removeValidIdObject(id, NOT_FOUND)
+    }
 
     void 'S01 : test searching for label "emptyclass" in complex model'() {
         given:

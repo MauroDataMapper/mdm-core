@@ -60,7 +60,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         assert imported
         imported.folder = testFolder
         log.debug('Check and save imported model')
-        importerService.checkImport(admin, imported, false, false)
+        importerService.checkImport(admin, imported, false, false, false)
         check(imported)
         dataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()
