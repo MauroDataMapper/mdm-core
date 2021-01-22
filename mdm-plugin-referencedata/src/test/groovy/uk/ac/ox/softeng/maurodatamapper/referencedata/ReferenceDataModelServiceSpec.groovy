@@ -19,14 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
-
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
@@ -175,7 +174,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.not.finalised.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -328,7 +327,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     @PendingFeature(reason = 'ReferenceDataModel permission copying')
@@ -353,7 +352,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     void 'DMSC06 : test creating a new model version on draft model'() {
@@ -368,7 +367,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.not.finalised.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
     }
 
     void 'DMSC07 : test creating a new model version on finalised model'() {
@@ -526,7 +525,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     void 'DMSV01 : test validation on valid model'() {

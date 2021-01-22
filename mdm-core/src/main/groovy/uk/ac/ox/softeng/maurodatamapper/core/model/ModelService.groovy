@@ -17,12 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
@@ -31,11 +37,16 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
+import groovy.util.logging.Slf4j
+import org.grails.datastore.gorm.GormValidateable
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
+@Slf4j
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
     protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
@@ -43,12 +54,19 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     @Autowired(required = false)
     Set<ModelItemService> modelItemServices
 
+    @Autowired
+    VersionLinkService versionLinkService
+
+    @Autowired
+    EditService editService
+
+    @Autowired
+    MessageSource messageSource
+
     @Override
     Class<K> getCatalogueItemClass() {
-        return getModelClass()
+        getModelClass()
     }
-
-    abstract VersionLinkService getVersionLinkService()
 
     abstract Class<K> getModelClass()
 
@@ -58,24 +76,17 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void removeAllFromContainer(Container container)
 
-    abstract List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
-                                           boolean includeModelSuperseded, boolean includeDeleted)
+    abstract List<K> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted)
 
     abstract List<K> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:])
 
     abstract List<UUID> findAllModelIdsWithTreeChildren(List<K> models)
 
-    abstract void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink)
-
-    abstract List<UUID> findAllSupersededModelIds(List<K> models)
-
-    abstract List<K> findAllDocumentationSupersededModels(Map pagination)
-
-    abstract List<K> findAllModelSupersededModels(Map pagination)
-
     abstract List<K> findAllDeletedModels(Map pagination)
 
     abstract List<K> findAllByFolderId(UUID folderId)
+
+    abstract List<K> findAllSupersededModels(List<UUID> ids, Map pagination)
 
     abstract K validate(K model)
 
@@ -87,8 +98,260 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract void permanentDeleteModel(K model)
 
+    abstract int countByLabel(String label)
+
+    abstract List<K> findAllByLabel(String label)
+
+    abstract List<UUID> findAllModelIds()
+
+    abstract int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName)
+
+    abstract K copyModel(K original,
+                         User copier,
+                         boolean copyPermissions,
+                         String label,
+                         Version copyDocVersion,
+                         String branchName,
+                         boolean throwErrors,
+                         UserSecurityPolicyManager userSecurityPolicyManager)
+
+    abstract List<K> findAllByMetadataNamespace(String namespace)
+
+    abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
+
     void deleteModelAndContent(K model) {
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
+    }
+
+    List<K> findAllByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService, Map pagination = [:]) {
+        findAllByMetadataNamespaceAndKey(dataLoaderProviderService.namespace, dataLoaderProviderService.name, pagination)
+    }
+
+    void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink) {
+        get(modelId).removeFromVersionLinks(versionLink)
+    }
+
+    List<UUID> findAllSupersededModelIds(List<K> models) {
+        findAllSupersededIds(models.id)
+    }
+
+    List<K> findAllDocumentationSupersededModels(Map pagination) {
+        List<UUID> ids = findAllDocumentSupersededIds(findAllModelIds())
+        findAllSupersededModels(ids, pagination)
+    }
+
+    List<K> findAllModelSupersededModels(Map pagination) {
+        List<UUID> ids = findAllModelSupersededIds(findAllModelIds())
+        findAllSupersededModels(ids, pagination)
+    }
+
+    List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {
+        readableIds - findAllDocumentSupersededIds(readableIds)
+    }
+
+    List<UUID> findAllExcludingModelSupersededIds(List<UUID> readableIds) {
+        readableIds - findAllModelSupersededIds(readableIds)
+    }
+
+    List<UUID> findAllExcludingDocumentAndModelSupersededIds(List<UUID> readableIds) {
+        readableIds - findAllSupersededIds(readableIds)
+    }
+
+    List<UUID> findAllSupersededIds(List<UUID> readableIds) {
+        (findAllDocumentSupersededIds(readableIds) + findAllModelSupersededIds(readableIds)).toSet().toList()
+    }
+
+    List<UUID> findAllDocumentSupersededIds(List<UUID> readableIds) {
+        versionLinkService.filterModelIdsWhereModelIdIsDocumentSuperseded(getModelClass().simpleName, readableIds)
+    }
+
+    List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
+        // All versionLinks which are targets of model version links
+        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(readableIds)
+
+        // However they are only superseded if the source of this link is finalised
+        modelVersionLinks.findAll {
+            K sourceModel = get(it.catalogueItemId)
+            sourceModel.finalised
+        }.collect {it.targetModelId}
+    }
+
+    List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
+                                  boolean includeModelSuperseded, boolean includeDeleted) {
+        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(getModelClass())
+        if (!ids) return []
+        List<UUID> constrainedIds
+        // The list of ids are ALL the readable ids by the user, no matter the model status
+        if (includeDocumentSuperseded && includeModelSuperseded) {
+            constrainedIds = new ArrayList<>(ids)
+        } else if (includeModelSuperseded) {
+            constrainedIds = findAllExcludingDocumentSupersededIds(ids)
+        } else if (includeDocumentSuperseded) {
+            constrainedIds = findAllExcludingModelSupersededIds(ids)
+        } else {
+            constrainedIds = findAllExcludingDocumentAndModelSupersededIds(ids)
+        }
+        if (!constrainedIds) return []
+        findAllReadableModels(constrainedIds, includeDeleted)
+    }
+
+    K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
+                    List<Serializable> supersedeModelIds = []) {
+
+        model.finalised = true
+        model.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+        // No requirement to have a breadcrumbtree
+        model.breadcrumbTree?.finalise()
+
+        model.modelVersion = getNextModelVersion(model, modelVersion, versionChangeType)
+
+        model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
+                               description: "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
+                                            "${OffsetDateTimeConverter.toString(model.dateFinalised)}")
+        editService.createAndSaveEdit(model.id, model.domainType,
+                                      "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
+                                      "${OffsetDateTimeConverter.toString(model.dateFinalised)}",
+                                      user)
+        model
+    }
+
+    K copyModelAsNewBranchModel(K original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
+                                UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyModel(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    K copyModelAsNewForkModel(K original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                              UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    K copyModelAsNewDocumentationModel(K original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
+                                       boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    K createNewDocumentationVersion(K model, User user, boolean copyPermissions,
+                                    UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        if (!newVersionCreationIsAllowed(model)) return model
+
+        K newDocVersion = copyModelAsNewDocumentationModel(model,
+                                                           user,
+                                                           copyPermissions,
+                                                           model.label,
+                                                           Version.nextMajorVersion(model.documentationVersion),
+                                                           model.branchName,
+                                                           additionalArguments.throwErrors as boolean,
+                                                           userSecurityPolicyManager,)
+        setModelIsNewDocumentationVersionOfModel(newDocVersion, model, user)
+        if (additionalArguments.moveDataFlows) {
+            throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
+            //            moveTargetDataFlows(dataModel, newDocVersion)
+        }
+        newDocVersion
+    }
+
+    K createNewForkModel(String label, K model, User user, boolean copyPermissions, UserSecurityPolicyManager
+        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        if (!newVersionCreationIsAllowed(model)) return model
+
+        K newForkModel = copyModelAsNewForkModel(model, user, copyPermissions, label,
+                                                 additionalArguments.throwErrors as boolean,
+                                                 userSecurityPolicyManager)
+        setModelIsNewForkModelOfModel(newForkModel, model, user)
+        if (additionalArguments.copyDataFlows) {
+            throw new ApiNotYetImplementedException('DMSXX', 'DataModel copying of DataFlows')
+            //copyTargetDataFlows(dataModel, newForkModel, user)
+        }
+        newForkModel
+    }
+
+    K createNewBranchModelVersion(String branchName, K model, User user, boolean copyPermissions,
+                                  UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        if (!newVersionCreationIsAllowed(model)) return model
+
+        // Check if the branch name is already being used
+        if (countAllByLabelAndBranchNameAndNotFinalised(model.label, branchName) > 0) {
+            (model as GormValidateable).errors.reject('model.label.branch.name.already.exists',
+                                                      ['branchName', getModelClass(), branchName, model.label] as Object[],
+                                                      'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
+            return model
+        }
+
+        // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
+        boolean draftModelOnMainBranchForLabel =
+            countAllByLabelAndBranchNameAndNotFinalised(model.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
+
+        if (!draftModelOnMainBranchForLabel) {
+            K newMainBranchModelVersion = copyModelAsNewBranchModel(model,
+                                                                    user,
+                                                                    copyPermissions,
+                                                                    model.label,
+                                                                    VersionAwareConstraints.DEFAULT_BRANCH_NAME,
+                                                                    additionalArguments.throwErrors as boolean,
+                                                                    userSecurityPolicyManager)
+            setModelIsNewBranchModelVersionOfModel(newMainBranchModelVersion, model, user)
+
+            if (additionalArguments.moveDataFlows) {
+                throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
+                //            moveTargetDataFlows(dataModel, newMainBranchModelVersion)
+            }
+
+            // If the branch name isn't main and the main branch doesnt exist then we need to validate and save it
+            // otherwise return the new model
+            if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                return newMainBranchModelVersion
+            } else {
+                if ((newMainBranchModelVersion as GormValidateable).validate()) saveModelWithContent(newMainBranchModelVersion)
+                else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) DataModel is invalid',
+                                                        (newMainBranchModelVersion as GormValidateable).errors, messageSource)
+            }
+        }
+
+        K newBranchModelVersion = copyModelAsNewBranchModel(model,
+                                                            user,
+                                                            copyPermissions,
+                                                            model.label,
+                                                            branchName,
+                                                            additionalArguments.throwErrors as boolean,
+                                                            userSecurityPolicyManager)
+
+        setModelIsNewBranchModelVersionOfModel(newBranchModelVersion, model, user)
+
+        if (additionalArguments.moveDataFlows) {
+            throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
+            //            moveTargetDataFlows(dataModel, newBranchModelVersion)
+        }
+        newBranchModelVersion
+    }
+
+    boolean newVersionCreationIsAllowed(K model) {
+        if (!model.finalised) {
+            (model as GormValidateable).errors.reject('invalid.model.new.version.not.finalised.message',
+                                                      [model.label, model.id] as Object[],
+                                                      'Model [{0}({1})] cannot have a new version as it is not finalised')
+            return false
+        }
+        K superseding = findModelDocumentationSuperseding(model)
+        if (superseding) {
+            (model as GormValidateable).errors.reject('invalid.model.new.version.superseded.message',
+                                                      [model.label, model.id, superseding.label, superseding.id] as Object[],
+                                                      'Model [{0}({1})] cannot have a new version as it has been superseded by [{2}({3})]')
+            return false
+        }
+
+        true
+    }
+
+    K findModelSuperseding(K model) {
+        VersionLink link = versionLinkService.findLatestLinkSupersedingModelId(getModelClass().simpleName, model.id)
+        if (!link) return null
+        link.catalogueItemId == model.id ? get(link.targetModelId) : get(link.catalogueItemId)
+    }
+
+    K findModelDocumentationSuperseding(K model) {
+        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingModelId(getModelClass().simpleName, model.id)
+        if (!link) return null
+        link.catalogueItemId == model.id ? get(link.targetModelId) : get(link.catalogueItemId)
     }
 
     /**
@@ -136,7 +399,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                                             metadataService)
                                 }
                             } else {
-                                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+                                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
                                 if (modelItemService) {
                                     // apply deletions of children to target object
                                     mergeFieldDiff.deleted.each {
@@ -169,21 +432,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         }
         rightModel
     }
-
-    abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType, List<Serializable> supersedeModelIds)
-
-    abstract K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType)
-
-    abstract K createNewBranchModelVersion(String branchName, K dataModel, User user, boolean copyPermissions,
-                                           UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
-
-    abstract K createNewDocumentationVersion(K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
-
-    abstract K createNewForkModel(String label, K dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:])
-
-    abstract List<K> findAllByMetadataNamespace(String namespace)
 
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
         thisModel.diff(otherModel)
@@ -332,5 +580,69 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
         super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
         versionLinkService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    }
+
+    void checkDocumentationVersion(K model, boolean importAsNewDocumentationVersion, User catalogueUser) {
+        if (importAsNewDocumentationVersion) {
+
+            if (countByLabel(model.label)) {
+                List<K> existingModels = findAllByLabel(model.label)
+                existingModels.each {existing ->
+                    log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
+                    setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
+                }
+                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                model.documentationVersion = Version.nextMajorVersion(latestVersion)
+
+            } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
+        }
+    }
+
+    void checkBranchModelVersion(K model, Boolean importAsNewBranchModelVersion, String branchName, User catalogueUser) {
+        if (importAsNewBranchModelVersion) {
+
+            if (countByLabel(model.label)) {
+                K latest = findLatestFinalisedModelByLabel(model.label)
+                if (latest) {
+                    setModelIsNewBranchModelVersionOfModel(model, latest, catalogueUser)
+                    model.dateFinalised = null
+                    model.finalised = false
+                    model.modelVersion = null
+                    model.branchName = branchName ?: VersionAwareConstraints.DEFAULT_BRANCH_NAME
+                    model.documentationVersion = Version.from('1')
+                } else {
+                    throw new ApiBadRequestException('MSXX', 'Request to importAsNewBranchModelVersion but no finalised model to use')
+                }
+            } else log.info('Marked as importAsNewBranchModelVersion but no existing Models with label [{}]', model.label)
+        }
+    }
+
+    void setModelIsNewForkModelOfModel(K newModel, K oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_FORK_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setModelIsNewDocumentationVersionOfModel(K newModel, K oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setModelIsNewBranchModelVersionOfModel(K newModel, K oldModel, User catalogueUser) {
+        newModel.addToVersionLinks(
+            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldModel
+        )
+    }
+
+    void setModelIsFromModel(K source, K target, User user) {
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
 }

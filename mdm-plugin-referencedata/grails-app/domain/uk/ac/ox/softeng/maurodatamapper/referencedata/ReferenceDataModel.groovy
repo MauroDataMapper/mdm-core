@@ -88,9 +88,9 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         documentationVersion type: VersionUserType
         modelVersion type: VersionUserType
         folder cascade: 'none'
-        referenceDataTypes cascade: 'all-delete-orphan'
-        referenceDataElements cascade: 'all-delete-orphan'
-        referenceDataValues cascade: 'all-delete-orphan'
+        referenceDataTypes cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
+        referenceDataElements cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
+        referenceDataValues cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
     }
 
     static mappedBy = [

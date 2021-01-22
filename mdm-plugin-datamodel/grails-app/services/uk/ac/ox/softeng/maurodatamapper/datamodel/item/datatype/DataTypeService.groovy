@@ -328,9 +328,9 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
     }
 
-    private void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {
-        referenceTypes.sort { it.label }.each { rdt ->
-            Map dataTypeBindingMap = bindingMaps.find { it.label == rdt.label } ?: [:]
+    void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {
+        referenceTypes.sort {it.label}.each {rdt ->
+            Map dataTypeBindingMap = bindingMaps.find {it.label == rdt.label} ?: [:]
             Map refClassBindingMap = dataTypeBindingMap.referenceClass ?: [:]
             matchReferenceClass(dataModel, rdt, refClassBindingMap)
         }

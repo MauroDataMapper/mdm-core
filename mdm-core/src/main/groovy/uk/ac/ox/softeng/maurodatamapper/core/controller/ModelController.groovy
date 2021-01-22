@@ -345,7 +345,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!validateResource(copy, 'create')) return
 
-        Model savedCopy = modelService.saveModelWithContent(copy)
+        T savedCopy = modelService.saveModelWithContent(copy) as T
         savedCopy.addCreatedEdit(currentUser)
 
         if (securityPolicyManagerService) {
@@ -374,7 +374,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!validateResource(copy, 'create')) return
 
-        Model savedCopy = modelService.saveModelWithContent(copy)
+        T savedCopy = modelService.saveModelWithContent(copy) as T
         savedCopy.addCreatedEdit(currentUser)
 
         if (securityPolicyManagerService) {
@@ -405,7 +405,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!validateResource(copy, 'create')) return
 
-        Model savedCopy = modelService.saveModelWithContent(copy)
+        T savedCopy = modelService.saveModelWithContent(copy) as T
         savedCopy.addCreatedEdit(currentUser)
 
         if (securityPolicyManagerService) {
