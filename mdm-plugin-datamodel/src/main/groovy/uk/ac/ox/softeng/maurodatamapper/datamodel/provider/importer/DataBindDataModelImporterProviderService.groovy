@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.web.databinding.DataBindingUtils
 import groovy.util.logging.Slf4j
@@ -48,28 +47,18 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
         false
     }
 
-    @Override
-    List<DataModel> importDataModels(User currentUser, T params) {
+    List<DataModel> importModels(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        long start = System.currentTimeMillis()
-        List<DataModel> imported = importDataModels(currentUser, params.importFile.fileContents)
-        List<DataModel> updated = imported.collect { updateImportedModelFromParameters(it, params, true) }
-        log.info('Imported {} models complete in {}', updated.size(), Utils.timeTaken(start))
-        updated
+        importDataModels(currentUser, params.importFile.fileContents)
     }
 
-    @Override
-    DataModel importDataModel(User currentUser, T params) {
+    DataModel importModel(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        long start = System.currentTimeMillis()
-        DataModel imported = importDataModel(currentUser, params.importFile.fileContents)
-        DataModel updated = updateImportedModelFromParameters(imported, params)
-        log.info('Import complete in {}', Utils.timeTaken(start))
-        updated
+        importDataModel(currentUser, params.importFile.fileContents)
     }
 
     DataModel bindMapToDataModel(User currentUser, Map dataModelMap) {

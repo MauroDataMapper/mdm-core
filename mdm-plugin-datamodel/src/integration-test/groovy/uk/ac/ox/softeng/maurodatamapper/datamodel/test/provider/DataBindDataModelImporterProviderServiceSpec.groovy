@@ -32,10 +32,12 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataBindDataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelImporterProviderServiceParameters
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import spock.lang.Shared
 import spock.lang.Stepwise
 
 /**
@@ -52,6 +54,17 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
     @Autowired
     DataModelService dataModelService
 
+    @Shared
+    DataModelImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new DataModelImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
+
     DataModel importAndConfirm(byte[] bytes) {
 
         log.trace('Importing:\n {}', new String(bytes))
@@ -60,7 +73,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         assert imported
         imported.folder = testFolder
         log.debug('Check and save imported model')
-        importerService.checkImport(admin, imported, false, false, false)
+        importerService.checkImport(admin, imported, basicParameters)
         check(imported)
         dataModelService.saveModelWithContent(imported)
         sessionFactory.currentSession.flush()

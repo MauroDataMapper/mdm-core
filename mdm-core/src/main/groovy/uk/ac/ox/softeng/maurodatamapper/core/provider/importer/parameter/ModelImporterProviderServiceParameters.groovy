@@ -20,6 +20,9 @@ package uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportGroupConfig
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class ModelImporterProviderServiceParameters implements ImporterProviderServiceParameters {
 
     @ImportParameterConfig(

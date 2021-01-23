@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseCodeSetIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
@@ -57,10 +58,22 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
     UUID simpleTerminologyId
 
     @Shared
-    UUID simpleCodeSetId  
+    UUID simpleCodeSetId
 
     CodeSetJsonImporterService codeSetJsonImporterService
     CodeSetJsonExporterService codeSetJsonExporterService
+
+
+    @Shared
+    CodeSetFileImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new CodeSetFileImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
 
     String getImportType() {
         'json'
@@ -118,7 +131,7 @@ class JsonCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec 
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        codeSetImporterService.checkImport(admin, imported, false, false)
+        codeSetImporterService.checkImport(admin, imported, basicParameters)
         check(imported)
         log.info('Saving imported model')
         assert codeSetService.saveModelWithContent(imported)

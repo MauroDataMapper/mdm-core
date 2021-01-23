@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataJsonExporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
@@ -61,6 +62,17 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
     ReferenceDataJsonImporterService referenceDataJsonImporterService
     ReferenceDataJsonExporterService referenceDataJsonExporterService
 
+    @Shared
+    ReferenceDataModelFileImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new ReferenceDataModelFileImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
+
     String getImportType() {
         'json'
     }
@@ -96,7 +108,7 @@ class JsonReferenceDataImporterExporterServiceSpec extends BaseReferenceDataMode
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        importerService.checkImport(admin, imported, false, false)
+        importerService.checkImport(admin, imported, basicParameters)
         check(imported)
         log.info('Saving imported model')
         assert referenceDataModelService.saveModelWithContent(imported)

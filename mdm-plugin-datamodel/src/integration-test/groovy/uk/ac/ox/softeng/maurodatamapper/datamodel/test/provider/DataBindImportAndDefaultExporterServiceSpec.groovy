@@ -23,10 +23,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataBindDataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelImporterProviderServiceParameters
 
 import grails.gorm.transactions.Rollback
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import spock.lang.Shared
 import spock.lang.Stepwise
 import spock.lang.Unroll
 
@@ -46,6 +48,17 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
     @Autowired
     DataModelService dataModelService
 
+    @Shared
+    DataModelImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new DataModelImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
+
     abstract I getImporterService()
 
     abstract E getExporterService()
@@ -58,7 +71,7 @@ abstract class DataBindImportAndDefaultExporterServiceSpec<I extends DataBindDat
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        importerService.checkImport(admin, imported, false, false, false)
+        importerService.checkImport(admin, imported, basicParameters)
         check(imported)
         log.info('Saving imported model')
         assert dataModelService.saveModelWithContent(imported)

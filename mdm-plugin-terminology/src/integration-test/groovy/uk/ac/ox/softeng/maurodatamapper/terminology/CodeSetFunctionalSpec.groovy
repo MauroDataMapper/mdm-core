@@ -1470,7 +1470,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/CodeSetJsonImporterService/2.0', [
             finalised                      : false,
             terminologyName                : 'Functional Test Import',
             folderId                       : folderId.toString(),
@@ -1515,7 +1515,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         exportedJsonString
 
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/CodeSetJsonImporterService/2.0', [
             finalised                      : true,
             terminologyName                : 'Functional Test Model',
             folderId                       : folderId.toString(),
@@ -1609,7 +1609,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @PendingFeature(reason = 'no importers/exporters')
     void 'test importing simple test CodeSet'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/CodeSetJsonImporterService/2.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1632,7 +1632,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @PendingFeature(reason = 'no importers/exporters')
     void 'test importing complex test CodeSet'() {
         when:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/CodeSetJsonImporterService/2.0', [
             finalised                      : true,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1655,7 +1655,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @PendingFeature(reason = 'no importers/exporters')
     void 'test export simple CodeSet'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/CodeSetJsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,
@@ -1687,7 +1687,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     @PendingFeature(reason = 'no importers/exporters')
     void 'test export complex CodeSet'() {
         given:
-        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/CodeSetJsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folderId.toString(),
             importAsNewDocumentationVersion: false,

@@ -47,28 +47,18 @@ abstract class DataBindCodeSetImporterProviderService<T extends CodeSetFileImpor
         false
     }
 
-    @Override
-    List<CodeSet> importCodeSets(User currentUser, T params) {
+    List<CodeSet> importModels(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        List<CodeSet> imported = importCodeSets(currentUser, params.importFile.fileContents)
-        imported.collect {updateImportedModelFromParameters(it, params, true)}
+        importCodeSets(currentUser, params.importFile.fileContents)
     }
 
-    @Override
-    CodeSet importCodeSet(User currentUser, T params) {
+    CodeSet importModel(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        CodeSet imported = importCodeSet(currentUser, params.importFile.fileContents)
-        updateImportedModelFromParameters(imported, params)
-    }
-
-    CodeSet updateImportedModelFromParameters(CodeSet codeSet, T params, boolean list = false) {
-        if (params.finalised != null) codeSet.finalised = params.finalised
-        if (!list && params.modelName) codeSet.label = params.modelName
-        codeSet
+        importCodeSet(currentUser, params.importFile.fileContents)
     }
 
     CodeSet bindMapToCodeSet(User currentUser, Map codeSetMap) {
