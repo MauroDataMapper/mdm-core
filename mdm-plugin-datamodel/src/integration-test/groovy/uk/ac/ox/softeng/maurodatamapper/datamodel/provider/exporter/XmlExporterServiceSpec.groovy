@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.XmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
@@ -40,11 +40,11 @@ import static org.junit.Assert.assertTrue
 @Integration
 @Rollback
 @Slf4j
-class XmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<XmlImporterService, XmlExporterService>
+class XmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelXmlImporterService, XmlExporterService>
     implements XmlValidator {
 
     XmlExporterService xmlExporterService
-    XmlImporterService xmlImporterService
+    DataModelXmlImporterService dataModelXmlImporterService
 
     @Override
     XmlExporterService getExporterService() {
@@ -52,8 +52,8 @@ class XmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec
     }
 
     @Override
-    XmlImporterService getImporterService() {
-        xmlImporterService
+    DataModelXmlImporterService getImporterService() {
+        dataModelXmlImporterService
     }
 
     @Override

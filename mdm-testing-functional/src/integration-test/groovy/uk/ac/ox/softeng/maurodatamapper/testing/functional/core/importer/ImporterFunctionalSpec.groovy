@@ -17,8 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.importer
 
-
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.JsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
@@ -44,8 +43,11 @@ class ImporterFunctionalSpec extends FunctionalSpec {
 
     void 'test datamodel importer parameters'() {
         given:
-        uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.JsonImporterService jsonImporterService = new uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.JsonImporterService()
-        String endpoint = "parameters/${jsonImporterService.class.packageName}/${jsonImporterService.class.simpleName}/${jsonImporterService.version}"
+        DataModelJsonImporterService jsonImporterService = new DataModelJsonImporterService()
+        String endpoint = "parameters/" +
+                          "${jsonImporterService.class.packageName}/" +
+                          "${jsonImporterService.class.simpleName}/" +
+                          "${jsonImporterService.version}"
         when: 'Unlogged in call to check'
         GET(endpoint)
 
@@ -132,7 +134,7 @@ class ImporterFunctionalSpec extends FunctionalSpec {
 
     void 'test terminology importer parameters'() {
         given:
-        uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService jsonImporterService = new uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService()
+        TerminologyJsonImporterService jsonImporterService = new TerminologyJsonImporterService()
         String endpoint = "parameters/${jsonImporterService.class.packageName}/${jsonImporterService.class.simpleName}/${jsonImporterService.version}"
         when: 'Unlogged in call to check'
         GET(endpoint)

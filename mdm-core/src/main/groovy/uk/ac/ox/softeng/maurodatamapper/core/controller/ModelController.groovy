@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
@@ -465,9 +466,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     @Transactional
     def importModel() throws ApiException {
 
-        ImporterProviderService importer = mauroDataMapperServiceProviderService.findImporterProvider(
+        ModelImporterProviderService importer = mauroDataMapperServiceProviderService.findImporterProvider(
             params.importerNamespace, params.importerName, params.importerVersion
-        ) as ImporterProviderService
+        ) as ModelImporterProviderService
         if (!importer) {
             notFound(ImporterProviderService, "${params.importerNamespace}:${params.importerName}:${params.importerVersion}"
             )
@@ -538,9 +539,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     @Transactional
     def importModels() throws ApiException {
-        ImporterProviderService importer = mauroDataMapperServiceProviderService.findImporterProvider(
+        ModelImporterProviderService importer = mauroDataMapperServiceProviderService.findImporterProvider(
             params.importerNamespace, params.importerName, params.importerVersion
-        ) as ImporterProviderService
+        ) as ModelImporterProviderService
         if (!importer) {
             notFound(ImporterProviderService, "${params.importerNamespace}:${params.importerName}:${params.importerVersion}"
             )

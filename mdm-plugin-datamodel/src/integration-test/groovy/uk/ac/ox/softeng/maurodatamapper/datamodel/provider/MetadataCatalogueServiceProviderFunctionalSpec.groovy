@@ -107,7 +107,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "JsonImporterService",
+    "name": "DataModelJsonImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
@@ -120,7 +120,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "canImportMultipleDomains": false
   },
   {
-    "name": "XmlImporterService",
+    "name": "DataModelXmlImporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "XML DataModel Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",

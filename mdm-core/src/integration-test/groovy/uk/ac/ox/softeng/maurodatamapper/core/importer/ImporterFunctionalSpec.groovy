@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.importer
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -29,6 +30,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
  *  | GET | /api/importer/parameters/${ns}?/${name}?/${version}? | Action: parameters |
  */
 @Integration
+@Slf4j
 class ImporterFunctionalSpec extends BaseFunctionalSpec {
 
     @Override
