@@ -49,7 +49,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "JsonExporterService",
+    "name": "DataModelJsonExporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "JSON DataModel Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
@@ -63,7 +63,7 @@ class MauroDataMapperServiceProviderFunctionalSpec extends BaseFunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "XmlExporterService",
+    "name": "DataModelXmlExporterService",
     "version": "${json-unit.matches:version}",
     "displayName": "XML DataModel Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",

@@ -21460,7 +21460,7 @@
     "exportedOn": "2020-07-15T13:02:41.876Z",
     "exporter": {
       "namespace": "ox.softeng.metadatacatalogue.core.spi.json",
-      "name": "JsonExporterService",
+      "name": "DataModelJsonExporterService",
       "version": "1.1"
     }
   }

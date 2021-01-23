@@ -459,7 +459,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     ],
     "displayName": "XML DataModel Exporter",
     "fileExtension": "xml",
-    "name": "XmlExporterService",
+    "name": "DataModelXmlExporterService",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "canExportMultipleDomains": false,
@@ -473,7 +473,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     ],
     "displayName": "JSON DataModel Exporter",
     "fileExtension": "json",
-    "name": "JsonExporterService",
+    "name": "DataModelJsonExporterService",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "canExportMultipleDomains": false,
@@ -2357,7 +2357,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String id = createNewItem(validJson)
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, '''{
@@ -2379,7 +2379,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
-      "name": "JsonExporterService",
+      "name": "DataModelJsonExporterService",
       "version": "2.0"
     }
   }
@@ -2395,7 +2395,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String id2 = createNewItem([label: 'Functional Test Model 2'])
 
         when:
-        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0',
+        POST('export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0',
              [dataModelIds: [id, id2]], STRING_ARG
         )
 
@@ -2419,7 +2419,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
-      "name": "JsonExporterService",
+      "name": "DataModelJsonExporterService",
       "version": "2.0"
     }
   }
@@ -2434,7 +2434,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         given:
         String id = createNewItem(validJson)
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -2481,7 +2481,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -2529,7 +2529,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -2578,7 +2578,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             modelVersion: Version.from('1.0.0')
         ])
 
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
         verifyResponse OK, jsonCapableResponse
         String exportedJsonString = jsonCapableResponse.body()
 
@@ -2826,7 +2826,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected
@@ -2858,7 +2858,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         id
 
         when:
-        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/JsonExporterService/2.0", STRING_ARG)
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter/DataModelJsonExporterService/2.0", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expected

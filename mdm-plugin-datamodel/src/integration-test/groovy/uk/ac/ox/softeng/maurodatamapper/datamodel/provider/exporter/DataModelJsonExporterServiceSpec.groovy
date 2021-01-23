@@ -37,12 +37,12 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
-class JsonExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelJsonImporterService, JsonExporterService>
+class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelJsonImporterService, DataModelJsonExporterService>
 
     implements JsonComparer {
 
     DataModelJsonImporterService dataModelJsonImporterService
-    JsonExporterService jsonExporterService
+    DataModelJsonExporterService dataModelJsonExporterService
 
     @Override
     DataModelJsonImporterService getImporterService() {
@@ -55,8 +55,8 @@ class JsonExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpe
     }
 
     @Override
-    JsonExporterService getExporterService() {
-        jsonExporterService
+    DataModelJsonExporterService getExporterService() {
+        dataModelJsonExporterService
     }
 
     @Override

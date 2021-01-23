@@ -29,7 +29,7 @@ import groovy.xml.Namespace
 class DataModelExportModel extends ExportModel {
 
     public static String getCurrentVersion(boolean isXml) {
-        isXml ? new XmlExporterService().version : new JsonExporterService().version
+        isXml ? new DataModelXmlExporterService().version : new DataModelJsonExporterService().version
     }
 
     DataModelExportModel(DataModel dataModel, ExportMetadata exportMetadata, boolean isXml) {

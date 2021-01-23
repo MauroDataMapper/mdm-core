@@ -21,7 +21,7 @@
     "exportedOn": "2018-07-02T11:52:51.069Z",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
-      "name": "JsonExporterService",
+      "name": "DataModelJsonExporterService",
       "version": "2.0"
     }
   }
