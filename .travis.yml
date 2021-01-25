@@ -34,13 +34,13 @@ jobs:
             name: "Plugin Email Proxy"
         -   stage: integration test
             name: "Core"
-            script: "cd mdm-core && ./grailsw -Dgrails.integrationTest=true test-app -integration"
-        -   script: "cd mdm-plugin-email-proxy && ./grailsw -Dgrails.integrationTest=true test-app -integration"
+            script: "cd mdm-core && ./grailsw -Dgradle.integrationTest=true test-app -integration"
+        -   script: "cd mdm-plugin-email-proxy && ./grailsw -Dgradle.integrationTest=true test-app -integration"
             name: "Plugin Email Proxy"
         -   stage: functional test
             name: "Core"
-            script: "cd mdm-core && ./grailsw -Dgrails.functionalTest=true test-app -integration"
-        -   script: "cd mdm-plugin-email-proxy && ./grailsw -Dgrails.integrationTest=true test-app -integration"
+            script: "cd mdm-core && ./grailsw -Dgradle.functionalTest=true test-app -integration"
+        -   script: "cd mdm-plugin-email-proxy && ./grailsw -Dgradle.integrationTest=true test-app -integration"
             name: "Plugin Email Proxy"
 after_failure:
     - "cd $TRAVIS_BUILD_DIR && ./gradlew publish"

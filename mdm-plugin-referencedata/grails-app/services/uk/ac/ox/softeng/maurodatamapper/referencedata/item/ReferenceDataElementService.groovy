@@ -72,6 +72,14 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
     }
 
     @Override
+    ReferenceDataElement save(Map args, ReferenceDataElement dataElement) {
+        if (!dataElement.referenceDataType.ident()) {
+            referenceDataTypeService.save(dataElement.referenceDataType)
+        }
+        super.save(args, dataElement)
+    }
+
+    @Override
     void deleteAll(Collection<ReferenceDataElement> dataElements) {
         dataElements.each { delete(it) }
     }

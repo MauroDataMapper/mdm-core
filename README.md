@@ -78,18 +78,28 @@ grails> test-app -unit
 grails> test-app -integration
 
 # To run just the integration tests
-grails> -Dgrails.integrationTest=true test-app -integration
+grails> -Dgradle.integrationTest=true test-app -integration
 
 # To run just the functional tests
-grails> -Dgrails.functionalTest=true test-app -integration
+grails> -Dgradle.functionalTest=true test-app -integration
 # or
 grails> test-app *FunctionalSpec -integration
 
 # Add --debug-jvm to start a debugger hook
 ```
 
-All pushes and Pull Requests to the MauroDataMapper repo will produce a build inside our Jenkins system which will run all of the above
-tests.
+You can also run all the tests in the same format that Jenkins runs them by using the shell script as below. This will run all the tests in order and
+generate a complete test report.
+
+```shell
+# Run the tests
+$ ./run-all-tests.sh
+
+# Open the complete test report
+$ open build/reports/tests/index.html 
+```
+
+All pushes and Pull Requests to the MauroDataMapper repo will produce a build inside our Jenkins system which will run all of the above tests.
 
 Please note the Grails default setup is to place both integration tests and functional tests into the same directory and both use the same annotation
 `grails.testing.mixin.integration.Integration` hence the reason we use system properties to allow running the tests separately.
