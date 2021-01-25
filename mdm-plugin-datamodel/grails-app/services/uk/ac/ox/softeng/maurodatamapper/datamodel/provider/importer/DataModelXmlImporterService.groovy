@@ -59,7 +59,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
     }
 
     @Override
-    DataModel importDataModel(User currentUser, byte[] content) {
+    DataModel importDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
         if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
 
@@ -72,7 +72,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
         Map map = convertToMap(result)
 
         log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
+        bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map), forceDefaultAuthority
     }
 
     @Override

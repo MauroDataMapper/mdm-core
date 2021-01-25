@@ -36,8 +36,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.SemanticLinkAwa
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.VersionLinkAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.markup.view.MarkupViewTemplateEngine
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.federation.SubscribedCatalogue
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmAtomModelCollectionRenderer
+import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmOpmlSubscribedCatalogueCollectionRenderer
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.search.filter.IdPathFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.search.filter.IdPathSecureFilterFactory
@@ -186,6 +188,16 @@ This is basically the backend API.
                 includes = []
             }
             halModelRenderer(MdmAtomModelCollectionRenderer, Model) {
+                includes = []
+            }
+
+            /*
+             * Define the OPML subscribedCatalogue renderer beans
+             */
+            halSubscribedCatalogueListRenderer(MdmOpmlSubscribedCatalogueCollectionRenderer, Collection) {
+                includes = []
+            }
+            halSubscribedCatalogueRenderer(MdmOpmlSubscribedCatalogueCollectionRenderer, SubscribedCatalogue) {
                 includes = []
             }
 

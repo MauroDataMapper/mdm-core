@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
-import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -30,7 +29,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -39,12 +41,12 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
@@ -53,11 +55,8 @@ class CodeSetService extends ModelService<CodeSet> {
     TermRelationshipTypeService termRelationshipTypeService
     TermService termService
     TermRelationshipService termRelationshipService
-    AuthorityService authorityService
     PathService pathService
-
-    @Autowired(required = false)
-    SecurityPolicyManagerService securityPolicyManagerService
+    CodeSetJsonImporterService codeSetJsonImporterService
 
     @Override
     CodeSet get(Serializable id) {
@@ -77,6 +76,11 @@ class CodeSetService extends ModelService<CodeSet> {
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
         pathPrefix == "cs"
+    }
+
+    @Override
+    String getPrefix() {
+        "codeSets"
     }
 
     Long count() {
@@ -417,7 +421,7 @@ class CodeSetService extends ModelService<CodeSet> {
     /**
      * When importing a codeSet, do checks and setting of required values as follows:
      * (1) Set the createdBy of the codeSeT to be the importing user
-     * (2) Always set authority to the default authority, overriding any authority that is set in the import data
+     * (2) Check the authority
      * (3) Check facets
      * (4) Check that terms exist
      *
@@ -425,13 +429,11 @@ class CodeSetService extends ModelService<CodeSet> {
      * @param codeSet The codeSet to be imported
      * @param bindingMap The binding map, which is necessary for looking up terms
      */
-    void checkImportedCodeSetAssociations(User importingUser, CodeSet codeSet, Map bindingMap = [:]) {
+    void checkImportedCodeSetAssociations(User importingUser, CodeSet codeSet, Map bindingMap = [:], boolean forceDefaultAuthority) throws
+        ApiBadRequestException {
         codeSet.createdBy = importingUser.emailAddress
 
-        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the
-        // import.
-        codeSet.authority = authorityService.getDefaultAuthority()
-
+        checkAuthorityAfterImportingModel(importingUser, codeSet, forceDefaultAuthority)
         checkFacetsAfterImportingCatalogueItem(codeSet)
 
         //Terms are imported by use of a path such as "te:my-terminology-label|tm:my-term-label"
@@ -455,6 +457,11 @@ class CodeSetService extends ModelService<CodeSet> {
                 }
             }
         }
+    }
+
+    @Override
+    ModelImporterProviderService<CodeSet, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
+        codeSetJsonImporterService
     }
 
     @Override

@@ -49,7 +49,7 @@ class ReferenceDataXmlImporterService
     }
 
     @Override
-    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
+    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
         if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
 
@@ -61,6 +61,6 @@ class ReferenceDataXmlImporterService
         Map map = convertToMap(result)
 
         log.debug('Importing ReferenceDataModel map')
-        bindMapToReferenceDataModel currentUser, new HashMap(map.referenceDataModel)
+        bindMapToReferenceDataModel currentUser, new HashMap(map.referenceDataModel), forceDefaultAuthority
     }
 }

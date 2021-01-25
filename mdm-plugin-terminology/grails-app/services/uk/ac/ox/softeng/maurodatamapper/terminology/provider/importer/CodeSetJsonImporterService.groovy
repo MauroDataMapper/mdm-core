@@ -41,7 +41,7 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
     }
 
     @Override
-    CodeSet importCodeSet(User currentUser, byte[] content) {
+    CodeSet importCodeSet(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
@@ -51,6 +51,6 @@ class CodeSetJsonImporterService extends DataBindCodeSetImporterProviderService<
         if (!codeSet) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as codeSet is not present')
 
         log.debug('Importing CodeSet map')
-        bindMapToCodeSet currentUser, new HashMap(codeSet)
+        bindMapToCodeSet currentUser, new HashMap(codeSet), forceDefaultAuthority
     }
 }

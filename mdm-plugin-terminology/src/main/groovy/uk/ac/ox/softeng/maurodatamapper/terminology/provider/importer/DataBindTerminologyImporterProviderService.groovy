@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
@@ -33,7 +34,7 @@ import org.springframework.core.GenericTypeResolver
 abstract class DataBindTerminologyImporterProviderService<T extends TerminologyFileImporterProviderServiceParameters> extends
     TerminologyImporterProviderService<T> {
 
-    abstract Terminology importTerminology(User currentUser, byte[] content)
+    abstract Terminology importTerminology(User currentUser, byte[] content, boolean forceDefaultAuthority = true)
 
     List<Terminology> importTerminologies(User currentUser, byte[] content) {
         throw new ApiBadRequestException('FBIP04', "${getName()} cannot import multiple Terminologies")
@@ -57,13 +58,17 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
     }
 
     Terminology importModel(User currentUser, T params) {
-        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
-        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
-        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        importTerminology(currentUser, params.importFile.fileContents)
+        importModel(currentUser, params, true)
     }
 
-    Terminology bindMapToTerminology(User currentUser, Map terminologyMap) {
+    Terminology importModel(User currentUser, T params, boolean forceDefaultAuthority) {
+        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
+        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
+        log.info('Importing {} as {} with forceDefaultAuthority {}', params.importFile.fileName, currentUser.emailAddress, forceDefaultAuthority)
+        importTerminology(currentUser, params.importFile.fileContents, forceDefaultAuthority)
+    }
+
+    Terminology bindMapToTerminology(User currentUser, Map terminologyMap, boolean forceDefaultAuthority = true) {
         if (!terminologyMap) throw new ApiBadRequestException('FBIP03', 'No TerminologyMap supplied to import')
 
         Terminology terminology = new Terminology()
@@ -72,7 +77,7 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
 
         bindTermRelationships(terminology, terminologyMap.termRelationships)
 
-        terminologyService.checkImportedTerminologyAssociations(currentUser, terminology)
+        terminologyService.checkImportedTerminologyAssociations(currentUser, terminology, forceDefaultAuthority)
 
         log.info('Import complete')
         terminology

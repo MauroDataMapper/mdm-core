@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.federation.SubscribedModel
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<SubscribedModel> subscribedModelList
+}
+
+json {
+    count subscribedModelList instanceof PagedResultList ? ((PagedResultList) subscribedModelList).getTotalCount() : subscribedModelList?.size() ?: 0
+    items tmpl.subscribedModel(subscribedModelList ?: [])
+}

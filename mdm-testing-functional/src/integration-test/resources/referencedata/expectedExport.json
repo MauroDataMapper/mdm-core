@@ -7,6 +7,7 @@
       "documentationVersion": "1.0.0",
       "finalised": true,
       "dateFinalised": null,
+      "modelVersion": "1.0.0",
       "authority": {
         "id": "${json-unit.matches:id}",
         "url": "http://localhost",

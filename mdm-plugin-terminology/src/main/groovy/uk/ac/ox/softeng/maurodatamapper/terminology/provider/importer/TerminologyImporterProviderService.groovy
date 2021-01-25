@@ -21,6 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyImporterProviderServiceParameters

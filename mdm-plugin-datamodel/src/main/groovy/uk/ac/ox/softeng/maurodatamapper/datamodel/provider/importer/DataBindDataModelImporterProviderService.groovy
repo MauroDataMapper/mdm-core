@@ -33,7 +33,7 @@ import org.springframework.core.GenericTypeResolver
 abstract class DataBindDataModelImporterProviderService<T extends DataModelFileImporterProviderServiceParameters> extends
     DataModelImporterProviderService<T> {
 
-    abstract DataModel importDataModel(User currentUser, byte[] content)
+    abstract DataModel importDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true)
 
     List<DataModel> importDataModels(User currentUser, byte[] content) {
         throw new ApiBadRequestException('FBIP04', "${getName()} cannot import multiple DataModels")
@@ -57,15 +57,18 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
         importDataModels(currentUser, params.importFile.fileContents)
     }
 
-    @Override
     DataModel importModel(User currentUser, DataModelFileImporterProviderServiceParameters params) {
-        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
-        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
-        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        importDataModel(currentUser, params.importFile.fileContents)
+        importModel(currentUser, params, true)
     }
 
-    DataModel bindMapToDataModel(User currentUser, Map dataModelMap) {
+    DataModel importModel(User currentUser, DataModelFileImporterProviderServiceParameters params, boolean forceDefaultAuthority) {
+        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
+        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
+        log.info('Importing {} as {} with forceDefaultAuthority {}', params.importFile.fileName, currentUser.emailAddress, forceDefaultAuthority)
+        importDataModel(currentUser, params.importFile.fileContents, forceDefaultAuthority)
+    }
+
+    DataModel bindMapToDataModel(User currentUser, Map dataModelMap, boolean forceDefaultAuthority = true) {
         if (!dataModelMap) throw new ApiBadRequestException('FBIP03', 'No DataModelMap supplied to import')
 
         log.debug('Setting map dataClasses')
@@ -76,7 +79,7 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
         DataBindingUtils.bindObjectToInstance(dataModel, dataModelMap, null, getImportBlacklistedProperties(), null)
 
         log.debug('Fixing bound DataModel')
-        dataModelService.checkImportedDataModelAssociations(currentUser, dataModel, dataModelMap)
+        dataModelService.checkImportedDataModelAssociations(currentUser, dataModel, dataModelMap, forceDefaultAuthority)
 
         log.debug('Binding complete')
         dataModel

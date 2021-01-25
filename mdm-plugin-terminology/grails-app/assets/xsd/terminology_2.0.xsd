@@ -27,6 +27,11 @@ Otherwise you will get an import error due to non-unique labels</xs:documentatio
           <xs:documentation>If finalised is true then this element is NOT optional</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" name="modelVersion" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>ModelVersion must only be set if the Terminology is finalised.</xs:documentation>
+        </xs:annotation>
+      </xs:element> 
       <xs:element name="termRelationshipTypes" type="mdm:termRelationshipTypeCollectionCT" minOccurs="0" />
       <xs:element name="terms" type="mdm:termCollectionCT" minOccurs="0" />
       <xs:element name="termRelationships" type="mdm:termRelationshipCollectionCT" minOccurs="0" />

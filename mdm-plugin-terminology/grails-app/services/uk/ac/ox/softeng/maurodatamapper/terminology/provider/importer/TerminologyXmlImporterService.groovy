@@ -48,7 +48,7 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
     }
 
     @Override
-    Terminology importTerminology(User currentUser, byte[] content) {
+    Terminology importTerminology(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
         if (!currentUser) throw new ApiUnauthorizedException('XTIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XTIS02', 'Cannot import empty content')
 
@@ -61,7 +61,7 @@ class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderS
         Map map = convertToMap(result)
 
         log.debug('Importing Terminology map')
-        bindMapToTerminology currentUser, backwardsCompatibleExtractTerminologyMap(result, map)
+        bindMapToTerminology currentUser, backwardsCompatibleExtractTerminologyMap(result, map), forceDefaultAuthority
     }
 
     Map backwardsCompatibleExtractTerminologyMap(GPathResult result, Map map) {

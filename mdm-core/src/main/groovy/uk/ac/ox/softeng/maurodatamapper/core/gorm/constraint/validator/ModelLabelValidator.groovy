@@ -49,8 +49,9 @@ class ModelLabelValidator implements Validator<String>, VersionAwareValidator {
 
         List<Model> modelsWithTheSameLabel
         // Existing models can change label but it must not already be in use
-        if (model.ident()) modelsWithTheSameLabel = modelClass.findAllByLabelAndIdNotEqual(value, model.ident())
-        else modelsWithTheSameLabel = modelClass.findAllByLabel(value)
+        // The same label is allowed for a different authority
+        if (model.ident()) modelsWithTheSameLabel = modelClass.findAllByLabelAndAuthorityAndIdNotEqual(value, model.authority, model.ident())
+        else modelsWithTheSameLabel = modelClass.findAllByLabelAndAuthority(value, model.authority)
 
         checkLabelValidity(modelsWithTheSameLabel.toSet() as Set<VersionAware>)
 

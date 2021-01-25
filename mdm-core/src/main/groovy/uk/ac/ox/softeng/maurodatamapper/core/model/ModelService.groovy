@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -28,12 +30,16 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.federation.SubscribedModelService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -49,10 +55,14 @@ import org.springframework.context.MessageSource
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+
 @Slf4j
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
     protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
+
+    @Autowired(required = false)
+    AuthorityService authorityService
 
     @Autowired(required = false)
     Set<ModelItemService> modelItemServices
@@ -69,12 +79,23 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     @Autowired
     MessageSource messageSource
 
+    @Autowired(required = false)
+    Set<ModelImporterProviderService> modelImporterProviderServices
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
+
+    @Autowired(required = false)
+    SubscribedModelService subscribedModelService
+
     @Override
     Class<K> getCatalogueItemClass() {
         getModelClass()
     }
 
     abstract Class<K> getModelClass()
+
+    abstract String getPrefix()
 
     abstract List<K> findAllByContainerId(UUID containerId)
 
@@ -124,6 +145,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract List<K> findAllByMetadataNamespace(String namespace, Map pagination = [:])
 
     abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
+
+    abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
     void deleteModelAndContent(K model) {
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
@@ -221,6 +244,21 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         }
         if (!constrainedIds) return []
         findAllReadableModels(constrainedIds, includeDeleted)
+    }
+
+    /**
+     * List models that are suitable for another catalogue to subscribe to. i.e. the model is
+     * readable, finalised, and has an authority equal to the default authority of this catalogue.
+     * List superseded models in order that when a new model version is created, we can still see its ancestors.
+     *
+     * @param userSecurityPolicyManager
+     * @return List<K>    a list of subscribable models
+     */
+    List<K> findAllSubscribableModels(UserSecurityPolicyManager userSecurityPolicyManager) {
+        List<K> readableModels = findAllReadableModels(userSecurityPolicyManager, false, true, false)
+
+        readableModels.findAll {it.finalised && it.authority.id == authorityService.getDefaultAuthority().id}
+
     }
 
     K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
@@ -523,6 +561,31 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             }
         }
         catalogueItem
+    }
+
+    /**
+     * After importing a model, either force the authority to be the default authority, or otherwise create or use an existing authority
+     * @param importingUser
+     * @param model
+     * @param forceDefaultAuthority If true then any imported authority will be overwritten with the default authority
+     * @return The model with its authority checked
+     */
+    K checkAuthorityAfterImportingModel(User importingUser, K model, boolean forceDefaultAuthority) {
+        if (forceDefaultAuthority) {
+            model.authority = authorityService.getDefaultAuthority()
+        } else {
+            //If the authority already exists then use it, otherwise create a new one but set the createdBy property
+            Authority exists = authorityService.findByLabel(model.authority.label)
+            if (exists) {
+                model.authority = exists
+            } else {
+                model.authority.createdBy = importingUser.emailAddress
+
+                //Save this new authority so that it is available later for ModelLabelValidator
+                authorityService.save(model.authority)
+            }
+        }
+        model
     }
 
     @Override

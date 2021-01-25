@@ -33,6 +33,11 @@ Otherwise you will get an import error due to non-unique labels</xs:documentatio
               <xs:documentation>If finalised is true then this element is NOT optional</xs:documentation>
             </xs:annotation>
           </xs:element>
+          <xs:element minOccurs="0" name="modelVersion" type="xs:string">
+            <xs:annotation>
+            <xs:documentation>ModelVersion must only be set if the ReferenceDataModel is finalised.</xs:documentation>
+          </xs:annotation>
+          </xs:element>
           <xs:element name="authority" type="mdm:authorityType" />
           <xs:element name="referenceDataTypes" type="mdm:referenceDataTypesType" maxOccurs="1" minOccurs="0">
             <xs:annotation>

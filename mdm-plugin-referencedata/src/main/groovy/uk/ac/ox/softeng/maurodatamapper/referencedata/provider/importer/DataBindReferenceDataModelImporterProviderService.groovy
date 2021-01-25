@@ -33,7 +33,7 @@ import org.springframework.core.GenericTypeResolver
 abstract class DataBindReferenceDataModelImporterProviderService<T extends ReferenceDataModelFileImporterProviderServiceParameters> extends
     ReferenceDataModelImporterProviderService<T> {
 
-    abstract ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content)
+    abstract ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true)
 
     List<ReferenceDataModel> importReferenceDataModels(User currentUser, byte[] content) {
         throw new ApiBadRequestException('FBIP04', "${getName()} cannot import multiple Reference Data Models")
@@ -57,15 +57,18 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         importReferenceDataModels(currentUser, params.importFile.fileContents)
     }
 
-    @Override
     ReferenceDataModel importModel(User currentUser, ReferenceDataModelFileImporterProviderServiceParameters params) {
-        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
-        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
-        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        importReferenceDataModel(currentUser, params.importFile.fileContents)
+        importModel(currentUser, params, true)
     }
 
-    ReferenceDataModel bindMapToReferenceDataModel(User currentUser, Map referenceDataModelMap) {
+    ReferenceDataModel importModel(User currentUser, ReferenceDataModelFileImporterProviderServiceParameters params, boolean forceDefaultAuthority) {
+        if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
+        if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
+        log.info('Importing {} as {} with forceDefaultAuthority {}', params.importFile.fileName, currentUser.emailAddress, forceDefaultAuthority)
+        importReferenceDataModel(currentUser, params.importFile.fileContents, forceDefaultAuthority)
+    }
+
+    ReferenceDataModel bindMapToReferenceDataModel(User currentUser, Map referenceDataModelMap, boolean forceDefaultAuthority) {
         if (!referenceDataModelMap) throw new ApiBadRequestException('FBIP03', 'No ReferenceDataModelMap supplied to import')
 
         log.debug('Setting map referenceDataTypes')
@@ -81,10 +84,10 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         DataBindingUtils.bindObjectToInstance(referenceDataModel, referenceDataModelMap, null, getImportBlacklistedProperties(), null)
 
         /**
-         * Bind each Reference Data Value. Somehow the JsonSluper and XmlSlurper produce different results. For Json, it is sufficient to do
+         * Bind each Reference Data Value. Somehow the JsonSlurper and XmlSlurper produce different results. For Json, it is sufficient to do
          * referenceDataModelMap.referenceDataValues = referenceDataModelMap.remove('referenceDataValues')
          *
-         * But when referenceDataModelMap has come from the XmlSluper, using the line above does not set the referenceDataElement 
+         * But when referenceDataModelMap has come from the XmlSlurper, using the line above does not set the referenceDataElement
          * attribute of each ReferenceDataValue.
          */
         mappedReferenceDataValues.each { rdv ->
@@ -100,7 +103,7 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
 
 
         log.debug('Fixing bound ReferenceDataModel')
-        referenceDataModelService.checkImportedReferenceDataModelAssociations(currentUser, referenceDataModel, referenceDataModelMap)
+        referenceDataModelService.checkImportedReferenceDataModelAssociations(currentUser, referenceDataModel, referenceDataModelMap, forceDefaultAuthority)
 
         log.info('Import complete')
         referenceDataModel

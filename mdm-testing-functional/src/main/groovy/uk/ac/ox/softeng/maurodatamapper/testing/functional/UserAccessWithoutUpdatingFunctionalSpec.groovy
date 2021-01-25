@@ -270,7 +270,7 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
             if (rolesLeftOver) {
                 log.warn('Roles not cleaned up : {}', rolesLeftOver.size())
                 rolesLeftOver.each { role ->
-                    log.warn('Left over role resource {}:{}', role.securableResourceDomainType, role.securableResourceId)
+                    log.warn('Left over role resource {}:{}:{}:{}', role.groupRole.name, role.userGroup.name, role.securableResourceDomainType, role.securableResourceId)
                 }
                 Assert.fail('Roles remaining these need to be cleaned up from another test.' +
                             '\nSee logs to find out what roles and resources havent been cleaned')

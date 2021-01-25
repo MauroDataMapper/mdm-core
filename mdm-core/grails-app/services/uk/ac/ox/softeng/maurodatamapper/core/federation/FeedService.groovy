@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.feed
+package uk.ac.ox.softeng.maurodatamapper.core.federation
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -37,7 +37,7 @@ class FeedService {
         List<Model> models = []
 
         modelServices.each {
-            models.addAll(it.findAllReadableModels(userSecurityPolicyManager, false, false, false))
+            models.addAll(it.findAllSubscribableModels(userSecurityPolicyManager))
         }
         
         models

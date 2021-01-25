@@ -15,15 +15,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.feed
+package uk.ac.ox.softeng.maurodatamapper.core.federation
 
-import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+import java.time.OffsetDateTime
 
-class FeedInterceptor implements MdmInterceptor {
 
-    boolean before() {
-        // Allow anyone to retrieve feeds
-        actionName == 'index'
+class AvailableModel {
+
+    UUID id
+    String label
+    String description
+    String modelType
+    OffsetDateTime lastUpdated
+
+    AvailableModel() {
+
     }
-
 }

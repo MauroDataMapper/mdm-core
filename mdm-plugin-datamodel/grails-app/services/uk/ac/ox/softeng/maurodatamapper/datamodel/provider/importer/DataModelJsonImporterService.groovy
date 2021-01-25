@@ -41,7 +41,7 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
     }
 
     @Override
-    DataModel importDataModel(User currentUser, byte[] content) {
+    DataModel importDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
@@ -51,6 +51,6 @@ class DataModelJsonImporterService extends DataBindDataModelImporterProviderServ
         if (!dataModel) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as dataModel is not present')
 
         log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, new HashMap(dataModel)
+        bindMapToDataModel currentUser, new HashMap(dataModel), forceDefaultAuthority
     }
 }

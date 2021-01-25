@@ -40,6 +40,11 @@ Otherwise you will get an import error due to non-unique labels</xs:documentatio
               <xs:documentation>If finalised is true then this element is NOT optional</xs:documentation>
             </xs:annotation>
           </xs:element>
+          <xs:element minOccurs="0" name="modelVersion" type="xs:string">
+            <xs:annotation>
+            <xs:documentation>ModelVersion must only be set if the DataModel is finalised.</xs:documentation>
+          </xs:annotation>
+          </xs:element>
           <xs:element name="dataTypes" type="mdm:dataTypesType" maxOccurs="1" minOccurs="0">
             <xs:annotation>
               <xs:documentation>Whilst it is preferable to provide the list of DataTypes here and then use the label and domainType to link from the DataElement, you can provide the DataType information at the DataElement level.

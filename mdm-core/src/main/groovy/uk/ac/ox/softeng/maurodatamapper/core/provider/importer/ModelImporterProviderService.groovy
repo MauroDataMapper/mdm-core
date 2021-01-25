@@ -39,9 +39,14 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
 
     abstract List<M> importModels(User currentUser, P params)
 
-    @Override
-    M importDomain(User currentUser, ModelImporterProviderServiceParameters params) {
-        M model = importModel(currentUser, params as P)
+    M importModel(User currentUser, P params, boolean forceDefaultAuthority) {
+        //no-op
+        //Implement in providers that give the option of not forcing the authority
+        //to be set to the default
+    }
+
+    M importDomain(User currentUser, ModelImporterProviderServiceParameters params, boolean forceDefaultAuthority) {
+        M model = importModel(currentUser, params)
         if (!model) return null
         M updated = updateImportedModelFromParameters(model, params as P, false)
         checkImport(currentUser, updated, params as P)

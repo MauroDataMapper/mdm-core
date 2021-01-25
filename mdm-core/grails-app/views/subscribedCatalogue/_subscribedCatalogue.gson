@@ -1,0 +1,23 @@
+import uk.ac.ox.softeng.maurodatamapper.core.federation.SubscribedCatalogue
+
+model {
+    SubscribedCatalogue subscribedCatalogue
+}
+
+json {
+    id subscribedCatalogue.id
+    url subscribedCatalogue.url
+    label subscribedCatalogue.label
+
+    if (subscribedCatalogue.description) {
+        description subscribedCatalogue.description
+    }
+
+    if (subscribedCatalogue.refreshPeriod) {
+        refreshPeriod subscribedCatalogue.refreshPeriod
+    }
+
+    if (subscribedCatalogue.apiKey) {
+        apiKey subscribedCatalogue.apiKey
+    }     
+}

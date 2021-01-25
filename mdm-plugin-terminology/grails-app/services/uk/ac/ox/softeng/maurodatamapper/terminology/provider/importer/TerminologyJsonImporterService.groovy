@@ -41,7 +41,7 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
     }
 
     @Override
-    Terminology importTerminology(User currentUser, byte[] content) {
+    Terminology importTerminology(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
@@ -51,6 +51,6 @@ class TerminologyJsonImporterService extends DataBindTerminologyImporterProvider
         if (!terminology) throw new ApiBadRequestException('JIS03', 'Cannot import JSON as terminology is not present')
 
         log.debug('Importing Terminology map')
-        bindMapToTerminology currentUser, new HashMap(terminology)
+        bindMapToTerminology currentUser, new HashMap(terminology), forceDefaultAuthority
     }
 }

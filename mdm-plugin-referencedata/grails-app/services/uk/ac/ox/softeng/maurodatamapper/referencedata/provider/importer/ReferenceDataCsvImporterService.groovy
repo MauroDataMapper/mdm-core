@@ -56,7 +56,7 @@ class ReferenceDataCsvImporterService
     }
 
     @Override
-    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
+    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
