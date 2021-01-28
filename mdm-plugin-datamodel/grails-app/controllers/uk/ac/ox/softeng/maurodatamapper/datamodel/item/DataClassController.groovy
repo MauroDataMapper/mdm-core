@@ -54,7 +54,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
         params.max = Math.min(max ?: 10, 100)
         params.sort = params.sort ?: 'label'
 
-        respond content: dataClassService.findAllContentOfDataClassId(params.dataClassId, params)
+        respond content: dataClassService.findAllContentOfDataClassIdInDataModelId(params.dataModelId, params.dataClassId, params)
     }
 
     def search(SearchParams searchParams) {
@@ -122,7 +122,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
     @Override
     protected DataClass queryForResource(Serializable resourceId) {
         if (params.dataClassId) {
-            return dataClassService.findByParentDataClassIdAndId(params.dataClassId, resourceId)
+            return dataClassService.findByDataModelIdAndParentDataClassIdAndId(params.dataModelId, params.dataClassId, resourceId)
         }
         return dataClassService.findWhereRootDataClassOfDataModelIdAndId(params.dataModelId, resourceId)
     }
@@ -131,7 +131,11 @@ class DataClassController extends CatalogueItemController<DataClass> {
     protected List<DataClass> listAllReadableResources(Map params) {
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
         if (params.dataClassId) {
-            return dataClassService.findAllByParentDataClassId(params.dataClassId, params)
+            if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
+                notFound(params.dataClassId)
+                return null
+            }
+            return dataClassService.findAllByDataModelIdAndParentDataClassId(params.dataModelId, params.dataClassId, params)
         }
         if (((GrailsParameterMap) params).boolean('all', false)) {
             if (params.search) {

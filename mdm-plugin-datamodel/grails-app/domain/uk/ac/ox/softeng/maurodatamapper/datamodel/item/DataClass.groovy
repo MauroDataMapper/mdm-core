@@ -129,7 +129,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     @Override
     Boolean hasChildren() {
         if (id) {
-            DataClass.byParentDataClassId(this.id).count() != 0
+            DataClass.byDataModelIdAndParentDataClassId(this.id).count() != 0
         } else {
             this.dataClasses == null ? false : !this.dataClasses.isEmpty()
         }
@@ -230,18 +230,18 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         new DetachedCriteria<DataClass>(DataClass).eq('dataModel.id', dataModelId)
     }
 
-    static DetachedCriteria<DataClass> byParentDataClassId(UUID dataClassId) {
-        new DetachedCriteria<DataClass>(DataClass).eq('parentDataClass.id', dataClassId)
+    static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId) {
+        byDataModelId(dataModelId).eq('parentDataClass.id', dataClassId)
     }
 
     static DetachedCriteria<DataClass> byRootDataClassOfDataModelId(UUID dataModelId) {
         byDataModelId(dataModelId).isNull('parentDataClass')
     }
 
-    static DetachedCriteria<DataClass> byChildOfDataClassId(UUID dataClassId) {
+    static DetachedCriteria<DataClass> byDataModelIdAndChildOfDataClassId(UUID dataModelId, UUID dataClassId) {
         DetachedCriteria<DataClass> criteria = new DetachedCriteria<>(DataClass)
         criteria.or {
-            inList('id', byParentDataClassId(dataClassId).id())
+            inList('id', byDataModelIdAndParentDataClassId(dataModelId, dataClassId).id())
             inList('id', DataElement.byDataClassId(dataClassId).id())
         }
     }

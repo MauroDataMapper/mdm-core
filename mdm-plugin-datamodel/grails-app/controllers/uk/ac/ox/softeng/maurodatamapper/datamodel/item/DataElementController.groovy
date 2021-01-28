@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 
 import grails.gorm.transactions.Transactional
 
@@ -30,6 +31,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
     DataClassService dataClassService
     DataElementService dataElementService
     DataModelService dataModelService
+    DataTypeService dataTypeService
 
     DataElementController() {
         super(DataElement)
@@ -94,9 +96,10 @@ class DataElementController extends CatalogueItemController<DataElement> {
     @Override
     protected DataElement queryForResource(Serializable resourceId) {
         if (params.dataTypeId) {
+            if (!dataTypeService.findByDataModelIdAndId(params.dataModelId, params.dataTypeId)) return null
             return dataElementService.findByDataTypeIdAndId(params.dataTypeId, resourceId)
         }
-
+        if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) return null
         return dataElementService.findByDataClassIdAndId(params.dataClassId, resourceId)
     }
 
@@ -104,10 +107,18 @@ class DataElementController extends CatalogueItemController<DataElement> {
     protected List<DataElement> listAllReadableResources(Map params) {
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
         if (params.dataTypeId) {
+            if (!dataTypeService.findByDataModelIdAndId(params.dataModelId, params.dataTypeId)) {
+                notFound(params.dataTypeId)
+                return null
+            }
             return dataElementService.findAllByDataTypeId(params.dataTypeId, params)
         }
         if (params.all) removePaginationParameters()
 
+        if (!dataClassService.findByDataModelIdAndId(params.dataModelId, params.dataClassId)) {
+            notFound(params.dataClassId)
+            return null
+        }
         return dataElementService.findAllByDataClassId(params.dataClassId, params)
     }
 

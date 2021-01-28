@@ -58,7 +58,10 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
         def res = listAllResources(params)
-        if (!response.isCommitted()) respond res, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'index']
+        // The new grails-views code sets the modelAndView object rather than writing the response
+        // Therefore if thats written then we dont want to try and re-write it
+        if (response.isCommitted() || modelAndView) return
+        respond res, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'index']
     }
 
     @Override

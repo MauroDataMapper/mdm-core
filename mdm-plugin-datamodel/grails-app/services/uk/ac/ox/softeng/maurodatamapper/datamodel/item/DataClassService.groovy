@@ -340,37 +340,37 @@ class DataClassService extends ModelItemService<DataClass> {
         false
     }
 
-    DataClass findByDataModelIdAndId(Serializable dataModelId, Serializable id) {
+    DataClass findByDataModelIdAndId(UUID dataModelId, Serializable id) {
         DataClass.byDataModelId(dataModelId).idEq(id).find()
     }
 
-    DataClass findByParentDataClassIdAndId(Serializable dataClassId, Serializable id) {
-        DataClass.byParentDataClassId(dataClassId).idEq(id).find()
+    DataClass findByDataModelIdAndParentDataClassIdAndId(UUID dataModelId, UUID dataClassId, Serializable id) {
+        DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId).idEq(id).find()
     }
 
     DataClass findByDataModelIdAndLabel(UUID dataModelId, String label) {
         DataClass.byDataModelId(dataModelId).eq('label', label).find()
     }
 
-    DataClass findWhereRootDataClassOfDataModelIdAndId(Serializable dataModelId, Serializable id) {
+    DataClass findWhereRootDataClassOfDataModelIdAndId(UUID dataModelId, Serializable id) {
         DataClass.byRootDataClassOfDataModelId(dataModelId).idEq(id).find()
     }
 
-    Boolean existsWhereRootDataClassOfDataModelIdAndId(Serializable dataModelId, Serializable id) {
+    Boolean existsWhereRootDataClassOfDataModelIdAndId(UUID dataModelId, Serializable id) {
         DataClass.byRootDataClassOfDataModelId(dataModelId).idEq(id).count() == 1
     }
 
-    def findAllByParentDataClassId(Serializable dataClassId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byParentDataClassId(dataClassId), paginate).list(paginate)
+    def findAllByDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
+        DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId), paginate).list(paginate)
     }
 
-    def findAllWhereRootDataClassOfDataModelId(Serializable dataModelId, Map paginate = [:]) {
+    def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:]) {
         DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId), paginate).list(paginate)
     }
 
-    List<ModelItem> findAllContentOfDataClassId(Serializable dataClassId, Map paginate = [:]) {
+    List<ModelItem> findAllContentOfDataClassIdInDataModelId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
         List<ModelItem> content = []
-        content.addAll(DataClass.withFilter(DataClass.byChildOfDataClassId(dataClassId), paginate).list())
+        content.addAll(DataClass.withFilter(DataClass.byDataModelIdAndChildOfDataClassId(dataModelId, dataClassId), paginate).list())
         content.addAll(dataElementService.findAllByDataClassId(dataClassId, paginate, [:]))
         content
     }
@@ -379,11 +379,11 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.byDataModelId(dataModelId).count()
     }
 
-    def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
+    def findAllByDataModelId(UUID dataModelId, Map paginate = [:]) {
         DataClass.withFilter(DataClass.byDataModelId(dataModelId), paginate).list(paginate)
     }
 
-    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:]) {
         DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
     }
 
@@ -624,7 +624,8 @@ class DataClassService extends ModelItemService<DataClass> {
 
     @Override
     List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean forDiff = false) {
-        (DataClass.byParentDataClassId(dataClass.id).list() + (forDiff ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
+        (DataClass.byDataModelIdAndParentDataClassId(dataClass.id).list() +
+         (forDiff ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
     }
 
     @Override

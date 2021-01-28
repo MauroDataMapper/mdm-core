@@ -113,14 +113,14 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         and:
         dataClassList[0].label == 'Integration grandparent'
         dataClassList[0].dataClasses.size() == 1
-        dataClassList[0].dataClasses.find { it.label == 'Integration parent' }
+        dataClassList[0].dataClasses.find {it.label == 'Integration parent'}
 
         and:
         dataClassList[1].label == 'Integration parent'
         dataClassList[1].minMultiplicity == 0
         dataClassList[1].maxMultiplicity == 1
         dataClassList[1].dataClasses.size() == 1
-        dataClassList[1].dataClasses.find { it.label == 'Integration child' }
+        dataClassList[1].dataClasses.find {it.label == 'Integration child'}
     }
 
     void "test count"() {
@@ -169,9 +169,9 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         assert dataClassId
 
         and:
-        dataClassService.findByParentDataClassIdAndId(grandParentId, parentId)
-        dataClassService.findByParentDataClassIdAndId(parentId, dataClassId)
-        !dataClassService.findByParentDataClassIdAndId(grandParentId, dataClassId)
+        dataClassService.findByDataModelIdAndParentDataClassIdAndId(dataModel.id, grandParentId, parentId)
+        dataClassService.findByDataModelIdAndParentDataClassIdAndId(dataModel.id, parentId, dataClassId)
+        !dataClassService.findByDataModelIdAndParentDataClassIdAndId(dataModel.id, grandParentId, dataClassId)
     }
 
     void 'test findWhereRootDataClassOfDataModelIdAndId'() {
@@ -203,9 +203,9 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def dataClassId = DataClass.findByLabel('Integration child').id
 
         expect:
-        dataClassService.findAllByParentDataClassId(grandParentId).size() == 1
-        dataClassService.findAllByParentDataClassId(parentId).size() == 1
-        dataClassService.findAllByParentDataClassId(dataClassId).isEmpty()
+        dataClassService.findAllByDataModelIdAndParentDataClassId(dataModel.id, grandParentId).size() == 1
+        dataClassService.findAllByDataModelIdAndParentDataClassId(dataModel.id, parentId).size() == 1
+        dataClassService.findAllByDataModelIdAndParentDataClassId(dataModel.id, dataClassId).isEmpty()
     }
 
     void 'test findAllWhereRootDataClassOfDataModelId'() {
@@ -227,8 +227,8 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def parentId = DataClass.findByLabel('Integration parent').id
 
         expect:
-        dataClassService.findAllContentOfDataClassId(grandParentId).size() == 1
-        dataClassService.findAllContentOfDataClassId(parentId).size() == 2
+        dataClassService.findAllContentOfDataClassIdInDataModelId(dataModel.id, grandParentId).size() == 1
+        dataClassService.findAllContentOfDataClassIdInDataModelId(dataModel.id, parentId).size() == 2
 
     }
 
@@ -296,7 +296,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.referenceTypes
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying simple DataClass with simple data elements'() {
@@ -349,18 +349,18 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.dataElements.size() == original.dataElements.size()
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying complex dataclass'() {
         given:
         setupData()
-        DataClass complex = dataModel.dataClasses.find { it.label == 'Integration grandparent' }
+        DataClass complex = dataModel.dataClasses.find {it.label == 'Integration grandparent'}
         DataModel copyModel = new DataModel(label: 'copy', createdByUser: editor, folder: testFolder, authority: testAuthority)
         checkAndSave(copyModel)
         dataModelService.updateFacetsAfterInsertingCatalogueItem(copyModel)
         sessionFactory.currentSession.flush()
-        dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find { it.label == 'dc1' }, editor, userSecurityPolicyManager)
+        dataClassService.copyDataClass(copyModel, dataModel.childDataClasses.find {it.label == 'dc1'}, editor, userSecurityPolicyManager)
 
         expect:
         check(copyModel)
@@ -408,20 +408,20 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copiedParent
         copiedParent.label == 'Integration parent'
         copiedParent.dataClasses.size() == 1
-        copiedParent.dataClasses.find { it.label == 'Integration child' }
+        copiedParent.dataClasses.find {it.label == 'Integration child'}
         copiedParent.dataElements.size() == 1
         copiedParent.referenceTypes.size() == 1
-        copiedParent.referenceTypes.find { it.label == 'Integration parent' }
+        copiedParent.referenceTypes.find {it.label == 'Integration parent'}
 
         when:
-        ReferenceType referenceType = copyModel.dataTypes.find { it.label == 'Integration parent' } as ReferenceType
+        ReferenceType referenceType = copyModel.dataTypes.find {it.label == 'Integration parent'} as ReferenceType
 
         then:
         referenceType
         referenceType.referenceClass == copiedParent
 
         when:
-        DataElement copiedElement = copiedParent.dataElements.find { it.label == 'parentel' }
+        DataElement copiedElement = copiedParent.dataElements.find {it.label == 'parentel'}
 
         then:
         copiedElement
