@@ -15,14 +15,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
+package uk.ac.ox.softeng.maurodatamapper.core.traits.service
 
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportGroupConfig
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.config.ImportParameterConfig
+trait DomainService<K> {
 
-/**
- * @since 14/09/2020
- */
-class TerminologyAdditionalImporterProviderServiceParameters extends TerminologyFileImporterProviderServiceParameters {
-  
+    abstract K get(Serializable id)
+
+    abstract List<K> list(Map args)
+
+    abstract Long count()
+
+    abstract void delete(K domain)
 }

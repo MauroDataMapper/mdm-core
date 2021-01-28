@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
@@ -189,7 +190,7 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
     }
 
-    Term copy(Terminology copiedTerminology, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
+    Term copy(Model copiedTerminology, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
         copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 
@@ -197,7 +198,7 @@ class TermService extends ModelItemService<Term> {
         copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, copier, userSecurityPolicyManager)
     }
 
-    private Term copyTermIntoTerminologyOrCodeSet(copiedTerminologyOrCodeSet, Term original, User copier,
+    private Term copyTermIntoTerminologyOrCodeSet(Model copiedTerminologyOrCodeSet, Term original, User copier,
                                                   UserSecurityPolicyManager userSecurityPolicyManager) {
 
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')

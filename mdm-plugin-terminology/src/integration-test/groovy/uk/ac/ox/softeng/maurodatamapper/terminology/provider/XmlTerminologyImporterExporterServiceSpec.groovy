@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyXmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
@@ -60,6 +61,17 @@ class XmlTerminologyImporterExporterServiceSpec extends BaseTerminologyIntegrati
 
     TerminologyXmlImporterService terminologyXmlImporterService
     TerminologyXmlExporterService terminologyXmlExporterService
+
+    @Shared
+    TerminologyFileImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new TerminologyFileImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
 
     String getImportType() {
         'xml'
@@ -115,7 +127,7 @@ class XmlTerminologyImporterExporterServiceSpec extends BaseTerminologyIntegrati
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        terminologyImporterService.checkImport(admin, imported, false, false)
+        terminologyImporterService.checkImport(admin, imported, basicParameters)
         check(imported)
         log.info('Saving imported model')
         assert terminologyService.saveModelWithContent(imported)
@@ -178,7 +190,7 @@ class XmlTerminologyImporterExporterServiceSpec extends BaseTerminologyIntegrati
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = terminologyService.diff(terminologyService.get(simpleTerminologyId), imported)
+        ObjectDiff diff = terminologyService.getDiffForModels(terminologyService.get(simpleTerminologyId), imported)
 
         then:
         diff.objectsAreIdentical()
@@ -210,7 +222,7 @@ class XmlTerminologyImporterExporterServiceSpec extends BaseTerminologyIntegrati
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = terminologyService.diff(terminologyService.get(complexTerminologyId), imported)
+        ObjectDiff diff = terminologyService.getDiffForModels(terminologyService.get(complexTerminologyId), imported)
 
         then:
         diff.objectsAreIdentical()

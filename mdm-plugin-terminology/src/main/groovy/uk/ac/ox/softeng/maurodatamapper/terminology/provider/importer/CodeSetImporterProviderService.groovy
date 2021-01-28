@@ -17,10 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
+
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSetService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetImporterProviderServiceParameters
@@ -31,42 +31,18 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 14/09/2020
  */
 abstract class CodeSetImporterProviderService<T extends CodeSetImporterProviderServiceParameters>
-    extends ImporterProviderService<CodeSet, T> {
+    extends ModelImporterProviderService<CodeSet, T> {
 
     @Autowired
     CodeSetService codeSetService
 
-    @Autowired
-    ClassifierService classifierService
-
     @Override
-    CodeSet importDomain(User currentUser, T params) {
-        CodeSet codeSet = importCodeSet(currentUser, params)
-        if (!codeSet) return null
-        if (params.modelName) codeSet.label = params.modelName
-        checkImport(currentUser, codeSet, params.finalised, params.importAsNewDocumentationVersion)
+    ModelService getModelService() {
+        codeSetService
     }
-
-    @Override
-    List<CodeSet> importDomains(User currentUser, T params) {
-        List<CodeSet> codeSets = importCodeSets(currentUser, params)
-        codeSets?.collect { checkImport(currentUser, it, params.finalised, params.importAsNewDocumentationVersion) }
-    }
-
-    abstract CodeSet importCodeSet(User currentUser, T params)
-
-    abstract List<CodeSet> importCodeSets(User currentUser, T params)
 
     @Override
     String getProviderType() {
         "CodeSet${ProviderType.IMPORTER.name}"
-    }
-
-    private CodeSet checkImport(User currentUser, CodeSet codeSet, boolean finalised, boolean importAsNewDocumentationVersion) {
-        codeSetService.checkfinaliseModel(codeSet, finalised)
-        codeSetService.checkDocumentationVersion(codeSet, importAsNewDocumentationVersion, currentUser)
-        classifierService.checkClassifiers(currentUser, codeSet)
-
-        codeSet
     }
 }

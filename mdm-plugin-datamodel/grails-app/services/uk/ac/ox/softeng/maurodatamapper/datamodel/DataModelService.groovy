@@ -24,17 +24,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -56,7 +49,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
@@ -64,11 +56,7 @@ import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.validation.ValidationErrors
 import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.MessageSource
 import org.springframework.validation.Errors
-
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 @Slf4j
 @Transactional
@@ -78,9 +66,6 @@ class DataModelService extends ModelService<DataModel> {
     DataTypeService dataTypeService
     DataClassService dataClassService
     DataElementService dataElementService
-    MessageSource messageSource
-    VersionLinkService versionLinkService
-    EditService editService
     AuthorityService authorityService
     SummaryMetadataService summaryMetadataService
 
@@ -204,6 +189,7 @@ class DataModelService extends ModelService<DataModel> {
         catalogueItem
     }
 
+    @Override
     DataModel saveModelWithContent(DataModel dataModel) {
 
         if (dataModel.dataTypes.any { it.id } || dataModel.dataClasses.any { it.id }) {
@@ -334,6 +320,7 @@ class DataModelService extends ModelService<DataModel> {
         log.trace('Content save of DataModel complete in {}', Utils.timeTaken(start))
     }
 
+    @Override
     void deleteModelAndContent(DataModel dataModel) {
 
         GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
@@ -377,6 +364,11 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
+    List<DataModel> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
+        DataModel.withReadable(DataModel.by(), constrainedIds, includeDeleted).list()
+    }
+
+    @Override
     void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
         super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
         summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
@@ -408,24 +400,29 @@ class DataModelService extends ModelService<DataModel> {
         DataModel.findAllByModelType(type)
     }
 
+    @Override
     List<DataModel> findAllByLabel(String label) {
         DataModel.findAllByLabel(label)
     }
 
+    @Override
+    List<UUID> findAllModelIds() {
+        DataModel.by().id().list() as List<UUID>
+    }
+
+    @Override
     List<DataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
         DataModel.byMetadataNamespaceAndKey(namespace, key).list(pagination)
     }
 
+    @Override
     List<DataModel> findAllByMetadataNamespace(String namespace) {
         DataModel.byMetadataNamespace(namespace).list()
     }
 
-    List<DataModel> findAllByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService, Map pagination = [:]) {
-        findAllByMetadataNamespaceAndKey(dataLoaderProviderService.namespace, dataLoaderProviderService.name, pagination)
-    }
-
+    @Override
     List<DataModel> findAllByFolderId(UUID folderId) {
-        DataModel.byFolderId(folderId).list()
+        DataModel.byFolderId(folderId).list() as List<DataModel>
     }
 
     List<UUID> findAllIdsByFolderId(UUID folderId) {
@@ -433,10 +430,10 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     List<DataModel> findAllDeleted(Map pagination = [:]) {
-        DataModel.byDeleted().list(pagination)
+        DataModel.byDeleted().list(pagination) as List<DataModel>
     }
 
-    Number countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+    int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
         DataModel.countByLabelAndBranchNameAndFinalised(label, branchName, false)
     }
 
@@ -542,157 +539,20 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    DataModel finaliseModel(DataModel dataModel, User user, Version modelVersion, VersionChangeType versionChangeType,
-                            List<Serializable> supersedeModelIds = []) {
-
-        dataModel.finalised = true
-        dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        dataModel.breadcrumbTree.finalise()
-
-        dataModel.modelVersion = getNextModelVersion(dataModel, modelVersion, versionChangeType)
-
-        dataModel.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
-                                   description: "DataModel finalised by ${user.firstName} ${user.lastName} on " +
-                                                "${OffsetDateTimeConverter.toString(dataModel.dateFinalised)}")
-        editService.createAndSaveEdit(dataModel.id, dataModel.domainType,
-                                      "DataModel finalised by ${user.firstName} ${user.lastName} on " +
-                                      "${OffsetDateTimeConverter.toString(dataModel.dateFinalised)}",
-                                      user)
-        dataModel
-    }
-
-    boolean newVersionCreationIsAllowed(DataModel dataModel) {
-        if (!dataModel.finalised) {
-            dataModel.errors.reject('invalid.datamodel.new.version.not.finalised.message',
-                                    [dataModel.label, dataModel.id] as Object[],
-                                    'DataModel [{0}({1})] cannot have a new version as it is not finalised')
-            return false
-        }
-        DataModel superseding = findDataModelDocumentationSuperseding(dataModel)
-        if (superseding) {
-            dataModel.errors.reject('invalid.datamodel.new.version.superseded.message',
-                                    [dataModel.label, dataModel.id, superseding.label, superseding.id] as Object[],
-                                    'DataModel [{0}({1})] cannot have a new version as it has been superseded by [{2}({3})]')
-            return false
-        }
-
-        true
+    DataModel copyModelAsNewForkModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager,
+                  false)
     }
 
     @Override
-    DataModel createNewBranchModelVersion(String branchName, DataModel dataModel, User user, boolean copyPermissions,
-                                          UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
-        if (!newVersionCreationIsAllowed(dataModel)) return dataModel
-
-        // Check if the branch name is already being used
-        if (countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, branchName) > 0) {
-            dataModel.errors.reject('model.label.branch.name.already.exists',
-                                    ['branchName', DataModel, branchName, dataModel.label] as Object[],
-                                    'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
-            return dataModel
-        }
-
-        // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean draftModelOnMainBranchForLabel =
-            countAllByLabelAndBranchNameAndNotFinalised(dataModel.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
-
-        if (!draftModelOnMainBranchForLabel) {
-            DataModel newMainBranchModelVersion = copyDataModel(dataModel,
-                                                                user,
-                                                                copyPermissions,
-                                                                dataModel.label,
-                                                                VersionAwareConstraints.DEFAULT_BRANCH_NAME,
-                                                                additionalArguments.throwErrors as boolean,
-                                                                userSecurityPolicyManager,
-                                                                true)
-            setDataModelIsNewBranchModelVersionOfDataModel(newMainBranchModelVersion, dataModel, user)
-
-            if (additionalArguments.moveDataFlows) {
-                throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
-                //            moveTargetDataFlows(dataModel, newMainBranchModelVersion)
-            }
-
-            // If the branch name isn't main and the main branch doesnt exist then we need to validate and save it
-            // otherwise return the new model
-            if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
-                return newMainBranchModelVersion
-            } else {
-                if (newMainBranchModelVersion.validate()) saveModelWithContent(newMainBranchModelVersion)
-                else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) DataModel is invalid',
-                                                        newMainBranchModelVersion.errors, messageSource)
-            }
-        }
-
-        DataModel newBranchModelVersion = copyDataModel(dataModel,
-                                                        user,
-                                                        copyPermissions,
-                                                        dataModel.label,
-                                                        branchName,
-                                                        additionalArguments.throwErrors as boolean,
-                                                        userSecurityPolicyManager,
-                                                        true)
-
-        setDataModelIsNewBranchModelVersionOfDataModel(newBranchModelVersion, dataModel, user)
-
-        if (additionalArguments.moveDataFlows) {
-            throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
-            //            moveTargetDataFlows(dataModel, newBranchModelVersion)
-        }
-        newBranchModelVersion
+    DataModel copyModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
+                        boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, true)
     }
 
-    @Override
-    DataModel createNewDocumentationVersion(DataModel dataModel, User user, boolean copyPermissions,
-                                            UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments) {
-        if (!newVersionCreationIsAllowed(dataModel)) return dataModel
-
-        DataModel newDocVersion = copyDataModel(dataModel,
-                                                user,
-                                                copyPermissions,
-                                                dataModel.label,
-                                                Version.nextMajorVersion(dataModel.documentationVersion),
-                                                dataModel.branchName,
-                                                additionalArguments.throwErrors as boolean,
-                                                userSecurityPolicyManager,
-                                                true)
-        setDataModelIsNewDocumentationVersionOfDataModel(newDocVersion, dataModel, user)
-        if (additionalArguments.moveDataFlows) {
-            throw new ApiNotYetImplementedException('DMSXX', 'DataModel moving of DataFlows')
-            //            moveTargetDataFlows(dataModel, newDocVersion)
-        }
-        newDocVersion
-    }
-
-    @Override
-    DataModel createNewForkModel(String label, DataModel dataModel, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments) {
-        if (!newVersionCreationIsAllowed(dataModel)) return dataModel
-
-        DataModel newForkModel = copyDataModel(dataModel, user, copyPermissions, label,
-                                               additionalArguments.throwErrors as boolean,
-                                               userSecurityPolicyManager, false)
-        setDataModelIsNewForkModelOfDataModel(newForkModel, dataModel, user)
-        if (additionalArguments.copyDataFlows) {
-            throw new ApiNotYetImplementedException('DMSXX', 'DataModel copying of DataFlows')
-            //copyTargetDataFlows(dataModel, newForkModel, user)
-        }
-        newForkModel
-    }
-
-    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
-                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
-        copyDataModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager,
-                      copySummaryMetadata)
-    }
-
-    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, String branchName, boolean throwErrors,
-                            UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
-        copyDataModel(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager,
-                      copySummaryMetadata)
-    }
-
-    DataModel copyDataModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
-                            boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
+    DataModel copyModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
+                        boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
 
         Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
@@ -732,7 +592,7 @@ class DataModelService extends ModelService<DataModel> {
 
         if (original.childDataClasses) {
             // Copy all the dataclasses (this will also match up the reference types)
-            original.childDataClasses.each { dc ->
+            original.childDataClasses.each {dc ->
                 dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager)
             }
         }
@@ -744,39 +604,22 @@ class DataModelService extends ModelService<DataModel> {
     DataModel copyCatalogueItemInformation(DataModel original,
                                            DataModel copy,
                                            User copier,
+                                           UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
+    }
+
+    DataModel copyCatalogueItemInformation(DataModel original,
+                                           DataModel copy,
+                                           User copier,
                                            UserSecurityPolicyManager userSecurityPolicyManager,
-                                           boolean copySummaryMetadata = false) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+                                           boolean copySummaryMetadata) {
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager) as DataModel
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByCatalogueItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
         copy
-    }
-
-    void setDataModelIsNewForkModelOfDataModel(DataModel newModel, DataModel oldModel, User catalogueUser) {
-        newModel.addToVersionLinks(
-            linkType: VersionLinkType.NEW_FORK_OF,
-            createdBy: catalogueUser.emailAddress,
-            targetModel: oldModel
-        )
-    }
-
-    void setDataModelIsNewDocumentationVersionOfDataModel(DataModel newModel, DataModel oldModel, User catalogueUser) {
-        newModel.addToVersionLinks(
-            linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
-            createdBy: catalogueUser.emailAddress,
-            targetModel: oldModel
-        )
-    }
-
-    void setDataModelIsNewBranchModelVersionOfDataModel(DataModel newModel, DataModel oldModel, User catalogueUser) {
-        newModel.addToVersionLinks(
-            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
-            createdBy: catalogueUser.emailAddress,
-            targetModel: oldModel
-        )
     }
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(DataModel dataModel, DataModel otherDataModel, int maxResults) {
@@ -843,7 +686,9 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataModel.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) }
+        DataModel.byClassifierId(classifier.id)
+            .list()
+            .findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id)} as List<DataModel>
     }
 
     @Override
@@ -882,111 +727,28 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    List<DataModel> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
-                                          boolean includeModelSuperseded, boolean includeDeleted) {
-        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
-        if (!ids) return []
-        List<UUID> constrainedIds
-        // The list of ids are ALL the readable ids by the user, no matter the model status
-        if (includeDocumentSuperseded && includeModelSuperseded) {
-            constrainedIds = new ArrayList<>(ids)
-        } else if (includeModelSuperseded) {
-            constrainedIds = findAllExcludingDocumentSupersededIds(ids)
-        } else if (includeDocumentSuperseded) {
-            constrainedIds = findAllExcludingModelSupersededIds(ids)
-        } else {
-            constrainedIds = findAllExcludingDocumentAndModelSupersededIds(ids)
-        }
-        if (!constrainedIds) return []
-        DataModel.withReadable(DataModel.by(), constrainedIds, includeDeleted).list()
-    }
-
-    @Override
     List<UUID> findAllModelIdsWithTreeChildren(List<DataModel> models) {
         models.collect { it.id }.findAll { dataClassService.countByDataModelId(it) }
     }
 
     @Override
-    void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink) {
-        get(modelId).removeFromVersionLinks(versionLink)
-    }
-
-    @Override
-    List<UUID> findAllSupersededModelIds(List<DataModel> models) {
-        findAllSupersededIds(models.id)
-    }
-
-    @Override
-    List<DataModel> findAllDocumentationSupersededModels(Map pagination) {
-        List<UUID> ids = findAllDocumentSupersededIds(DataModel.by().id().list() as List<UUID>)
-        findAllSupersededModels(ids, pagination)
-    }
-
-    @Override
-    List<DataModel> findAllModelSupersededModels(Map pagination) {
-        List<UUID> ids = findAllModelSupersededIds(DataModel.by().id().list() as List<UUID>)
-        findAllSupersededModels(ids, pagination)
-    }
-
-    @Override
     List<DataModel> findAllDeletedModels(Map pagination) {
-        DataModel.byDeleted().list(pagination)
+        DataModel.byDeleted().list(pagination) as List<DataModel>
     }
 
-    List<DataModel> findAllSupersededModels(List ids, Map pagination) {
+    List<DataModel> findAllSupersededModels(List<UUID> ids, Map pagination) {
         if (!ids) return []
-        DataModel.byIdInList(ids).list(pagination)
-    }
-
-    List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllDocumentSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllExcludingModelSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllModelSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllExcludingDocumentAndModelSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllSupersededIds(List<UUID> readableIds) {
-        (findAllDocumentSupersededIds(readableIds) + findAllModelSupersededIds(readableIds)).toSet().toList()
-    }
-
-    List<UUID> findAllDocumentSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsDocumentSuperseded(DataModel.simpleName, readableIds)
-    }
-
-    List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
-        // All versionLinks which are targets of model version links
-        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(readableIds)
-
-        // However they are only superseded if the source of this link is finalised
-        modelVersionLinks.findAll {
-            DataModel sourceModel = get(it.catalogueItemId)
-            sourceModel.finalised
-        }.collect { it.targetModelId }
+        DataModel.byIdInList(ids).list(pagination) as List<DataModel>
     }
 
     List<DataModel> findAllDocumentSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
-        DataModel.byIdInList(findAllDocumentSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel))).list(pagination)
+        DataModel.byIdInList(findAllDocumentSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel))).list(pagination) as
+            List<DataModel>
     }
 
     List<DataModel> findAllModelSuperseded(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
-        DataModel.byIdInList(findAllModelSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel))).list(pagination)
-    }
-
-    DataModel findDataModelSuperseding(DataModel dataModel) {
-        VersionLink link = versionLinkService.findLatestLinkSupersedingModelId(DataModel.simpleName, dataModel.id)
-        if (!link) return null
-        link.catalogueItemId == dataModel.id ? get(link.targetModelId) : get(link.catalogueItemId)
-    }
-
-    DataModel findDataModelDocumentationSuperseding(DataModel dataModel) {
-        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingModelId(DataModel.simpleName, dataModel.id)
-        if (!link) return null
-        link.catalogueItemId == dataModel.id ? get(link.targetModelId) : get(link.catalogueItemId)
+        DataModel.byIdInList(findAllModelSupersededIds(userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel))).list(pagination) as
+            List<DataModel>
     }
 
     /**
@@ -996,26 +758,10 @@ class DataModelService extends ModelService<DataModel> {
      * @param pagination
      * @return
      */
+    @Override
     List<DataModel> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
         ids ? DataModel.byIds(ids).list(pagination) : []
-    }
-
-    void checkDocumentationVersion(DataModel dataModel, boolean importAsNewDocumentationVersion, User catalogueUser) {
-        if (importAsNewDocumentationVersion) {
-
-            if (countByLabel(dataModel.label)) {
-                List<DataModel> existingModels = findAllByLabel(dataModel.label)
-                existingModels.each { existing ->
-                    log.debug('Setting DataModel as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
-                    setDataModelIsNewDocumentationVersionOfDataModel(dataModel, existing, catalogueUser)
-                }
-                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
-                dataModel.documentationVersion = Version.nextMajorVersion(latestVersion)
-
-            } else log.info('Marked as importAsNewDocumentationVersion but no existing DataModels with label [{}]', dataModel.label)
-        }
     }
 
     DataModel createAndSaveDataModel(User createdBy, Folder folder, DataModelType type, String label, String description,
@@ -1030,10 +776,6 @@ class DataModelService extends ModelService<DataModel> {
             } else throw new ApiInvalidModelException('DMSXX', 'Could not create new DataModel', dataModel.errors)
         }
         dataModel
-    }
-
-    void setDataModelIsFromDataModel(DataModel source, DataModel target, User user) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
 
     /**

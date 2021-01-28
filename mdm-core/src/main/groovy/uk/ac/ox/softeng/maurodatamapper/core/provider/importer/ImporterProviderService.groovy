@@ -18,17 +18,17 @@
 package uk.ac.ox.softeng.maurodatamapper.core.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.transform.CompileStatic
-import org.grails.datastore.gorm.GormEntity
 import org.springframework.core.GenericTypeResolver
 
 @CompileStatic
-abstract class ImporterProviderService<D extends GormEntity, T extends ImporterProviderServiceParameters>
+abstract class ImporterProviderService<D extends CatalogueItem, T extends ImporterProviderServiceParameters>
     extends MauroDataMapperService {
 
     abstract D importDomain(User currentUser, T params)

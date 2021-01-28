@@ -17,13 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
+
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -31,40 +31,18 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 07/03/2018
  */
 abstract class ReferenceDataModelImporterProviderService<T extends ReferenceDataModelImporterProviderServiceParameters>
-    extends ImporterProviderService<ReferenceDataModel, T> {
+    extends ModelImporterProviderService<ReferenceDataModel, T> {
 
     @Autowired
     ReferenceDataModelService referenceDataModelService
 
-    @Autowired
-    ClassifierService classifierService    
-
     @Override
-    ReferenceDataModel importDomain(User currentUser, T params) {
-        ReferenceDataModel referenceDataModel = importReferenceDataModel(currentUser, params)
-        if (!referenceDataModel) return null
-        if (params.modelName) referenceDataModel.label = params.modelName
-        checkImport(currentUser, referenceDataModel, params.finalised, params.importAsNewDocumentationVersion)
+    ModelService getModelService() {
+        referenceDataModelService
     }
-
-    @Override
-    List<ReferenceDataModel> importDomains(User currentUser, T params) {
-        //do nothing
-    }
-
-    abstract ReferenceDataModel importReferenceDataModel(User currentUser, T params)
-
-    abstract List<ReferenceDataModel> importReferenceDataModels(User currentUser, T params)
 
     @Override
     String getProviderType() {
         "ReferenceDataModel${ProviderType.IMPORTER.name}"
-    }
-
-    private ReferenceDataModel checkImport(User currentUser, ReferenceDataModel referenceDataModel, boolean finalised, boolean importAsNewDocumentationVersion) {
-        referenceDataModelService.checkfinaliseModel(referenceDataModel, finalised)
-        referenceDataModelService.checkDocumentationVersion(referenceDataModel, importAsNewDocumentationVersion, currentUser)
-        classifierService.checkClassifiers(currentUser, referenceDataModel)
-        referenceDataModel
     }
 }

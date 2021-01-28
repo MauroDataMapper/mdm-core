@@ -12,7 +12,7 @@ pipeline {
     options {
         timestamps()
         //        timeout(time: 45, unit: 'MINUTES')
-       // skipStagesAfterUnstable()
+        // skipStagesAfterUnstable()
         buildDiscarder(logRotator(numToKeepStr: '30'))
     }
 
@@ -35,8 +35,7 @@ pipeline {
                 stage('Core gradle info') {
                     steps {
                         sh './gradlew -v' // Output gradle version for verification checks
-                        sh './gradlew jvmArgs'
-                        sh './gradlew sysProps'
+                        sh './gradlew jvmArgs sysProps'
                     }
                 }
                 stage('mdm-core info') {
@@ -85,127 +84,13 @@ pipeline {
         /*
         Unit Tests
          */
-        stage('Unit Test: mdm-common') {
+        stage('Unit Tests') {
             steps {
-                sh "./gradlew :mdm-common:test"
+                sh "./gradlew --build-cache test"
             }
             post {
                 always {
-                    dir('mdm-common') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Unit Test: mdm-core') {
-            steps {
-                dir('mdm-core') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-core') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Unit Test: mdm-plugin-email-proxy') {
-            steps {
-                dir('mdm-plugin-email-proxy') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-email-proxy') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Unit Test: mdm-plugin-datamodel') {
-            steps {
-                dir('mdm-plugin-datamodel') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-datamodel') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Unit Test: mdm-plugin-terminology') {
-            steps {
-                dir('mdm-plugin-terminology') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-terminology') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Unit Test: mdm-security') {
-            steps {
-                dir('mdm-security') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-security') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Unit Test: mdm-plugin-authentication-basic') {
-            steps {
-                dir('mdm-plugin-authentication-basic') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-authentication-basic') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Unit Test: mdm-plugin-dataflow') {
-            steps {
-                dir('mdm-plugin-dataflow') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-dataflow') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Unit Test: mdm-plugin-referencedata') {
-            steps {
-                dir('mdm-plugin-referencedata') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-referencedata') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: '**/build/test-results/test/*.xml'
                 }
             }
         }
@@ -213,103 +98,23 @@ pipeline {
         /*
         Integration Tests
          */
-        stage('Integration Test: mdm-core') {
+        stage('Integration Tests') {
             steps {
-                dir('mdm-core') {
-                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
-                }
+                sh './gradlew --build-cache -Dgradle.integrationTest=true ' + [
+                    'mdm-core',
+                    //                    'mdm-plugin-authentication-apikey',
+                    //                    'mdm-plugin-authentication-basic',
+                    'mdm-plugin-dataflow',
+                    'mdm-plugin-datamodel',
+                    'mdm-plugin-email-proxy',
+                    'mdm-plugin-referencedata',
+                    'mdm-plugin-terminology',
+                    'mdm-security',
+                ].collect { ":${it}:integrationTest" }.join(' ')
             }
             post {
                 always {
-                    dir('mdm-core') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Integration Test: mdm-plugin-email-proxy') {
-            steps {
-                dir('mdm-plugin-email-proxy') {
-                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-email-proxy') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Integration Test: mdm-plugin-datamodel') {
-            steps {
-                dir('mdm-plugin-datamodel') {
-                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-datamodel') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
-                    }
-                }
-            }
-        }
-
-        stage('Integration Test: mdm-plugin-terminology') {
-            steps {
-                dir('mdm-plugin-terminology') {
-                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-terminology') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
-                    }
-                }
-            }
-        }
-
-        stage('Integration Test: mdm-security') {
-            steps {
-                dir('mdm-security') {
-                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-security') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Integration Test: mdm-plugin-dataflow') {
-            steps {
-                dir('mdm-plugin-dataflow') {
-                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-dataflow') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Integration Test: mdm-plugin-referencedata') {
-            steps {
-                dir('mdm-plugin-referencedata') {
-                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-referencedata') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: '**/build/test-results/integrationTest/*.xml'
                 }
             }
         }
@@ -319,99 +124,81 @@ pipeline {
          */
         stage('Functional Test: mdm-core') {
             steps {
-                dir('mdm-core') {
-                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                }
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-core:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-core') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-core/build/test-results/functionalTest/*.xml'
                 }
             }
         }
-        stage('Functional Test: mdm-security') {
+        stage('Functional Test: mdm-plugin-authentication-apikey') {
             steps {
-                dir('mdm-security') {
-                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                }
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-authentication-apikey:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-security') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Functional Test: mdm-plugin-datamodel') {
-            steps {
-                dir('mdm-plugin-datamodel') {
-                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-datamodel') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                    }
-                }
-            }
-        }
-        stage('Functional Test: mdm-plugin-terminology') {
-            steps {
-                dir('mdm-plugin-terminology') {
-                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-terminology') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-authentication-apikey/build/test-results/functionalTest/*.xml'
                 }
             }
         }
         stage('Functional Test: mdm-plugin-authentication-basic') {
             steps {
-                dir('mdm-plugin-authentication-basic') {
-                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                }
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-authentication-basic:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-plugin-authentication-basic') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-authentication-basic/build/test-results/functionalTest/*.xml'
                 }
             }
         }
         stage('Functional Test: mdm-plugin-dataflow') {
             steps {
-                dir('mdm-plugin-dataflow') {
-                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                }
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-dataflow:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-plugin-dataflow') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-dataflow/build/test-results/functionalTest/*.xml'
+                }
+            }
+        }
+        stage('Functional Test: mdm-plugin-datamodel') {
+            steps {
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-datamodel:integrationTest"
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-datamodel/build/test-results/functionalTest/*.xml'
                 }
             }
         }
         stage('Functional Test: mdm-plugin-referencedata') {
             steps {
-                dir('mdm-plugin-referencedata') {
-                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                }
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-referencedata:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-plugin-referencedata') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-referencedata/build/test-results/functionalTest/*.xml'
+                }
+            }
+        }
+        stage('Functional Test: mdm-plugin-terminology') {
+            steps {
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-terminology:integrationTest"
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-terminology/build/test-results/functionalTest/*.xml'
+                }
+            }
+        }
+        stage('Functional Test: mdm-security') {
+            steps {
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-security:integrationTest"
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'mdm-security/build/test-results/functionalTest/*.xml'
                 }
             }
         }
@@ -421,118 +208,76 @@ pipeline {
         */
         stage('E2E Core Functional Test') {
             steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=core test-app"
-                }
+                sh "./gradlew -Dgradle.test.package=core :mdm-testing-functional:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/core/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/core/*.xml'
                 }
             }
         }
         stage('E2E Security Functional Test') {
             steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=security test-app"
-                }
+                sh "./gradlew -Dgradle.test.package=security :mdm-testing-functional:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/security/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/security/*.xml'
                 }
             }
         }
         stage('E2E Authentication Functional Test') {
             steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=authentication test-app"
-                }
+                sh "./gradlew -Dgradle.test.package=authentication :mdm-testing-functional:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/authentication/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/authentication/*.xml'
                 }
             }
         }
         stage('E2E DataModel Functional Test') {
             steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=datamodel test-app"
-                }
+                sh "./gradlew -Dgradle.test.package=datamodel :mdm-testing-functional:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/datamodel/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/datamodel/*.xml'
                 }
             }
         }
         stage('E2E Terminology Functional Test') {
             steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=terminology test-app"
-                }
+                sh "./gradlew -Dgradle.test.package=terminology :mdm-testing-functional:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/terminology/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/terminology/*.xml'
                 }
             }
         }
         stage('E2E DataFlow Functional Test') {
             steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=dataflow test-app"
-                }
+                sh "./gradlew -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/dataflow/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/dataflow/*.xml'
                 }
             }
         }
         stage('E2E ReferenceData Functional Test') {
             steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=referencedata test-app"
-                }
+                sh "./gradlew -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/referencedata/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/referencedata/*.xml'
                 }
             }
         }
-//        stage('E2E Trouble Functional Test') {
-//            steps {
-//                dir('mdm-testing-functional') {
-//                    sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
-//                }
-//            }
-//            post {
-//                always {
-//                    dir('mdm-testing-functional') {
-//                        junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
-//                    }
-//                }
-//            }
-//        }
 
-        stage('Compile complete Test Report'){
+        stage('Compile complete Test Report') {
             steps {
                 sh "./gradlew --build-cache rootTestReport"
             }

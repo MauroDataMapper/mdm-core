@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
@@ -30,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import org.spockframework.util.Assert
 import spock.lang.PendingFeature
 
 @Slf4j
@@ -51,11 +53,11 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         secondReferenceDataModel = buildSecondExampleReferenceDataModel()
 
         ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder,
-                                             authority: testAuthority)
+                                                                        authority: testAuthority)
         ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', folder: testFolder,
-                                             authority: testAuthority)
+                                                                        authority: testAuthority)
         ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard', folder: testFolder,
-                                             authority: testAuthority)
+                                                                        authority: testAuthority)
 
         checkAndSave(referenceDataModel1)
         checkAndSave(referenceDataModel2)
@@ -63,12 +65,42 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         ReferenceDataType referenceDataType = new ReferencePrimitiveType(createdByUser: admin, label: 'string')
         referenceDataModel1.addToReferenceDataTypes(referenceDataType)
-        ReferenceDataElement referenceDataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor, referenceDataType: referenceDataType)
+        ReferenceDataElement referenceDataElement = new ReferenceDataElement(label: 'sdmelement', createdByUser: editor,
+                                                                             referenceDataType: referenceDataType)
         referenceDataModel1.addToReferenceDataElements(referenceDataElement)
 
         checkAndSave(referenceDataModel1)
 
         id = referenceDataModel1.id
+    }
+
+    protected ReferenceDataModel checkAndSaveNewVersion(ReferenceDataModel referenceDataModel) {
+        check(referenceDataModel)
+        referenceDataModelService.saveModelWithContent(referenceDataModel)
+    }
+
+    protected ReferenceDataModel getAndFinaliseReferenceDataModel(UUID idToFinalise = id) {
+        ReferenceDataModel referenceDataModel = referenceDataModelService.get(idToFinalise)
+        referenceDataModelService.finaliseModel(referenceDataModel, admin, null, null)
+        checkAndSave(referenceDataModel)
+        referenceDataModel
+    }
+
+    protected UUID createAndSaveNewBranchModel(String branchName, ReferenceDataModel base) {
+        ReferenceDataModel referenceDataModel =
+            referenceDataModelService.createNewBranchModelVersion(branchName, base, admin, false, adminSecurityPolicyManager)
+        if (referenceDataModel.hasErrors()) {
+            GormUtils.outputDomainErrors(messageSource, referenceDataModel)
+            Assert.fail('Could not create new branch version')
+        }
+        check(referenceDataModel)
+        referenceDataModelService.saveModelWithContent(referenceDataModel)
+        referenceDataModel.id
+    }
+
+    protected ReferenceDataModel createSaveAndGetNewBranchModel(String branchName, ReferenceDataModel base) {
+        UUID id = createAndSaveNewBranchModel(branchName, base)
+        referenceDataModelService.get(id)
     }
 
     void "test get"() {
@@ -134,7 +166,8 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         setupData()
 
         when:
-        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdByUser: reader2, label: 'saving test',  folder: testFolder, authority: testAuthority)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdByUser: reader2, label: 'saving test', folder: testFolder,
+                                                                       authority: testAuthority)
         referenceDataModel = referenceDataModelService.validate(referenceDataModel)
 
         then:
@@ -189,7 +222,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.not.finalised.message' }
+        result.errors.allErrors.find { it.code == 'invalid.model.new.version.not.finalised.message' }
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -252,7 +285,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
                 it.id != ode.id &&
                 it.domainType == ode.domainType
             }
-        }              
+        }
 
     }
 
@@ -262,9 +295,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         setupData()
 
         when: 'finalising model and then creating a new doc version is allowed'
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
         def result = referenceDataModelService.createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
@@ -331,13 +362,12 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         setupData()
 
         when: 'creating new doc version'
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, editor, null, null)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
         def newDocVersion = referenceDataModelService.
             createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
-        checkAndSave(newDocVersion)
+        checkAndSaveNewVersion(newDocVersion)
 
         when: 'trying to create a new doc version on the old datamodel'
         def result = referenceDataModelService.
@@ -345,62 +375,36 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.superseded.message' }
+        result.errors.allErrors.find { it.code == 'invalid.model.new.version.superseded.message' }
     }
 
-    @PendingFeature(reason = 'DataModel permission copying')
-    void 'DMSC05 : test creating a new documentation version on finalised superseded model with permission copying'() {
-        given:
-        setupData()
-
-        when: 'creating new doc version'
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, editor, null, null)
-        def newDocVersion = referenceDataModelService.
-            createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
-
-        then:
-        checkAndSave(newDocVersion)
-
-        when: 'trying to create a new doc version on the old datamodel'
-        def result = referenceDataModelService.
-            createNewDocumentationVersion(dataModel, editor, true, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
-
-        then:
-        result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
-    }
-
-    void 'DMSC06 : test creating a new model version on draft model'() {
+    void 'DMSC05 : test creating a new fork version on draft model'() {
         given:
         setupData()
 
         when: 'creating new version on draft model is not allowed'
         ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
-                                                         [copyDataFlows: false, throwErrors: true])
+        def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, editorSecurityPolicyManager,
+                                                                  [copyDataFlows: false, throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
         result.errors.allErrors.find {
-            it.code == 'invalid.referencedatamodel.new.version.not.finalised.message'
+            it.code == 'invalid.model.new.version.not.finalised.message'
         }
     }
 
-   void 'DMSC07 : test creating a new model version on finalised model'() {
+    void 'DMSC06 : test creating a new fork version on finalised model'() {
         given:
         setupData()
 
         when: 'finalising model and then creating a new version is allowed'
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-        def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
-                                                         [copyDataFlows: false, throwErrors: true])
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
+        def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, editorSecurityPolicyManager,
+                                                                  [copyDataFlows: false, throwErrors: true])
 
         then:
-        result.instanceOf(ReferenceDataModel)
-        checkAndSave(result)
+        checkAndSaveNewVersion(result)
 
         when: 'load from DB to make sure everything is saved'
         dataModel = referenceDataModelService.get(id)
@@ -423,9 +427,6 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         newVersion.organisation == dataModel.organisation
         newVersion.modelType == dataModel.modelType
 
-        newVersion.referenceDataTypes.size() == dataModel.referenceDataTypes.size()
-        newVersion.referenceDataElements.size() == dataModel.referenceDataElements.size()
-
         and: 'annotations and edits are not copied'
         !newVersion.annotations
         newVersion.edits.size() == 1
@@ -433,7 +434,96 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         and: 'link between old and new version'
         newVersion.versionLinks.any {
-            it.targetModel.id == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF
+            it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF
+        }
+    }
+
+
+    void 'DMSC08 : test creating a new fork version on finalised superseded model'() {
+        given:
+        setupData()
+
+        when: 'creating new version'
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
+        def newVersion = referenceDataModelService.
+            createNewDocumentationVersion(dataModel, editor, false, editorSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
+
+        then:
+        checkAndSaveNewVersion(newVersion)
+
+        when: 'trying to create a new version on the old datamodel'
+        def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, editorSecurityPolicyManager,
+                                                                  [copyDataFlows: false, throwErrors: true])
+
+        then:
+        result.errors.allErrors.size() == 1
+        result.errors.allErrors.find { it.code == 'invalid.model.new.version.superseded.message' }
+    }
+
+    void 'DMSC09 : test creating a new branch model version on draft model'() {
+        given:
+        setupData()
+
+        when: 'creating new version on draft model is not allowed'
+        ReferenceDataModel dataModel = referenceDataModelService.get(id)
+        def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
+                                                                  [copyDataFlows: false, throwErrors: true])
+
+        then:
+        result.errors.allErrors.size() == 1
+        result.errors.allErrors.find {
+            it.code == 'invalid.model.new.version.not.finalised.message'
+        }
+    }
+
+    void 'DMSC10 : test creating a new branch model version on finalised model'() {
+        given:
+        setupData()
+
+        when: 'finalising model and then creating a new version is allowed'
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
+        def result = referenceDataModelService.
+            createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false, editorSecurityPolicyManager, [
+                moveDataFlows: false,
+                throwErrors  : true
+            ])
+
+        then:
+        checkAndSaveNewVersion(result)
+
+        when: 'load from DB to make sure everything is saved'
+        dataModel = referenceDataModelService.get(id)
+        ReferenceDataModel newVersion = referenceDataModelService.get(result.id)
+
+        then: 'old model is finalised and superseded'
+        dataModel.finalised
+        dataModel.dateFinalised
+        dataModel.documentationVersion == Version.from('1')
+        dataModel.modelVersion == Version.from('1')
+
+        and: 'new  version model is draft v2'
+        newVersion.documentationVersion == Version.from('1')
+        !newVersion.modelVersion
+        !newVersion.finalised
+        !newVersion.dateFinalised
+
+        and: 'new  version model matches old model'
+        newVersion.label == dataModel.label
+        newVersion.description == dataModel.description
+        newVersion.author == dataModel.author
+        newVersion.organisation == dataModel.organisation
+        newVersion.modelType == dataModel.modelType
+
+        newVersion.referenceDataTypes.size() == dataModel.referenceDataTypes.size()
+        newVersion.referenceDataElements.size() == dataModel.referenceDataElements.size()
+
+        and: 'annotations and edits are not copied'
+        !newVersion.annotations
+        newVersion.edits.size() == 1
+
+        and: 'link between old and new version'
+        newVersion.versionLinks.any {
+            it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF
         }
 
         and:
@@ -450,24 +540,21 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
                 it.id != ode.id &&
                 it.domainType == ode.domainType
             }
-        }   
+        }
     }
 
     @PendingFeature(reason = 'DataModel permission copying')
-    void 'DMSC08 : test creating a new model version on finalised model with permission copying'() {
+    void 'DMSC11 : test creating a new branch model version on finalised model with permission copying'() {
         given:
         setupData()
 
         when: 'finalising model and then creating a new version is allowed'
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
         def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, true, userSecurityPolicyManager,
-                                                         [copyDataFlows: false, throwErrors: true])
+                                                                  [copyDataFlows: false, throwErrors: true])
 
         then:
-        result.instanceOf(DataModel)
-        checkAndSave(result)
+        checkAndSaveNewVersion(result)
 
         when: 'load from DB to make sure everything is saved'
         dataModel = referenceDataModelService.get(id)
@@ -522,62 +609,83 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         }
     }
 
-    void 'DMSC09 : test creating a new model version on finalised superseded model'() {
+    void 'DMSC12 : test creating a new branch model version on finalised superseded model'() {
         given:
         setupData()
 
         when: 'creating new version'
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, editor, null, null)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
         def newVersion = referenceDataModelService.
             createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [moveDataFlows: false, throwErrors: true])
 
         then:
-        checkAndSave(newVersion)
+        checkAndSaveNewVersion(newVersion)
 
         when: 'trying to create a new version on the old datamodel'
         def result = referenceDataModelService.createNewForkModel("${dataModel.label}-1", dataModel, editor, false, userSecurityPolicyManager,
-                                                         [copyDataFlows: false, throwErrors: true])
+                                                                  [copyDataFlows: false, throwErrors: true])
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.referencedatamodel.new.version.superseded.message' }
+        result.errors.allErrors.find { it.code == 'invalid.model.new.version.superseded.message' }
     }
 
-    void 'DMSICA01 : test finding common ancestor of two datamodels'() {
+    void 'DMSC13 : test creating a new branch model version using main branch name when it already exists'() {
         given:
         setupData()
 
         when:
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
+        def mainBranch = referenceDataModelService.createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false,
+                                                                               editorSecurityPolicyManager, [
+                                                                                   moveDataFlows: false,
+                                                                                   throwErrors  : true
+                                                                               ])
 
         then:
-        dataModel.branchName == 'main'
+        checkAndSaveNewVersion(mainBranch)
+
+
+        when: 'trying to create a new branch version on the old datamodel'
+        def result = referenceDataModelService.
+            createNewBranchModelVersion(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel, editor, false, editorSecurityPolicyManager,
+                                        [moveDataFlows: false, throwErrors: true])
+
+        then:
+        result.errors.allErrors.size() == 1
+        result.errors.allErrors.find { it.code == 'model.label.branch.name.already.exists' }
+    }
+
+    void 'DMSF01 : test finding common ancestor of two datamodels'() {
+        given:
+        setupData()
 
         when:
-        def left = referenceDataModelService.createNewBranchModelVersion('left', dataModel, admin, false, userSecurityPolicyManager)
-        def right = referenceDataModelService.createNewBranchModelVersion('right', dataModel, admin, false, userSecurityPolicyManager)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
 
         then:
-        checkAndSave(left)
-        checkAndSave(right)
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when:
+        def left = createSaveAndGetNewBranchModel('left', dataModel)
+        def right = createSaveAndGetNewBranchModel('right', dataModel)
+
+        then:
         left.modelVersion == null
         left.branchName == 'left'
         right.modelVersion == null
         right.branchName == 'right'
 
         when:
-        def commonAncestor = referenceDataModelService.commonAncestor(left, right)
+        def commonAncestor = referenceDataModelService.findCommonAncestorBetweenModels(left, right)
 
         then:
         commonAncestor.id == id
-        commonAncestor.branchName == 'main'
+        commonAncestor.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         commonAncestor.modelVersion == Version.from('1')
     }
 
-    void 'DMSILV01 : test finding latest version of a datamodel'() {
+    void 'DMSF02 : test finding latest finalised model version of a datamodel'() {
         //
         // dataModel (finalised) -- expectedModel (finalised) -- draftModel (draft)
         //   \_ testModel (draft)
@@ -586,171 +694,123 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         setupData()
 
         when:
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
 
         then:
-        dataModel.branchName == 'main'
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def expectedModel = referenceDataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
-        def testModel = referenceDataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
-        referenceDataModelService.finaliseModel(expectedModel, admin, null, null)
-        checkAndSave(
-            expectedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = referenceDataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+        ReferenceDataModel expectedModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
+        ReferenceDataModel testModel = createSaveAndGetNewBranchModel('test', dataModel)
+
+        expectedModel = getAndFinaliseReferenceDataModel(expectedModel.id)
+        ReferenceDataModel draftModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, expectedModel)
 
         then:
-        checkAndSave(testModel)
-        checkAndSave(draftModel)
         testModel.modelVersion == null
         testModel.branchName == 'test'
         expectedModel.modelVersion == Version.from('2')
-        expectedModel.branchName == 'main'
+        expectedModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         draftModel.modelVersion == null
-        draftModel.branchName == 'main'
-        
+        draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
         when:
-        def latestVersion = referenceDataModelService.latestFinalisedModel(testModel.label)
+        def latestVersion = referenceDataModelService.findLatestFinalisedModelByLabel(testModel.label)
 
         then:
         latestVersion.id == expectedModel.id
-        latestVersion.branchName == 'main'
+        latestVersion.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = referenceDataModelService.latestFinalisedModel(draftModel.label)
+        latestVersion = referenceDataModelService.findLatestFinalisedModelByLabel(draftModel.label)
 
         then:
         latestVersion.id == expectedModel.id
-        latestVersion.branchName == 'main'
+        latestVersion.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = referenceDataModelService.latestModelVersion(testModel.label)
+        latestVersion = referenceDataModelService.getLatestModelVersionByLabel(testModel.label)
 
         then:
         latestVersion == Version.from('2')
 
         when:
-        latestVersion = referenceDataModelService.latestModelVersion(draftModel.label)
+        latestVersion = referenceDataModelService.getLatestModelVersionByLabel(draftModel.label)
 
         then:
         latestVersion == Version.from('2')
     }
 
-    /*void 'DMSIMD01 : test finding merge difference between two datamodels'() {
+    void 'DMSF03 : test getting current draft model on main branch from side branch'() {
+        /*
+        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
         given:
         setupData()
 
         when:
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
 
         then:
-        dataModel.branchName == 'main'
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def left = referenceDataModelService.createNewBranchModelVersion('left', dataModel, admin, false, userSecurityPolicyManager)
-        def right = referenceDataModelService.createNewBranchModelVersion('right', dataModel, admin, false, userSecurityPolicyManager)
+        def finalisedModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
+        def testModel = createSaveAndGetNewBranchModel('test', dataModel)
+        finalisedModel = getAndFinaliseReferenceDataModel(finalisedModel.id)
+        def draftModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, finalisedModel)
 
         then:
-        checkAndSave(left)
-        checkAndSave(right)
-        left.modelVersion == null
-        left.branchName == 'left'
-        right.modelVersion == null
-        right.branchName == 'right'
-
-        when:
-        def mergeDiff = referenceDataModelService.mergeDiff(left, right)
-
-        then:
-        mergeDiff == [left: dataModel.diff(left), right: dataModel.diff(right)]
-    }*/
-
-    void 'DMSICMB01 : test getting current draft model on main branch from side branch'() {
-        //
-        // dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
-        //  \_ testModel (draft)
-        //
-        given:
-        setupData()
-
-        when:
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
-
-        then:
-        dataModel.branchName == 'main'
-
-        when:
-        def finalisedModel = referenceDataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
-        def testModel = referenceDataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
-        referenceDataModelService.finaliseModel(finalisedModel, admin, null, null)
-        checkAndSave(
-            finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = referenceDataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
-
-        then:
-        checkAndSave(testModel)
-        checkAndSave(draftModel)
         testModel.modelVersion == null
         testModel.branchName == 'test'
         finalisedModel.modelVersion == Version.from('2')
-        finalisedModel.branchName == 'main'
+        finalisedModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         draftModel.modelVersion == null
-        draftModel.branchName == 'main'
+        draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def currentMainBranch = referenceDataModelService.currentMainBranch(testModel)
+        def currentMainBranch = referenceDataModelService.findCurrentMainBranchForModel(testModel)
 
         then:
         currentMainBranch.id == draftModel.id
         currentMainBranch.label == testModel.label
         currentMainBranch.modelVersion == null
-        currentMainBranch.branchName == 'main'
+        currentMainBranch.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
     }
 
-    void 'DMSIAB01 : test getting all draft models'() {
-        //
-        // dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
-        //  \_ testModel (draft)
-        //
+    void 'DMSF04 : test getting all draft models'() {
+        /*
+        dataModel (finalised) -- finalisedModel (finalised) -- draftModel (draft)
+          \_ testModel (draft)
+        */
         given:
         setupData()
 
         when:
-        ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
-        checkAndSave(dataModel)
+        ReferenceDataModel dataModel = getAndFinaliseReferenceDataModel()
 
         then:
-        dataModel.branchName == 'main'
+        dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def finalisedModel = referenceDataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
-        def testModel = referenceDataModelService.createNewBranchModelVersion('test', dataModel, admin, false, userSecurityPolicyManager)
-        referenceDataModelService.finaliseModel(finalisedModel, admin, null, null)
-        checkAndSave(
-            finalisedModel) // must persist before createNewBranchModelVersion is called due to call to countAllByLabelAndBranchNameAndNotFinalised
-        def draftModel = referenceDataModelService.createNewBranchModelVersion('main', dataModel, admin, false, userSecurityPolicyManager)
+        def finalisedModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
+        def testModel = createSaveAndGetNewBranchModel('test', dataModel)
+        finalisedModel = getAndFinaliseReferenceDataModel(finalisedModel.id)
+        def draftModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, finalisedModel)
 
         then:
-        checkAndSave(testModel)
-        checkAndSave(draftModel)
         testModel.modelVersion == null
         testModel.branchName == 'test'
         finalisedModel.modelVersion == Version.from('2')
-        finalisedModel.branchName == 'main'
+        finalisedModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         draftModel.modelVersion == null
-        draftModel.branchName == 'main'
+        draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def availableBranches = referenceDataModelService.availableBranches(dataModel.label)
+        def availableBranches = referenceDataModelService.findAllAvailableBranchesByLabel(dataModel.label)
 
         then:
         availableBranches.size() == 2
@@ -837,7 +897,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         ele2Res.first().item.id != ele2Res.source.id
         ele2Res.first().item.label == 'sdmelement'
         ele2Res.first().item.referenceDataType.label == 'string'
-        ele2Res.first().similarity > 0        
+        ele2Res.first().similarity > 0
     }
 }
 

@@ -166,7 +166,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.not.finalised.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -302,7 +302,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     @PendingFeature(reason = 'Terminology permission copying')
@@ -321,7 +321,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     void 'DMSC06 : test creating a new model version on draft model'() {
@@ -334,7 +334,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.not.finalised.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
     }
 
     void 'DMSC07 : test creating a new model version on finalised model'() {
@@ -477,7 +477,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.terminology.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     void 'DMSV01 : test validation on valid model'() {

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.JsonImportMapping
@@ -25,13 +24,10 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
-import java.nio.charset.Charset
-
 @Slf4j
-class JsonImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> 
+class DataModelJsonImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters>
     implements JsonImportMapping {
 
     @Override

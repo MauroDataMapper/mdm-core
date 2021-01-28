@@ -31,7 +31,7 @@ import groovy.util.logging.Slf4j
  * @since 31/01/2020
  */
 @Slf4j
-trait CatalogueItemAwareService<K> {
+trait CatalogueItemAwareService<K> extends DomainService<K> {
 
     abstract List<CatalogueItemService> getCatalogueItemServices()
 

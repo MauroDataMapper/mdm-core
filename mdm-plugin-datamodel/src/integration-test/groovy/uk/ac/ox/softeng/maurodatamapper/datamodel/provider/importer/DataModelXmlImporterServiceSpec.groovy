@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataModelImporterProviderServiceSpec
 
 import grails.gorm.transactions.Rollback
@@ -25,37 +24,22 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 
 /**
- * @since 15/11/2017
+ * @since 04/08/2017
  */
 @Integration
 @Rollback
 @Slf4j
-class JsonImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<JsonImporterService> {
+class DataModelXmlImporterServiceSpec extends DataBindDataModelImporterProviderServiceSpec<DataModelXmlImporterService> {
 
-    JsonImporterService jsonImporterService
+    DataModelXmlImporterService dataModelXmlImporterService
 
     @Override
-    JsonImporterService getImporterService() {
-        jsonImporterService
+    DataModelXmlImporterService getImporterService() {
+        dataModelXmlImporterService
     }
 
     @Override
     String getImportType() {
-        'json'
-    }
-
-    void 'test multiple DataModel import fails'() {
-        given:
-        setupData()
-
-        expect:
-        !importerService.canImportMultipleDomains()
-
-        when:
-        importerService.importDataModels(admin, loadTestFile('simple'))
-
-        then:
-        ApiBadRequestException exception = thrown(ApiBadRequestException)
-        exception.message.contains('cannot import multiple DataModels')
+        'xml'
     }
 }

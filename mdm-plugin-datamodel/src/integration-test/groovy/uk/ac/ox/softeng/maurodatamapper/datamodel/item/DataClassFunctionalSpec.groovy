@@ -326,7 +326,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Rollback
     void 'test searching for metadata "mdk1" in content dataclass'() {
         given:
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folder.id.toString(),
             importAsNewDocumentationVersion: false,
@@ -381,7 +381,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Rollback
     void 'test searching for metadata "mdk1" in empty dataclass'() {
         given:
-        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/JsonImporterService/2.0', [
+        POST('dataModels/import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
             finalised                      : false,
             folderId                       : folder.id.toString(),
             importAsNewDocumentationVersion: false,

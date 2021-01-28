@@ -35,7 +35,7 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
 
     abstract ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content)
 
-    List<ReferenceDataModel> importDataModels(User currentUser, byte[] content) {
+    List<ReferenceDataModel> importReferenceDataModels(User currentUser, byte[] content) {
         throw new ApiBadRequestException('FBIP04', "${getName()} cannot import multiple Reference Data Models")
     }
 
@@ -49,30 +49,18 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         false
     }
 
-    @Override
-    List<ReferenceDataModel> importReferenceDataModels(User currentUser, T params) {
+    List<ReferenceDataModel> importModels(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        List<ReferenceDataModel> imported = importReferenceDataModels(currentUser, params.importFile.fileContents)
-        imported.collect {updateImportedModelFromParameters(it, params, true)}
+        importReferenceDataModels(currentUser, params.importFile.fileContents)
     }
 
-    @Override
-    ReferenceDataModel importReferenceDataModel(User currentUser, T params) {
+    ReferenceDataModel importModel(User currentUser, T params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
-        ReferenceDataModel imported = importReferenceDataModel(currentUser, params.importFile.fileContents)
-        updateImportedModelFromParameters(imported, params)
-    }
-
-    ReferenceDataModel updateImportedModelFromParameters(ReferenceDataModel referenceDataModel, T params, boolean list = false) {
-        log.debug("updateImportedModelFromParameters ${params}")
-        log.debug("updateImportedModelFromParameters ${referenceDataModel}")
-        if (params.finalised != null) referenceDataModel.finalised = params.finalised
-        if (!list && params.modelName) referenceDataModel.label = params.modelName
-        referenceDataModel
+        importReferenceDataModel(currentUser, params.importFile.fileContents)
     }
 
     ReferenceDataModel bindMapToReferenceDataModel(User currentUser, Map referenceDataModelMap) {

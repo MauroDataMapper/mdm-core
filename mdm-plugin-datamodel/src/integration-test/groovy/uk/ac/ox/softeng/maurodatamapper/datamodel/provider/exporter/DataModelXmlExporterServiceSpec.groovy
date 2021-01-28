@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.XmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelXmlImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
@@ -40,20 +40,20 @@ import static org.junit.Assert.assertTrue
 @Integration
 @Rollback
 @Slf4j
-class XmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<XmlImporterService, XmlExporterService>
+class DataModelXmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelXmlImporterService, DataModelXmlExporterService>
     implements XmlValidator {
 
-    XmlExporterService xmlExporterService
-    XmlImporterService xmlImporterService
+    DataModelXmlExporterService dataModelXmlExporterService
+    DataModelXmlImporterService dataModelXmlImporterService
 
     @Override
-    XmlExporterService getExporterService() {
-        xmlExporterService
+    DataModelXmlExporterService getExporterService() {
+        dataModelXmlExporterService
     }
 
     @Override
-    XmlImporterService getImporterService() {
-        xmlImporterService
+    DataModelXmlImporterService getImporterService() {
+        dataModelXmlImporterService
     }
 
     @Override
@@ -84,7 +84,7 @@ class XmlExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec
             Assert.fail("Expected export file ${xmlPath} does not exist")
         }
 
-        def xmlIsValid = validateXml('export', xmlExporterService.version, Files.readString(xmlPath))
+        def xmlIsValid = validateXml('export', dataModelXmlExporterService.version, Files.readString(xmlPath))
 
         then:
         assertTrue failureReason, xmlIsValid

@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetXmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseCodeSetIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
@@ -57,10 +58,21 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
     UUID simpleTerminologyId
 
     @Shared
-    UUID simpleCodeSetId  
+    UUID simpleCodeSetId
 
     CodeSetXmlImporterService codeSetXmlImporterService
     CodeSetXmlExporterService codeSetXmlExporterService
+
+    @Shared
+    CodeSetFileImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new CodeSetFileImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
 
     String getImportType() {
         'xml'
@@ -117,7 +129,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        codeSetImporterService.checkImport(admin, imported, false, false)
+        codeSetImporterService.checkImport(admin, imported, basicParameters)
         check(imported)
         log.info('Saving imported model')
         assert codeSetService.saveModelWithContent(imported)
@@ -192,7 +204,7 @@ class XmlCodeSetImporterExporterServiceSpec extends BaseCodeSetIntegrationSpec i
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = codeSetService.diff(codeSetService.get(simpleCodeSetId), imported)
+        ObjectDiff diff = codeSetService.getDiffForModels(codeSetService.get(simpleCodeSetId), imported)
 
         then:
         diff.objectsAreIdentical()

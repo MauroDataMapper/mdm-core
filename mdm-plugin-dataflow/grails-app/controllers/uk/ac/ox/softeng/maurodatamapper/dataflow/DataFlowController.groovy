@@ -26,11 +26,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 
+import groovy.util.logging.Slf4j
 import org.grails.web.json.JSONArray
 
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @SuppressWarnings('GroovyAssignabilityCheck')
+@Slf4j
 class DataFlowController extends EditLoggingController<DataFlow> {
     static responseFormats = ['json', 'xml']
 
@@ -263,7 +265,7 @@ class DataFlowController extends EditLoggingController<DataFlow> {
     protected DataFlow createResource() {
         DataFlow resource = super.createResource() as DataFlow
         resource.target = dataModelService.get(params.dataModelId)
-        dataModelService.setDataModelIsFromDataModel(resource.target, resource.source, currentUser)
+        dataModelService.setModelIsFromModel(resource.target, resource.source, currentUser)
         resource
     }
 }

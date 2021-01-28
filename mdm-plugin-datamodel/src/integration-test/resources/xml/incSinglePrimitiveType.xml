@@ -47,7 +47,7 @@
     <exp:exportedOn>2017-11-21T13:17:01.791Z</exp:exportedOn>
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
-      <exp:name>XmlExporterService</exp:name>
+      <exp:name>DataModelXmlExporterService</exp:name>
       <exp:version>3.1</exp:version>
     </exp:exporter>
   </exp:exportMetadata>

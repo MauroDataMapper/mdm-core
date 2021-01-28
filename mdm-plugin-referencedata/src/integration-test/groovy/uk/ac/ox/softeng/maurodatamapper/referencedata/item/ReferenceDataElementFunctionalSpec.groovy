@@ -28,13 +28,11 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -375,7 +373,7 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
                  referenceDataType       : [
                      label         : 'Reference Test DataType',
                      domainType    : ReferenceDataType.PRIMITIVE_DOMAIN_TYPE,
-                     referenceDataModel: referenceDataModelId
+                     referenceDataModel: referenceDataModelId.toString()
                  ]
              ])
         verifyResponse CREATED, response

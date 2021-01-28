@@ -129,11 +129,11 @@ apply from: "${rootDir}/gradle/additions/grails.gradle"
 String testCategory = ''
 String testPackage = ''
 
-if (System.getProperty('grails.test.category')) {
-    testCategory = System.getProperty('grails.test.category')
+if (System.getProperty('gradle.test.category')) {
+    testCategory = System.getProperty('gradle.test.category')
 }
-if (System.getProperty('grails.test.package')) {
-    testPackage = System.getProperty('grails.test.package')
+if (System.getProperty('gradle.test.package')) {
+    testPackage = System.getProperty('gradle.test.package')
 }
 
 

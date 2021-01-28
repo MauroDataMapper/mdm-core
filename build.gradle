@@ -1,5 +1,7 @@
+import java.awt.Desktop
 import java.lang.management.ManagementFactory
 import java.lang.management.RuntimeMXBean
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 buildscript {
@@ -120,6 +122,13 @@ task rootTestReport(type: TestReport) {
             }
         })
     }
+    doLast {
+        if (Desktop.isDesktopSupported()) {
+            Desktop.desktop.open(Paths.get("${buildDir}/reports/tests/index.html").toFile())
+        } else {
+            logger.error("File opening not supported by JVM, use native OS command")
+        }
+    }
 }
 
 subprojects {
@@ -164,10 +173,10 @@ subprojects {
         }
     }
 
-    tasks.register('copyTestResultsToRoot', Copy){
+    tasks.register('copyTestResultsToRoot', Copy) {
         from file("${project.buildDir}/test-results")
         into file("${rootProject.buildDir}/test-results/${project.name}")
-        doFirst{
+        doFirst {
             logger.quiet("Copying ${file("${project.buildDir}/test-results")} to ${file("${rootProject.buildDir}/test-results/${project.name}")}")
         }
         rootProject.rootTestReport.dependsOn it
@@ -179,9 +188,9 @@ subprojects {
         }
 
         Set<Project> dependencyProjects = collectProjectDependencies(project)
-       if(dependencyProjects){
-           project.tasks.findByName('install').dependsOn dependencyProjects.collect {it.tasks.findByName('install')}
-       }
+        if (dependencyProjects) {
+            project.tasks.findByName('install').dependsOn dependencyProjects.collect { it.tasks.findByName('install') }
+        }
     }
 }
 
@@ -212,7 +221,7 @@ Set<Project> collectProjectDependencies(Project project) {
     Set<Project> dependencyProjects = new HashSet<>()
     ConfigurationContainer configurations = project.configurations
     Configuration configuration = configurations.findByName('compile')
-    if(configuration) {
+    if (configuration) {
         DomainObjectSet<ProjectDependency> projectDependencies = configuration.dependencies.withType ProjectDependency
         projectDependencies.forEach {
             dependencyProjects.add(it.dependencyProject)
@@ -220,7 +229,7 @@ Set<Project> collectProjectDependencies(Project project) {
         }
     }
     configuration = configurations.findByName('implementation')
-    if(configuration) {
+    if (configuration) {
         DomainObjectSet<ProjectDependency> projectDependencies = configuration.dependencies.withType ProjectDependency
         projectDependencies.forEach {
             dependencyProjects.add(it.dependencyProject)

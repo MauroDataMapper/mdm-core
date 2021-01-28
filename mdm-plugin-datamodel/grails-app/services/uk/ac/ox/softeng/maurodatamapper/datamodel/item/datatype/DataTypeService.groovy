@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -327,9 +328,9 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
     }
 
-    private void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {
-        referenceTypes.sort { it.label }.each { rdt ->
-            Map dataTypeBindingMap = bindingMaps.find { it.label == rdt.label } ?: [:]
+    void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {
+        referenceTypes.sort {it.label}.each {rdt ->
+            Map dataTypeBindingMap = bindingMaps.find {it.label == rdt.label} ?: [:]
             Map refClassBindingMap = dataTypeBindingMap.referenceClass ?: [:]
             matchReferenceClass(dataModel, rdt, refClassBindingMap)
         }
@@ -367,8 +368,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
     }
 
-    DataType copy(DataModel copiedDataModel, DataType original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyDataType(copiedDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    DataType copy(Model copiedDataModel, DataType original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyDataType(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,

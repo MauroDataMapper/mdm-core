@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.JsonImporterService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindImportAndDefaultExporterServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.test.json.JsonComparer
 
@@ -37,16 +37,16 @@ import java.nio.file.Path
 @Integration
 @Rollback
 @Slf4j
-class JsonExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<JsonImporterService, JsonExporterService>
+class DataModelJsonExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpec<DataModelJsonImporterService, DataModelJsonExporterService>
 
     implements JsonComparer {
 
-    JsonImporterService jsonImporterService
-    JsonExporterService jsonExporterService
+    DataModelJsonImporterService dataModelJsonImporterService
+    DataModelJsonExporterService dataModelJsonExporterService
 
     @Override
-    JsonImporterService getImporterService() {
-        jsonImporterService
+    DataModelJsonImporterService getImporterService() {
+        dataModelJsonImporterService
     }
 
     @Override
@@ -55,8 +55,8 @@ class JsonExporterServiceSpec extends DataBindImportAndDefaultExporterServiceSpe
     }
 
     @Override
-    JsonExporterService getExporterService() {
-        jsonExporterService
+    DataModelJsonExporterService getExporterService() {
+        dataModelJsonExporterService
     }
 
     @Override

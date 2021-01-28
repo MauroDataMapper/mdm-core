@@ -238,7 +238,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.not.finalised.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -393,7 +393,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     void 'DMSC05 : test creating a new fork version on draft model'() {
@@ -408,7 +408,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         result.errors.allErrors.size() == 1
         result.errors.allErrors.find {
-            it.code == 'invalid.datamodel.new.version.not.finalised.message'
+            it.code == 'invalid.model.new.version.not.finalised.message'
         }
     }
 
@@ -563,7 +563,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     void 'DMSC09 : test creating a new branch model version on draft model'() {
@@ -580,7 +580,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.not.finalised.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
     }
 
     void 'DMSC10 : test creating a new branch model version on finalised model'() {
@@ -742,7 +742,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'invalid.datamodel.new.version.superseded.message' }
+        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
     }
 
     void 'DMSC13 : test creating a new branch model version using main branch name when it already exists'() {
@@ -792,7 +792,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         right.branchName == 'right'
 
         when:
-        def commonAncestor = dataModelService.commonAncestor(left, right)
+        def commonAncestor = dataModelService.findCommonAncestorBetweenModels(left, right)
 
         then:
         commonAncestor.id == id
@@ -830,7 +830,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def latestVersion = dataModelService.latestFinalisedModel(testModel.label)
+        def latestVersion = dataModelService.findLatestFinalisedModelByLabel(testModel.label)
 
         then:
         latestVersion.id == expectedModel.id
@@ -838,7 +838,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = dataModelService.latestFinalisedModel(draftModel.label)
+        latestVersion = dataModelService.findLatestFinalisedModelByLabel(draftModel.label)
 
         then:
         latestVersion.id == expectedModel.id
@@ -846,13 +846,13 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         latestVersion.modelVersion == Version.from('2')
 
         when:
-        latestVersion = dataModelService.latestModelVersion(testModel.label)
+        latestVersion = dataModelService.getLatestModelVersionByLabel(testModel.label)
 
         then:
         latestVersion == Version.from('2')
 
         when:
-        latestVersion = dataModelService.latestModelVersion(draftModel.label)
+        latestVersion = dataModelService.getLatestModelVersionByLabel(draftModel.label)
 
         then:
         latestVersion == Version.from('2')
@@ -887,7 +887,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def currentMainBranch = dataModelService.currentMainBranch(testModel)
+        def currentMainBranch = dataModelService.findCurrentMainBranchForModel(testModel)
 
         then:
         currentMainBranch.id == draftModel.id
@@ -925,7 +925,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def availableBranches = dataModelService.availableBranches(dataModel.label)
+        def availableBranches = dataModelService.findAllAvailableBranchesByLabel(dataModel.label)
 
         then:
         availableBranches.size() == 2
@@ -1037,7 +1037,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel draft = dataModelService.get(draftId)
         DataModel test = dataModelService.get(testId)
 
-        def mergeDiff = dataModelService.mergeDiff(test, draft)
+        def mergeDiff = dataModelService.getMergeDiffForModels(test, draft)
 
         then:
         mergeDiff.class == ObjectDiff
@@ -1174,7 +1174,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         DataModel draft = dataModelService.get(draftId)
         DataModel test = dataModelService.get(testId)
 
-        def mergeDiff = dataModelService.mergeDiff(test, draft)
+        def mergeDiff = dataModelService.getMergeDiffForModels(test, draft)
 
         then:
         mergeDiff.class == ObjectDiff
@@ -1319,7 +1319,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 )
             ]
         )
-        def mergedModel = dataModelService.mergeInto(test, draft, patch, adminSecurityPolicyManager)
+        def mergedModel = dataModelService.mergeModelIntoModel(test, draft, patch, adminSecurityPolicyManager)
 
         then:
         mergedModel.description == 'DescriptionLeft'

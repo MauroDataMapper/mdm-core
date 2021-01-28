@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter.ReferenceDataXmlExporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataXmlImporterService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.referencedata.test.BaseReferenceDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.test.xml.XmlValidator
 
@@ -61,6 +62,17 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
     ReferenceDataXmlImporterService referenceDataXmlImporterService
     ReferenceDataXmlExporterService referenceDataXmlExporterService
 
+    @Shared
+    ReferenceDataModelFileImporterProviderServiceParameters basicParameters
+
+    def setupSpec() {
+        basicParameters = new ReferenceDataModelFileImporterProviderServiceParameters().tap {
+            importAsNewBranchModelVersion = false
+            importAsNewDocumentationVersion = false
+            finalised = false
+        }
+    }
+
     String getImportType() {
         'xml'
     }
@@ -96,7 +108,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
         assert imported
         imported.folder = testFolder
         log.info('Checking imported model')
-        importerService.checkImport(admin, imported, false, false)
+        importerService.checkImport(admin, imported, basicParameters)
         check(imported)
         log.info('Saving imported model')
         assert referenceDataModelService.saveModelWithContent(imported)
@@ -183,7 +195,7 @@ class XmlReferenceDataImporterExporterServiceSpec extends BaseReferenceDataModel
 
         when:
         imported.folder = testFolder
-        ObjectDiff diff = referenceDataModelService.diff(referenceDataModelService.get(exampleReferenceDataModelId), imported)
+        ObjectDiff diff = referenceDataModelService.getDiffForModels(referenceDataModelService.get(exampleReferenceDataModelId), imported)
 
         then:
         diff.objectsAreIdentical()

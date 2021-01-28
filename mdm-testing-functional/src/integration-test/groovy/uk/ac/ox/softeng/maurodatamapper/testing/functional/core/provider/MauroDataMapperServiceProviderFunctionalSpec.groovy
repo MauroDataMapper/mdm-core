@@ -76,24 +76,39 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
         GET('exporters', Argument.of(String))
 
         then:
-        verifyJsonResponse(OK, '''[
+        verifyJsonResponse(OK,
+                           '''[
   {
-    "name": "JsonExporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "JSON DataModel Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+    "name": "CodeSetXmlExporterService",
+    "version": "3.0",
+    "displayName": "XML CodeSet Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "providerType": "DataModelExporter",
+    "providerType": "CodeSetExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
+    "canExportMultipleDomains": false
+  },
+  {
+    "name": "ReferenceDataJsonExporterService",
+    "version": "3.0",
+    "displayName": "JSON Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelExporter",
     "fileExtension": "json",
     "fileType": "text/json",
     "canExportMultipleDomains": false
   },
   {
-    "name": "XmlExporterService",
-    "version": "${json-unit.matches:version}",
+    "name": "DataModelXmlExporterService",
+    "version": "3.1",
     "displayName": "XML DataModel Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -106,43 +121,15 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "TerminologyJsonExporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "JSON Terminology Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "TerminologyExporter",
-    "fileExtension": "json",
-    "fileType": "text/json",
-    "canExportMultipleDomains": false
-  },
-  {
-    "name": "TerminologyXmlExporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "XML Terminology Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "TerminologyExporter",
-    "fileExtension": "xml",
-    "fileType": "text/xml",
-    "canExportMultipleDomains": false
-  },
-  {
-    "name": "CodeSetXmlExporterService",
+    "name": "ReferenceDataXmlExporterService",
     "version": "3.0",
-    "displayName": "XML CodeSet Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+    "displayName": "XML Reference Data Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "providerType": "CodeSetExporter",
+    "providerType": "ReferenceDataModelExporter",
     "fileExtension": "xml",
     "fileType": "text/xml",
     "canExportMultipleDomains": false
@@ -162,31 +149,45 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canExportMultipleDomains": false
   },
   {
-    "name": "ReferenceDataXmlExporterService",
-    "version": "3.0",
-    "displayName": "XML Reference Data Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+    "name": "DataModelJsonExporterService",
+    "version": "2.0",
+    "displayName": "JSON DataModel Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "providerType": "ReferenceDataModelExporter",
-    "fileExtension": "xml",
-    "fileType": "text/xml",
+    "providerType": "DataModelExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
     "canExportMultipleDomains": false
   },
   {
-    "name": "ReferenceDataJsonExporterService",
+    "name": "TerminologyJsonExporterService",
     "version": "3.0",
-    "displayName": "JSON Reference Data Exporter",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+    "displayName": "JSON Terminology Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
     "knownMetadataKeys": [
       
     ],
-    "providerType": "ReferenceDataModelExporter",
+    "providerType": "TerminologyExporter",
     "fileExtension": "json",
     "fileType": "text/json",
+    "canExportMultipleDomains": false
+  },
+  {
+    "name": "TerminologyXmlExporterService",
+    "version": "3.0",
+    "displayName": "XML Terminology Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "TerminologyExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
     "canExportMultipleDomains": false
   }
 ]''')
@@ -222,100 +223,6 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "ReferenceDataXmlImporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "XML Reference Data Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
-                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
-  },
-  {
-    "name": "ReferenceDataJsonImporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "JSON Reference Data Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
-                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
-  },  
-  {
-    "name": "ReferenceDataCsvImporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "CSV Reference Data Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
-    "allowsExtraMetadataKeys": false,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "ReferenceDataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
-                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
-  },          
-  {
-    "name": "JsonImporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "JSON DataModel Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "DataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
-  },
-  {
-    "name": "XmlImporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "XML DataModel Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "DataModelImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": true
-  },
-  {
-    "name": "TerminologyJsonImporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "JSON Terminology Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "TerminologyImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
-  },
-  {
-    "name": "TerminologyXmlImporterService",
-    "version": "${json-unit.matches:version}",
-    "displayName": "XML Terminology Importer",
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
-    "allowsExtraMetadataKeys": true,
-    "knownMetadataKeys": [
-      
-    ],
-    "providerType": "TerminologyImporter",
-    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
-    "canImportMultipleDomains": false
-  },
-  {
     "name": "CodeSetXmlImporterService",
     "version": "3.0",
     "displayName": "XML CodeSet Importer",
@@ -329,6 +236,20 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "canImportMultipleDomains": false
   },
   {
+    "name": "ReferenceDataJsonImporterService",
+    "version": "3.0",
+    "displayName": "JSON Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
     "name": "CodeSetJsonImporterService",
     "version": "3.0",
     "displayName": "JSON CodeSet Importer",
@@ -339,6 +260,86 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     ],
     "providerType": "CodeSetImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "TerminologyJsonImporterService",
+    "version": "3.0",
+    "displayName": "JSON Terminology Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "TerminologyImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "DataModelJsonImporterService",
+    "version": "2.0",
+    "displayName": "JSON DataModel Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "ReferenceDataXmlImporterService",
+    "version": "3.0",
+    "displayName": "XML Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "ReferenceDataCsvImporterService",
+    "version": "3.0",
+    "displayName": "CSV Reference Data Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
+    "allowsExtraMetadataKeys": false,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "ReferenceDataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter''' +
+                               '''.ReferenceDataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "DataModelXmlImporterService",
+    "version": "3.0",
+    "displayName": "XML DataModel Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataModelImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": true
+  },
+  {
+    "name": "TerminologyXmlImporterService",
+    "version": "3.0",
+    "displayName": "XML Terminology Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "TerminologyImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
   }
 ]''')

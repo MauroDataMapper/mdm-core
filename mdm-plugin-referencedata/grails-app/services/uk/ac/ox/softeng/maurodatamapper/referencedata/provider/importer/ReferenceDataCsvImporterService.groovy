@@ -61,19 +61,19 @@ class ReferenceDataCsvImporterService
 
         def referenceDataElements = [:]
         ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: currentUser.emailAddress)
-        referenceDataModel.authority = authorityService.getDefaultAuthority();
+        referenceDataModel.authority = authorityService.getDefaultAuthority()
 
         ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: currentUser.emailAddress, label: 'string')
         referenceDataModel.addToReferenceDataTypes(stringDataType)
 
-        CSVFormat csvFormat = CSVFormat.newFormat((char)',')
-            .withQuote((char)'"')
-            .withHeader();
+        CSVFormat csvFormat = CSVFormat.newFormat((char) ',')
+            .withQuote((char) '"')
+            .withHeader()
 
         CSVParser parser = csvFormat.parse(
-        new InputStreamReader(new ByteArrayInputStream(content), "UTF8"));
+            new InputStreamReader(new ByteArrayInputStream(content), "UTF8"))
 
-        List headers = parser.getHeaderNames();
+        List headers = parser.getHeaderNames()
         headers.each {
             ReferenceDataElement referenceDataElement = new ReferenceDataElement(referenceDataType: stringDataType, label: it, createdBy: currentUser.emailAddress)
             referenceDataModel.addToReferenceDataElements(referenceDataElement)
@@ -84,17 +84,19 @@ class ReferenceDataCsvImporterService
         for (CSVRecord record : parser) {
             try {
                 headers.each {
-                    ReferenceDataValue referenceDataValue = new ReferenceDataValue(referenceDataElement: referenceDataElements[it], value: record.get(it), rowNumber: rowNumber, createdBy: currentUser.emailAddress);
+                    ReferenceDataValue referenceDataValue = new ReferenceDataValue(referenceDataElement: referenceDataElements[it], value: record.get(
+                        it), rowNumber: rowNumber, createdBy: currentUser.emailAddress)
+
                     referenceDataModel.addToReferenceDataValues(referenceDataValue)
                 }
                 
             } catch (Exception e) {
             throw new RuntimeException("Error at line "
-            + parser.getCurrentLineNumber(), e);
+                                           + parser.getCurrentLineNumber(), e)
             }
             rowNumber++
         }
-        parser.close();
+        parser.close()
 
         referenceDataModel
     }

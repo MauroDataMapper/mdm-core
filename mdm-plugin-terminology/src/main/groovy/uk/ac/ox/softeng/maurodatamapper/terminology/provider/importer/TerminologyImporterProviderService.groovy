@@ -17,10 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
+
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.ProviderType
-import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
-import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyImporterProviderServiceParameters
@@ -31,42 +31,18 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 14/09/2020
  */
 abstract class TerminologyImporterProviderService<T extends TerminologyImporterProviderServiceParameters>
-    extends ImporterProviderService<Terminology, T> {
+    extends ModelImporterProviderService<Terminology, T> {
 
     @Autowired
     TerminologyService terminologyService
 
-    @Autowired
-    ClassifierService classifierService
-
     @Override
-    Terminology importDomain(User currentUser, T params) {
-        Terminology terminology = importTerminology(currentUser, params)
-        if (!terminology) return null
-        if (params.modelName) terminology.label = params.modelName
-        checkImport(currentUser, terminology, params.finalised, params.importAsNewDocumentationVersion)
+    ModelService getModelService() {
+        terminologyService
     }
-
-    @Override
-    List<Terminology> importDomains(User currentUser, T params) {
-        List<Terminology> terminologies = importTerminologies(currentUser, params)
-        terminologies?.collect { checkImport(currentUser, it, params.finalised, params.importAsNewDocumentationVersion) }
-    }
-
-    abstract Terminology importTerminology(User currentUser, T params)
-
-    abstract List<Terminology> importTerminologies(User currentUser, T params)
 
     @Override
     String getProviderType() {
         "Terminology${ProviderType.IMPORTER.name}"
-    }
-
-    private Terminology checkImport(User currentUser, Terminology terminology, boolean finalised, boolean importAsNewDocumentationVersion) {
-        terminologyService.checkfinaliseModel(terminology, finalised)
-        terminologyService.checkDocumentationVersion(terminology, importAsNewDocumentationVersion, currentUser)
-        classifierService.checkClassifiers(currentUser, terminology)
-
-        terminology
     }
 }

@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
@@ -354,8 +355,8 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement
     }
 
-    DataElement copy(DataModel copiedDataModel, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyDataElement(copiedDataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    DataElement copy(Model copiedDataModel, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
     }
 
     DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,

@@ -37,7 +37,7 @@ import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
 
 @Slf4j
-class XmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> {
+class DataModelXmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> {
 
     AssetResourceLocator assetResourceLocator
 
