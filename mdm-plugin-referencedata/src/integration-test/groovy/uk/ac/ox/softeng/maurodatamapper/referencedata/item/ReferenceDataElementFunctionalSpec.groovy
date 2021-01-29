@@ -212,15 +212,20 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
         response.body().items[0].label == validJson.label
     }
 
+    @Transactional
+    void cleanupCreatedDataTypes(String label) {
+        ReferenceDataType.findByLabel(label).delete()
+    }
+
     void 'test creation of ReferenceDataType alongside saving ReferenceDataElement'() {
 
         when: 'The save action is executed with valid data'
         POST('',
              [
-                 label          : 'Functional Test DataElement',
-                 maxMultiplicity: 2,
-                 minMultiplicity: 1,
-                 referenceDataType       : [
+                 label            : 'Functional Test DataElement',
+                 maxMultiplicity  : 2,
+                 minMultiplicity  : 1,
+                 referenceDataType: [
                      label     : 'Functional Test DataType',
                      domainType: ReferenceDataType.PRIMITIVE_DOMAIN_TYPE
                  ]
@@ -260,6 +265,8 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   ]
 }'''
 
+        cleanup:
+        cleanupCreatedDataTypes('Functional Test DataType')
     }
 
    void 'test creation of ReferenceDataType alongside updating ReferenceDataElement'() {
@@ -310,7 +317,9 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   ]
 }'''
 
-    }
+       cleanup:
+       cleanupCreatedDataTypes('Functional Test DataType 2')
+   }
 
     void 'test creation of Reference DataType alongside saving ReferenceDataElement'() {
 
@@ -361,6 +370,8 @@ class ReferenceDataElementFunctionalSpec extends ResourceFunctionalSpec<Referenc
   ]
 }'''
 
+        cleanup:
+        cleanupCreatedDataTypes('Functional Test DataType 3')
     }
 
     void 'test copying reference type DataElement'() {
