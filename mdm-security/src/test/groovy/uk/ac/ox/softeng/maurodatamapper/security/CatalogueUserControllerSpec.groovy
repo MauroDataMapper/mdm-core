@@ -457,6 +457,7 @@ json {
 
         when:
         response.reset()
+        controller.modelAndView = null // reset model and view from last request
         params.currentUserSecurityPolicyManager = new IdSecuredUserSecurityPolicyManager(editor, UUID.randomUUID(), UUID.randomUUID(),
                                                                                          UUID.randomUUID(), UUID.randomUUID())
         params.userGroupId = userGroup.id
