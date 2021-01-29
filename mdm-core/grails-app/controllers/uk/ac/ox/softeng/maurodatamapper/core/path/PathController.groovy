@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.core.path
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
-import org.springframework.beans.factory.annotation.Autowired
-
 import grails.rest.RestfulController
+import org.springframework.beans.factory.annotation.Autowired
 
 class PathController extends RestfulController<CatalogueItem> implements MdmController {
 

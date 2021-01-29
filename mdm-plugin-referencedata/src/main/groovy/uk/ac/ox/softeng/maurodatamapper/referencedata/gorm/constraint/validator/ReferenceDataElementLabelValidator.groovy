@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueStringValidator
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 
 /**
  * @since 19/04/2018

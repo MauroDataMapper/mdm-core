@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
+import uk.ac.ox.softeng.maurodatamapper.referencedata.test.ReferenceDataTypeSpec
+
 import grails.testing.gorm.DomainUnitTest
 import groovy.util.logging.Slf4j
-import uk.ac.ox.softeng.maurodatamapper.referencedata.test.ReferenceDataTypeSpec
 
 @Slf4j
 class ReferenceEnumerationTypeSpec extends ReferenceDataTypeSpec<ReferenceEnumerationType> implements DomainUnitTest<ReferenceEnumerationType> {
