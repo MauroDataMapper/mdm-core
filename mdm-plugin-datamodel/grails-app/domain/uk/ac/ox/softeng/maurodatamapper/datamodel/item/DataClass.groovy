@@ -129,7 +129,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     @Override
     Boolean hasChildren() {
         if (id) {
-            DataClass.byDataModelIdAndParentDataClassId(this.id).count() != 0
+            DataClass.byDataModelIdAndParentDataClassId(this.dataModel.id, this.id).count() != 0
         } else {
             this.dataClasses == null ? false : !this.dataClasses.isEmpty()
         }

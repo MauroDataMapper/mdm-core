@@ -624,7 +624,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
     @Override
     List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean forDiff = false) {
-        (DataClass.byDataModelIdAndParentDataClassId(dataClass.id).list() +
+        (DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id).list() +
          (forDiff ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
     }
 
