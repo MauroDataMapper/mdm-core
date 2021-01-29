@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,10 @@ class Edit implements CreatorAware {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
         resourceDomainType nullable: false, blank: false
         resourceId nullable: false
+    }
+
+    static mapping = {
+        description type: 'text'
     }
 
     Edit() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.web.interceptor.InterceptorUnitTest
 import groovy.util.logging.Slf4j
-import spock.lang.Specification
 
 @Slf4j
 class ApiKeyAuthenticationInterceptorSpec extends BaseUnitSpec implements InterceptorUnitTest<ApiKeyAuthenticationInterceptor> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.session
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 
 import javax.servlet.ServletContext
-import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionEvent
 import javax.servlet.http.HttpSessionListener

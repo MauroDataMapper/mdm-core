@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -451,7 +451,7 @@ class DataModelService extends ModelService<DataModel> {
 
     DataModel checkForAndAddDefaultDataTypes(DataModel resource, String defaultDataTypeProvider) {
         if (defaultDataTypeProvider) {
-            DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.displayName == defaultDataTypeProvider }
+            DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.name == defaultDataTypeProvider }
             if (provider) {
                 log.debug("Adding ${provider.displayName} default DataTypes")
                 return dataTypeService.addDefaultListOfDataTypesToDataModel(resource, provider.defaultListOfDataTypes)

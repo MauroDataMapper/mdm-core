@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -29,8 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.core.ModelItemSpec
 
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
-
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 class TermRelationshipTypeSpec extends ModelItemSpec<TermRelationshipType> implements DomainUnitTest<TermRelationshipType> {
 

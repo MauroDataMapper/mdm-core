@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.test.functional
 
-import grails.gorm.transactions.Rollback
-import grails.gorm.transactions.Transactional
-import grails.testing.spock.OnceBefore
-import grails.util.BuildSettings
+
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import org.grails.datastore.gorm.GormEntity
-import spock.lang.PendingFeature
-import spock.lang.Shared
-
-import java.lang.reflect.ParameterizedType
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * @since 25/09/2020

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
-import org.springframework.core.io.Resource
 
 import java.nio.charset.Charset
-import javax.xml.XMLConstants
-import javax.xml.transform.stream.StreamSource
-import javax.xml.validation.SchemaFactory
 
 @Slf4j
 class TerminologyXmlImporterService extends DataBindTerminologyImporterProviderService<TerminologyFileImporterProviderServiceParameters> implements XmlImportMapping {
