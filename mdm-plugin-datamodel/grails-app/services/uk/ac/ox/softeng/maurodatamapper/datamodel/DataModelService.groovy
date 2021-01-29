@@ -451,7 +451,7 @@ class DataModelService extends ModelService<DataModel> {
 
     DataModel checkForAndAddDefaultDataTypes(DataModel resource, String defaultDataTypeProvider) {
         if (defaultDataTypeProvider) {
-            DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.displayName == defaultDataTypeProvider }
+            DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.name == defaultDataTypeProvider }
             if (provider) {
                 log.debug("Adding ${provider.displayName} default DataTypes")
                 return dataTypeService.addDefaultListOfDataTypesToDataModel(resource, provider.defaultListOfDataTypes)
