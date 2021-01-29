@@ -35,6 +35,10 @@ class Edit implements CreatorAware {
         resourceId nullable: false
     }
 
+    static mapping = {
+        description type: 'text'
+    }
+
     Edit() {
     }
 
