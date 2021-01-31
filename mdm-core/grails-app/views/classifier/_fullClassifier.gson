@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: 'classifier'
+model {
+    Classifier classifier
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    readableByEveryone classifier.readableByEveryone
+    readableByAuthenticatedUsers classifier.readableByAuthenticatedUsers
+    availableActions userSecurityPolicyManager.userAvailableActions(Classifier, classifier.id)
+    if (classifier.description) description classifier.description
+}

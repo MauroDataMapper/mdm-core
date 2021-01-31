@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<ReferenceSummaryMetadataReport> referenceSummaryMetadataReportList
+}
+
+json {
+    count referenceSummaryMetadataReportList instanceof PagedResultList ? ((PagedResultList) referenceSummaryMetadataReportList).getTotalCount() :
+          referenceSummaryMetadataReportList?.size() ?: 0
+    items tmpl.referenceSummaryMetadataReport(referenceSummaryMetadataReportList ?: [])
+}
+

@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+
+inherits template: '/term/fullTerm', model: [term: catalogueItem, userSecurityPolicyManager: userSecurityPolicyManager]
+
+model {
+    Term catalogueItem
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+
+}

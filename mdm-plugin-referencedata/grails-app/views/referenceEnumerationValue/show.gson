@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValue
+
+model {
+    ReferenceEnumerationValue referenceEnumerationValue
+}
+
+json tmpl.referenceEnumerationValue(referenceEnumerationValue)

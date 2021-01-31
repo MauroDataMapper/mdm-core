@@ -1,0 +1,33 @@
+{
+  "codeSet": {
+    "id": "${json-unit.matches:id}",
+    "label": "Simple CodeSet Import",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "author": "Test Author",
+    "organisation": "Test Organisation",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
+    "termPaths": [
+      {
+        "termPath": "te:Simple Test Terminology|tm:STT01: Simple Test Term 01"
+      },
+      {
+        "termPath": "te:Simple Test Terminology|tm:STT03: Simple Test Term 03"
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "CodeSetJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}

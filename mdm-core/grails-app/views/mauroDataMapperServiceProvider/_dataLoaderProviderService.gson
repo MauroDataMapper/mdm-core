@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+
+inherits template: '/mauroDataMapperServiceProvider/mauroDataMapperService', model: [mauroDataMapperService: dataLoaderProviderService]
+
+model {
+    DataLoaderProviderService dataLoaderProviderService
+}
+
+json {
+    classifers dataLoaderProviderService.classifiers
+}

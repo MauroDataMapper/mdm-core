@@ -1,0 +1,21 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+
+model {
+    CatalogueItem export
+    Boolean addContents = true
+}
+json {
+    if (export.id) id export.id
+    label export.label
+    if (addContents) {
+        if (export.description) description export.description
+        if (export.aliasesString) aliases export.aliases
+
+        if (export.lastUpdated) lastUpdated OffsetDateTimeConverter.toString(export.lastUpdated)
+
+        if (export.classifiers) classifiers tmpl.'/classifier/export'(export.classifiers)
+        if (export.metadata) metadata g.render(export.metadata)
+        if (export.annotations) annotations tmpl.'/annotation/export'(export.annotations)
+    }
+}

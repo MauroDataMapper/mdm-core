@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+
+model {
+    GroupRole groupRole
+}
+
+json {
+    id groupRole.id
+    name groupRole.name
+    displayName groupRole.displayName
+}

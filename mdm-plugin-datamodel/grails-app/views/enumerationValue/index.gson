@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<EnumerationValue> enumerationValueList
+}
+
+json {
+    count enumerationValueList instanceof PagedResultList ? ((PagedResultList) enumerationValueList).getTotalCount() :
+          enumerationValueList?.size() ?: 0
+    items tmpl.enumerationValue(enumerationValueList ?: [])
+}
+

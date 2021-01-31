@@ -1,0 +1,7 @@
+model {
+    Boolean applicationAdministrationSession
+}
+
+json {
+    applicationAdministrationSession applicationAdministrationSession
+}

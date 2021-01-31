@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
+
+model {
+    RuleRepresentation ruleRepresentation
+}
+
+json tmpl.ruleRepresentation(ruleRepresentation)

@@ -1,0 +1,37 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ModelDataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem               : dataType,
+                                                               userSecurityPolicyManager   : userSecurityPolicyManager,
+                                                               owningSecurableResourceId   : dataType.modelId,
+                                                               owningSecurableResourceClass: DataModel]
+model {
+    DataType dataType
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+
+    if (dataType.instanceOf(EnumerationType)) {
+        EnumerationType et = dataType as EnumerationType
+        enumerationValues g.render(et.enumerationValues.sort())
+    }
+    if (dataType.instanceOf(ReferenceType)) {
+        ReferenceType rt = dataType as ReferenceType
+        referenceClass g.render(rt.referenceClass)
+    }
+    if (dataType.instanceOf(PrimitiveType)) {
+        PrimitiveType pt = dataType as PrimitiveType
+        if (pt.units) units pt.units
+    }
+    if (dataType.instanceOf(ModelDataType)) {
+        ModelDataType mdt = dataType as ModelDataType
+        modelResourceId mdt.modelResourceId
+        modelResourceDomainType mdt.modelResourceDomainType
+    }
+}

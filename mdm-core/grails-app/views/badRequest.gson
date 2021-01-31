@@ -1,0 +1,7 @@
+response.status BAD_REQUEST.value()
+
+json {
+    message BAD_REQUEST.reasonPhrase
+    error BAD_REQUEST.value()
+
+}

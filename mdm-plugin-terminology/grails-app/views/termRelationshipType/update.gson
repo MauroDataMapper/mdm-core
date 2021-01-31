@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
+
+model {
+    TermRelationshipType termRelationshipType
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.fullTermRelationshipType(termRelationshipType: termRelationshipType, userSecurityPolicyManager: userSecurityPolicyManager)

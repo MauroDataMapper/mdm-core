@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
+
+model {
+    SimilarityResult similarityResult
+}
+
+json g.render(similarityResult)

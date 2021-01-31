@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<SemanticLink> semanticLinkList
+}
+
+json {
+    count semanticLinkList instanceof PagedResultList ? ((PagedResultList) semanticLinkList).getTotalCount() : semanticLinkList?.size() ?: 0
+    items tmpl.semanticLink(semanticLinkList ?: [])
+}

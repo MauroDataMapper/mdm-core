@@ -1,0 +1,23 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+
+inherits template: '/catalogueItem/export'
+model {
+    CodeSet export
+}
+json {
+
+    if (export.author) author export.author
+    if (export.organisation) organisation export.organisation
+
+    documentationVersion export.documentationVersion.toString()
+
+    finalised export.finalised
+    if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
+    if (export.modelVersion) modelVersion export.modelVersion.toString()
+    if (export.authority) authority tmpl.'/authority/export'(export.authority)
+
+    if (export.terms) {
+        termPaths tmpl.'/term/termAsPath'(export.terms)
+    }
+}

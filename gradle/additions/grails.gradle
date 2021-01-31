@@ -1,15 +1,13 @@
-import java.util.concurrent.TimeUnit
-
 // Use the pathing jar if running in windows. This is needed otherwise the classpath is too long for the idiotic windows OS
 grails {
-    if (org.gradle.internal.os.OperatingSystem.current() == org.gradle.internal.os.OperatingSystem.WINDOWS) {
+    if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
         logger.quiet('Using pathing Jar as running in Windows OS')
         pathingJar = true
     }
 }
 
 // Ensure the compile task in gradle runs all the classes tasks.
-compile.dependsOn(tasks.findAll {it.name.toLowerCase().endsWith('classes')})
+compile.dependsOn(tasks.findAll { it.name.toLowerCase().endsWith('classes') })
 
 /*
  Create a way of only running integration tests and only running functional tests
@@ -19,11 +17,21 @@ compile.dependsOn(tasks.findAll {it.name.toLowerCase().endsWith('classes')})
 boolean integrationTests = true
 boolean functionalTests = true
 
-if (System.getProperty('grails.integrationTest')) {
+if (System.getProperty('gradle.integrationTest')) {
+    integrationTests = System.getProperty('gradle.integrationTest').toBoolean()
+    functionalTests = !integrationTests
+}
+// Legacy to be deprecated soon
+else if (System.getProperty('grails.integrationTest')) {
     integrationTests = System.getProperty('grails.integrationTest').toBoolean()
     functionalTests = !integrationTests
 }
-if (System.getProperty('grails.functionalTest')) {
+if (System.getProperty('gradle.functionalTest')) {
+    functionalTests = System.getProperty('gradle.functionalTest').toBoolean()
+    integrationTests = !functionalTests
+}
+// Legacy to be deprecated soon
+else if (System.getProperty('grails.functionalTest')) {
     functionalTests = System.getProperty('grails.functionalTest').toBoolean()
     integrationTests = !functionalTests
 }
@@ -36,19 +44,30 @@ if (tasks.findByName('integrationTest')) {
         }
     }
 
+    integrationTest {
+        systemProperty 'hibernate.search.default.indexBase', "/tmp/lucene/${UUID.randomUUID().toString()}"
+        System.properties.each { prop ->
+            systemProperty prop.key, prop.value
+        }
+        systemProperty 'user.dir', workingDir
+        systemProperty 'grails.run.active', 'true'
+        systemProperty 'grails.env', 'test'
+        enabled file("src/integration-test").isDirectory()
+    }
+
     if (integrationTests && !functionalTests) {
         logger.log(LogLevel.WARN, '<<>> Running integration tests only <<>>')
         integrationTest {
-            exclude {
-                !it.directory && it.name.contains('FunctionalSpec')
+            filter {
+                excludeTestsMatching '*FunctionalSpec'
             }
         }
     } else if (functionalTests && !integrationTests) {
         logger.log(LogLevel.WARN, '<<>> Running functional tests only <<>>')
         integrationTest {
-            binResultsDir = file("${project.testResultsDir}/functionalTest/binary")
-            exclude {
-                !it.directory && !it.name.contains('FunctionalSpec')
+            binaryResultsDirectory.set(file("${project.testResultsDir}/functionalTest/binary"))
+            filter {
+                includeTestsMatching '*FunctionalSpec'
             }
             reports {
                 junitXml.destination = file("${project.testResultsDir}/functionalTest")
@@ -74,6 +93,8 @@ task('jenkinsClean') {
 
 test {
     systemProperty 'grails.root.base.dir', rootDir.absolutePath
+    systemProperty 'grails.env', 'test'
+    systemProperty 'grails.run.active', 'true'
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
 }
 
@@ -88,11 +109,11 @@ if (tasks.findByName('mergeTestReports')) {
             }
         }
     }
-}else{
+} else {
     logger.quiet("Fixing test report path to ${file("${buildDir}/reports/tests/index.html")}")
-    test{
-        reports{
-            html{
+    test {
+        reports {
+            html {
                 destination = file("${buildDir}/reports/tests")
             }
         }
@@ -110,16 +131,28 @@ if (compile) {
     compile.setClasspath(compile.getClasspath() + configurations.compileClasspath)
 }
 
+configurations {
+    publishToArtifactory
+}
+
+if (!name.contains('testing')) {
+    javadoc {
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
+        }
+    }
+}
+
 project.afterEvaluate {
 
-    project.tasks.withType(JavaCompile) {JavaCompile c ->
+    project.tasks.withType(JavaCompile) { JavaCompile c ->
         c.options.fork = true
         c.options.encoding = 'UTF-8'
         //compile.options.incremental = useIncrementalJavaBuilding.toBoolean()
         c.options.compilerArgs.add('-Xlint:unchecked')
         c.options.compilerArgs.add('-Xlint:deprecation')
     }
-    project.tasks.withType(GroovyCompile) {GroovyCompile c ->
+    project.tasks.withType(GroovyCompile) { GroovyCompile c ->
         c.options.fork = true
         c.options.encoding = 'UTF-8'
     }
@@ -141,4 +174,16 @@ project.afterEvaluate {
         // sourceCompatibility = project.sourceCompatibility
         group 'archives'
     }
+
+    artifactory {
+        publish {
+            defaults {
+                publications('maven')
+                publishBuildInfo = true
+                publishArtifacts = true
+                publishPom = true
+            }
+        }
+    }
+
 }

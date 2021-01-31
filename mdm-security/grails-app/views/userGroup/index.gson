@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<UserGroup> userGroupList
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    count userGroupList instanceof PagedResultList ? ((PagedResultList) userGroupList).getTotalCount() : userGroupList?.size() ?: 0
+    items tmpl.fullUserGroup(userGroupList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
+}

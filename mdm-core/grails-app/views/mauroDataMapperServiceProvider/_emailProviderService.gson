@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
+
+inherits template: '/mauroDataMapperServiceProvider/mauroDataMapperService', model: [mauroDataMapperService: emailProviderService]
+
+model {
+    EmailProviderService emailProviderService
+}
+
+json {
+    order emailProviderService.order
+}

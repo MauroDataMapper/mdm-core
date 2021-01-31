@@ -1,0 +1,5 @@
+model {
+    Collection<Module> modules
+}
+
+json tmpl.mauroDataMapperProvider(modules)

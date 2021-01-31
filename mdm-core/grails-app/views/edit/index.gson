@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<Edit> editList
+}
+
+json {
+    count editList instanceof PagedResultList ? ((PagedResultList) editList).getTotalCount() : editList?.size() ?: 0
+    items tmpl.edit(editList ?: [])
+}
+

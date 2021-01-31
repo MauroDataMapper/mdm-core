@@ -1,0 +1,30 @@
+<?xml version='1.0'?>
+<exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.0' xmlns:mdm='http://maurodatamapper.com/codeSet/3.0'>
+    <mdm:codeSet>
+        <mdm:id>9bde38fe-d4b6-4dbd-a5b9-061b606a7e23</mdm:id>
+        <mdm:label>Simple CodeSet Import</mdm:label>
+        <mdm:lastUpdated>2020-08-20T15:37:21.8Z</mdm:lastUpdated>
+        <mdm:author>Test Author</mdm:author>
+        <mdm:organisation>Test Organisation</mdm:organisation>
+        <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+        <mdm:finalised>false</mdm:finalised>
+        <mdm:authority>
+            <mdm:id>107adf2e-7051-4ffc-b785-1122f598f13a</mdm:id>
+            <mdm:label>Test Authority</mdm:label>
+            <mdm:url>http://localhost</mdm:url>
+            <mdm:lastUpdated>2020-07-21T12:24:44.612Z</mdm:lastUpdated>
+        </mdm:authority>
+        <mdm:termPaths>
+            <mdm:termPath>te:Simple Test Terminology|tm:STT01: Simple Test Term 01</mdm:termPath>
+        </mdm:termPaths>        
+    </mdm:codeSet>
+    <exp:exportMetadata>
+      <exp:exportedBy>Admin User</exp:exportedBy>
+      <exp:exportedOn>2017-11-21T13:17:00.559Z</exp:exportedOn>
+      <exp:exporter>
+        <exp:namespace>uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter</exp:namespace>
+        <exp:name>CodeSetXmlExporterService</exp:name>
+        <exp:version>3.0</exp:version>
+      </exp:exporter>
+    </exp:exportMetadata>
+</exp:exportModel>

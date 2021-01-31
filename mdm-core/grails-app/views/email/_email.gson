@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.core.email.Email
+
+model {
+    Email email
+}
+
+json {
+    successfullySent email.successfullySent
+    subject email.subject
+    failureReason email.failureReason
+    dateTimeSent email.dateTimeSent
+    sentToEmailAddress email.sentToEmailAddress
+    id email.id
+    body email.body
+    emailServiceUsed email.emailServiceUsed
+}

@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+
+model {
+    ReferenceFile referenceFile
+}
+
+json tmpl.referenceFile(referenceFile)

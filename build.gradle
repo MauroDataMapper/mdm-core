@@ -1,17 +1,28 @@
+import java.awt.Desktop
 import java.lang.management.ManagementFactory
 import java.lang.management.RuntimeMXBean
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 buildscript {
     repositories {
         mavenLocal()
-        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot'}
-        maven {url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release'}
+        maven { url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-snapshot' }
+        maven { url 'https://jenkins.cs.ox.ac.uk/artifactory/plugins-release' }
         jcenter()
 
     }
     dependencies {
         classpath "ox.softeng.gradle:oxbrcinformatics-gradle-plugins:$oxbrcinformaticsGradlePluginsVersion"
+
+        // The version of spring-core included is 3.1.3.RELEASE which is incompatible with the grails-gradle-plugin used by all the
+        // the Grails modules and causes issues when trying to run-app therefore we exclude it
+        classpath("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:$licenseGradlePluginVersion") {
+            exclude group: 'org.springframework', module: 'spring-core'
+        }
+        // However without spring-core the license plugin won't work so we need to include it at the top level
+        // this version will need to be kept inline with Grails' spring-core
+        classpath "org.springframework:spring-core:$licenseGradlePluginSpringCoreOverrideVersion"
     }
     configurations.all {
         // check for updates every build
@@ -19,7 +30,14 @@ buildscript {
     }
 }
 
+plugins {
+    id 'maven'
+    id "com.jfrog.artifactory" version "4.15.2"
+    id 'maven-publish'
+}
+
 apply plugin: 'ox.softeng.ox-brc-base'
+apply plugin: "com.github.hierynomus.license"
 
 task unitTest() {
     group 'testing'
@@ -51,7 +69,7 @@ check {
 task('sysProps') {
     group 'help'
     doLast {
-        logger.quiet('{}', System.properties.collect {"${it.key}:${it.value}"}.sort().join('\n'))
+        logger.quiet('{}', System.properties.collect { "${it.key}:${it.value}" }.sort().join('\n'))
     }
 }
 
@@ -63,22 +81,160 @@ task('jvmArgs') {
     }
 }
 
-if(System.getenv().containsKey('JENKINS')) logger.quiet('Ignoring test failures')
-logger.quiet("Available processors ${Runtime.runtime.availableProcessors()}. Max Unit Test Parallel Forks ${Runtime.runtime.availableProcessors().intdiv(2) ?: 1}")
+task('jenkinsClean') {
+    group 'clean'
+    delete 'build'
+}
+
+logger.quiet(
+    "Available processors ${Runtime.runtime.availableProcessors()}. Max Unit Test Parallel Forks " +
+    "${Runtime.runtime.availableProcessors().intdiv(2) ?: 1}")
+
+/*
+Task to archive up all reports that exist in the project and sub-project
+ */
+task reportsArchive(type: Tar) {
+    archiveClassifier = 'reports'
+    if (System.getenv('TRAVIS')) {
+        archiveVersion = System.getenv('TRAVIS_JOB_NUMBER')
+    }
+    from("$buildDir/reports") {
+        into "reports/ROOT"
+    }
+
+    doLast {
+        println archiveFileName.get()
+    }
+}
+
+task rootTestReport(type: TestReport) {
+    group = 'reporting'
+    destinationDir = file("${buildDir}/reports/tests")
+    testResultDirs = files("${buildDir}/test-results")
+    FileCollection testResultContentDir = files("${buildDir}/test-results")
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        (testResultContentDir.getAsFileTree().visit { FileVisitDetails details ->
+            if (details.directory && details.name == 'binary') {
+                logger.info("Reporting on ${details.path}")
+                reportOn files(details.file)
+            }
+        })
+    }
+    doLast {
+        if (Desktop.isDesktopSupported()) {
+            Desktop.desktop.open(Paths.get("${buildDir}/reports/tests/index.html").toFile())
+        } else {
+            logger.error("File opening not supported by JVM, use native OS command")
+        }
+    }
+}
+
 subprojects {
+
+    apply plugin: 'com.github.hierynomus.license'
+
+    license {
+        header = file("${rootDir}/NOTICE")
+        excludes([
+            '**/*.gson',
+            '**/*.yml',
+            '**/META-INF/**',
+            '**/*.txt',
+            '**/*.json',
+            '**/*.gml',
+            '**/*.jpeg',
+            '**/*.png',
+            '**/*.xml',
+            '**/*.sql',
+            '**/*.csv',
+        ])
+    }
+
+    String pName = project.name
+    rootProject.tasks.reportsArchive {
+        from("$buildDir/reports") {
+            into "reports/$pName"
+        }
+        from("$buildDir/logs") {
+            into "logs/$pName"
+        }
+    }
+
     tasks.register("bomProperties") {
         group = 'Introspection'
         description = 'Print properties from all BOMs'
         doLast {
             if (project.hasProperty('dependencyManagement')) {
                 Map imported = dependencyManagement.importedProperties
-                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect {k, v -> "$k:$v"}.sort().join('\n  ')
+                logger.quiet 'Project :: {}\n  {}', project.name, imported.collect { k, v -> "$k:$v" }.sort().join('\n  ')
             }
         }
     }
+
+    tasks.register('copyTestResultsToRoot', Copy) {
+        from file("${project.buildDir}/test-results")
+        into file("${rootProject.buildDir}/test-results/${project.name}")
+        doFirst {
+            logger.quiet("Copying ${file("${project.buildDir}/test-results")} to ${file("${rootProject.buildDir}/test-results/${project.name}")}")
+        }
+        rootProject.rootTestReport.dependsOn it
+    }
+
     afterEvaluate {
-        project.tasks.withType(Test) {
+        project.tasks.withType(Test) { testTask ->
             ignoreFailures = System.getenv().containsKey('JENKINS')
         }
+
+        Set<Project> dependencyProjects = collectProjectDependencies(project)
+        if (dependencyProjects) {
+            project.tasks.findByName('install').dependsOn dependencyProjects.collect { it.tasks.findByName('install') }
+        }
     }
+}
+
+// Custom publishing to allow us to push the reports up to artifactory from travis
+if (project.hasProperty('artifactory_user') && project.hasProperty('artifactory_apiKey')) {
+    publishing {
+        repositories {
+            maven {
+                url = "${project.artifactory_contextUrl}/build-reports"
+                credentials {
+                    username = "${project.artifactory_user}"
+                    password = "${project.artifactory_apiKey}"
+                }
+            }
+        }
+        publications {
+            reports(MavenPublication) {
+                if (System.getenv('TRAVIS')) {
+                    version = System.getenv('TRAVIS_JOB_NUMBER')
+                }
+                artifact tasks.reportsArchive
+            }
+        }
+    }
+}
+
+Set<Project> collectProjectDependencies(Project project) {
+    Set<Project> dependencyProjects = new HashSet<>()
+    ConfigurationContainer configurations = project.configurations
+    Configuration configuration = configurations.findByName('compile')
+    if (configuration) {
+        DomainObjectSet<ProjectDependency> projectDependencies = configuration.dependencies.withType ProjectDependency
+        projectDependencies.forEach {
+            dependencyProjects.add(it.dependencyProject)
+            dependencyProjects.addAll(collectProjectDependencies(it.dependencyProject))
+        }
+    }
+    configuration = configurations.findByName('implementation')
+    if (configuration) {
+        DomainObjectSet<ProjectDependency> projectDependencies = configuration.dependencies.withType ProjectDependency
+        projectDependencies.forEach {
+            dependencyProjects.add(it.dependencyProject)
+            dependencyProjects.addAll(collectProjectDependencies(it.dependencyProject))
+        }
+    }
+    dependencyProjects
 }

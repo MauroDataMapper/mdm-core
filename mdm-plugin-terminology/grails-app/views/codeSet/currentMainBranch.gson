@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+
+model {
+    CodeSet codeSet
+}
+
+json tmpl.codeSet(codeSet: codeSet)

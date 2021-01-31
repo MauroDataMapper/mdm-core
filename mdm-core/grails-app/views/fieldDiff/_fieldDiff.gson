@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.FieldDiff
+
+model {
+    FieldDiff fieldDiff
+}
+
+json("${fieldDiff.fieldName}") {
+    left fieldDiff.getLeft()
+    right fieldDiff.getRight()
+
+    if (fieldDiff.isMergeConflict != null) {
+        isMergeConflict fieldDiff.isMergeConflict
+        if (fieldDiff.isMergeConflict) commonAncestorValue fieldDiff.commonAncestorValue
+    }
+
+}

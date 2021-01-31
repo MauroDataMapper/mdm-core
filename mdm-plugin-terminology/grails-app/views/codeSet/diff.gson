@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+
+model {
+    ObjectDiff<CodeSet> objectDiff
+}
+
+json tmpl.'/objectDiff/objectDiff'(objectDiff)
+

@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<VersionLink> versionLinkList
+}
+
+json {
+    count versionLinkList instanceof PagedResultList ? ((PagedResultList) versionLinkList).getTotalCount() : versionLinkList?.size() ?: 0
+    items tmpl.versionLink(versionLinkList ?: [])
+}

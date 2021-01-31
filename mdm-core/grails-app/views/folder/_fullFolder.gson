@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/folder/folder'
+
+model {
+    Folder folder
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    readableByEveryone folder.readableByEveryone
+    readableByAuthenticatedUsers folder.readableByAuthenticatedUsers
+    availableActions userSecurityPolicyManager.userAvailableActions(folder.getClass(), folder.id)
+    if (folder.description) description folder.description
+}

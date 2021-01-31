@@ -1,0 +1,6 @@
+response.status NOT_IMPLEMENTED.value()
+
+json {
+    message NOT_IMPLEMENTED.reasonPhrase
+    error NOT_IMPLEMENTED.value()
+}

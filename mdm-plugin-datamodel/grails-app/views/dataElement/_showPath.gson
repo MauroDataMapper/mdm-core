@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/dataElement/fullDataElement', model: [dataElement: catalogueItem, userSecurityPolicyManager: userSecurityPolicyManager]
+
+model {
+    DataElement catalogueItem
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+
+}

@@ -1,0 +1,21 @@
+model {
+    String fromName
+    String fromAddress
+    Map<String, String> to
+    Map<String, String> cc
+    String subject
+    String body
+    String username
+    String password
+}
+
+json {
+    fromName fromName
+    fromAddress fromAddress
+    to tmpl.'/email/recipient'(to.entrySet())
+    if (cc) cc tmpl.'/email/recipient'(cc.entrySet())
+    subject subject
+    body body
+    if (username) username username
+    if (password) password password
+}

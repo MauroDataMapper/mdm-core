@@ -1,0 +1,3 @@
+maurodatamapper:
+    security:
+        public: false

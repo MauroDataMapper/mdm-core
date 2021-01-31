@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+
+model {
+    Metadata metadata
+}
+
+json tmpl.metadata(metadata)

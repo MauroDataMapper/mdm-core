@@ -1,0 +1,8 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
+
+model {
+    List<ReferenceDataElementSimilarityResult> dataElementSimilarityResultList
+}
+json {
+    links tmpl.'/similarityResult/similarityResult'(dataElementSimilarityResultList)
+}

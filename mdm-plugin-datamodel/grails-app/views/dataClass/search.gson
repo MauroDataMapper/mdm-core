@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+
+model {
+    PaginatedLuceneResult<ModelItem> paginatedLuceneResult
+}
+json {
+    count paginatedLuceneResult.count
+    items tmpl.'/catalogueItem/catalogueItem'(paginatedLuceneResult.results ?: [])
+}

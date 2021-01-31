@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
+
+model {
+    ExportMetadata exportMetadata
+}
+
+json {
+    exportedBy exportMetadata.exportedBy
+    exportedOn exportMetadata.exportDate
+    exporter {
+        namespace exportMetadata.namespace
+        name exportMetadata.name
+        version exportMetadata.version
+    }
+}

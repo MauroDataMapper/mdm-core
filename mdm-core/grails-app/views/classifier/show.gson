@@ -1,0 +1,9 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    Classifier classifier
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json tmpl.fullClassifier(classifier: classifier, userSecurityPolicyManager: userSecurityPolicyManager)

@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+
+model {
+    List<ApiProperty> apiPropertyList
+}
+
+json {
+    apiPropertyList.each {p ->
+
+        call("${p.key}", "${p.value}")
+
+    }
+}

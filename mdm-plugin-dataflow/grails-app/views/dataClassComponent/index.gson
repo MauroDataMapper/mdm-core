@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<DataClassComponent> dataClassComponentList
+}
+
+json {
+    count dataClassComponentList instanceof PagedResultList ? ((PagedResultList) dataClassComponentList).getTotalCount() :
+          dataClassComponentList?.size() ?: 0
+    items tmpl.dataClassComponent(dataClassComponentList ?: [])
+}

@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataElementComponent
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+model {
+    DataElementComponent dataElementComponent
+    UserSecurityPolicyManager userSecurityPolicyManager
+
+}
+
+json tmpl.fullDataElementComponent(dataElementComponent: dataElementComponent, userSecurityPolicyManager: userSecurityPolicyManager)

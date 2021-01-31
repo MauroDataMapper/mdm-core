@@ -1,0 +1,9 @@
+response.status FORBIDDEN.value()
+model {
+    String path
+    String additional
+}
+json {
+    if (path) path path
+    if (additional) additional additional
+}

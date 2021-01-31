@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: term]
+
+model {
+    Term term
+}
+
+json {
+    code term.getCode()
+    definition term.getDefinition()
+    if (term.url) url term.getUrl()
+}

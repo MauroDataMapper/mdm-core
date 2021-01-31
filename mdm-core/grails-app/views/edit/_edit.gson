@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
+
+model {
+    Edit edit
+}
+
+json {
+    dateCreated edit.dateCreated
+    createdBy edit.createdBy
+    description edit.description
+}

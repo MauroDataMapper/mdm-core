@@ -1,0 +1,208 @@
+{
+  "dataModel": {
+    "id": "${json-unit.matches:id}",
+    "label": "Complex Test DataModel",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "classifiers": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "test classifier",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "test classifier2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "metadata": [
+      {
+        "id": "${json-unit.matches:id}",
+        "key": "mdk1",
+        "namespace": "test.com",
+        "value": "mdv1",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "key": "mdk2",
+        "namespace": "test.com",
+        "value": "mdv2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "key": "mdk1",
+        "namespace": "test.com/test",
+        "value": "mdv2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "annotations": [
+      {
+        "id": "${json-unit.matches:id}",
+        "createdBy": "development@test.com",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "label": "test annotation 1"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "createdBy": "development@test.com",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "label": "test annotation 2",
+        "description": "with description"
+      }
+    ],
+    "type": "Data Standard",
+    "author": "admin person",
+    "organisation": "brc",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
+    "dataTypes": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "string",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "integer",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "PrimitiveType"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "yesnounknown",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "EnumerationType",
+        "enumerationValues": [
+          {
+            "id": "${json-unit.matches:id}",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 0,
+            "key": "Y",
+            "value": "Yes"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 1,
+            "key": "N",
+            "value": "No"
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "index": 2,
+            "key": "U",
+            "value": "Unknown"
+          }
+        ]
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "child",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "domainType": "ReferenceType",
+        "referenceClass": {
+          "id": "${json-unit.matches:id}",
+          "label": "child",
+          "dataClassPath": "parent|child"
+        }
+      }
+    ],
+    "childDataClasses": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "emptyclass",
+        "description": "dataclass with desc",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "parent",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "maxMultiplicity": -1,
+        "minMultiplicity": 1,
+        "dataClasses": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "child",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}"
+          }
+        ],
+        "dataElements": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "child",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "dataType": {
+              "id": "${json-unit.matches:id}",
+              "label": "child",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "ReferenceType",
+              "referenceClass": {
+                "id": "${json-unit.matches:id}",
+                "label": "child",
+                "dataClassPath": "parent|child"
+              }
+            },
+            "maxMultiplicity": 1,
+            "minMultiplicity": 1
+          }
+        ]
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "content",
+        "description": "A dataclass with elements",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "maxMultiplicity": 1,
+        "minMultiplicity": 0,
+        "dataElements": [
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "ele1",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "dataType": {
+              "id": "${json-unit.matches:id}",
+              "label": "string",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "PrimitiveType"
+            },
+            "maxMultiplicity": 20,
+            "minMultiplicity": 0
+          },
+          {
+            "id": "${json-unit.matches:id}",
+            "label": "element2",
+            "lastUpdated": "${json-unit.matches:offsetDateTime}",
+            "dataType": {
+              "id": "${json-unit.matches:id}",
+              "label": "integer",
+              "lastUpdated": "${json-unit.matches:offsetDateTime}",
+              "domainType": "PrimitiveType"
+            },
+            "maxMultiplicity": 1,
+            "minMultiplicity": 1
+          }
+        ]
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter",
+      "name": "DataModelJsonExporterService",
+      "version": "2.0"
+    }
+  }
+}

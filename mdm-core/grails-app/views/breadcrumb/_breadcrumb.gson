@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.Breadcrumb
+
+model {
+    Breadcrumb breadcrumb
+}
+
+json {
+    id breadcrumb.id
+    label breadcrumb.label
+    domainType breadcrumb.domainType
+
+    if (breadcrumb.finalised != null) finalised breadcrumb.finalised
+
+}

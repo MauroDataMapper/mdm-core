@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2020 University of Oxford
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    SPDX-License-Identifier: Apache-2.0
+
+-->
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.1" xmlns:mdm="http://maurodatamapper.com/dataModel/3.1">
+  <mdm:dataModel>
+    <mdm:id>85c51db1-6e48-486e-9be7-001b572798f2</mdm:id>
+    <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
+    <mdm:lastUpdated>2017-11-21T13:17:04.184Z</mdm:lastUpdated>
+    <mdm:type>Data Standard</mdm:type>
+    <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+    <mdm:finalised>false</mdm:finalised>
+    <mdm:authority>
+      <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
+      <mdm:label>Test Authority</mdm:label>
+      <mdm:url>http://localhost</mdm:url>
+      <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
+    </mdm:authority>
+    <mdm:dataTypes>
+      <mdm:dataType>
+        <mdm:id>c83ff0a2-7a9f-45b8-a2d1-61c71dfd7a7a</mdm:id>
+        <mdm:label>child</mdm:label>
+        <mdm:lastUpdated>2017-11-21T13:17:04.185Z</mdm:lastUpdated>
+        <mdm:domainType>ReferenceType</mdm:domainType>
+        <mdm:referenceClass>
+          <mdm:id>a5451050-359c-4930-b9f8-4ccff5a1a8d8</mdm:id>
+          <mdm:label>child</mdm:label>
+          <mdm:dataClassPath>parent|child</mdm:dataClassPath>
+        </mdm:referenceClass>
+      </mdm:dataType>
+    </mdm:dataTypes>
+    <mdm:childDataClasses>
+      <mdm:dataClass>
+        <mdm:id>ecc4179f-009b-47ef-8c08-15f0ff6276b1</mdm:id>
+        <mdm:label>parent</mdm:label>
+        <mdm:lastUpdated>2020-04-13T14:07:01.056545Z</mdm:lastUpdated>
+        <mdm:maxMultiplicity>-1</mdm:maxMultiplicity>
+        <mdm:minMultiplicity>1</mdm:minMultiplicity>
+        <mdm:dataClasses>
+          <mdm:dataClass>
+            <mdm:id>a5451050-359c-4930-b9f8-4ccff5a1a8d8</mdm:id>
+            <mdm:label>child</mdm:label>
+            <mdm:lastUpdated>2020-04-13T14:07:01.065187Z</mdm:lastUpdated>
+          </mdm:dataClass>
+        </mdm:dataClasses>
+        <mdm:dataElements>
+          <mdm:dataElement>
+            <mdm:id>fc641e81-e25c-4b6c-b425-39d1730e11b1</mdm:id>
+            <mdm:label>child</mdm:label>
+            <mdm:lastUpdated>2020-04-13T14:07:01.079591Z</mdm:lastUpdated>
+            <mdm:dataType>
+              <mdm:id>6b09007b-0966-4dd4-89d2-ba0e28f57bfc</mdm:id>
+              <mdm:label>child</mdm:label>
+              <mdm:lastUpdated>2020-04-13T14:07:01.072873Z</mdm:lastUpdated>
+              <mdm:domainType>ReferenceType</mdm:domainType>
+              <mdm:referenceClass>
+                <mdm:id>a5451050-359c-4930-b9f8-4ccff5a1a8d8</mdm:id>
+                <mdm:label>child</mdm:label>
+                <mdm:dataClassPath>parent|child</mdm:dataClassPath>
+              </mdm:referenceClass>
+            </mdm:dataType>
+            <mdm:maxMultiplicity>1</mdm:maxMultiplicity>
+            <mdm:minMultiplicity>1</mdm:minMultiplicity>
+          </mdm:dataElement>
+        </mdm:dataElements>
+      </mdm:dataClass>
+    </mdm:childDataClasses>
+  </mdm:dataModel>
+  <exp:exportMetadata>
+    <exp:exportedBy>Admin User</exp:exportedBy>
+    <exp:exportedOn>2017-11-21T13:17:04.197Z</exp:exportedOn>
+    <exp:exporter>
+      <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
+      <exp:name>DataModelXmlExporterService</exp:name>
+      <exp:version>3.1</exp:version>
+    </exp:exporter>
+  </exp:exportMetadata>
+</exp:exportModel>

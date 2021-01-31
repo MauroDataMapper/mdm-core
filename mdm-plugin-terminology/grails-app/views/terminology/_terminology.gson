@@ -1,0 +1,19 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+
+inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: terminology]
+
+model {
+    Terminology terminology
+}
+
+json {
+    branchName terminology.branchName
+    documentationVersion terminology.documentationVersion.toString()
+    if (terminology.modelVersion) modelVersion terminology.modelVersion.toString()
+
+    if (terminology.classifiers) classifiers g.render(terminology.classifiers)
+    if (terminology.deleted) deleted terminology.deleted
+    if (terminology.author) author terminology.author
+    if (terminology.organisation) organisation terminology.organisation
+    authority g.render(terminology.authority)
+}

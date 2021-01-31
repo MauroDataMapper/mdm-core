@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderService
+
+model {
+    Iterable<ExporterProviderService> exporterProviders
+}
+json tmpl.exporterProviderService(exporterProviders ?: [])
+

@@ -1,0 +1,32 @@
+import java.lang.reflect.InvocationTargetException
+
+model {
+    Exception exception
+}
+
+json {
+    Throwable cause = getCause(exception)
+    type cause.class.simpleName
+
+    if (cause.message)
+        message cause.message.replaceAll(/\n\n/, '\n').replaceAll(/\n/, ' >> ')
+    if (cause.stackTrace) {
+        stacktrace renderStackTrace(cause)
+    }
+}
+
+static List<String> renderStackTrace(Throwable cause) {
+    cause.cause ? renderStackTrace(cause.cause) : renderStackTrace(cause.stackTrace)
+}
+
+static List<String> renderStackTrace(StackTraceElement[] stackTrace) {
+    stackTrace.collect {StackTraceElement element ->
+        "${element.className}.${element.methodName}(${element.fileName}:${element.lineNumber})".toString()
+    }
+}
+
+static Throwable getCause(Throwable throwable) {
+    if (!throwable.cause) return throwable
+    Throwable cause = throwable.cause
+    cause instanceof InvocationTargetException ? cause.cause : cause
+}

@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<VersionedFolder> versionedFolderList
+}
+json {
+    count versionedFolderList instanceof PagedResultList ? ((PagedResultList) versionedFolderList).getTotalCount() : versionedFolderList?.size() ?: 0
+    items tmpl.versionedFolder(versionedFolderList ?: [])
+}

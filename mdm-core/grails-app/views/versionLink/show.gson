@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
+
+model {
+    VersionLink versionLink
+}
+
+json tmpl.versionLink(versionLink)

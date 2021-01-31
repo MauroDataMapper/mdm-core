@@ -1,0 +1,28 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/catalogueItem/fullCatalogueItem', model: [catalogueItem            : dataModel,
+                                                               userSecurityPolicyManager: userSecurityPolicyManager]
+
+model {
+    DataModel dataModel
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    type dataModel.modelType
+    branchName dataModel.branchName
+    documentationVersion dataModel.documentationVersion.toString()
+    finalised dataModel.finalised
+    readableByEveryone dataModel.readableByEveryone
+    readableByAuthenticatedUsers dataModel.readableByAuthenticatedUsers
+
+    if (dataModel.finalised) dateFinalised dataModel.dateFinalised
+
+    if (dataModel.deleted) deleted dataModel.deleted
+    if (dataModel.author) author dataModel.author
+    if (dataModel.organisation) organisation dataModel.organisation
+    if (dataModel.modelVersion) modelVersion dataModel.modelVersion.toString()
+
+    authority tmpl.'/authority/authority'(dataModel.authority)
+}

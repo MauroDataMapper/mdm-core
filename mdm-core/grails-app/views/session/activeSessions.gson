@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
+
+import javax.servlet.http.HttpSession
+
+model {
+    Collection<HttpSession> httpSessionCollection
+    SessionService sessionService
+}
+json {
+    countAuthorised httpSessionCollection.findAll( { it.getAttribute('emailAddress')}).size() ?: 0
+    countUnauthorised httpSessionCollection.findAll( { !it.getAttribute('emailAddress') }).size() ?: 0
+    items g.render(httpSessionCollection ?: [])
+}

@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
+
+model {
+    DataModelFileImporterProviderServiceParameters dataModelFileImporterProviderServiceParameters
+}
+
+json {
+    importFile {
+        fileContents dataModelFileImporterProviderServiceParameters.importFile.fileContents
+        fileName dataModelFileImporterProviderServiceParameters.importFile.fileName
+        fileType dataModelFileImporterProviderServiceParameters.importFile.fileType
+    }
+    finalised dataModelFileImporterProviderServiceParameters.finalised
+    modelName dataModelFileImporterProviderServiceParameters.modelName
+    folderId dataModelFileImporterProviderServiceParameters.folderId.toString()
+    importAsNewDocumentationVersion dataModelFileImporterProviderServiceParameters.importAsNewDocumentationVersion
+    importAsNewBanchModelVersion dataModelFileImporterProviderServiceParameters.importAsNewBranchModelVersion
+}

@@ -1,0 +1,34 @@
+{
+  "terminology": {
+    "id": "${json-unit.matches:id}",
+    "label": "Simple Test Terminology Import",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "annotations": [
+      {
+          "id": "${json-unit.matches:id}",
+          "createdBy": "development@test.com",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}",
+          "label": "test annotation 1 label",
+          "description": "test annotation 1 description"
+      }
+    ],    
+    "author": "Test Author",
+    "organisation": "Test Organisation",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "label": "Test Authority",
+      "url": "http://localhost"
+    }
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "TerminologyJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}

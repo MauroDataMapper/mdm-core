@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+
+model {
+    CatalogueUser catalogueUser
+}
+
+json tmpl.'/catalogueUser/catalogueUser'(catalogueUser)

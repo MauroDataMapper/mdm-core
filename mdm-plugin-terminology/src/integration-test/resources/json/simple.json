@@ -1,0 +1,73 @@
+{
+  "terminology": {
+    "id": "${json-unit.matches:id}",
+    "label": "Simple Test Terminology",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "classifiers": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "test classifier simple",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "metadata": [
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "terminology.test.com/simple",
+        "key": "mdk1",
+        "value": "mdv1",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "terminology.test.com",
+        "key": "mdk2",
+        "value": "mdv2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "terminology.test.com/simple",
+        "key": "mdk2",
+        "value": "mdv2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "author": "Test Bootstrap",
+    "organisation": "Oxford BRC",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
+    "terms": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "STT01: Simple Test Term 01",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "STT01",
+        "definition": "Simple Test Term 01",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "STT02: Simple Test Term 02",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "STT02",
+        "definition": "Simple Test Term 02",
+        "depth": 1
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "TerminologyJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}

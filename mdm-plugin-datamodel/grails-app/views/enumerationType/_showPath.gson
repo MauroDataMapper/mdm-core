@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+inherits template: '/dataType/fullDataType', model: [dataType: catalogueItem, userSecurityPolicyManager: userSecurityPolicyManager]
+
+model {
+    EnumerationType catalogueItem
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+
+}

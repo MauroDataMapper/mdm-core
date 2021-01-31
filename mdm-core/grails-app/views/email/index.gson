@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.email.Email
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<Email> emailList
+}
+json {
+    count emailList instanceof PagedResultList ? ((PagedResultList) emailList).getTotalCount() : emailList?.size() ?: 0
+    items tmpl.email(emailList ?: [])
+}

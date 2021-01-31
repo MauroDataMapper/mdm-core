@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
+
+model {
+    VersionLink versionLink
+}
+
+json {
+    id versionLink.id
+    linkType versionLink.linkType.label
+    domainType versionLink.domainType
+
+    sourceModel tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: versionLink.model)
+    targetModel tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: versionLink.targetModel)
+}

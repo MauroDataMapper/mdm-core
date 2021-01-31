@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+
+model {
+    DataModel dataModel
+}
+
+json tmpl.dataModel(dataModel: dataModel)

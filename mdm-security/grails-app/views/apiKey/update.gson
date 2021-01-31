@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
+
+model {
+    ApiKey apiKey
+}
+
+json tmpl.apiKey(apiKey: apiKey)

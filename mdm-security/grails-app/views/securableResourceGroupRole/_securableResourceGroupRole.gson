@@ -1,0 +1,19 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
+
+model {
+    SecurableResourceGroupRole securableResourceGroupRole
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    id securableResourceGroupRole.id
+    availableActions userSecurityPolicyManager.userAvailableActions(securableResourceGroupRole.securableResourceDomainType,
+                                                                    securableResourceGroupRole.securableResourceId)
+    createdBy securableResourceGroupRole.createdBy
+
+    securableResourceDomainType securableResourceGroupRole.securableResourceDomainType
+    securableResourceId securableResourceGroupRole.securableResourceId
+    userGroup tmpl.'/userGroup/userGroup'(securableResourceGroupRole.userGroup)
+    groupRole tmpl.'/groupRole/groupRole'(securableResourceGroupRole.groupRole)
+}

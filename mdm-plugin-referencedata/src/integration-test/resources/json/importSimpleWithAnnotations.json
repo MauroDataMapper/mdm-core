@@ -1,0 +1,35 @@
+{
+    "referenceDataModel": {
+        "id": "941f6774-9eae-4bfa-890e-e819eb1af281",
+        "label": "importSimple Reference Data Model",
+        "lastUpdated": "2020-10-27T15:00:35.77Z",  
+        "annotations": [
+            {
+                "id": "${json-unit.matches:id}",
+                "createdBy": "development@test.com",
+                "lastUpdated": "${json-unit.matches:offsetDateTime}",
+                "label": "test annotation 1 label",
+                "description": "test annotation 1 description"
+            }
+          ],              
+        "type": "ReferenceDataModel",
+        "documentationVersion": "1.0.0",
+        "author": "Test Author",
+        "organisation": "Test Organisation",
+        "finalised": false,
+        "authority": {
+            "id": "107adf2e-7051-4ffc-b785-1122f598f13a",
+            "url": "http://localhost",
+            "label": "Mauro Data Mapper"
+        }
+    },
+   "exportMetadata": {
+        "exportedBy": "Admin User",
+        "exportedOn": "2020-10-30T12:01:02.099Z",
+        "exporter": {
+          "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
+          "name": "ReferenceDataJsonExporterService",
+          "version": "3.0"
+        }
+    }
+}

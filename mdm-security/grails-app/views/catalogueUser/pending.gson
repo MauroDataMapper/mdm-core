@@ -1,0 +1,14 @@
+import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<CatalogueUser> catalogueUserList
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    count catalogueUserList instanceof PagedResultList ? ((PagedResultList) catalogueUserList).getTotalCount() : catalogueUserList?.size() ?: 0
+    items tmpl.fullCatalogueUser(catalogueUserList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
+}

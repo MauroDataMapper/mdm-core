@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exp="http://maurodatamapper.com/export/3.0"
+           xmlns:mdm="http://maurodatamapper.com/codeSet/3.0" elementFormDefault="qualified"
+           targetNamespace="http://maurodatamapper.com/export/3.0">
+  <xs:import namespace="http://maurodatamapper.com/codeSet/3.0" schemaLocation="codeSet_1.0.xsd" />
+  <xs:element name="exportModel" type="exp:exportType" />
+  <xs:complexType name="exportType">
+    <xs:sequence>
+      <xs:element ref="mdm:codeSet" />
+      <xs:element name="exportMetadata" type="exp:exportMetadata" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="exporterType">
+    <xs:all>
+      <xs:element name="namespace" type="xs:string" />
+      <xs:element name="name" type="xs:string" />
+      <xs:element name="version" type="xs:decimal" />
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="exportMetadata">
+    <xs:all>
+      <xs:element name="exportedBy" type="xs:string" />
+      <xs:element name="exportedOn" type="xs:dateTime" />
+      <xs:element name="exporter" type="exp:exporterType" />
+    </xs:all>
+  </xs:complexType>
+</xs:schema>

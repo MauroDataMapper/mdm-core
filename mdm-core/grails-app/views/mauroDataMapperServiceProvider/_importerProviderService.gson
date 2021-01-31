@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
+
+inherits template: '/mauroDataMapperServiceProvider/mauroDataMapperService', model: [mauroDataMapperService: importerProviderService]
+
+model {
+    ImporterProviderService importerProviderService
+}
+json {
+    paramClassType importerProviderService.importerProviderServiceParametersClass.canonicalName
+    canImportMultipleDomains importerProviderService.canImportMultipleDomains()
+}

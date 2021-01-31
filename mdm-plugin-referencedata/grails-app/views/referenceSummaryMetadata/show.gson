@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+
+model {
+    ReferenceSummaryMetadata referenceSummaryMetadata
+}
+
+json tmpl.referenceSummaryMetadata(referenceSummaryMetadata)

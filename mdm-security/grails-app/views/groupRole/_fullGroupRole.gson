@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+
+inherits template: '/groupRole/groupRole'
+
+model {
+    GroupRole groupRole
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    availableActions userSecurityPolicyManager.userAvailableActions(GroupRole, groupRole.id)
+    createdBy groupRole.createdBy
+    applicationLevelRole groupRole.applicationLevelRole
+    if (groupRole.parent) parent groupRole.parent.id
+}

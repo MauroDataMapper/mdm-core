@@ -1,0 +1,19 @@
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultReferenceDataType
+
+model {
+    DefaultReferenceDataType defaultReferenceDataType
+}
+json {
+    domainType defaultReferenceDataType.domainType
+    label defaultReferenceDataType.getLabel()
+    if (defaultReferenceDataType.description) description defaultReferenceDataType.description
+
+    if (defaultReferenceDataType.domainType == ReferenceEnumerationType.simpleName) {
+        enumerationValues g.render(defaultReferenceDataType.enumerationValues)
+    }
+    if (defaultReferenceDataType.domainType == ReferencePrimitiveType.simpleName) {
+        if (defaultReferenceDataType.units) units defaultReferenceDataType.units
+    }
+}

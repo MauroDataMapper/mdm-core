@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<CodeSet> codeSetList
+}
+
+json {
+    count codeSetList instanceof PagedResultList ? ((PagedResultList) codeSetList).getTotalCount() : codeSetList?.size() ?: 0
+    items tmpl.codeSet(codeSetList ?: [])
+}

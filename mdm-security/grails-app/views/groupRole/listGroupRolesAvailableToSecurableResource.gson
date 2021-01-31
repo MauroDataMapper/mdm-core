@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
+
+model {
+    Set<GroupRole> groupRoleSet
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    count groupRoleSet.size()
+    items tmpl.fullGroupRole(groupRoleSet, [userSecurityPolicyManager: userSecurityPolicyManager])
+}

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mdm="http://maurodatamapper.com/codeSet/3.0" elementFormDefault="qualified"
+           targetNamespace="http://maurodatamapper.com/codeSet/3.0">
+  <xs:element name="codeSet" type="mdm:codeSetCT" />
+  <xs:complexType name="codeSetCT">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mdm:uuid" />
+      <xs:element name="label" type="mdm:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+      <xs:element minOccurs="0" name="aliases" type="mdm:aliasesType" />
+      <xs:element minOccurs="0" name="classifiers" type="mdm:classifiersType" />
+      <xs:element minOccurs="0" name="metadata" type="mdm:metadataCollectionType" />
+      <xs:element minOccurs="0" name="annotations" type="mdm:annotationsType" />
+      <xs:element minOccurs="0" name="author" type="xs:string" />
+      <xs:element minOccurs="0" name="organisation" type="xs:string" />
+      <xs:element name="documentationVersion" type="mdm:mandatoryString">
+        <xs:annotation>
+          <xs:documentation>If adding a CodeSet which already exists in the Metadata Catalogue then this must be provided and be a later version to the one in the Catalogue. 
+Otherwise you will get an import error due to non-unique labels</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="finalised" type="xs:boolean" />
+      <xs:element minOccurs="0" name="dateFinalised" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>If finalised is true then this element is NOT optional</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="modelVersion" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>ModelVersion must only be set if the CodeSet is finalised.</xs:documentation>
+        </xs:annotation>
+      </xs:element>      
+      <xs:element name="authority" type="mdm:authorityType" />
+      <xs:element name="termPaths" type="mdm:termPathCollectionCT" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="termPathCollectionCT">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="termPath" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="aliasesType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="alias" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="classifiersType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="classifier" type="mdm:classifierType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="classifierType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mdm:uuid" />
+      <xs:element name="label" type="mdm:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="annotationsType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:annotationType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="annotationType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="createdBy" type="mdm:mandatoryString" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element name="label" type="mdm:mandatoryString">
+        <xs:annotation>
+          <xs:documentation />
+        </xs:annotation>
+      </xs:element>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="childAnnotations" type="mdm:childAnnotationsType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="childAnnotationsType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:childAnnotationType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="childAnnotationType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="label" type="mdm:mandatoryString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation />
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="createdBy" type="mdm:mandatoryString" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="childAnnotations" type="mdm:annotationsType" />
+    </xs:sequence>
+  </xs:complexType>  
+  <xs:complexType name="metadataCollectionType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="metadata" type="mdm:metadataType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="metadataType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="id" type="mdm:uuid" />
+      <xs:element name="namespace" type="xs:string" />
+      <xs:element name="key" type="xs:string" />
+      <xs:element minOccurs="1" name="value" type="xs:string" />
+      <xs:element minOccurs="0" name="lastUpdated" type="xs:dateTime" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="mandatoryString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="multiplicity">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="-1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="uuid">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-fF0-9]{4}-[a-f0-9]{12}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="authorityType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="label" type="mdm:mandatoryString" />
+      <xs:element name="url" type="mdm:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>  
+</xs:schema>

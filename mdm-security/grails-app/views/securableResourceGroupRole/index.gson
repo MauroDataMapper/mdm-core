@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<SecurableResourceGroupRole> securableResourceGroupRoleList
+    UserSecurityPolicyManager userSecurityPolicyManager
+}
+
+json {
+    count securableResourceGroupRoleList instanceof PagedResultList ? ((PagedResultList) securableResourceGroupRoleList).getTotalCount() :
+          securableResourceGroupRoleList?.size() ?: 0
+    items tmpl.securableResourceGroupRole(securableResourceGroupRoleList ?: [], [userSecurityPolicyManager: userSecurityPolicyManager])
+}

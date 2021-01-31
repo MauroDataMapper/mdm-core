@@ -1,0 +1,12 @@
+import grails.gorm.PagedResultList
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
+
+model {
+    Integer numberOfRows
+    List<List> referenceDataRows
+}
+json {
+    count numberOfRows
+    rows tmpl.referenceDataRow(referenceDataRows ?: [])
+}
+

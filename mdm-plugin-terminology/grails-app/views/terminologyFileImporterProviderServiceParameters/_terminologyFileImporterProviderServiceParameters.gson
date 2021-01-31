@@ -1,0 +1,17 @@
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters
+
+model {
+    TerminologyFileImporterProviderServiceParameters terminologyFileImporterProviderServiceParameters
+}
+
+json {
+    importFile {
+        fileContents terminologyFileImporterProviderServiceParameters.importFile.fileContents
+        fileName terminologyFileImporterProviderServiceParameters.importFile.fileName
+        fileType terminologyFileImporterProviderServiceParameters.importFile.fileType
+    }
+    finalised terminologyFileImporterProviderServiceParameters.finalised
+    modelName terminologyFileImporterProviderServiceParameters.modelName
+    folderId terminologyFileImporterProviderServiceParameters.folderId.toString()
+    importAsNewDocumentationVersion terminologyFileImporterProviderServiceParameters.importAsNewDocumentationVersion
+}

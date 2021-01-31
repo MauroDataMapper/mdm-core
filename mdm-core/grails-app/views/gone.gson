@@ -1,0 +1,6 @@
+response.status GONE.value()
+
+json {
+    message GONE.reasonPhrase
+    error GONE.value()
+}

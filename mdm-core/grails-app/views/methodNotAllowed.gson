@@ -1,0 +1,9 @@
+response.status METHOD_NOT_ALLOWED.value()
+model {
+    String message
+    String path
+}
+json {
+    message message
+    if (path) path path
+}
