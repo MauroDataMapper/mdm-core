@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -35,6 +37,8 @@ import groovy.util.logging.Slf4j
 trait CatalogueItemAwareService<K> extends DomainService<K> {
 
     abstract List<CatalogueItemService> getCatalogueItemServices()
+
+    abstract List<ContainerService> getContainerServices()
 
     abstract K findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id)
 
@@ -66,8 +70,8 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
         domain
     }
 
-    CatalogueItem findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
-        findCatalogueItemService(domainType).get(catalogueItemId)
+    MultiFacetAware findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
+        findCatalogueItemService(domainType).get(catalogueItemId)?:findContainerService(domainType)
     }
 
     void deleteAllByCatalogueItemIds(List<UUID> catalogueItemIds) {
@@ -107,4 +111,9 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
         return service
     }
 
+    ContainerService findContainerService(String containerDomainType) {
+        ContainerService service = containerServices.find {it.handles(containerDomainType)}
+        if (!service) throw new ApiBadRequestException('FS01', "No supporting service for ${containerDomainType}")
+        return service
+    }
 }

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
@@ -42,6 +43,9 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
 
     @Autowired(required = false)
     List<ModelService> modelServices
+
+    @Autowired(required = false)
+    List <ContainerService> containerServices
 
     VersionLink get(Serializable id) {
         VersionLink.get(id)

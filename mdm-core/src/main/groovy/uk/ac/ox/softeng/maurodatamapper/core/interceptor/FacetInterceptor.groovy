@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.interceptor
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -65,6 +66,10 @@ abstract class FacetInterceptor implements MdmInterceptor {
     }
 
     boolean checkActionAllowedOnFacet() {
+        if (Utils.parentClassIsAssignableFromChild(CatalogueItem, getOwningClass())){
+
+        }
+
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, getOwningClass())) {
             return checkActionAuthorisationOnUnsecuredResource(getFacetClass(), params.id, getOwningClass(), getOwningId())
         }

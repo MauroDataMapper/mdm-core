@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFileService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -31,6 +32,9 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Catal
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
+
+    @Autowired(required = false)
+    List <ContainerService> containerServices
 
     ReferenceFile get(Serializable id) {
         ReferenceFile.get(id)

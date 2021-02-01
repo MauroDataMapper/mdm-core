@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.util.test
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
-import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.core.CatalogueItemAwareServiceSpec as FrameworkCatalogueItemAwareServiceSpec
 
 import spock.lang.Stepwise

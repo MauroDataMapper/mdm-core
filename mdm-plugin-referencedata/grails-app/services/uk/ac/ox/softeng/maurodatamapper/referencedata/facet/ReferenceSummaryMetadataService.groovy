@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 
@@ -35,6 +36,9 @@ class ReferenceSummaryMetadataService implements CatalogueItemAwareService<Refer
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
+
+    @Autowired(required = false)
+    List <ContainerService> containerServices
 
     ReferenceSummaryMetadata get(Serializable id) {
         ReferenceSummaryMetadata.get(id)

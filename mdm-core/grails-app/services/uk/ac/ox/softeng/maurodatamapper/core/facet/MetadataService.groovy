@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
@@ -42,6 +43,9 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
+
+    @Autowired(required = false)
+    List <ContainerService> containerServices
 
     SessionFactory sessionFactory
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
