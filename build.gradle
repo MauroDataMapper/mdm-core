@@ -187,10 +187,10 @@ subprojects {
             ignoreFailures = System.getenv().containsKey('JENKINS')
         }
 
-        Set<Project> dependencyProjects = collectProjectDependencies(project)
-        if (dependencyProjects) {
-            project.tasks.findByName('install').dependsOn dependencyProjects.collect { it.tasks.findByName('install') }
-        }
+//        Set<Project> dependencyProjects = collectProjectDependencies(project)
+//        if (dependencyProjects) {
+//            project.tasks.findByName('install').dependsOn dependencyProjects.collect { it.tasks.findByName('install') }
+//        }
     }
 }
 
