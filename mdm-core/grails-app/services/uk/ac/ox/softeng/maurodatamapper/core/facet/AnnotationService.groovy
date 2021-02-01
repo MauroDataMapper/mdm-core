@@ -61,7 +61,12 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
     void delete(Annotation annotation, boolean flush = false) {
         if (!annotation) return
         CatalogueItemService service = findCatalogueItemService(annotation.catalogueItemDomainType)
-        service.removeAnnotationFromCatalogueItem(annotation.catalogueItemId, annotation)
+        if(service) {
+            service.removeAnnotationFromCatalogueItem(annotation.catalogueItemId, annotation)
+        }else{
+            ContainerService containerService = findContainerService(annotation.catalogueItemDomainType)
+            containerService.removeAnnotationFromContainer(annotation.catalogueItemId, annotation)
+        }
 
         annotation.parentAnnotation?.removeFromChildAnnotations(annotation)
         List<Annotation> children = new ArrayList<>(annotation.childAnnotations)

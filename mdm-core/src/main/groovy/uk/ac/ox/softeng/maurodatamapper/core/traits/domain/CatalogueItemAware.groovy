@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 
 /**
  * @since 30/01/2020
@@ -26,16 +27,16 @@ trait CatalogueItemAware {
 
     UUID catalogueItemId
     String catalogueItemDomainType
-    CatalogueItem catalogueItem
+    MultiFacetAware catalogueItem
 
     abstract String getEditLabel()
 
     //static transients = ['catalogueItem']
 
-    void setCatalogueItem(CatalogueItem catalogueItem) {
-        this.catalogueItem = catalogueItem
-        catalogueItemId = catalogueItem.id
-        catalogueItemDomainType = catalogueItem.domainType
+    void setCatalogueItem(MultiFacetAware multiFacetAware) {
+        this.catalogueItem = multiFacetAware
+        catalogueItemId = multiFacetAware.id
+        catalogueItemDomainType = multiFacetAware.domainType
     }
 
 }

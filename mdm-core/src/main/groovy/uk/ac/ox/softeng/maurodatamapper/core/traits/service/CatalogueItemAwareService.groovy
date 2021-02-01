@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -53,19 +54,19 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
     abstract void addFacetToDomain(K facet, String domainType, UUID domainId)
 
     K addCreatedEditToCatalogueItem(User creator, K domain, String catalogueItemDomainType, UUID catalogueItemId) {
-        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
+        EditHistoryAware catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId) as EditHistoryAware
         catalogueItem.addToEditsTransactionally EditTitle.CREATE, creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
         domain
     }
 
     K addUpdatedEditToCatalogueItem(User editor, K domain, String catalogueItemDomainType, UUID catalogueItemId, List<String> dirtyPropertyNames) {
-        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
+        EditHistoryAware catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId) as EditHistoryAware
         catalogueItem.addToEditsTransactionally EditTitle.UPDATE, editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
-    K addDeletedEditToCatalogueItem(User deleter, K domain, String catalogueItemDomainType, UUID catalogueItemId) {
-        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
+    K addDeletedEditToCatalogueItem(User deleter, K domain, String catalogueItemDomainType, UUID catalogueItemId) { as EditHistoryAware
+        EditHistoryAware catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
         catalogueItem.addToEditsTransactionally EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component [${catalogueItem.editLabel}]"
         domain
     }

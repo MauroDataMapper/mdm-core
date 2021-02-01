@@ -34,26 +34,23 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 abstract class ContainerFacetFunctionalSpec<D extends GormEntity> extends ResourceFunctionalSpec<D> {
 
     @Shared
-    Folder folder
-
-    @Shared
     Authority testAuthority
 
     abstract UUID getContainerId()
+
+    abstract String getContainerDomainResourcePath()
 
     abstract String getFacetResourcePath()
 
     @Override
     String getResourcePath() {
-        "${getContainerId()}/${getFacetResourcePath()}"
+        "${getContainerDomainResourcePath()}/${getContainerId()}/${getFacetResourcePath()}"
     }
 
     @OnceBefore
     @Transactional
     def checkAndSetupFolderAndAuthority() {
         log.debug('Check and setup test data')
-        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
-        checkAndSave(folder)
         testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
         checkAndSave(testAuthority)
     }
@@ -63,9 +60,5 @@ abstract class ContainerFacetFunctionalSpec<D extends GormEntity> extends Resour
         log.debug('CleanupSpec ContainerFacetFunctionalSpec')
         cleanUpResources(Folder)
         Authority.findByLabel('Test Authority').delete(flush: true)
-    }
-
-    String getCopyResourcePath(String copyId) {
-        "${copyId}/${facetResourcePath}"
     }
 }

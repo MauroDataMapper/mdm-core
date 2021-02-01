@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -105,5 +106,13 @@ abstract class ContainerService<K> implements SecurableResourceService<K> {
         }
 
         domain.label = "${defaultLabel} (${++lastNum})"
+    }
+
+    void removeAnnotationFromContainer(UUID containerId, Annotation annotation) {
+        (get(containerId) as Container).removeFromAnnotations(annotation)
+    }
+
+    void removeMetadataFromContainer(UUID containerId, Metadata metadata) {
+        (get(containerId) as Container).removeFromMetadata(metadata)
     }
 }

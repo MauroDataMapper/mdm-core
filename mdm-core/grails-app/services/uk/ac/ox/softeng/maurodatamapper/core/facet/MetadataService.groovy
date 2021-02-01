@@ -17,10 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
@@ -70,7 +72,12 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
     void delete(Metadata metadata, boolean flush = false) {
         if (!metadata) return
         CatalogueItemService service = findCatalogueItemService(metadata.catalogueItemDomainType)
-        service.removeMetadataFromCatalogueItem(metadata.catalogueItemId, metadata)
+        if (service) service.removeMetadataFromCatalogueItem(metadata.catalogueItemId, metadata)
+        else {
+            ContainerService containerService = containerServices.find { it.handles(metadata.catalogueItemDomainType) }
+            if (containerService) containerService.removeMetadataFromContainer(metadata.catalogueItemId, metadata)
+            else throw new ApiBadRequestException('MS01', 'Metadata removal with no supporting service')
+        }
         metadata.delete(flush: flush)
     }
 
@@ -82,8 +89,9 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
     void saveCatalogueItem(Metadata metadata) {
         if (!metadata) return
         CatalogueItemService catalogueItemService = findCatalogueItemService(metadata.catalogueItemDomainType)
-        catalogueItemService.save(metadata.catalogueItem)
-    }
+            catalogueItemService?.save(metadata.catalogueItem)
+        }
+
 
     @Override
     void addFacetToDomain(Metadata facet, String domainType, UUID domainId) {
@@ -143,8 +151,8 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         boolean valid = metadata.validate()
         if (!valid) return false
 
-        CatalogueItem catalogueItem = metadata.catalogueItem ?: findCatalogueItemByDomainTypeAndId(metadata.catalogueItemDomainType,
-                                                                                                   metadata.catalogueItemId)
+        MultiFacetAware catalogueItem = metadata.catalogueItem ?: findCatalogueItemByDomainTypeAndId(metadata.catalogueItemDomainType,
+                                                                                                     metadata.catalogueItemId)
 
         if (catalogueItem.metadata.any {md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key}) {
             metadata.errors.rejectValue('key', 'default.not.unique.message', ['key', Metadata.name, metadata.value].toArray(),

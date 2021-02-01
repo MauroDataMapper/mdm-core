@@ -15,16 +15,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.annotation
+package uk.ac.ox.softeng.maurodatamapper.core.facet.annotation
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.ContainerAnnotationFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
-import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.ContainerAnnotationFunctionalSpec
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
@@ -33,11 +33,10 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
  */
 @Integration
 @Slf4j
-class ClassifierAnnotationFunctional extends ContainerAnnotationFunctionalSpec {
+class ClassifierAnnotationFunctionalSpec extends ContainerAnnotationFunctionalSpec {
 
     @Shared
     Classifier classifier
-
 
     @OnceBefore
     @Transactional
@@ -59,6 +58,6 @@ class ClassifierAnnotationFunctional extends ContainerAnnotationFunctionalSpec {
 
     @Override
     String getContainerDomainResourcePath() {
-        'classifier'
+        'classifiers'
     }
 }
