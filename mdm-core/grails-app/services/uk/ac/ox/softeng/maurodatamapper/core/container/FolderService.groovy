@@ -218,4 +218,8 @@ class FolderService extends ContainerService<Folder> {
     List<Folder> getFullPathFolders(Folder folder) {
         getFullPathDomains(folder)
     }
+
+    Folder save(Folder folder) {
+        folder.save()
+    }
 }

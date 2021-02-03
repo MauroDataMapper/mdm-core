@@ -126,6 +126,13 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
             batchSave(batch)
             batch.clear()
         }
+        else {
+            ContainerService containerService = containerServices.find { it.handles(metadata.catalogueItemDomainType) }
+            if (containerService){
+                metadata.catalogueItem.addToMetadata(metadata)
+                containerService.save(metadata.catalogueItem)
+            }
+        }
     }
 
     void batchSave(Collection<Metadata> metadata) {

@@ -160,4 +160,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> {
     void generateDefaultFolderLabel(VersionedFolder folder) {
         generateDefaultLabel(folder, Folder.DEFAULT_FOLDER_LABEL)
     }
+
+    VersionedFolder save(VersionedFolder folder) {
+        folder.save()
+    }
 }

@@ -221,7 +221,9 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
         // Allow reviewers to create annotations on a model if they have reviewer status
         if (Utils.parentClassIsAssignableFromChild(Annotation, resourceClass) &&
-            Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass)) {
+                (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
+            Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass)))
+                        {
             return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, REVIEWER_ROLE_NAME)
         }
         // Allow users to create their own user image file

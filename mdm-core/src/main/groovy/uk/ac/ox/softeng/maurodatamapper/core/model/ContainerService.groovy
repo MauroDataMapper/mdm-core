@@ -52,6 +52,8 @@ abstract class ContainerService<K> implements SecurableResourceService<K> {
 
     abstract List<K> findAllWhereDirectParentOfContainer(K container)
 
+    abstract K save(K domain)
+
     K findByPath(String path) {
         List<String> paths
         if (path.contains('/')) paths = path.split('/').findAll() ?: []
