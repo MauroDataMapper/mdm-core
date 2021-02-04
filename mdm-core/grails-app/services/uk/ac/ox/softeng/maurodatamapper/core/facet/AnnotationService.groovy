@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 import javax.transaction.Transactional
@@ -35,12 +34,6 @@ import javax.transaction.Transactional
 @Slf4j
 @Transactional
 class AnnotationService implements CatalogueItemAwareService<Annotation> {
-
-    @Autowired(required = false)
-    List<CatalogueItemService> catalogueItemServices
-
-    @Autowired(required = false)
-    List <ContainerService> containerServices
 
     Annotation get(Serializable id) {
         Annotation.get(id)

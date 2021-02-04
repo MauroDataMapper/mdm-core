@@ -35,7 +35,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
 import org.hibernate.SessionFactory
-import org.springframework.beans.factory.annotation.Autowired
 
 import javax.transaction.Transactional
 
@@ -43,11 +42,7 @@ import javax.transaction.Transactional
 @Transactional
 class MetadataService implements CatalogueItemAwareService<Metadata> {
 
-    @Autowired(required = false)
-    List<CatalogueItemService> catalogueItemServices
 
-    @Autowired(required = false)
-    List <ContainerService> containerServices
 
     SessionFactory sessionFactory
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService

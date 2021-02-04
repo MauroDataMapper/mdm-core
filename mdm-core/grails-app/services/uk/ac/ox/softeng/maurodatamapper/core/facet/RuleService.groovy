@@ -21,15 +21,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentationService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 
 import javax.transaction.Transactional
 
@@ -38,12 +35,6 @@ import javax.transaction.Transactional
 class RuleService implements CatalogueItemAwareService<Rule> {
 
     RuleRepresentationService ruleRepresentationService
-
-    @Autowired(required = false)
-    List<CatalogueItemService> catalogueItemServices
-
-    @Autowired(required = false)
-    List <ContainerService> containerServices
 
     Rule get(Serializable id) {
         Rule.get(id)

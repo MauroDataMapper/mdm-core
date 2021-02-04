@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -30,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * @since 31/01/2020
@@ -37,9 +39,11 @@ import groovy.util.logging.Slf4j
 @Slf4j
 trait CatalogueItemAwareService<K> extends DomainService<K> {
 
-    abstract List<CatalogueItemService> getCatalogueItemServices()
+    @Autowired(required = false)
+    List<CatalogueItemService> catalogueItemServices
 
-    abstract List<ContainerService> getContainerServices()
+    @Autowired
+    List<ContainerService> containerServices
 
     abstract K findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id)
 
@@ -72,7 +76,7 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
     }
 
     MultiFacetAware findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
-        findCatalogueItemService(domainType).get(catalogueItemId)?:findContainerService(domainType)
+        findServiceForMultiFacetAware(domainType).get(catalogueItemId)
     }
 
     void deleteAllByCatalogueItemIds(List<UUID> catalogueItemIds) {
@@ -87,7 +91,7 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
     void batchDeleteAllByCatalogueItemIds(List<UUID> catalogueItemIds) {
         int batchSize = GormUtils.POSTGRES_MAX_BIND_VARIABLES
         List<UUID> batch = new ArrayList<>(batchSize)
-        catalogueItemIds.each { UUID id ->
+        catalogueItemIds.each {UUID id ->
             batch << id
             if (batch.size() % batchSize == 0) {
                 performDeletion(batch)
@@ -104,6 +108,18 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
         long start = System.currentTimeMillis()
         getBaseDeleteCriteria().inList('catalogueItemId', batch).deleteAll()
         log.trace('{} removed took {}', getBaseDeleteCriteria().getPersistentClass().simpleName, Utils.timeTaken(start))
+    }
+
+    void addFacetAndSaveMultiFacetAware(String facetType, CatalogueItemAware catalogueItemAware) {
+        if (!catalogueItemAware) return
+        MultiFacetAware multiFacetAware = catalogueItemAware.catalogueItem
+        multiFacetAware.addTo(facetType, catalogueItemAware)
+        def service = findServiceForMultiFacetAware(catalogueItemAware.catalogueItemDomainType)
+        service.save(multiFacetAware)
+    }
+
+    def findServiceForMultiFacetAware(String domainType) {
+        findCatalogueItemService(domainType)?:findContainerService(domainType)
     }
 
     CatalogueItemService findCatalogueItemService(String catalogueItemDomainType) {

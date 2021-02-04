@@ -26,19 +26,12 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.Refe
 
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 
 import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
 class ReferenceSummaryMetadataService implements CatalogueItemAwareService<ReferenceSummaryMetadata> {
-
-    @Autowired(required = false)
-    List<CatalogueItemService> catalogueItemServices
-
-    @Autowired(required = false)
-    List <ContainerService> containerServices
 
     ReferenceSummaryMetadata get(Serializable id) {
         ReferenceSummaryMetadata.get(id)
