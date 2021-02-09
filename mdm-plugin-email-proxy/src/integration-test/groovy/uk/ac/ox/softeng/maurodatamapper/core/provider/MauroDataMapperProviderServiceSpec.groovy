@@ -21,12 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.MdmSpecification
 
 import grails.core.GrailsApplication
 import grails.testing.mixin.integration.Integration
-import grails.util.BuildSettings
 import org.springframework.context.MessageSource
-
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * @since 13/10/2017
@@ -37,13 +32,6 @@ class MauroDataMapperProviderServiceSpec extends MdmSpecification {
     MessageSource messageSource
     GrailsApplication grailsApplication
     MauroDataMapperProviderService mauroDataMapperProviderService
-    def currentVersion
-
-    def setup(){
-        Path gradleProperties = Paths.get(BuildSettings.BASE_DIR.absolutePath, '../gradle.properties')
-        assert Files.exists(gradleProperties)
-        currentVersion = Files.readAllLines(gradleProperties).find {it.startsWith('version')}.find(/version=(.+)/) {it[1]}
-    }
 
     void 'test modules'() {
         expect:
@@ -56,7 +44,7 @@ class MauroDataMapperProviderServiceSpec extends MdmSpecification {
 
         and:
         mauroDataMapperProviderService.findModule('Core', grailsApplication.metadata.getApplicationVersion())
-        mauroDataMapperProviderService.findModule('Common',currentVersion )
-        mauroDataMapperProviderService.findModule('PluginEmailProxy', currentVersion)
+        mauroDataMapperProviderService.findModule('Common', grailsApplication.metadata.getApplicationVersion())
+        mauroDataMapperProviderService.findModule('PluginEmailProxy', grailsApplication.metadata.getApplicationVersion())
     }
 }
