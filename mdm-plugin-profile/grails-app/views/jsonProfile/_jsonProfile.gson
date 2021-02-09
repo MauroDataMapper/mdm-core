@@ -6,7 +6,8 @@ model {
 
 json {
     sections jsonProfile.sections
-    catalogueItemId jsonProfile.catalogueItemId
-    catalogueItemDomainType jsonProfile.catalogueItemDomainType
+    id jsonProfile.catalogueItemId
+    label jsonProfile.catalogueItemLabel
+    domainType jsonProfile.catalogueItemDomainType
 
 }

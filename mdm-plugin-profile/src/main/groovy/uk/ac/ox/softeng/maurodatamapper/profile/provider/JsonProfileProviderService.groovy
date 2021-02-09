@@ -32,6 +32,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         JsonProfile jsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
         jsonProfile.catalogueItemId = entity.id
         jsonProfile.catalogueItemDomainType = entity.domainType
+        jsonProfile.catalogueItemLabel = entity.label
 
         List<Metadata> metadataList = metadataService.findAllByCatalogueItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 

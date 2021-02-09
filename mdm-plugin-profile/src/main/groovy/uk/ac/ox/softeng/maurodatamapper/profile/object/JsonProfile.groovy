@@ -27,6 +27,7 @@ class JsonProfile extends MapBasedProfile {
     List<ProfileSection> sections = []
     UUID catalogueItemId
     String catalogueItemDomainType
+    String catalogueItemLabel
 
     // Empty constructor used for deserialization from Json
     JsonProfile() { }
@@ -35,10 +36,11 @@ class JsonProfile extends MapBasedProfile {
         this.sections = sections
     }
 
-    JsonProfile(List<ProfileSection> sections, UUID catalogueItemId, String catalogueItemDomainType) {
+    JsonProfile(List<ProfileSection> sections, UUID catalogueItemId, String catalogueItemDomainType, String catalogueItemLabel) {
         this(sections)
         this.catalogueItemId = catalogueItemId
         this.catalogueItemDomainType = catalogueItemDomainType
+        this.catalogueItemLabel = catalogueItemLabel
     }
 
 
