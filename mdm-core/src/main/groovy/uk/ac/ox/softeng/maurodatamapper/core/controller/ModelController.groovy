@@ -520,13 +520,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         log.debug('No errors in imported model')
 
-        Model savedModel = getModelService().saveModelWithContent(model)
-
-        log.debug('Saved model')
-
-        if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
-        }
+      Model savedModel = saveNewModelAndAddSecurity(model)
 
         log.info('Single Model Import complete')
 
@@ -600,17 +594,16 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         log.debug('No errors in imported models')
-        List<Model> savedModels = result.collect {
-            Model saved = getModelService().saveModelWithContent(it)
-            if (securityPolicyManagerService) {
-                currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(saved, currentUser, saved.label)
-            }
-            saved
+        List<T> savedModels = result.collect {
+            saveNewModelAndAddSecurity(it)
         }
         log.debug('Saved all models')
+        List<T> loadedModels = savedModels.collect {
+            getModelService().get(it.id)
+        } as List<T>
         log.info('Multi-Model Import complete')
 
-        respond savedModels, status: CREATED, view: 'index'
+        respond loadedModels, status: CREATED, view: 'index'
 
     }
 
@@ -656,13 +649,22 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T model = super.updateResource(resource) as T
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(model,
-                                                                                                               changedProperties,
-                                                                                                               currentUser)
+                    changedProperties,
+                    currentUser)
         }
         model
     }
 
-    String getMultipleModelsParamsIdKey() {
+    protected String getMultipleModelsParamsIdKey() {
         "${alternateParamsIdKey}s"
+    }
+
+    protected T saveNewModelAndAddSecurity(T model) {
+        T savedModel = getModelService().saveModelWithContent(model) as T
+        log.debug('Saved model')
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
+        }
+        savedModel
     }
 }

@@ -45,91 +45,91 @@ class MauroDataMapperProviderFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyJsonResponse(OK, '''[
   {
-    "name": "Common",
+    "name": "mdm.common",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "Core",
+    "name": "mdm.core",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "assetPipeline",
+    "name": "grails.assetPipeline",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "cache",
+    "name": "grails.cache",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "codecs",
+    "name": "grails.codecs",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "controllers",
+    "name": "grails.controllers",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "controllersAsync",
+    "name": "grails.controllersAsync",
     "version": "SNAPSHOT"
   },
   {
-    "name": "converters",
+    "name": "grails.converters",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "core",
+    "name": "grails.core",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "dataSource",
+    "name": "grails.dataSource",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "domainClass",
+    "name": "grails.domainClass",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "eventBus",
+    "name": "grails.eventBus",
     "version": "SNAPSHOT"
   },
   {
-    "name": "groovyPages",
+    "name": "grails.groovyPages",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "hibernate",
+    "name": "grails.hibernate",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "hibernateSearch",
+    "name": "grails.hibernateSearch",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "i18n",
+    "name": "grails.i18n",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "interceptors",
+    "name": "grails.interceptors",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "jsonView",
+    "name": "grails.jsonView",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "markupView",
+    "name": "grails.markupView",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "restResponder",
+    "name": "grails.restResponder",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "services",
+    "name": "grails.services",
     "version": "${json-unit.matches:version}"
   },
   {
-    "name": "urlMappings",
+    "name": "grails.urlMappings",
     "version": "${json-unit.matches:version}"
   },
   {

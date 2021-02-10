@@ -25,11 +25,6 @@ import uk.ac.ox.softeng.maurodatamapper.provider.plugin.AbstractMauroDataMapperP
 class CommonPlugin extends AbstractMauroDataMapperPlugin {
     @Override
     String getName() {
-        "Common"
-    }
-
-    @Override
-    String getVersion() {
-        '4.0.0-SNAPSHOT'
+        'mdm.common'
     }
 }

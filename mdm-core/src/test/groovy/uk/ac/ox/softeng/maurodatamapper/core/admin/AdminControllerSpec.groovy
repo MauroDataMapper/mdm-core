@@ -69,7 +69,7 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         bootStrap.grailsApplication.config.simplejavamail.smtp.username = 'Unit Test Controller'
         bootStrap.loadApiProperties(tmpDir)
 
-        Path gradleProperties = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'gradle.properties')
+        Path gradleProperties = Paths.get(BuildSettings.BASE_DIR.absolutePath, '../gradle.properties')
         assert Files.exists(gradleProperties)
         currentVersion = Files.readAllLines(gradleProperties).find {it.startsWith('version')}.find(/version=(.+)/) {it[1]}
     }

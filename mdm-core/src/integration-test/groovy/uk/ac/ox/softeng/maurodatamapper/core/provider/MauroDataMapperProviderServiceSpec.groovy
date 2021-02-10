@@ -43,7 +43,7 @@ class MauroDataMapperProviderServiceSpec extends MdmSpecification {
         mauroDataMapperProviderService.otherModules.size() == 1
 
         and:
-        mauroDataMapperProviderService.findModule('Core', grailsApplication.metadata.getApplicationVersion())
-        mauroDataMapperProviderService.findModule('Common', '4.0.0-SNAPSHOT')
+        mauroDataMapperProviderService.findModule('mdm.core', grailsApplication.metadata.getApplicationVersion())
+        mauroDataMapperProviderService.findModule('mdm.common', grailsApplication.metadata.getApplicationVersion())
     }
 }
