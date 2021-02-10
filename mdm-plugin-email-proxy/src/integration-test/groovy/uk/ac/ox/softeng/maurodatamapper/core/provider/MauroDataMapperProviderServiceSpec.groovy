@@ -43,8 +43,8 @@ class MauroDataMapperProviderServiceSpec extends MdmSpecification {
         mauroDataMapperProviderService.otherModules.size() == 1
 
         and:
-        mauroDataMapperProviderService.findModule('Core', grailsApplication.metadata.getApplicationVersion())
-        mauroDataMapperProviderService.findModule('Common', grailsApplication.metadata.getApplicationVersion())
-        mauroDataMapperProviderService.findModule('PluginEmailProxy', grailsApplication.metadata.getApplicationVersion())
+        mauroDataMapperProviderService.findModule('mdm.core', grailsApplication.metadata.getApplicationVersion())
+        mauroDataMapperProviderService.findModule('mdm.common', grailsApplication.metadata.getApplicationVersion())
+        mauroDataMapperProviderService.findModule('mdm.pluginEmailProxy', grailsApplication.metadata.getApplicationVersion())
     }
 }

@@ -33,7 +33,7 @@ class GrailsPluginMauroDataMapperPlugin extends AbstractMauroDataMapperPlugin {
 
     @Override
     String getName() {
-        plugin.name.replaceFirst(/^mdm/, '')
+        "grails.${plugin.name}"
     }
 
     @Override
