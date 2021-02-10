@@ -1,0 +1,16 @@
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+
+model {
+    ApiProperty apiProperty
+}
+
+json {
+    id apiProperty.id
+    key apiProperty.key
+    value apiProperty.value
+    if (apiProperty.category) category apiProperty.category
+    publiclyVisible apiProperty.publiclyVisible
+    lastUpdatedBy apiProperty.lastUpdatedBy
+    createdBy apiProperty.createdBy
+    lastUpdated apiProperty.lastUpdated
+}

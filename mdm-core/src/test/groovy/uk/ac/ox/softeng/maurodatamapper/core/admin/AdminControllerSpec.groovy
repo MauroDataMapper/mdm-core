@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-import uk.ac.ox.softeng.maurodatamapper.core.ApiPropertyService
+
 import uk.ac.ox.softeng.maurodatamapper.core.BootStrap
 import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.LuceneIndexParameters
@@ -72,36 +72,6 @@ class AdminControllerSpec extends BaseUnitSpec implements ControllerUnitTest<Adm
         Path gradleProperties = Paths.get(BuildSettings.BASE_DIR.absolutePath, '../gradle.properties')
         assert Files.exists(gradleProperties)
         currentVersion = Files.readAllLines(gradleProperties).find {it.startsWith('version')}.find(/version=(.+)/) {it[1]}
-    }
-
-    void 'test apiProperties'() {
-        when:
-        params.currentUserSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
-        controller.apiProperties()
-
-        then:
-        model.apiPropertyList
-        ApiPropertyEnum.values().findAll { it != ApiPropertyEnum.SITE_URL }.every { ape -> model.apiPropertyList.any { it.key == ape.key } }
-    }
-
-    void 'test editProperties'() {
-        when:
-        params.currentUserSecurityPolicyManager = PublicAccessSecurityPolicyManager.instance
-        request.method = 'POST'
-        request.contentType = JSON_CONTENT_TYPE
-        request.setJson("{\"${ApiPropertyEnum.EMAIL_FROM_ADDRESS}\":\"${admin.emailAddress}\"}".toString())
-        controller.editApiProperties()
-
-        then:
-        status == HttpStatus.OK.code
-
-        and: 'response has updated properties'
-        model.apiPropertyList
-        model.apiPropertyList.find { it.key == ApiPropertyEnum.EMAIL_FROM_ADDRESS.key }.value == admin.emailAddress
-
-        and: 'properties loaded from servlet context has the updated property'
-        ApiProperty.findByKey(ApiPropertyEnum.EMAIL_FROM_ADDRESS.key).value == admin.emailAddress
-
     }
 
     void 'test rebuild lucene indexes from the UI'() {

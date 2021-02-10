@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-import uk.ac.ox.softeng.maurodatamapper.core.ApiPropertyService
+
 import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import asset.pipeline.grails.AssetResourceLocator

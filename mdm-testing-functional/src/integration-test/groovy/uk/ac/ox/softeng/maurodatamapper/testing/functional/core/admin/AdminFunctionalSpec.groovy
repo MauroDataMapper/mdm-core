@@ -29,9 +29,7 @@ import static io.micronaut.http.HttpStatus.OK
  * <pre>
  * Controller: admin
  *  |  GET   | /api/admin/status                | Action: status
- *  |  POST  | /api/admin/editProperties        | Action: editApiProperties
  *  |  POST  | /api/admin/rebuildLuceneIndexes  | Action: rebuildLuceneIndexes
- *  |  GET   | /api/admin/properties            | Action: apiProperties
  *  </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.admin.AdminController
  */
@@ -63,9 +61,7 @@ class AdminFunctionalSpec extends FunctionalSpec {
         where:
         method | endpoint               | args
         'GET'  | 'status'               | null
-        'POST' | 'editProperties'       | [:]
         'POST' | 'rebuildLuceneIndexes' | [:]
-        'GET'  | 'properties'           | null
     }
 
     @Unroll
@@ -77,11 +73,7 @@ class AdminFunctionalSpec extends FunctionalSpec {
 
         then: 'The response is Unauth'
         verifyJsonResponse responseCode, expectedJson
-
-        cleanup:
-        POST('editProperties', ["site.url": ''])
-        verifyResponse(OK, response)
-
+        
         where:
         method | endpoint               | args                                       || responseCode | expectedJson
         'GET'  | 'status'               | null                                       || OK           | '''
@@ -112,70 +104,5 @@ class AdminFunctionalSpec extends FunctionalSpec {
   "timeTakenMilliseconds": "${json-unit.ignore}",
   "timeTaken": "${json-unit.ignore}"
 }'''
-        'GET'  | 'properties'           | null                                       || OK           | '{\n' +
-        '  "email.invite_edit.body": "Dear ${firstName},\\nYou have been invited to edit the model \'${itemLabel}\' in the Mauro Data Mapper at ' +
-        '${catalogueUrl}\\n\\nYour username / email address is: ${emailAddress}\\nYour password is: ${tempPassword}\\n and you will be asked to ' +
-        'update this when you first log on.\\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.admin_register.body": "Dear ${firstName},\\nYou have been given access to the Mauro Data Mapper at ${catalogueUrl} \\n\\nYour ' +
-        'username / email address is: ${emailAddress} \\nYour password is: ${tempPassword} \\nand you will be asked to update this when you first ' +
-        'log on.\\n\\nKind regards, the Mauro Data Mapper folks. \\n\\n(This is an automated mail).",\n' +
-        '  "email.admin_register.subject": "Mauro Data Mapper Registration",\n' +
-        '  "email.self_register.subject": "Mauro Data Mapper Registration",\n' +
-        '  "email.forgotten_password.subject": "Mauro Data Mapper Forgotten Password",\n' +
-        '  "email.invite_edit.subject": "Mauro Data Mapper Invitation",\n' +
-        '  "email.admin_confirm_registration.body": "Dear ${firstName},\\nYour registration for the Mauro Data Mapper at ${catalogueUrl} has been ' +
-        'confirmed.\\n\\nYour username / email address is: ${emailAddress} \\nYou chose a password on registration, but can reset it from the login' +
-        ' page.\\n\\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.invite_view.subject": "Mauro Data Mapper Invitation",\n' +
-        '  "email.from.address": "username@gmail.com",\n' +
-        '  "email.self_register.body": "Dear ${firstName},\\nYou have self-registered for the Mauro Data Mapper at ${catalogueUrl}\\n\\nYour ' +
-        'username / email address is: ${emailAddress}\\nYour registration is marked as pending: you\'ll be sent another email when your request has' +
-        ' been confirmed by an administrator. \\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.password_reset.body": "Dear ${firstName},\\nYour password has been reset for the Mauro Data Mapper at ${catalogueUrl}.\\n\\nYour' +
-        ' new temporary password is: ${tempPassword} \\nand you will be asked to update this when you next log on.\\n\\nKind regards, the Mauro ' +
-        'Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.from.name": "Mauro Data Mapper",\n' +
-        '  "email.admin_confirm_registration.subject": "Mauro Data Mapper Registration - Confirmation",\n' +
-        '  "email.forgotten_password.body": "Dear ${firstName},\\nA request has been made to reset the password for the Mauro Data Mapper at ' +
-        '${catalogueUrl}.\\nIf you did not make this request please ignore this email.\\n\\nPlease use the following link to reset your password ' +
-        '${passwordResetLink}.\\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.password_reset.subject": "Mauro Data Mapper Password Reset",\n' +
-        '  "email.invite_view.body": "Dear ${firstName},\\nYou have been invited to view the item \'${itemLabel}\' in the Mauro Data Mapper at ' +
-        '${catalogueUrl}\\n\\nYour username / email address is: ${emailAddress}\\nYour password is: ${tempPassword}\\n and you will be asked to ' +
-        'update this when you first log on.\\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail)."\n' +
-        '}'
-        'POST' | 'editProperties'       | ["site.url": "http://functional-test.com"] || OK           | '{\n' +
-        '  "email.invite_edit.body": "Dear ${firstName},\\nYou have been invited to edit the model \'${itemLabel}\' in the Mauro Data Mapper at ' +
-        '${catalogueUrl}\\n\\nYour username / email address is: ${emailAddress}\\nYour password is: ${tempPassword}\\n and you will be asked to ' +
-        'update this when you first log on.\\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.admin_register.body": "Dear ${firstName},\\nYou have been given access to the Mauro Data Mapper at ${catalogueUrl} \\n\\nYour ' +
-        'username / email address is: ${emailAddress} \\nYour password is: ${tempPassword} \\nand you will be asked to update this when you first ' +
-        'log on.\\n\\nKind regards, the Mauro Data Mapper folks. \\n\\n(This is an automated mail).",\n' +
-        '  "email.admin_register.subject": "Mauro Data Mapper Registration",\n' +
-        '  "email.self_register.subject": "Mauro Data Mapper Registration",\n' +
-        '  "email.forgotten_password.subject": "Mauro Data Mapper Forgotten Password",\n' +
-        '  "email.invite_edit.subject": "Mauro Data Mapper Invitation",\n' +
-        '  "email.admin_confirm_registration.body": "Dear ${firstName},\\nYour registration for the Mauro Data Mapper at ${catalogueUrl} has been ' +
-        'confirmed.\\n\\nYour username / email address is: ${emailAddress} \\nYou chose a password on registration, but can reset it from the login' +
-        ' page.\\n\\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.invite_view.subject": "Mauro Data Mapper Invitation",\n' +
-        '  "email.from.address": "username@gmail.com",\n' +
-        '  "email.self_register.body": "Dear ${firstName},\\nYou have self-registered for the Mauro Data Mapper at ${catalogueUrl}\\n\\nYour ' +
-        'username / email address is: ${emailAddress}\\nYour registration is marked as pending: you\'ll be sent another email when your request has' +
-        ' been confirmed by an administrator. \\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.password_reset.body": "Dear ${firstName},\\nYour password has been reset for the Mauro Data Mapper at ${catalogueUrl}.\\n\\nYour' +
-        ' new temporary password is: ${tempPassword} \\nand you will be asked to update this when you next log on.\\n\\nKind regards, the Mauro ' +
-        'Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.from.name": "Mauro Data Mapper",\n' +
-        '  "site.url": "http://functional-test.com",\n' +
-        '  "email.admin_confirm_registration.subject": "Mauro Data Mapper Registration - Confirmation",\n' +
-        '  "email.forgotten_password.body": "Dear ${firstName},\\nA request has been made to reset the password for the Mauro Data Mapper at ' +
-        '${catalogueUrl}.\\nIf you did not make this request please ignore this email.\\n\\nPlease use the following link to reset your password ' +
-        '${passwordResetLink}.\\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail).",\n' +
-        '  "email.password_reset.subject": "Mauro Data Mapper Password Reset",\n' +
-        '  "email.invite_view.body": "Dear ${firstName},\\nYou have been invited to view the item \'${itemLabel}\' in the Mauro Data Mapper at ' +
-        '${catalogueUrl}\\n\\nYour username / email address is: ${emailAddress}\\nYour password is: ${tempPassword}\\n and you will be asked to ' +
-        'update this when you first log on.\\nKind regards, the Mauro Data Mapper folks.\\n\\n(This is an automated mail)."\n' +
-        '}'
     }
 }

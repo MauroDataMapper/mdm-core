@@ -21,20 +21,34 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstra
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
+import grails.gorm.DetachedCriteria
+
 class ApiProperty implements CreatorAware {
 
     UUID id
     String key
     String value
     String lastUpdatedBy
+    Boolean publiclyVisible
+    String category
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
         lastUpdatedBy email: true
+        publiclyVisible nullable: false
+        key blank: false, unique: true, validator: {val ->
+            !val.matches(/[a-z._]+/) ? ['invalid.api.property.format'] : true
+        }
+        value blank: false
+        category nullable: true, blank: false
     }
 
     static mapping = {
         value type: 'text'
+    }
+
+    ApiProperty() {
+        publiclyVisible = false
     }
 
     @Override
@@ -50,26 +64,15 @@ class ApiProperty implements CreatorAware {
         if (!lastUpdatedBy) lastUpdatedBy = createdBy
     }
 
-    @Override
-    boolean equals(o) {
-        if (this.is(o)) return true
-        if (getClass() != o.class) return false
-
-        ApiProperty that = (ApiProperty) o
-
-        if (id == that.id) return true
-
-        if (key != that.key) return false
-        if (value != that.value) return false
-
-        return true
+    static DetachedCriteria<ApiProperty> by() {
+        new DetachedCriteria<ApiProperty>(ApiProperty)
     }
 
-    @Override
-    int hashCode() {
-        int result
-        result = key.hashCode()
-        result = 31 * result + value.hashCode()
-        return result
+    static DetachedCriteria<ApiProperty> byPubliclyVisible() {
+        by().eq('publiclyVisible', true)
+    }
+
+    static String extractDefaultCategoryFromKey(String key){
+        key.split(/\./)[0].capitalize()
     }
 }

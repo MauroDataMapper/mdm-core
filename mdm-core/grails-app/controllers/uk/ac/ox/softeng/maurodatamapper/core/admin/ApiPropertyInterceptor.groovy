@@ -17,21 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 
-import grails.util.Pair
+import grails.web.servlet.mvc.GrailsParameterMap
 
-class AdminService {
 
-    ApiPropertyService apiPropertyService
+class ApiPropertyInterceptor implements MdmInterceptor {
 
-    def getAndUpdateApiProperties(User user, Map<String, String> newValues) throws ApiInternalException {
-        apiPropertyService.listAndUpdateApiProperties(newValues, user)
+    boolean before() {
+        if (isIndex() && (params as GrailsParameterMap).boolean('openAccess')) return true
+        currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
     }
 
-    def getAndUpdateApiProperty(User user, Pair<String, String> newValue) throws ApiInternalException {
-        apiPropertyService.findAndUpdateByKey(newValue.aValue, newValue.bValue, user)
-        apiPropertyService.list()
-    }
 }

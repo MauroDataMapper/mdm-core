@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core
+package uk.ac.ox.softeng.maurodatamapper.core.admin
 
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
@@ -36,12 +36,16 @@ class ApiPropertyService {
 
     AssetResourceLocator assetResourceLocator
 
-    List<ApiProperty> list() {
-        ApiProperty.list()
+    List<ApiProperty> list(Map pagination = [:]) {
+        ApiProperty.by().list(pagination)
     }
 
     Long count() {
         ApiProperty.count()
+    }
+
+    void delete(ApiProperty apiProperty) {
+        apiProperty.delete(flush: true)
     }
 
     ApiProperty findByKey(String key) {
@@ -50,6 +54,10 @@ class ApiPropertyService {
 
     ApiProperty findByApiPropertyEnum(ApiPropertyEnum key) {
         findByKey(key.key)
+    }
+
+    List<ApiProperty> findAllByPubliclyVisible(Map pagination) {
+        ApiProperty.byPubliclyVisible().list(pagination)
     }
 
     List<ApiProperty> listAndUpdateApiProperties(Map<String, String> updateValues, User updatedBy) {
@@ -71,10 +79,10 @@ class ApiPropertyService {
     }
 
     ApiProperty findAndUpdateByApiPropertyEnum(ApiPropertyEnum key, updateValue, User updatedBy) {
-        findAndUpdateByKey(key.key, updateValue, updatedBy)
+        findAndUpdateByKey(key.key, updateValue, updatedBy, ApiProperty.extractDefaultCategoryFromKey(key.key))
     }
 
-    ApiProperty findAndUpdateByKey(String key, updateValue, User updatedBy) {
+    ApiProperty findAndUpdateByKey(String key, updateValue, User updatedBy, String category = null) {
         if (updateValue) {
             ApiProperty property = findByKey(key)
             if (property) {
@@ -82,19 +90,19 @@ class ApiPropertyService {
                     property.value = updateValue.toString()
                 }
             } else {
-                property = new ApiProperty(key: key, value: updateValue.toString(), createdBy: updatedBy.emailAddress)
+                property = new ApiProperty(key: key, value: updateValue.toString(), createdBy: updatedBy.emailAddress, category: category)
             }
             return save(property, updatedBy)
         }
         null
     }
 
-    ApiProperty save(String key, value, User updatedBy) {
-        value ? save(new ApiProperty(key: key, value: value.toString, createdBy: updatedBy.emailAddress), updatedBy) : null
+    ApiProperty save(String key, value, User updatedBy, String category = null) {
+        value ? save(new ApiProperty(key: key, value: value.toString, createdBy: updatedBy.emailAddress, category: category), updatedBy) : null
     }
 
-    ApiProperty save(ApiPropertyEnum apiProperty, value, User updatedBy) {
-        save(apiProperty.key, value, updatedBy)
+    ApiProperty save(ApiPropertyEnum apiProperty, value, User updatedBy, String category = null) {
+        save(apiProperty.key, value, updatedBy, category)
     }
 
     ApiProperty save(ApiProperty apiProperty, User updatedBy) {
@@ -113,7 +121,8 @@ class ApiPropertyService {
                 if (legacyProperties) {
                     List<ApiProperty> legacyApiProperties = legacyProperties.findAll {it.value}.collect {
                         new ApiProperty(key: it.key, value: it.value,
-                                        createdBy: createdBy.emailAddress)
+                                        createdBy: createdBy.emailAddress,
+                                        category: ApiProperty.extractDefaultCategoryFromKey(it.key))
                     }
                     List<ApiProperty> existingApiProperties = list()
 
@@ -157,7 +166,8 @@ class ApiPropertyService {
                             .findAll {!(it.key in existingApiPropertyKeys)}
                             .collect {
                                 new ApiProperty(key: it.key, value: it.value,
-                                                createdBy: createdBy.emailAddress)
+                                                createdBy: createdBy.emailAddress,
+                                                category: ApiProperty.extractDefaultCategoryFromKey(it.key))
                             }
                         log.debug('Found {} new default Api properties', newDefaultApiProperties.size())
                         if (newDefaultApiProperties) ApiProperty.saveAll(newDefaultApiProperties)
