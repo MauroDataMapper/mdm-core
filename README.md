@@ -1,5 +1,11 @@
 # Mauro Data Mapper Core Backend Application
+
 Core API for Mauro Data Mapper
+
+| Branch | Build Status |
+| ------ | ------------ |
+| main | [![Build Status](https://jenkins.cs.ox.ac.uk/buildStatus/icon?job=Mauro+Data+Mapper%2Fmdm-core%2Fmain)](https://jenkins.cs.ox.ac.uk/blue/organizations/jenkins/Mauro%20Data%20Mapper%2Fmdm-core/branches) |
+| develop | [![Build Status](https://jenkins.cs.ox.ac.uk/buildStatus/icon?job=Mauro+Data+Mapper%2Fmdm-core%2Fdevelop)](https://jenkins.cs.ox.ac.uk/blue/organizations/jenkins/Mauro%20Data%20Mapper%2Fmdm-core/branches) |
 
 ## Requirements
 
@@ -9,7 +15,7 @@ Core API for Mauro Data Mapper
 
 All of the above can be installed an easily maintained by using [SDKMAN!](https://sdkman.io).
 
-*Grails 4.0.3 will not run in any version above Java 12, and Grails 4 will not work on any version below Java 11* 
+*Grails 4.0.3 will not run in any version above Java 12, and Grails 4 will not work on any version below Java 11*
 
 * PostgreSQL 12+
 
