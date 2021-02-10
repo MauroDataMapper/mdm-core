@@ -39,10 +39,13 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
 
     @Shared
     Path resourcesPath
+    @Shared
+    Path xmlResourcesPath
 
     @OnceBefore
     void setupResourcesPath() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'json').toAbsolutePath()
+        xmlResourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'xml').toAbsolutePath()
     }
 
     @Transactional
@@ -68,7 +71,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
             assert response.status() == HttpStatus.OK
             def items = response.body().items
             items.each { i ->
-                sleep (20) //TODO Workaround to reduce the risk of StaleObjectException 
+                sleep(20) //TODO Workaround to reduce the risk of StaleObjectException
                 DELETE(getDeleteEndpoint(i.id))
                 assert response.status() in [HttpStatus.NO_CONTENT, HttpStatus.NOT_FOUND]
                 sleep(20)
@@ -76,8 +79,8 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         }
     }
 
-    byte[] loadTestFile(String filename) {
-        Path testFilePath = resourcesPath.resolve("${filename}.json")
+    byte[] loadTestFile(String filename, String fileType = 'json') {
+        Path testFilePath = fileType == 'json' ? resourcesPath.resolve("${filename}.json") : xmlResourcesPath.resolve("${filename}.xml")
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
     }
