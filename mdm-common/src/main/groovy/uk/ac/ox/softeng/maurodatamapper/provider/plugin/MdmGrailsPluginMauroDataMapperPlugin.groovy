@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.provider.plugin
 
+import com.google.common.base.CaseFormat
+
 /**
  * @since 17/10/2019
  */
@@ -29,5 +31,11 @@ class MdmGrailsPluginMauroDataMapperPlugin extends GrailsPluginMauroDataMapperPl
 
     boolean isMdmModule() {
         true
+    }
+
+    @Override
+    String getName() {
+        String component = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, plugin.name.replaceFirst(/^mdm/, ''))
+        "mdm.${component}"
     }
 }
