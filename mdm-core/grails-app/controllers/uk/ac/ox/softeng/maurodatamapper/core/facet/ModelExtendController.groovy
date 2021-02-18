@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ class ModelExtendController extends EditLoggingController<ModelExtend> {
         modelExtendService.removeModelExtendFromCatalogueItem(resource, catalogueItem)
 
         //Delete the modelExtend
-        modelExtendService.delete(resource, true)
+        modelExtendService.delete(resource)
 
         //Record the deletion against the CatalogueItem to which the ModelExtend belonged
         modelExtendService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)

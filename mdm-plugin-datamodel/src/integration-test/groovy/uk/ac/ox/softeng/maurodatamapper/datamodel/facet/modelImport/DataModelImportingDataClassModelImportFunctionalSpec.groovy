@@ -18,10 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.modelimport
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemModelImportFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -106,7 +105,7 @@ class DataModelImportingDataClassModelImportFunctionalSpec extends CatalogueItem
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec')
-        cleanUpResources(DataModel, Folder, DataClass)
+        cleanUpResources(DataModel, Folder, DataClass, ModelImport)
     }
 
     @Override

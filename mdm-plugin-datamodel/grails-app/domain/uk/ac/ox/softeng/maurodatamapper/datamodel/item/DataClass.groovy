@@ -243,10 +243,6 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         .in('id', ModelImport.importedByCatalogueItemId(dataModelId))
     }
 
-    static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId) {
-        byDataModelId(dataModelId).eq('parentDataClass.id', dataClassId)
-    }
-
     /**
      * If we want to include imported DataClasses then do a logical OR on imported and directly owned DataClasses.
      *
@@ -280,10 +276,15 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      *                        addition to DataClasses directly belonging to the DataClass)?
      * @return DetachedCriteria<DataClass>    
      */
-    static DetachedCriteria<DataClass> byParentDataClassId(UUID dataClassId, boolean includeImported = false, boolean includeExtends = false) {
+    static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, boolean includeImported = false, boolean includeExtends = false) {
         DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
 
         criteria
+        .or {
+            if (!includeImported) {
+                criteria.eq('dataModel.id', Utils.toUuid(dataModelId))
+            }
+        }
         .or {
             //DataClasses whose parent DataClass is dataClassId
             criteria.eq('parentDataClass.id', dataClassId)   

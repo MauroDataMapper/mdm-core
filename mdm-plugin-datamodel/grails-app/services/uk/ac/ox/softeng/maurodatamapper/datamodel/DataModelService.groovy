@@ -75,7 +75,6 @@ class DataModelService extends ModelService<DataModel> {
     DataTypeService dataTypeService
     DataClassService dataClassService
     DataElementService dataElementService
-    MessageSource messageSource
     ModelImportService modelImportService    
     VersionLinkService versionLinkService
     EditService editService
