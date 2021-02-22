@@ -58,21 +58,23 @@ class BootstrapModels {
         if (!simpleDataModel) {
             simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
 
-            Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
-                                                             readableByAuthenticatedUsers: true)
-            checkAndSave(messageSource, classifier)
+            Classifier classifier
 
+            classifier = Classifier.findByLabel('test classifier simple')
+
+            if (!classifier) {
+                classifier = new Classifier(createdBy: DEVELOPMENT, label: 'test classifier simple', readableByAuthenticatedUsers: true)
+                checkAndSave(messageSource, classifier)
+            }
             simpleDataModel.addToClassifiers(classifier)
-
             checkAndSave(messageSource, simpleDataModel)
+
             DataClass dataClass = new DataClass(createdBy: DEVELOPMENT, label: 'simple')
 
             simpleDataModel
             .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
             .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com', key: 'mdk2', value: 'mdv2')
-
             .addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk2', value: 'mdv2')
-
             .addToDataClasses(dataClass)
 
             checkAndSave(messageSource, simpleDataModel)
