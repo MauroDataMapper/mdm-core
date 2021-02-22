@@ -360,7 +360,7 @@ class DataElementComponentFunctionalSpec extends UserAccessFunctionalSpec {
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataElementComponent",
-      "label": "CONCAT 1",
+      "label": "CONCAT",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
@@ -615,7 +615,7 @@ class DataElementComponentFunctionalSpec extends UserAccessFunctionalSpec {
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataElementComponent",
-      "label": "CONCAT 2",
+      "label": "CONCAT",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
         {
