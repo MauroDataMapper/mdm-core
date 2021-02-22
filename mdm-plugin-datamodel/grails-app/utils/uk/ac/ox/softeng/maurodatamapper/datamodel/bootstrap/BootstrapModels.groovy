@@ -35,9 +35,12 @@ import org.springframework.context.MessageSource
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
+import groovy.util.logging.Slf4j
+
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+@Slf4j
 class BootstrapModels {
 
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
@@ -56,6 +59,7 @@ class BootstrapModels {
         DataModel simpleDataModel = DataModel.findByLabel(SIMPLE_DATAMODEL_NAME)
 
         if (!simpleDataModel) {
+            log.debug("Creating simple datamodel")
             simpleDataModel = new DataModel(createdBy: DEVELOPMENT, label: SIMPLE_DATAMODEL_NAME, folder: folder, authority: authority)
 
             Classifier classifier
@@ -63,8 +67,11 @@ class BootstrapModels {
             classifier = Classifier.findByLabel('test classifier simple')
 
             if (!classifier) {
+                log.debug("creating test classifier simple")
                 classifier = new Classifier(createdBy: DEVELOPMENT, label: 'test classifier simple', readableByAuthenticatedUsers: true)
                 checkAndSave(messageSource, classifier)
+            } else {
+                log.debug("test classifier simple already exists")
             }
             simpleDataModel.addToClassifiers(classifier)
             checkAndSave(messageSource, simpleDataModel)
@@ -82,6 +89,8 @@ class BootstrapModels {
             dataClass.addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
 
             checkAndSave(messageSource, simpleDataModel)
+        } else {
+            log.debug("simple datamodel already exists")
         }
 
         simpleDataModel
