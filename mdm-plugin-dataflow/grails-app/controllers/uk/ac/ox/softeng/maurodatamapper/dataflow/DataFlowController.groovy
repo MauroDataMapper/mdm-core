@@ -46,7 +46,6 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 @SuppressWarnings('GroovyAssignabilityCheck')
-@Slf4j
 class DataFlowController extends EditLoggingController<DataFlow> {
     static responseFormats = ['json', 'xml']
 
