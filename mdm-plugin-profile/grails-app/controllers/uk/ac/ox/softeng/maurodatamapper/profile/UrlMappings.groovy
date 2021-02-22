@@ -30,12 +30,14 @@ class UrlMappings {
                     // New URL replaces /api/profiles/namespace/name/customSearch
                     post '/search'(controller: 'profile', action: 'search')
                     // New URL replaces /api/dataModels/profile/namespace/name/version
-                    get '/models'(controller: 'profile', action: 'listModelsInProfile')
+                    get "/$catalogueItemDomainType"(controller: 'profile', action: 'listModelsInProfile')
+
                     // New URL replaces /api/dataModels/profile/values/namespace/name/version
                     get '/values'(controller: 'profile', action: 'listValuesInProfile')
 
                     // Provide multiple ways to obtain profile of a catalogue item
                     get "/${catalogueItemDomainType}/${catalogueItemId}"(controller: 'profile', action: 'show')
+
                     post "/${catalogueItemDomainType}/${catalogueItemId}"(controller: 'profile', action: 'save')
                 }
             }

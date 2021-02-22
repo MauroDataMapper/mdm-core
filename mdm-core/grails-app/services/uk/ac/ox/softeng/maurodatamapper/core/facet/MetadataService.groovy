@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
@@ -133,6 +134,10 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
 
     List<Metadata> findAllByCatalogueItemIdAndNamespace(UUID catalogueItemId, String namespace, Map pagination = [:]) {
         Metadata.byCatalogueItemIdAndNamespace(catalogueItemId, namespace).list(pagination)
+    }
+
+    List<MetadataAware> findAllCatalogueItemsByNamespace(String namespace, Map pagination = [:]) {
+        Metadata.byNamespace(namespace)
     }
 
     @Override

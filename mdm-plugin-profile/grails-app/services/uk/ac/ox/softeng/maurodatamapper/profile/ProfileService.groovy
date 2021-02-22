@@ -106,24 +106,19 @@ class ProfileService {
         profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
     }
 
-    PaginatedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
+    PaginatedResultList<Model> getModelsWithProfile(ProfileProviderService profileProviderService,
                                                       UserSecurityPolicyManager userSecurityPolicyManager,
+                                                      String domainType,
                                                       Map pagination = [:]) {
-        List<Model> models = []
 
-        modelServices.each { service ->
-            models.addAll(service.findAllByMetadataNamespace(profileProviderService.metadataNamespace))
+        List<Model> models = []
+        ModelService service = modelServices.find { it.handles(domainType) }
+        models.addAll(service.findAllByMetadataNamespace(profileProviderService.metadataNamespace))
+
+        List<Model> validModels = models.findAll {model ->
+            userSecurityPolicyManager.userCanReadSecuredResourceId(model.class, model.id) && !model.deleted
         }
-        List<Profile> profiles = []
-        models.each { model ->
-            if (userSecurityPolicyManager.userCanReadSecuredResourceId(model.class, model.id) && !model.deleted) {
-                Profile profile = profileProviderService.createProfileFromEntity(model)
-                if (profile.simpleFilter(pagination)) {
-                    profiles.add(profile)
-                }
-            }
-        }
-        new PaginatedResultList<>(profiles, pagination)
+        new PaginatedResultList<>(models, pagination)
     }
 
     CatalogueItem findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
