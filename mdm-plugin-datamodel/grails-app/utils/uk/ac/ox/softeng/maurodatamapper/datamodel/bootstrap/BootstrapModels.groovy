@@ -93,6 +93,8 @@ class BootstrapModels {
             log.debug("simple datamodel already exists")
         }
 
+        log.debug("Simple Test DataModel id = {}", simpleDataModel.id.toString())
+        log.debug("test classifier simple id = {}", simpleDataModel.classifiers[0].id.toString())
         simpleDataModel
     }
 
