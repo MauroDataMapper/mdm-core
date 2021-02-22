@@ -2,7 +2,7 @@
 <exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.0' xmlns:mdm='http://maurodatamapper.com/dataFlow/3.0'>
     <mdm:dataFlow>
         <mdm:id>edd1757b-c762-4090-84c0-9ad61dd812fe</mdm:id>
-        <mdm:label>Sample DataFlow</mdm:label>
+        <mdm:label>My DataFlow label</mdm:label>
         <mdm:lastUpdated>2021-01-18T10:47:15.542Z</mdm:lastUpdated>
         <mdm:type>Data Asset</mdm:type>
         <mdm:source>
