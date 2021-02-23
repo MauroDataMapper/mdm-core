@@ -49,14 +49,16 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         false
     }
 
-    List<ReferenceDataModel> importModels(User currentUser, T params) {
+    @Override
+    List<ReferenceDataModel> importModels(User currentUser, ReferenceDataModelFileImporterProviderServiceParameters params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
         importReferenceDataModels(currentUser, params.importFile.fileContents)
     }
 
-    ReferenceDataModel importModel(User currentUser, T params) {
+    @Override
+    ReferenceDataModel importModel(User currentUser, ReferenceDataModelFileImporterProviderServiceParameters params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)

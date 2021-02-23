@@ -49,16 +49,17 @@ abstract class DataModelImporterProviderService<T extends DataModelImporterProvi
         "DataModel${ProviderType.IMPORTER.name}"
     }
 
-    DataModel checkImport(User currentUser, DataModel dataModel, T params) {
+    @Override
+    DataModel checkImport(User currentUser, DataModel dataModel, DataModelImporterProviderServiceParameters params) {
         DataModel checked = super.checkImport(currentUser, dataModel, params) as DataModel
 
-        checked.dataClasses?.each { dc ->
+        checked.dataClasses?.each {dc ->
             classifierService.checkClassifiers(currentUser, dc)
-            dc.dataElements?.each { de ->
+            dc.dataElements?.each {de ->
                 classifierService.checkClassifiers(currentUser, de)
             }
         }
-        checked.dataTypes?.each { dt ->
+        checked.dataTypes?.each {dt ->
             classifierService.checkClassifiers(currentUser, dt)
         }
         checked
