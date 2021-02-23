@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -67,6 +68,6 @@ trait RuleAware {
     }
 
     def removeFromRules(Rule rule) {
-        removeFrom('rules', rule)
+        throw new ApiInternalException('FR01', 'Do not use removeFrom to remove facet from domain')
     }
 }

@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 
-class MetadataController extends EditLoggingController<Metadata> {
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+
+class MetadataController extends FacetController<Metadata> {
 
     static responseFormats = ['json', 'xml']
 
@@ -35,47 +37,8 @@ class MetadataController extends EditLoggingController<Metadata> {
     }
 
     @Override
-    protected Metadata queryForResource(Serializable resourceId) {
-        return metadataService.findByCatalogueItemIdAndId(params.catalogueItemId, resourceId)
-    }
-
-    @Override
-    protected List<Metadata> listAllReadableResources(Map params) {
-        return metadataService.findAllByCatalogueItemId(params.catalogueItemId, params)
-    }
-
-    @Override
-    protected Metadata createResource() {
-        Metadata resource = super.createResource() as Metadata
-        resource.clearErrors()
-        resource.catalogueItem = metadataService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        resource
-    }
-
-    @Override
-    void serviceDeleteResource(Metadata resource) {
-        metadataService.delete(resource, true)
-    }
-
-    @Override
-    protected Metadata saveResource(Metadata resource) {
-        resource.save flush: true, validate: false
-        metadataService.saveCatalogueItem(resource)
-        metadataService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
-    }
-
-    @Override
-    protected Metadata updateResource(Metadata resource) {
-        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        resource.save flush: true, validate: false
-        metadataService.
-            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
-    }
-
-    @Override
-    protected void deleteResource(Metadata resource) {
-        serviceDeleteResource(resource)
-        metadataService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+    CatalogueItemAwareService getFacetService() {
+        metadataService
     }
 
     @Override

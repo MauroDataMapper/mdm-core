@@ -143,6 +143,10 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         get(catalogueItemId).removeFromReferenceFiles(referenceFile)
     }
 
+    void removeRuleFromCatalogueItem(UUID catalogueItemId, Rule rule) {
+        get(catalogueItemId).removeFromRules(rule)
+    }
+
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy.createdBy = copier.emailAddress
         copy.label = original.label

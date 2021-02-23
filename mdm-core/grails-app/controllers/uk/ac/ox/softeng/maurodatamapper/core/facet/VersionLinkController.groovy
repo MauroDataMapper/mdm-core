@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 
-class VersionLinkController extends EditLoggingController<VersionLink> {
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+
+class VersionLinkController extends FacetController<VersionLink> {
 
     static responseFormats = ['json', 'xml']
 
@@ -27,6 +29,21 @@ class VersionLinkController extends EditLoggingController<VersionLink> {
 
     VersionLinkController() {
         super(VersionLink)
+    }
+
+    @Override
+    CatalogueItemAwareService getFacetService() {
+        versionLinkService
+    }
+
+    @Override
+    String getOwnerDomainTypeField() {
+        'modelDomainType'
+    }
+
+    @Override
+    String getOwnerIdField() {
+        'modelId'
     }
 
     @Override
@@ -52,35 +69,14 @@ class VersionLinkController extends EditLoggingController<VersionLink> {
     }
 
     @Override
-    void serviceDeleteResource(VersionLink resource) {
-        versionLinkService.delete(resource)
-    }
-
-    @Override
-    protected VersionLink createResource() {
-        VersionLink resource = super.createResource() as VersionLink
-        resource.catalogueItem = versionLinkService.findCatalogueItemByDomainTypeAndId(params.modelDomainType, params.modelId)
-        resource
-    }
-
-    @Override
     protected VersionLink saveResource(VersionLink resource) {
         versionLinkService.loadModelsIntoVersionLink(resource)
-        resource.save flush: true, validate: false
-        versionLinkService.addCreatedEditToCatalogueItem(currentUser, resource, params.modelDomainType, params.modelId)
+        super.saveResource(resource)
     }
 
     @Override
     protected VersionLink updateResource(VersionLink resource) {
         versionLinkService.loadModelsIntoVersionLink(resource)
-        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        resource.save flush: true, validate: false
-        versionLinkService.addUpdatedEditToCatalogueItem(currentUser, resource, params.modelDomainType, params.modelId, dirtyPropertyNames)
-    }
-
-    @Override
-    protected void deleteResource(VersionLink resource) {
-        serviceDeleteResource(resource)
-        versionLinkService.addDeletedEditToCatalogueItem(currentUser, resource, params.modelDomainType, params.modelId)
+        super.updateResource(resource)
     }
 }

@@ -17,12 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 
 import grails.web.mime.MimeType
 import org.grails.web.servlet.mvc.GrailsWebRequest
 
-class ReferenceFileController extends EditLoggingController<ReferenceFile> {
+class ReferenceFileController extends FacetController<ReferenceFile> {
     static responseFormats = ['json', 'xml']
 
     ReferenceFileService referenceFileService
@@ -41,48 +43,16 @@ class ReferenceFileController extends EditLoggingController<ReferenceFile> {
     }
 
     @Override
-    protected ReferenceFile queryForResource(Serializable resourceId) {
-        return referenceFileService.findByCatalogueItemIdAndId(params.catalogueItemId, resourceId)
-    }
-
-    @Override
-    protected List<ReferenceFile> listAllReadableResources(Map params) {
-        return referenceFileService.findAllByCatalogueItemId(params.catalogueItemId, params)
+    CatalogueItemAwareService getFacetService() {
+        referenceFileService
     }
 
     @Override
     protected ReferenceFile createResource() {
         ReferenceFile resource = super.createResource() as ReferenceFile
         resource.determineFileType()
-        resource.catalogueItem = referenceFileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
         resource
     }
-
-    @Override
-    void serviceDeleteResource(ReferenceFile resource) {
-        referenceFileService.delete(resource)
-    }
-
-    @Override
-    protected ReferenceFile saveResource(ReferenceFile resource) {
-        resource.save flush: true, validate: false
-        referenceFileService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
-    }
-
-    @Override
-    protected ReferenceFile updateResource(ReferenceFile resource) {
-        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        resource.save flush: true, validate: false
-        referenceFileService.
-            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
-    }
-
-    @Override
-    protected void deleteResource(ReferenceFile resource) {
-        serviceDeleteResource(resource)
-        referenceFileService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
-    }
-
 
     @Override
     protected Object getObjectToBind() {

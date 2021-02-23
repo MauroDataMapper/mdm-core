@@ -128,7 +128,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink) {
-        get(modelId).removeFromVersionLinks(versionLink)
+        removeFacetFromDomain(modelId, versionLink.id, 'versionLinks')
     }
 
     List<UUID> findAllSupersededModelIds(List<K> models) {

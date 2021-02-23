@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFileService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
@@ -48,12 +48,26 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Catal
         delete(get(id))
     }
 
-    void delete(ReferenceFile file) {
+    void delete(ReferenceFile file, boolean flush = false) {
         if (!file) return
-        CatalogueItemService service = catalogueItemServices.find {it.handles(file.catalogueItemDomainType)}
-        if (!service) throw new ApiBadRequestException('RFS01', 'Reference File removal for catalogue item with no supporting service')
+        CatalogueItemService service = findCatalogueItemService(file.catalogueItemDomainType)
         service.removeReferenceFileFromCatalogueItem(file.catalogueItemId, file)
-        file.delete()
+        file.delete(flush: flush)
+    }
+
+    @Override
+    void saveCatalogueItem(ReferenceFile referenceFile) {
+        if (!referenceFile) return
+        CatalogueItemService catalogueItemService = findCatalogueItemService(referenceFile.catalogueItemDomainType)
+        catalogueItemService.save(referenceFile.catalogueItem)
+    }
+
+    @Override
+    void addFacetToDomain(ReferenceFile facet, String domainType, UUID domainId) {
+        if (!facet) return
+        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
+        facet.catalogueItem = domain
+        domain.addToReferenceFiles(facet)
     }
 
     @Override

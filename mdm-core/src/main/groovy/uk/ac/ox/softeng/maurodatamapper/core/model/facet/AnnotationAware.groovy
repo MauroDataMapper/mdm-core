@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
@@ -42,6 +43,6 @@ trait AnnotationAware {
     }
 
     def removeFromAnnotations(Annotation annotations) {
-        removeFrom('annotations', annotations)
+        throw new ApiInternalException('FR01', 'Do not use removeFrom to remove facet from domain')
     }
 }

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
@@ -42,6 +43,6 @@ trait SemanticLinkAware {
     }
 
     def removeFromSemanticLinks(SemanticLink semanticLinks) {
-        removeFrom('semanticLinks', semanticLinks)
+        throw new ApiInternalException('FR01', 'Do not use removeFrom to remove facet from domain')
     }
 }
