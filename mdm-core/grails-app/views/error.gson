@@ -1,6 +1,7 @@
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 
 import grails.util.Environment
+import grails.util.Holders
 import org.grails.datastore.mapping.validation.ValidationException
 import org.springframework.http.HttpStatus
 import org.springframework.validation.Errors
@@ -39,6 +40,8 @@ json {
     path request.getUri()
 
     devMode Environment.isDevelopmentMode()
+
+    version Holders.getPluginManager()?.getGrailsPlugin('mdmCore')?.version ?: 'Unknown Version'
 
     // If there are errors then render those
     if (errors) validationErrors tmpl."/errors/errors"(errors)
