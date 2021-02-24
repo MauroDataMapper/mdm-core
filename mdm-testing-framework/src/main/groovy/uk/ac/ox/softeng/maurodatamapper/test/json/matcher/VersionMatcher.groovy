@@ -31,7 +31,7 @@ class VersionMatcher extends BaseMatcher<Version> {
     boolean matches(Object item) {
         if (item instanceof String) {
             // "-[0-9]+-.+" trims Linux {kernel}.{major}.{minor}-{patch}-{flavour} version format
-            return Version.isVersionable(item.replaceAll(/(-SNAPSHOT|\.RC\d|-[0-9]+-.+)/, ''))
+            return item == 'SNAPSHOT' ?: Version.isVersionable(item.replaceAll(/(-SNAPSHOT|\.RC\d|-[0-9]+-.+)/, ''))
         }
         false
 
