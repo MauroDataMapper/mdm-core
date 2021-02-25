@@ -109,6 +109,10 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         catalogueItem
     }
 
+    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
+    }
+
     @Override
     boolean hasTreeTypeModelItems(ReferenceDataElement catalogueItem, boolean forDiff) {
         false

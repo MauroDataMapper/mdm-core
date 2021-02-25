@@ -142,6 +142,10 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         updated
     }
 
+    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
+    }
+
     @Override
     ReferenceDataModel save(ReferenceDataModel referenceDataModel) {
         log.debug('Saving {}({}) without batching', referenceDataModel.label, referenceDataModel.ident())
