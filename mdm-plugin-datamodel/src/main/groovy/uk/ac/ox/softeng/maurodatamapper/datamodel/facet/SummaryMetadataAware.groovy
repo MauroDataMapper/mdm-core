@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 
@@ -32,16 +33,16 @@ trait SummaryMetadataAware {
 
     abstract Set<SummaryMetadata> getSummaryMetadata()
 
-    CatalogueItem addToSummaryMetadata(SummaryMetadata summaryMetadata) {
+    def addToSummaryMetadata(SummaryMetadata summaryMetadata) {
         summaryMetadata.setCatalogueItem(this as CatalogueItem)
         addTo('summaryMetadata', summaryMetadata)
     }
 
-    CatalogueItem addToSummaryMetadata(Map args) {
+    def addToSummaryMetadata(Map args) {
         addToSummaryMetadata(new SummaryMetadata(args))
     }
 
-    CatalogueItem removeFromSummaryMetadata(SummaryMetadata summaryMetadata) {
-        removeFrom('summaryMetadata', summaryMetadata)
+    def removeFromSummaryMetadata(SummaryMetadata summaryMetadata) {
+        throw new ApiInternalException('FR01', 'Do not use removeFrom to remove facet from domain')
     }
 }

@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 
-class SummaryMetadataController extends EditLoggingController<SummaryMetadata> {
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+
+class SummaryMetadataController extends FacetController<SummaryMetadata> {
     static responseFormats = ['json', 'xml']
 
     SummaryMetadataService summaryMetadataService
@@ -29,50 +31,18 @@ class SummaryMetadataController extends EditLoggingController<SummaryMetadata> {
     }
 
     @Override
-    protected SummaryMetadata queryForResource(Serializable resourceId) {
-        return summaryMetadataService.findByCatalogueItemIdAndId(params.catalogueItemId, resourceId)
-    }
-
-    @Override
-    protected List<SummaryMetadata> listAllReadableResources(Map params) {
-        return summaryMetadataService.findAllByCatalogueItemId(params.catalogueItemId, params)
-    }
-
-    @Override
-    void serviceDeleteResource(SummaryMetadata resource) {
-        summaryMetadataService.delete(resource)
+    CatalogueItemAwareService getFacetService() {
+        summaryMetadataService
     }
 
     @Override
     protected SummaryMetadata createResource() {
         SummaryMetadata resource = super.createResource() as SummaryMetadata
-        resource.clearErrors()
-        resource.catalogueItem = summaryMetadataService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
         if (resource.summaryMetadataReports) {
             for (def report : resource.summaryMetadataReports) {
                 if (!report.createdBy) report.createdBy = resource.createdBy
             }
         }
         resource
-    }
-
-    @Override
-    protected SummaryMetadata saveResource(SummaryMetadata resource) {
-        resource.save flush: true, validate: false
-        summaryMetadataService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
-    }
-
-    @Override
-    protected SummaryMetadata updateResource(SummaryMetadata resource) {
-        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        resource.save flush: true, validate: false
-        summaryMetadataService.
-            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
-    }
-
-    @Override
-    protected void deleteResource(SummaryMetadata resource) {
-        serviceDeleteResource(resource)
-        summaryMetadataService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
     }
 }
