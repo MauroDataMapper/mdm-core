@@ -354,13 +354,17 @@ class DataModelService extends ModelService<DataModel> {
         log.trace('DataModel removed')
 
         sessionFactory.currentSession
-            .createSQLQuery('delete from core.breadcrumb_tree where domain_id = :id')
+            .createSQLQuery('DELETE FROM core.breadcrumb_tree WHERE domain_id = :id')
             .setParameter('id', dataModel.id)
             .executeUpdate()
 
         log.trace('Breadcrumb tree removed')
 
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+    }
+
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override
