@@ -67,7 +67,7 @@ class TreeItemInterceptor implements MdmInterceptor {
 
     Model getOwningModel() {
         ModelItem modelItem = findModelItemByDomainTypeAndId(params.catalogueItemClass, params.catalogueItemId)
-        Model model = modelItem.getModel()
+        modelItem.getModel()
     }
 
     ModelItem findModelItemByDomainTypeAndId(Class domainType, UUID catalogueItemId) {

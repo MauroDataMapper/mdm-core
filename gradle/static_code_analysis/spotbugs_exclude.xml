@@ -1,0 +1,26 @@
+<FindBugsFilter xmlns="https://github.com/spotbugs/filter/3.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0
+  https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+  <!-- Dont match the following rules -->
+  <Match>
+    <Bug pattern="ES_COMPARING_STRINGS_WITH_EQ,SE_NO_SERIALVERSIONID,NP_NULL_PARAM_DEREF_ALL_TARGETS_DANGEROUS" />
+    <!-- ES_COMPARING_STRINGS_WITH_EQ : Groovy code expects == and != to be used for string comparison -->
+    <!-- SE_NO_SERIALVERSIONID : Need to review if we should include this but groovy and grails don't usually by standard -->
+    <!-- NP_NULL_PARAM_DEREF_ALL_TARGETS_DANGEROUS : Spotbugs cannot handle groovy closures and believes this issue exists in ALL closures-->
+  </Match>
+  <!-- Dont test spec classes -->
+  <Match>
+    <Class name="~.*\.*Spec" />
+  </Match>
+  <Match>
+    <Package name="~.*\.test\.*" />
+  </Match>
+  <Match>
+    <Class name="~.*\.*gson" />
+    <Bug pattern="RANGE_ARRAY_INDEX" />
+  </Match>
+  <Match>
+    <Class name="~.*\.*gml" />
+    <Bug pattern="RANGE_ARRAY_INDEX" />
+  </Match>
+</FindBugsFilter>

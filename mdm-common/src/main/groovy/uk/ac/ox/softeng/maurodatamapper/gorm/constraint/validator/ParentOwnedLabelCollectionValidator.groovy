@@ -17,8 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
-
 import org.grails.datastore.gorm.GormEntity
 
 /**

@@ -22,5 +22,7 @@ dependencies {
     runtime group: 'org.postgresql', name: 'postgresql'
 
     testImplementation project(':mdm-testing-framework')
+
+    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: spotbugsAnnotationVersion
 }
 

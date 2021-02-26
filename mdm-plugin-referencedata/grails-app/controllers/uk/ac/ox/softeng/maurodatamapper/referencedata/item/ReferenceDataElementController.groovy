@@ -42,7 +42,6 @@ class ReferenceDataElementController extends CatalogueItemController<ReferenceDa
 
         ReferenceDataModel referenceDataModel = referenceDataModelService.get(params.referenceDataModelId)
         ReferenceDataElement original = referenceDataElementService.findByReferenceDataModelIdAndId(params.otherReferenceDataModelId, params.referenceDataElementId)
-        ReferenceDataModel originalReferenceDataModel = referenceDataModelService.get(params.otherReferenceDataModelId)
 
         if (!original) return notFound(params.referenceDataElementId)
         ReferenceDataElement copy

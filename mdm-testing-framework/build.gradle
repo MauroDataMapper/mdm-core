@@ -18,6 +18,7 @@ plugins {
 
 apply plugin: 'ox.softeng.ox-brc-standard'
 apply plugin: 'ox.softeng.ox-brc-artifactory'
+apply plugin: 'ox.softeng.static-code-analysis'
 
 repositories {
     mavenLocal()
@@ -34,3 +35,8 @@ dependencyManagement {
 }
 
 apply from: 'dependencies.gradle'
+apply from: "${rootDir}/gradle/additions/staticCodeAnalysis.gradle"
+
+sonarqube {
+    skipProject = true
+}
