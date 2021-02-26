@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
@@ -127,6 +128,11 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results
+    }
+
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(ReferenceDataType.name)
     }
 
     ReferencePrimitiveType createDataType(String label, String description, User createdBy, String units = null) {

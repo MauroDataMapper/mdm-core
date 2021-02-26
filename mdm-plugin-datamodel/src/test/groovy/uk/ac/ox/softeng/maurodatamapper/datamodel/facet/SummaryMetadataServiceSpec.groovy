@@ -55,7 +55,6 @@ class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMe
         mockArtefact(MetadataService)
         mockArtefact(DataTypeService)
         mockDomains(Folder, DataModel, Edit, SummaryMetadata, SummaryMetadataReport, Authority, Metadata, VersionLink, SemanticLink, Classifier)
-        mockArtefact(DataModelService)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
         dataModel = new DataModel(label: 'dm1', createdBy: StandardEmailAddress.UNIT_TEST, folder: Folder.findByLabel('catalogue'),
@@ -73,6 +72,15 @@ class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMe
 
         checkAndSave dataModel
 
+        DataModelService dataModelService = Stub() {
+            get(_) >> dataModel
+            getModelClass() >> dataModel
+            handles('DataModel') >> true
+            removeSummaryMetadataFromCatalogueItem(dataModel.id, _) >> {UUID bmid, SummaryMetadata sm ->
+                dataModel.summaryMetadata.remove(sm)
+            }
+        }
+        service.catalogueItemServices = [dataModelService]
         id = summaryMetadata.id
     }
 

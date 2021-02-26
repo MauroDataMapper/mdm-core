@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
@@ -184,6 +185,11 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
             return findOrCreateDataTypeForDataModel(dataModel, "${cleanLabel}.1", description, createdByEmailAddress, referenceClass)
         }
         dataType as ReferenceType
+    }
+
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(DataType.name)
     }
 
 }

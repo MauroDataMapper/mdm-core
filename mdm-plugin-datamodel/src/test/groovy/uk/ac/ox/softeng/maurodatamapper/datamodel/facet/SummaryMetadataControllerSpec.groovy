@@ -69,6 +69,12 @@ class SummaryMetadataControllerSpec extends ResourceControllerSpec<SummaryMetada
                 if (iid != dataModel.id) return null
                 mid == domain.id ? domain : null
             }
+            addFacetToDomain(_, _, _) >> {SummaryMetadata md, String domain, UUID bid ->
+                if (dataModel.id == bid) {
+                    dataModel.addToSummaryMetadata(md)
+                    md.catalogueItem = dataModel
+                }
+            }
         }
     }
 

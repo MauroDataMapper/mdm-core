@@ -106,10 +106,6 @@ abstract class CatalogueItemSummaryMetadataFunctionalSpec extends UserAccessFunc
         verifyForbidden response
     }
 
-    void verifySameValidDataCreationResponse() {
-        verifyResponse CREATED, response
-    }
-
     @Override
     Pattern getExpectedCreatedEditRegex() {
         ~/\[Summary Metadata:Functional Test Summary Metadata] added to component \[.+?]/

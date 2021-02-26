@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
@@ -148,13 +149,20 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
         enumerationType
     }
 
-    private ReferenceEnumerationType addEnumerationValueToEnumerationType(ReferenceEnumerationType enumerationType, String key, String value, User createdBy) {
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(ReferenceDataType.name)
+    }
+
+    private ReferenceEnumerationType addEnumerationValueToEnumerationType(ReferenceEnumerationType enumerationType, String key, String value,
+                                                                          User createdBy) {
         if (key)
             enumerationType.addToReferenceEnumerationValues(key: key, value: value ?: key, createdBy: createdBy.emailAddress)
         enumerationType
     }
 
-    private ReferenceEnumerationType addEnumerationValueToEnumerationType(ReferenceEnumerationType enumerationType, String key, String value, String category,
+    private ReferenceEnumerationType addEnumerationValueToEnumerationType(ReferenceEnumerationType enumerationType, String key, String value,
+                                                                          String category,
                                                                           User createdBy) {
         if (key)
             enumerationType.addToReferenceEnumerationValues(key: key, value: value ?: key, category: category, createdBy: createdBy.emailAddress)

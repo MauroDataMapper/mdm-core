@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
@@ -149,5 +150,10 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> {
             dataModel.addToDataTypes(modelDataType)
         }
         modelDataType
+    }
+
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(DataType.name)
     }
 }
