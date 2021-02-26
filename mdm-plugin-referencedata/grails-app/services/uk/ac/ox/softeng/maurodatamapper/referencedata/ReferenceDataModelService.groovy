@@ -33,6 +33,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMeta
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValueService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
@@ -176,6 +177,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         log.debug('Saving {} complete referenceDataModel', referenceDataModel.label)
         Collection<ReferenceDataType> referenceDataTypes = []
         Collection<ReferenceDataElement> referenceDataElements = []
+        Collection<ReferenceDataValue> referenceDataValues = []
 
         if (referenceDataModel.classifiers) {
             log.trace('Saving {} classifiers')
@@ -196,18 +198,25 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
             referenceDataModel.breadcrumbTree.children.each { it.skipValidation(true) }
         }
 
+        if (referenceDataModel.referenceDataValues) {
+            referenceDataValues.addAll referenceDataModel.referenceDataValues
+            referenceDataModel.referenceDataValues.clear()
+        }        
+
         save(referenceDataModel)
         sessionFactory.currentSession.flush()
 
-        saveContent(referenceDataTypes, referenceDataElements)
+        saveContent(referenceDataTypes, referenceDataElements, referenceDataValues)
 
         get(referenceDataModel.id)
     }
 
     ReferenceDataModel saveModelNewContentOnly(ReferenceDataModel referenceDataModel) {
         log.debug('Saving {} using batching', referenceDataModel.label)
+        long start = System.currentTimeMillis()
         Collection<ReferenceDataType> referenceDataTypes = []
         Collection<ReferenceDataElement> referenceDataElements = []
+        Collection<ReferenceDataValue> referenceDataValues = []
 
         if (referenceDataModel.classifiers) {
             log.trace('Saving {} classifiers')
@@ -222,18 +231,41 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
             referenceDataElements.addAll referenceDataModel.referenceDataElements.findAll {!it.id}
         }
 
-        saveContent(referenceDataTypes, referenceDataElements)
+        if (referenceDataModel.referenceDataValues) {
+            referenceDataValues.addAll referenceDataModel.referenceDataValues.findAll {!it.id}
+        }         
+
+        saveContent(referenceDataTypes, referenceDataElements, referenceDataValues)
+        log.debug('saveModelNewContentOnly took {}', Utils.timeTaken(start))
 
         get(referenceDataModel.id)
     }
 
-    void saveContent(Collection<ReferenceDataType> referenceDataTypes, Collection<ReferenceDataElement> referenceDataElements) {
+    void saveContent(Collection<ReferenceDataType> referenceDataTypes, Collection<ReferenceDataElement> referenceDataElements, Collection<ReferenceDataValue> referenceDataValues) {
         sessionFactory.currentSession.clear()
+
+        //Skip validation on all contents
+        long start = System.currentTimeMillis()
+        log.debug('Skip validation')
+        referenceDataTypes.each { it.skipValidation(true) }
+        referenceDataElements.each { it.skipValidation(true) }
+        referenceDataValues.each { it.skipValidation(true) }
+        log.debug('skip validation took {}', Utils.timeTaken(start))
+
         log.trace('Saving {} referenceDataTypes', referenceDataTypes.size())
+        start = System.currentTimeMillis()
         referenceDataTypeService.saveAll(referenceDataTypes)
+        log.debug('referenceDataTypeService.saveAll took {}', Utils.timeTaken(start))
 
         log.trace('Saving {} referenceDataElements ', referenceDataElements.size())
+        start = System.currentTimeMillis()
         referenceDataElementService.saveAll(referenceDataElements)
+        log.debug('referenceDataElementService.saveAll took {}', Utils.timeTaken(start))
+
+        start = System.currentTimeMillis()
+        log.trace('Saving {} referenceDataValues ', referenceDataValues.size())
+        referenceDataValueService.saveAll(referenceDataValues)
+        log.debug('referenceDataValueService.saveAll took {}', Utils.timeTaken(start))
     }
 
     @Override

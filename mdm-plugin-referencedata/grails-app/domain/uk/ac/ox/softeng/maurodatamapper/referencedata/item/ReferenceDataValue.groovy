@@ -39,6 +39,8 @@ import org.grails.datastore.gorm.GormEntity
 @Resource(readOnly = false, formats = ['json', 'xml'])
 class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataModel> {
 
+    public final static Integer BATCH_SIZE = 10000
+
     UUID id
 
     int rowNumber
@@ -91,6 +93,10 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
 
     @Override
     def beforeValidate() {
+        if (rowNumber % 1000 == 0) {
+            log.debug("Validate {}", rowNumber)
+        }
+        
         buildLabel()
         description = value     
         beforeValidateModelItem()

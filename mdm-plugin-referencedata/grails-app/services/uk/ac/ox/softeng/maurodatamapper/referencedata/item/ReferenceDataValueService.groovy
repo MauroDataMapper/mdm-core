@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -69,6 +70,55 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
         referenceDataValue.referenceDataModel?.removeFromReferenceDataValues(referenceDataValue)
         referenceDataValue.delete(flush: flush)
     }
+
+    def saveAll(Collection<ReferenceDataValue> referenceDataValues) {
+        List<Classifier> classifiers = referenceDataValues.collectMany { it.classifiers ?: [] } as List<Classifier>
+        if (classifiers) {
+            log.debug('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
+        }
+
+        Collection<ReferenceDataValue> alreadySaved = referenceDataValues.findAll { it.ident() && it.isDirty() }
+        Collection<ReferenceDataValue> notSaved = referenceDataValues.findAll { !it.ident() }
+
+        if (alreadySaved) {
+            log.debug('Straight saving {} already saved ReferenceDataValues', alreadySaved.size())
+            ReferenceDataValue.saveAll(alreadySaved)
+        }
+
+        if (notSaved) {
+            log.debug('Batch saving {} new ReferenceDataValues in batches of {}', notSaved.size(), ReferenceDataValue.BATCH_SIZE)
+            List batch = []
+            int count = 0
+
+            notSaved.each { rdv ->
+                batch += rdv
+                count++
+                if (count % ReferenceDataValue.BATCH_SIZE == 0) {
+                    batchSave(batch)
+                    batch.clear()
+                }
+
+            }
+            batchSave(batch)
+            batch.clear()
+        }
+    }
+
+    void batchSave(List<ReferenceDataValue> referenceDataValues) {
+        long start = System.currentTimeMillis()
+        log.debug('Performing batch save of {} ReferenceDataValues', referenceDataValues.size())
+
+        ReferenceDataValue.saveAll(referenceDataValues)
+        referenceDataValues.each { rdv ->
+            updateFacetsAfterInsertingCatalogueItem(rdv)
+        }
+
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        log.debug('Batch save took {}', Utils.timeTaken(start))
+    }    
 
     @Override
     boolean hasTreeTypeModelItems(ReferenceDataValue catalogueItem, boolean forDiff) {
