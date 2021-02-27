@@ -92,13 +92,15 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
         checkAndSave(dataSet)
 
         when: 'adding data type with same label to existing'
-        dataSet.addToReferenceDataTypes(createValidDomain(domain.label))
-        checkAndSave(dataSet)
+        ReferenceDataType addtl = createValidDomain(domain.label)
+        dataSet.addToReferenceDataTypes(addtl)
+        // dataset is saved so validation happens at DT level
+        checkAndSave(addtl)
 
         then: 'datamodel should not be valid'
         thrown(InternalSpockError)
-        dataSet.errors.allErrors.size() >= 3
-        dataSet.errors.fieldErrors.any {it.field.contains('label') && it.code.contains('unique')}
+        addtl.errors.allErrors.size() >= 1
+        addtl.errors.fieldErrors.any { it.field.contains('label') && it.code.contains('unique') }
     }
 
     void 'DT02 : test unique label naming across datamodels'() {
@@ -109,14 +111,14 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
         expect: 'domain is currently valid'
         checkAndSave(domain)
         checkAndSave(dataSet)
-        checkAndSave(referenceDataModel)
+        check(referenceDataModel)
 
         when: 'adding data type with same label as existing to different model'
         referenceDataModel.addToReferenceDataTypes(createValidDomain(domain.label))
 
         then:
         checkAndSave(dataSet)
-        checkAndSave(referenceDataModel)
+        check(referenceDataModel)
 
         when: 'adding multiple data types with same label'
         referenceDataModel.addToReferenceDataTypes(createValidDomain('a'))
@@ -131,10 +133,8 @@ abstract class ReferenceDataTypeSpec<K extends ReferenceDataType> extends ModelI
 
         then:
         thrown(InternalSpockError)
-        referenceDataModel.errors.allErrors.size() == 3
+        referenceDataModel.errors.allErrors.size() == 1
         referenceDataModel.errors.fieldErrors.any {it.field.contains('referenceDataTypes') && it.code.contains('unique')}
-        referenceDataModel.errors.fieldErrors.any {it.field.contains('referenceDataTypes[1].label') && it.code.contains('unique')}
-        referenceDataModel.errors.fieldErrors.any {it.field.contains('referenceDataTypes[3].label') && it.code.contains('unique')}
     }
 
     private Class<K> getDomainUnderTest() {
