@@ -19,5 +19,10 @@ json {
     authority tmpl.'/authority/authority'(export.authority)
     if (export.referenceDataTypes) referenceDataTypes tmpl.'/referenceDataType/export'(export.referenceDataTypes.sort())
     if (export.referenceDataElements) referenceDataElements tmpl.'/referenceDataElement/export'(export.referenceDataElements.sort())    
-    if (export.referenceDataValues) referenceDataValues tmpl.'/referenceDataValue/export'(export.referenceDataValues.sort())   
+    if (export.referenceDataValues) referenceDataValues tmpl.'/referenceDataValue/export'(export.referenceDataValues.sort{a,b -> 
+            if (a.rowNumber == b.rowNumber) {
+                a.referenceDataElement.label <=> b.referenceDataElement.label
+            } else {
+                a.rowNumber <=> b.rowNumber
+            }})   
 }

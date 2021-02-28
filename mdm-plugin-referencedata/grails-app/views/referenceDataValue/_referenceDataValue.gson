@@ -1,12 +1,12 @@
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
-
-inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: referenceDataValue]
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 
 model {
     ReferenceDataValue referenceDataValue
 }
 
 json {
+    id referenceDataValue.id  
     rowNumber referenceDataValue.rowNumber
     value referenceDataValue.value
     referenceDataElement tmpl.'/referenceDataElement/referenceDataElement'(referenceDataValue.referenceDataElement)

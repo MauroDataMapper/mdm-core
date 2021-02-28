@@ -17,11 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -29,11 +27,13 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
+import org.hibernate.SessionFactory
+
 @Slf4j
 @Transactional
-class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
+class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
 
-    ReferenceSummaryMetadataService referenceSummaryMetadataService
+    SessionFactory sessionFactory
 
     @Override
     ReferenceDataValue get(Serializable id) {
@@ -49,12 +49,12 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
         ReferenceDataValue.list(args)
     }
 
-    @Override
+    //@Override
     List<ReferenceDataValue> getAll(Collection<UUID> ids) {
         ReferenceDataValue.getAll(ids).findAll()
     }
 
-    @Override
+    //@Override
     void deleteAll(Collection<ReferenceDataValue> referenceDataValues) {
         referenceDataValues.each { delete(it) }
     }
@@ -72,12 +72,6 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
     }
 
     def saveAll(Collection<ReferenceDataValue> referenceDataValues) {
-        List<Classifier> classifiers = referenceDataValues.collectMany { it.classifiers ?: [] } as List<Classifier>
-        if (classifiers) {
-            log.debug('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
-        }
-
         Collection<ReferenceDataValue> alreadySaved = referenceDataValues.findAll { it.ident() && it.isDirty() }
         Collection<ReferenceDataValue> notSaved = referenceDataValues.findAll { !it.ident() }
 
@@ -110,71 +104,12 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
         log.debug('Performing batch save of {} ReferenceDataValues', referenceDataValues.size())
 
         ReferenceDataValue.saveAll(referenceDataValues)
-        referenceDataValues.each { rdv ->
-            updateFacetsAfterInsertingCatalogueItem(rdv)
-        }
 
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
 
         log.debug('Batch save took {}', Utils.timeTaken(start))
     }    
-
-    @Override
-    boolean hasTreeTypeModelItems(ReferenceDataValue catalogueItem, boolean forDiff) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataValue catalogueItem, boolean forDiff) {
-        []
-    }
-
-    @Override
-    ReferenceDataValue findByIdJoinClassifiers(UUID id) {
-        ReferenceDataValue.findById(id, [fetch: [classifiers: 'join']])
-    }
-
-    @Override
-    void removeAllFromClassifier(Classifier classifier) {
-        ReferenceDataValue.byClassifierId(classifier.id).list().each {
-            it.removeFromClassifiers(classifier)
-        }
-    }
-
-    @Override
-    List<ReferenceDataValue> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceDataValue.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id) }
-    }
-
-    @Override
-    Class<ReferenceDataValue> getModelItemClass() {
-        ReferenceDataValue
-    }
-
-    @Override
-    Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
-        domainType == ReferenceDataValue.simpleName
-    }
-
-
-    @Override
-    List<ReferenceDataValue> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                          String searchTerm, String domainType) {
-        /*List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
-        if (!readableIds) return []
-
-        List<ReferenceDataElement> results = []
-        if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
-            long start = System.currentTimeMillis()
-            results = ReferenceDataElement.luceneLabelSearch(ReferenceDataElement, searchTerm, readableIds.toList()).results
-            log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
-        }*/
-
-results = [] //TODO
-        results
-    }
 
     List<ReferenceDataValue> findAllByReferenceDataModelId(Serializable referenceDataModelId, Map pagination = [:]) {
         findAllByReferenceDataModelId(referenceDataModelId, pagination, pagination)
@@ -210,7 +145,5 @@ results = [] //TODO
 
         //Get the reference data element for this value by getting the matching reference data element for the model
         referenceDataValue.referenceDataElement = referenceDataModel.referenceDataElements.find {it.label == referenceDataValue.referenceDataElement.label}
-
-        checkFacetsAfterImportingCatalogueItem(referenceDataValue)
     }    
 }

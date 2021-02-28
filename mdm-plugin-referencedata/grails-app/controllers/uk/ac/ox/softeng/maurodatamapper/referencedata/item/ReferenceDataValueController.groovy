@@ -17,13 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
+import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class ReferenceDataValueController extends CatalogueItemController<ReferenceDataValue> {
+class ReferenceDataValueController extends EditLoggingController<ReferenceDataValue> {
     static responseFormats = ['json', 'xml']
 
     ReferenceDataValueService referenceDataValueService
@@ -138,12 +138,10 @@ class ReferenceDataValueController extends CatalogueItemController<ReferenceData
         referenceDataValueService.findAllByReferenceDataModelId(params.referenceDataModelId, params)
     }
 
-    @Override
     void serviceDeleteResource(ReferenceDataValue resource) {
         //referenceDataValueService.delete(resource, true)
     }
 
-    @Override
     protected void serviceInsertResource(ReferenceDataValue resource) {
         //referenceDataValueService.save(flush: true, resource)
     }
