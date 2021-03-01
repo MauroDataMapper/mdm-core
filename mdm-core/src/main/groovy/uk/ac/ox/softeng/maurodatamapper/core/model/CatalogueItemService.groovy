@@ -411,6 +411,20 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         semanticLinkService.deleteAllByCatalogueItemIds(catalogueItemIds)
     }
 
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(getCatalogueItemClass().name)
+    }
+
+    JoinTable getJoinTable(PersistentEntity persistentEntity, String facetProperty) {
+        PropertyConfig propertyConfig = persistentEntity.getPropertyByName(facetProperty).mapping.mappedForm as PropertyConfig
+        propertyConfig.joinTable
+    }
+
+    Table getDomainEntityTable(PersistentEntity persistentEntity) {
+        Mapping mapping = persistentEntity.mapping.mappedForm as Mapping
+        mapping.table
+    }    
+
     void additionalModelImports(User currentUser, ModelImport imported) {
         //no-op
     }
