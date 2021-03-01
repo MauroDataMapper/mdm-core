@@ -55,6 +55,13 @@ class ModelExtendService implements CatalogueItemAwareService<ModelExtend> {
         delete(get(id))
     }
 
+    void delete(ModelExtend modelExtend, boolean flush = false) {
+        if (!modelExtend) return
+        CatalogueItemService service = findCatalogueItemService(modelExtend.catalogueItemDomainType)
+        service.removeModelExtendFromCatalogueItem(modelExtend.catalogueItemId, modelExtend)
+        modelExtend.delete(flush: flush)
+    }    
+
     @Override
     DetachedCriteria<ModelExtend> getBaseDeleteCriteria() {
         ModelExtend.by()
@@ -69,12 +76,6 @@ class ModelExtendService implements CatalogueItemAwareService<ModelExtend> {
     void removeModelExtendFromCatalogueItem(ModelExtend modelExtend, CatalogueItem catalogueItem) {
         catalogueItem.removeFromModelExtends(modelExtend)
     }     
-
-    void delete(ModelExtend modelExtend) {
-        if (!modelExtend) return
-
-        modelExtend.delete()
-    }
 
     void deleteAll(List<ModelExtend> modelExtends, boolean cleanFromOwner = true) {
         if (cleanFromOwner) {
@@ -188,6 +189,21 @@ class ModelExtendService implements CatalogueItemAwareService<ModelExtend> {
         addCreatedEditToCatalogueItem(currentUser, resource, resource.catalogueItemDomainType, resource.catalogueItemId)
 
         resource
-    }     
+    }   
+
+    @Override
+    void saveCatalogueItem(ModelExtend modelExtend) {
+        if (!modelExtend) return
+        CatalogueItemService catalogueItemService = findCatalogueItemService(modelExtend.catalogueItemDomainType)
+        catalogueItemService.save(modelExtend.catalogueItem)
+    }
+
+    @Override
+    void addFacetToDomain(ModelExtend facet, String domainType, UUID domainId) {
+        if (!facet) return
+        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
+        facet.catalogueItem = domain
+        domain.addToModelExtends(facet)
+    }       
 
 }

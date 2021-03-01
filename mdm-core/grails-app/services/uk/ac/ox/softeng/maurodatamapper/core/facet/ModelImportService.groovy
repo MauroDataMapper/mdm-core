@@ -55,6 +55,13 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         delete(get(id))
     }
 
+    void delete(ModelImport modelImport, boolean flush = false) {
+        if (!modelImport) return
+        CatalogueItemService service = findCatalogueItemService(modelImport.catalogueItemDomainType)
+        service.removeModelImportFromCatalogueItem(modelImport.catalogueItemId, modelImport)
+        modelImport.delete(flush: flush)
+    }      
+
     @Override
     DetachedCriteria<ModelImport> getBaseDeleteCriteria() {
         ModelImport.by()
@@ -69,12 +76,6 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
     void removeModelImportFromCatalogueItem(ModelImport modelImport, CatalogueItem catalogueItem) {
         catalogueItem.removeFromModelImports(modelImport)
     }     
-
-    void delete(ModelImport modelImport) {
-        if (!modelImport) return
-
-        modelImport.delete()
-    }
 
     void deleteAll(List<ModelImport> modelImports, boolean cleanFromOwner = true) {
         if (cleanFromOwner) {
@@ -203,5 +204,20 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
   
         resource
     }     
+
+    @Override
+    void saveCatalogueItem(ModelImport modelImport) {
+        if (!modelImport) return
+        CatalogueItemService catalogueItemService = findCatalogueItemService(modelImport.catalogueItemDomainType)
+        catalogueItemService.save(modelImport.catalogueItem)
+    }
+
+    @Override
+    void addFacetToDomain(ModelImport facet, String domainType, UUID domainId) {
+        if (!facet) return
+        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
+        facet.catalogueItem = domain
+        domain.addToModelImports(facet)
+    }        
 
 }
