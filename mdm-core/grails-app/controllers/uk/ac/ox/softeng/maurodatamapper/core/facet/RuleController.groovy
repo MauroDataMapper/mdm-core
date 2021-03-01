@@ -17,10 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
-class RuleController extends EditLoggingController<Rule> {
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+
+class RuleController extends FacetController<Rule> {
 
     static responseFormats = ['json', 'xml']
 
@@ -31,59 +32,8 @@ class RuleController extends EditLoggingController<Rule> {
     }
 
     @Override
-    protected Rule queryForResource(Serializable resourceId) {
-        return ruleService.findByCatalogueItemIdAndId(params.catalogueItemId, resourceId)
-    }
-
-    @Override
-    protected List<Rule> listAllReadableResources(Map params) {
-        return ruleService.findAllByCatalogueItemId(params.catalogueItemId, params)
-    }
-
-    @Override
-    protected Rule createResource() {
-        Rule resource = super.createResource() as Rule
-        resource.clearErrors()
-        resource.catalogueItem = ruleService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        resource
-    }
-
-    @Override
-    protected Rule saveResource(Rule resource) {
-        //Save the Rule
-        resource.save flush: true, validate: false
-
-        //Add an association between the Rule and CatalogueItem
-        ruleService.addRuleToCatalogueItem(resource, resource.catalogueItem)
-        
-        //Record the creation against the CatalogueItem to which the Rule belongs
-        ruleService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
-    }
-
-    @Override
-    protected Rule updateResource(Rule resource) {
-        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        resource.save flush: true, validate: false
-        ruleService.
-            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
-    }
-
-    @Override
-    protected void deleteResource(Rule resource) {
-        serviceDeleteResource(resource)
-    }
-
-    @Override
-    protected void serviceDeleteResource(Rule resource) {
-        //Delete the association between Rule and CatalogueItem
-        CatalogueItem catalogueItem = ruleService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        ruleService.removeRuleFromCatalogueItem(resource, catalogueItem)
-        
-        //Delete the rule
-        ruleService.delete(resource, true)
-
-        //Record the deletion against the CatalogueItem to which the Rule belonged
-        ruleService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+    CatalogueItemAwareService getFacetService() {
+        ruleService
     }
 
     @Override

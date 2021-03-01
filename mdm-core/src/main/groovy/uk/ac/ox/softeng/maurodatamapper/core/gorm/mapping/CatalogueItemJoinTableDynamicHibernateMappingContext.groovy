@@ -26,6 +26,6 @@ abstract class CatalogueItemJoinTableDynamicHibernateMappingContext extends Join
 
     @Override
     String getJoinTableName(PersistentEntity entity) {
-        "join_${getInverseSidePropertyName(entity)}_to_facet"
+        "join_${getInverseSidePropertyName(entity).toLowerCase()}_to_facet"
     }
 }

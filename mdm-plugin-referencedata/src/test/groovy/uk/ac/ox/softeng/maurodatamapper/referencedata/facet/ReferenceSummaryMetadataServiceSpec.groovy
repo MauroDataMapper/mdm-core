@@ -74,10 +74,20 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
                                                                                          label: 'summary metadata 3',
                                                                                          summaryMetadataType: ReferenceSummaryMetadataType.STRING)
             .addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST, reportDate: OffsetDateTime.now(), reportValue: 'some value')
-        
+
         referenceDataModel.addToReferenceSummaryMetadata(referenceSummaryMetadata)
 
         checkAndSave referenceDataModel
+
+        ReferenceDataModelService dataModelService = Stub() {
+            get(_) >> referenceDataModel
+            getModelClass() >> referenceDataModel
+            handles('ReferenceDataModel') >> true
+            removeReferenceSummaryMetadataFromCatalogueItem(referenceDataModel.id, _) >> {UUID bmid, ReferenceSummaryMetadata sm ->
+                referenceDataModel.referenceSummaryMetadata.remove(sm)
+            }
+        }
+        service.catalogueItemServices = [dataModelService]
 
         id = referenceSummaryMetadata.id
     }

@@ -123,12 +123,16 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             log.trace('Removing {} DataTypes', dataTypeIds.size())
 
             sessionFactory.currentSession
-                .createSQLQuery('delete from datamodel.data_type where data_model_id = :id')
+                .createSQLQuery('DELETE FROM datamodel.data_type WHERE data_model_id = :id')
                 .setParameter('id', dataModelId)
                 .executeUpdate()
 
             log.trace('DataTypes removed')
         }
+    }
+
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override

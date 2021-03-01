@@ -17,11 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 
 import grails.gorm.transactions.Transactional
 
-class SemanticLinkController extends EditLoggingController<SemanticLink> {
+class SemanticLinkController extends FacetController<SemanticLink> {
 
     static responseFormats = ['json', 'xml']
 
@@ -29,6 +31,32 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
 
     SemanticLinkController() {
         super(SemanticLink)
+    }
+
+    @Override
+    CatalogueItemAwareService getFacetService() {
+        semanticLinkService
+    }
+
+    @Transactional
+    def confirm() {
+        if (handleReadOnly()) return
+
+        SemanticLink instance = queryForResource(params.semanticLinkId)
+
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        instance.unconfirmed = false
+
+        if (!validateResource(instance, 'update')) return
+
+        updateResource instance
+
+        updateResponse instance
     }
 
     @Override
@@ -54,37 +82,15 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
     }
 
     @Override
-    void serviceDeleteResource(SemanticLink resource) {
-        semanticLinkService.delete(resource)
-    }
-
-    @Override
-    protected SemanticLink createResource() {
-        SemanticLink resource = super.createResource() as SemanticLink
-        resource.catalogueItem = semanticLinkService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        resource
-    }
-
-    @Override
     protected SemanticLink saveResource(SemanticLink resource) {
         semanticLinkService.loadCatalogueItemsIntoSemanticLink(resource)
-        resource.save flush: true, validate: false
-        semanticLinkService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        super.saveResource(resource)
     }
 
     @Override
     protected SemanticLink updateResource(SemanticLink resource) {
         semanticLinkService.loadCatalogueItemsIntoSemanticLink(resource)
-        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        resource.save flush: true, validate: false
-        semanticLinkService.
-            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
-    }
-
-    @Override
-    protected void deleteResource(SemanticLink resource) {
-        serviceDeleteResource(resource)
-        semanticLinkService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        super.updateResource(resource)
     }
 
     @Transactional
@@ -105,14 +111,5 @@ class SemanticLinkController extends EditLoggingController<SemanticLink> {
         true
     }
 
-    @Transactional
-    def confirm() {
-        SemanticLink instance = queryForResource(params.semanticLinkId)
 
-        if (!instance) return notFound(params.semanticLinkId)
-
-        instance.unconfirmed = false
-
-        updateResponse(instance)
-    }
 }

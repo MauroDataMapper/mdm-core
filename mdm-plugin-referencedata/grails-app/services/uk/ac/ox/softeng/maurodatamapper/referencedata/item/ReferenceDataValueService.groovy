@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -67,7 +66,7 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
         if (!referenceDataValue) return
         referenceDataValue.breadcrumbTree.removeFromParent()
         referenceDataValue.referenceDataElement = null
-        referenceDataValuet.referenceDataModel?.removeFromReferenceDataValues(referenceDataValue)
+        referenceDataValue.referenceDataModel?.removeFromReferenceDataValues(referenceDataValue)
         referenceDataValue.delete(flush: flush)
     }
 
@@ -75,7 +74,6 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
     boolean hasTreeTypeModelItems(ReferenceDataValue catalogueItem, boolean forDiff) {
         false
     }
-
 
     @Override
     List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataValue catalogueItem, boolean forDiff) {

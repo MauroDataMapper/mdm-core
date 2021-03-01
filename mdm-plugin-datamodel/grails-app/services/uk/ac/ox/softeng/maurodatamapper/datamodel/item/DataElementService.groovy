@@ -110,11 +110,15 @@ class DataElementService extends ModelItemService<DataElement> {
 
             log.trace('Removing {} DataElements', dataElementIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from datamodel.data_element where id in :ids')
+                .createSQLQuery('DELETE FROM datamodel.data_element WHERE id IN :ids')
                 .setParameter('ids', dataElementIds)
                 .executeUpdate()
         }
         log.trace('DataElements removed')
+    }
+
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override

@@ -81,6 +81,11 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
             findAllWhereRootAnnotationOfCatalogueItemId(_, _) >> {
                 Annotation.whereRootAnnotationOfCatalogueItemId(basicModel.id).list()
             }
+            addFacetToDomain(_, _, _) >> {Annotation ann, String domain, UUID bid ->
+                if (basicModel.id == bid) {
+                    basicModel.addToAnnotations(ann)
+                }
+            }
         }
     }
 

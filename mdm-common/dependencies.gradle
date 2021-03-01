@@ -21,8 +21,14 @@ dependencies {
     implementation "org.grails.plugins:hibernate-search:$hibernateSearchVersion", {
         exclude group: 'org.hibernate', module: 'hibernate-ehcache'
     }
-    implementation "org.hibernate:hibernate-core"
-    api group: 'org.hibernate', name: 'hibernate-search-orm', version: hibernateSearchOrmVersion
+    implementation('org.hibernate:hibernate-core'){
+        version{
+            strictly project.ext['hibernate.version']
+        }
+    }
+    api group: 'org.hibernate', name: 'hibernate-search-orm', version: hibernateSearchOrmVersion, {
+        exclude group: 'org.hibernate', module: 'hibernate-core'
+    }
     api 'org.apache.lucene:lucene-analyzers-common'
 
     constraints {

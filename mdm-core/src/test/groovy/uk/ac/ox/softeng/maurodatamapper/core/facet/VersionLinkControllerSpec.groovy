@@ -28,8 +28,8 @@ import grails.testing.web.controllers.ControllerUnitTest
 import groovy.util.logging.Slf4j
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
+import static uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType.NEW_DOCUMENTATION_VERSION_OF
 import static uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType.NEW_FORK_OF
-import static uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType.SUPERSEDED_BY_FORK
 
 @Slf4j
 class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> implements
@@ -59,7 +59,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
         checkAndSave(basicModel3)
         checkAndSave(basicModel4)
 
-        VersionLink sl1 = new VersionLink(createdBy: admin.emailAddress, linkType: SUPERSEDED_BY_FORK)
+        VersionLink sl1 = new VersionLink(createdBy: admin.emailAddress, linkType: NEW_DOCUMENTATION_VERSION_OF)
         basicModel.addToVersionLinks(sl1)
         sl1.setTargetModel(basicModel2)
         VersionLink sl2 = new VersionLink(createdBy: admin.emailAddress, linkType: NEW_FORK_OF)
@@ -69,7 +69,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
         checkAndSave(basicModel)
 
         domain.createdBy = admin.emailAddress
-        domain.linkType = SUPERSEDED_BY_FORK
+        domain.linkType = NEW_DOCUMENTATION_VERSION_OF
         domain.setTargetModel(basicModel4)
         basicModel3.addToVersionLinks(domain)
         checkAndSave(domain)
@@ -81,8 +81,9 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
             handles('BasicModel') >> true
             removeVersionLinkFromModel(_, _) >> {UUID id, VersionLink versionLink ->
                 BasicModel bm = BasicModel.get(id)
-                bm.removeFromVersionLinks(versionLink)
+                bm.versionLinks.remove(versionLink)
             }
+            save(_) >> {BasicModel model -> model.save()}
         }
         VersionLinkService versionLinkService = new VersionLinkService()
         versionLinkService.catalogueItemServices = [basicModelService]
@@ -96,33 +97,33 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
   "count": 2,
   "items": [
     {
+      "domainType": "VersionLink",
       "targetModel": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
-        "label": "dm2"
+        "label": "dm4"
       },
-      "domainType": "VersionLink",
+      "linkType": "New Documentation Version Of",
       "sourceModel": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
-        "label": "dm1"
+        "label": "dm3"
       },
-      "linkType": "Superseded By Fork",
       "id": "${json-unit.matches:id}"
     },
     {
+      "domainType": "VersionLink",
       "targetModel": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
         "label": "dm3"
       },
-      "domainType": "VersionLink",
+      "linkType": "New Fork Of",
       "sourceModel": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
         "label": "dm1"
       },
-      "linkType": "New Fork Of",
       "id": "${json-unit.matches:id}"
     }
   ]
@@ -165,37 +166,37 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
     @Override
     String getExpectedValidSavedJson() {
         '''{
-    "domainType": "VersionLink",
-    "linkType": "Superseded By Fork",
+  "domainType": "VersionLink",
+  "targetModel": {
+    "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
-    "sourceModel": {
-        "domainType": "BasicModel",
-        "id": "${json-unit.matches:id}",
-        "label": "dm1"
-    },
-    "targetModel": {
-        "domainType": "BasicModel",
-        "id": "${json-unit.matches:id}",
-        "label": "dm3"
-    }
+    "label": "dm1"
+  },
+  "linkType": "New Documentation Version Of",
+  "sourceModel": {
+    "domainType": "BasicModel",
+    "id": "${json-unit.matches:id}",
+    "label": "dm3"
+  },
+  "id": "${json-unit.matches:id}"
 }'''
     }
 
     @Override
     String getExpectedShowJson() {
         '''{
+  "domainType": "VersionLink",
   "targetModel": {
     "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
     "label": "dm4"
   },
-  "domainType": "VersionLink",
+  "linkType": "New Documentation Version Of",
   "sourceModel": {
     "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
     "label": "dm3"
   },
-  "linkType": "Superseded By Fork",
   "id": "${json-unit.matches:id}"
 }'''
     }
@@ -244,14 +245,14 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
 
     @Override
     VersionLink getValidUnsavedInstance() {
-        new VersionLink(linkType: SUPERSEDED_BY_FORK, targetModel: basicModel3)
+        new VersionLink(linkType: NEW_DOCUMENTATION_VERSION_OF, targetModel: basicModel)
     }
 
     @Override
     void givenParameters() {
         super.givenParameters()
         params.modelDomainType = BasicModel.simpleName
-        params.modelId = basicModel.id
+        params.modelId = basicModel3.id
     }
 
     @Override

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 
 import groovy.transform.CompileStatic
@@ -42,7 +43,7 @@ trait ClassifierAware<K> {
     }
 
     K removeFromClassifiers(Classifier classifier) {
-        removeFrom('classifiers', classifier) as K
+        throw new ApiInternalException('CL01', 'Do not use removeFrom to remove classifier from domain')
     }
 
     static abstract K findByIdJoinClassifiers(UUID id)

@@ -64,10 +64,17 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
 
         controller.referenceSummaryMetadataService = Mock(ReferenceSummaryMetadataService) {
             findAllByCatalogueItemId(referenceDataModel.id, _) >> referenceDataModel.referenceSummaryMetadata.toList()
-            findCatalogueItemByDomainTypeAndId(ReferenceDataModel.simpleName, _) >> {String domain, UUID bid -> referenceDataModel.id == bid ? referenceDataModel : null}
+            findCatalogueItemByDomainTypeAndId(ReferenceDataModel.simpleName, _) >>
+            {String domain, UUID bid -> referenceDataModel.id == bid ? referenceDataModel : null}
             findByCatalogueItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
                 if (iid != referenceDataModel.id) return null
                 mid == domain.id ? domain : null
+            }
+            addFacetToDomain(_, _, _) >> {ReferenceSummaryMetadata md, String domain, UUID bid ->
+                if (referenceDataModel.id == bid) {
+                    referenceDataModel.addToReferenceSummaryMetadata(md)
+                    md.catalogueItem = referenceDataModel
+                }
             }
         }
     }

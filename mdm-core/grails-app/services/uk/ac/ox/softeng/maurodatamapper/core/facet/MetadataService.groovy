@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
@@ -61,10 +60,10 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         delete(get(id))
     }
 
+    @Override
     void delete(Metadata metadata, boolean flush = false) {
         if (!metadata) return
-        CatalogueItemService service = catalogueItemServices.find { it.handles(metadata.catalogueItemDomainType) }
-        if (!service) throw new ApiBadRequestException('MS01', 'Metadata removal for catalogue item with no supporting service')
+        CatalogueItemService service = findCatalogueItemService(metadata.catalogueItemDomainType)
         service.removeMetadataFromCatalogueItem(metadata.catalogueItemId, metadata)
         metadata.delete(flush: flush)
     }
@@ -73,12 +72,19 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         target.addToMetadata(item.namespace, item.key, item.value, userSecurityPolicyManager.user)
     }
 
+    @Override
     void saveCatalogueItem(Metadata metadata) {
         if (!metadata) return
-        CatalogueItemService catalogueItemService = catalogueItemServices.find { it.handles(metadata.catalogueItemDomainType) }
-        if (!catalogueItemService) throw new ApiBadRequestException('MS02', 'Catalogue item save for catalogue item with no supporting service')
-        metadata.catalogueItem.addToMetadata(metadata)
+        CatalogueItemService catalogueItemService = findCatalogueItemService(metadata.catalogueItemDomainType)
         catalogueItemService.save(metadata.catalogueItem)
+    }
+
+    @Override
+    void addFacetToDomain(Metadata facet, String domainType, UUID domainId) {
+        if (!facet) return
+        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
+        facet.catalogueItem = domain
+        domain.addToMetadata(facet)
     }
 
     void batchSave(Collection<Metadata> metadata) {
@@ -86,7 +92,7 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         long start = System.currentTimeMillis()
         List batch = []
         int count = 0
-        metadata.each { relationship ->
+        metadata.each {relationship ->
             batch += relationship
             count++
             if (count % Metadata.BATCH_SIZE == 0) {

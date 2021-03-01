@@ -87,17 +87,18 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
             handles('BasicModel') >> true
             removeSemanticLinkFromCatalogueItem(_, _) >> {UUID id, SemanticLink semanticLink ->
                 BasicModel bm = BasicModel.get(id)
-                bm.removeFromSemanticLinks(semanticLink)
+                bm.semanticLinks.remove(semanticLink)
             }
+            save(_) >> {BasicModel model -> model.save()}
         }
         ModelItemService basicModelItemService = Stub() {
             get(_) >> {UUID id -> BasicModelItem.get(id)}
             getAll(_) >> {List<UUID> ids -> BasicModelItem.getAll(ids)}
-            getModelClass() >> BasicModelItem
+            getCatalogueItemClass() >> BasicModelItem
             handles('BasicModelItem') >> true
             removeSemanticLinkFromCatalogueItem(_, _) >> {UUID id, SemanticLink semanticLink ->
                 BasicModelItem bm = BasicModelItem.get(id)
-                bm.removeFromSemanticLinks(semanticLink)
+                bm.semanticLinks.remove(semanticLink)
             }
         }
         SemanticLinkService semanticLinkService = new SemanticLinkService()
@@ -111,29 +112,38 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
   "count": 2,
   "items": [
     {
+      "unconfirmed": false,
       "targetCatalogueItem": {
-        "domainType": "BasicModel",
+        "domainType": "BasicModelItem",
+        "model": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
-        "label": "dm2"
+        "label": "bmi1",
+        "breadcrumbs": [
+          {
+            "domainType": "BasicModel",
+            "finalised": false,
+            "id": "${json-unit.matches:id}",
+            "label": "dm1"
+          }
+        ]
       },
       "domainType": "SemanticLink",
-      "unconfirmed": false,
       "sourceCatalogueItem": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
-        "label": "dm1"
+        "label": "dm3"
       },
-      "linkType": "Refines",
+      "linkType": "Abstracts",
       "id": "${json-unit.matches:id}"
     },
     {
+      "unconfirmed": false,
       "targetCatalogueItem": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
         "label": "dm3"
       },
       "domainType": "SemanticLink",
-      "unconfirmed": false,
       "sourceCatalogueItem": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
@@ -182,20 +192,20 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     @Override
     String getExpectedValidSavedJson() {
         '''{
-    "domainType": "SemanticLink",
-    "unconfirmed": false,
-    "linkType": "Abstracts",
+  "unconfirmed": false,
+  "targetCatalogueItem": {
+    "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
-    "sourceCatalogueItem": {
-        "domainType": "BasicModel",
-        "id": "${json-unit.matches:id}",
-        "label": "dm1"
-    },
-    "targetCatalogueItem": {
-        "domainType": "BasicModel",
-        "id": "${json-unit.matches:id}",
-        "label": "dm3"
-    }
+    "label": "dm2"
+  },
+  "domainType": "SemanticLink",
+  "sourceCatalogueItem": {
+    "domainType": "BasicModel",
+    "id": "${json-unit.matches:id}",
+    "label": "dm3"
+  },
+  "linkType": "Abstracts",
+  "id": "${json-unit.matches:id}"
 }'''
     }
 
@@ -282,14 +292,14 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
 
     @Override
     SemanticLink getValidUnsavedInstance() {
-        new SemanticLink(linkType: ABSTRACTS, targetCatalogueItem: basicModel3)
+        new SemanticLink(linkType: ABSTRACTS, targetCatalogueItem: basicModel2)
     }
 
     @Override
     void givenParameters() {
         super.givenParameters()
         params.catalogueItemDomainType = BasicModel.simpleName
-        params.catalogueItemId = basicModel.id
+        params.catalogueItemId = basicModel3.id
     }
 
     @Override

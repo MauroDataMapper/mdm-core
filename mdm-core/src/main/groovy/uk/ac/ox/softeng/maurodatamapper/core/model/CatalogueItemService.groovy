@@ -38,10 +38,17 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
+import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.orm.hibernate.cfg.JoinTable
+import org.grails.orm.hibernate.cfg.Mapping
+import org.grails.orm.hibernate.cfg.PropertyConfig
+import org.grails.orm.hibernate.cfg.Table
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
+@Slf4j
 abstract class CatalogueItemService<K extends CatalogueItem> implements DomainService<K> {
 
     @Autowired
@@ -124,23 +131,27 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     void removeClassifierFromCatalogueItem(UUID catalogueItemId, Classifier classifier) {
-        get(catalogueItemId).removeFromClassifiers(classifier)
+        removeFacetFromDomain(catalogueItemId, classifier.id, 'classifiers')
     }
 
     void removeMetadataFromCatalogueItem(UUID catalogueItemId, Metadata metadata) {
-        get(catalogueItemId).removeFromMetadata(metadata)
+        removeFacetFromDomain(catalogueItemId, metadata.id, 'metadata')
     }
 
     void removeAnnotationFromCatalogueItem(UUID catalogueItemId, Annotation annotation) {
-        get(catalogueItemId).removeFromAnnotations(annotation)
+        removeFacetFromDomain(catalogueItemId, annotation.id, 'annotations')
     }
 
     void removeSemanticLinkFromCatalogueItem(UUID catalogueItemId, SemanticLink semanticLink) {
-        get(catalogueItemId).removeFromSemanticLinks(semanticLink)
+        removeFacetFromDomain(catalogueItemId, semanticLink.id, 'semanticLinks')
     }
 
     void removeReferenceFileFromCatalogueItem(UUID catalogueItemId, ReferenceFile referenceFile) {
-        get(catalogueItemId).removeFromReferenceFiles(referenceFile)
+        removeFacetFromDomain(catalogueItemId, referenceFile.id, 'referenceFiles')
+    }
+
+    void removeRuleFromCatalogueItem(UUID catalogueItemId, Rule rule) {
+        removeFacetFromDomain(catalogueItemId, rule.id, 'rules')
     }
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
@@ -148,11 +159,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         copy.label = original.label
         copy.description = original.description
 
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
-        metadataService.findAllByCatalogueItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
-        ruleService.findAllByCatalogueItemId(original.id).each { rule ->
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
+        metadataService.findAllByCatalogueItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
+        ruleService.findAllByCatalogueItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -160,7 +171,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
                                     targetCatalogueItemDomainType: link.targetCatalogueItemDomainType,
@@ -260,6 +271,21 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         null
     }
 
+    void removeFacetFromDomain(UUID domainId, UUID facetId, String facetProperty) {
+        PersistentEntity persistentEntity = getPersistentEntity()
+        JoinTable joinTable = getJoinTable(persistentEntity, facetProperty)
+        Table domainEntityTable = getDomainEntityTable(persistentEntity)
+        sessionFactory.currentSession
+            .createSQLQuery("DELETE FROM ${domainEntityTable.schema}.${joinTable.name} " +
+                            "WHERE ${joinTable.key.name} = :domainId " +
+                            "AND ${joinTable.column.name} = :facetId")
+            .setParameter('domainId', domainId)
+            .setParameter('facetId', facetId)
+            .executeUpdate()
+        log.warn('stop')
+
+    }
+
     void deleteAllFacetsByCatalogueItemId(UUID catalogueItemId, String queryToDeleteFromJoinTable) {
         sessionFactory.currentSession
             .createSQLQuery(queryToDeleteFromJoinTable)
@@ -284,5 +310,19 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         referenceFileService.deleteAllByCatalogueItemIds(catalogueItemIds)
         ruleService.deleteAllByCatalogueItemIds(catalogueItemIds)
         semanticLinkService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    }
+
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(getCatalogueItemClass().name)
+    }
+
+    JoinTable getJoinTable(PersistentEntity persistentEntity, String facetProperty) {
+        PropertyConfig propertyConfig = persistentEntity.getPropertyByName(facetProperty).mapping.mappedForm as PropertyConfig
+        propertyConfig.joinTable
+    }
+
+    Table getDomainEntityTable(PersistentEntity persistentEntity) {
+        Mapping mapping = persistentEntity.mapping.mappedForm as Mapping
+        mapping.table
     }
 }

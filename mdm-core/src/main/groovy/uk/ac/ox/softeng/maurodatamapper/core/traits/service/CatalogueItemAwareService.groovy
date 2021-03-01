@@ -41,6 +41,12 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
 
     abstract DetachedCriteria<K> getBaseDeleteCriteria()
 
+    abstract void saveCatalogueItem(K facet)
+
+    abstract void delete(K facet, boolean flush)
+
+    abstract void addFacetToDomain(K facet, String domainType, UUID domainId)
+
     K addCreatedEditToCatalogueItem(User creator, K domain, String catalogueItemDomainType, UUID catalogueItemId) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
         catalogueItem.addToEditsTransactionally creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
@@ -60,9 +66,7 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
     }
 
     CatalogueItem findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
-        CatalogueItemService service = catalogueItemServices.find { it.handles(domainType) }
-        if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${domainType}] with no supporting service")
-        service.get(catalogueItemId)
+        findCatalogueItemService(domainType).get(catalogueItemId)
     }
 
     void deleteAllByCatalogueItemIds(List<UUID> catalogueItemIds) {
@@ -94,6 +98,12 @@ trait CatalogueItemAwareService<K> extends DomainService<K> {
         long start = System.currentTimeMillis()
         getBaseDeleteCriteria().inList('catalogueItemId', batch).deleteAll()
         log.trace('{} removed took {}', getBaseDeleteCriteria().getPersistentClass().simpleName, Utils.timeTaken(start))
+    }
+
+    CatalogueItemService findCatalogueItemService(String catalogueItemDomainType) {
+        CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItemDomainType)}
+        if (!service) throw new ApiBadRequestException('FS01', "No supporting service for ${catalogueItemDomainType}")
+        return service
     }
 
 }

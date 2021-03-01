@@ -124,12 +124,16 @@ class DataClassService extends ModelItemService<DataClass> {
 
             log.trace('Removing {} DataClasses', dataClassIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from datamodel.data_class where data_model_id = :id')
+                .createSQLQuery('DELETE FROM datamodel.data_class WHERE data_model_id = :id')
                 .setParameter('id', dataModelId)
                 .executeUpdate()
 
             log.trace('DataClasses removed')
         }
+    }
+
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override

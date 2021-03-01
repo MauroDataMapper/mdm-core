@@ -71,6 +71,11 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
                 if (iid != basicModel.id) return null
                 mid == domain.id ? domain : null
             }
+            addFacetToDomain(_, _, _) >> {ReferenceFile rf, String domain, UUID bid ->
+                if (basicModel.id == bid) {
+                    basicModel.addToReferenceFiles(rf)
+                }
+            }
         }
     }
 

@@ -59,7 +59,7 @@ class AnnotationServiceSpec extends CatalogueItemAwareServiceSpec<Annotation, An
             getModelClass() >> BasicModel
             handles('BasicModel') >> true
             removeAnnotationFromCatalogueItem(basicModel.id, _) >> {UUID bmid, Annotation annotation ->
-                basicModel.removeFromAnnotations(annotation)
+                basicModel.annotations.remove(annotation)
             }
         }
         service.catalogueItemServices = [basicModelService]

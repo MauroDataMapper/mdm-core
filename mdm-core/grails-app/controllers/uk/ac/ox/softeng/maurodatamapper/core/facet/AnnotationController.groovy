@@ -17,9 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 
-class AnnotationController extends EditLoggingController<Annotation> {
+class AnnotationController extends FacetController<Annotation> {
 
     static responseFormats = ['json', 'xml']
 
@@ -30,8 +31,8 @@ class AnnotationController extends EditLoggingController<Annotation> {
     }
 
     @Override
-    protected Annotation queryForResource(Serializable resourceId) {
-        annotationService.findByCatalogueItemIdAndId(params.catalogueItemId, resourceId)
+    CatalogueItemAwareService getFacetService() {
+        annotationService
     }
 
     @Override
@@ -46,41 +47,14 @@ class AnnotationController extends EditLoggingController<Annotation> {
     }
 
     @Override
-    void serviceDeleteResource(Annotation resource) {
-        annotationService.delete(resource)
-    }
-
-    @Override
     protected Annotation createResource() {
         Annotation resource = super.createResource() as Annotation
         if (params.annotationId) {
             annotationService.get(params.annotationId)?.addToChildAnnotations(resource)
         }
-        resource.catalogueItem = annotationService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-
         if (!resource.label && resource.parentAnnotation) {
             resource.label = "${resource.parentAnnotation.label} [${resource.parentAnnotation.childAnnotations.size()}]"
         }
         resource
-    }
-
-    @Override
-    protected Annotation saveResource(Annotation resource) {
-        resource.save flush: true, validate: false
-        annotationService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
-    }
-
-    @Override
-    protected Annotation updateResource(Annotation resource) {
-        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        resource.save flush: true, validate: false
-        annotationService.
-            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
-    }
-
-    @Override
-    protected void deleteResource(Annotation resource) {
-        serviceDeleteResource(resource)
-        annotationService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
     }
 }
