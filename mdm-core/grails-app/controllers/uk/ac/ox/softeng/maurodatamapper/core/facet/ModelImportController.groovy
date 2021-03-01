@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 
 import grails.gorm.transactions.Transactional
 
-class ModelImportController extends EditLoggingController<ModelImport> {
+class ModelImportController extends FacetController<ModelImport> {
 
     static responseFormats = ['json', 'xml']
 
@@ -30,6 +30,11 @@ class ModelImportController extends EditLoggingController<ModelImport> {
 
     ModelImportController() {
         super(ModelImport)
+    }
+
+    @Override
+    CatalogueItemAwareService getFacetService() {
+        modelImportService
     }
 
     @Override
@@ -46,19 +51,6 @@ class ModelImportController extends EditLoggingController<ModelImport> {
     }
 
     @Override
-    void serviceDeleteResource(ModelImport resource) {
-        //Delete the association between ModelImport and CatalogueItem
-        CatalogueItem catalogueItem = modelImportService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        modelImportService.removeModelImportFromCatalogueItem(resource, catalogueItem)
-
-        //Delete the modelImport
-        modelImportService.delete(resource)
-
-        //Record the deletion against the CatalogueItem to which the ModelImport belonged
-        modelImportService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
-    }
-
-    @Override
     protected ModelImport createResource() {
         ModelImport resource = super.createResource() as ModelImport
         resource.catalogueItem = modelImportService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
@@ -68,11 +60,6 @@ class ModelImportController extends EditLoggingController<ModelImport> {
     @Override
     protected ModelImport saveResource(ModelImport resource) {
         modelImportService.saveResource(currentUser, resource)
-    }
-
-    @Override
-    protected void deleteResource(ModelImport resource) {
-        serviceDeleteResource(resource)
     }
 
     @Transactional

@@ -235,15 +235,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     void removeSemanticLinkFromCatalogueItem(UUID catalogueItemId, SemanticLink semanticLink) {
         removeFacetFromDomain(catalogueItemId, semanticLink.id, 'semanticLinks')
-    }
-
-    void removeModelExtendFromCatalogueItem(UUID catalogueItemId, ModelExtend modelExtend) {
-        get(catalogueItemId).removeFromModelExtends(modelExtend)
-    }      
-
-    void removeModelImportFromCatalogueItem(UUID catalogueItemId, ModelImport modelImport) {
-        get(catalogueItemId).removeFromModelImports(modelImport)
-    }    
+    }  
 
     void removeReferenceFileFromCatalogueItem(UUID catalogueItemId, ReferenceFile referenceFile) {
         removeFacetFromDomain(catalogueItemId, referenceFile.id, 'referenceFiles')
@@ -252,6 +244,14 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     void removeRuleFromCatalogueItem(UUID catalogueItemId, Rule rule) {
         removeFacetFromDomain(catalogueItemId, rule.id, 'rules')
     }
+
+    void removeModelImportFromCatalogueItem(UUID catalogueItemId, ModelImport modelImport) {
+        removeFacetFromDomain(catalogueItemId, modelImport.id, 'modelImports')
+    }
+
+    void removeModelExtendFromCatalogueItem(UUID catalogueItemId, ModelExtend modelExtend) {
+        removeFacetFromDomain(catalogueItemId, modelExtend.id, 'modelExtends')
+    }      
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy.createdBy = copier.emailAddress

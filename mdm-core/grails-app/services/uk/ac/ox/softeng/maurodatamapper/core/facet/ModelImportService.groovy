@@ -71,12 +71,7 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
     void addModelImportToCatalogueItem(ModelImport modelImport, CatalogueItem catalogueItem) {
         catalogueItem.addToModelImports(modelImport)
     }
-
-    //Ensure a row is removed from the _facet table
-    void removeModelImportFromCatalogueItem(ModelImport modelImport, CatalogueItem catalogueItem) {
-        catalogueItem.removeFromModelImports(modelImport)
-    }     
-
+   
     void deleteAll(List<ModelImport> modelImports, boolean cleanFromOwner = true) {
         if (cleanFromOwner) {
             modelImports.each {delete(it)}

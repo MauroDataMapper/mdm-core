@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 
 import grails.gorm.transactions.Transactional
 
-class ModelExtendController extends EditLoggingController<ModelExtend> {
+class ModelExtendController extends FacetController<ModelExtend> {
 
     static responseFormats = ['json', 'xml']
 
@@ -30,6 +30,11 @@ class ModelExtendController extends EditLoggingController<ModelExtend> {
 
     ModelExtendController() {
         super(ModelExtend)
+    }
+
+    @Override
+    CatalogueItemAwareService getFacetService() {
+        modelExtendService
     }
 
     @Override
@@ -46,33 +51,10 @@ class ModelExtendController extends EditLoggingController<ModelExtend> {
     }
 
     @Override
-    void serviceDeleteResource(ModelExtend resource) {
-        //Delete the association between ModelExtend and CatalogueItem
-        CatalogueItem catalogueItem = modelExtendService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        modelExtendService.removeModelExtendFromCatalogueItem(resource, catalogueItem)
-
-        //Delete the modelExtend
-        modelExtendService.delete(resource)
-
-        //Record the deletion against the CatalogueItem to which the ModelExtend belonged
-        modelExtendService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
-    }
-
-    @Override
     protected ModelExtend createResource() {
         ModelExtend resource = super.createResource() as ModelExtend
         resource.catalogueItem = modelExtendService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
         resource
-    }
-
-    @Override
-    protected ModelExtend saveResource(ModelExtend resource) {
-        modelExtendService.saveResource(currentUser, resource)
-    }
-
-    @Override
-    protected void deleteResource(ModelExtend resource) {
-        serviceDeleteResource(resource)
     }
 
     @Transactional

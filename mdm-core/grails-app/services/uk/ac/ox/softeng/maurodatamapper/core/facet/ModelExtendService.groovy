@@ -72,11 +72,6 @@ class ModelExtendService implements CatalogueItemAwareService<ModelExtend> {
         catalogueItem.addToModelExtends(modelExtend)
     }
 
-    //Ensure a row is removed from the _facet table
-    void removeModelExtendFromCatalogueItem(ModelExtend modelExtend, CatalogueItem catalogueItem) {
-        catalogueItem.removeFromModelExtends(modelExtend)
-    }     
-
     void deleteAll(List<ModelExtend> modelExtends, boolean cleanFromOwner = true) {
         if (cleanFromOwner) {
             modelExtends.each {delete(it)}
