@@ -17,19 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.search.CallableSearch
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -37,7 +30,9 @@ import grails.rest.Resource
 import org.grails.datastore.gorm.GormEntity
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataModel> {
+class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
+
+    public final static Integer BATCH_SIZE = 10000
 
     UUID id
 
@@ -46,19 +41,7 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
 
     static belongsTo = [referenceDataModel: ReferenceDataModel, referenceDataElement: ReferenceDataElement]
 
-    static transients = ['aliases']
-
-    static hasMany = [
-        classifiers   : Classifier,
-        metadata      : Metadata,
-        annotations   : Annotation,
-        semanticLinks : SemanticLink,
-        referenceFiles: ReferenceFile,
-        rules         : Rule
-    ]    
-
     static constraints = {
-        CallableConstraints.call(ModelItemConstraints, delegate)
         value blank: true, nullable: true
     }
 
@@ -72,10 +55,6 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
 
     static mappedBy = [:]
 
-    static search = {
-        CallableSearch.call(ModelItemSearch, delegate)
-    }
-
     ReferenceDataValue() {
     }
 
@@ -85,45 +64,8 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
     }
 
     @Override
-    GormEntity getPathParent() {
-        referenceDataModel
-    }
-
-    @Override
-    def beforeValidate() {
-        buildLabel()
-        description = value     
-        beforeValidateModelItem()
-    }
-
-    @Override
-    def beforeInsert() {
-        buildPath()
-    }
-
-    @Override
-    def beforeUpdate() {
-        buildPath()
-    }
-
-    @Override
-    String getEditLabel() {
-        "${domainType}:${label}"
-    }
-
-    @Override
-    ReferenceDataModel getModel() {
-        referenceDataModel
-    }
-
-    @Override
     String getDiffIdentifier() {
-        this.label
-    }
-
-    @Override
-    Boolean hasChildren() {
-        false
+        this.id
     }
 
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue) {
@@ -132,30 +74,13 @@ class ReferenceDataValue implements ModelItem<ReferenceDataValue, ReferenceDataM
             .appendString('value', this.value, otherValue.value)
     }
 
-    void setValue(String value) {
-        this.value = value
-        this.description = value
-    }
-
-    private String buildLabel() {
-        this.label = "Model: ${this.referenceDataModel.label}, Row: ${this.rowNumber}, Element: ${this.referenceDataElement.label}"
-    }
-
     static DetachedCriteria<ReferenceDataValue> byReferenceDataModelId(Serializable referenceDataModelId) {
         new DetachedCriteria<ReferenceDataValue>(ReferenceDataValue)
         .eq('referenceDataModel.id', Utils.toUuid(referenceDataModelId))
     }
 
-    static DetachedCriteria<ReferenceDataValue> byClassifierId(Serializable classifierId) {
-        where {
-            classifiers {
-                eq 'id', Utils.toUuid(classifierId)
-            }
-        }
-    }
-
     static DetachedCriteria<ReferenceDataValue> withFilter(DetachedCriteria<ReferenceDataValue> criteria, Map filters) {
-        criteria = withCatalogueItemFilter(criteria, filters)
+        if (filters.domainType) criteria = criteria.ilike('domainType', "%${filters.domainType}%")
         criteria
     }    
 

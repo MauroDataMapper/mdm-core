@@ -36,7 +36,13 @@ ReferenceDataModel rdm = referenceDataModel as ReferenceDataModel
 
     if (rdm.referenceDataValues) {
         'mdm:referenceDataValues' {
-            rdm.referenceDataValues.sort().each {rdv ->
+            //Sort by row number and reference data element lable, purely for reproduceability in testing
+            rdm.referenceDataValues.sort{a,b -> 
+            if (a.rowNumber == b.rowNumber) {
+                a.referenceDataElement.label <=> b.referenceDataElement.label
+            } else {
+                a.rowNumber <=> b.rowNumber
+            }}.each {rdv ->
                 layout '/referenceDataValue/export.gml', referenceDataValue: rdv
             }
         }

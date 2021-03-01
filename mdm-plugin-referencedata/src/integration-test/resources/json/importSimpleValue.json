@@ -84,8 +84,6 @@
         "referenceDataValues": [
             {
                 "id": "${json-unit.matches:id}",
-                "label": "Model: Imported Reference Data Model, Row: 1, Element: Organisation code",
-                "description": "ORG1",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
                 "rowNumber": 1,
                 "value": "ORG1",
@@ -120,8 +118,6 @@
             },
             {
                 "id": "${json-unit.matches:id}",
-                "label": "Model: Imported Reference Data Model, Row: 1, Element: Organisation name",
-                "description": "Organisation 1",
                 "lastUpdated": "${json-unit.matches:offsetDateTime}",
                 "rowNumber": 1,
                 "value": "Organisation 1",

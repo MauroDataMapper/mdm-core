@@ -3,18 +3,6 @@
   "items": [
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 1, Element: Column 1",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row1Value1",
       "rowNumber": 1,
       "value": "Row1Value1",
       "referenceDataElement": {
@@ -48,18 +36,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 1, Element: Column 2",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row1Value2",
       "rowNumber": 1,
       "value": "Row1Value2",
       "referenceDataElement": {
@@ -93,18 +69,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 1, Element: Column 3",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row1Value3",
       "rowNumber": 1,
       "value": "Row1Value3",
       "referenceDataElement": {
@@ -138,18 +102,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 2, Element: Column 1",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row2Value1",
       "rowNumber": 2,
       "value": "Row2Value1",
       "referenceDataElement": {
@@ -183,18 +135,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 2, Element: Column 2",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row2Value2",
       "rowNumber": 2,
       "value": "Row2Value2",
       "referenceDataElement": {
@@ -228,18 +168,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 2, Element: Column 3",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row2Value3",
       "rowNumber": 2,
       "value": "Row2Value3",
       "referenceDataElement": {
@@ -273,18 +201,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 3, Element: Column 1",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row3Value1",
       "rowNumber": 3,
       "value": "Row3Value1",
       "referenceDataElement": {
@@ -318,18 +234,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 3, Element: Column 2",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row3Value2",
       "rowNumber": 3,
       "value": "Row3Value2",
       "referenceDataElement": {
@@ -363,18 +267,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 3, Element: Column 3",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row3Value3",
       "rowNumber": 3,
       "value": "Row3Value3",
       "referenceDataElement": {
@@ -408,18 +300,6 @@
     },
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 4, Element: Column 1",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row4Value1",
       "rowNumber": 4,
       "value": "Row4Value1",
       "referenceDataElement": {

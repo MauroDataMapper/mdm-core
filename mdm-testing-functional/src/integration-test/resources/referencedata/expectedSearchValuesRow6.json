@@ -3,18 +3,6 @@
   "items": [
     {
       "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceDataValue",
-      "label": "Model: FT Test Reference Data Model, Row: 6, Element: Column 2",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "FT Test Reference Data Model",
-          "domainType": "ReferenceDataModel",
-          "finalised": false
-        }
-      ],
-      "description": "Row6Value2",
       "rowNumber": 6,
       "value": "Row6Value2",
       "referenceDataElement": {

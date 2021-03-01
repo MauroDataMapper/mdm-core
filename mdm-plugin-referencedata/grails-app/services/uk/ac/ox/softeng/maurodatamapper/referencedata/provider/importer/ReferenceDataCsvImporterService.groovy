@@ -27,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDat
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferencePrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.parameter.ReferenceDataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
 import org.apache.commons.csv.CSVFormat
@@ -70,8 +71,10 @@ class ReferenceDataCsvImporterService
             .withQuote((char) '"')
             .withHeader()
 
+        long start = System.currentTimeMillis()
         CSVParser parser = csvFormat.parse(
             new InputStreamReader(new ByteArrayInputStream(content), "UTF8"))
+        log.debug('Input parsed in {}', Utils.timeTaken(start))            
 
         List headers = parser.getHeaderNames()
         headers.each {
@@ -80,24 +83,30 @@ class ReferenceDataCsvImporterService
             referenceDataElements[it] = referenceDataElement
         }
 
+        start = System.currentTimeMillis()
         int rowNumber = 1
-        for (CSVRecord record : parser) {
-            try {
+        try {
+            for (CSVRecord record : parser) {
+
                 headers.each {
                     ReferenceDataValue referenceDataValue = new ReferenceDataValue(referenceDataElement: referenceDataElements[it], value: record.get(
                         it), rowNumber: rowNumber, createdBy: currentUser.emailAddress)
 
                     referenceDataModel.addToReferenceDataValues(referenceDataValue)
                 }
-                
-            } catch (Exception e) {
+
+                rowNumber++ 
+                if (rowNumber % 1000 == 0) {
+                    log.debug("rowNumber {}", rowNumber)
+                }
+            }
+        } catch (Exception e) {
             throw new RuntimeException("Error at line "
                                            + parser.getCurrentLineNumber(), e)
-            }
-            rowNumber++
         }
-        parser.close()
 
+        parser.close()
+        log.debug('{} rows read in {}', rowNumber - 1, Utils.timeTaken(start))
         referenceDataModel
     }
 }
