@@ -189,6 +189,34 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "fileExtension": "xml",
     "fileType": "text/xml",
     "canExportMultipleDomains": false
+  },
+  {
+    "name": "DataFlowJsonExporterService",
+    "version": "3.0",
+    "displayName": "JSON DataFlow Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowExporter",
+    "fileExtension": "json",
+    "fileType": "text/json",
+    "canExportMultipleDomains": false
+  },  
+  {
+    "name": "DataFlowXmlExporterService",
+    "version": "3.0",
+    "displayName": "XML DataFlow Exporter",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowExporter",
+    "fileExtension": "xml",
+    "fileType": "text/xml",
+    "canExportMultipleDomains": false
   }
 ]''')
     }
@@ -341,6 +369,32 @@ class MauroDataMapperServiceProviderFunctionalSpec extends FunctionalSpec {
     "providerType": "TerminologyImporter",
     "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
     "canImportMultipleDomains": false
+  },
+  {
+    "name": "DataFlowJsonImporterService",
+    "version": "3.0",
+    "displayName": "JSON DataFlow Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": false
+  },
+  {
+    "name": "DataFlowXmlImporterService",
+    "version": "3.0",
+    "displayName": "XML DataFlow Importer",
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer",
+    "allowsExtraMetadataKeys": true,
+    "knownMetadataKeys": [
+      
+    ],
+    "providerType": "DataFlowImporter",
+    "paramClassType": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.DataFlowFileImporterProviderServiceParameters",
+    "canImportMultipleDomains": true
   }
 ]''')
     }

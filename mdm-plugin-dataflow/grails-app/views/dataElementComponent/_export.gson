@@ -1,0 +1,15 @@
+import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataElementComponent
+
+inherits template: '/catalogueItem/export'
+
+model {
+    DataElementComponent dataElementComponent
+}
+
+json {
+    if (dataElementComponent.definition) {
+        definition dataElementComponent.definition
+    }
+    sourceDataElements tmpl.exportDataElement(dataElementComponent.sourceDataElements)
+    targetDataElements tmpl.exportDataElement(dataElementComponent.targetDataElements)
+}

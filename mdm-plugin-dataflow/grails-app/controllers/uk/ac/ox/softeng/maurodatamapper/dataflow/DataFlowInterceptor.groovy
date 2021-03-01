@@ -35,7 +35,6 @@ class DataFlowInterceptor extends DataModelSecuredInterceptor {
     }
 
     boolean before() {
-        performChecks()
 
         if (actionName in ['exporterProviders']) {
             return true
@@ -43,13 +42,15 @@ class DataFlowInterceptor extends DataModelSecuredInterceptor {
 
         if (actionName in ['importerProviders']) {
             return currentUserSecurityPolicyManager.isAuthenticated() ?: forbiddenDueToNotAuthenticated()
-        }
+        }        
+            
+        performChecks()
 
         boolean canReadDataModel = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.dataModelId)
 
         if (actionName in ['exportDataFlow', 'exportDataFlows']) {
             return currentUserSecurityPolicyManager.userCanReadResourceId(DataFlow, params.id, DataModel, params.dataModelId) ?:
-                   forbiddenOrNotFound(canReadDataModel, DataFlow, params.id)
+                   forbiddenOrNotFound(canReadDataModel, DataFlow, params.dataFlowId)
         }
 
         if (actionName in ['importDataFlow', 'importDataFlows']) {

@@ -18,14 +18,21 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
 import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponentService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -37,6 +44,7 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 class DataFlowService extends ModelItemService<DataFlow> {
 
     DataClassComponentService dataClassComponentService
+    PathService pathService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
@@ -294,4 +302,63 @@ class DataFlowService extends ModelItemService<DataFlow> {
                                                                               String searchTerm, String domainType) {
         []
     }
+
+    ObjectDiff<DataFlow> diff(DataFlow thisDataFlow, DataFlow otherDataFlow) {
+        thisDataFlow.diff(otherDataFlow)
+    }
+
+   /**
+     * When importing a DataFlow, do checks and setting of required values as follows:
+     * (1) Set the createdBy of the DataFlow to be the importing user
+     * (2) Check facets
+     * (3) Use path service to lookup the source and target data models, throwing an exception if either cannot be found
+     * (4) Use DataClassComponentService to check associations on all DataClassComponents
+     *
+     *
+     * @param importingUser The importing user, who will be used to set createdBy
+     * @param dataFlow The DataFlow to be imported
+     * @param bindingMap The binding map, which is necessary for looking up source and target, plus dataClassComponents
+     */
+    void checkImportedDataFlowAssociations(User importingUser, DataFlow dataFlow, Map bindingMap = [:]) {
+        //Note: The pathService requires a UserSecurityPolicyManager.
+        //Assumption is that if we got this far then it is OK to read the Source DataModel because either (i) we came via a controller in which case
+        //the user's ability to import a DataFlow has already been tested, or (ii) we are calling this method from a service test spec in which
+        //case it is OK to read.
+        
+        dataFlow.createdBy = importingUser.emailAddress
+        checkFacetsAfterImportingCatalogueItem(dataFlow)
+
+        //source and target data model are imported by use of a path like "dm:my-data-model"
+        String sourcePath = "dm:${bindingMap.source.label}"
+        DataModel sourceDataModel = pathService.findCatalogueItemByPath(
+            PublicAccessSecurityPolicyManager.instance, 
+            [path: sourcePath, catalogueItemDomainType: DataModel.simpleName]
+        )
+
+        if (sourceDataModel) {
+            dataFlow.source = sourceDataModel
+        } else {
+            throw new ApiBadRequestException('DFI01', "Source DataModel retrieval for ${sourcePath} failed")
+        }
+        
+        String targetPath = "dm:${bindingMap.target.label}"
+        DataModel targetDataModel = pathService.findCatalogueItemByPath(
+            PublicAccessSecurityPolicyManager.instance, 
+            [path: targetPath, catalogueItemDomainType: DataModel.simpleName]
+        )
+
+        if (targetDataModel) {
+            dataFlow.target = targetDataModel
+        } else {
+            throw new ApiBadRequestException('DFI02', "Target DataModel retrieval for ${targetPath} failed")
+        }
+
+        //Check associations for the dataClassComponents
+        if (dataFlow.dataClassComponents) {
+            dataFlow.dataClassComponents.each { dcc ->
+                dataClassComponentService.checkImportedDataClassComponentAssociations(importingUser, dataFlow, dcc)
+            }
+
+        }
+    }    
 }

@@ -1,0 +1,311 @@
+{
+    "dataFlow": {
+        "id": "7dd81a66-58af-4dd2-80b2-62775544d925",
+        "label": "Sample DataFlow",
+        "lastUpdated": "2021-02-22T11:31:11.603Z",
+        "type": "Data Asset",
+        "source": {
+            "id": "040344df-f64c-4587-a2ae-55856d5b6ad0",
+            "label": "SourceFlowDataModel",
+            "type": "Data Asset"
+        },
+        "target": {
+            "id": "1f551f81-f1d0-4b2f-8d1e-5a4658e96af6",
+            "label": "TargetFlowDataModel",
+            "type": "Data Asset"
+        },
+        "dataClassComponents": [
+            {
+                "id": "158e96c4-3d55-4db3-ad25-602b12aca1a4",
+                "label": "aToD",
+                "lastUpdated": "2021-02-22T11:31:11.552Z",
+                "definition": "SELECT * \nINTO TargetFlowDataModel.tableD \nFROM SourceFlowDataModel.tableA",
+                "sourceDataClasses": [
+                    {
+                        "label": "tableA"
+                    }
+                ],
+                "targetDataClasses": [
+                    {
+                        "label": "tableD"
+                    }
+                ],
+                "dataElementComponents": [
+                    {
+                        "id": "08a95045-0654-49c2-b3a3-8b52dfb52f1b",
+                        "label": "Direct Copy",
+                        "lastUpdated": "2021-02-22T11:31:11.557Z",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnA",
+                                "dataClass": {
+                                    "label": "tableA"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnN",
+                                "dataClass": {
+                                    "label": "tableD"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "ff270401-de64-4620-bd04-96fc07c560d1",
+                        "label": "Direct Copy",
+                        "lastUpdated": "2021-02-22T11:31:11.559Z",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnB",
+                                "dataClass": {
+                                    "label": "tableA"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnO",
+                                "dataClass": {
+                                    "label": "tableD"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "24f7fd88-2b44-49af-a5f7-4cad6b9a88b0",
+                        "label": "Direct Copy",
+                        "lastUpdated": "2021-02-22T11:31:11.56Z",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnC",
+                                "dataClass": {
+                                    "label": "tableA"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnP",
+                                "dataClass": {
+                                    "label": "tableD"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "0cc5c614-1745-4dd3-a2bb-b66f89c64734",
+                        "label": "Direct Copy",
+                        "lastUpdated": "2021-02-22T11:31:11.561Z",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnD",
+                                "dataClass": {
+                                    "label": "tableA"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnQ",
+                                "dataClass": {
+                                    "label": "tableD"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "3fb7fe4b-c359-4a84-ae04-802583139d8d",
+                "label": "bAndCToE",
+                "lastUpdated": "2021-02-22T11:31:11.555Z",
+                "definition": "INSERT INTO TargetFlowDataModel.tableE\nSELECT  \n    b.columnE1                                      AS columnE,\n    b.columnF                                       AS columnR,\n    CONCAT(b.columnG,'_',c.columnJ)                 AS columnS,\n    CASE\n        WHEN b.columnH IS NULL THEN b.columnI\n        ELSE b.columnH\n    END                                             AS columnT,\n    TRIM(c.columnJ)                                 AS columnU,\n    CONCAT(c.columnL,' ',c.columnM,'--',b.columnG)  AS columnV\nFROM SourceFlowDataModel.tableB b\nINNER JOIN SourceFlowDataModel.tableC c ON b.columnE1 = c.columnE2",
+                "sourceDataClasses": [
+                    {
+                        "label": "tableC"
+                    },
+                    {
+                        "label": "tableB"
+                    }
+                ],
+                "targetDataClasses": [
+                    {
+                        "label": "tableE"
+                    }
+                ],
+                "dataElementComponents": [
+                    {
+                        "id": "e82ef7b9-5d0a-46f9-b165-552b2658f9d0",
+                        "label": "JOIN KEY",
+                        "lastUpdated": "2021-02-22T11:31:11.562Z",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnE1",
+                                "dataClass": {
+                                    "label": "tableB"
+                                }
+                            },
+                            {
+                                "label": "columnE2",
+                                "dataClass": {
+                                    "label": "tableC"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnE",
+                                "dataClass": {
+                                    "label": "tableE"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "eabfe9f0-10d4-48fb-9169-abb59f05379d",
+                        "label": "CONCAT",
+                        "lastUpdated": "2021-02-22T11:31:11.563Z",
+                        "definition": "CONCAT(b.columnG,'_',c.columnJ)",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnG",
+                                "dataClass": {
+                                    "label": "tableB"
+                                }
+                            },
+                            {
+                                "label": "columnJ",
+                                "dataClass": {
+                                    "label": "tableC"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnS",
+                                "dataClass": {
+                                    "label": "tableE"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "aa83ad5e-678b-4466-a7d1-7718dc28095e",
+                        "label": "Direct Copy",
+                        "lastUpdated": "2021-02-22T11:31:11.562Z",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnF",
+                                "dataClass": {
+                                    "label": "tableB"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnR",
+                                "dataClass": {
+                                    "label": "tableE"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "221a93ec-c251-4ca9-9d77-2df94989d316",
+                        "label": "CONCAT",
+                        "lastUpdated": "2021-02-22T11:31:11.565Z",
+                        "definition": "CONCAT(c.columnL,' ',c.columnM,'--',b.columnG)",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnL",
+                                "dataClass": {
+                                    "label": "tableC"
+                                }
+                            },
+                            {
+                                "label": "columnM",
+                                "dataClass": {
+                                    "label": "tableC"
+                                }
+                            },
+                            {
+                                "label": "columnG",
+                                "dataClass": {
+                                    "label": "tableB"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnV",
+                                "dataClass": {
+                                    "label": "tableE"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "71afe1f5-b3be-4b53-8ec5-a46da77e526e",
+                        "label": "TRIM",
+                        "lastUpdated": "2021-02-22T11:31:11.565Z",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnJ",
+                                "dataClass": {
+                                    "label": "tableC"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnU",
+                                "dataClass": {
+                                    "label": "tableE"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "681809aa-fbf1-470d-b75f-eff51ee507b5",
+                        "label": "CASE",
+                        "lastUpdated": "2021-02-22T11:31:11.564Z",
+                        "definition": "CASE\n    WHEN b.columnH IS NULL THEN b.columnI\n    ELSE b.columnH\nEND",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnH",
+                                "dataClass": {
+                                    "label": "tableB"
+                                }
+                            },
+                            {
+                                "label": "columnI",
+                                "dataClass": {
+                                    "label": "tableB"
+                                }
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnT",
+                                "dataClass": {
+                                    "label": "tableE"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "exportMetadata": {
+        "exportedBy": "Admin User",
+        "exportedOn": "2021-02-22T11:47:23.161Z",
+        "exporter": {
+            "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+            "name": "DataFlowJsonExporterService",
+            "version": "3.0"
+        }
+    }
+}

@@ -18,14 +18,19 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -37,6 +42,7 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
     DataElementComponentService dataElementComponentService
+    PathService pathService
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
@@ -194,5 +200,72 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
     DataClassComponent findOrCreateDataClassComponentForDataElementComponent(DataElementComponent dataElementComponent, User user) {
 
+    }
+
+   /**
+     * When importing a DataFlow, do checks and setting of DataClassComponents  as follows:
+     * (1) Set the createdBy of the DataClassComponent to be the importing user
+     * (2) Check facets
+     * (3) Use path service to lookup the source and target data classes, throwing an exception if either cannot be found
+     * (4) Use DataElementComponentService to check associations on all DataElementComponents
+     *
+     *
+     * @param importingUser The importing user, who will be used to set createdBy
+     * @param dataFlow The DataFlow to be imported
+     * @param dataClassComponent The DataClassComponent to be imported
+     */
+    void checkImportedDataClassComponentAssociations(User importingUser, DataFlow dataFlow, DataClassComponent dataClassComponent) {
+
+        dataClassComponent.createdBy = importingUser.emailAddress
+        checkFacetsAfterImportingCatalogueItem(dataClassComponent)
+
+        def rawSourceDataClasses = dataClassComponent.sourceDataClasses
+        Set<DataClass> resolvedSourceDataClasses = []
+
+        if (rawSourceDataClasses) {
+            rawSourceDataClasses.each { sdc ->
+                String path = "dm:${dataFlow.source.label}|dc:${sdc.label}"
+                DataClass sourceDataClass = pathService.findCatalogueItemByPath(
+                        PublicAccessSecurityPolicyManager.instance,
+                        [path: path, catalogueItemDomainType: DataModel.simpleName]
+                )
+
+                if (sourceDataClass) {
+                    resolvedSourceDataClasses.add(sourceDataClass)
+                } else {
+                    throw new ApiBadRequestException('DCCI01', "Source DataClass retrieval for ${path} failed")
+                }
+            }
+
+            dataClassComponent.sourceDataClasses = resolvedSourceDataClasses
+        }
+
+
+        def rawTargetDataClasses = dataClassComponent.targetDataClasses
+        Set<DataClass> resolvedTargetDataClasses = []
+
+        if (rawTargetDataClasses) {
+            rawTargetDataClasses.each { tdc ->
+                String path = "dm:${dataFlow.target.label}|dc:${tdc.label}"
+                DataClass targetDataClass = pathService.findCatalogueItemByPath(
+                        PublicAccessSecurityPolicyManager.instance,
+                        [path: path, catalogueItemDomainType: DataModel.simpleName]
+                )
+
+                if (targetDataClass) {
+                    resolvedTargetDataClasses.add(targetDataClass)
+                } else {
+                    throw new ApiBadRequestException('DCCI02', "Target DataClass retrieval for ${path} failed")
+                }
+            }
+
+            dataClassComponent.targetDataClasses = resolvedTargetDataClasses
+        }
+
+        if (dataClassComponent.dataElementComponents) {
+            dataClassComponent.dataElementComponents.each { dec ->
+                dataElementComponentService.checkImportedDataElementComponentAssociations(importingUser, dataFlow, dataClassComponent, dec)
+            }
+        }
     }
 }

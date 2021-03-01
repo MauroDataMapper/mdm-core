@@ -18,12 +18,19 @@
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
+import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
@@ -35,6 +42,8 @@ import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 class DataElementComponentService extends ModelItemService<DataElementComponent> {
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+
+    PathService pathService
 
     @Override
     DataElementComponent get(Serializable id) {
@@ -222,4 +231,63 @@ TODO data flow copying
        }
 
     */
+
+
+   /**
+     * When importing a DataFlow, do checks and setting of DataElementComponents  as follows:
+     * (1) Set the createdBy of the DataElementComponent to be the importing user
+     * (2) Check facets
+     * (3) Use path service to lookup the source and target data elements, throwing an exception if either cannot be found
+     *
+     *
+     * @param importingUser The importing user, who will be used to set createdBy
+     * @param dataClassComponent The DataClassComponent to be imported
+     * @param dataElementComponent The DataElementComponent to be imported
+     */
+    void checkImportedDataElementComponentAssociations(User importingUser, DataFlow dataFlow,
+                                                       DataClassComponent dataClassComponent,
+                                                       DataElementComponent dataElementComponent) {
+
+        dataElementComponent.createdBy = importingUser.emailAddress
+        checkFacetsAfterImportingCatalogueItem(dataElementComponent)
+
+        def rawSourceDataElements = dataElementComponent.sourceDataElements
+        Set<DataElement> resolvedSourceDataElements = []
+
+        rawSourceDataElements.each { sde ->
+            String path = "dm:${dataFlow.source.label}|dc:${sde.dataClass.label}|de:${sde.label}"
+            DataElement sourceDataElement = pathService.findCatalogueItemByPath(
+                    PublicAccessSecurityPolicyManager.instance,
+                    [path: path, catalogueItemDomainType: DataModel.simpleName]
+            )
+
+            if (sourceDataElement) {
+                resolvedSourceDataElements.add(sourceDataElement)
+            } else {
+                throw new ApiBadRequestException('DECI01', "Source DataElement retrieval for ${path} failed")
+            }
+        }
+
+        dataElementComponent.sourceDataElements = resolvedSourceDataElements
+
+        def rawTargetDataElements = dataElementComponent.targetDataElements
+        Set<DataElement> resolvedTargetDataElements = []
+
+        rawTargetDataElements.each { tde ->
+            String path = "dm:${dataFlow.target.label}|dc:${tde.dataClass.label}|de:${tde.label}"
+            DataElement targetDataElement = pathService.findCatalogueItemByPath(
+                    PublicAccessSecurityPolicyManager.instance,
+                    [path: path, catalogueItemDomainType: DataModel.simpleName]
+            )
+
+            if (targetDataElement) {
+                resolvedTargetDataElements.add(targetDataElement)
+            } else {
+                throw new ApiBadRequestException('DECI02', "Target DataElement retrieval for ${path} failed")
+            }
+        }
+
+        dataElementComponent.targetDataElements = resolvedTargetDataElements
+
+    }
 }

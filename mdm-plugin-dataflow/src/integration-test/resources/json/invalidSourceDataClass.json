@@ -1,0 +1,87 @@
+{
+    "dataFlow": {
+        "id": "7d2c95e0-08ec-4e44-8791-87f649e54156",
+        "label": "My DataFlow label",
+        "lastUpdated": "2021-01-13T13:09:26.532Z",
+        "type": "Data Asset",
+        "source": {
+            "id": "1e2c95e0-08ec-4e44-8791-87f649e54156",
+            "label": "SourceFlowDataModel",
+            "type": "Data Asset"
+        },
+        "target": {
+            "id": "2d2c95e0-08ec-4e44-8791-87f649e54156",
+            "label": "TargetFlowDataModel",
+            "type": "Data Asset"
+        },
+        "dataClassComponents": [
+            {
+                "id": "3fa13519-203b-480d-8313-5944e1fc653e",
+                "label": "Label of data class component",
+                "lastUpdated": "2021-01-13T13:09:26.445Z",
+                "definition": "Definition of data class component",
+                "sourceDataClasses": [
+                    {
+                        "label": "tableA"
+                    },
+                    {
+                        "label": "Invalid tableB"
+                    }
+                ],
+                "targetDataClasses": [
+                    {
+                        "label": "tableD"
+                    },
+                    {
+                        "label": "tableE"
+                    }
+                ],
+                "dataElementComponents": [
+                    {
+                        "id": "ff5e9e84-fa1d-4ee2-af65-dcbfd6fdd531",
+                        "label": "First data element component label",
+                        "lastUpdated": "2021-01-13T13:09:26.472Z",
+                        "definition": "First data element component definition",
+                        "sourceDataElements": [
+                            {
+                                "label": "columnA",
+                                "dataClass": {
+                                    "label": "tableA"
+                                }                                
+                            },
+                            {
+                                "label": "columnB",
+                                "dataClass": {
+                                    "label": "tableA"
+                                }                                
+                            },
+                            {
+                                "label": "columnE2",
+                                "dataClass": {
+                                    "label": "tableC"
+                                }                                
+                            }
+                        ],
+                        "targetDataElements": [
+                            {
+                                "label": "columnN",
+                                "dataClass": {
+                                    "label": "tableD"
+                                }                                
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "exportMetadata": {
+        "exportedBy": "Admin User",
+        "exportedOn": "2021-01-14T16:51:54.623Z",
+        "exporter": {
+            "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+            "name": "DataFlowJsonExporterService",
+            "version": "3.0"
+        }
+    }
+}
