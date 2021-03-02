@@ -645,14 +645,27 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     @Override
     protected T updateResource(T resource) {
+        long start = System.currentTimeMillis()
         Set<String> changedProperties = resource.getDirtyPropertyNames()
         T model = super.updateResource(resource) as T
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(model,
-                    changedProperties,
-                    currentUser)
+                                                                                                               changedProperties,
+                                                                                                               currentUser)
         }
+        log.debug('Updated resource took {}', Utils.timeTaken(start))
         model
+    }
+
+    @Override
+    protected boolean validateResource(T instance, String view) {
+        modelService.shallowValidate(instance)
+        if (instance.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
+        }
+        true
     }
 
     protected String getMultipleModelsParamsIdKey() {
