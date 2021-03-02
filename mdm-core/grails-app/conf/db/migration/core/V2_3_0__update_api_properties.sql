@@ -3,3 +3,12 @@ ALTER TABLE core.api_property
 
 ALTER TABLE core.api_property
     ADD category VARCHAR(255) NULL;
+
+UPDATE core.api_property
+set category = 'Email'
+where starts_with(key, 'email');
+
+
+UPDATE core.api_property
+set category = 'Site'
+where starts_with(key, 'site');
