@@ -142,12 +142,12 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataElementComponent dataElementComponent, boolean forDiff) {
+    boolean hasTreeTypeModelItems(DataElementComponent dataElementComponent, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataElementComponent dataElementComponent, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataElementComponent dataElementComponent, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 

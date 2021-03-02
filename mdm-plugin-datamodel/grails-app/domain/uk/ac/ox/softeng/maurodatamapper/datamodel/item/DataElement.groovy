@@ -21,6 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -201,9 +203,33 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         byDataTypeId(dataTypeId).idEq(Utils.toUuid(resourceId))
     }
 
-    static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId) {
-        new DetachedCriteria<DataElement>(DataElement).eq('dataClass.id', Utils.toUuid(dataClassId))
-    }
+    /**
+     * List DataElements belonging to a DataClass either directly, by import, or by extension
+     *
+     * @param dataModelId The ID of the DataModel we are looking at
+     * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
+     *                        addition to DataTypes directly belonging to the DataModel)?
+     * @param includeExtends  Do we want to retrieve DataElements belonging to classes which are extended?
+     * @return DetachedCriteria<DataElement>    
+     */
+    static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId, boolean includeImported = false, boolean includeExtended = false) {
+        DetachedCriteria criteria = new DetachedCriteria<DataElement>(DataElement)
+        criteria
+        .or {
+            //DataElements belonging directly to dataClassIs
+            eq('dataClass.id', Utils.toUuid(dataClassId)) 
+            if (includeImported) {
+                //DataElements which have been imported into dataClassId
+                inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
+            }
+            if (includeExtended) {
+                //DataElements belonging to a DataClass which has been extended by dataClassId
+                inList('dataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))
+            }
+        }
+        
+        criteria
+    }    
 
     static DetachedCriteria<DataElement> byDataClass(DataClass dataClass) {
         new DetachedCriteria<DataElement>(DataElement).eq('dataClass', dataClass)

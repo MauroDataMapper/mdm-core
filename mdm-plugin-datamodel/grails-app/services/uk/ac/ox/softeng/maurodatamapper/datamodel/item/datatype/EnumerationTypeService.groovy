@@ -72,12 +72,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(EnumerationType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(EnumerationType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationType catalogueItem, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationType catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 

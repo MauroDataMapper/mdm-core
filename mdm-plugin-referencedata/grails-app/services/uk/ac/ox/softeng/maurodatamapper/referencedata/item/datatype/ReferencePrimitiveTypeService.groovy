@@ -76,12 +76,12 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     }
 
     @Override
-    boolean hasTreeTypeModelItems(ReferencePrimitiveType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(ReferencePrimitiveType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferencePrimitiveType catalogueItem, boolean forDiff) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferencePrimitiveType catalogueItem, boolean forDiff, boolean includeImported = false) {
         []
     }
 

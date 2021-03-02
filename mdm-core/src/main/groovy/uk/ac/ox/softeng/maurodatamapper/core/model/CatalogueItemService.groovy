@@ -24,6 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -57,6 +60,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     ClassifierService classifierService
     MetadataService metadataService
     RuleService ruleService
+    ModelImportService modelImportService
     SemanticLinkService semanticLinkService
     SessionFactory sessionFactory
     AnnotationService annotationService
@@ -79,6 +83,93 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     boolean handlesPathPrefix(String pathPrefix) {
         false
     }
+
+    /**
+     * What domains does the catalogue item allow to be imported? Override this in sub-classes.
+     */
+    List<Class> importsDomains() {
+        []
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type importedDomainType to be imported?
+     *
+     * @param clazz Domain (Class) that something is trying to import.
+     * @return boolean Is the import of this domain type allowed or not?
+     */
+    boolean importsDomain(Class clazz) {
+        importsDomains().contains(clazz)
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type importedDomainType to be imported?
+     *
+     * @param importedDomainType Domain type (string) of the domain that something is trying to import.
+     * @return boolean Is the import of this domain type allowed or not?
+     */
+    boolean importsDomainType(String importedDomainType) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, importedDomainType)
+        if (!grailsClass) {
+            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
+        }
+        importsDomain(grailsClass.clazz)
+    }
+
+    /**
+     * Does the importedModelItem belong to a DataModel which is finalised, or does it belong to the same
+     * collection as the importing DataModel?
+     *
+     * @param importingDataModel The DataModel which is importing the importedModelItem
+     * @param importedModelItem The ModelItem which is being imported into importingDataModel
+     *
+     * @return boolean Is this import allowed by domain specific rules?
+     */
+    boolean isImportableByCatalogueItem(CatalogueItem importingCatalogueItem, CatalogueItem importedCatalogueItem) {
+        false
+    }
+
+    /**
+     * What domains can the catalogue item extend? Override this in sub-classes.
+     */
+    List<Class> extendsDomains() {
+        []
+    }
+
+    /**
+     * Can the catalogue item extend a catalogue item of type extendedDomainType?
+     *
+     * @param clazz Domain (Class) that something is trying to extend.
+     * @return boolean Is the extend of this domain type allowed or not?
+     */
+    boolean extendsDomain(Class clazz) {
+        extendsDomains().contains(clazz)
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type extendedDomainType to be extended?
+     *
+     * @param extendedDomainType Domain type (string) of the domain that something is trying to extend.
+     * @return boolean Is the extend of this domain type allowed or not?
+     */
+    boolean extendsDomainType(String extendedDomainType) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, extendedDomainType)
+        if (!grailsClass) {
+            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
+        }
+        extendsDomain(grailsClass.clazz)
+    }
+
+    /**
+     * Does the extendeModelItem pass domain specific rules for extension?
+     *
+     * @param extendingCatalogueItem The CatalogueItem which is extending the extendedCatalogueItem
+     * @param extendedCatalogueItem The CatalogueItem which is being extended by extendingCatalogueItem
+     *
+     * @return boolean Is this extend allowed by domain specific rules?
+     */
+    boolean isExtendableByCatalogueItem(K extendingCatalogueItem, K extendedCatalogueItem) {
+        false
+    }    
 
     abstract void deleteAll(Collection<K> catalogueItems)
 
@@ -111,9 +202,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff)
+    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff, boolean includeImported)
 
-    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false)
+    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false, boolean includeImported = false)
 
     abstract K findByIdJoinClassifiers(UUID id)
 
@@ -144,7 +235,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     void removeSemanticLinkFromCatalogueItem(UUID catalogueItemId, SemanticLink semanticLink) {
         removeFacetFromDomain(catalogueItemId, semanticLink.id, 'semanticLinks')
-    }
+    }  
 
     void removeReferenceFileFromCatalogueItem(UUID catalogueItemId, ReferenceFile referenceFile) {
         removeFacetFromDomain(catalogueItemId, referenceFile.id, 'referenceFiles')
@@ -153,6 +244,14 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     void removeRuleFromCatalogueItem(UUID catalogueItemId, Rule rule) {
         removeFacetFromDomain(catalogueItemId, rule.id, 'rules')
     }
+
+    void removeModelImportFromCatalogueItem(UUID catalogueItemId, ModelImport modelImport) {
+        removeFacetFromDomain(catalogueItemId, modelImport.id, 'modelImports')
+    }
+
+    void removeModelExtendFromCatalogueItem(UUID catalogueItemId, ModelExtend modelExtend) {
+        removeFacetFromDomain(catalogueItemId, modelExtend.id, 'modelExtends')
+    }      
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy.createdBy = copier.emailAddress
@@ -171,7 +270,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each {link ->
+        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
                                     targetCatalogueItemDomainType: link.targetCatalogueItemDomainType,
@@ -220,7 +319,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                 it.beforeValidate()
             }
             ReferenceFile.saveAll(catalogueItem.referenceFiles)
-        }
+        }      
         catalogueItem.breadcrumbTree?.trackChanges()
         catalogueItem.breadcrumbTree?.beforeValidate()
         catalogueItem.breadcrumbTree?.save(validate: false)
@@ -324,5 +423,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     Table getDomainEntityTable(PersistentEntity persistentEntity) {
         Mapping mapping = persistentEntity.mapping.mappedForm as Mapping
         mapping.table
+    }    
+
+    void additionalModelImports(User currentUser, ModelImport imported) {
+        //no-op
     }
 }

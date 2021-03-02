@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils

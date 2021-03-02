@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.semanticlink
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -98,7 +99,7 @@ class DataElementSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFun
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec PluginCatalogueItemFunctionalSpec')
-        cleanUpResources(DataModel, Folder, DataClass, DataElement, DataType)
+        cleanUpResources(DataModel, Folder, DataClass, DataElement, DataType, SemanticLink)
     }
 
     @Override

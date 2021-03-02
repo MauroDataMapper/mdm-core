@@ -218,7 +218,7 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 4,
+  "count": 10,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -272,6 +272,56 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
       "type": "Data Asset",
       "branchName": "main",
       "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Finalised Example Test DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "modelVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "First Importing DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Second Importing DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Third Importing DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Xtending DataM0del 1",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Extendable DataM0del",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "modelVersion": "1.0.0"
     }
   ]
 }'''

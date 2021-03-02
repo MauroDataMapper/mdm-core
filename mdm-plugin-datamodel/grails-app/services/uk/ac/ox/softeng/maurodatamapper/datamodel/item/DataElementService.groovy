@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -53,6 +55,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     DataClassService dataClassService
     DataTypeService dataTypeService
+    ModelImportService modelImportService   
     SummaryMetadataService summaryMetadataService
 
     @Override
@@ -149,12 +152,12 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataElement catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(DataElement catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataElement catalogueItem, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataElement catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 
@@ -284,12 +287,12 @@ class DataElementService extends ModelItemService<DataElement> {
         DataElement.byDataTypeIdAndId(dataTypeId, id).find()
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:]) {
-        findAllByDataClassId(dataClassId, pagination, pagination)
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:], boolean includeImported = false, boolean includeExtends = false) {
+        findAllByDataClassId(dataClassId, pagination, pagination, includeImported, includeExtends)
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination) {
-        DataElement.withFilter(DataElement.byDataClassId(dataClassId), filter).list(pagination)
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination, boolean includeImported = false, boolean includeExtends = false) {
+        DataElement.withFilter(DataElement.byDataClassId(dataClassId, includeImported, includeExtends), filter).list(pagination)
     }
 
     List<DataElement> findAllByDataClassIdJoinDataType(Serializable dataClassId) {
@@ -504,5 +507,40 @@ class DataElementService extends ModelItemService<DataElement> {
     @Override
     DataElement findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findDataElement(parentCatalogueItem, label)
+    }
+
+    /**
+     * When a DataElement is imported into a DataClass, we also want to import the DataElement's
+     * DataType into the DataModel to which the importing DataClass belongs.
+     *
+     * @param currentUser The user doing the import
+     * @param imported The resource that was imported
+     *
+     */
+    @Override
+    void additionalModelImports(User currentUser, ModelImport imported) {
+
+        //The DataElement that was imported
+        DataElement dataElement = imported.importedCatalogueItem
+        
+        //The DataType of that DataElement
+        DataType dataType = dataElement.dataType
+
+        //The CatalogueItem (which will be a DataClass) into which the DataElement was imported
+        CatalogueItem catalogueItem = imported.catalogueItem
+
+        //The DataModel to which that DataClass belongs
+        DataModel dataModel = catalogueItem.getModel()
+
+        if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
+            //Create a new ModelImport for the DataType into DataModel
+            ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
+                                                              importedCatalogueItem  : dataType,
+                                                              createdByUser          : currentUser)
+        
+            //Save the additional model import, indicating that this is an additional rather than
+            //principal import and so should fail silently if it already exists.
+            modelImportService.saveResource(currentUser, modelImportDataType, true)                                                  
+        }
     }
 }

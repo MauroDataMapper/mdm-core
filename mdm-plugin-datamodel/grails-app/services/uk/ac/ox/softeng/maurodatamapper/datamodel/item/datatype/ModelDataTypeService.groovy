@@ -69,12 +69,12 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(ModelDataType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(ModelDataType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ModelDataType catalogueItem, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ModelDataType catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 

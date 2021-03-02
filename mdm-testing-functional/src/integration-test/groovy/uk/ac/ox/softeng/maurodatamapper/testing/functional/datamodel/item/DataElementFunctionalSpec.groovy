@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
 
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
@@ -52,7 +54,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
     String getResourcePath() {
         "dataModels/${getComplexDataModelId()}/dataClasses/${getContentDataClassId()}/dataElements"
     }
-
+   
     @Override
     String getCopyPath(String fromId) {
         "dataModels/${getSimpleDataModelId()}/dataClasses/${getSimpleDataClassId()}/${getCatalogueItemDomainType()}/" +
@@ -101,6 +103,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getComplexDataModelId()), 'string').get().id.toString()
     }
 
+
     @Transactional
     String getSimpleDataClassId() {
         DataClass.byDataModelIdAndLabel(Utils.toUuid(simpleDataModelId), 'simple').get().id.toString()
@@ -115,7 +118,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
             dataType       : [id: getStringDataTypeId()]
         ]
     }
-
+  
     @Override
     Map getInvalidJson() {
         [
@@ -933,4 +936,5 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
 '''
     }
 */
+
 }

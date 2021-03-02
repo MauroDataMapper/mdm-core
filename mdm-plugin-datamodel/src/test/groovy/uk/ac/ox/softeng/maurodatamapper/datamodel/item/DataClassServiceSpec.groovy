@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -44,6 +46,8 @@ class DataClassServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         log.debug('Setting up DataClassServiceSpec Unit')
         mockArtefact(DataTypeService)
         mockArtefact(DataElementService)
+        mockArtefact(ModelExtendService)
+        mockArtefact(ModelImportService)
         mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType, ReferenceType, EnumerationType, EnumerationValue, DataElement)
 

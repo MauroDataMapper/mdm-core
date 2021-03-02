@@ -171,7 +171,7 @@ class TreeItemService {
      * @param catalogueItem
      * @return
      */
-    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean forDiff = false) {
+    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         log.info("Building tree for ${catalogueItem.class.simpleName}")
         long start = System.currentTimeMillis()
 
@@ -179,12 +179,12 @@ class TreeItemService {
 
         if (!service) throw new ApiBadRequestException('TIS01', 'Tree requested for catalogue item with no supporting service')
 
-        if (!service.hasTreeTypeModelItems(catalogueItem, forDiff)) {
+        if (!service.hasTreeTypeModelItems(catalogueItem, forDiff, includeImported)) {
             log.warn('Catalogue Item has no model items')
             return []
         }
 
-        List<ModelItem> content = service.findAllTreeTypeModelItemsIn(catalogueItem, forDiff)
+        List<ModelItem> content = service.findAllTreeTypeModelItemsIn(catalogueItem, forDiff, includeImported)
         log.debug('Catalogue item has {} model items', content.size())
         List<ModelItemTreeItem> tree = content.collect { new ModelItemTreeItem(it, it.hasChildren()) }
         log.debug("Tree buid took ${Utils.timeTaken(start)}")

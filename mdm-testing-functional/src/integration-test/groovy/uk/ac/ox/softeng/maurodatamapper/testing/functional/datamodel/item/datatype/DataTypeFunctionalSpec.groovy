@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item.datatype
 
 
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
@@ -49,7 +51,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     @Override
     String getResourcePath() {
         "dataModels/${getComplexDataModelId()}/dataTypes"
-    }
+    }  
 
     @Override
     String getEditsPath() {
@@ -256,7 +258,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         assert body.lastUpdated
     }
 
-    void "E03 : Test the save action correctly persists an instance for enumeration type (as editor)"() {
+    void "E03: Test the save action correctly persists an instance for enumeration type (as editor)"() {
         given:
         loginEditor()
         Map validJson = [
@@ -322,7 +324,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         removeValidIdObject(id)
     }
 
-    void "E03 : Test the save action correctly persists an instance for reference type (as editor)"() {
+    void "E03: Test the save action correctly persists an instance for reference type (as editor)"() {
         given:
         loginEditor()
 
@@ -385,7 +387,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         removeValidIdObject(id)
     }
 
-    void "E03 : Test the save action correctly persists an instance for model data type (as editor)"() {
+    void "E03: Test the save action correctly persists an instance for model data type (as editor)"() {
         given:
         UUID modelId = UUID.randomUUID()
         loginEditor()

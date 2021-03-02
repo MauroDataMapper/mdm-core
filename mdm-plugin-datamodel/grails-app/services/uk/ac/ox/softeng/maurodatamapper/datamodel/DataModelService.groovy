@@ -24,6 +24,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -66,6 +75,9 @@ class DataModelService extends ModelService<DataModel> {
     DataTypeService dataTypeService
     DataClassService dataClassService
     DataElementService dataElementService
+    ModelImportService modelImportService    
+    VersionLinkService versionLinkService
+    EditService editService
     AuthorityService authorityService
     SummaryMetadataService summaryMetadataService
 
@@ -94,6 +106,32 @@ class DataModelService extends ModelService<DataModel> {
     boolean handlesPathPrefix(String pathPrefix) {
         pathPrefix == "dm"
     }
+
+    /**
+     * DataModel allows the import of DataType and DataClass
+     */
+    @Override
+    List<Class> importsDomains() {
+        [DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]
+    }
+
+    /**
+     * Does the importedModelItem belong to a DataModel which is finalised, or does it belong to the same
+     * collection as the importing DataModel?
+     *
+     * @param importingDataModel The DataModel which is importing the importedModelItem
+     * @param importedModelItem The ModelItem which is being imported into importingDataModel
+     *
+     * @return boolean Is this import allowed by domain specific rules?
+     */
+    @Override
+    boolean isImportableByCatalogueItem(CatalogueItem importingDataModel, CatalogueItem importedModelItem) {
+        DataModel importedFromDataModel = importedModelItem.getModel()
+
+        importedFromDataModel.finalised
+
+        //TODO add OR importedFromModel is in the same collection as importingDataModel
+    }    
 
     Long count() {
         DataModel.count()
@@ -186,6 +224,13 @@ class DataModelService extends ModelService<DataModel> {
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
+        if (catalogueItem.modelImports) {
+            catalogueItem.modelImports.each {
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            ModelImport.saveAll(catalogueItem.modelImports)
+        }          
         catalogueItem
     }
 
@@ -623,6 +668,12 @@ class DataModelService extends ModelService<DataModel> {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
+
+        modelImportService.findAllByCatalogueItemId(original.id).each { 
+            copy.addToModelImports(it.importedCatalogueItemDomainType,
+                                   it.importedCatalogueItemId,
+                                   copier) 
+        }        
         copy
     }
 
@@ -646,13 +697,13 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataModel dataModel, boolean forDiff) {
-        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && forDiff)
+    boolean hasTreeTypeModelItems(DataModel dataModel, boolean forDiff, boolean includeImported = false) {
+        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && forDiff) || (dataModel.modelImports && includeImported)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean forDiff = false) {
-        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id) +
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean forDiff = false, boolean includeImported = false) {
+        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id, [:], includeImported) +
          (forDiff ? DataType.byDataModelId(catalogueItem.id).list() : []) as List<ModelItem>)
     }
 

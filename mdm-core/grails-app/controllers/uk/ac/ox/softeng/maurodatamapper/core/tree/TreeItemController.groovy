@@ -51,12 +51,13 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
 
     def show() {
         log.debug('Call to tree for catalogue item')
+        params.imported = params.boolean('imported', true)
         // If id provided then build the tree for that item, as we build the containers on the default we will assume this a catalogue item
         // Interceptor will have confirmed allowance to read
         CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
         if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
 
-        respond(treeItemService.buildCatalogueItemTree(catalogueItem, params.forDiff as boolean))
+        respond(treeItemService.buildCatalogueItemTree(catalogueItem, params.forDiff as boolean, params.imported))
     }
 
     def index() {

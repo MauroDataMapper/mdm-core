@@ -575,6 +575,9 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         response.status() == HttpStatus.NOT_FOUND
 
         cleanup:
+        //Shouldn't be necessary to cleanup roles but log files indicates that occasionally they are left over
+        cleanUpRoles(subFolderId)
+        cleanUpRoles(id)
         cleanupUserGroups()
     }
 
@@ -612,6 +615,9 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         response.status() == HttpStatus.NOT_FOUND
 
         cleanup:
+        //Shouldn't be necessary to cleanup roles but log files indicates that occasionally they are left over
+        cleanUpRoles(subFolderId)
+        cleanUpRoles(id)        
         cleanupUserGroups()
     }
     

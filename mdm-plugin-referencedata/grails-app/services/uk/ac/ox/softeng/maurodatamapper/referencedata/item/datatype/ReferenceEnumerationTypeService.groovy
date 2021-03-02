@@ -76,12 +76,12 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     }
 
     @Override
-    boolean hasTreeTypeModelItems(ReferenceEnumerationType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(ReferenceEnumerationType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceEnumerationType catalogueItem, boolean forDiff) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceEnumerationType catalogueItem, boolean forDiff, boolean includeImported = false) {
         []
     }
 
