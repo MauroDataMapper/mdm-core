@@ -38,7 +38,6 @@ abstract class Profile implements Comparable<Profile> {
             } else if (params[profileFieldName] instanceof String) {
                 String filterField = params[profileFieldName]
                 if (this[profileFieldName] != filterField) {
-                    //System.err.println("returning false")
                     result = false
                 }
 
@@ -48,7 +47,6 @@ abstract class Profile implements Comparable<Profile> {
                 boolean found = false
                 filters.each { filter ->
                     if (getField(profileFieldName) == filter) {
-                        //System.err.println("returning false")
                         found = true
                     }
                 }

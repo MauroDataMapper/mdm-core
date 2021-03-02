@@ -268,4 +268,14 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
             }
         }
     }
+
+    @Override
+    List<DataClassComponent> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        DataClassComponent.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<DataClassComponent> findAllByMetadataNamespace(String namespace, Map pagination) {
+        DataClassComponent.byMetadataNamespace(namespace).list(pagination)
+    }
 }

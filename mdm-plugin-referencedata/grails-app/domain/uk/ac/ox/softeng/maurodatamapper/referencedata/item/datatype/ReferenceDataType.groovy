@@ -191,4 +191,22 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
         byReferenceDataModelId(referenceDataModelId)
         .eq('label', label)
     }
+
+    static DetachedCriteria<ReferenceDataType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<ReferenceDataType> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
+
 }

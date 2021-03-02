@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
@@ -140,24 +141,12 @@ class ProfileController implements ResourcelessMdmController {
         }
 
         profileService.storeProfile(profileProviderService, catalogueItem, request, currentUser)
-        catalogueItem.metadata.each {
-            System.err.println(it.key + " -1:- " + it.value)
-        }
 
         // Flush the profile before we create as the create method retrieves whatever is stored in the database
         sessionFactory.currentSession.flush()
-        catalogueItem.metadata.each {
-            System.err.println(it.key + " -2:- " + it.value)
-        }
-
-        def x = profileService.createProfile(profileProviderService, catalogueItem)
-
-        catalogueItem.metadata.each {
-            System.err.println(it.key + " -3:- " + it.value)
-        }
 
         // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
-        respond x
+        respond profileService.createProfile(profileProviderService, catalogueItem)
     }
 
     def listModelsInProfile() {
@@ -166,47 +155,50 @@ class ProfileController implements ResourcelessMdmController {
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
-        PaginatedResultList<Profile> profiles = profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params)
+        PaginatedResultList<Profile> profiles =
+                profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params.catalogueItemDomainType, params)
         respond profileList: profiles
     }
 
     def listValuesInProfile() {
-        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
-                                                                                                  params.profileVersion)
+        ProfileProviderService profileProviderService =
+                profileService.findProfileProviderService(params.profileNamespace, params.profileName, params.profileVersion)
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        List<Profile> profiledResults
-        if (params.search) {
-            SearchParams searchParams = new SearchParams()
-            searchParams.searchTerm = params.search
-            searchParams.offset = 0
-            searchParams.max = null
-            searchParams.order = searchParams.order ?: 'asc'
+        List<MetadataAware> profiledItems = profileProviderService.findAllProfiledItems(params.catalogueItemDomainType)
+        List<MetadataAware> filteredProfiledItems = []
+        profiledItems.each {profiledItem ->
+            if(profiledItem instanceof Model
+                    && currentUserSecurityPolicyManager.userCanReadSecuredResourceId(profiledItem.getClass(), profiledItem.id)) {
+                    filteredProfiledItems.add(profiledItem)
+            } else if (profiledItem instanceof ModelItem) {
 
-            PaginatedLuceneResult<CatalogueItem> result = mdmPluginProfileSearchService.findAllReadableByLuceneSearch(
-                currentUserSecurityPolicyManager, searchParams, params
-            )
-
-            Set<Model> foundModels = new HashSet<>()
-
-            result.results.each { resultCatalogueItem ->
-                if (Utils.parentClassIsAssignableFromChild(Model, resultCatalogueItem.class)) {
-                    foundModels.add(resultCatalogueItem as Model)
-                }
-                if (Utils.parentClassIsAssignableFromChild(ModelItem, resultCatalogueItem.class)) {
-                    foundModels.add((resultCatalogueItem as ModelItem).model)
-                }
-            }
-            profiledResults = foundModels.collect { model ->
-                profileProviderService.createProfileFromEntity(model)
+                CatalogueItem model = proxyHandler.unwrapIfProxy(profiledItem.getModel())
+                if(currentUserSecurityPolicyManager.userCanReadResourceId(profiledItem.getClass(), profiledItem.id, model.getClass(), model.id)) {
+                        filteredProfiledItems.add(profiledItem)
+                    }
             }
 
-        } else {
-            profiledResults = profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params)
         }
-        respond excludes: 'knownFields', profileProviderService.getAllProfileFieldValues(params, profiledResults)
+        Map<String, Collection<String>> allValuesMap = [:]
+        profileProviderService.getKnownMetadataKeys().findAll{key -> (!params.filter || params.filter.contains(key))}.each { key ->
+            Set<String> allValues = new HashSet<String>();
+            filteredProfiledItems.each { profiledItem ->
+                Metadata md = profiledItem.metadata.find {
+                    it.namespace == profileProviderService.metadataNamespace &&
+                            it.key == key }
+                if(md) {
+                    allValues.add(md.value)
+                }
+            }
+
+            allValuesMap[key] = allValues
+        }
+
+
+        respond allValuesMap
     }
 
     def search(SearchParams searchParams) {

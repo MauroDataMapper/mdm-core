@@ -290,4 +290,14 @@ TODO data flow copying
         dataElementComponent.targetDataElements = resolvedTargetDataElements
 
     }
+
+    @Override
+    List<DataElementComponent> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        DataElementComponent.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<DataElementComponent> findAllByMetadataNamespace(String namespace, Map pagination) {
+        DataElementComponent.byMetadataNamespace(namespace).list(pagination)
+    }
 }

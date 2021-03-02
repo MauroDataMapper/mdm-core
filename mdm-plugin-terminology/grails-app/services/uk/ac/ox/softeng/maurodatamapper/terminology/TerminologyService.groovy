@@ -210,12 +210,14 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.by().id().list() as List<UUID>
     }
 
-    List<Terminology> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
+    @Override
+    List<Terminology> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         Terminology.byMetadataNamespaceAndKey(namespace, key).list(pagination)
     }
 
-    List<Terminology> findAllByMetadataNamespace(String namespace) {
-        Terminology.byMetadataNamespace(namespace).list()
+    @Override
+    List<Terminology> findAllByMetadataNamespace(String namespace, Map pagination) {
+        Terminology.byMetadataNamespace(namespace).list(pagination)
     }
 
     List<Terminology> findAllByFolderId(UUID folderId) {

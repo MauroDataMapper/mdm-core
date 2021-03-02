@@ -76,7 +76,6 @@ class ProfileService {
     void storeProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem, HttpServletRequest request, User user) {
 
         Profile profile = profileProviderService.getNewProfile()
-        //System.err.println(request.getJSON())
         List<ProfileSection> profileSections = []
         request.getJSON().sections.each { it ->
             ProfileSection profileSection = new ProfileSection(it)
@@ -106,7 +105,7 @@ class ProfileService {
         profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
     }
 
-    PaginatedResultList<Model> getModelsWithProfile(ProfileProviderService profileProviderService,
+    PaginatedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
                                                       UserSecurityPolicyManager userSecurityPolicyManager,
                                                       String domainType,
                                                       Map pagination = [:]) {
@@ -118,7 +117,11 @@ class ProfileService {
         List<Model> validModels = models.findAll {model ->
             userSecurityPolicyManager.userCanReadSecuredResourceId(model.class, model.id) && !model.deleted
         }
-        new PaginatedResultList<>(models, pagination)
+        List<Profile> profiles = []
+        validModels.each {model ->
+            profiles.add(profileProviderService.createProfileFromEntity(model))
+        }
+        new PaginatedResultList<>(profiles, pagination)
     }
 
     CatalogueItem findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {

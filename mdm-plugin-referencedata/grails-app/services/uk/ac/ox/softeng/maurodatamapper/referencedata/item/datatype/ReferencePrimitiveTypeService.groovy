@@ -158,4 +158,14 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         }
         primitiveType
     }
+
+    @Override
+    List<ReferencePrimitiveType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ReferencePrimitiveType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<ReferencePrimitiveType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ReferencePrimitiveType.byMetadataNamespace(namespace).list(pagination)
+    }
 }

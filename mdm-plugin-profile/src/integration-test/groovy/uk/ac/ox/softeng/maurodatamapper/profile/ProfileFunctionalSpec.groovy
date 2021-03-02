@@ -74,7 +74,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
     void 'test get all models values in profile which doesnt exist'() {
         when:
-        GET("profiles/${getProfilePath()}/values")
+        GET("profiles/${getProfilePath()}/DataModel/values")
 
         then:
         verifyResponse HttpStatus.NOT_FOUND, response

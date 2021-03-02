@@ -86,10 +86,6 @@ abstract class MapBasedProfile extends Profile {
             profileSection.fields.each {field ->
                 String fieldName = knownFields.find { it == field.metadataPropertyName}
                 if(fieldName) {
-                    System.err.println(fieldName)
-                    System.err.println(field)
-                    System.err.println(contents)
-                    System.err.println(field.currentValue)
                     setField(fieldName, field.currentValue)
                 } else {
                     log.error("Cannot match field: " + field.fieldName)

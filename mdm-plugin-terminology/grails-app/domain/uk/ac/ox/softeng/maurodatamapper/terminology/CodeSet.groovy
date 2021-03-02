@@ -144,11 +144,20 @@ class CodeSet implements Model<CodeSet> {
     }
 
     static DetachedCriteria<CodeSet> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
-        by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('terminologyId'))
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
     }
 
     static DetachedCriteria<CodeSet> byMetadataNamespace(String metadataNamespace) {
-        by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItemId'))
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
     }
 
     static DetachedCriteria<CodeSet> withFilter(DetachedCriteria<CodeSet> criteria, Map filters) {

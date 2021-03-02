@@ -167,4 +167,21 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
             }
         }
     }
+
+    static DetachedCriteria<DataClassComponent> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<DataClassComponent> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

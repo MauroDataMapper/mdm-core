@@ -89,7 +89,7 @@ class BootStrap implements SecurityDefinition {
         log.debug('Main bootstrap complete')
 
         environments {
-            development {
+            test {
                 CatalogueUser.withNewTransaction {
 
                     getOrCreateModernSecurityUsers('development', false)

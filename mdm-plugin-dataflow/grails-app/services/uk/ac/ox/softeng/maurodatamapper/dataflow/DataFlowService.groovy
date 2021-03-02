@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -324,14 +325,14 @@ class DataFlowService extends ModelItemService<DataFlow> {
         //Assumption is that if we got this far then it is OK to read the Source DataModel because either (i) we came via a controller in which case
         //the user's ability to import a DataFlow has already been tested, or (ii) we are calling this method from a service test spec in which
         //case it is OK to read.
-        
+
         dataFlow.createdBy = importingUser.emailAddress
         checkFacetsAfterImportingCatalogueItem(dataFlow)
 
         //source and target data model are imported by use of a path like "dm:my-data-model"
         String sourcePath = "dm:${bindingMap.source.label}"
         DataModel sourceDataModel = pathService.findCatalogueItemByPath(
-            PublicAccessSecurityPolicyManager.instance, 
+            PublicAccessSecurityPolicyManager.instance,
             [path: sourcePath, catalogueItemDomainType: DataModel.simpleName]
         )
 
@@ -340,10 +341,10 @@ class DataFlowService extends ModelItemService<DataFlow> {
         } else {
             throw new ApiBadRequestException('DFI01', "Source DataModel retrieval for ${sourcePath} failed")
         }
-        
+
         String targetPath = "dm:${bindingMap.target.label}"
         DataModel targetDataModel = pathService.findCatalogueItemByPath(
-            PublicAccessSecurityPolicyManager.instance, 
+            PublicAccessSecurityPolicyManager.instance,
             [path: targetPath, catalogueItemDomainType: DataModel.simpleName]
         )
 
@@ -360,5 +361,15 @@ class DataFlowService extends ModelItemService<DataFlow> {
             }
 
         }
-    }    
+    }
+
+    @Override
+    List<DataFlow> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        DataFlow.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<DataFlow> findAllByMetadataNamespace(String namespace, Map pagination) {
+        DataFlow.byMetadataNamespace(namespace).list(pagination)
+    }
 }

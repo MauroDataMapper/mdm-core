@@ -38,6 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.lucene.search.Query
@@ -55,7 +56,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     DataClassService dataClassService
     DataTypeService dataTypeService
-    ModelImportService modelImportService   
+    ModelImportService modelImportService
     SummaryMetadataService summaryMetadataService
 
     @Override
@@ -522,7 +523,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
         //The DataElement that was imported
         DataElement dataElement = imported.importedCatalogueItem
-        
+
         //The DataType of that DataElement
         DataType dataType = dataElement.dataType
 
@@ -537,10 +538,21 @@ class DataElementService extends ModelItemService<DataElement> {
             ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
                                                               importedCatalogueItem  : dataType,
                                                               createdByUser          : currentUser)
-        
+
             //Save the additional model import, indicating that this is an additional rather than
             //principal import and so should fail silently if it already exists.
-            modelImportService.saveResource(currentUser, modelImportDataType, true)                                                  
+            modelImportService.saveResource(currentUser, modelImportDataType, true)
         }
     }
+
+    @Override
+    List<DataElement> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        DataElement.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<DataElement> findAllByMetadataNamespace(String namespace, Map pagination) {
+        DataElement.byMetadataNamespace(namespace).list(pagination)
+    }
+
 }

@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelItemConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.ModelExtendAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.ModelImportAware
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
@@ -76,7 +77,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         summaryMetadata: SummaryMetadata,
         rules          : Rule,
         modelImports   : ModelImport,
-        modelExtends   : ModelExtend    
+        modelExtends   : ModelExtend
     ]
 
     static belongsTo = [DataClass, DataModel]
@@ -232,7 +233,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     /**
-     * Where the DataClass has been imported into the specified DataModel. Use this method if you want only those 
+     * Where the DataClass has been imported into the specified DataModel. Use this method if you want only those
      * DataClasses which have been imported into a DataModel i.e. excluding DataClasses owned directly by the DataModel.
      *
      * @param ID of DataModel which has imported other catalogue items
@@ -247,9 +248,9 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      * If we want to include imported DataClasses then do a logical OR on imported and directly owned DataClasses.
      *
      * @param dataModelId The ID of the DataModel we are looking at
-     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in 
+     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in
      *                        addition to DataClasses directly belonging to the DataModel)?
-     * @return DetachedCriteria<DataClass>    
+     * @return DetachedCriteria<DataClass>
      */
     static DetachedCriteria<DataClass> byDataModelId(Serializable dataModelId, boolean includeImported = false) {
         DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
@@ -258,23 +259,23 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             criteria
             .or {
                 inList('id', ModelImport.importedByCatalogueItemId(dataModelId))
-                eq('dataModel.id', Utils.toUuid(dataModelId))                
+                eq('dataModel.id', Utils.toUuid(dataModelId))
             }
         } else {
             criteria
             .eq('dataModel.id', Utils.toUuid(dataModelId))
         }
-        
+
         criteria
-    }     
+    }
 
     /**
      * If we want to include imported DataClasses then do a logical OR on imported and directly owned DataClasses.
      *
      * @param dataClassId The ID of the DataClass we are looking at
-     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataClass (in 
+     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataClass (in
      *                        addition to DataClasses directly belonging to the DataClass)?
-     * @return DetachedCriteria<DataClass>    
+     * @return DetachedCriteria<DataClass>
      */
     static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, boolean includeImported = false, boolean includeExtends = false) {
         DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
@@ -287,7 +288,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         }
         .or {
             //DataClasses whose parent DataClass is dataClassId
-            criteria.eq('parentDataClass.id', dataClassId)   
+            criteria.eq('parentDataClass.id', dataClassId)
 
             //DataClasses which have been imported into dataClassId
             if (includeImported) {
@@ -297,11 +298,11 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
             //DataClasses whose parent is extended by dataClassId
             if (includeExtends) {
                 inList('parentDataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))
-            }           
+            }
         }
 
         criteria
-    }    
+    }
 
     static DetachedCriteria<DataClass> byRootDataClassOfDataModelId(UUID dataModelId, boolean includeImported = false) {
         byDataModelId(dataModelId, includeImported).isNull('parentDataClass')
@@ -324,9 +325,9 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      *
      * @param dataModelId The ID of the DataModel we are looking at
      * @param searchTerm Search string which is applied against the label and description of the DataClass
-     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in 
+     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in
      *                        addition to DataClasses directly belonging to the DataModel)?
-     * @return DetachedCriteria<DataClass>      
+     * @return DetachedCriteria<DataClass>
      */
     static DetachedCriteria<DataClass> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, boolean includeImported = false) {
         byDataModelId(dataModelId, includeImported).or {
@@ -346,4 +347,22 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     static DetachedCriteria<DataClass> withFilter(DetachedCriteria<DataClass> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
     }
+
+    static DetachedCriteria<DataClass> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<DataClass> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
+
 }

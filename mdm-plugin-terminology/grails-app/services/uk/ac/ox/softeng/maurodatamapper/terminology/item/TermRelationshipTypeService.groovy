@@ -188,4 +188,14 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
                                                                                           String searchTerm, String domainType) {
         []
     }
+
+    @Override
+    List<TermRelationshipType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        TermRelationshipType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<TermRelationshipType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        TermRelationshipType.byMetadataNamespace(namespace).list(pagination)
+    }
 }

@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -136,8 +137,19 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         Metadata.byCatalogueItemIdAndNamespace(catalogueItemId, namespace).list(pagination)
     }
 
-    List<MetadataAware> findAllCatalogueItemsByNamespace(String namespace, Map pagination = [:]) {
-        Metadata.byNamespace(namespace)
+    List<MetadataAware> findAllCatalogueItemsByNamespace(String namespace, String domainType = null, Map pagination = [:]) {
+        List<MetadataAware> returnResult = []
+        catalogueItemServices.each { catalogueItemService ->
+            if(!domainType || catalogueItemService.handles(domainType)) {
+                returnResult.addAll(catalogueItemService.findAllByMetadataNamespace(namespace))
+            }
+        }
+        return new PaginatedResultList<MetadataAware>(returnResult, pagination)
+    }
+
+
+    List<Metadata> findAllByNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
+        Metadata.byNamespaceAndKey(namespace, key).list(pagination)
     }
 
     @Override

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -113,6 +114,10 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
 
     List<String> profileApplicableForDomains() {
         return []
+    }
+
+    List<MetadataAware> findAllProfiledItems(String domainType = null) {
+        metadataService.findAllCatalogueItemsByNamespace(metadataNamespace, domainType)
     }
 
 }
