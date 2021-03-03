@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels
@@ -45,17 +47,30 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
     def setup() {
         log.debug('Setting up ReferenceDataModelServiceSpec unit')
+        mockArtefact(BreadcrumbTreeService)
         mockArtefact(ReferenceDataElementService)
         mockArtefact(ReferenceDataTypeService)
         mockArtefact(ReferenceSummaryMetadataService)
         mockDomains(ReferenceDataModel, ReferenceDataType, ReferencePrimitiveType,
                     ReferenceEnumerationType, ReferenceEnumerationValue, ReferenceDataElement)
 
+        service.breadcrumbTreeService = Stub(BreadcrumbTreeService) {
+            finalise(_) >> {
+                BreadcrumbTree bt ->
+                    bt.finalised = true
+                    bt.buildTree()
+
+            }
+        }
+
         simpleReferenceDataModel = buildExampleReferenceDataModel()
 
-        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder, authority: testAuthority)
-        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', folder: testFolder, authority: testAuthority)
-        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard',folder: testFolder, authority: testAuthority)
+        ReferenceDataModel referenceDataModel1 = new ReferenceDataModel(createdByUser: reader1, label: 'test database', folder: testFolder,
+                                                                        authority: testAuthority)
+        ReferenceDataModel referenceDataModel2 = new ReferenceDataModel(createdByUser: reader2, label: 'test form', folder: testFolder,
+                                                                        authority: testAuthority)
+        ReferenceDataModel referenceDataModel3 = new ReferenceDataModel(createdByUser: editor, label: 'test standard', folder: testFolder,
+                                                                        authority: testAuthority)
 
         checkAndSave(referenceDataModel1)
         checkAndSave(referenceDataModel2)

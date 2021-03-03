@@ -13,6 +13,7 @@ class BreadcrumbTreeService {
     SessionFactory sessionFactory
 
     def finalise(BreadcrumbTree breadcrumbTree) {
+        if (!breadcrumbTree) return
         log.debug('Finalising BreadcrumbTree')
         long start = System.currentTimeMillis()
         breadcrumbTree.finalised = true

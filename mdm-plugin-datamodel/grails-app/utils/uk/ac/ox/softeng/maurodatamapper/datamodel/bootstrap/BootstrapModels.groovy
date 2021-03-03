@@ -30,15 +30,14 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
-import org.springframework.context.MessageSource
-
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
-
 import groovy.util.logging.Slf4j
+import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
 @Slf4j
 class BootstrapModels {
@@ -276,17 +275,18 @@ class BootstrapModels {
             dataClass.addToDataElements(dataElement1)
 
             simpleDataModel
-            .addToDataClasses(dataClass)
-            .addToDataTypes(primitiveType1)
-    
+                .addToDataClasses(dataClass)
+                .addToDataTypes(primitiveType1)
+
             checkAndSave(messageSource, simpleDataModel)
 
             simpleDataModel.finalised = true
             simpleDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-            simpleDataModel.breadcrumbTree.finalise()
-            simpleDataModel.modelVersion = Version.from('1.0.0')     
+            simpleDataModel.breadcrumbTree.finalised = true
+            simpleDataModel.breadcrumbTree.updateTree()
+            simpleDataModel.modelVersion = Version.from('1.0.0')
 
-            checkAndSave(messageSource, simpleDataModel)   
+            checkAndSave(messageSource, simpleDataModel)
         }
 
         simpleDataModel
@@ -311,18 +311,19 @@ class BootstrapModels {
             .addToDataClasses(childDataClass)
 
             dataModel
-            .addToDataClasses(dataClass)
-            .addToDataTypes(primitiveType1)
-        
+                .addToDataClasses(dataClass)
+                .addToDataTypes(primitiveType1)
+
 
             checkAndSave(messageSource, dataModel)
 
             dataModel.finalised = true
             dataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-            dataModel.breadcrumbTree.finalise()
-            dataModel.modelVersion = Version.from('1.0.0')     
+            dataModel.breadcrumbTree.finalised = true
+            dataModel.breadcrumbTree.updateTree()
+            dataModel.modelVersion = Version.from('1.0.0')
 
-            checkAndSave(messageSource, dataModel)   
+            checkAndSave(messageSource, dataModel)
         }
 
         dataModel

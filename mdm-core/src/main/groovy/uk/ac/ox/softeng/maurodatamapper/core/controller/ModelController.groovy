@@ -270,7 +270,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T instance =
             modelService.mergeModelIntoModel(left, right, mergeIntoData.patch, currentUserSecurityPolicyManager) as T
 
-        if (!validateResource(instance, 'update')) return
+        if (!validateResource(instance, 'merge')) return
 
         if (mergeIntoData.deleteBranch) {
             if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(left.class, left.id)) {
@@ -658,8 +658,15 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     }
 
     @Override
+    @Transactional
     protected boolean validateResource(T instance, String view) {
-        modelService.shallowValidate(instance)
+        if (instance.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
+        }
+        if (view == 'update') modelService.shallowValidate(instance)
+        else modelService.validate(instance)
         if (instance.hasErrors()) {
             transactionStatus.setRollbackOnly()
             respond instance.errors, view: view // STATUS CODE 422

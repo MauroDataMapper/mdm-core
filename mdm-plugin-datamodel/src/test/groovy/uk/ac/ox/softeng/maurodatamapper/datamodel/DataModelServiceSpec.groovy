@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -50,6 +52,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
     def setup() {
         log.debug('Setting up DataModelServiceSpec unit')
+        mockArtefact(BreadcrumbTreeService)
         mockArtefact(DataClassService)
         mockArtefact(DataElementService)
         mockArtefact(DataTypeService)
@@ -58,6 +61,15 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType,
                     ReferenceType, EnumerationType, EnumerationValue, DataElement)
+
+        service.breadcrumbTreeService = Stub(BreadcrumbTreeService) {
+            finalise(_) >> {
+                BreadcrumbTree bt ->
+                    bt.finalised = true
+                    bt.buildTree()
+
+            }
+        }
 
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()

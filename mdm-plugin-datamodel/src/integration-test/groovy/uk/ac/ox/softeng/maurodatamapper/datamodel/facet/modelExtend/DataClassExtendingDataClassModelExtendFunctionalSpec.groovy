@@ -21,8 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemModelExtendFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
@@ -30,7 +28,6 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import spock.lang.Shared
 
 import java.time.OffsetDateTime
@@ -105,7 +102,7 @@ class DataClassExtendingDataClassModelExtendFunctionalSpec extends CatalogueItem
 
         extendedDataModel.finalised = true
         extendedDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        extendedDataModel.breadcrumbTree.finalise()
+        extendedDataModel.breadcrumbTree.finalised = true
         extendedDataModel.modelVersion = Version.from('1.0.0')
         extendedDataModel.save(flush: true)                                           
 
