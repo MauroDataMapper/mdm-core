@@ -38,6 +38,9 @@ class FinaliseData implements Validateable {
     @BindUsing({ obj, source -> Version.from(source['version'] as String) })
     Version version
 
+    @BindUsing({ obj, source -> source['versionTag'] })
+    String versionTag
+
 
     static constraints = {
         supersededBy nullable: true
@@ -47,5 +50,6 @@ class FinaliseData implements Validateable {
             }
         }
         version nullable: true
+        versionTag nullable: true
     }
 }

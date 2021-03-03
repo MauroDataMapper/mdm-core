@@ -11,6 +11,7 @@ json {
     branchName referenceDataModel.branchName
     documentationVersion referenceDataModel.documentationVersion.toString()
     if (referenceDataModel.modelVersion) modelVersion referenceDataModel.modelVersion.toString()
+    if (referenceDataModel.modelVersionTag) modelVersionTag referenceDataModel.modelVersionTag
 
     if (referenceDataModel.classifiers) classifiers g.render(referenceDataModel.classifiers)
     if (referenceDataModel.deleted) deleted referenceDataModel.deleted

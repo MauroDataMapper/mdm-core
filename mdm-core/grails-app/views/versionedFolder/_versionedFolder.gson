@@ -10,4 +10,5 @@ json {
     branchName versionedFolder.branchName
     documentationVersion versionedFolder.documentationVersion.toString()
     if (versionedFolder.modelVersion) modelVersion versionedFolder.modelVersion.toString()
+    if (versionedFolder.modelVersionTag) modelVersionTag versionedFolder.modelVersionTag
 }

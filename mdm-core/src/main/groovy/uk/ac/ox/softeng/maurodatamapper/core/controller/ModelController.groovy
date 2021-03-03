@@ -315,8 +315,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
 
-        instance = modelService.finaliseModel(instance, currentUser,
-                                              finaliseData.version, finaliseData.versionChangeType,
+        instance = modelService.finaliseModel(instance, 
+                                              currentUser,
+                                              finaliseData.version, 
+                                              finaliseData.versionChangeType,
+                                              finaliseData.versionTag,
                                               finaliseData.supersededBy ?: []) as T
 
         if (!validateResource(instance, 'update')) return

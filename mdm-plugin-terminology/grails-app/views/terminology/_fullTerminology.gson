@@ -23,6 +23,7 @@ json {
     if (terminology.author) author terminology.author
     if (terminology.organisation) organisation terminology.organisation
     if (terminology.modelVersion) modelVersion terminology.modelVersion.toString()
+    if (terminology.modelVersionTag) modelVersionTag terminology.modelVersionTag
 
     authority tmpl.'/authority/authority'(terminology.authority)
 }

@@ -34,6 +34,9 @@ trait VersionAware {
     @BindUsing({ obj, source -> Version.from(source['modelVersion'] as String) })
     Version modelVersion
 
+    @BindUsing({ obj, source -> Version.from(source['modelVersionTag'] as String) })
+    String modelVersionTag
+
     @BindUsing({ obj, source -> Version.from(source['documentationVersion'] as String) })
     Version documentationVersion
 
