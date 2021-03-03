@@ -607,7 +607,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                 List<K> existingModels = findAllByLabel(model.label)
                 existingModels.each {existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion

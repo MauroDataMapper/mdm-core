@@ -87,7 +87,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
     protected DataModel getAndFinaliseDataModel(UUID idToFinalise = id) {
         DataModel dataModel = dataModelService.get(idToFinalise)
-        dataModelService.finaliseModel(dataModel, admin, null, null)
+        dataModelService.finaliseModel(dataModel, admin, null, null, null)
         checkAndSave(dataModel)
         dataModel
     }
@@ -210,7 +210,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.documentationVersion == Version.from('1')
 
         when:
-        dataModelService.finaliseModel(dataModel, admin, Version.from('1'), null)
+        dataModelService.finaliseModel(dataModel, admin, Version.from('1'), null, null)
 
         then:
         checkAndSave(dataModel)
@@ -954,7 +954,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteLeftOnlyFromExistingClass'))
                 .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteRightOnlyFromExistingClass'))
         )
-        dataModelService.finaliseModel(dataModel, admin, null, null)
+        dataModelService.finaliseModel(dataModel, admin, null, null, null)
         checkAndSave(dataModel)
 
         then:
@@ -1106,7 +1106,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         def existingClass = new DataClass(createdByUser: admin, label: 'existingClass')
         def deleteLeftOnlyFromExistingClass = new DataClass(createdByUser: admin, label: 'deleteLeftOnlyFromExistingClass')
         dataModel.addToDataClasses(existingClass.addToDataClasses(deleteLeftOnlyFromExistingClass))
-        dataModelService.finaliseModel(dataModel, admin, null, null)
+        dataModelService.finaliseModel(dataModel, admin, null, null, null)
         checkAndSave(dataModel)
 
         then:

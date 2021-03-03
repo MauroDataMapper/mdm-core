@@ -37,7 +37,5 @@ class ModelConstraints extends CatalogueItemConstraints {
         organisation nullable: true, blank: false
 
         label validator: {String val, Model obj -> new ModelLabelValidator(obj).isValid(val)}
-
-        modelVersionTag nullable: true
     }
 }

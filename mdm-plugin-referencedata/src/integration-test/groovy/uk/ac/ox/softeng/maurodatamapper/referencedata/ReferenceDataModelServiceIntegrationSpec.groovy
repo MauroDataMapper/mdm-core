@@ -81,7 +81,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
     protected ReferenceDataModel getAndFinaliseReferenceDataModel(UUID idToFinalise = id) {
         ReferenceDataModel referenceDataModel = referenceDataModelService.get(idToFinalise)
-        referenceDataModelService.finaliseModel(referenceDataModel, admin, null, null)
+        referenceDataModelService.finaliseModel(referenceDataModel, admin, null, null, null)
         checkAndSave(referenceDataModel)
         referenceDataModel
     }
@@ -194,7 +194,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         referenceDataModel.documentationVersion == Version.from('1')
 
         when:
-        referenceDataModelService.finaliseModel(referenceDataModel, admin, Version.from('1'), null)
+        referenceDataModelService.finaliseModel(referenceDataModel, admin, Version.from('1'), null, null)
 
         then:
         checkAndSave(referenceDataModel)
@@ -231,7 +231,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
 
         when: 'finalising model and then creating a new doc version is allowed'
         ReferenceDataModel dataModel = referenceDataModelService.get(id)
-        referenceDataModelService.finaliseModel(dataModel, admin, null, null)
+        referenceDataModelService.finaliseModel(dataModel, admin, null, null, null)
         checkAndSave(dataModel)
         def result = referenceDataModelService.createNewDocumentationVersion(dataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,

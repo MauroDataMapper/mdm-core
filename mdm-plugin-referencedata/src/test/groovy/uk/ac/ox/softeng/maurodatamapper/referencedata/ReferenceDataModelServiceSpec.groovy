@@ -164,7 +164,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
         referenceDataModel.documentationVersion == Version.from('1')
 
         when:
-        service.finaliseModel(referenceDataModel, admin, null, null)
+        service.finaliseModel(referenceDataModel, admin, null, null, null)
 
         then:
         checkAndSave(referenceDataModel)
@@ -195,7 +195,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
         when: 'finalising model and then creating a new doc version is allowed'
         ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, admin, null, null)
+        service.finaliseModel(referenceDataModel, admin, null, null, null)
         checkAndSave(referenceDataModel)
         def result = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -258,7 +258,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
     void 'DMSC03 : test creating a new documentation version on finalised model with permission copying'() {
         when: 'finalising model and then creating a new doc version is allowed'
         ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, admin, null, null)
+        service.finaliseModel(referenceDataModel, admin, null, null, null)
         checkAndSave(referenceDataModel)
         def result = service.createNewDocumentationVersion(referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -325,7 +325,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         when: 'creating new doc version'
         ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, editor, null, null)
+        service.finaliseModel(referenceDataModel, editor, null, null, null)
         def newDocVersion = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
@@ -350,7 +350,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         when: 'creating new doc version'
         ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, editor, null, null)
+        service.finaliseModel(referenceDataModel, editor, null, null, null)
         def newDocVersion = service.createNewDocumentationVersion(referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true
@@ -389,7 +389,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         when: 'finalising model and then creating a new version is allowed'
         ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, admin, null, null)
+        service.finaliseModel(referenceDataModel, admin, null, null, null)
         checkAndSave(referenceDataModel)
         def result = service.createNewForkModel("${referenceDataModel.label}-1", referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -455,7 +455,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         when: 'finalising model and then creating a new version is allowed'
         ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, admin, null, null)
+        service.finaliseModel(referenceDataModel, admin, null, null, null)
         checkAndSave(referenceDataModel)
         def result = service.createNewForkModel("${referenceDataModel.label}-1", referenceDataModel, editor, true, userSecurityPolicyManager, [
             moveDataFlows: false,
@@ -523,7 +523,7 @@ class ReferenceDataModelServiceSpec extends CatalogueItemServiceSpec implements 
 
         when: 'creating new version'
         ReferenceDataModel referenceDataModel = service.get(id)
-        service.finaliseModel(referenceDataModel, editor, null, null)
+        service.finaliseModel(referenceDataModel, editor, null, null, null)
         def newVersion = service.createNewDocumentationVersion(referenceDataModel, editor, false, userSecurityPolicyManager, [
             moveDataFlows: false,
             throwErrors  : true

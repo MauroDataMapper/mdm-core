@@ -33,6 +33,7 @@ class ContainerTreeItem extends TreeItem {
     Boolean finalised
     Version documentationVersion
     Version modelVersion
+    String modelVersionTag
     String branchName
     boolean versionAware
 
@@ -47,6 +48,7 @@ class ContainerTreeItem extends TreeItem {
             finalised = container.finalised
             documentationVersion = container.documentationVersion
             modelVersion = container.modelVersion
+            modelVersionTag = container.modelVersionTag
             branchName = container.branchName
             versionAware = true
         }

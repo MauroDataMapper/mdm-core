@@ -32,6 +32,7 @@ class VersionAwareConstraints {
 
         documentationVersion nullable: false, validator: { Version val, VersionAware obj -> new DocumentationVersionValidator(obj).isValid(val) }
         modelVersion nullable: true, validator: { Version val, VersionAware obj -> new ModelVersionValidator(obj).isValid(val) }
+        modelVersionTag nullable: true
         branchName nullable: false
     }
 }

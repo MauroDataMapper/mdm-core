@@ -155,7 +155,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
         terminology.documentationVersion == Version.from('1')
 
         when:
-        service.finaliseModel(terminology, admin, null, null)
+        service.finaliseModel(terminology, admin, null, null, null)
 
         then:
         checkAndSave(terminology)
@@ -183,7 +183,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
         when: 'finalising model and then creating a new doc version is allowed'
         Terminology terminology = service.get(id)
-        service.finaliseModel(terminology, admin, null, null)
+        service.finaliseModel(terminology, admin, null, null, null)
         checkAndSave(terminology)
         def result = service.createNewDocumentationVersion(terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
@@ -242,7 +242,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
     void 'DMSC03 : test creating a new documentation version on finalised model with permission copying'() {
         when: 'finalising model and then creating a new doc version is allowed'
         Terminology terminology = service.get(id)
-        service.finaliseModel(terminology, admin, null, null)
+        service.finaliseModel(terminology, admin, null, null, null)
         checkAndSave(terminology)
         def result = service.createNewDocumentationVersion(terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
@@ -302,7 +302,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new doc version'
         Terminology terminology = service.get(id)
-        service.finaliseModel(terminology, editor, null, null)
+        service.finaliseModel(terminology, editor, null, null, null)
         def newDocVersion = service.createNewDocumentationVersion(terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
@@ -321,7 +321,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new doc version'
         Terminology terminology = service.get(id)
-        service.finaliseModel(terminology, editor, null, null)
+        service.finaliseModel(terminology, editor, null, null, null)
         def newDocVersion = service.createNewDocumentationVersion(terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
 
         then:
@@ -352,7 +352,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'finalising model and then creating a new version is allowed'
         Terminology terminology = service.get(id)
-        service.finaliseModel(terminology, admin, null, null)
+        service.finaliseModel(terminology, admin, null, null, null)
         checkAndSave(terminology)
         def result =
             service.createNewForkModel("${terminology.label}-1", terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
@@ -415,7 +415,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'finalising model and then creating a new version is allowed'
         Terminology terminology = service.get(id)
-        service.finaliseModel(terminology, admin, null, null)
+        service.finaliseModel(terminology, admin, null, null, null)
         checkAndSave(terminology)
         def result =
             service.createNewForkModel("${terminology.label}-1", terminology, editor, true, userSecurityPolicyManager, [throwErrors: true])
@@ -476,7 +476,7 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
 
         when: 'creating new version'
         Terminology terminology = service.get(id)
-        service.finaliseModel(terminology, editor, null, null)
+        service.finaliseModel(terminology, editor, null, null, null)
         def newVersion = service.createNewDocumentationVersion(terminology, editor, false, userSecurityPolicyManager, [throwErrors: true])
 
         then:
