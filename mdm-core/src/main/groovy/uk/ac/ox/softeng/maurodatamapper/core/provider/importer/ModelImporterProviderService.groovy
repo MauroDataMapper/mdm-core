@@ -39,19 +39,20 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
 
     abstract List<M> importModels(User currentUser, P params)
 
-    M importDomain(User currentUser, P params) {
-        M model = importModel(currentUser, params)
+    @Override
+    M importDomain(User currentUser, ModelImporterProviderServiceParameters params) {
+        M model = importModel(currentUser, params as P)
         if (!model) return null
-        M updated = updateImportedModelFromParameters(model, params, false)
-        checkImport(currentUser, updated, params) as M
-        model
+        M updated = updateImportedModelFromParameters(model, params as P, false)
+        checkImport(currentUser, updated, params as P)
     }
 
-    List<M> importDomains(User currentUser, P params) {
-        List<M> models = importModels(currentUser, params)
+    @Override
+    List<M> importDomains(User currentUser, ModelImporterProviderServiceParameters params) {
+        List<M> models = importModels(currentUser, params as P)
         models?.collect {
-            M updated = updateImportedModelFromParameters(it, params, true)
-            checkImport(currentUser, updated, params)
+            M updated = updateImportedModelFromParameters(it, params as P, true)
+            checkImport(currentUser, updated, params as P)
         }
         models
     }

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
@@ -94,7 +95,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     @Transactional
     def cleanupSpec() {
         log.debug('CleanupSpec DataModelFunctionalSpec')
-        cleanUpResources(Folder, Classifier)
+        cleanUpResources(Folder, Classifier, SemanticLink)
     }
 
     @Override

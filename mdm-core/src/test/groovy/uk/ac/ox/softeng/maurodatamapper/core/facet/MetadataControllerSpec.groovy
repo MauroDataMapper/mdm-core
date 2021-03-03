@@ -78,6 +78,12 @@ class MetadataControllerSpec extends ResourceControllerSpec<Metadata> implements
                 }
                 true
             }
+            addFacetToDomain(_, _, _) >> {Metadata md, String domain, UUID bid ->
+                if (basicModel.id == bid) {
+                    basicModel.addToMetadata(md)
+                    md.catalogueItem = basicModel
+                }
+            }
         }
     }
 

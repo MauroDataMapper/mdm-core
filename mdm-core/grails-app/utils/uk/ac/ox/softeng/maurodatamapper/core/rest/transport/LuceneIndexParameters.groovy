@@ -17,10 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport
 
+import grails.validation.Validateable
+
 /**
  * @since 26/04/2018
  */
-class LuceneIndexParameters extends UserCredentials {
+class LuceneIndexParameters implements Validateable {
 
     Integer typesToIndexInParallel
     Integer threadsToLoadObjects
@@ -33,8 +35,8 @@ class LuceneIndexParameters extends UserCredentials {
     Integer transactionTimeout
 
     static constraints = {
-        username nullable: false, email: true
-        password nullable: false
+        //        username nullable: false, email: true
+        //        password nullable: false
         typesToIndexInParallel nullable: true, min: 0
         threadsToLoadObjects nullable: true, min: 0
         batchSizeToLoadObjects nullable: true, min: 0

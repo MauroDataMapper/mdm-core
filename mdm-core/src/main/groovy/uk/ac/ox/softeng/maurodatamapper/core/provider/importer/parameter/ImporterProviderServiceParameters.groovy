@@ -17,8 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter
 
+import groovy.transform.CompileStatic
+
 /**
  * @since 06/03/2018
  */
+@CompileStatic
 interface ImporterProviderServiceParameters {
 }

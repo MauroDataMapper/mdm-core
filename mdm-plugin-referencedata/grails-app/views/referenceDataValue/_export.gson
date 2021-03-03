@@ -1,10 +1,12 @@
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 
-inherits template: '/catalogueItem/export'
 model {
     ReferenceDataValue export
 }
 json {
+    id export.id
+    lastUpdated OffsetDateTimeConverter.toString(export.lastUpdated)
     rowNumber export.rowNumber
     value export.value
     referenceDataElement tmpl.'/referenceDataElement/referenceDataElement'(export.referenceDataElement)

@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
@@ -34,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
@@ -56,6 +58,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Autowired
     VersionLinkService versionLinkService
+
+    @Autowired
+    BreadcrumbTreeService breadcrumbTreeService
 
     @Autowired
     EditService editService
@@ -123,12 +128,20 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
     }
 
+    K shallowValidate(K model) {
+        log.debug('Shallow validating model')
+        long st = System.currentTimeMillis()
+        model.validate(deepValidate: false)
+        log.debug('Validated Model in {}', Utils.timeTaken(st))
+        model
+    }
+
     List<K> findAllByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService, Map pagination = [:]) {
         findAllByMetadataNamespaceAndKey(dataLoaderProviderService.namespace, dataLoaderProviderService.name, pagination)
     }
 
     void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink) {
-        get(modelId).removeFromVersionLinks(versionLink)
+        removeFacetFromDomain(modelId, versionLink.id, 'versionLinks')
     }
 
     List<UUID> findAllSupersededModelIds(List<K> models) {
@@ -197,11 +210,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
                     List<Serializable> supersedeModelIds = []) {
-
+        log.debug('Finalising model')
+        long start = System.currentTimeMillis()
         model.finalised = true
         model.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         // No requirement to have a breadcrumbtree
-        model.breadcrumbTree?.finalise()
+        breadcrumbTreeService.finalise(model.breadcrumbTree)
 
         model.modelVersion = getNextModelVersion(model, modelVersion, versionChangeType)
 
@@ -212,6 +226,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                       "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(model.dateFinalised)}",
                                       user)
+        log.debug('Model finalised took {}', Utils.timeTaken(start))
         model
     }
 

@@ -69,7 +69,7 @@ class ReferenceFileServiceSpec extends CatalogueItemAwareServiceSpec<ReferenceFi
             getModelClass() >> BasicModel
             handles('BasicModel') >> true
             removeReferenceFileFromCatalogueItem(basicModel.id, _) >> {UUID bmid, ReferenceFile referenceFile ->
-                basicModel.removeFromReferenceFiles(referenceFile)
+                basicModel.referenceFiles.remove(referenceFile)
             }
         }
         service.catalogueItemServices = [basicModelService]

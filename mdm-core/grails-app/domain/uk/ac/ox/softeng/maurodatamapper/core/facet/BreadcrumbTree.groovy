@@ -106,11 +106,6 @@ class BreadcrumbTree {
         }
     }
 
-    void finalise() {
-        finalised = true
-        updateTree()
-    }
-
     def beforeValidate() {
         if (id && !isDirty()) trackChanges()
         if (domainEntity) {

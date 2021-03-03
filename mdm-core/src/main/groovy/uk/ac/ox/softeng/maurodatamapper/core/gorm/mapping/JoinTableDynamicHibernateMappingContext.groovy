@@ -19,12 +19,16 @@ package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping
 
 import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.types.Association
 import org.grails.orm.hibernate.cfg.PropertyConfig
+import org.hibernate.cfg.ImprovedNamingStrategy
 
 /**
  * @since 09/03/2020
  */
 abstract class JoinTableDynamicHibernateMappingContext extends DynamicHibernateMappingContext {
+
+    public final static ImprovedNamingStrategy NAMING_STRATEGY = ImprovedNamingStrategy.INSTANCE as ImprovedNamingStrategy
 
     abstract String getPropertyName()
 
@@ -37,16 +41,22 @@ abstract class JoinTableDynamicHibernateMappingContext extends DynamicHibernateM
     }
 
     String getJoinTableName(PersistentEntity entity) {
-        "join_${getInverseSidePropertyName(entity)}_to_${propertyName}"
+        "join_${getInverseSidePropertyName(entity).toLowerCase()}_to_${propertyName}"
     }
 
     String getJoinTableKey(PersistentEntity entity) {
-        "${entity.decapitalizedName}_id"
+        "${entity.decapitalizedName.toLowerCase()}_${entity.identity.name}"
+    }
+
+    String getJoinTableColumn(PersistentEntity entity) {
+        PersistentEntity associatedEntity = (entity.getPropertyByName(propertyName) as Association).associatedEntity
+        "${NAMING_STRATEGY.propertyToColumnName(associatedEntity.decapitalizedName)}_${associatedEntity.identity.name}"
     }
 
     Map getJoinTableMap(PersistentEntity entity) {
-        [name: getJoinTableName(entity),
-         key : getJoinTableKey(entity)]
+        [name  : getJoinTableName(entity),
+         key   : getJoinTableKey(entity),
+         column: getJoinTableColumn(entity)]
     }
 
     @Override

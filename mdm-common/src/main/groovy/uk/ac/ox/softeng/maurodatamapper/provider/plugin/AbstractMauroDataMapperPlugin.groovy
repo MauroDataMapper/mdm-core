@@ -24,7 +24,7 @@ abstract class AbstractMauroDataMapperPlugin implements MauroDataMapperPlugin, C
 
     @Override
     String getVersion() {
-        getClass().getPackage().getSpecificationVersion() ?: 'unknown'
+        getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
     }
 
     @Override

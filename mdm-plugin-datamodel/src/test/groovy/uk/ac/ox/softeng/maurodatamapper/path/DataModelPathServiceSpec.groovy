@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.path
 
+
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
@@ -71,13 +73,22 @@ class DataModelPathServiceSpec extends CatalogueItemServiceSpec implements Servi
      */
     def setup() {
         log.debug('Setting up PathServiceSpec Unit')
-
+        mockArtefact(BreadcrumbTreeService)
         mockArtefact(DataTypeService)
         mockArtefact(DataClassService)
         mockArtefact(DataElementService)
         //The Metadata is required
         mockDomains(DataModel, Metadata, DataClass, DataType, DataElement, PrimitiveType)
         mockArtefact(DataModelService)
+
+        //        service.breadcrumbTreeService = Stub(BreadcrumbTreeService){
+        //            finalise(_) >> {
+        //                BreadcrumbTree bt ->
+        //                    bt.finalised = true
+        //                    bt.buildTree()
+        //
+        //            }
+        //        }
 
         dataModel1 = new DataModel(createdByUser: admin, label: 'data model 1', folder: testFolder, authority: testAuthority)
         checkAndSave(dataModel1)

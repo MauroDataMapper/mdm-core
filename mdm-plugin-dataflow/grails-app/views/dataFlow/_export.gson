@@ -1,0 +1,22 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
+
+inherits template: '/catalogueItem/export'
+model {
+    DataFlow export
+}
+json {
+    type export.modelType
+    
+    if (export.source) {
+        source tmpl.shortDataModel(export: export.source)
+    }
+    
+    if (export.target) {
+        target tmpl.shortDataModel(export: export.target)
+    }
+    
+    if (export.dataClassComponents) {
+        dataClassComponents tmpl.'/dataClassComponent/export'(export.dataClassComponents)
+    }
+}

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.path
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -95,6 +96,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
     def setup() {
         log.debug('Setting up TerminologyPathServiceSpec Unit')
 
+        mockArtefact(BreadcrumbTreeService)
         mockArtefact(TermService)
         mockArtefact(TerminologyService)
         mockArtefact(CodeSetService)
@@ -128,7 +130,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         checkAndSave(terminology4finalised)
         terminology4finalised.finalised = true
         terminology4finalised.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        terminology4finalised.breadcrumbTree.finalise()
+        terminology4finalised.breadcrumbTree.finalised = true
         terminology4finalised.modelVersion = Version.from('1.0.0')
         checkAndSave(terminology4finalised)
 
@@ -139,7 +141,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         checkAndSave(terminology5first)
         terminology5first.finalised = true
         terminology5first.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        terminology5first.breadcrumbTree.finalise()
+        terminology5first.breadcrumbTree.finalised = true
         terminology5first.modelVersion = Version.from('1.0.0')
         checkAndSave(terminology5first)
 
@@ -147,7 +149,7 @@ class TerminologyPathServiceSpec extends CatalogueItemServiceSpec implements Ser
         checkAndSave(terminology5second)
         terminology5second.finalised = true
         terminology5second.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        terminology5second.breadcrumbTree.finalise()
+        terminology5second.breadcrumbTree.finalised = true
         terminology5second.modelVersion = Version.from('2.0.0')
         checkAndSave(terminology5second)                 
 

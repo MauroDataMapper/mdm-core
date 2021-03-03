@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -48,6 +49,7 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
     ReferenceDataModel referenceDataModel
 
     def setup() {
+        mockArtefact(BreadcrumbTreeService)
         mockArtefact(ClassifierService)
         mockArtefact(VersionLinkService)
         mockArtefact(SemanticLinkService)
@@ -74,10 +76,20 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
                                                                                          label: 'summary metadata 3',
                                                                                          summaryMetadataType: ReferenceSummaryMetadataType.STRING)
             .addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST, reportDate: OffsetDateTime.now(), reportValue: 'some value')
-        
+
         referenceDataModel.addToReferenceSummaryMetadata(referenceSummaryMetadata)
 
         checkAndSave referenceDataModel
+
+        ReferenceDataModelService dataModelService = Stub() {
+            get(_) >> referenceDataModel
+            getModelClass() >> referenceDataModel
+            handles('ReferenceDataModel') >> true
+            removeReferenceSummaryMetadataFromCatalogueItem(referenceDataModel.id, _) >> {UUID bmid, ReferenceSummaryMetadata sm ->
+                referenceDataModel.referenceSummaryMetadata.remove(sm)
+            }
+        }
+        service.catalogueItemServices = [dataModelService]
 
         id = referenceSummaryMetadata.id
     }

@@ -486,13 +486,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
 
         when:
-        GET('')
+        //get all so that if there are more than 10 items, we can be sure of finding the correct one in the when block below
+        GET("?all=true")
 
         then:
         verifyResponse OK, response
         responseBody().count >= 3
 
         when:
+        log.debug(responseBody().toString())
         String mainBranchId = responseBody().items.find {
             it.label == validJson.label &&
             !(it.id in [branchId, id])
@@ -620,13 +622,15 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().label == validJson.label
 
         when:
-        GET('')
+        //get all so that if there are more than 10 items, we can be sure of finding the correct one in the when block below
+        GET("?all=true")
 
         then:
         verifyResponse OK, response
         responseBody().count >= 3
 
         when:
+        log.debug(responseBody().toString())
         String mainBranchId = responseBody().items.find {
             it.label == validJson.label &&
             !(it.id in [leftId, rightId, id])

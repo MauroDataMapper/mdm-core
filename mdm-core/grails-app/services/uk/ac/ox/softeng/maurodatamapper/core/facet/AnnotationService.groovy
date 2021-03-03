@@ -17,8 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -53,18 +54,17 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
         delete(get(id))
     }
 
-    void delete(Annotation annotation) {
+    void delete(Annotation annotation, boolean flush = false) {
         if (!annotation) return
-        CatalogueItemService service = catalogueItemServices.find {it.handles(annotation.catalogueItemDomainType)}
-        if (!service) throw new ApiBadRequestException('AS01', 'Annotation removal for catalogue item with no supporting service')
+        CatalogueItemService service = findCatalogueItemService(annotation.catalogueItemDomainType)
         service.removeAnnotationFromCatalogueItem(annotation.catalogueItemId, annotation)
 
         annotation.parentAnnotation?.removeFromChildAnnotations(annotation)
         List<Annotation> children = new ArrayList<>(annotation.childAnnotations)
         children.each {
-            delete(it)
+            delete(it, false)
         }
-        annotation.delete()
+        annotation.delete(flush: flush)
     }
 
     Annotation editInformation(Annotation annotation, String label, String description) {
@@ -89,6 +89,21 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
         Annotation.by()
     }
 
+    @Override
+    void saveCatalogueItem(Annotation facet) {
+        if (!facet) return
+        CatalogueItemService catalogueItemService = findCatalogueItemService(facet.catalogueItemDomainType)
+        catalogueItemService.save(facet.catalogueItem)
+    }
+
+    @Override
+    void addFacetToDomain(Annotation facet, String domainType, UUID domainId) {
+        if (!facet) return
+        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
+        facet.catalogueItem = domain
+        domain.addToAnnotations(facet)
+    }
+
     List<Annotation> findAllWhereRootAnnotationOfCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
         Annotation.whereRootAnnotationOfCatalogueItemId(catalogueItemId).list(paginate)
     }
@@ -105,5 +120,6 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
     Number countWhereRootAnnotationOfCatalogueItemId(UUID catalogueItemId) {
         Annotation.whereRootAnnotationOfCatalogueItemId(catalogueItemId).count()
     }
+
 
 }

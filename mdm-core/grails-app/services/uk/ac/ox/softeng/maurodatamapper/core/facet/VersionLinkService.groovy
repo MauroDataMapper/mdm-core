@@ -63,14 +63,13 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         versionLink.save(flush: true)
     }
 
-    void delete(VersionLink versionLink) {
+    void delete(VersionLink versionLink, boolean flush = false) {
         if (!versionLink) return
 
-        ModelService service = modelServices.find { it.handles(versionLink.catalogueItemDomainType) }
-        if (!service) throw new ApiBadRequestException('VLS01', 'Version link removal for catalogue item with no supporting service')
+        ModelService service = findModelService(versionLink.catalogueItemDomainType)
         service.removeVersionLinkFromModel(versionLink.catalogueItemId, versionLink)
 
-        versionLink.delete()
+        versionLink.delete(flush: flush)
     }
 
     void deleteBySourceModelAndTargetModelAndLinkType(Model sourceModel, Model targetModel,
@@ -79,10 +78,25 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         if (sl) delete(sl)
     }
 
+    @Override
+    void saveCatalogueItem(VersionLink facet) {
+        if (!facet) return
+        ModelService modelService = findModelService(facet.modelDomainType)
+        modelService.save(facet.catalogueItem)
+    }
+
+    @Override
+    void addFacetToDomain(VersionLink facet, String domainType, UUID domainId) {
+        if (!facet) return
+        Model domain = findModelByDomainTypeAndId(domainType, domainId)
+        facet.model = domain
+        domain.addToVersionLinks(facet)
+    }
+
     VersionLink loadModelsIntoVersionLink(VersionLink versionLink) {
         if (!versionLink) return null
         if (!versionLink.model) {
-            versionLink.model = findModelByDomainTypeAndId(versionLink.catalogueItemDomainType, versionLink.catalogueItemId)
+            versionLink.model = findModelByDomainTypeAndId(versionLink.modelDomainType, versionLink.modelId)
         }
         if (!versionLink.targetModel) {
             versionLink.targetModel = findModelByDomainTypeAndId(versionLink.targetModelDomainType, versionLink.targetModelId)
@@ -276,7 +290,7 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
 
     List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(String modelType, List<UUID> modelIds) {
         if (!modelIds) return []
-        findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(modelIds).collect { it.targetModelId }
+        findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(modelIds).collect {it.targetModelId}
     }
 
     List<VersionLink> findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(List<UUID> modelIds) {
@@ -285,5 +299,11 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         VersionLink.by()
             .eq('linkType', VersionLinkType.NEW_MODEL_VERSION_OF)
             .inList('targetModelId', modelIds).list()
+    }
+
+    ModelService findModelService(String modelDomainType) {
+        ModelService service = modelServices.find {it.handles(modelDomainType)}
+        if (!service) throw new ApiBadRequestException('FS01', "No supporting service for ${modelDomainType}")
+        return service
     }
 }

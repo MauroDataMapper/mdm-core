@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
 
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
@@ -51,13 +52,31 @@ class SummaryMetadataService implements CatalogueItemAwareService<SummaryMetadat
         delete(get(id))
     }
 
-    void delete(SummaryMetadata summaryMetadata) {
+    void delete(SummaryMetadata summaryMetadata, boolean flush = false) {
         if (!summaryMetadata) return
+
+        CatalogueItemService service = findCatalogueItemService(summaryMetadata.catalogueItemDomainType)
+        service.removeSummaryMetadataFromCatalogueItem(summaryMetadata.catalogueItemId, summaryMetadata)
+
         List<SummaryMetadataReport> reports = new ArrayList<>(summaryMetadata.summaryMetadataReports)
         reports.each {
-            it.delete()
+            it.delete(flush: false)
         }
-        summaryMetadata.delete()
+        summaryMetadata.delete(flush: flush)
+    }
+
+    void saveCatalogueItem(SummaryMetadata facet) {
+        if (!facet) return
+        CatalogueItemService catalogueItemService = findCatalogueItemService(facet.catalogueItemDomainType)
+        catalogueItemService.save(facet.catalogueItem)
+    }
+
+    @Override
+    void addFacetToDomain(SummaryMetadata facet, String domainType, UUID domainId) {
+        if (!facet) return
+        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
+        facet.catalogueItem = domain
+        domain.addToSummaryMetadata(facet)
     }
 
     @Override

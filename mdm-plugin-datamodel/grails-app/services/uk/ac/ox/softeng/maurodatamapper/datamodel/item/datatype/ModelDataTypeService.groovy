@@ -22,12 +22,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
@@ -67,12 +69,12 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(ModelDataType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(ModelDataType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ModelDataType catalogueItem, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ModelDataType catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 
@@ -103,6 +105,10 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> {
     @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ModelDataType.simpleName
+    }
+
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override
@@ -144,5 +150,10 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> {
             dataModel.addToDataTypes(modelDataType)
         }
         modelDataType
+    }
+
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(DataType.name)
     }
 }

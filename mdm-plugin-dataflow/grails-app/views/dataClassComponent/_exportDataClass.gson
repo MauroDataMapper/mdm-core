@@ -1,0 +1,8 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+
+model {
+    DataClass exportDataClass
+}
+json {
+    label exportDataClass.label
+}

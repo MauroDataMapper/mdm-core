@@ -123,12 +123,16 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             log.trace('Removing {} DataTypes', dataTypeIds.size())
 
             sessionFactory.currentSession
-                .createSQLQuery('delete from datamodel.data_type where data_model_id = :id')
+                .createSQLQuery('DELETE FROM datamodel.data_type WHERE data_model_id = :id')
                 .setParameter('id', dataModelId)
                 .executeUpdate()
 
             log.trace('DataTypes removed')
         }
+    }
+
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override
@@ -138,12 +142,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 
@@ -320,12 +324,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         throw new ApiNotYetImplementedException('DTSXX', 'DataType setting created by')
     }
 
-    private def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
-        DataType.withFilter(DataType.byDataModelId(dataModelId), paginate).list(paginate)
-    }
+    private def findAllByDataModelId(Serializable dataModelId, Map paginate = [:], boolean includeImported = false) {
+        DataType.withFilter(DataType.byDataModelId(dataModelId, includeImported), paginate).list(paginate)
+    }   
 
-    private def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
-        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
+    private def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:], boolean includeImported = false) {
+        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm, includeImported).list(paginate)
     }
 
     void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {

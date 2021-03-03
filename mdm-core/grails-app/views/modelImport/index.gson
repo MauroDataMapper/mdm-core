@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<ModelImport> modelImportList
+}
+
+json {
+    count modelImportList instanceof PagedResultList ? ((PagedResultList) modelImportList).getTotalCount() : modelImportList?.size() ?: 0
+    items tmpl.modelImport(modelImportList ?: [])
+}

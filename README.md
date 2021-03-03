@@ -9,8 +9,8 @@ Core API for Mauro Data Mapper
 
 ## Requirements
 
-* Grails 4.0.3 +
-* Gradle 6.3
+* Grails 4.0.6 +
+* Gradle 6.7.1
 * Java OpenJDK 12
 
 All of the above can be installed an easily maintained by using [SDKMAN!](https://sdkman.io).

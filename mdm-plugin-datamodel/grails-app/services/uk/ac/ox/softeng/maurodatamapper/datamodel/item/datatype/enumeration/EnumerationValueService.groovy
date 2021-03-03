@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -95,12 +96,12 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(EnumerationValue catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(EnumerationValue catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationValue catalogueItem, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationValue catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 
@@ -121,6 +122,10 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
         EnumerationValue.byClassifierId(classifier.id).list().findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
         }
+    }
+
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override

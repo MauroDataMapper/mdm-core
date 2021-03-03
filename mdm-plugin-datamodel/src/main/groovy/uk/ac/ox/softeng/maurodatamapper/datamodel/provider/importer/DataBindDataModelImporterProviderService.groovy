@@ -24,10 +24,12 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.Da
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.web.databinding.DataBindingUtils
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.springframework.core.GenericTypeResolver
 
 @Slf4j
+@CompileStatic
 abstract class DataBindDataModelImporterProviderService<T extends DataModelFileImporterProviderServiceParameters> extends
     DataModelImporterProviderService<T> {
 
@@ -47,14 +49,16 @@ abstract class DataBindDataModelImporterProviderService<T extends DataModelFileI
         false
     }
 
-    List<DataModel> importModels(User currentUser, T params) {
+    @Override
+    List<DataModel> importModels(User currentUser, DataModelFileImporterProviderServiceParameters params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
         importDataModels(currentUser, params.importFile.fileContents)
     }
 
-    DataModel importModel(User currentUser, T params) {
+    @Override
+    DataModel importModel(User currentUser, DataModelFileImporterProviderServiceParameters params) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
         log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)

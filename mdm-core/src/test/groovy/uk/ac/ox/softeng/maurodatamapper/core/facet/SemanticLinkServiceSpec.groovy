@@ -66,7 +66,7 @@ class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink
             handles('BasicModel') >> true
             removeSemanticLinkFromCatalogueItem(_, _) >> {UUID id, SemanticLink semanticLink ->
                 BasicModel bm = BasicModel.get(id)
-                bm.removeFromSemanticLinks(semanticLink)
+                bm.semanticLinks.remove(semanticLink)
             }
         }
         service.catalogueItemServices = [basicModelService]

@@ -24,6 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -38,10 +41,17 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
+import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.orm.hibernate.cfg.JoinTable
+import org.grails.orm.hibernate.cfg.Mapping
+import org.grails.orm.hibernate.cfg.PropertyConfig
+import org.grails.orm.hibernate.cfg.Table
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
+@Slf4j
 abstract class CatalogueItemService<K extends CatalogueItem> implements DomainService<K> {
 
     @Autowired
@@ -50,6 +60,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     ClassifierService classifierService
     MetadataService metadataService
     RuleService ruleService
+    ModelImportService modelImportService
     SemanticLinkService semanticLinkService
     SessionFactory sessionFactory
     AnnotationService annotationService
@@ -72,6 +83,93 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     boolean handlesPathPrefix(String pathPrefix) {
         false
     }
+
+    /**
+     * What domains does the catalogue item allow to be imported? Override this in sub-classes.
+     */
+    List<Class> importsDomains() {
+        []
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type importedDomainType to be imported?
+     *
+     * @param clazz Domain (Class) that something is trying to import.
+     * @return boolean Is the import of this domain type allowed or not?
+     */
+    boolean importsDomain(Class clazz) {
+        importsDomains().contains(clazz)
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type importedDomainType to be imported?
+     *
+     * @param importedDomainType Domain type (string) of the domain that something is trying to import.
+     * @return boolean Is the import of this domain type allowed or not?
+     */
+    boolean importsDomainType(String importedDomainType) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, importedDomainType)
+        if (!grailsClass) {
+            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
+        }
+        importsDomain(grailsClass.clazz)
+    }
+
+    /**
+     * Does the importedModelItem belong to a DataModel which is finalised, or does it belong to the same
+     * collection as the importing DataModel?
+     *
+     * @param importingDataModel The DataModel which is importing the importedModelItem
+     * @param importedModelItem The ModelItem which is being imported into importingDataModel
+     *
+     * @return boolean Is this import allowed by domain specific rules?
+     */
+    boolean isImportableByCatalogueItem(CatalogueItem importingCatalogueItem, CatalogueItem importedCatalogueItem) {
+        false
+    }
+
+    /**
+     * What domains can the catalogue item extend? Override this in sub-classes.
+     */
+    List<Class> extendsDomains() {
+        []
+    }
+
+    /**
+     * Can the catalogue item extend a catalogue item of type extendedDomainType?
+     *
+     * @param clazz Domain (Class) that something is trying to extend.
+     * @return boolean Is the extend of this domain type allowed or not?
+     */
+    boolean extendsDomain(Class clazz) {
+        extendsDomains().contains(clazz)
+    }
+
+    /**
+     * Does the catalogue item allow a catalogue item of type extendedDomainType to be extended?
+     *
+     * @param extendedDomainType Domain type (string) of the domain that something is trying to extend.
+     * @return boolean Is the extend of this domain type allowed or not?
+     */
+    boolean extendsDomainType(String extendedDomainType) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, extendedDomainType)
+        if (!grailsClass) {
+            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${domainType}]")
+        }
+        extendsDomain(grailsClass.clazz)
+    }
+
+    /**
+     * Does the extendeModelItem pass domain specific rules for extension?
+     *
+     * @param extendingCatalogueItem The CatalogueItem which is extending the extendedCatalogueItem
+     * @param extendedCatalogueItem The CatalogueItem which is being extended by extendingCatalogueItem
+     *
+     * @return boolean Is this extend allowed by domain specific rules?
+     */
+    boolean isExtendableByCatalogueItem(K extendingCatalogueItem, K extendedCatalogueItem) {
+        false
+    }    
 
     abstract void deleteAll(Collection<K> catalogueItems)
 
@@ -104,9 +202,9 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff)
+    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff, boolean includeImported)
 
-    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false)
+    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false, boolean includeImported = false)
 
     abstract K findByIdJoinClassifiers(UUID id)
 
@@ -124,35 +222,47 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     void removeClassifierFromCatalogueItem(UUID catalogueItemId, Classifier classifier) {
-        get(catalogueItemId).removeFromClassifiers(classifier)
+        removeFacetFromDomain(catalogueItemId, classifier.id, 'classifiers')
     }
 
     void removeMetadataFromCatalogueItem(UUID catalogueItemId, Metadata metadata) {
-        get(catalogueItemId).removeFromMetadata(metadata)
+        removeFacetFromDomain(catalogueItemId, metadata.id, 'metadata')
     }
 
     void removeAnnotationFromCatalogueItem(UUID catalogueItemId, Annotation annotation) {
-        get(catalogueItemId).removeFromAnnotations(annotation)
+        removeFacetFromDomain(catalogueItemId, annotation.id, 'annotations')
     }
 
     void removeSemanticLinkFromCatalogueItem(UUID catalogueItemId, SemanticLink semanticLink) {
-        get(catalogueItemId).removeFromSemanticLinks(semanticLink)
-    }
+        removeFacetFromDomain(catalogueItemId, semanticLink.id, 'semanticLinks')
+    }  
 
     void removeReferenceFileFromCatalogueItem(UUID catalogueItemId, ReferenceFile referenceFile) {
-        get(catalogueItemId).removeFromReferenceFiles(referenceFile)
+        removeFacetFromDomain(catalogueItemId, referenceFile.id, 'referenceFiles')
     }
+
+    void removeRuleFromCatalogueItem(UUID catalogueItemId, Rule rule) {
+        removeFacetFromDomain(catalogueItemId, rule.id, 'rules')
+    }
+
+    void removeModelImportFromCatalogueItem(UUID catalogueItemId, ModelImport modelImport) {
+        removeFacetFromDomain(catalogueItemId, modelImport.id, 'modelImports')
+    }
+
+    void removeModelExtendFromCatalogueItem(UUID catalogueItemId, ModelExtend modelExtend) {
+        removeFacetFromDomain(catalogueItemId, modelExtend.id, 'modelExtends')
+    }      
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy.createdBy = copier.emailAddress
         copy.label = original.label
         copy.description = original.description
 
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
-        metadataService.findAllByCatalogueItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
-        ruleService.findAllByCatalogueItemId(original.id).each { rule ->
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
+        metadataService.findAllByCatalogueItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
+        ruleService.findAllByCatalogueItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -209,7 +319,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                 it.beforeValidate()
             }
             ReferenceFile.saveAll(catalogueItem.referenceFiles)
-        }
+        }      
         catalogueItem.breadcrumbTree?.trackChanges()
         catalogueItem.breadcrumbTree?.beforeValidate()
         catalogueItem.breadcrumbTree?.save(validate: false)
@@ -260,6 +370,21 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         null
     }
 
+    void removeFacetFromDomain(UUID domainId, UUID facetId, String facetProperty) {
+        PersistentEntity persistentEntity = getPersistentEntity()
+        JoinTable joinTable = getJoinTable(persistentEntity, facetProperty)
+        Table domainEntityTable = getDomainEntityTable(persistentEntity)
+        sessionFactory.currentSession
+            .createSQLQuery("DELETE FROM ${domainEntityTable.schema}.${joinTable.name} " +
+                            "WHERE ${joinTable.key.name} = :domainId " +
+                            "AND ${joinTable.column.name} = :facetId")
+            .setParameter('domainId', domainId)
+            .setParameter('facetId', facetId)
+            .executeUpdate()
+        log.warn('stop')
+
+    }
+
     void deleteAllFacetsByCatalogueItemId(UUID catalogueItemId, String queryToDeleteFromJoinTable) {
         sessionFactory.currentSession
             .createSQLQuery(queryToDeleteFromJoinTable)
@@ -284,5 +409,23 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         referenceFileService.deleteAllByCatalogueItemIds(catalogueItemIds)
         ruleService.deleteAllByCatalogueItemIds(catalogueItemIds)
         semanticLinkService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    }
+
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(getCatalogueItemClass().name)
+    }
+
+    JoinTable getJoinTable(PersistentEntity persistentEntity, String facetProperty) {
+        PropertyConfig propertyConfig = persistentEntity.getPropertyByName(facetProperty).mapping.mappedForm as PropertyConfig
+        propertyConfig.joinTable
+    }
+
+    Table getDomainEntityTable(PersistentEntity persistentEntity) {
+        Mapping mapping = persistentEntity.mapping.mappedForm as Mapping
+        mapping.table
+    }    
+
+    void additionalModelImports(User currentUser, ModelImport imported) {
+        //no-op
     }
 }

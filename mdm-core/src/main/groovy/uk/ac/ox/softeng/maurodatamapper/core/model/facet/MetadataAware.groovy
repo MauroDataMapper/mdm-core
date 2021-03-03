@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -71,6 +72,6 @@ trait MetadataAware {
     }
 
     def removeFromMetadata(Metadata metadata) {
-        removeFrom('metadata', metadata)
+        throw new ApiInternalException('FR01', 'Do not use removeFrom to remove facet from domain')
     }
 }

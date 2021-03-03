@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalS
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
+import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -103,6 +104,23 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     void verifyR04UnknownIdResponse(HttpResponse<Map> response, String id) {
         verifyForbidden response
+    }
+
+    void removeValidIdObjectUsingTransaction(String id) {
+        log.info('Removing valid id {} using permanent API call', id)
+        loginAdmin()
+        DELETE("${id}?permanent=true")
+        response.status() in [HttpStatus.NO_CONTENT, HttpStatus.NOT_FOUND]
+    }
+
+    String getAdditionalValidId(Map additionalValidJson) {
+        loginEditor()
+        POST(getSavePath(), additionalValidJson, MAP_ARG, true)
+        verifyResponse HttpStatus.CREATED, response
+        String id = response.body().id
+        addReaderShare(id)
+        logout()
+        id
     }
 
     Map getValidJson() {
@@ -291,94 +309,298 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         removeValidIdObject(id)
     }
 
-    /*
-    TODO importers/exporters
 
-        void 'test exporting DataFlow'() {
-            given:
-            def id = getValidId()
+    void 'L34 : test export a single DataFlow (as not logged in)'() {
+        given:
+        String id = getValidId()
 
-            when: 'not logged in'
-            def response = restGet("$id/export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0")
+        when:
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0")
 
-            then:
-            verifyUnauthorised response
+        then:
+        verifyNotFound response, id
 
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = restGet("$id/export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0")
+        cleanup:
+        removeValidIdObject(id)
+    }
 
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
+    void 'N34 : test export a single DataFlow (as authenticated/no access)'() {
+        given:
+        String id = getValidId()
 
-            when: 'logged in as writer'
-            loginEditor()
-            response = restGet("$id/export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0")
+        when:
+        loginAuthenticated()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0")
 
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
-        }
+        then:
+        verifyNotFound response, id
 
-        void 'test exporting DataFlows'() {
-            given:
-            def id = getValidId()
+        cleanup:
+        removeValidIdObject(id)
+    }
 
-            when: 'not logged in'
-            def response = post('export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                json([id])
-            }
+    void 'R34 : test export a single DataFlow (as reader)'() {
+        given:
+        String id = getValidId()
 
-            then:
-            verifyUnauthorised response
+        when:
+        loginReader()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
 
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = post('export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                json([id])
-            }
+        then:
+        verifyJsonResponse HttpStatus.OK, '''{
+  "dataFlow": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test DataFlow",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Asset",
+    "source": {
+      "id": "${json-unit.matches:id}",
+      "label": "SourceFlowDataModel",
+      "type": "Data Asset"
+    },
+    "target": {
+      "id": "${json-unit.matches:id}",
+      "label": "TargetFlowDataModel",
+      "type": "Data Asset"
+    }
+  },
+  "exportMetadata": {
+    "exportedBy": "reader User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+      "name": "DataFlowJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}'''
 
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
+        cleanup:
+        removeValidIdObject(id)
+    }    
 
-            when: 'logged in as writer'
-            loginEditor()
-            response = post('export/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                json([id])
-            }
+    void 'L35 : test export multiple Flows (json only exports first id) (as not logged in)'() {
+        given:
+        String id = getValidId()
+        String id2 = getAdditionalValidId([
+            label : 'Functional Test DataFlow 2',
+            source: sourceDataModelId
+        ])
 
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
-        }
+        when:
+        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0',
+             [dataFlowIds: [id, id2]]
+        )
 
-        void 'test importing DataFlows'() {
-            when: 'not logged in'
-            def response = post('import/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                contentType MimeType.MULTIPART_FORM.name
-                body = ''
-            }
+        then:
+        //no id set when multiple ones sent in the POST
+        verifyNotFound response, null
 
-            then:
-            verifyUnauthorised response
+        cleanup:
+        removeValidIdObject(id)
+        removeValidIdObject(id2)
+    }   
 
-            when: 'logged in as reader'
-            loginUser(reader2)
-            response = post('import/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                contentType MimeType.MULTIPART_FORM.name
-                body = ''
-            }
+    void 'N35 : test export multiple Flows (json only exports first id) (as authenticated/no access)'() {
+        given:
+        String id = getValidId()
+        String id2 = getAdditionalValidId([
+            label : 'Functional Test DataFlow 2',
+            source: sourceDataModelId
+        ])
 
-            then:
-            verifyUnauthorised response
+        when:
+        loginAuthenticated()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0',
+             [dataFlowIds: [id, id2]]
+        )
 
-            when: 'logged in as writer'
-            loginEditor()
-            response = post('import/ox.softeng.metadatacatalogue.plugins.excel/ExcelDataFlowExporterService/1.0.0') {
-                contentType MimeType.MULTIPART_FORM.name
-                body = ''
-            }
+        then:
+        //no id set when multiple ones sent in the POST
+        verifyNotFound response, null
 
-            then: 'there are no dataflow importers or exporters available in core'
-            verifyResponse NOT_FOUND, response
-        }
-    */
+        cleanup:
+        removeValidIdObject(id)
+        removeValidIdObject(id2)
+    }
+
+    void 'R35 : test export multiple Flows (json only exports first id) (as reader)'() {
+        given:
+        String id = getValidId()
+        String id2 = getAdditionalValidId([
+            label : 'Functional Test DataFlow 2',
+            source: sourceDataModelId
+        ])
+
+        when:
+        loginReader()
+        POST('export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0',
+             [dataFlowIds: [id, id2]], STRING_ARG
+        )
+
+        then:
+        verifyJsonResponse HttpStatus.OK, '''{
+  "dataFlow": {
+    "id": "${json-unit.matches:id}",
+    "label": "Functional Test DataFlow",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "type": "Data Asset",
+    "source": {
+      "id": "${json-unit.matches:id}",
+      "label": "SourceFlowDataModel",
+      "type": "Data Asset"
+    },
+    "target": {
+      "id": "${json-unit.matches:id}",
+      "label": "TargetFlowDataModel",
+      "type": "Data Asset"
+    }
+  },
+  "exportMetadata": {
+    "exportedBy": "reader User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter",
+      "name": "DataFlowJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}'''
+
+        cleanup:
+        removeValidIdObject(id)
+        removeValidIdObject(id2)
+    }       
+
+
+    void 'L36 : test import basic DataFlow (as not logged in)'() {
+        given:
+        String id = getValidId()
+        loginReader()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        verifyResponse HttpStatus.OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        expect:
+        exportedJsonString
+
+        when:
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
+            modelName                      : 'Functional Test Import',
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyNotFound response, targetDataModelId
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'N36 : test import basic DataFlow (as authenticated/no access)'() {
+        given:
+        String id = getValidId()
+        loginReader()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        verifyResponse HttpStatus.OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        expect:
+        exportedJsonString
+
+        when:
+        loginAuthenticated()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
+            modelName                      : 'Functional Test Import',
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        verifyNotFound response, targetDataModelId
+
+        cleanup:
+        removeValidIdObject(id)
+    }    
+
+    void 'R36 : test import basic DataFlow (as reader)'() {
+        given:
+        String id = getValidId()
+        loginReader()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        verifyResponse HttpStatus.OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        expect:
+        exportedJsonString
+
+        when:
+        loginReader()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
+            modelName                      : 'Functional Test Import',
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+        then:
+        //Can read the DM but importing a DF is forbidden
+        verifyForbidden response
+
+        cleanup:
+        removeValidIdObject(id)
+    }     
+
+
+    void 'E36A : test import basic DataFlow (as editor)'() {
+        given:
+        String id = getValidId()
+        loginReader()
+        GET("${id}/export/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter/DataFlowJsonExporterService/3.0", STRING_ARG)
+        verifyResponse HttpStatus.OK, jsonCapableResponse
+        String exportedJsonString = jsonCapableResponse.body()
+        logout()
+
+        expect:
+        exportedJsonString
+
+        when:
+        loginEditor()
+        POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
+            modelName                      : 'Functional Test Import',
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
+                fileContents: exportedJsonString.bytes.toList()
+            ]
+        ])
+
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+        response.body().count == 1
+        response.body().items.first().label == 'Functional Test Import'
+        response.body().items.first().id != id
+        String id2 = response.body().items.first().id
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id2)
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObject(id2, HttpStatus.NOT_FOUND)
+        removeValidIdObject(id, HttpStatus.NOT_FOUND)
+    }    
+
 }

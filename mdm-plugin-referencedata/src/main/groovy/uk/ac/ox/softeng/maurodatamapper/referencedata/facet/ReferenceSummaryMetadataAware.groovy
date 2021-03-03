@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
 import groovy.transform.CompileStatic
@@ -31,16 +32,16 @@ trait ReferenceSummaryMetadataAware {
 
     abstract Set<ReferenceSummaryMetadata> getReferenceSummaryMetadata()
 
-    CatalogueItem addToReferenceSummaryMetadata(ReferenceSummaryMetadata referenceSummaryMetadata) {
+    def addToReferenceSummaryMetadata(ReferenceSummaryMetadata referenceSummaryMetadata) {
         referenceSummaryMetadata.setCatalogueItem(this as CatalogueItem)
         addTo('referenceSummaryMetadata', referenceSummaryMetadata)
     }
 
-    CatalogueItem addToReferenceSummaryMetadata(Map args) {
+    def addToReferenceSummaryMetadata(Map args) {
         addToReferenceSummaryMetadata(new ReferenceSummaryMetadata(args))
     }
 
-    CatalogueItem removeFromReferenceSummaryMetadata(ReferenceSummaryMetadata referenceSummaryMetadata) {
-        removeFrom('referenceSummaryMetadata', referenceSummaryMetadata)
+    def removeFromReferenceSummaryMetadata(ReferenceSummaryMetadata referenceSummaryMetadata) {
+        throw new ApiInternalException('FR01', 'Do not use removeFrom to remove facet from domain')
     }
 }

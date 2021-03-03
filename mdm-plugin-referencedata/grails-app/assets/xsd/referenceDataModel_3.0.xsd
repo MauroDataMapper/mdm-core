@@ -172,21 +172,17 @@ If you have not provided all the information at the DataModel level then a DataT
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="referenceDataValueType">
-    <xs:complexContent>
-      <xs:extension base="mdm:catalogueItem">
-        <xs:sequence>
-          <xs:element name="rowNumber" type="xs:integer" />
-          <xs:element name="value" type="xs:string" />
-          <xs:element name="referenceDataElement" type="mdm:referenceDataElementType">
-            <xs:annotation>
-              <xs:documentation>If you've already provided the full DataType information in the DataModel list of DataTypes, then you need only provide the label and domainType here to link to the DataType.
-
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="rowNumber" type="xs:integer" />
+      <xs:element name="value" type="xs:string" />
+      <xs:element name="referenceDataElement" type="mdm:referenceDataElementType">
+        <xs:annotation>
+          <xs:documentation>If you've already provided the full DataType information in the DataModel list of DataTypes, then you need only provide the label and domainType here to link to the DataType.
 If you have not provided all the information at the DataModel level then a DataType will be created using the information provided.</xs:documentation>
-            </xs:annotation>
-          </xs:element>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
   </xs:complexType>  
   <xs:complexType name="referenceEnumerationValuesType">
     <xs:sequence>

@@ -68,7 +68,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
             handles('BasicModel') >> true
             removeVersionLinkFromModel(_, _) >> {UUID id, VersionLink versionLink ->
                 BasicModel bm = BasicModel.get(id)
-                bm.removeFromVersionLinks(versionLink)
+                bm.versionLinks.remove(versionLink)
             }
         }
         service.catalogueItemServices = [basicModelService]

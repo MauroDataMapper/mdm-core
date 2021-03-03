@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS datamodel.join_dataclass_to_facet ADD COLUMN model_extend_id UUID NULL;
+ALTER TABLE IF EXISTS datamodel.join_dataclass_to_facet ADD CONSTRAINT FKdataclass_to_model_extend FOREIGN KEY (model_extend_id) REFERENCES core.model_extend;

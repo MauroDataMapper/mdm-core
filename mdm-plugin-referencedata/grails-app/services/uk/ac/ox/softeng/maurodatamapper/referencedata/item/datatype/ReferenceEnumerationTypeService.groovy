@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -29,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
@@ -69,13 +71,17 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
         enumerationType.delete(flush: flush)
     }
 
+    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
+    }
+
     @Override
-    boolean hasTreeTypeModelItems(ReferenceEnumerationType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(ReferenceEnumerationType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceEnumerationType catalogueItem, boolean forDiff) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceEnumerationType catalogueItem, boolean forDiff, boolean includeImported = false) {
         []
     }
 
@@ -143,13 +149,20 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
         enumerationType
     }
 
-    private ReferenceEnumerationType addEnumerationValueToEnumerationType(ReferenceEnumerationType enumerationType, String key, String value, User createdBy) {
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(ReferenceDataType.name)
+    }
+
+    private ReferenceEnumerationType addEnumerationValueToEnumerationType(ReferenceEnumerationType enumerationType, String key, String value,
+                                                                          User createdBy) {
         if (key)
             enumerationType.addToReferenceEnumerationValues(key: key, value: value ?: key, createdBy: createdBy.emailAddress)
         enumerationType
     }
 
-    private ReferenceEnumerationType addEnumerationValueToEnumerationType(ReferenceEnumerationType enumerationType, String key, String value, String category,
+    private ReferenceEnumerationType addEnumerationValueToEnumerationType(ReferenceEnumerationType enumerationType, String key, String value,
+                                                                          String category,
                                                                           User createdBy) {
         if (key)
             enumerationType.addToReferenceEnumerationValues(key: key, value: value ?: key, category: category, createdBy: createdBy.emailAddress)

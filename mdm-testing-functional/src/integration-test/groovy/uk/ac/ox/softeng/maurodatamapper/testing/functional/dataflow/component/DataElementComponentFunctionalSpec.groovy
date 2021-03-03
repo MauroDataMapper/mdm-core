@@ -477,7 +477,7 @@ class DataElementComponentFunctionalSpec extends UserAccessFunctionalSpec {
         {
           "id": "${json-unit.matches:id}",
           "domainType": "DataElement",
-          "label": "columnI",
+          "label": "columnH",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -498,7 +498,7 @@ class DataElementComponentFunctionalSpec extends UserAccessFunctionalSpec {
         {
           "id": "${json-unit.matches:id}",
           "domainType": "DataElement",
-          "label": "columnH",
+          "label": "columnI",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -640,7 +640,7 @@ class DataElementComponentFunctionalSpec extends UserAccessFunctionalSpec {
         {
           "id": "${json-unit.matches:id}",
           "domainType": "DataElement",
-          "label": "columnL",
+          "label": "columnM",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {
@@ -682,7 +682,7 @@ class DataElementComponentFunctionalSpec extends UserAccessFunctionalSpec {
         {
           "id": "${json-unit.matches:id}",
           "domainType": "DataElement",
-          "label": "columnM",
+          "label": "columnL",
           "model": "${json-unit.matches:id}",
           "breadcrumbs": [
             {

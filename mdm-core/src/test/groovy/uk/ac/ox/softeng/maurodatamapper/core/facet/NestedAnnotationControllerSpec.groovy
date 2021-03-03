@@ -96,6 +96,11 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
             findAllByParentAnnotationId(_, _) >> {
                 new DetachedCriteria<Annotation>(Annotation).eq('parentAnnotation', Utils.toUuid(parent.id)).list()
             }
+            addFacetToDomain(_, _, _) >> {Annotation ann, String domain, UUID bid ->
+                if (basicModel.id == bid) {
+                    basicModel.addToAnnotations(ann)
+                }
+            }
         }
     }
 

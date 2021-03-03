@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentationService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -58,17 +59,24 @@ class RuleService implements CatalogueItemAwareService<Rule> {
 
     void delete(Rule rule, boolean flush = false) {
         if (!rule) return
+        CatalogueItemService service = findCatalogueItemService(rule.catalogueItemDomainType)
+        service.removeRuleFromCatalogueItem(rule.catalogueItemId, rule)
         rule.delete(flush: flush)
     }
 
-    //Ensure a row is inserted into the _facet table
-    void addRuleToCatalogueItem(Rule rule, CatalogueItem catalogueItem) {
-        catalogueItem.addToRules(rule)
+    @Override
+    void saveCatalogueItem(Rule facet) {
+        if (!facet) return
+        CatalogueItemService catalogueItemService = findCatalogueItemService(facet.catalogueItemDomainType)
+        catalogueItemService.save(facet.catalogueItem)
     }
 
-    //Ensure a row is removed from the _facet table
-    void removeRuleFromCatalogueItem(Rule rule, CatalogueItem catalogueItem) {
-        catalogueItem.removeFromRules(rule)
+    @Override
+    void addFacetToDomain(Rule facet, String domainType, UUID domainId) {
+        if (!facet) return
+        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
+        facet.catalogueItem = domain
+        domain.addToRules(facet)
     }
 
     boolean validate(Rule rule) {

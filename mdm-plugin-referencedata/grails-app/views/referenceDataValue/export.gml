@@ -3,8 +3,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 ReferenceDataValue rdv = referenceDataValue as ReferenceDataValue
 
 'mdm:referenceDataValue' {
-    layout '/catalogueItem/_export.gml', catalogueItem: rdv
-
+    'mdm:id'(rdv.id)
     'mdm:rowNumber'(rdv.rowNumber)
     'mdm:value'(rdv.value)
     

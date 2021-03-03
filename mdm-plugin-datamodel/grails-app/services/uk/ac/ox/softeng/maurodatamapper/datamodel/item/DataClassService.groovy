@@ -21,6 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -31,6 +35,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
@@ -51,6 +57,8 @@ class DataClassService extends ModelItemService<DataClass> {
     DataElementService dataElementService
     DataTypeService dataTypeService
     MessageSource messageSource
+    ModelExtendService modelExtendService 
+    ModelImportService modelImportService    
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
 
@@ -81,6 +89,60 @@ class DataClassService extends ModelItemService<DataClass> {
     void delete(UUID id) {
         delete(get(id))
     }
+    /**
+     * DataClass allows the import of DataClass and DataElement
+     */
+    @Override
+    List<Class> importsDomains() {
+        [DataElement, DataClass]
+    }    
+
+    /**
+     * Does the importedModelItem belong to a DataClass belonging to a DataModel which is either finalised
+     * or in the same collection as the importing DataModel?
+     *
+     * @param importingDataClass The DataClass which is importing the importedModelItem
+     * @param importedModelItem The ModelItem which is being imported into importingDataClass
+     *
+     * @return boolean Is this import allowed by domain specific rules?
+     */
+    @Override
+    boolean isImportableByCatalogueItem(CatalogueItem importingDataClass, CatalogueItem importedModelItem) {
+        //DataModel importingDataModel = importingDataClass.getModel()
+        DataModel importedFromDataModel = importedModelItem.getModel()
+
+        importedFromDataModel.finalised
+
+        //TODO add OR importedFromModel is in the same collection as importingDataModel
+    }
+
+    /**
+     * DataClass can extend DataClass
+     */
+    @Override
+    List<Class> extendsDomains() {
+        [DataClass]
+    }    
+
+    /**
+     * Does the extendedDataClass meet domain specific rules for extension?
+     *
+     * @param extendingDataClass The DataClass which is extending the extendedDataClass
+     * @param extendedDataClass The DataClass which is being extended by extendingDataClass
+     *
+     * @return boolean Is this extend allowed by domain specific rules?
+     */
+    @Override
+    boolean isExtendableByCatalogueItem(DataClass extendingDataClass, DataClass extendedDataClass) {
+        //1. The extended DataClass must directly belong to the same DataModel as the extending DataClass, or
+        (extendingDataClass.dataModelId == extendedDataClass.dataModelId) ||
+        //2. the extended DataClass is imported into the same DataModel as owns the extending DataClass, or
+        (extendingDataClass.dataModel.modelImports.any {it.catalogueItemId == extendedDataClass.dataModelId}) ||
+        //3. TODO the two DataClasses belong to the same collection, or
+        //
+        //4. the extended DataClass belongs to a DataModel which is finalised
+        (extendedDataClass.dataModel.finalised)
+    }      
 
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
@@ -124,12 +186,16 @@ class DataClassService extends ModelItemService<DataClass> {
 
             log.trace('Removing {} DataClasses', dataClassIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from datamodel.data_class where data_model_id = :id')
+                .createSQLQuery('DELETE FROM datamodel.data_class WHERE data_model_id = :id')
                 .setParameter('id', dataModelId)
                 .executeUpdate()
 
             log.trace('DataClasses removed')
         }
+    }
+
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override
@@ -148,6 +214,20 @@ class DataClassService extends ModelItemService<DataClass> {
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
+        if (catalogueItem.modelImports) {
+            catalogueItem.modelImports.each {
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            ModelImport.saveAll(catalogueItem.modelImports)
+        }   
+        if (catalogueItem.modelExtends) {
+            catalogueItem.modelExtends.each {
+                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+                it.catalogueItemId = catalogueItem.getId()
+            }
+            ModelExtend.saveAll(catalogueItem.modelExtends)
+        }                 
         catalogueItem
     }
 
@@ -360,13 +440,13 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.byRootDataClassOfDataModelId(dataModelId).idEq(id).count() == 1
     }
 
-    def findAllByDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId), paginate).list(paginate)
+    def findAllByDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, Map paginate = [:], boolean includeImported = false, boolean includeExtends = false) {
+        DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId, includeImported, includeExtends), paginate).list(paginate)
     }
 
-    def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId), paginate).list(paginate)
-    }
+    def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:], boolean includeImported = false) {
+        DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId, includeImported), paginate).list(paginate)
+    }   
 
     List<ModelItem> findAllContentOfDataClassIdInDataModelId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
         List<ModelItem> content = []
@@ -379,12 +459,12 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.byDataModelId(dataModelId).count()
     }
 
-    def findAllByDataModelId(UUID dataModelId, Map paginate = [:]) {
-        DataClass.withFilter(DataClass.byDataModelId(dataModelId), paginate).list(paginate)
+    def findAllByDataModelId(UUID dataModelId, Map paginate = [:], boolean includeImported = false) {
+        DataClass.withFilter(DataClass.byDataModelId(dataModelId, includeImported), paginate).list(paginate)
     }
 
-    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:]) {
-        DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:], boolean includeImported = false) {
+        DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm, includeImported).list(paginate)
     }
 
     private CatalogueItem findCommonParent(DataClass leftDataClass, DataClass rightDataClass) {
@@ -566,6 +646,18 @@ class DataClassService extends ModelItemService<DataClass> {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
+
+        modelImportService.findAllByCatalogueItemId(original.id).each { 
+            copy.addToModelImports(it.importedCatalogueItemDomainType,
+                                   it.importedCatalogueItemId,
+                                   copier) 
+        }       
+
+        modelExtendService.findAllByCatalogueItemId(original.id).each { 
+            copy.addToModelExtends(it.extendedCatalogueItemDomainType,
+                                   it.extendedCatalogueItemId,
+                                   copier) 
+        }                
         copy
     }
 
@@ -618,13 +710,13 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataClass dataClass, boolean forDiff) {
-        dataClass.dataClasses || (dataClass.dataElements && forDiff)
+    boolean hasTreeTypeModelItems(DataClass dataClass, boolean forDiff, boolean includeImported = false) {
+        dataClass.dataClasses || (dataClass.dataElements && forDiff) || (dataClass.modelImports && includeImported)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean forDiff = false) {
-        (DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id).list() +
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean forDiff = false, boolean includeImported = false) {
+        (DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id, includeImported).list() +
          (forDiff ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
     }
 
@@ -726,5 +818,47 @@ class DataClassService extends ModelItemService<DataClass> {
      */
     DataClass findByLabel(String label) {
         DataClass.findByLabel(label)
+    }
+
+    /**
+     * When a DataClass is imported into a DataClass or DataModel, we also want to import any DataTypes
+     * belonging to the DataElements of the imported DataClass.
+     *
+     * @param currentUser The user doing the import
+     * @param imported The resource that was imported
+     *
+     */
+    @Override
+    void additionalModelImports(User currentUser, ModelImport imported) {
+
+        //The DataClass that was imported
+        DataClass dataClass = imported.importedCatalogueItem
+        
+        dataClass.dataElements.each {dataElement ->
+            DataType dataType = dataElement.dataType
+
+            //The CatalogueItem (which will be a DataClass) into which the DataElement was imported
+            CatalogueItem catalogueItem = imported.catalogueItem
+
+            //The DataModel to which that DataClass belongs
+            DataModel dataModel
+            if (catalogueItem instanceof ModelItem) {
+                dataModel = catalogueItem.getModel()
+            } else {
+                dataModel = catalogueItem
+            }
+
+            if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
+                //Create a new ModelImport for the DataType into DataModel
+                ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
+                                                                  importedCatalogueItem  : dataType,
+                                                                  createdByUser          : currentUser)
+        
+                //Save the additional model import, indicating that this is an additional rather than
+                //principal import and so should fail silently if it already exists.
+                modelImportService.saveResource(currentUser, modelImportDataType, true) 
+            }
+        }
+                                                 
     }
 }

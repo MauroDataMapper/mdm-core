@@ -18,22 +18,22 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
+import org.hibernate.SessionFactory
+
 @Slf4j
 @Transactional
-class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
+class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
 
-    ReferenceSummaryMetadataService referenceSummaryMetadataService
+    SessionFactory sessionFactory
 
     @Override
     ReferenceDataValue get(Serializable id) {
@@ -49,12 +49,12 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
         ReferenceDataValue.list(args)
     }
 
-    @Override
+    //@Override
     List<ReferenceDataValue> getAll(Collection<UUID> ids) {
         ReferenceDataValue.getAll(ids).findAll()
     }
 
-    @Override
+    //@Override
     void deleteAll(Collection<ReferenceDataValue> referenceDataValues) {
         referenceDataValues.each { delete(it) }
     }
@@ -67,66 +67,49 @@ class ReferenceDataValueService extends ModelItemService<ReferenceDataValue> {
         if (!referenceDataValue) return
         referenceDataValue.breadcrumbTree.removeFromParent()
         referenceDataValue.referenceDataElement = null
-        referenceDataValuet.referenceDataModel?.removeFromReferenceDataValues(referenceDataValue)
+        referenceDataValue.referenceDataModel?.removeFromReferenceDataValues(referenceDataValue)
         referenceDataValue.delete(flush: flush)
     }
 
-    @Override
-    boolean hasTreeTypeModelItems(ReferenceDataValue catalogueItem, boolean forDiff) {
-        false
-    }
+    def saveAll(Collection<ReferenceDataValue> referenceDataValues) {
+        Collection<ReferenceDataValue> alreadySaved = referenceDataValues.findAll { it.ident() && it.isDirty() }
+        Collection<ReferenceDataValue> notSaved = referenceDataValues.findAll { !it.ident() }
 
+        if (alreadySaved) {
+            log.debug('Straight saving {} already saved ReferenceDataValues', alreadySaved.size())
+            ReferenceDataValue.saveAll(alreadySaved)
+        }
 
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataValue catalogueItem, boolean forDiff) {
-        []
-    }
+        if (notSaved) {
+            log.debug('Batch saving {} new ReferenceDataValues in batches of {}', notSaved.size(), ReferenceDataValue.BATCH_SIZE)
+            List batch = []
+            int count = 0
 
-    @Override
-    ReferenceDataValue findByIdJoinClassifiers(UUID id) {
-        ReferenceDataValue.findById(id, [fetch: [classifiers: 'join']])
-    }
+            notSaved.each { rdv ->
+                batch += rdv
+                count++
+                if (count % ReferenceDataValue.BATCH_SIZE == 0) {
+                    batchSave(batch)
+                    batch.clear()
+                }
 
-    @Override
-    void removeAllFromClassifier(Classifier classifier) {
-        ReferenceDataValue.byClassifierId(classifier.id).list().each {
-            it.removeFromClassifiers(classifier)
+            }
+            batchSave(batch)
+            batch.clear()
         }
     }
 
-    @Override
-    List<ReferenceDataValue> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        ReferenceDataValue.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id) }
-    }
+    void batchSave(List<ReferenceDataValue> referenceDataValues) {
+        long start = System.currentTimeMillis()
+        log.debug('Performing batch save of {} ReferenceDataValues', referenceDataValues.size())
 
-    @Override
-    Class<ReferenceDataValue> getModelItemClass() {
-        ReferenceDataValue
-    }
+        ReferenceDataValue.saveAll(referenceDataValues)
 
-    @Override
-    Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
-        domainType == ReferenceDataValue.simpleName
-    }
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
 
-
-    @Override
-    List<ReferenceDataValue> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                          String searchTerm, String domainType) {
-        /*List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
-        if (!readableIds) return []
-
-        List<ReferenceDataElement> results = []
-        if (shouldPerformSearchForTreeTypeCatalogueItems(domainType)) {
-            log.debug('Performing lucene label search')
-            long start = System.currentTimeMillis()
-            results = ReferenceDataElement.luceneLabelSearch(ReferenceDataElement, searchTerm, readableIds.toList()).results
-            log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
-        }*/
-
-results = [] //TODO
-        results
-    }
+        log.debug('Batch save took {}', Utils.timeTaken(start))
+    }    
 
     List<ReferenceDataValue> findAllByReferenceDataModelId(Serializable referenceDataModelId, Map pagination = [:]) {
         findAllByReferenceDataModelId(referenceDataModelId, pagination, pagination)
@@ -162,7 +145,5 @@ results = [] //TODO
 
         //Get the reference data element for this value by getting the matching reference data element for the model
         referenceDataValue.referenceDataElement = referenceDataModel.referenceDataElements.find {it.label == referenceDataValue.referenceDataElement.label}
-
-        checkFacetsAfterImportingCatalogueItem(referenceDataValue)
     }    
 }

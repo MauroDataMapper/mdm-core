@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -29,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
@@ -70,12 +72,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(EnumerationType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(EnumerationType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationType catalogueItem, boolean forDiff = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationType catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
 
@@ -143,6 +145,10 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
         enumerationType
     }
 
+    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
+    }
+
     private EnumerationType addEnumerationValueToEnumerationType(EnumerationType enumerationType, String key, String value, User createdBy) {
         if (key)
             enumerationType.addToEnumerationValues(key: key, value: value ?: key, createdBy: createdBy.emailAddress)
@@ -168,5 +174,10 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
             dataModel.addToDataTypes(enumerationType)
         }
         enumerationType
+    }
+
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(DataType.name)
     }
 }

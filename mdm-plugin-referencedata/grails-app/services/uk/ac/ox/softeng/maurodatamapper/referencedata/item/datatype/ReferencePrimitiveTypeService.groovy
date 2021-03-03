@@ -22,12 +22,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
@@ -69,13 +71,17 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         primitiveType.delete(flush: flush)
     }
 
+    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
+    }
+
     @Override
-    boolean hasTreeTypeModelItems(ReferencePrimitiveType catalogueItem, boolean forDiff) {
+    boolean hasTreeTypeModelItems(ReferencePrimitiveType catalogueItem, boolean forDiff, boolean includeImported = false) {
         false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferencePrimitiveType catalogueItem, boolean forDiff) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(ReferencePrimitiveType catalogueItem, boolean forDiff, boolean includeImported = false) {
         []
     }
 
@@ -122,6 +128,11 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         }
         log.debug("Search took: ${Utils.getTimeString(System.currentTimeMillis() - start)}. Found ${results.size()}")
         results
+    }
+
+    @Override
+    PersistentEntity getPersistentEntity() {
+        grailsApplication.mappingContext.getPersistentEntity(ReferenceDataType.name)
     }
 
     ReferencePrimitiveType createDataType(String label, String description, User createdBy, String units = null) {
