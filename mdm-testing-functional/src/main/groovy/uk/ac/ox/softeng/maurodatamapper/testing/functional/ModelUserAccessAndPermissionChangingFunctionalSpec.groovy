@@ -207,6 +207,77 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObject(id)
     }
 
+    void 'E16b : Test finalising Model (as editor) with a versionTag'() {
+        given:
+        String id = getValidId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Release'])
+
+        then:
+        verifyResponse OK, response
+        responseBody().finalised == true
+        responseBody().dateFinalised
+        responseBody().availableActions == [
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
+        ]
+        responseBody().modelVersion == '1.0.0'
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        when: 'log out and log back in again in as editor available actions are correct and modelVersionTag is set'
+        logout()
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == [
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
+        ]
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        when: 'log out and log back in again in as admin available actions are correct and modelVersionTag is set'
+        logout()
+        loginAdmin()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == [
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
+        ]
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+
     void 'L17 : test creating a new fork model of a Model<T> (as not logged in)'() {
         given:
         String id = getValidFinalisedId()
