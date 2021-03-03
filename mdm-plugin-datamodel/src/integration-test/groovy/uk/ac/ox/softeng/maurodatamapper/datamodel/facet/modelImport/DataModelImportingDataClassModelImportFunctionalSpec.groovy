@@ -89,7 +89,7 @@ class DataModelImportingDataClassModelImportFunctionalSpec extends CatalogueItem
 
         importedDataModel.finalised = true
         importedDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        importedDataModel.breadcrumbTree.finalise()
+        importedDataModel.breadcrumbTree.finalised = true
         importedDataModel.modelVersion = Version.from('1.0.0')
         importedDataModel.save(flush: true)                                            
 

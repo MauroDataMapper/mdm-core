@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -48,6 +49,7 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
     ReferenceDataModel referenceDataModel
 
     def setup() {
+        mockArtefact(BreadcrumbTreeService)
         mockArtefact(ClassifierService)
         mockArtefact(VersionLinkService)
         mockArtefact(SemanticLinkService)

@@ -32,7 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConst
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.ModelImportAware
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.DataTypeCollectionBindingHelper
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata

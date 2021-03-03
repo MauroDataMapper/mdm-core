@@ -28,7 +28,6 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import spock.lang.Shared
 
 import java.time.OffsetDateTime
@@ -103,7 +102,7 @@ class DataClassImportingDataClassModelImportFunctionalSpec extends CatalogueItem
 
         importedDataModel.finalised = true
         importedDataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-        importedDataModel.breadcrumbTree.finalise()
+        importedDataModel.breadcrumbTree.finalised = true
         importedDataModel.modelVersion = Version.from('1.0.0')
         importedDataModel.save(flush: true)                                           
 

@@ -17,7 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
+import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
@@ -46,9 +47,19 @@ class TerminologyServiceSpec extends CatalogueItemServiceSpec implements Service
     def setup() {
         log.debug('Setting up TerminologyServiceSpec unit')
         mockArtefact(TermService)
+        mockArtefact(BreadcrumbTreeService)
         mockArtefact(TermRelationshipService)
         mockArtefact(TermRelationshipTypeService)
         mockDomains(Terminology, Term, TermRelationship, TermRelationshipType)
+
+        service.breadcrumbTreeService = Stub(BreadcrumbTreeService) {
+            finalise(_) >> {
+                BreadcrumbTree bt ->
+                    bt.finalised = true
+                    bt.buildTree()
+
+            }
+        }
 
         complexTerminology = BootstrapModels.buildAndSaveComplexTerminology(messageSource, testFolder, null, testAuthority)
         simpleTerminology = BootstrapModels.buildAndSaveSimpleTerminology(messageSource, testFolder, testAuthority)

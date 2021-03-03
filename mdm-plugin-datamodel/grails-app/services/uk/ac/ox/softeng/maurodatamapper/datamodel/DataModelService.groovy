@@ -142,7 +142,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     DataModel validate(DataModel dataModel) {
-        log.trace('Validating DataModel')
+        log.debug('Validating DataModel')
         long st = System.currentTimeMillis()
         dataModel.validate()
         if (dataModel.hasErrors()) {
