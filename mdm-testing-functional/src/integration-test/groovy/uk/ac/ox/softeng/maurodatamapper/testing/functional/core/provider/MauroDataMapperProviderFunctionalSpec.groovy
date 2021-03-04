@@ -96,7 +96,7 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
     "name": "mdm.security",
      "version": "${json-unit.matches:version}"
   },
-  { "name": "PluginProfile",
+  { "name": "mdm.pluginProfile",
     "version": "${json-unit.matches:version}"
   },
   {

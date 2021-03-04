@@ -39,19 +39,18 @@ class BootstrapModels {
     static String SECOND_SIMPLE_REFERENCE_MODEL_NAME = "Second Simple Reference Data Model"
 
     static ReferenceDataModel buildAndSaveExampleReferenceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
-        ReferenceDataModel referenceDataModel = ReferenceDataModel.findByLabel(SIMPLE_REFERENCE_MODEL_NAME)
-        if(!referenceDataModel) {
-            referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SIMPLE_REFERENCE_MODEL_NAME,
-                                   folder: folder, authority: authority)
-
-            Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
-                    readableByAuthenticatedUsers: true)
-            checkAndSave(messageSource, classifier)
-            referenceDataModel.addToClassifiers(classifier)
-            checkAndSave(messageSource, referenceDataModel)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SIMPLE_REFERENCE_MODEL_NAME, folder: folder,
+                                                                       authority: authority)
 
 
-            ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
+                                                             readableByAuthenticatedUsers: true)
+        checkAndSave(messageSource, classifier)
+        referenceDataModel.addToClassifiers(classifier)
+        checkAndSave(messageSource, referenceDataModel)
+
+
+        ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
             ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
             referenceDataModel
                     .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk1', value: 'mdv1')
@@ -90,23 +89,22 @@ class BootstrapModels {
 
             checkAndSave(messageSource, referenceDataModel)
 
-        }
         referenceDataModel
     }
 
     static ReferenceDataModel buildAndSaveSecondExampleReferenceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
-        ReferenceDataModel referenceDataModel = ReferenceDataModel.findByLabel(SECOND_SIMPLE_REFERENCE_MODEL_NAME)
-        if(!referenceDataModel) {
-            referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SECOND_SIMPLE_REFERENCE_MODEL_NAME, folder: folder, authority: authority)
-
-            Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
-                    readableByAuthenticatedUsers: true)
-            checkAndSave(messageSource, classifier)
-            referenceDataModel.addToClassifiers(classifier)
-            checkAndSave(messageSource, referenceDataModel)
+        ReferenceDataModel referenceDataModel = new ReferenceDataModel(createdBy: DEVELOPMENT, label: SECOND_SIMPLE_REFERENCE_MODEL_NAME,
+                                                                       folder: folder, authority: authority)
 
 
-            ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
+                                                             readableByAuthenticatedUsers: true)
+        checkAndSave(messageSource, classifier)
+        referenceDataModel.addToClassifiers(classifier)
+        checkAndSave(messageSource, referenceDataModel)
+
+
+        ReferenceDataType stringDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'string')
             ReferenceDataType integerDataType = new ReferencePrimitiveType(createdBy: DEVELOPMENT, label: 'integer')
             referenceDataModel
                     .addToMetadata(createdBy: DEVELOPMENT, namespace: 'referencedata.com', key: 'mdk1', value: 'mdv1')
@@ -134,7 +132,6 @@ class BootstrapModels {
 
             checkAndSave(messageSource, referenceDataModel)
 
-        }
         referenceDataModel
     }
 

@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.compiler.GrailsCompileStatic
-import grails.gorm.DetachedCriteria
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
 

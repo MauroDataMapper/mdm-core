@@ -217,6 +217,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     abstract Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType)
 
+    abstract List<K> findAllByMetadataNamespace(String namespace, Map pagination = [:])
+
+    abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
+
+
     void addClassifierToCatalogueItem(UUID catalogueItemId, Classifier classifier) {
         get(catalogueItemId).addToClassifiers(classifier)
     }
@@ -428,9 +433,4 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     void additionalModelImports(User currentUser, ModelImport imported) {
         //no-op
     }
-
-    abstract List<K> findAllByMetadataNamespace(String namespace, Map pagination = [:])
-
-    abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
-
 }

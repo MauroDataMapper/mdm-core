@@ -41,11 +41,8 @@ class BootstrapModels {
 
     static DataModel buildAndSaveSourceDataModel(MessageSource messageSource, Folder folder, Authority authority) {
 
-        DataModel dataModel = DataModel.findByLabel(SOURCE_DATAMODEL_NAME)
-        if(!dataModel) {
-            dataModel = new DataModel(createdBy: DEVELOPMENT, label: SOURCE_DATAMODEL_NAME,
-                          folder: folder, type: DataModelType.DATA_ASSET,
-                          authority: authority)
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: SOURCE_DATAMODEL_NAME, folder: folder, type: DataModelType.DATA_ASSET,
+                                            authority: authority)
             checkAndSave(messageSource, dataModel)
 
             PrimitiveType string = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
@@ -79,17 +76,13 @@ class BootstrapModels {
                 .addToDataClasses(tableC)
 
             checkAndSave(messageSource, dataModel)
-        }
         dataModel
     }
 
     static DataModel buildAndSaveTargetDataModel(MessageSource messageSource, Folder folder, Authority authority) {
 
-        DataModel dataModel = DataModel.findByLabel(TARGET_DATAMODEL_NAME)
-        if(!dataModel) {
-            dataModel = new DataModel(createdBy: DEVELOPMENT, label: TARGET_DATAMODEL_NAME,
-                          folder: folder, type: DataModelType.DATA_ASSET,
-                          authority: authority)
+        DataModel dataModel = new DataModel(createdBy: DEVELOPMENT, label: TARGET_DATAMODEL_NAME, folder: folder, type: DataModelType.DATA_ASSET,
+                                            authority: authority)
             checkAndSave(messageSource, dataModel)
 
             PrimitiveType string = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
@@ -116,7 +109,6 @@ class BootstrapModels {
                 .addToDataClasses(tableE)
 
             checkAndSave(messageSource, dataModel)
-        }
         dataModel
     }
 
@@ -138,10 +130,7 @@ class BootstrapModels {
             [it.label, it]
         }
 
-        DataFlow dataFlow = DataFlow.findByLabel(DATAFLOW_NAME)
-        if(!dataFlow) {
-            dataFlow = new DataFlow(label: DATAFLOW_NAME, createdBy: DEVELOPMENT, source: sourceDataModel,
-                         target: targetDataModel)
+        DataFlow dataFlow = new DataFlow(label: DATAFLOW_NAME, createdBy: DEVELOPMENT, source: sourceDataModel, target: targetDataModel)
             checkAndSave(messageSource, dataFlow)
 
             dataFlow.addToDataClassComponents(
@@ -233,7 +222,6 @@ END''')
                 )
 
             checkAndSave(messageSource, dataFlow)
-        }
         dataFlow
     }
 

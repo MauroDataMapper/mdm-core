@@ -45,11 +45,8 @@ class BootstrapModels {
     public static final String UNFINALISED_CODESET_NAME = 'Unfinalised Simple Test CodeSet'
 
     static Terminology buildAndSaveSimpleTerminology(MessageSource messageSource, Folder folder, Authority authority) {
-        Terminology terminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
-        if(!terminology) {
-
-            terminology = new Terminology(createdBy: DEVELOPMENT, label: SIMPLE_TERMINOLOGY_NAME, folder: folder,
-                                                      author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
+        Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: SIMPLE_TERMINOLOGY_NAME, folder: folder,
+                                                  author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
             Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
                                                                  readableByAuthenticatedUsers: true)
@@ -67,16 +64,13 @@ class BootstrapModels {
 
             checkAndSave(messageSource, terminology)
 
-        }
         terminology
     }
 
     static CodeSet buildAndSaveSimpleCodeSet(MessageSource messageSource, Folder folder, Authority authority) {
 
-        CodeSet codeSet = CodeSet.findByLabel(SIMPLE_CODESET_NAME)
-        if(!codeSet) {
-            codeSet = new CodeSet(createdBy: DEVELOPMENT, label: SIMPLE_CODESET_NAME, folder: folder,
-                        author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
+        CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: SIMPLE_CODESET_NAME, folder: folder,
+                                      author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
             Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
                                                                  readableByAuthenticatedUsers: true)
@@ -102,15 +96,12 @@ class BootstrapModels {
 
             checkAndSave(messageSource, codeSet)
 
-        }
         codeSet
     }
 
     static Terminology buildAndSaveComplexTerminology(MessageSource messageSource, Folder folder, TerminologyService terminologyService,
                                                       Authority authority) {
-        Terminology terminology = Terminology.findByLabel(COMPLEX_TERMINOLOGY_NAME)
-        if(!terminology) {
-            terminology = new Terminology(createdBy: DEVELOPMENT, label: COMPLEX_TERMINOLOGY_NAME, folder: folder,
+        Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: COMPLEX_TERMINOLOGY_NAME, folder: folder,
                                                   author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
             Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
@@ -202,16 +193,13 @@ class BootstrapModels {
 
             checkAndSave(messageSource, terminology)
 
-        }
         terminology
     }
 
     static CodeSet buildAndSaveUnfinalisedCodeSet(MessageSource messageSource, Folder folder, Authority authority) {
 
-        CodeSet codeSet = CodeSet.findByLabel(UNFINALISED_CODESET_NAME)
-        if(!codeSet) {
-            codeSet = new CodeSet(createdBy: DEVELOPMENT, label: UNFINALISED_CODESET_NAME, folder: folder,
-                        author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
+        CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: UNFINALISED_CODESET_NAME, folder: folder,
+                                      author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
             checkAndSave(messageSource, codeSet)
 
@@ -233,7 +221,6 @@ class BootstrapModels {
 
             checkAndSave(messageSource, codeSet)
 
-        }
         codeSet
     }
 }

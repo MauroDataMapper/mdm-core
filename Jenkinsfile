@@ -95,20 +95,6 @@ pipeline {
                 }
             }
         }
-        stage('Unit Test: mdm-plugin-profile') {
-            steps {
-                dir('mdm-plugin-profile') {
-                    sh "./grailsw test-app -unit"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-profile') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-                    }
-                }
-            }
-        }
 
         /*
         Integration Tests
@@ -122,10 +108,11 @@ pipeline {
                     'mdm-plugin-dataflow',
                     'mdm-plugin-datamodel',
                     'mdm-plugin-email-proxy',
+                    //                    'mdm-plugin-profile',
                     'mdm-plugin-referencedata',
                     'mdm-plugin-terminology',
                     'mdm-security',
-                ].collect { ":${it}:integrationTest" }.join(' ')
+                ].collect {":${it}:integrationTest"}.join(' ')
             }
             post {
                 always {
@@ -197,24 +184,6 @@ pipeline {
                 }
             }
         }
-/*        stage('Integration Test: mdm-plugin-profile') {
-            steps {
-                dir('mdm-plugin-profile') {
-                    sh "./grailsw -Dgrails.integrationTest=true test-app -integration"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-plugin-profile') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/integrationTest/*.xml'
-                    }
-                }
-            }
-        }
-*/
-        /*
-        Functional Tests
-         */
         stage('Functional Test: mdm-plugin-terminology') {
             steps {
                 sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-terminology:integrationTest"
@@ -237,15 +206,11 @@ pipeline {
         }
         stage('Functional Test: mdm-plugin-profile') {
             steps {
-                dir('mdm-plugin-profile') {
-                    sh "./grailsw -Dgrails.functionalTest=true test-app -integration"
-                }
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-profile:integrationTest"
             }
             post {
                 always {
-                    dir('mdm-plugin-profile') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/functionalTest/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-profile/build/test-results/functionalTest/*.xml'
                 }
             }
         }
@@ -319,38 +284,17 @@ pipeline {
             }
             post {
                 always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/referencedata/*.xml'
-                    }
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/referencedata/*.xml'
                 }
             }
         }
- /*       stage('E2E Profile Functional Test') {
-            steps {
-                dir('mdm-testing-functional') {
-                    sh "./grailsw -Dgrails.test.package=profile test-app"
-                }
-            }
-            post {
-                always {
-                    dir('mdm-testing-functional') {
-                        junit allowEmptyResults: true, testResults: 'build/test-results/profile/*.xml'
-                    }
-                }
-            }
-        }
-*/
-//        stage('E2E Trouble Functional Test') {
+//        stage('E2E Profile Functional Test') {
 //            steps {
-//                dir('mdm-testing-functional') {
-//                    sh "./grailsw -Dgrails.test.category=TroubleTest test-app"
-//                }
+//                sh "./gradlew -Dgradle.test.package=profile :mdm-testing-functional:integrationTest"
 //            }
 //            post {
 //                always {
-//                    dir('mdm-testing-functional') {
-//                        junit allowEmptyResults: true, testResults: 'build/test-results/TroubleTest/*.xml'
-//                    }
+//                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/profile/*.xml'
 //                }
 //            }
 //        }

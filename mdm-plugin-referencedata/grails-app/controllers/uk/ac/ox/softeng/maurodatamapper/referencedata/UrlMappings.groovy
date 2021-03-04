@@ -48,8 +48,6 @@ class UrlMappings {
                 get '/currentMainBranch'(controller: 'referenceDataModel', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'referenceDataModel', action: 'availableBranches')
 
-                get '/modelVersionTree' (controller: 'referenceDataModel', action: 'modelVersionTree')
-
                 get "/diff/$otherModelId"(controller: 'referenceDataModel', action: 'diff')
                 get "/suggestLinks/$otherModelId"(controller: 'referenceDataModel', action: 'suggestLinks')
                 put "/folder/$folderId"(controller: 'referenceDataModel', action: 'changeFolder')

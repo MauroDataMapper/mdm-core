@@ -31,6 +31,8 @@ apply plugin: 'ox.softeng.ox-brc-artifactory'
 
 repositories {
     mavenLocal()
+    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-release"}
+    maven {url "https://jenkins.cs.ox.ac.uk/artifactory/libs-snapshot"}
     maven {url "https://repo.grails.org/grails/core"}
 }
 
@@ -117,7 +119,6 @@ grails {
         compile project(':mdm-plugin-referencedata')
         //        compile project(':mdm-plugin-email-proxy')
         compile project(':mdm-security')
-        compile project(':mdm-plugin-dataflow')
         compile project(':mdm-plugin-dataflow')
         compile project(':mdm-plugin-profile')
     }
