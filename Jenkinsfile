@@ -14,6 +14,7 @@ pipeline {
         //        timeout(time: 45, unit: 'MINUTES')
         // skipStagesAfterUnstable()
         buildDiscarder(logRotator(numToKeepStr: '30'))
+        disableConcurrentBuilds()
     }
 
     stages {
