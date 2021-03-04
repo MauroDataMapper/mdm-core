@@ -216,10 +216,10 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        if (!(profileProviderService instanceof DataModelProfileProviderService)) {
+/*        if (!(profileProviderService instanceof DataModelProfileProviderService)) {
             throw new ApiNotYetImplementedException('PCXX', 'Non-DataModel Based searching in profiles')
         }
-
+*/
         searchParams.searchTerm = searchParams.searchTerm ?: params.search
         searchParams.offset = 0
         searchParams.max = null

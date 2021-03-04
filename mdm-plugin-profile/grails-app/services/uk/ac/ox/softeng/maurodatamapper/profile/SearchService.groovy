@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.search.searchpa
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DataModelProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.MapBasedDataModelProfileProviderService
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
@@ -59,7 +60,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
     }
 
     List<Profile> findAllDataModelProfileObjectsForProfileProviderByLuceneSearch(UserSecurityPolicyManager userSecurityPolicyManager,
-                                                                                 DataModelProfileProviderService dataModelProfileProviderService,
+                                                                                 ProfileProviderService dataModelProfileProviderService,
                                                                                  SearchParams searchParams, Map pagination = [:]) {
 
         // Limit domain types to only those we know we care about
@@ -127,7 +128,7 @@ class SearchService extends AbstractCatalogueItemSearchService<DataModel> {
         [DataModel] as HashSet<Class<DataModel>>
     }
 
-    PaginatedLuceneResult<DataModel> filterSearchResultsByProfile(DataModelProfileProviderService dataModelProfileProviderService,
+    PaginatedLuceneResult<DataModel> filterSearchResultsByProfile(ProfileProviderService dataModelProfileProviderService,
                                                                   Set<UUID> foundDataModelIds,
                                                                   SearchParams searchParams, Map<String, Object> pagination) {
         log.debug('Filtering found DataModel ids')
