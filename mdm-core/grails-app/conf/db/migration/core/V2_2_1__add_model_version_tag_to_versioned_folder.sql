@@ -1,1 +1,0 @@
-ALTER TABLE IF EXISTS core.folder ADD COLUMN model_version_tag TEXT;
