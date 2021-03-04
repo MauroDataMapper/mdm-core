@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+
+model {
+    ApiProperty apiProperty
+}
+
+json tmpl.apiProperty(apiProperty)

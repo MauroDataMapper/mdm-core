@@ -39,12 +39,12 @@ class UrlMappings {
 
             group '/admin', {
                 get '/modules'(controller: 'mauroDataMapperProvider', action: 'modules')
-                get '/properties'(controller: 'admin', action: 'apiProperties')
                 post '/rebuildLuceneIndexes'(controller: 'admin', action: 'rebuildLuceneIndexes')
-                post '/editProperties'(controller: 'admin', action: 'editApiProperties')
                 get '/status'(controller: 'admin', action: 'status')
                 get '/activeSessions'(controller: 'session', action: 'activeSessions')
                 '/emails'(resources: 'email', includes: INCLUDES_INDEX_ONLY)
+
+                '/properties'(resources: 'apiProperty', excludes: DEFAULT_EXCLUDES)
 
                 group "/tree/$containerDomainType/$modelDomainType", {
                     get '/documentationSuperseded'(controller: 'treeItem', action: 'documentationSupersededModels') // New URL
@@ -64,6 +64,9 @@ class UrlMappings {
             get "/session/isAuthenticated/$sesssionId?"(controller: 'session', action: 'isAuthenticatedSession') // New Url
             get '/session/isApplicationAdministration'(controller: 'session', action: 'isApplicationAdministrationSession') // New Url
             get '/session/keepAlive'(controller: 'session', action: 'keepAlive') // New Url
+            get '/properties'(controller: 'apiProperty', action: 'index') {
+                openAccess = true
+            }
 
             group '/importer', {
                 get "/parameters/$ns?/$name?/$version?"(controller: 'importer', action: 'parameters')
