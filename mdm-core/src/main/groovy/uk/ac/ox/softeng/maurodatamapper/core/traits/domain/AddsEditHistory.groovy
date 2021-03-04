@@ -35,6 +35,8 @@ trait AddsEditHistory {
 
     abstract void addDeletedEdit(User deleter)
 
+    abstract void addMergedEdit(User merger,  String leftLabel, String leftBranch, String rightLabel, String rightBranch)
+
     abstract String getEditLabel()
 
     boolean shouldAddEdit(List<String> dirtyPropertyNames) {

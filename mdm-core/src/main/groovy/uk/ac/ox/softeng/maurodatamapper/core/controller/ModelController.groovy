@@ -282,6 +282,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             }
         }
 
+        instance.addMergedEdit(currentUser, left.label, left.branchName, right.label, right.branchName)
         updateResource(instance)
 
         updateResponse(instance)

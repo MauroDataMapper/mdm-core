@@ -75,6 +75,11 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
         // No-op
     }
 
+    @Override
+    void addMergedEdit(User merger, String leftLabel, String leftBranch, String rightLabel, String rightBranch) {
+        addToEditsTransactionally merger, "Merged [${leftLabel}].[${leftBranch}] into [${rightLabel}].[${rightBranch}]"
+    }    
+
     List<Edit> getEdits() {
         Edit.findAllByResource(domainType, id)
     }
