@@ -17,47 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
-import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.MessageSource
-
-import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
-
 class BootStrap {
 
-    @Autowired
-    MessageSource messageSource
-
-    AuthorityService authorityService
-
     def init = { servletContext ->
-        environments {
-            test {
-                Folder.withNewTransaction {
-
-
-                    Folder folder = Folder.findByLabel('Functional Test Folder')
-                    if(!folder)
-                    {
-                        folder = new Folder(label: 'Functional Test Folder', createdBy: StandardEmailAddress.getFUNCTIONAL_TEST())
-                        checkAndSave(messageSource, folder)
-                    }
-                    Authority authority = authorityService.getDefaultAuthority()
-                    if (DataModel.countByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
-                    }
-                    if (DataModel.countByLabel(BootstrapModels.SIMPLE_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
-                    }
-                }
-            }
-        }
     }
     def destroy = {
     }

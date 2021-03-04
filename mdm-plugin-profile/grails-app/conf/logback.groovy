@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,21 +93,22 @@ appender("FILE", clazz) {
 }
 root(INFO, ['STDOUT', 'FILE'])
 
+if (Environment.current != Environment.PRODUCTION) {
 
-logger('uk.ac.ox.softeng', DEBUG)
-logger('db.migration', DEBUG)
+    logger('uk.ac.ox.softeng', DEBUG)
+    logger('db.migration', DEBUG)
 
-logger('org.springframework.jdbc.core.JdbcTemplate', DEBUG)
+    logger('org.springframework.jdbc.core.JdbcTemplate', DEBUG)
 
-logger('org.apache.lucene', DEBUG)
-logger('org.hibernate.search.fulltext_query', DEBUG)
-logger('org.hibernate.search.batchindexing.impl', WARN)
-//    logger('org.hibernate.SQL', DEBUG)
-// logger 'org.hibernate.type', TRACE
-logger('org.flyway', DEBUG)
-// Track interceptor order
-logger 'grails.artefact.Interceptor', DEBUG
-logger 'org.simplejavamail.mailer.internal.mailsender.MailSender', OFF
+    logger('org.apache.lucene', DEBUG)
+    logger('org.hibernate.search.fulltext_query', DEBUG)
+    logger('org.hibernate.search.batchindexing.impl', WARN)
+    //    logger('org.hibernate.SQL', DEBUG)
+    // logger 'org.hibernate.type', TRACE
+    logger('org.flyway', DEBUG)
+    // Track interceptor order
+    logger 'grails.artefact.Interceptor', DEBUG
+}
 
 logger('org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory', ERROR)
 logger('org.springframework.context.support.PostProcessorRegistrationDelegate', WARN)
