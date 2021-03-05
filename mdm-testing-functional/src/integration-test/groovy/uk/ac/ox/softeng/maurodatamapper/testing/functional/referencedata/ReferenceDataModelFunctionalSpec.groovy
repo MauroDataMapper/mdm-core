@@ -133,7 +133,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     @Override
     Map getValidJson() {
         [
-            label: 'Functional Test Reference Data'
+            label: 'Functional Test ReferenceDataModel'
         ]
     }
 
@@ -209,12 +209,12 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
 
     @Override
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[ReferenceDataModel:Functional Test Reference Data] created/
+        ~/\[ReferenceDataModel:Functional Test ReferenceDataModel] created/
     }
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[ReferenceDataModel:Functional Test Reference Data] changed properties \[description]/
+        ~/\[ReferenceDataModel:Functional Test ReferenceDataModel] changed properties \[description]/
     }
 
     @Override
@@ -282,7 +282,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         '''{
   "id": "${json-unit.matches:id}",
   "domainType": "ReferenceDataModel",
-  "label": "Functional Test Reference Data",
+  "label": "Functional Test ReferenceDataModel",
   "availableActions": [
     "show",
     "comment",
@@ -449,7 +449,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         verifyJsonResponse OK, '''{
   "referenceDataModel": {
     "id": "${json-unit.matches:id}",
-    "label": "Functional Test Reference Data",
+    "label": "Functional Test ReferenceDataModel",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "ReferenceDataModel",
     "documentationVersion": "1.0.0",
@@ -521,7 +521,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         verifyJsonResponse OK, '''{
   "referenceDataModel": {
     "id": "${json-unit.matches:id}",
-    "label": "Functional Test Reference Data",
+    "label": "Functional Test ReferenceDataModel",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "type": "ReferenceDataModel",
     "documentationVersion": "1.0.0",
@@ -713,7 +713,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         then:
         verifyResponse CREATED, response
         response.body().count == 1
-        response.body().items.first().label == 'Functional Test Reference Data'
+        response.body().items.first().label == 'Functional Test ReferenceDataModel'
         response.body().items.first().id != id
 
         when:

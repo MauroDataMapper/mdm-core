@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.controller
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -28,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -317,7 +317,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        if (instance.branchName != 'main') return METHOD_NOT_ALLOWED
+        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
 
         instance = modelService.finaliseModel(instance, currentUser,
                                               finaliseData.version, finaliseData.versionChangeType,
@@ -326,12 +326,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!validateResource(instance, 'update')) return
 
         updateResource instance
-
-        if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(instance,
-                                                                                                               ['finalised'] as HashSet,
-                                                                                                               currentUser)
-        }
 
         updateResponse instance
     }
@@ -535,9 +529,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         log.info('Single Model Import complete')
 
         if (params.boolean('returnList')) {
-            respond([model], status: CREATED, view: 'index')
+            respond([savedModel], status: CREATED, view: 'index')
         } else {
-            respond model, status: CREATED, view: 'show'
+            respond savedModel, status: CREATED, view: 'show'
         }
     }
 
@@ -646,7 +640,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     @Override
     protected void serviceInsertResource(T resource) {
-        T model = getModelService().save(flush: true, resource) as T
+        T model = getModelService().save(DEFAULT_SAVE_ARGS, resource) as T
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(model, currentUser, model.label)
         }

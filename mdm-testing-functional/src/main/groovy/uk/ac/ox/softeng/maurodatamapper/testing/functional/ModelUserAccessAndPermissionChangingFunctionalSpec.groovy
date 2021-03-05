@@ -17,19 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
-import io.micronaut.core.type.Argument
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
+import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpResponse
 import spock.lang.PendingFeature
-
-import java.net.http.HttpResponse
-
-import java.net.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -962,7 +959,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String latestDraftId = responseBody().id
 
         when: 'logged in as editor'
-        io.micronaut.http.HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
+        HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
 
         then:
         verifyResponse OK, localResponse
@@ -973,17 +970,17 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         Map sourceMap = localResponse.body().find { it.modelId == id }
         sourceMap
         sourceMap == [branchName             : "main",
-                         label                  : "Functional Test " + getModelType(),
-                         modelId                : id,
-                         newBranchModelVersion  : false,
-                         newDocumentationVersion: false,
-                         newFork                : false,
-                         targets                : [[
-                                                            modelId: forkId,
-                                                            description: VersionLinkType.NEW_FORK_OF.label
-                                                   ],
-                                                   [
-                                                           modelId: mainBranchId,
+                      label                  : "Functional Test ${getModelType()}",
+                      modelId                : id,
+                      newBranchModelVersion  : false,
+                      newDocumentationVersion: false,
+                      newFork                : false,
+                      targets                : [[
+                                                    modelId    : forkId,
+                                                    description: VersionLinkType.NEW_FORK_OF.label
+                                                ],
+                                                [
+                                                    modelId           : mainBranchId,
                                                            description: VersionLinkType.NEW_MODEL_VERSION_OF.label
                                                    ],
                                                    [
@@ -994,32 +991,32 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         Map forkMap = localResponse.body().find { it.modelId == forkId }
         forkMap
-        forkMap ==    [branchName            : "main",
-                      label                  : "Functional Test " + getModelType() + " v2",
-                      modelId                : forkId,
-                      newBranchModelVersion  : false,
-                      newDocumentationVersion: false,
-                      newFork                : true,
-                      targets                : [[
-                                                        modelId: latestDraftId,
-                                                        description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
-                                                ]]
-                ]
+        forkMap == [branchName             : "main",
+                    label                  : "Functional Test ${getModelType()} v2",
+                    modelId                : forkId,
+                    newBranchModelVersion  : false,
+                    newDocumentationVersion: false,
+                    newFork                : true,
+                    targets                : [[
+                                                  modelId    : latestDraftId,
+                                                  description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
+                                              ]]
+        ]
 
         Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
         mainBranchMap
         mainBranchMap == [branchName             : "main",
-                         label                  : "Functional Test " + getModelType(),
-                         modelId                : mainBranchId,
-                         newBranchModelVersion  : true,
-                         newDocumentationVersion: false,
-                         newFork                : false,
-                         targets                : []]
+                          label                  : "Functional Test ${getModelType()}",
+                          modelId                : mainBranchId,
+                          newBranchModelVersion  : true,
+                          newDocumentationVersion: false,
+                          newFork                : false,
+                          targets                : []]
 
         Map newBranchMap = localResponse.body().find { it.modelId == newBranchId }
         newBranchMap
         newBranchMap == [branchName             : "newBranch",
-                         label                  : "Functional Test " + getModelType(),
+                         label                  : "Functional Test ${getModelType()}",
                          modelId                : newBranchId,
                          newBranchModelVersion  : true,
                          newDocumentationVersion: false,
@@ -1028,13 +1025,13 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         Map latestDraftMap = localResponse.body().find { it.modelId == latestDraftId }
         latestDraftMap
-        latestDraftMap == [branchName           : "main",
-                         label                  : "Functional Test " + getModelType() + " v2",
-                         modelId                : latestDraftId,
-                         newBranchModelVersion  : false,
-                         newDocumentationVersion: true,
-                         newFork                : false,
-                         targets                : []]
+        latestDraftMap == [branchName             : "main",
+                           label                  : "Functional Test ${getModelType()}" + " v2",
+                           modelId                : latestDraftId,
+                           newBranchModelVersion  : false,
+                           newDocumentationVersion: true,
+                           newFork                : false,
+                           targets                : []]
 
         cleanup:
         removeValidIdObjectUsingTransaction(id)
@@ -1069,8 +1066,8 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String latestDraftId = responseBody().id
 
         when: 'logged in as editor'
-        io.micronaut.http.HttpResponse<List<Map>> localResponseOldestAncestor = GET("$id/modelVersionTree", Argument.listOf(Map))
-        io.micronaut.http.HttpResponse<List<Map>> localResponseYoungestAncestor = GET("$latestDraftId/modelVersionTree", Argument.listOf(Map))
+        HttpResponse<List<Map>> localResponseOldestAncestor = GET("$id/modelVersionTree", Argument.listOf(Map))
+        HttpResponse<List<Map>> localResponseYoungestAncestor = GET("$latestDraftId/modelVersionTree", Argument.listOf(Map))
 
         then:
         verifyResponse OK, localResponseOldestAncestor
