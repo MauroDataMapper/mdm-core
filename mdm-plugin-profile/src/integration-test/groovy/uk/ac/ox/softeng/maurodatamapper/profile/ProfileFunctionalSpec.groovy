@@ -17,13 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
+import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import spock.lang.Shared
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.OK
 
@@ -31,14 +38,35 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 class ProfileFunctionalSpec extends BaseFunctionalSpec {
 
+    @Shared
+    Folder folder
+
+    @Shared
+    UUID complexDataModelId
+
+    @Shared
+    UUID simpleDataModelId
+
+    @OnceBefore
     @Transactional
-    String getComplexDataModelId() {
-        DataModel.findByLabel('Complex Test DataModel').id.toString()
+    def checkAndSetupData() {
+        log.debug('Check and setup test data')
+        folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
+        checkAndSave(testAuthority)
+
+        complexDataModelId = BootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, testAuthority).id
+        simpleDataModelId = BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, testAuthority).id
+
+        sessionFactory.currentSession.flush()
     }
 
     @Transactional
-    String getSimpleDataModelId() {
-        DataModel.findByLabel('Simple Test DataModel').id.toString()
+    def cleanupSpec() {
+        log.debug('CleanupSpec DataFlowFunctionalSpec')
+        cleanUpResources(DataModel, Folder)
+        Authority.findByLabel('Test Authority').delete(flush: true)
     }
 
     @Override
