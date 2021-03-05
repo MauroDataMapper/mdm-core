@@ -177,4 +177,20 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
             }
         }
     }
+    static DetachedCriteria<ReferenceEnumerationValue> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<ReferenceEnumerationValue> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

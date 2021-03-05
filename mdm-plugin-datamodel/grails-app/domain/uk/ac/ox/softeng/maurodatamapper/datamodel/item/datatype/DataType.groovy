@@ -247,4 +247,22 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     static DetachedCriteria<DataType> byDataModelIdAndLabel(UUID dataModelId, String label) {
         byDataModelId(dataModelId).eq('label', label)
     }
+
+
+    static DetachedCriteria<DataType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<DataType> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

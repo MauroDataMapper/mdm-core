@@ -292,14 +292,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         ReferenceDataModel.by().id().list() as List<UUID>
     }
 
-    List<ReferenceDataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
-        ReferenceDataModel.byMetadataNamespaceAndKey(namespace, key).list(pagination)
-    }
-
-    List<ReferenceDataModel> findAllByMetadataNamespace(String namespace) {
-        ReferenceDataModel.byMetadataNamespace(namespace).list()
-    }
-
     List<ReferenceDataModel> findAllByFolderId(UUID folderId) {
         ReferenceDataModel.byFolderId(folderId).list()
     }
@@ -692,4 +684,15 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     void setReferenceDataModelIsFromReferenceDataModel(ReferenceDataModel source, ReferenceDataModel target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
+
+    @Override
+    List<ReferenceDataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ReferenceDataModel.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<ReferenceDataModel> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ReferenceDataModel.byMetadataNamespace(namespace).list(pagination)
+    }
+
 }

@@ -74,4 +74,5 @@ trait MetadataAware {
     def removeFromMetadata(Metadata metadata) {
         throw new ApiInternalException('FR01', 'Do not use removeFrom to remove facet from domain')
     }
+
 }

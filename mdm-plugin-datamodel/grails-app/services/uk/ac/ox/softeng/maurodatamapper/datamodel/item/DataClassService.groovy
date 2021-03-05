@@ -861,4 +861,15 @@ class DataClassService extends ModelItemService<DataClass> {
         }
                                                  
     }
+
+    @Override
+    List<DataClass> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        DataClass.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<DataClass> findAllByMetadataNamespace(String namespace, Map pagination) {
+        DataClass.byMetadataNamespace(namespace).list(pagination)
+    }
+
 }

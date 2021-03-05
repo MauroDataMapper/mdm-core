@@ -224,4 +224,14 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationship catalogueItem, boolean forDiff = false, boolean includeImported = false) {
         []
     }
+
+    @Override
+    List<TermRelationship> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        TermRelationship.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<TermRelationship> findAllByMetadataNamespace(String namespace, Map pagination) {
+        TermRelationship.byMetadataNamespace(namespace).list(pagination)
+    }
 }

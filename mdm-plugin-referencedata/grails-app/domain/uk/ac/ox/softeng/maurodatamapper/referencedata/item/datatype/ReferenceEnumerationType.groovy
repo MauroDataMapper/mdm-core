@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
@@ -26,6 +27,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 import groovy.util.logging.Slf4j
 import io.micronaut.core.order.Ordered
@@ -108,5 +110,21 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
         }
         updateChildIndexes(valueToAdd, Ordered.LOWEST_PRECEDENCE)
         this
+    }
+    static DetachedCriteria<ReferenceEnumerationValue> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<ReferenceEnumerationValue> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
     }
 }

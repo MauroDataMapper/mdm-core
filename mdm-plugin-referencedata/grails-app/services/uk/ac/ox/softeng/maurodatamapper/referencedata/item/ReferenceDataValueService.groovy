@@ -17,16 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
-import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-
 import org.hibernate.SessionFactory
 
 @Slf4j
@@ -109,7 +106,7 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
         sessionFactory.currentSession.clear()
 
         log.debug('Batch save took {}', Utils.timeTaken(start))
-    }    
+    }
 
     List<ReferenceDataValue> findAllByReferenceDataModelId(Serializable referenceDataModelId, Map pagination = [:]) {
         findAllByReferenceDataModelId(referenceDataModelId, pagination, pagination)
@@ -145,5 +142,13 @@ class ReferenceDataValueService implements DomainService<ReferenceDataValue> {
 
         //Get the reference data element for this value by getting the matching reference data element for the model
         referenceDataValue.referenceDataElement = referenceDataModel.referenceDataElements.find {it.label == referenceDataValue.referenceDataElement.label}
-    }    
+    }
+
+    List<ReferenceDataValue> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ReferenceDataValue.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    List<ReferenceDataValue> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ReferenceDataValue.byMetadataNamespace(namespace).list(pagination)
+    }
 }

@@ -465,8 +465,8 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    List<DataModel> findAllByMetadataNamespace(String namespace) {
-        DataModel.byMetadataNamespace(namespace).list()
+    List<DataModel> findAllByMetadataNamespace(String namespace, Map pagination = [:]) {
+        DataModel.byMetadataNamespace(namespace).list(pagination)
     }
 
     @Override

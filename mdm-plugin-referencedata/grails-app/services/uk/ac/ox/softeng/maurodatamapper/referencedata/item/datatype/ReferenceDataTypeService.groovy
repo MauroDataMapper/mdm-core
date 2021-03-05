@@ -367,4 +367,15 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
             keep.addToMetadata(md.namespace, md.key, md.value, md.createdBy)
         }
     }
+
+
+    @Override
+    List<ReferenceDataType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ReferenceDataType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<ReferenceDataType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ReferenceDataType.byMetadataNamespace(namespace).list(pagination)
+    }
 }

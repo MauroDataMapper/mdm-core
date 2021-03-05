@@ -120,6 +120,7 @@ grails {
         //        compile project(':mdm-plugin-email-proxy')
         compile project(':mdm-security')
         compile project(':mdm-plugin-dataflow')
+        compile project(':mdm-plugin-profile')
     }
 }
 

@@ -202,8 +202,21 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         new DetachedCriteria<ReferenceDataElement>(ReferenceDataElement).eq('referenceDataType', referenceDataType)
     }
 
-    static DetachedCriteria<ReferenceDataElement> byMetadataNamespaceAndKeyAndValue(String namespace, String key, String value) {
-        new DetachedCriteria<ReferenceDataElement>(ReferenceDataElement).in('id', Metadata.byNamespaceAndKeyAndValue(namespace, key, value).catalogueItemId)
+    static DetachedCriteria<ReferenceDataElement> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<ReferenceDataElement> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
     }
 
     static DetachedCriteria<ReferenceDataElement> byReferenceDataModelIdAndLabelIlike(Serializable referenceDataModelId, String labelSearch) {

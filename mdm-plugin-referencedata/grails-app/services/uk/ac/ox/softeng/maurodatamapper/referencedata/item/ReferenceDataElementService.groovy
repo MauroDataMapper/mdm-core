@@ -438,5 +438,15 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         referenceDataElement.referenceDataType = referenceDataModel.referenceDataTypes.find {it.label == referenceDataElement.referenceDataType.label}
 
         checkFacetsAfterImportingCatalogueItem(referenceDataElement)
-    }    
+    }
+
+    @Override
+    List<ReferenceDataElement> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ReferenceDataElement.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<ReferenceDataElement> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ReferenceDataElement.byMetadataNamespace(namespace).list(pagination)
+    }
 }

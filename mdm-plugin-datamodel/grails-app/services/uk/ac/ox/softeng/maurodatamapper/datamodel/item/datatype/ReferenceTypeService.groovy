@@ -192,4 +192,14 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
         grailsApplication.mappingContext.getPersistentEntity(DataType.name)
     }
 
+
+    @Override
+    List<ReferenceType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ReferenceType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<ReferenceType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ReferenceType.byMetadataNamespace(namespace).list(pagination)
+    }
 }

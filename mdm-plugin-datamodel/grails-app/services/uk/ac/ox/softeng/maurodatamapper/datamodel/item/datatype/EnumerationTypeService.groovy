@@ -180,4 +180,14 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
     PersistentEntity getPersistentEntity() {
         grailsApplication.mappingContext.getPersistentEntity(DataType.name)
     }
+
+    @Override
+    List<EnumerationType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        EnumerationType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<EnumerationType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        EnumerationType.byMetadataNamespace(namespace).list(pagination)
+    }
 }

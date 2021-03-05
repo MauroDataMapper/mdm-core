@@ -120,7 +120,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                          boolean throwErrors,
                          UserSecurityPolicyManager userSecurityPolicyManager)
 
-    abstract List<K> findAllByMetadataNamespace(String namespace)
+    abstract List<K> findAllByMetadataNamespace(String namespace, Map pagination = [:])
 
     abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
 

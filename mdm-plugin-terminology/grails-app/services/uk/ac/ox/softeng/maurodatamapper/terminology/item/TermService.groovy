@@ -424,4 +424,14 @@ class TermService extends ModelItemService<Term> {
     Term findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findTerm(parentCatalogueItem, label)
     }
+
+    @Override
+    List<Term> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        Term.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<Term> findAllByMetadataNamespace(String namespace, Map pagination) {
+        Term.byMetadataNamespace(namespace).list(pagination)
+    }
 }

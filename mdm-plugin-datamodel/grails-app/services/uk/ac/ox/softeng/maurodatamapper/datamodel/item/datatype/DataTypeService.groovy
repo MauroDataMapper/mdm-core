@@ -486,4 +486,15 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     DataType findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findDataType(parentCatalogueItem, label)
     }
+
+    @Override
+    List<DataType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        DataType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<DataType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        DataType.byMetadataNamespace(namespace).list(pagination)
+    }
+
 }

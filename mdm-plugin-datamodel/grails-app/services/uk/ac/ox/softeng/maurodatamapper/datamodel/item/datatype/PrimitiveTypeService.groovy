@@ -158,4 +158,14 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> {
     PersistentEntity getPersistentEntity() {
         grailsApplication.mappingContext.getPersistentEntity(DataType.name)
     }
+
+    @Override
+    List<PrimitiveType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        PrimitiveType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<PrimitiveType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        PrimitiveType.byMetadataNamespace(namespace).list(pagination)
+    }
 }

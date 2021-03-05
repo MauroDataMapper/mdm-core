@@ -32,6 +32,7 @@ echo ">> Functional Tests <<"
   :mdm-plugin-datamodel:integrationTest \
   :mdm-plugin-referencedata:integrationTest \
   :mdm-plugin-terminology:integrationTest \
+  :mdm-plugin-profile:integrationTest \
   :mdm-security:integrationTest
 echo ">> E2E Tests <<"
 ./gradlew --build-cache -Dgradle.test.package=core :mdm-testing-functional:integrationTest

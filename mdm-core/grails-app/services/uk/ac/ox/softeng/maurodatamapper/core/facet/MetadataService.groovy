@@ -20,9 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -87,6 +89,33 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         domain.addToMetadata(facet)
     }
 
+    def saveAll(Collection<Metadata> metadata) {
+        Collection<Metadata> alreadySaved = metadata.findAll {it.ident() && it.isDirty()}
+        Collection<Metadata> notSaved = metadata.findAll {!it.ident()}
+        if (alreadySaved) {
+            log.debug('Straight saving {} metadata', alreadySaved.size())
+            Metadata.saveAll(alreadySaved)
+        }
+
+        if (notSaved) {
+            log.debug('Batch saving {} metadata', notSaved.size())
+            List batch = []
+            int count = 0
+
+            notSaved.each {de ->
+
+                batch += de
+                count++
+                if (count % Metadata.BATCH_SIZE == 0) {
+                    batchSave(batch)
+                    batch.clear()
+                }
+            }
+            batchSave(batch)
+            batch.clear()
+        }
+    }
+
     void batchSave(Collection<Metadata> metadata) {
         log.trace('Batch saving Metadata')
         long start = System.currentTimeMillis()
@@ -135,9 +164,31 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         Metadata.byCatalogueItemIdAndNamespace(catalogueItemId, namespace).list(pagination)
     }
 
+    List<MetadataAware> findAllCatalogueItemsByNamespace(String namespace, String domainType = null, Map pagination = [:]) {
+        List<MetadataAware> returnResult = []
+        catalogueItemServices.each { catalogueItemService ->
+            if(!domainType || catalogueItemService.handles(domainType)) {
+                returnResult.addAll(catalogueItemService.findAllByMetadataNamespace(namespace))
+            }
+        }
+        return new PaginatedResultList<MetadataAware>(returnResult, pagination)
+    }
+
+
+    List<Metadata> findAllByNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
+        Metadata.byNamespaceAndKey(namespace, key).list(pagination)
+    }
+
     @Override
     DetachedCriteria<Metadata> getBaseDeleteCriteria() {
         Metadata.by()
+    }
+
+    List<Metadata> findAllByCatalogueItemIdAndNotNamespaces(UUID catalogueItemId, List<String> namespaces, Map pagination = [:]) {
+        if(!namespaces || namespaces.size() == 0) {
+            return Metadata.byCatalogueItemId(catalogueItemId).list(pagination)
+        }
+        Metadata.byCatalogueItemIdAndNotNamespaces(catalogueItemId, namespaces).list(pagination)
     }
 
     List<NamespaceKeys> findNamespaceKeysIlikeNamespace(String namespacePrefix) {
@@ -216,5 +267,4 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
 
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
     }
-
 }

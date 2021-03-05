@@ -113,5 +113,22 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
     static DetachedCriteria<ReferenceDataValue> byReferenceDataModelIdAndValueIlike(Serializable referenceDataModelId, String valueSearch) {
         ReferenceDataValue.byReferenceDataModelId(referenceDataModelId)
         .ilike('value', "%${valueSearch}%")
-    } 
+    }
+
+    static DetachedCriteria<ReferenceDataValue> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<ReferenceDataValue> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

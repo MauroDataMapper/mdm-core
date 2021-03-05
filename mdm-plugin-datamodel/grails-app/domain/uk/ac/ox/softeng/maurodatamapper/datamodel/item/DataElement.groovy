@@ -244,7 +244,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     }
 
     static DetachedCriteria<DataElement> byMetadataNamespaceAndKeyAndValue(String namespace, String key, String value) {
-        new DetachedCriteria<DataElement>(DataElement).in('id', Metadata.byNamespaceAndKeyAndValue(namespace, key, value).catalogueItemId)
+        new DetachedCriteria<DataElement>(DataElement).in('id', Metadata.byNamespaceAndKeyAndValue(namespace, key, value))
     }
 
     static DetachedCriteria<DataElement> byDataModelId(Serializable dataModelId) {
@@ -271,5 +271,22 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
             }
         }
         criteria
+    }
+
+    static DetachedCriteria<DataElement> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<DataElement> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
     }
 }

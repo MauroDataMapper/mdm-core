@@ -187,4 +187,21 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
             }
         }
     }
+
+    static DetachedCriteria<EnumerationValue> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<EnumerationValue> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

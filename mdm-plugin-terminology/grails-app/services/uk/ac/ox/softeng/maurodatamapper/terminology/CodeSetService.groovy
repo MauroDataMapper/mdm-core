@@ -177,14 +177,6 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.by().id().list() as List<UUID>
     }
 
-    List<CodeSet> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
-        CodeSet.byMetadataNamespaceAndKey(namespace, key).list(pagination)
-    }
-
-    List<CodeSet> findAllByMetadataNamespace(String namespace) {
-        CodeSet.byMetadataNamespace(namespace).list()
-    }
-
     List<CodeSet> findAllByFolderId(UUID folderId) {
         CodeSet.byFolderId(folderId).list()
     }
@@ -480,4 +472,15 @@ class CodeSetService extends ModelService<CodeSet> {
             }
         }
     }
+
+    @Override
+    List<CodeSet> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        CodeSet.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<CodeSet> findAllByMetadataNamespace(String namespace, Map pagination) {
+        CodeSet.byMetadataNamespace(namespace).list(pagination)
+    }
+
 }

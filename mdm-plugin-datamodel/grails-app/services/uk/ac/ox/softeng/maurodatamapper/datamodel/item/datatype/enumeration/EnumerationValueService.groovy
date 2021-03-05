@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -162,5 +163,15 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
 
     private List<EnumerationValue> findAllByEnumerationType(UUID enumerationTypeId, Map pagination = [:]) {
         EnumerationValue.byEnumerationType(enumerationTypeId).list(pagination)
+    }
+
+    @Override
+    List<EnumerationValue> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        EnumerationValue.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<EnumerationValue> findAllByMetadataNamespace(String namespace, Map pagination) {
+        EnumerationValue.byMetadataNamespace(namespace).list(pagination)
     }
 }

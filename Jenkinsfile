@@ -108,10 +108,11 @@ pipeline {
                     'mdm-plugin-dataflow',
                     'mdm-plugin-datamodel',
                     'mdm-plugin-email-proxy',
+                    //                    'mdm-plugin-profile',
                     'mdm-plugin-referencedata',
                     'mdm-plugin-terminology',
                     'mdm-security',
-                ].collect { ":${it}:integrationTest" }.join(' ')
+                ].collect {":${it}:integrationTest"}.join(' ')
             }
             post {
                 always {
@@ -203,6 +204,16 @@ pipeline {
                 }
             }
         }
+        stage('Functional Test: mdm-plugin-profile') {
+            steps {
+                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-profile:integrationTest"
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-profile/build/test-results/functionalTest/*.xml'
+                }
+            }
+        }
 
         /*
         E2E Functional Tests
@@ -277,6 +288,16 @@ pipeline {
                 }
             }
         }
+//        stage('E2E Profile Functional Test') {
+//            steps {
+//                sh "./gradlew -Dgradle.test.package=profile :mdm-testing-functional:integrationTest"
+//            }
+//            post {
+//                always {
+//                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/profile/*.xml'
+//                }
+//            }
+//        }
 
         stage('Compile complete Test Report') {
             steps {

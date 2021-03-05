@@ -264,4 +264,20 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
             }
         }
     }
+    static DetachedCriteria<TermRelationship> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<TermRelationship> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

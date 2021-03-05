@@ -192,4 +192,22 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
             }
         }
     }
+
+    static DetachedCriteria<DataFlow> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<DataFlow> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
+
 }

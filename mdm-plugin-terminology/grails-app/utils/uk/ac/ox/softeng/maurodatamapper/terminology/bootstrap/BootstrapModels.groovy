@@ -48,21 +48,21 @@ class BootstrapModels {
         Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: SIMPLE_TERMINOLOGY_NAME, folder: folder,
                                                   author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
-                                                             readableByAuthenticatedUsers: true)
-        checkAndSave(messageSource, classifier)
+            Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier simple',
+                                                                 readableByAuthenticatedUsers: true)
+            checkAndSave(messageSource, classifier)
 
-        terminology.addToClassifiers(classifier)
-        checkAndSave(messageSource, terminology)
+            terminology.addToClassifiers(classifier)
+            checkAndSave(messageSource, terminology)
 
-        terminology.addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk1', value: 'mdv1')
-            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com', key: 'mdk2', value: 'mdv2')
-            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk2', value: 'mdv2')
+            terminology.addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk1', value: 'mdv1')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk2', value: 'mdv2')
 
-        terminology.addToTerms(createdBy: DEVELOPMENT, code: 'STT01', definition: 'Simple Test Term 01')
-        terminology.addToTerms(createdBy: DEVELOPMENT, code: 'STT02', definition: 'Simple Test Term 02')
+            terminology.addToTerms(createdBy: DEVELOPMENT, code: 'STT01', definition: 'Simple Test Term 01')
+            terminology.addToTerms(createdBy: DEVELOPMENT, code: 'STT02', definition: 'Simple Test Term 02')
 
-        checkAndSave(messageSource, terminology)
+            checkAndSave(messageSource, terminology)
 
         terminology
     }
@@ -72,29 +72,29 @@ class BootstrapModels {
         CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: SIMPLE_CODESET_NAME, folder: folder,
                                       author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
-                                                             readableByAuthenticatedUsers: true)
+            Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
+                                                                 readableByAuthenticatedUsers: true)
 
-        checkAndSave(messageSource, classifier)
-        codeSet.addToClassifiers(classifier)
-        checkAndSave(messageSource, codeSet)
+            checkAndSave(messageSource, classifier)
+            codeSet.addToClassifiers(classifier)
+            checkAndSave(messageSource, codeSet)
 
-        Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
+            Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
 
-        if (!simpleTestTerminology) {
-            simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
-        }
+            if (!simpleTestTerminology) {
+                simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
+            }
 
-        simpleTestTerminology.terms.each {
-            codeSet.addToTerms(it)
-        }
+            simpleTestTerminology.terms.each {
+                codeSet.addToTerms(it)
+            }
 
-        codeSet.finalised = true
-        //Truncate the dateFinalised to milliseconds to avoid a Diff failure when test exporting and reimporting a CodeSet
-        codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
-        codeSet.modelVersion = Version.from('1.0.0')
+            codeSet.finalised = true
+            //Truncate the dateFinalised to milliseconds to avoid a Diff failure when test exporting and reimporting a CodeSet
+            codeSet.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
+            codeSet.modelVersion = Version.from('1.0.0')
 
-        checkAndSave(messageSource, codeSet)
+            checkAndSave(messageSource, codeSet)
 
         codeSet
     }
@@ -104,94 +104,94 @@ class BootstrapModels {
         Terminology terminology = new Terminology(createdBy: DEVELOPMENT, label: COMPLEX_TERMINOLOGY_NAME, folder: folder,
                                                   author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
-                                                             readableByAuthenticatedUsers: true)
-        Classifier classifier1 = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier2',
-                                                              readableByAuthenticatedUsers: true)
-        checkAndSave(messageSource, classifier)
-        checkAndSave(messageSource, classifier1)
-        checkAndSave(messageSource, terminology)
+            Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier',
+                                                                 readableByAuthenticatedUsers: true)
+            Classifier classifier1 = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'test classifier2',
+                                                                  readableByAuthenticatedUsers: true)
+            checkAndSave(messageSource, classifier)
+            checkAndSave(messageSource, classifier1)
+            checkAndSave(messageSource, terminology)
 
-        terminology.addToRules(name: "Bootstrapped Functional Test Rule", 
-                               description: 'Functional Test Description',
-                               createdBy: DEVELOPMENT) 
-        
-        checkAndSave(messageSource, terminology)                                       
+            terminology.addToRules(name: "Bootstrapped Functional Test Rule",
+                                   description: 'Functional Test Description',
+                                   createdBy: DEVELOPMENT)
 
-        terminology.addToClassifiers(classifier)
-            .addToClassifiers(classifier1)
-            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk1', value: 'mdv1')
-            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com', key: 'mdk2', value: 'mdv2')
-            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk2', value: 'mdv2')
-            .addToAnnotations(createdBy: DEVELOPMENT, label: 'test annotation 1')
-            .addToAnnotations(createdBy: DEVELOPMENT, label: 'test annotation 2', description: 'with description')
+            checkAndSave(messageSource, terminology)
 
-        Term top = new Term(createdBy: DEVELOPMENT, code: 'CTT00', definition: 'Complex Test Term 00',
-                            description: 'This is a very important description', url: 'https://google.co.uk')
-        terminology.addToTerms(top)
-        List<Term> terms = [top]
-        (1..100).each {
-            Term t = new Term(createdBy: DEVELOPMENT, code: "CTT$it", definition: "Complex Test Term $it")
-            terminology.addToTerms(t)
-            terms += t
-        }
+            terminology.addToClassifiers(classifier)
+                .addToClassifiers(classifier1)
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk1', value: 'mdv1')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com', key: 'mdk2', value: 'mdv2')
+                .addToMetadata(createdBy: DEVELOPMENT, namespace: 'terminology.test.com/simple', key: 'mdk2', value: 'mdv2')
+                .addToAnnotations(createdBy: DEVELOPMENT, label: 'test annotation 1')
+                .addToAnnotations(createdBy: DEVELOPMENT, label: 'test annotation 2', description: 'with description')
 
-        TermRelationshipType is = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'is-a', displayLabel: 'Is A')
-        TermRelationshipType isPartOf = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'is-a-part-of', displayLabel: 'Is A Part Of',
-                                                                 childRelationship: true)
-        TermRelationshipType broaderThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'broaderThan', displayLabel: 'Broader Than',
-                                                                    parentalRelationship: true)
-        TermRelationshipType narrowerThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'narrowerThan', displayLabel: 'Narrower Than')
-    
-        terminology.addToTermRelationshipTypes(is)
-            .addToTermRelationshipTypes(isPartOf)
-            .addToTermRelationshipTypes(broaderThan)
-            .addToTermRelationshipTypes(narrowerThan)
+            Term top = new Term(createdBy: DEVELOPMENT, code: 'CTT00', definition: 'Complex Test Term 00',
+                                description: 'This is a very important description', url: 'https://google.co.uk')
+            terminology.addToTerms(top)
+            List<Term> terms = [top]
+            (1..100).each {
+                Term t = new Term(createdBy: DEVELOPMENT, code: "CTT$it", definition: "Complex Test Term $it")
+                terminology.addToTerms(t)
+                terms += t
+            }
 
-        (1..99).each {
-            Term source = terms[it]
-            Term target = it % 10 != 0 ? terms[((it / 10) as Integer) * 10] : top
-            TermRelationship relationship = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: source, targetTerm: target,
-                                                                 relationshipType: isPartOf)
-            source.addToSourceTermRelationships(relationship)
-            target.addToTargetTermRelationships(relationship)
-        }
+            TermRelationshipType is = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'is-a', displayLabel: 'Is A')
+            TermRelationshipType isPartOf = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'is-a-part-of', displayLabel: 'Is A Part Of',
+                                                                     childRelationship: true)
+            TermRelationshipType broaderThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'broaderThan', displayLabel: 'Broader Than',
+                                                                        parentalRelationship: true)
+            TermRelationshipType narrowerThan = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'narrowerThan', displayLabel: 'Narrower Than')
 
-        TermRelationship relationship = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: terms[100], targetTerm: top, relationshipType: is)
-        terms[100].addToSourceTermRelationships(relationship)
-        top.addToTargetTermRelationships(relationship)
+            terminology.addToTermRelationshipTypes(is)
+                .addToTermRelationshipTypes(isPartOf)
+                .addToTermRelationshipTypes(broaderThan)
+                .addToTermRelationshipTypes(narrowerThan)
 
-        (2..9).each {
-            relationship =
-                new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: terms[it], targetTerm: terms[it - 1], relationshipType: narrowerThan)
-            terms[it].addToSourceTermRelationships(relationship)
-            terms[it - 1].addToTargetTermRelationships(relationship)
-        }
-        (11..18).each {
-            relationship =
-                new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: terms[it], targetTerm: terms[it + 1], relationshipType: broaderThan)
-            terms[it].addToSourceTermRelationships(relationship)
-            terms[it + 1].addToTargetTermRelationships(relationship)
-        }
+            (1..99).each {
+                Term source = terms[it]
+                Term target = it % 10 != 0 ? terms[((it / 10) as Integer) * 10] : top
+                TermRelationship relationship = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: source, targetTerm: target,
+                                                                     relationshipType: isPartOf)
+                source.addToSourceTermRelationships(relationship)
+                target.addToTargetTermRelationships(relationship)
+            }
 
-        checkAndSave(messageSource, terminology)
-        if (terminologyService) {
-            terminologyService.updateTermDepths(terminology, true)
-        }
-        checkAndSave(messageSource, terminology)
+            TermRelationship relationship = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: terms[100], targetTerm: top, relationshipType: is)
+            terms[100].addToSourceTermRelationships(relationship)
+            top.addToTargetTermRelationships(relationship)
 
-        narrowerThan.addToRules(name: "Bootstrapped Functional Test Rule", 
-                               description: 'Functional Test Description',
-                               createdBy: DEVELOPMENT)    
-        terminology.findTermByCode('CTT1').addToRules(name: "Bootstrapped Functional Test Rule", 
-                               description: 'Functional Test Description',
-                               createdBy: DEVELOPMENT)    
-        terminology.findTermByCode('CTT1').sourceTermRelationships[0]
-                   .addToRules(name: "Bootstrapped Functional Test Rule", 
-                               description: 'Functional Test Description',
-                               createdBy: DEVELOPMENT)                                  
-        
-        checkAndSave(messageSource, terminology)                                        
+            (2..9).each {
+                relationship =
+                    new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: terms[it], targetTerm: terms[it - 1], relationshipType: narrowerThan)
+                terms[it].addToSourceTermRelationships(relationship)
+                terms[it - 1].addToTargetTermRelationships(relationship)
+            }
+            (11..18).each {
+                relationship =
+                    new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: terms[it], targetTerm: terms[it + 1], relationshipType: broaderThan)
+                terms[it].addToSourceTermRelationships(relationship)
+                terms[it + 1].addToTargetTermRelationships(relationship)
+            }
+
+            checkAndSave(messageSource, terminology)
+            if (terminologyService) {
+                terminologyService.updateTermDepths(terminology, true)
+            }
+            checkAndSave(messageSource, terminology)
+
+            narrowerThan.addToRules(name: "Bootstrapped Functional Test Rule",
+                                   description: 'Functional Test Description',
+                                   createdBy: DEVELOPMENT)
+            terminology.findTermByCode('CTT1').addToRules(name: "Bootstrapped Functional Test Rule",
+                                   description: 'Functional Test Description',
+                                   createdBy: DEVELOPMENT)
+            terminology.findTermByCode('CTT1').sourceTermRelationships[0]
+                       .addToRules(name: "Bootstrapped Functional Test Rule",
+                                   description: 'Functional Test Description',
+                                   createdBy: DEVELOPMENT)
+
+            checkAndSave(messageSource, terminology)
 
         terminology
     }
@@ -201,26 +201,26 @@ class BootstrapModels {
         CodeSet codeSet = new CodeSet(createdBy: DEVELOPMENT, label: UNFINALISED_CODESET_NAME, folder: folder,
                                       author: 'Test Bootstrap', organisation: 'Oxford BRC', authority: authority)
 
-        checkAndSave(messageSource, codeSet)
+            checkAndSave(messageSource, codeSet)
 
-        Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
+            Terminology simpleTestTerminology = Terminology.findByLabel(SIMPLE_TERMINOLOGY_NAME)
 
-        if (!simpleTestTerminology) {
-            simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
-        }
+            if (!simpleTestTerminology) {
+                simpleTestTerminology = buildAndSaveSimpleTerminology(messageSource, folder, authority)
+            }
 
-        simpleTestTerminology.terms.each {
-            codeSet.addToTerms(it)
-        }
+            simpleTestTerminology.terms.each {
+                codeSet.addToTerms(it)
+            }
 
-        checkAndSave(messageSource, codeSet)
+            checkAndSave(messageSource, codeSet)
 
-        codeSet.addToRules(name: "Bootstrapped Functional Test Rule", 
-                           description: 'Functional Test Description',
-                           createdBy: DEVELOPMENT) 
+            codeSet.addToRules(name: "Bootstrapped Functional Test Rule",
+                               description: 'Functional Test Description',
+                               createdBy: DEVELOPMENT)
 
-        checkAndSave(messageSource, codeSet)          
+            checkAndSave(messageSource, codeSet)
 
         codeSet
-    }    
+    }
 }
