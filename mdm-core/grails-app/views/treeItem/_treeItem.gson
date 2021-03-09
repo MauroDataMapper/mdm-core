@@ -21,6 +21,7 @@ json {
             finalised cti.finalised
             documentationVersion cti.documentationVersion.toString()
             if (cti.modelVersion) modelVersion cti.modelVersion.toString()
+            if (cti.modelVersionTag) modelVersionTag cti.modelVersionTag
             if (cti.branchName && !cti.modelVersion) branchName cti.branchName
         }
     } else if (treeItem instanceof ModelTreeItem) {
@@ -32,6 +33,7 @@ json {
         folder mti.containerId
         type mti.modelType
         if (mti.modelVersion) modelVersion mti.modelVersion.toString()
+        if (mti.modelVersionTag) modelVersionTag mti.modelVersionTag
         if (mti.branchName && !mti.modelVersion) branchName mti.branchName
     } else if (treeItem instanceof ModelItemTreeItem) {
         ModelItemTreeItem miti = (ModelItemTreeItem) treeItem

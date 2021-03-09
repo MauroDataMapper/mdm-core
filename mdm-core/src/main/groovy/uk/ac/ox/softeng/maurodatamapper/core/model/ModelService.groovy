@@ -210,15 +210,18 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
-                    List<Serializable> supersedeModelIds = []) {
+                    String versionTag, List<Serializable> supersedeModelIds = []) {
         log.debug('Finalising model')
         long start = System.currentTimeMillis()
+                    
         model.finalised = true
         model.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         // No requirement to have a breadcrumbtree
         breadcrumbTreeService.finalise(model.breadcrumbTree)
 
         model.modelVersion = getNextModelVersion(model, modelVersion, versionChangeType)
+
+        model.modelVersionTag = versionTag
 
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                description: "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
@@ -628,7 +631,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                 List<K> existingModels = findAllByLabel(model.label)
                 existingModels.each {existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
                 Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion

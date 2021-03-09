@@ -58,7 +58,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
 
     protected Terminology getAndFinaliseDataModel(UUID idToFinalise = id) {
         Terminology terminology = terminologyService.get(idToFinalise)
-        terminologyService.finaliseModel(terminology, admin, null, null)
+        terminologyService.finaliseModel(terminology, admin, null, null, null)
         checkAndSave(terminology)
         terminology
     }
@@ -170,7 +170,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminology.documentationVersion == Version.from('1')
 
         when:
-        terminologyService.finaliseModel(terminology, admin, Version.from('1'), null)
+        terminologyService.finaliseModel(terminology, admin, Version.from('1'), null, null)
 
         then:
         checkAndSave(terminology)

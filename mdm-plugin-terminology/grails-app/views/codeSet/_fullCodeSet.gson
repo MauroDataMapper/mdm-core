@@ -22,6 +22,7 @@ json {
     if (codeSet.author) author codeSet.author
     if (codeSet.organisation) organisation codeSet.organisation
     if (codeSet.modelVersion) modelVersion codeSet.modelVersion.toString()
+    if (codeSet.modelVersionTag) modelVersionTag codeSet.modelVersionTag
 
     authority tmpl.'/authority/authority'(codeSet.authority)
 }
