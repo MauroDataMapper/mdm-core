@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -448,6 +449,21 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         rightModel
     }
 
+    List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType, UserSecurityPolicyManager userSecurityPolicyManager) {
+        if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
+
+        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
+        VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType)
+        List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
+
+        for (link in versionLinks) {
+            K linkedModel = get(link.catalogueItemId)
+            rootVersionTreeModel.addTarget(linkedModel.id, link.linkType)
+            versionTreeModelList.addAll(buildModelVersionTree(linkedModel, link.linkType, userSecurityPolicyManager))
+        }
+        versionTreeModelList
+    }
+
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
         thisModel.diff(otherModel)
     }
@@ -465,6 +481,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         // Choose the finalised parent with the lowest model version
         leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
+    }
+
+    K findOldestAncestor(K model) {
+        VersionLink versionLink = versionLinkService.findBySourceModel(model)
+        if (!versionLink)
+            return model
+        K parentModel = get(versionLink.targetModelId)
+        findOldestAncestor(parentModel)
     }
 
     K findLatestFinalisedModelByLabel(String label) {

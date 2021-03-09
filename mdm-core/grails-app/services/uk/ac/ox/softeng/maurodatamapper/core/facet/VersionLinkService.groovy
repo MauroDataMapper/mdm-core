@@ -301,6 +301,10 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
             .inList('targetModelId', modelIds).list()
     }
 
+    VersionLink findBySourceModel(Model source){
+        VersionLink.byModelId(source.id).get()
+    }
+
     ModelService findModelService(String modelDomainType) {
         ModelService service = modelServices.find {it.handles(modelDomainType)}
         if (!service) throw new ApiBadRequestException('FS01', "No supporting service for ${modelDomainType}")

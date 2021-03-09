@@ -36,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelIm
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeIntoData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -604,6 +605,18 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         log.info('Multi-Model Import complete')
 
         respond loadedModels, status: CREATED, view: 'index'
+
+    }
+
+    def modelVersionTree() {
+        T instance = queryForResource params[alternateParamsIdKey]
+
+        if (!instance) return notFound(params[alternateParamsIdKey])
+
+        T oldestAncestor = modelService.findOldestAncestor(instance)
+
+        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null, currentUserSecurityPolicyManager)
+        respond versionTreeModelList
 
     }
 
