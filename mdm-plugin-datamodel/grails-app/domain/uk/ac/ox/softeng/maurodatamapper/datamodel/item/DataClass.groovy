@@ -120,6 +120,11 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         DataClass.simpleName
     }
 
+    @Override
+    List<String> getEditHistoryAwareDescendants() {
+        ['dataClasses', 'dataElements', 'referenceTypes']
+    }
+
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {

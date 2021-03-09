@@ -209,6 +209,11 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         "${modelType}:${label}"
     }
 
+    @Override
+    List<String> getEditHistoryAwareDescendants() {
+        ['dataClasses', 'referenceTypes', 'enumerationTypes', 'primitiveTypes']
+    }
+
     DataModel addToReferenceTypes(Map dataType) {
         addToDataTypes(new ReferenceType(dataType))
     }
@@ -321,4 +326,5 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     static DetachedCriteria<DataModel> withFilter(DetachedCriteria<DataModel> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
     }
+
 }

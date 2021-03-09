@@ -84,4 +84,7 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
         Edit.findAllByResource(domainType, id)
     }
 
+    List<String> getEditHistoryAwareDescendants() {
+        []
+    }
 }
