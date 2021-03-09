@@ -15,6 +15,11 @@ pipeline {
         // skipStagesAfterUnstable()
         buildDiscarder(logRotator(numToKeepStr: '30'))
         disableConcurrentBuilds()
+        throttleJobProperty(
+            categories: ['mdm-core'],
+            throttleEnabled: true,
+            throttleOption: 'category'
+        )
     }
 
     stages {
