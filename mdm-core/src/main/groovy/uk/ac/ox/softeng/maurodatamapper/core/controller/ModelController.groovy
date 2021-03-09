@@ -24,9 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -611,6 +608,18 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     }
 
+    def modelVersionTree() {
+        T instance = queryForResource params[alternateParamsIdKey]
+
+        if (!instance) return notFound(params[alternateParamsIdKey])
+
+        T oldestAncestor = modelService.findOldestAncestor(instance)
+
+        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null, currentUserSecurityPolicyManager)
+        respond versionTreeModelList
+
+    }
+
     @Override
     protected T queryForResource(Serializable id) {
         getModelService().get(id)
@@ -690,46 +699,5 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
         }
         savedModel
-    }
-
-    def modelVersionTree(){
-        T instance = queryForResource params[alternateParamsIdKey]
-
-        if (!instance) return notFound(params[alternateParamsIdKey])
-
-        VersionLinkService versionLinkService = new VersionLinkService()
-
-        T oldestAncestor = modelService.findOldestAncestor(instance)
-
-        List<VersionTreeModel> versionTreeModelList = [new VersionTreeModel(oldestAncestor, null)]
-
-        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(oldestAncestor.id)
-
-        for (link in versionLinks){
-            T linkedModel = queryForResource link.catalogueItemId
-            versionTreeModelList.get(0).addTarget(linkedModel.id, link.linkType)
-            versionTreeModelList += modelVersionTreeInternal(linkedModel, versionLinkService, link.linkType)
-        }
-
-        respond versionTreeModelList
-
-    }
-
-    List<VersionTreeModel> modelVersionTreeInternal(T instance, VersionLinkService versionLinkService, VersionLinkType versionLinkType){
-        if(!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id))
-            return []
-
-        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
-
-        List<VersionTreeModel> versionTreeModelList = [new VersionTreeModel(instance, versionLinkType)]
-
-        for (link in versionLinks){
-            T linkedModel = queryForResource link.catalogueItemId
-            versionTreeModelList.get(0).addTarget(linkedModel.id, link.linkType)
-            versionTreeModelList += modelVersionTreeInternal(linkedModel, versionLinkService, link.linkType)
-        }
-
-        return versionTreeModelList
-
     }
 }
