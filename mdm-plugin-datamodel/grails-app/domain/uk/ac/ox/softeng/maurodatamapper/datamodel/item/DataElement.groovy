@@ -84,6 +84,11 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         minMultiplicity nullable: true
         maxMultiplicity nullable: true
         label validator: {val, obj -> new DataElementLabelValidator(obj).isValid(val)}
+        dataType validator: {val, obj ->
+            if (val && val.model && obj.model) {
+                val.model.id == obj.model.id ?: ['invalid.dataelement.datatype.model']
+            }
+        }
     }
 
     static mapping = {
@@ -157,7 +162,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
 
     @Override
     DataModel getModel() {
-        dataClass.model
+        dataClass?.model
     }
 
     @Override

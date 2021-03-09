@@ -97,6 +97,11 @@ class DataElementSpec extends ModelItemSpec<DataElement> implements DomainUnitTe
         domain.dataClass = null
     }
 
+    @Override
+    int getExpectedBaseConstrainedErrorCount() {
+        0
+    }
+
     void 'test unique label naming'() {
         given:
         setValidDomainValues()
