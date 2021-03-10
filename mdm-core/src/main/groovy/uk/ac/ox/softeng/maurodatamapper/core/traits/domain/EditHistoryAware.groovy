@@ -77,7 +77,7 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
 
     @Override
     void addMergedEdit(User merger, String leftLabel, String leftBranch, String rightLabel, String rightBranch) {
-        addToEditsTransactionally merger, "Merged [${leftLabel}].[${leftBranch}] into [${rightLabel}].[${rightBranch}]"
+        addToEditsTransactionally merger, "CHANGE NOTICE Merged [${leftLabel}].[${leftBranch}] into [${rightLabel}].[${rightBranch}]"
     }    
 
     List<Edit> getEdits() {
