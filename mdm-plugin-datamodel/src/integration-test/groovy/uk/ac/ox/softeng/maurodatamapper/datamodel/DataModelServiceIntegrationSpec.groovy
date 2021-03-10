@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
@@ -32,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.BaseDataModelIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Rollback
@@ -51,6 +54,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     DataModel simpleDataModel
     DataModelService dataModelService
     DataClassService dataClassService
+    EditService editService
 
     @Override
     void setupDomainData() {
@@ -77,7 +81,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         checkAndSave(dataModel1)
 
-        id = dataModel1.id
+        id = dataModel1.id 
     }
 
     protected DataModel checkAndSaveNewVersion(DataModel dataModel) {
@@ -1609,6 +1613,94 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         ele2Res
         ele2Res.size() == 0
+    }
+
+    void 'test getting edits on a data model'() {
+        given:
+        setupData()
+        DataModel dataModel = new DataModel(createdByUser: reader1, label: 'data model for editing', type: DataModelType.DATA_ASSET, folder: testFolder,
+                                            authority: testAuthority)
+        checkAndSave(dataModel)
+
+        //5 edits directly on the data model
+        (1..5).each {
+             Edit edit = new Edit(createdBy: reader1.emailAddress, description: "data model edit ${it}", resourceDomainType: 'DataModel', resourceId: dataModel.id)
+             checkAndSave(edit) 
+        }                                   
+
+        //Create 10 primitive data types
+        (1..100).each {dt ->
+            log.debug("create PrimitiveType {}", dt)
+            PrimitiveType primitiveType = new PrimitiveType(createdByUser: admin, label: "primitive type ${dt}")
+            dataModel.addToPrimitiveTypes(primitiveType)
+            checkAndSave(dataModel)
+
+            //Each with 2 edits
+            (1..2).each {
+                Edit edit = new Edit(createdBy: reader1.emailAddress, description: "primitive type ${dt} edit ${it}", resourceDomainType: 'PrimitiveType', resourceId: primitiveType.id)
+                checkAndSave(edit) 
+            }
+        }
+
+        //Create 100 data classes
+        (1..100).each {dc ->
+            log.debug("create DataClass {}", dc)
+            DataClass dataClass = new DataClass(createdByUser: admin, label: "top class ${dc}")
+            dataModel.addToDataClasses(dataClass)
+            checkAndSave(dataModel)
+
+            //Each with 2 edits
+            (1..2).each {
+                Edit edit = new Edit(createdBy: reader1.emailAddress, description: "top class ${dc} edit ${it}", resourceDomainType: 'DataClass', resourceId: dataClass.id)
+                checkAndSave(edit) 
+            }
+
+            //Each data class with 4 child data classes
+            (1..4).each {cdc ->
+                DataClass childDataClass = new DataClass(createdByUser: admin, label: "top class ${dc} child ${cdc}")
+                dataClass.addToDataClasses(childDataClass)
+                checkAndSave(dataClass)
+
+                //each having 4 edits
+                (1..4).each {
+                    Edit edit = new Edit(createdBy: reader1.emailAddress, description: "top class ${dc} child ${cdc} edit ${it}", resourceDomainType: 'DataClass', resourceId: childDataClass.id)
+                    checkAndSave(edit) 
+                }                
+            }
+        }
+                    
+     
+        when:
+        long start = System.currentTimeMillis()
+        def edits = editService.findAllByCatalogueItem('DataModel', dataModel.id)
+        log.debug('Retrieval took {}', Utils.timeTaken(start))
+        def dataModelEdits = edits[dataModel.id]
+        log.debug(edits.toString())                                     
+
+        then:
+        //Size is two because we have 1 for the edits directly on the DataModel, 1 for edits to PrimitiveTypes, and 1 for edits on DataClasses
+        dataModelEdits.size() == 3
+        //There are 5 edits made directly to the DataModel
+        dataModelEdits[dataModel.id].size() == 5
+        
+        //There are 100 maps containing primitive type edits
+        def primitiveTypeEdits = dataModelEdits['primitiveTypes']
+        primitiveTypeEdits.size() == 100
+
+        //each one containing 2 edits
+        primitiveTypeEdits.each {
+            it.size == 2
+        }
+
+        //There is a map containing data class edits, and this map has 300 entries (one
+        //for each of the data classes that was edited)
+        def dataClassEdits = dataModelEdits['dataClasses']
+        dataClassEdits.size() == 100
+
+        //each one containing 2 edits
+        dataClassEdits.each {
+            it.size == 2
+        }
     }
 
 }
