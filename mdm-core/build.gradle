@@ -27,8 +27,7 @@ apply plugin: "org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
 apply plugin: "com.bertramlabs.asset-pipeline"
 
-apply plugin: 'ox.softeng.ox-brc-base'
-apply plugin: 'ox.softeng.ox-brc-artifactory'
+apply plugin: 'ox.softeng.grails'
 
 repositories {
     mavenLocal()
@@ -133,4 +132,4 @@ This is basically the backend API.
 }
 
 apply from: 'dependencies.gradle'
-apply from: "${rootDir}/gradle/additions/grails.gradle"
+apply from: "${rootDir}/gradle/additions/staticCodeAnalysis.gradle"

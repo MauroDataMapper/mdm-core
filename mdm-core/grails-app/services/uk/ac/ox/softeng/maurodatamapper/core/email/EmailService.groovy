@@ -39,17 +39,12 @@ class EmailService {
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
     ApiPropertyService apiPropertyService
 
-    private static EmailProviderService emailInstance
-
     List<Email> list(Map pagination = [:]) {
         Email.withFilter(pagination).list(pagination)
     }
 
     EmailProviderService getEmailer() {
-        if (!emailInstance) {
-            emailInstance = mauroDataMapperServiceProviderService.getEmailProvider()
-        }
-        emailInstance
+        mauroDataMapperServiceProviderService.getEmailProvider()
     }
 
     @Transactional

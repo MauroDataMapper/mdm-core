@@ -25,8 +25,7 @@ apply plugin: "org.grails.grails-plugin-publish"
 apply plugin: "org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
 
-apply plugin: 'ox.softeng.ox-brc-base'
-apply plugin: 'ox.softeng.ox-brc-artifactory'
+apply plugin: 'ox.softeng.grails'
 
 repositories {
     mavenLocal()
@@ -136,4 +135,4 @@ grails {
 }
 
 apply from: 'dependencies.gradle'
-apply from: "${rootDir}/gradle/additions/grails.gradle"
+apply from: "${rootDir}/gradle/additions/staticCodeAnalysis.gradle"

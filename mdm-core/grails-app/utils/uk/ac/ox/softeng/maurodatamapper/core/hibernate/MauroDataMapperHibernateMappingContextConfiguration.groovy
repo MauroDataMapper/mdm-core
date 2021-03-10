@@ -45,6 +45,7 @@ import static uk.ac.ox.softeng.maurodatamapper.util.Utils.parentClassIsAssignabl
  * classloader. Therefore you need to obtain the current classloader to compare object classes.
  * @since 31/10/2019
  */
+@SuppressWarnings('CatchNullPointerException')
 @Slf4j
 class MauroDataMapperHibernateMappingContextConfiguration extends HibernateMappingContextConfiguration {
 

@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.api.exception
 
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.micronaut.http.HttpStatus
 
 import java.time.LocalDateTime
@@ -25,7 +25,7 @@ import java.time.LocalDateTime
 /**
  * Created by james on 27/04/2017.
  */
-//@SuppressFBWarnings('RANGE_ARRAY_INDEX')
+@SuppressFBWarnings('RANGE_ARRAY_INDEX')
 abstract class ApiException extends Exception {
 
     LocalDateTime dateThrown

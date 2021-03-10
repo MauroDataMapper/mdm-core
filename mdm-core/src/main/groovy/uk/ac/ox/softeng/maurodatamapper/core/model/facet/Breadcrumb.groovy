@@ -19,9 +19,12 @@ package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
 /**
  * @since 06/02/2020
  */
+@SuppressFBWarnings('RANGE_ARRAY_INDEX')
 class Breadcrumb {
 
     UUID id

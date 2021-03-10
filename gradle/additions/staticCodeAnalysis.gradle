@@ -1,0 +1,17 @@
+sca.ciEnabled project.hasProperty('ciRun') ? project.findProperty('ciRun').toBoolean() : false
+
+codenarc {
+    configFile = file("${rootDir}/gradle/static_code_analysis/codenarc_rules.groovy")
+}
+
+spotbugs {
+    excludeFilter = file("${rootDir}/gradle/static_code_analysis/spotbugs_exclude.xml")
+}
+
+checkstyle {
+    configFile = file("${rootDir}/gradle/static_code_analysis/checkstyle.xml")
+}
+
+pmd {
+    ruleSets = ['category/java/errorprone.xml', 'category/java/bestpractices.xml']
+}
