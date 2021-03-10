@@ -137,7 +137,7 @@ class EditService {
             }
 
             if (edits) {
-                allEdits[resource.id.toString()] = edits
+                allEdits[resource.id] = edits
             }
         }
 
