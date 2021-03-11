@@ -69,6 +69,13 @@ pipeline {
             }
         }
 
+        // If the flyway is broken then do NOT deploy to artifactory
+        stage('Flyway Migration Check') {
+            steps {
+                sh './gradlew --build-cache verifyFlywayMigrationVersions'
+            }
+        }
+
         // Deploy develop branch even if tests fail if the code builds, as it'll be an unstable snapshot but we should still deploy
         stage('Deploy develop to Artifactory') {
             when {
