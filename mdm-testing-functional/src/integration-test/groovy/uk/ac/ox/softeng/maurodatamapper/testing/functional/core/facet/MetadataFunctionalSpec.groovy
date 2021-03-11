@@ -58,7 +58,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
       "mdk3"
     ],
     "namespace": "referencedata.com"
-  },          
+  },
   {
     "defaultNamespace": false,
     "editable": true,
@@ -116,6 +116,22 @@ class MetadataFunctionalSpec extends FunctionalSpec {
     "keys": [
       
     ],
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter"
+  },
+  {
+    "defaultNamespace": true,
+    "editable": true,
+    "keys": [
+      
+    ],
+    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer"
+  },
+  {
+    "defaultNamespace": true,
+    "editable": true,
+    "keys": [
+      
+    ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter"
   },
   {
@@ -133,7 +149,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
       
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter"
-  },  
+  },
   {
     "defaultNamespace": true,
     "editable": true,
@@ -141,7 +157,7 @@ class MetadataFunctionalSpec extends FunctionalSpec {
       
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer"
-  },  
+  },
   {
     "defaultNamespace": true,
     "editable": true,
@@ -157,22 +173,6 @@ class MetadataFunctionalSpec extends FunctionalSpec {
       
     ],
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer"
-  },
-  {
-    "defaultNamespace": true,
-    "editable": true,
-    "keys": [
-      
-    ],
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter"
-  },
-  {
-    "defaultNamespace": true,
-    "editable": true,
-    "keys": [
-      
-    ],
-    "namespace": "uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer"
   }
 ]'''
     }
