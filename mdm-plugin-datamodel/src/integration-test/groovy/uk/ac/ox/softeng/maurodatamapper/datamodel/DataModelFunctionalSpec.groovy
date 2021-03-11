@@ -590,9 +590,51 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         response.body().finalised
         response.body().dateFinalised
 
+        when: 'List edits for the DataModel'
+        GET("$id/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is not a CHANGE NOTICE edit'
+        !response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Change Notice"
+        }      
+
         cleanup:
         cleanUpData(id)
     }
+
+    void 'test finalising DataModel with a changeNotice'() {
+        given: 'The save action is executed with valid data'
+        String id = createNewItem(validJson)
+
+        when:
+        PUT("$id/finalise", [versionChangeType: 'Major', changeNotice: 'Functional Test Change Notice'])
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().availableActions == ['delete', 'show', 'update']
+        response.body().finalised
+        response.body().dateFinalised
+
+        when: 'List edits for the DataModel'
+        GET("$id/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Change Notice"
+        }
+
+
+        cleanup:
+        cleanUpData(id)
+    }    
 
     void 'VF01 : test creating a new fork model of a DataModel'() {
         given: 'finalised model is created'
@@ -1729,7 +1771,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String modifiedDescriptionSource = 'modifiedDescriptionSource'
 
         def requestBody = [
-            patch: [
+            changeNotice: 'Functional Test Merge Change Notice',
+            patch: [                
                 leftId : target,
                 rightId: source,
                 label  : "Functional Test Model",
@@ -1845,6 +1888,17 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+
+        when: 'List edits for the Target DataModel'
+        GET("$target/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Merge Change Notice"
+        }           
 
         cleanup:
         cleanUpData(source)
