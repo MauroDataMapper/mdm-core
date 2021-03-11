@@ -664,9 +664,50 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         response.body().finalised
         response.body().dateFinalised
 
+        when: 'List edits for the Terminology'
+        GET("$id/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is not a CHANGE NOTICE edit'
+        !response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Change Notice"
+        }           
+
         cleanup:
         cleanUpData(id)
     }
+
+    void 'test finalising Terminology with a changeNotice'() {
+        given: 'The save action is executed with valid data'
+        String id = createNewItem(validJson)
+
+        when:
+        PUT("$id/finalise", [versionChangeType: "Major", changeNotice: "Functional Test Change Notice"])
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().availableActions == ['delete', 'show', 'update']
+        response.body().finalised
+        response.body().dateFinalised
+
+        when: 'List edits for the Terminology'
+        GET("$id/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Change Notice"
+        }           
+
+        cleanup:
+        cleanUpData(id)
+    }    
 
     void 'VF01 : test creating a new fork model of a Terminology'() {
         given: 'finalised model is created'
@@ -1595,6 +1636,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String modifiedDescriptionSource = 'modifiedDescriptionSource'
 
         def requestBody = [
+            changeNotice: 'Functional Test Merge Change Notice',
             patch: [
                 leftId : target,
                 rightId: source,
@@ -1798,6 +1840,17 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         responseBody().sourceTerm.id == addLeftOnly
         responseBody().targetTerm.id == addAndAddReturningDifference
+
+        when: 'List edits for the Target Terminology'
+        GET("$target/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Merge Change Notice"
+        }          
 
         cleanup:
         cleanUpData(source)
