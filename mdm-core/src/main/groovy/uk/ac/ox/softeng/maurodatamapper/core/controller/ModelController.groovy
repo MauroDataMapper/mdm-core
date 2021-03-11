@@ -283,6 +283,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             }
         }
 
+        if (mergeIntoData.changeNotice) {
+            instance.addChangeNoticeEdit(currentUser, mergeIntoData.changeNotice)
+        }
+
         updateResource(instance)
 
         updateResponse(instance)
@@ -324,6 +328,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                                               finaliseData.supersededBy ?: []) as T
 
         if (!validateResource(instance, 'update')) return
+
+        if (finaliseData.changeNotice) {
+            instance.addChangeNoticeEdit(currentUser, finaliseData.changeNotice)
+        }
 
         updateResource instance
 
