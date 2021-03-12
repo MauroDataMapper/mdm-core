@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileSpecificationDataTypeProvider
 
 import grails.plugins.Plugin
 
@@ -64,6 +65,7 @@ The profile services and controllers for the Mauro Data Mapper backend.
 
     Closure doWithSpring() {
         { ->
+            profileSpecificationDataTypeProvider ProfileSpecificationDataTypeProvider
         }
     }
 

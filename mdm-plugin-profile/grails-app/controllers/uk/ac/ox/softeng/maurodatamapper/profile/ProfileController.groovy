@@ -26,7 +26,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
+import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.DataModelProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -43,14 +46,16 @@ class ProfileController implements ResourcelessMdmController {
     SessionFactory sessionFactory
 
     ProfileService profileService
+    DataModelService dataModelService
 
     MetadataService metadataService
 
     @Autowired
     SearchService mdmPluginProfileSearchService
 
+
     def profileProviders() {
-        respond providers: profileService.profileProviderServices
+        respond providers: profileService.getStaticAndDynamicProfileServices()
     }
 
     def profiles() {
@@ -68,12 +73,13 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(params.catalogueItemClass, params.catalogueItemId)
         }
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
-        Set<ProfileProviderService> allProfiles = profileService.getProfileProviderServices().findAll() {
+        Set<ProfileProviderService> allProfiles = profileService.getStaticAndDynamicProfileServices().findAll() {
             it.profileApplicableForDomains().size() == 0 ||
                 it.profileApplicableForDomains().contains(params.catalogueItemDomainType)
         }
         Set<ProfileProviderService> unusedProfiles = new HashSet<ProfileProviderService>(allProfiles)
         unusedProfiles.removeAll(usedProfiles)
+
         render(view: "/profile/profileProviders", model: [providers: unusedProfiles])
     }
 
@@ -110,7 +116,6 @@ class ProfileController implements ResourcelessMdmController {
     def show() {
 
         CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-
         if (!catalogueItem) {
             return notFound(params.catalogueItemClass, params.catalogueItemId)
         }

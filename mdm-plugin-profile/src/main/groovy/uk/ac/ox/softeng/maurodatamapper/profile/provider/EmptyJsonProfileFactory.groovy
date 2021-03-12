@@ -36,7 +36,7 @@ class EmptyJsonProfileFactory {
         } else {
             List<ProfileSection> emptySections = []
             String resourceFile = jsonProfileProviderService.getJsonResourceFile()
-            def sectionMap = new JsonSlurper().parse(jsonProfileProviderService.getClass().getResource(resourceFile))
+            def sectionMap = new JsonSlurper().parse(jsonProfileProviderService.getClass().classLoader.getResource(resourceFile))
             sectionMap.each { Map it ->
                 ProfileSection profileSection = new ProfileSection(it)
                 emptySections.add(profileSection)

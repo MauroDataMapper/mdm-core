@@ -24,7 +24,7 @@ enum ProfileFieldDataType {
     INT('int'),
     DECIMAL('decimal'),
     DATE('date'),
-    DATETIME('decimal'),
+    DATETIME('datetime'),
     TIME('time'),
     FOLDER('folder'),
     MODEL('model')
