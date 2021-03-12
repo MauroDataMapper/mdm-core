@@ -341,7 +341,12 @@ class TermService extends ModelItemService<Term> {
         Set<Term> sourceAsParentTerms = TermRelationship.bySourceTermIdAndParental(term.id)
             .join('targetTerm')
             .list()
-            .collect { it.targetTerm }.toSet()
+            .collect {it.targetTerm}.toSet()
+
+        if (sourceAsParentTerms.size() > 100) {
+            log.warn('Too many terms found to provide a stable tree {}', sourceAsParentTerms.size())
+            return []
+        }
 
         Set<Term> treeTerms = updateChildKnowledge(sourceAsParentTerms)
 
@@ -349,7 +354,12 @@ class TermService extends ModelItemService<Term> {
         Set<Term> sourceAsChildTerms = TermRelationship.byTargetTermIdAndChild(term.id)
             .join('sourceTerm')
             .list()
-            .collect { it.sourceTerm }.toSet()
+            .collect {it.sourceTerm}.toSet()
+
+        if (sourceAsChildTerms.size() + treeTerms.size() > 100) {
+            log.warn('Too many terms found to provide a stable tree {}', sourceAsChildTerms.size())
+            return []
+        }
 
         treeTerms.addAll(updateChildKnowledge(sourceAsChildTerms))
         treeTerms.toList() as List<ModelItem>
