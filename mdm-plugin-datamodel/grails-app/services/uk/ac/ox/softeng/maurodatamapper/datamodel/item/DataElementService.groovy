@@ -20,7 +20,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -38,15 +37,17 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.lucene.search.Query
+import org.grails.datastore.mapping.validation.ValidationErrors
 import org.hibernate.search.engine.ProjectionConstants
 import org.hibernate.search.jpa.FullTextEntityManager
 import org.hibernate.search.jpa.FullTextQuery
 import org.hibernate.search.jpa.Search
 import org.hibernate.search.query.dsl.QueryBuilder
+import org.springframework.validation.Errors
+import org.springframework.validation.FieldError
 
 import javax.persistence.EntityManager
 
@@ -56,7 +57,6 @@ class DataElementService extends ModelItemService<DataElement> {
 
     DataClassService dataClassService
     DataTypeService dataTypeService
-    ModelImportService modelImportService
     SummaryMetadataService summaryMetadataService
 
     @Override
@@ -85,7 +85,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     @Override
     void deleteAll(Collection<DataElement> dataElements) {
-        dataElements.each { delete(it) }
+        dataElements.each {delete(it)}
     }
 
     void delete(UUID id) {
@@ -119,6 +119,27 @@ class DataElementService extends ModelItemService<DataElement> {
                 .executeUpdate()
         }
         log.trace('DataElements removed')
+    }
+
+    DataElement validate(DataElement dataElement) {
+        dataElement.validate()
+        if (dataElement.hasErrors()) {
+            FieldError invalidOwnerError = dataElement.errors.getFieldErrors('dataType')?.find {it.code == 'invalid.dataelement.datatype.model'}
+            if (invalidOwnerError) {
+                if (modelImportService.hasCatalogueItemImportedCatalogueItem(dataElement.model, dataElement.dataType)) {
+                    Errors existingErrors = dataElement.errors
+                    Errors cleanedErrors = new ValidationErrors(dataElement)
+
+                    existingErrors.fieldErrors.each {fe ->
+                        if (fe.field != 'dataType' && fe.code != 'invalid.dataelement.datatype.model') {
+                            cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
+                        }
+                    }
+                    dataElement.errors = cleanedErrors
+                }
+            }
+        }
+        dataElement
     }
 
     void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
@@ -176,7 +197,7 @@ class DataElementService extends ModelItemService<DataElement> {
 
     @Override
     List<DataElement> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataElement.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        DataElement.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
@@ -209,14 +230,14 @@ class DataElementService extends ModelItemService<DataElement> {
 
     def saveAll(Collection<DataElement> dataElements) {
 
-        List<Classifier> classifiers = dataElements.collectMany { it.classifiers ?: [] } as List<Classifier>
+        List<Classifier> classifiers = dataElements.collectMany {it.classifiers ?: []} as List<Classifier>
         if (classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(classifiers)
         }
 
-        Collection<DataElement> alreadySaved = dataElements.findAll { it.ident() && it.isDirty() }
-        Collection<DataElement> notSaved = dataElements.findAll { !it.ident() }
+        Collection<DataElement> alreadySaved = dataElements.findAll {it.ident() && it.isDirty()}
+        Collection<DataElement> notSaved = dataElements.findAll {!it.ident()}
 
         if (alreadySaved) {
             log.trace('Straight saving {} already saved DataElements', alreadySaved.size())
@@ -228,7 +249,7 @@ class DataElementService extends ModelItemService<DataElement> {
             List batch = []
             int count = 0
 
-            notSaved.each { de ->
+            notSaved.each {de ->
 
                 batch += de
                 count++
@@ -247,7 +268,7 @@ class DataElementService extends ModelItemService<DataElement> {
         log.trace('Performing batch save of {} DataElements', dataElements.size())
 
         DataElement.saveAll(dataElements)
-        dataElements.each { updateFacetsAfterInsertingCatalogueItem(it) }
+        dataElements.each {updateFacetsAfterInsertingCatalogueItem(it)}
 
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
@@ -258,13 +279,13 @@ class DataElementService extends ModelItemService<DataElement> {
     void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
         if (dataElements) {
             log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())
-            def grouped = dataElements.groupBy { it.dataType.label }.sort { a, b ->
+            def grouped = dataElements.groupBy {it.dataType.label}.sort {a, b ->
                 def res = a.value.size() <=> b.value.size()
                 if (res == 0) res = a.key <=> b.key
                 res
             }
             log.debug('Grouped {} DataElements by DataType label', grouped.size())
-            grouped.each { label, elements ->
+            grouped.each {label, elements ->
                 log.trace('Matching {} elements to DataType label {}', elements.size(), label)
                 DataType dataType = dataModel.findDataTypeByLabel(label)
 
@@ -275,7 +296,7 @@ class DataElementService extends ModelItemService<DataElement> {
                     dataType.createdBy = dataElement.createdBy
                     dataModel.addToDataTypes(dataType)
                 }
-                elements.each { dataType.addToDataElements(it) }
+                elements.each {dataType.addToDataElements(it)}
             }
         }
     }
@@ -288,11 +309,13 @@ class DataElementService extends ModelItemService<DataElement> {
         DataElement.byDataTypeIdAndId(dataTypeId, id).find()
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:], boolean includeImported = false, boolean includeExtends = false) {
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:], boolean includeImported = false,
+                                           boolean includeExtends = false) {
         findAllByDataClassId(dataClassId, pagination, pagination, includeImported, includeExtends)
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination, boolean includeImported = false, boolean includeExtends = false) {
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination, boolean includeImported = false,
+                                           boolean includeExtends = false) {
         DataElement.withFilter(DataElement.byDataClassId(dataClassId, includeImported, includeExtends), filter).list(pagination)
     }
 
@@ -461,10 +484,10 @@ class DataElementService extends ModelItemService<DataElement> {
         if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to create links')
         List<SemanticLink> alreadyExistingLinks = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
             dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each { de ->
-            fromDataElements.each { fde ->
+        dataElements.each {de ->
+            fromDataElements.each {fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any { it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id }) {
+                if (!alreadyExistingLinks.any {it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id}) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }
@@ -496,7 +519,7 @@ class DataElementService extends ModelItemService<DataElement> {
      * @param label The label of the DataElement being sought
      */
     DataElement findDataElement(DataClass dataClass, String label) {
-        dataClass.dataElements.find { it.label == label.trim() }
+        dataClass.dataElements.find {it.label == label.trim()}
     }
 
     /**
@@ -535,9 +558,9 @@ class DataElementService extends ModelItemService<DataElement> {
 
         if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
             //Create a new ModelImport for the DataType into DataModel
-            ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
-                                                              importedCatalogueItem  : dataType,
-                                                              createdByUser          : currentUser)
+            ModelImport modelImportDataType = new ModelImport(catalogueItem: dataModel,
+                                                              importedCatalogueItem: dataType,
+                                                              createdByUser: currentUser)
 
             //Save the additional model import, indicating that this is an additional rather than
             //principal import and so should fail silently if it already exists.

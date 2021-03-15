@@ -18,12 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import spock.lang.Stepwise
 
 import static io.micronaut.http.HttpStatus.CREATED
-import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -39,9 +37,11 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 abstract class ModelImportFunctionalSpec extends FunctionalSpec {
 
-    abstract String getResourcePath()
+    String getResourcePath() {
+        ''
+    }
 
-    abstract String getEditorIndexJson()
+    abstract String getIndexPath()
 
     /**
      * The endpoint (without ID) used for ModelImport
@@ -49,11 +49,6 @@ abstract class ModelImportFunctionalSpec extends FunctionalSpec {
      */
     abstract String getModelImportPath()
 
-    /**
-     * Endpoints for additional model imports which should be cleaned up
-     *
-     */
-    abstract List getAdditionalModelImportPaths()    
 
     /**
      * ID of the CatalogueItem which is going to be imported
@@ -67,25 +62,41 @@ abstract class ModelImportFunctionalSpec extends FunctionalSpec {
      */
     abstract String getImportedCatalogueItemDomainType()
 
-    /**
-     * Expected JSON for a ModelImport
-     *
-     */
-    abstract String getExpectedModelImportJson()
+    abstract String getCatalogueItemId()
+
+    abstract String getCatalogueItemDomainType()
 
     /**
-     * Expected JSON when listing all resources including imported catalogue items.
-     * Should be the same as getEditorIndexJson() but with the addition of any imported resources.
+     * Endpoints for additional model imports which should be cleaned up
      *
      */
-    abstract String getEditorIndexJsonWithImported()
+    List getAdditionalModelImportPaths() {
+        []
+    }
 
-    Map getModelImportJson() {
-        [
-            importedCatalogueItemDomainType       : getImportedCatalogueItemDomainType(),
-            importedCatalogueItemId               : getImportedCatalogueItemId()
-        ]
-    }    
+    void verifyIndex() {
+        assert responseBody().count == 0
+        assert responseBody().items.size() == 0
+    }
+
+    void cleanupModelImports() {
+        GET("${getModelImportPath()}")
+        verifyResponse OK, response
+        responseBody().items.each {item ->
+            log.debug("Deleting model import {}", item.id)
+            DELETE("${getModelImportPath()}/${item.id}")
+            verifyResponse HttpStatus.NO_CONTENT, response
+        }
+
+        getAdditionalModelImportPaths().each {path ->
+            GET("${path}")
+            responseBody().items.each {item ->
+                log.debug("Deleting additional model import {}", item.id)
+                DELETE("${path}/${item.id}")
+                verifyResponse HttpStatus.NO_CONTENT, response
+            }
+        }
+    }
 
     /**
      * Import a CatalogueItem.
@@ -99,54 +110,52 @@ abstract class ModelImportFunctionalSpec extends FunctionalSpec {
         loginEditor()
 
         when: "List the resources on the endpoint"
-        GET(getResourcePath(), STRING_ARG, true)
+        GET(getIndexPath())
 
         then: "The correct resources are listed"
-        verifyJsonResponse HttpStatus.OK, getEditorIndexJson()
+        verifyResponse OK, response
+        verifyIndex()
 
         when: "The save action is executed with valid data"
-        POST(getModelImportPath(), getModelImportJson(), MAP_ARG, true)
+        POST(getModelImportPath(), [
+            importedCatalogueItemDomainType: getImportedCatalogueItemDomainType(),
+            importedCatalogueItemId        : getImportedCatalogueItemId()
+        ])
 
         then: "The response is correct"
-        verifyResponse HttpStatus.CREATED, response
+        verifyResponse CREATED, response
         String id = responseBody().id
-        assert responseBody().catalogueItem
-        assert responseBody().importedCatalogueItem
+        responseBody().catalogueItem.id == getCatalogueItemId()
+        responseBody().catalogueItem.domainType == getCatalogueItemDomainType()
+        responseBody().importedCatalogueItem.id == getImportedCatalogueItemId()
+        responseBody().importedCatalogueItem.domainType == getImportedCatalogueItemDomainType()
 
         when: "The ModelImport is requested"
-        GET("${getModelImportPath()}/${id}" , STRING_ARG, true)        
+        GET("${getModelImportPath()}/${id}")
 
         then: "The response is correct"
-        verifyJsonResponse HttpStatus.OK, getExpectedModelImportJson()
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().catalogueItem.id == getCatalogueItemId()
+        responseBody().catalogueItem.domainType == getCatalogueItemDomainType()
+        responseBody().importedCatalogueItem.id == getImportedCatalogueItemId()
+        responseBody().importedCatalogueItem.domainType == getImportedCatalogueItemDomainType()
 
         when: "List the resources on the endpoint without showing imported resources"
-        GET("${getResourcePath()}?imported=false", STRING_ARG, true)
+        GET("${getIndexPath()}?imported=false")
 
-        then: "The correct resources are listed"
-        verifyJsonResponse HttpStatus.OK, getEditorIndexJson()        
+        then: "The imported CI is not there"
+        verifyResponse OK, response
+        responseBody().items.every {it.id != importedCatalogueItemId}
 
         when: "List the resources on the endpoint showing imported resources"
-        GET(getResourcePath(), STRING_ARG, true)
+        GET(getIndexPath())
 
         then: "The correct resources are listed"
-        verifyJsonResponse HttpStatus.OK, getEditorIndexJsonWithImported()           
+        verifyResponse OK, response
+        responseBody().items.any {it.id == importedCatalogueItemId}
 
         cleanup:
-        GET("${getModelImportPath()}", MAP_ARG, true)
-        verifyResponse HttpStatus.OK, response
-        responseBody().items.each { item ->
-            log.debug("Deleting model import {}", item.id)
-            DELETE("${getModelImportPath()}/${item.id}", MAP_ARG, true) 
-            verifyResponse HttpStatus.NO_CONTENT, response
-        }
-
-        getAdditionalModelImportPaths().each { path ->
-            GET("${path}", MAP_ARG, true)
-            responseBody().items.each { item ->
-                log.debug("Deleting additional model import {}", item.id)
-                DELETE("${path}/${item.id}", MAP_ARG, true) 
-                verifyResponse HttpStatus.NO_CONTENT, response
-            }
-        }
-    }     
+        cleanupModelImports()
+    }
 }

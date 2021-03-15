@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 
 import grails.gorm.DetachedCriteria
@@ -31,6 +30,14 @@ class ReferenceType extends DataType<ReferenceType> {
     DataClass referenceClass
 
     static belongsTo = DataClass
+
+    static constraints = {
+        referenceClass validator: {val, obj ->
+            if (val && val.model && obj.model) {
+                val.model.id == obj.model.id ?: ['invalid.datatype.dataclass.model']
+            }
+        }
+    }
 
     static mapping = {
         referenceClass index: 'reference_type_reference_class_idx', fetch: 'join', cascade: 'none'

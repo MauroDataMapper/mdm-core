@@ -15,14 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item.datatype
+package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
-
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelImportFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -30,8 +28,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * <pre>
@@ -51,35 +51,51 @@ import io.micronaut.http.HttpStatus
 class DataElementModelImportFunctionalSpec extends ModelImportFunctionalSpec {
 
     @Override
-    String getResourcePath() {
-        "dataModels/${getImportingDataModelId()}/dataClasses/${getContentDataClassId()}/dataElements"
+    String getIndexPath() {
+        "dataModels/${getImportingDataModelId()}/dataClasses/${getCatalogueItemId()}/dataElements"
+    }
+
+    @Override
+    String getModelImportPath() {
+        "dataClasses/${getCatalogueItemId()}/modelImports"
+    }
+
+    @Override
+    List getAdditionalModelImportPaths() {
+        [getDataTypeModelImportPath()]
     }
 
     String getDataTypeResourcePath() {
         "dataModels/${getImportingDataModelId()}/dataTypes"
-    }      
+    }
+
+    String getDataTypeModelImportPath() {
+        "dataModels/${getImportingDataModelId()}/modelImports"
+    }
 
     @Transactional
     @Override
     String getImportedCatalogueItemId() {
-        String dataClassId = DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, BootstrapModels.FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL).get().id.toString()
+        String dataClassId = DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id,
+                                                             BootstrapModels.FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL).get().id.toString()
         DataElement.byDataClassIdAndLabel(dataClassId, 'data element 1').get().id.toString()
     }
 
     @Override
     String getImportedCatalogueItemDomainType() {
         DataElement.simpleName
-    } 
-    
+    }
+
+    @Transactional
     @Override
-    String getModelImportPath() {
-        "dataClasses/${getContentDataClassId()}/modelImports"
+    String getCatalogueItemId() {
+        DataClass.byDataModelIdAndLabel(Utils.toUuid(importingDataModelId), 'importing class 3').get().id.toString()
     }
 
     @Override
-    List getAdditionalModelImportPaths() {
-        ["dataModels/${getImportingDataModelId()}/modelImports"]
-    }   
+    String getCatalogueItemDomainType() {
+        'DataClass'
+    }
 
     @Transactional
     String getImportingDataModelId() {
@@ -87,33 +103,15 @@ class DataElementModelImportFunctionalSpec extends ModelImportFunctionalSpec {
     }
 
     @Transactional
-    String getImportedDataClassId() {
-        DataClass.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, BootstrapModels.FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL).get().id.toString()
-    }   
-
-    @Transactional
-    String getImportedDataModelId() {
-        DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id.toString()
-    }     
+    String getImportedStringDataTypeId() {
+        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getFinalisedSimpleDataModelId()), 'gnirts on finalised example data model')
+            .get().id.toString()
+    }
 
     @Transactional
     String getFinalisedSimpleDataModelId() {
         DataModel.byLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).get().id.toString()
     }
-
-    @Transactional
-    String getImportedStringDataTypeId() {
-        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getFinalisedSimpleDataModelId()), 'gnirts on finalised example data model').get().id.toString()
-    }  
-
-    @Transactional
-    String getContentDataClassId() {
-        DataClass.byDataModelIdAndLabel(Utils.toUuid(importingDataModelId), 'importing class 3').get().id.toString()
-    }        
-
-    String getResourcePathForFinalisedSimpleDataModel() {
-        "dataModels/${getImportedDataModelId()}/dataTypes"
-    }  
 
     Map getValidJsonWithImportedDataType() {
         [
@@ -122,248 +120,122 @@ class DataElementModelImportFunctionalSpec extends ModelImportFunctionalSpec {
             minMultiplicity: 1,
             dataType       : [id: getImportedStringDataTypeId()]
         ]
-    }        
-
-    @Override
-    String getExpectedModelImportJson() {
-      '''{
-  "id": "${json-unit.matches:id}",
-  "catalogueItem": {
-    "id": "${json-unit.matches:id}",
-    "domainType": "DataClass",
-    "label": "importing class 3",
-    "model": "${json-unit.matches:id}",
-    "breadcrumbs": [
-      {
-        "id": "${json-unit.matches:id}",
-        "label": "Third Importing DataModel",
-        "domainType": "DataModel",
-        "finalised": false
-      }
-    ]
-  },
-  "importedCatalogueItem": {
-    "id": "${json-unit.matches:id}",
-    "domainType": "DataElement",
-    "label": "data element 1",
-    "model": "${json-unit.matches:id}",
-    "breadcrumbs": [
-      {
-        "id": "${json-unit.matches:id}",
-        "label": "Finalised Example Test DataModel",
-        "domainType": "DataModel",
-        "finalised": true
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "label": "first class on example finalised model",
-        "domainType": "DataClass"
-      }
-    ]
-  }
-}'''
     }
 
-    @Override
-    String getEditorIndexJson() {
-        '''{
-  "count": 0,
-  "items": []
-}'''
-    }
-
-    //Same as getEditorIndexJson but with one extra imported DataType
-    @Override
-    String getEditorIndexJsonWithImported() {
-        '''{
-  "count": 1,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataElement",
-      "label": "data element 1",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Finalised Example Test DataModel",
-          "domainType": "DataModel",
-          "finalised": true
-        },
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "first class on example finalised model",
-          "domainType": "DataClass"
-        }
-      ],
-      "dataClass": "${json-unit.matches:id}",
-      "dataType": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "PrimitiveType",
-        "label": "gnirts on finalised example data model",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Finalised Example Test DataModel",
-            "domainType": "DataModel",
-            "finalised": true
-          }
-        ]
-      },
-      "maxMultiplicity": 1,
-      "minMultiplicity": 1
-    }
-  ]
-}'''
-    }    
-
-    String getExpectedDataElementWithImportedDataTypeJson() {
-      '''{
-  "id": "${json-unit.matches:id}",
-  "domainType": "DataElement",
-  "label": "Functional Test DataElement With Imported DataType",
-  "model": "${json-unit.matches:id}",
-  "breadcrumbs": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "Third Importing DataModel",
-      "domainType": "DataModel",
-      "finalised": false
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "importing class 3",
-      "domainType": "DataClass"
-    }
-  ],
-  "availableActions": [
-    "show",
-    "comment",
-    "editDescription",
-    "update",
-    "save",
-    "delete"
-  ],
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "dataClass": "${json-unit.matches:id}",
-  "dataType": {
-    "id": "${json-unit.matches:id}",
-    "domainType": "PrimitiveType",
-    "label": "gnirts on finalised example data model",
-    "model": "${json-unit.matches:id}",
-    "breadcrumbs": [
-      {
-        "id": "${json-unit.matches:id}",
-        "label": "Finalised Example Test DataModel",
-        "domainType": "DataModel",
-        "finalised": true
-      }
-    ]
-  },
-  "maxMultiplicity": 1,
-  "minMultiplicity": 1
-}'''
-    }
-
-    /**
-     * Import a DataElement into a DataClass and check that a DataType import is also created.
-     * Note that we are not testing here that ModelImports are done/not done for different logins -
-     * that is done by separate facet tests.
-     * Check that the imported item appears in relevant endpoints when the ?imported query parameter is used.
-     * Check that the imported item does not appear when the ?imported query parameter is not used.
-     */
-    void "MI02: import DataElement and check that its DataType is listed in the DataType Endpoint"() {
+    void "MI02: Check imported DataElement also imports the DataType"() {
         given:
         loginEditor()
 
-        when: "List the resources on the endpoint"
-        GET(getResourcePath(), STRING_ARG, true)
-
-        then: "The correct resources are listed"
-        verifyJsonResponse HttpStatus.OK, getEditorIndexJson()
-
-        //TODO Prevent a DataElement being created with a DataType that is neither imported into or directly 
-        //owned by the DataModel to which the DataElement is being saved.
-        //when: "Create a new DataElement with the DataType from another model which has not been imported"    
-        //POST(getResourcePath(), getValidJsonWithImportedDataType(), MAP_ARG, true)
-
-        //then: "DataElement is created correctly"
-        //verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response          
-    
         when: "The save action is executed with valid data"
-        POST(getModelImportPath(), getModelImportJson(), MAP_ARG, true)
+        POST(getModelImportPath(), [
+            importedCatalogueItemDomainType: getImportedCatalogueItemDomainType(),
+            importedCatalogueItemId        : getImportedCatalogueItemId()
+        ])
 
         then: "The response is correct"
-        verifyResponse HttpStatus.CREATED, response
+        verifyResponse CREATED, response
         String id = responseBody().id
-        assert responseBody().catalogueItem
-        assert responseBody().importedCatalogueItem
+        responseBody().catalogueItem.id == getCatalogueItemId()
+        responseBody().catalogueItem.domainType == getCatalogueItemDomainType()
+        responseBody().importedCatalogueItem.id == getImportedCatalogueItemId()
+        responseBody().importedCatalogueItem.domainType == getImportedCatalogueItemDomainType()
 
-        when: "The ModelImport is requested"
-        GET("${getModelImportPath()}/${id}", STRING_ARG, true)        
+        when: 'Getting the model imports list for the DataModel'
+        GET(getDataTypeModelImportPath())
 
-        then: "The response is correct"
-        verifyJsonResponse HttpStatus.OK, getExpectedModelImportJson()
+        then: 'There is a datatype listed in it'
+        responseBody().count == 1
+        responseBody().items.first().importedCatalogueItem.id == getImportedStringDataTypeId()
+        def dataTypeImportId = responseBody().items.first().id
+
 
         when: "List the resources on the DataType endpoint without showing imported resources"
-        GET("${getDataTypeResourcePath()}?imported=false", STRING_ARG, true)
+        GET("${getDataTypeResourcePath()}?imported=false")
 
         then: "The correct resources are listed"
-        verifyJsonResponse HttpStatus.OK, getExpectedDataTypeIndexJson()        
+        verifyResponse OK, response
+        responseBody().items.every {it.id != getImportedStringDataTypeId()}
 
         when: "List the resources on the DataType endpoint showing imported resources"
-        GET(getDataTypeResourcePath(), STRING_ARG, true)
+        GET(getDataTypeResourcePath())
 
         then: "The correct resources are listed"
-        verifyJsonResponse HttpStatus.OK, getExpectedDataTypeIndexJsonWithImported()       
+        verifyResponse OK, response
+        responseBody().items.any {it.id == getImportedStringDataTypeId()}
 
-        when: "Create a new DataElement with the imported DataType"    
-        POST(getResourcePath(), getValidJsonWithImportedDataType(), MAP_ARG, true)
+        cleanup:
+        DELETE("${getModelImportPath()}/${id}")
+        verifyResponse HttpStatus.NO_CONTENT, response
+
+        DELETE("${getDataTypeModelImportPath()}/${dataTypeImportId}")
+        verifyResponse HttpStatus.NO_CONTENT, response
+    }
+
+    void "MI03: Create DataElement using imported DataType"() {
+        given:
+        loginEditor()
+
+        when: "Create a new DataElement with the DataType from another model which has not been imported"
+        POST(getIndexPath(), getValidJsonWithImportedDataType())
+
+        then: "DataElement is not created"
+        verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
+
+        when: "The import action for datatype is executed"
+        POST(getDataTypeModelImportPath(), [
+            importedCatalogueItemDomainType: PrimitiveType.simpleName,
+            importedCatalogueItemId        : getImportedStringDataTypeId()
+        ])
+
+        then: "The response is correct"
+        verifyResponse CREATED, response
+        String dataTypeImportId = responseBody().id
+        responseBody().catalogueItem.id == getImportingDataModelId()
+        responseBody().catalogueItem.domainType == DataModel.simpleName
+        responseBody().importedCatalogueItem.id == getImportedStringDataTypeId()
+        responseBody().importedCatalogueItem.domainType == PrimitiveType.simpleName
+
+        when: "The ModelImport is requested"
+        GET("${getDataTypeModelImportPath()}/${dataTypeImportId}")
+
+        then: "The response is correct"
+        verifyResponse OK, response
+        responseBody().id == dataTypeImportId
+        responseBody().catalogueItem.id == getImportingDataModelId()
+        responseBody().catalogueItem.domainType == DataModel.simpleName
+        responseBody().importedCatalogueItem.id == getImportedStringDataTypeId()
+        responseBody().importedCatalogueItem.domainType == PrimitiveType.simpleName
+
+        when: "List the resources on the DataType endpoint without showing imported resources"
+        GET("${getDataTypeResourcePath()}?imported=false")
+
+        then: "The correct resources are listed"
+        verifyResponse OK, response
+        responseBody().items.every {it.id != getImportedStringDataTypeId()}
+
+        when: "List the resources on the DataType endpoint showing imported resources"
+        GET(getDataTypeResourcePath())
+
+        then: "The correct resources are listed"
+        verifyResponse OK, response
+        responseBody().items.any {it.id == getImportedStringDataTypeId()}
+
+        when: "Create a new DataElement with the imported DataType"
+        POST(getIndexPath(), getValidJsonWithImportedDataType())
 
         then: "DataElement is created correctly"
-        verifyResponse HttpStatus.CREATED, response
+        verifyResponse CREATED, response
         String newDataElementId = responseBody().id
 
         when: "Get the DataElement created with the imported DataType"
-        GET("${getResourcePath()}/${newDataElementId}", STRING_ARG, true)
+        GET("${getIndexPath()}/${newDataElementId}")
 
         then: "The DataElement is shown correctly"
-        verifyJsonResponse HttpStatus.OK, getExpectedDataElementWithImportedDataTypeJson()  
+        verifyResponse OK, response
+        responseBody().id == newDataElementId
 
         cleanup:
-        DELETE("${getModelImportPath()}/${id}", MAP_ARG, true) 
+        DELETE("${getDataTypeModelImportPath()}/${dataTypeImportId}")
         verifyResponse HttpStatus.NO_CONTENT, response
-    }    
-
-    String getExpectedDataTypeIndexJson() {
-      '''{
-  "count": 0,
-  "items": []
-}'''
     }
-
-    String getExpectedDataTypeIndexJsonWithImported() {
-      '''{
-  "count": 1,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "gnirts on finalised example data model",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Finalised Example Test DataModel",
-          "domainType": "DataModel",
-          "finalised": true
-        }
-      ]
-    }
-  ]
-}'''
-    }    
-
-
 }

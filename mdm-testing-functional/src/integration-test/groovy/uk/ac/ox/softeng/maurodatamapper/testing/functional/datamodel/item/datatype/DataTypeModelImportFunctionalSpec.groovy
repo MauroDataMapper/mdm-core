@@ -17,19 +17,22 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item.datatype
 
-
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelImportFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
+
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * <pre>
@@ -49,30 +52,36 @@ import io.micronaut.http.HttpStatus
 class DataTypeModelImportFunctionalSpec extends ModelImportFunctionalSpec {
 
     @Override
-    String getResourcePath() {
+    String getIndexPath() {
         "dataModels/${getImportingDataModelId()}/dataTypes"
     }
 
-    @Transactional
-    @Override
-    String getImportedCatalogueItemId() {
-        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id, 'gnirts on finalised example data model').get().id.toString()
-    }
-
-    @Override
-    String getImportedCatalogueItemDomainType() {
-        DataType.simpleName
-    } 
-    
     @Override
     String getModelImportPath() {
         "dataModels/${getImportingDataModelId()}/modelImports"
     }
 
+    @Transactional
     @Override
-    List getAdditionalModelImportPaths() {
-        []
-    }     
+    String getImportedCatalogueItemId() {
+        DataType.byDataModelIdAndLabel(DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id,
+                                       'gnirts on finalised example data model').get().id.toString()
+    }
+
+    @Override
+    String getImportedCatalogueItemDomainType() {
+        PrimitiveType.simpleName
+    }
+
+    @Override
+    String getCatalogueItemId() {
+        getImportingDataModelId()
+    }
+
+    @Override
+    String getCatalogueItemDomainType() {
+        DataModel.simpleName
+    }
 
     @Transactional
     String getImportingDataModelId() {
@@ -87,235 +96,69 @@ class DataTypeModelImportFunctionalSpec extends ModelImportFunctionalSpec {
     @Transactional
     String getImportedDataModelId() {
         DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id.toString()
-    }     
-
-    String getResourcePathForFinalisedSimpleDataModel() {
-        "dataModels/${getImportedDataModelId()}/dataTypes"
-    }     
-
-    @Override
-    String getExpectedModelImportJson() {
-      '''{
-  "id": "${json-unit.matches:id}",
-  "catalogueItem": {
-    "id": "${json-unit.matches:id}",
-    "domainType": "DataModel",
-    "label": "First Importing DataModel"
-  },
-  "importedCatalogueItem": {
-    "id": "${json-unit.matches:id}",
-    "domainType": "PrimitiveType",
-    "label": "gnirts on finalised example data model",
-    "model": "${json-unit.matches:id}",
-    "breadcrumbs": [
-      {
-        "id": "${json-unit.matches:id}",
-        "label": "Finalised Example Test DataModel",
-        "domainType": "DataModel",
-        "finalised": true
-      }
-    ]
-  }
-}'''
     }
 
-    @Override
-    String getEditorIndexJson() {
-        '''{
-  "count": 0,
-  "items": []
-}'''
-    }
-
-    //Same as getEditorIndexJson but with one extra imported DataType
-    @Override
-    String getEditorIndexJsonWithImported() {
-        '''{
-  "count": 1,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "gnirts on finalised example data model",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Finalised Example Test DataModel",
-          "domainType": "DataModel",
-          "finalised": true
-        }
-      ]
-    }
-  ]
-}'''
-    }    
-
-    void "E03c: Test the save action correctly persists an instance for reference type when the DataClass is imported as editor"() {
+    void "MI02: Test creating a Reference DataType using an imported DataClass"() {
         given:
         loginEditor()
-        
-        //TODO Currently this test fails because the ReferenceType is created. Add a check so that ReferenceType can only
-        //be created on a DataClass which is directly owned by or imported into the DataModel
-        //when: "The save action is executed using valid data with the imported DataClass which has not yet been imported"
-        //POST('', [
-        //    domainType    : 'ReferenceType',
-        //    label         : 'Functional Reference Type on Imported DataClass',
-        //    referenceClass: getImportedDataClassId()
-        //])
-
-        //then: "The response is correct"
-        //verifyResponse HttpStatus.UNPROCESSABLE_ENTITY, response
-
-        when: "A DataClass is imported into the DataModel"
-        POST(getModelImportPath(), [
-            importedCatalogueItemDomainType: "DataClass",
-            importedCatalogueItemId: getImportedDataClassId()
-        ], MAP_ARG, true)
-
-        then: "The response is correct"
-        verifyResponse HttpStatus.CREATED, response
-        String modelImportId = responseBody().id
 
         when: "The save action is executed using valid data with the imported DataClass"
-        POST('', [
+        POST(getIndexPath(), [
             domainType    : 'ReferenceType',
             label         : 'Functional Reference Type on Imported DataClass',
             referenceClass: getImportedDataClassId()
         ])
 
+        then: "The response is unprocessable as the DC is in the wrong datamodel"
+        verifyResponse UNPROCESSABLE_ENTITY, response
+
+        when: "A DataClass is imported into the DataModel"
+        POST(getModelImportPath(), [
+            importedCatalogueItemDomainType: DataClass.simpleName,
+            importedCatalogueItemId        : getImportedDataClassId()
+        ])
+
         then: "The response is correct"
-        verifyResponse HttpStatus.CREATED, response
+        verifyResponse CREATED, response
+        String modelImportId = responseBody().id
+
+        when: "The save action is executed using valid data with the imported DataClass"
+        POST(getIndexPath(), [
+            domainType    : ReferenceType.simpleName,
+            label         : 'Functional Reference Type on Imported DataClass',
+            referenceClass: getImportedDataClassId()
+        ])
+
+        then: "The response is correct"
+        verifyResponse CREATED, response
         String id = responseBody().id
-        assert responseBody().domainType == 'ReferenceType'
+        assert responseBody().domainType == ReferenceType.simpleName
         assert responseBody().label == 'Functional Reference Type on Imported DataClass'
         assert responseBody().referenceClass.id == getImportedDataClassId()
 
         when:
-        GET(id, STRING_ARG)
+        GET("${getIndexPath()}/${id}")
 
         then:
-        verifyJsonResponse HttpStatus.OK, '''{
-  "id": "${json-unit.matches:id}",
-  "domainType": "ReferenceType",
-  "label": "Functional Reference Type on Imported DataClass",
-  "model": "${json-unit.matches:id}",
-  "breadcrumbs": [
-    {
-      "id": "${json-unit.matches:id}",
-      "label": "First Importing DataModel",
-      "domainType": "DataModel",
-      "finalised": false
-    }
-  ],
-  "availableActions": [
-    "show",
-    "comment",
-    "editDescription",
-    "update",
-    "save",
-    "delete"
-  ],
-  "lastUpdated": "${json-unit.matches:offsetDateTime}",
-  "referenceClass": {
-    "id": "${json-unit.matches:id}",
-    "domainType": "DataClass",
-    "label": "first class on example finalised model",
-    "model": "${json-unit.matches:id}",
-    "breadcrumbs": [
-      {
-        "id": "${json-unit.matches:id}",
-        "label": "Finalised Example Test DataModel",
-        "domainType": "DataModel",
-        "finalised": true
-      }
-    ]
-  }
-}'''
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().referenceClass.id == getImportedDataClassId()
 
         when: "List the DataTypes on the importing DataModel"
-        GET("${getResourcePath()}", STRING_ARG, true)
+        GET(getIndexPath())
 
         then: "The ReferenceType is included in the list as the imported primitive type"
-        verifyJsonResponse HttpStatus.OK, '''{
-  "count": 2,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "ReferenceType",
-      "label": "Functional Reference Type on Imported DataClass",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "First Importing DataModel",
-          "domainType": "DataModel",
-          "finalised": false
-        }
-      ],
-      "referenceClass": {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataClass",
-        "label": "first class on example finalised model",
-        "model": "${json-unit.matches:id}",
-        "breadcrumbs": [
-          {
-            "id": "${json-unit.matches:id}",
-            "label": "Finalised Example Test DataModel",
-            "domainType": "DataModel",
-            "finalised": true
-          }
-        ]
-      }
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "gnirts on finalised example data model",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Finalised Example Test DataModel",
-          "domainType": "DataModel",
-          "finalised": true
-        }
-      ]
-    }
-  ]
-}'''
+        verifyResponse OK, response
+        responseBody().items.any {it.id == id}
 
-        when: "List the DataTypes on the DataModel from which the DataClass was imported"
-        GET(getResourcePathForFinalisedSimpleDataModel(), STRING_ARG, true)
-
-        then: "The ReferenceType is not unintentionally included in the list"
-        verifyJsonResponse HttpStatus.OK, '''{
-  "count": 1,
-  "items": [
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "PrimitiveType",
-      "label": "gnirts on finalised example data model",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Finalised Example Test DataModel",
-          "domainType": "DataModel",
-          "finalised": true
-        }
-      ]
-    }
-  ]
-}'''
-        cleanup:     
+        cleanup:
         //Delete the Reference Type
-        DELETE(id, MAP_ARG)
-        verifyResponse HttpStatus.NO_CONTENT, response
+        DELETE("${getIndexPath()}/${id}", MAP_ARG)
+        verifyResponse NO_CONTENT, response
 
         //Delete the ModelImport
         DELETE("${getModelImportPath()}/${modelImportId}", MAP_ARG, true)
-        verifyResponse HttpStatus.NO_CONTENT, response        
+        verifyResponse NO_CONTENT, response
     }    
 
 }

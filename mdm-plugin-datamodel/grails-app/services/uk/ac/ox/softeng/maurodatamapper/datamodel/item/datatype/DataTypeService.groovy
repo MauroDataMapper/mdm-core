@@ -265,7 +265,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         log.trace('Performing batch save of {} DataTypes', dataTypes.size())
 
         DataType.saveAll(dataTypes)
-        dataTypes.each { dt ->
+        dataTypes.each {dt ->
             updateFacetsAfterInsertingCatalogueItem(dt)
         }
 
@@ -273,6 +273,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         sessionFactory.currentSession.clear()
 
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
+    }
+
+    DataType validate(DataType dataType) {
+        if (dataType.domainType == ReferenceType.simpleName) return referenceTypeService.validate(dataType as ReferenceType)
+        dataType.validate()
+        dataType
     }
 
     @Override
