@@ -29,6 +29,7 @@ class ProfileField {
     String description
     Integer maxMultiplicity
     Integer minMultiplicity
+    List<String> allowedValues
 
     ProfileFieldDataType dataType
 

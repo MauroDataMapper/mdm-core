@@ -26,6 +26,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileFieldDataType
@@ -162,29 +163,29 @@ class ProfileService {
                 profileSpecificationProfileService.metadataNamespace)
 
 
-        dynamicModels.collect{dataModel ->
-            List<ProfileSection> sections = dataModel.dataClasses.sort{it.order}.collect(){dataClass ->
+        dynamicModels.collect { dataModel ->
+            List<ProfileSection> sections = dataModel.dataClasses.sort { it.order }.collect() { dataClass ->
                 new ProfileSection(
                         sectionName: dataClass.label,
                         sectionDescription: dataClass.description,
-                        fields: dataClass.dataElements.sort {it.order}.collect { dataElement ->
+                        fields: dataClass.dataElements.sort { it.order }.collect { dataElement ->
                             new ProfileField(
                                     fieldName: dataElement.label,
                                     description: dataElement.description,
-                                    metadataPropertyName: dataElement.metadata.find{
+                                    metadataPropertyName: dataElement.metadata.find {
                                         it.namespace == "uk.ac.ox.softeng.profile.field" &&
-                                        it.key == "metadataPropertyName"
+                                                it.key == "metadataPropertyName"
                                     }?.value,
                                     maxMultiplicity: dataElement.maxMultiplicity,
                                     minMultiplicity: dataElement.minMultiplicity,
-                                    dataType: dataElement.dataType.label,
+                                    dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
+                                    allowedValues: (dataElement.dataType instanceof EnumerationType) ?
+                                            ((EnumerationType) dataElement.dataType).enumerationValues.collect { it.key } : [],
                                     currentValue: ""
                             )
                         }
                 )
             }
-
-
 
             return new ProfileProviderService<JsonProfile, CatalogueItem>() {
 

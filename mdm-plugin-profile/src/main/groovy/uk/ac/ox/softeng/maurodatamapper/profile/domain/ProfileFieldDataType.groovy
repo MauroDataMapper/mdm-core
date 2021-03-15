@@ -27,7 +27,8 @@ enum ProfileFieldDataType {
     DATETIME('datetime'),
     TIME('time'),
     FOLDER('folder'),
-    MODEL('model')
+    MODEL('model'),
+    ENUMERATION('enumeration')
 
     String label
 
