@@ -260,9 +260,9 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         when:
         DataType dataType = dm.dataTypes[0]
 
-        then:
+        then: 'the \n is replaced with a space'
         dataType.instanceOf(PrimitiveType)
-        dataType.label == 'openworld\ntick'
+        dataType.label == 'openworld tick'
         (dataType as PrimitiveType).units == 'mg'
         !dataType.annotations
         !dataType.metadata

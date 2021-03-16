@@ -34,4 +34,16 @@ trait InformationAware {
     String toString() {
         "${getClass().getName()} (${label})[${ident() ?: '(unsaved)'}]"
     }
+
+    void setLabel(String label) {
+        //Replace any linebreaks with a space (when importing from Json, a literal '\n' is parsed as a line feed)
+        String cleanLabel = label?.replaceAll("\\R", " ")
+
+        //Replace any literal '\\n' with a space (when importing from Xml, a literal '\n' is escaped to '\\n')
+        cleanLabel = cleanLabel?.replace('\\n', " ")
+
+        //Replace any literal '\n' with a space
+        cleanLabel = cleanLabel?.replace('\n', " ")
+        this.label = cleanLabel
+    }
 }
