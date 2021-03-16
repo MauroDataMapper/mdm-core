@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.DataTypeSpec
 
@@ -28,6 +28,7 @@ import groovy.util.logging.Slf4j
 class ReferenceTypeSpec extends DataTypeSpec<ReferenceType> implements DomainUnitTest<ReferenceType> {
 
     DataClass reference
+
 
     def setup() {
         log.debug('Setting up ReferenceTypeSpec unit')
@@ -52,5 +53,13 @@ class ReferenceTypeSpec extends DataTypeSpec<ReferenceType> implements DomainUni
         ReferenceType referenceType = super.createValidDomain(label)
         referenceType.referenceClass = reference
         referenceType
+    }
+
+    ReferenceType createValidDomain(String label, DataModel dataModel) {
+        DataClass reference2 = new DataClass(createdByUser: admin, label: 'reference', dataModel: dataModel)
+        checkAndSave(reference2)
+        createValidDomain(label).tap {
+            referenceClass = reference2
+        }
     }
 }

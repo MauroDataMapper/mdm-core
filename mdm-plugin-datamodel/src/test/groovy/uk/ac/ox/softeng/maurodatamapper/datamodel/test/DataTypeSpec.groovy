@@ -62,6 +62,12 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
         domain
     }
 
+    K createValidDomain(String label, DataModel diffDataModel) {
+        createValidDomain(label).tap {
+            dataModel = diffDataModel
+        }
+    }
+
     @Override
     Model getOwningModel() {
         dataSet
@@ -114,16 +120,16 @@ abstract class DataTypeSpec<K extends DataType> extends ModelItemSpec<K> {
         check(dataModel)
 
         when: 'adding data type with same label as existing to different model'
-        dataModel.addToDataTypes(createValidDomain(domain.label))
+        dataModel.addToDataTypes(createValidDomain(domain.label, dataModel))
 
         then:
         checkAndSave(dataSet)
         check(dataModel)
 
         when: 'adding multiple data types with same label'
-        dataModel.addToDataTypes(createValidDomain('a'))
-        dataModel.addToDataTypes(createValidDomain('b'))
-        dataModel.addToDataTypes(createValidDomain('a'))
+        dataModel.addToDataTypes(createValidDomain('a', dataModel))
+        dataModel.addToDataTypes(createValidDomain('b', dataModel))
+        dataModel.addToDataTypes(createValidDomain('a', dataModel))
 
         then: 'dataset is still valid'
         checkAndSave(dataSet)
