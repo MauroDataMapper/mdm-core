@@ -394,9 +394,50 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         response.body().finalised
         response.body().dateFinalised
 
+        when: 'List edits for the CodeSet'
+        GET("$id/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is not a CHANGE NOTICE edit'
+        !response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Change Notice"
+        }          
+
         cleanup:
         cleanUpData(id)
     }
+
+    void 'test finalising CodeSet with a changeNotice'() {
+        given: 'The save action is executed with valid data'
+        String id = createNewItem(validJson)
+
+        when:
+        PUT("$id/finalise", [versionChangeType: "Major", changeNotice: "Functional Test Change Notice"])
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().availableActions == ['delete', 'show', 'update',]
+        response.body().finalised
+        response.body().dateFinalised
+
+        when: 'List edits for the CodeSet'
+        GET("$id/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Change Notice"
+        }          
+
+        cleanup:
+        cleanUpData(id)
+    }    
 
     void 'VF01 : test creating a new fork model of a CodeSet'() {
         given: 'finalised model is created'
@@ -1224,6 +1265,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         when:
         def requestBody = [
+            changeNotice: 'Functional Test Merge Change Notice',
             patch: [
                 leftId : target,
                 rightId: source,
@@ -1290,6 +1332,17 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         responseBody().items.find { dataClass -> dataClass.label == 'MAMRD: modifyAndModifyReturningDifference' }.description ==
         'DescriptionLeft'
         responseBody().items.find { dataClass -> dataClass.label == 'MLO: modifyLeftOnly' }.description == 'Description'
+
+        when: 'List edits for the Target CodeSet'
+        GET("$target/edits", MAP_ARG)
+        
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+          it.description == "CHANGE NOTICE: Functional Test Merge Change Notice"
+        }          
 
         cleanup:
         cleanUpData(source)

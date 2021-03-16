@@ -75,6 +75,11 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
         // No-op
     }
 
+    @Override
+    void addChangeNoticeEdit(User changer, String changeNotice) {
+        addToEditsTransactionally changer, "CHANGE NOTICE: ${changeNotice}"
+    }
+
     List<Edit> getEdits() {
         Edit.findAllByResource(domainType, id)
     }

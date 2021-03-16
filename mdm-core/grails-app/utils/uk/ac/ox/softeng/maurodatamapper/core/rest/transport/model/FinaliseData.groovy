@@ -40,6 +40,8 @@ class FinaliseData implements Validateable {
 
     String versionTag
 
+    String changeNotice
+
 
     static constraints = {
         supersededBy nullable: true
@@ -50,5 +52,6 @@ class FinaliseData implements Validateable {
         }
         version nullable: true
         versionTag nullable: true
+        changeNotice nullable: true
     }
 }
