@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtend
+
+model {
+    ModelExtend modelExtend
+}
+
+json {
+    id modelExtend.id
+
+    catalogueItem tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: modelExtend.modelItem)
+    extendedCatalogueItem tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: modelExtend.extendedModelItem)
+}

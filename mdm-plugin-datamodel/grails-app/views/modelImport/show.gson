@@ -1,4 +1,4 @@
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
 
 model {
     ModelImport modelImport

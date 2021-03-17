@@ -1,4 +1,4 @@
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtend
 
 import grails.gorm.PagedResultList
 

@@ -72,6 +72,8 @@ The DataModel domain, services and controllers for the Mauro Data Mapper backend
             dataTypeValueConverter DataTypeValueConverter
 
             summaryMetadataAwareMappingContext SummaryMetadataAwareMappingContext
+            modelImportAwareMappingContext ModelImportAwareMappingContext
+            modelExtendAwareMappingContext ModelExtendAwareMappingContext
         }
     }
 

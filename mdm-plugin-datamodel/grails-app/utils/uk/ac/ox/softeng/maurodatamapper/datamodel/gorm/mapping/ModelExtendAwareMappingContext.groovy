@@ -15,32 +15,24 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.facet
+package uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.mapping
 
-import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.CatalogueItemJoinTableDynamicHibernateMappingContext
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtendAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-class ModelExtendInterceptor extends FacetInterceptor {
 
+/**
+ * @since 23/12/2020
+ */
+class ModelExtendAwareMappingContext extends CatalogueItemJoinTableDynamicHibernateMappingContext {
     @Override
-    Class getFacetClass() {
-        ModelExtend
-    }
-
-
-    UUID getId() {
-        params.modelExtendId ?: params.id
+    boolean handlesDomainClass(Class domainClass) {
+        Utils.parentClassIsAssignableFromChild(ModelExtendAware, domainClass)
     }
 
     @Override
-    void checkAdditionalIds() {
-        Utils.toUuid(params,"modelExtendId")
-    }
-
-    boolean before() {
-        facetResourceChecks()
-        checkActionAllowedOnFacet()
+    String getPropertyName() {
+        'modelExtends'
     }
 }

@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -27,6 +26,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -482,12 +483,13 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     void addDataElementsAreFromDataElements(Collection<DataElement> dataElements, Collection<DataElement> fromDataElements, User user) {
         if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to create links')
-        List<SemanticLink> alreadyExistingLinks = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
-            dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each {de ->
-            fromDataElements.each {fde ->
+        List<SemanticLink> alreadyExistingLinks =
+            semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
+                dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
+        dataElements.each { de ->
+            fromDataElements.each { fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any {it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id}) {
+                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }
@@ -504,7 +506,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     void removeDataElementsAreFromDataElements(Collection<DataElement> dataElements, Collection<DataElement> fromDataElements) {
         if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to remove links')
-        List<SemanticLink> links = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
+        List<SemanticLink> links = semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
             dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
         semanticLinkService.deleteAll(links)
     }
@@ -538,33 +540,34 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
      * DataType into the DataModel to which the importing DataClass belongs.
      *
      * @param currentUser The user doing the import
-     * @param imported The resource that was imported
+     * @param modelImport The resource that was imported
      *
      */
     @Override
-    void additionalModelImports(User currentUser, ModelImport imported) {
+    void performAdditionalModelImports(ModelImport modelImport) {
 
         //The DataElement that was imported
-        DataElement dataElement = imported.importedCatalogueItem
+        DataElement dataElement = modelImport.importedModelItem as DataElement
 
         //The DataType of that DataElement
         DataType dataType = dataElement.dataType
 
         //The CatalogueItem (which will be a DataClass) into which the DataElement was imported
-        CatalogueItem catalogueItem = imported.catalogueItem
+        DataClass dataClass = modelImport.catalogueItem as DataClass
 
         //The DataModel to which that DataClass belongs
-        DataModel dataModel = catalogueItem.getModel()
+        DataModel dataModel = dataClass.getModel()
 
         if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
             //Create a new ModelImport for the DataType into DataModel
             ModelImport modelImportDataType = new ModelImport(catalogueItem: dataModel,
                                                               importedCatalogueItem: dataType,
-                                                              createdByUser: currentUser)
+                                                              createdBy: modelImport.createdBy)
+            dataModel.addToModelImports(modelImportDataType)
 
             //Save the additional model import, indicating that this is an additional rather than
             //principal import and so should fail silently if it already exists.
-            modelImportService.saveResource(currentUser, modelImportDataType, true)
+            modelImportService.save(modelImportDataType, false)
         }
     }
 

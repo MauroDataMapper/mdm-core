@@ -50,7 +50,7 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         if (aliases) {
             Collection<String> list
             if (aliases.first() instanceof Map) {
-                list = aliases.collect { (it as Map).alias as String }
+                list = aliases.collect {(it as Map).alias as String}
             } else list = aliases
 
             aliasString = list.collect { (it as String).trim() }?.join('|')

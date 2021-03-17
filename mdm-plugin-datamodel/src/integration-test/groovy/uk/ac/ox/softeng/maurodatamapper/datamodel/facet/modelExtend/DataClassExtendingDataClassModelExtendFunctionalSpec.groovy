@@ -18,10 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.modelextend
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtend
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemModelExtendFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.datamodel.test.functional.CatalogueItemModelExtendFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
@@ -36,7 +36,7 @@ import java.time.ZoneOffset
 /**
  * Where facet owner is a DataClass and it extends a DataClass
  *
- * @see uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendController
+ * @see uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtendController
  */
 @Integration
 @Slf4j

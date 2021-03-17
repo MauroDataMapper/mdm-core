@@ -21,9 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -32,10 +29,12 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtendService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
@@ -87,38 +86,20 @@ class DataClassService extends ModelItemService<DataClass> {
     void delete(UUID id) {
         delete(get(id))
     }
+
     /**
      * DataClass allows the import of DataClass and DataElement
      */
     @Override
-    List<Class> importsDomains() {
+    List<Class> domainImportableModelItemClasses() {
         [DataElement, DataClass]
-    }
-
-    /**
-     * Does the importedModelItem belong to a DataClass belonging to a DataModel which is either finalised
-     * or in the same collection as the importing DataModel?
-     *
-     * @param importingDataClass The DataClass which is importing the importedModelItem
-     * @param importedModelItem The ModelItem which is being imported into importingDataClass
-     *
-     * @return boolean Is this import allowed by domain specific rules?
-     */
-    @Override
-    boolean isImportableByCatalogueItem(CatalogueItem importingDataClass, CatalogueItem importedModelItem) {
-        //DataModel importingDataModel = importingDataClass.getModel()
-        DataModel importedFromDataModel = importedModelItem.getModel()
-
-        importedFromDataModel.finalised
-
-        //TODO add OR importedFromModel is in the same collection as importingDataModel
     }
 
     /**
      * DataClass can extend DataClass
      */
     @Override
-    List<Class> extendsDomains() {
+    List<Class> domainExtendableModelItemClasses() {
         [DataClass]
     }
 
@@ -235,14 +216,14 @@ class DataClassService extends ModelItemService<DataClass> {
 
     Collection<DataElement> saveAllAndGetDataElements(Collection<DataClass> dataClasses) {
 
-        List<Classifier> classifiers = dataClasses.collectMany { it.classifiers ?: [] } as List<Classifier>
+        List<Classifier> classifiers = dataClasses.collectMany {it.classifiers ?: []} as List<Classifier>
         if (classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(classifiers)
         }
 
-        Collection<DataClass> alreadySaved = dataClasses.findAll { it.ident() && it.isDirty() }
-        Collection<DataClass> notSaved = dataClasses.findAll { !it.ident() }
+        Collection<DataClass> alreadySaved = dataClasses.findAll {it.ident() && it.isDirty()}
+        Collection<DataClass> notSaved = dataClasses.findAll {!it.ident()}
 
         Collection<DataElement> dataElements = []
 
@@ -257,10 +238,10 @@ class DataClassService extends ModelItemService<DataClass> {
             int count = 0
 
             // Find all DCs which are either top level or have their parent DC already saved
-            Collection<DataClass> parentIsSaved = notSaved.findAll { !it.parentDataClass || it.parentDataClass.id }
+            Collection<DataClass> parentIsSaved = notSaved.findAll {!it.parentDataClass || it.parentDataClass.id}
             log.trace('Ready to save on first run {}', parentIsSaved.size())
             while (parentIsSaved) {
-                parentIsSaved.each { dc ->
+                parentIsSaved.each {dc ->
                     dataElements.addAll dc.dataElements ?: []
 
                     dc.dataClasses?.clear()
@@ -278,7 +259,7 @@ class DataClassService extends ModelItemService<DataClass> {
                 batch.clear()
                 // Find all DCs which have a saved parent DC
                 notSaved.removeAll(parentIsSaved)
-                parentIsSaved = notSaved.findAll { it.parentDataClass && it.parentDataClass.id }
+                parentIsSaved = notSaved.findAll {it.parentDataClass && it.parentDataClass.id}
                 log.trace('Ready to save on subsequent run {}', parentIsSaved.size())
             }
         }
@@ -290,7 +271,7 @@ class DataClassService extends ModelItemService<DataClass> {
         log.trace('Performing batch save of {} DataClasses', dataClasses.size())
 
         DataClass.saveAll(dataClasses)
-        dataClasses.each { updateFacetsAfterInsertingCatalogueItem(it) }
+        dataClasses.each {updateFacetsAfterInsertingCatalogueItem(it)}
 
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
@@ -303,31 +284,31 @@ class DataClassService extends ModelItemService<DataClass> {
         removeReferenceTypes(dataClass)
         dataClass.breadcrumbTree.removeFromParent()
         dataClass.dataModel.removeFromDataClasses(dataClass)
-        dataClass.dataClasses?.each { removeAssociations(it) }
+        dataClass.dataClasses?.each {removeAssociations(it)}
     }
 
     private void removeSemanticLinks(DataClass dataClass) {
         List<SemanticLink> semanticLinks = semanticLinkService.findAllByMultiFacetAwareItemId(dataClass.id)
-        semanticLinks.each { semanticLinkService.delete(it) }
+        semanticLinks.each {semanticLinkService.delete(it)}
     }
 
     private void removeReferenceTypes(DataClass dataClass) {
         List<ReferenceType> referenceTypes = []
         referenceTypes += dataClass.referenceTypes.findAll()
-        referenceTypes.each { dataTypeService.delete(it) }
+        referenceTypes.each {dataTypeService.delete(it)}
     }
 
     private void removeAllDataElementsWithNoLabel(DataClass dataClass) {
         List<DataElement> dataElements = []
-        dataElements += dataClass.dataElements.findAll { !it.label }
-        dataElements.each { dataElementService.delete(it) }
+        dataElements += dataClass.dataElements.findAll {!it.label}
+        dataElements.each {dataElementService.delete(it)}
     }
 
     private void removeAllDataElementsWithSameLabel(DataClass dataClass) {
 
         if (dataClass.dataElements) {
-            Map<String, List<DataElement>> identicalDataElements = dataClass.dataElements.groupBy { it.label }.findAll { it.value.size() > 1 }
-            identicalDataElements.each { label, dataElements ->
+            Map<String, List<DataElement>> identicalDataElements = dataClass.dataElements.groupBy {it.label}.findAll {it.value.size() > 1}
+            identicalDataElements.each {label, dataElements ->
                 for (int i = 1; i < dataElements.size(); i++) {
                     dataElementService.delete(dataElements[i])
                 }
@@ -337,8 +318,8 @@ class DataClassService extends ModelItemService<DataClass> {
 
     private void ensureChildDataClassesHaveUniqueNames(DataClass dataClass) {
         if (dataClass.dataClasses) {
-            dataClass.dataClasses.groupBy { it.label }.findAll { it.value.size() > 1 }.each { label, dataClasses ->
-                dataClasses.eachWithIndex { DataClass child, int i ->
+            dataClass.dataClasses.groupBy {it.label}.findAll {it.value.size() > 1}.each {label, dataClasses ->
+                dataClasses.eachWithIndex {DataClass child, int i ->
                     child.label = "${child.label}-$i"
                 }
             }
@@ -348,10 +329,10 @@ class DataClassService extends ModelItemService<DataClass> {
     private void collapseReferenceTypes(DataClass dataClass) {
         if (!dataClass.referenceTypes || dataClass.referenceTypes.size() == 1) return
         DataModel dataModel = dataClass.dataModel
-        Map<String, List<ReferenceType>> labelGroupedReferenceTypes = dataClass.referenceTypes.groupBy { it.label }
+        Map<String, List<ReferenceType>> labelGroupedReferenceTypes = dataClass.referenceTypes.groupBy {it.label}
 
-        labelGroupedReferenceTypes.findAll { it.value.size() > 1 }.each { label, labelReferenceTypes ->
-            Map<String, List<ReferenceType>> dmGrouped = labelReferenceTypes.groupBy { it.dataModel ? 'dataModel' : 'noDataModel' }
+        labelGroupedReferenceTypes.findAll {it.value.size() > 1}.each {label, labelReferenceTypes ->
+            Map<String, List<ReferenceType>> dmGrouped = labelReferenceTypes.groupBy {it.dataModel ? 'dataModel' : 'noDataModel'}
 
             // There will be only 1 datamodel owned type as we've already merged datamodel owned datatypes
             // If no datamodel owned, then we merge no datamodel and assign
@@ -368,11 +349,11 @@ class DataClassService extends ModelItemService<DataClass> {
 
     private void setCreatedBy(User creator, DataClass dataClass) {
         dataClass.createdBy = creator.emailAddress
-        dataClass.dataClasses?.each { dc ->
+        dataClass.dataClasses?.each {dc ->
             setCreatedBy(creator, dc)
         }
 
-        dataClass.dataElements?.each { de ->
+        dataClass.dataElements?.each {de ->
             de.createdBy = creator.emailAddress
         }
     }
@@ -384,13 +365,13 @@ class DataClassService extends ModelItemService<DataClass> {
         checkFacetsAfterImportingCatalogueItem(dataClass)
         if (dataClass.dataClasses) {
             dataClass.fullSortOfChildren(dataClass.dataClasses)
-            dataClass.dataClasses.each { dc ->
+            dataClass.dataClasses.each {dc ->
                 checkImportedDataClassAssociations(importingUser, dataModel, dc, matchDataTypes)
             }
         }
         if (dataClass.dataElements) {
             dataClass.fullSortOfChildren(dataClass.dataElements)
-            dataClass.dataElements.each { de ->
+            dataClass.dataElements.each {de ->
                 de.createdBy = importingUser.emailAddress
                 de.buildPath()
                 dataElementService.checkFacetsAfterImportingCatalogueItem(de)
@@ -400,7 +381,7 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     DataClass findSameLabelTree(DataModel dataModel, DataClass searchFor) {
-        dataModel.dataClasses.find { hasSameLabelTree(it, searchFor) }
+        dataModel.dataClasses.find {hasSameLabelTree(it, searchFor)}
     }
 
     private boolean hasSameLabelTree(DataClass left, DataClass right) {
@@ -434,8 +415,10 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.byRootDataClassOfDataModelId(dataModelId).idEq(id).count() == 1
     }
 
-    def findAllByDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, Map paginate = [:], boolean includeImported = false, boolean includeExtends = false) {
-        DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId, includeImported, includeExtends), paginate).list(paginate)
+    def findAllByDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, Map paginate = [:], boolean includeImported = false,
+                                                 boolean includeExtends = false) {
+        DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassId(dataModelId, dataClassId, includeImported, includeExtends), paginate).
+            list(paginate)
     }
 
     def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:], boolean includeImported = false) {
@@ -457,7 +440,8 @@ class DataClassService extends ModelItemService<DataClass> {
         DataClass.withFilter(DataClass.byDataModelId(dataModelId, includeImported), paginate).list(paginate)
     }
 
-    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:], boolean includeImported = false) {
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:],
+                                                            boolean includeImported = false) {
         DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm, includeImported).list(paginate)
     }
 
@@ -537,11 +521,11 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     DataClass findDataClass(DataModel dataModel, String label) {
-        dataModel.dataClasses.find { !it.parentDataClass && it.label == label.trim() }
+        dataModel.dataClasses.find {!it.parentDataClass && it.label == label.trim()}
     }
 
     DataClass findDataClass(DataClass parentDataClass, String label) {
-        parentDataClass.dataClasses.find { it.label == label.trim() }
+        parentDataClass.dataClasses.find {it.label == label.trim()}
     }
 
     DataClass findDataClassByPath(DataModel dataModel, List<String> pathLabels) {
@@ -569,8 +553,8 @@ class DataClassService extends ModelItemService<DataClass> {
         findDataClassByPath(parent, pathLabels)
     }
 
-    DataClass copyDataClassMatchingAllReferenceTypes(DataModel copiedDataModel, DataClass original, User copier, UserSecurityPolicyManager
-        userSecurityPolicyManager, Serializable parentDataClassId) {
+    DataClass copyDataClassMatchingAllReferenceTypes(DataModel copiedDataModel, DataClass original, User copier,
+                                                     UserSecurityPolicyManager userSecurityPolicyManager, Serializable parentDataClassId) {
         DataClass copiedDataClass = copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager, parentDataClassId)
         log.debug('Copied required DataClass, now checking for reference classes which haven\'t been matched or added')
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, original.dataModel, copier, userSecurityPolicyManager)
@@ -606,8 +590,8 @@ class DataClassService extends ModelItemService<DataClass> {
         if (!copy.validate()) //save(validate: false, copy) else
             throw new ApiInvalidModelException('DCS01', 'Copied DataClass is invalid', copy.errors, messageSource)
 
-        original.referenceTypes.each { refType ->
-            ReferenceType referenceType = copiedDataModel.referenceTypes.find { it.label == refType.label }
+        original.referenceTypes.each {refType ->
+            ReferenceType referenceType = copiedDataModel.referenceTypes.find {it.label == refType.label}
             if (!referenceType) {
                 referenceType = new ReferenceType(createdBy: copier.emailAddress, label: refType.label)
                 copiedDataModel.addToDataTypes(referenceType)
@@ -616,11 +600,11 @@ class DataClassService extends ModelItemService<DataClass> {
         }
 
         copy.dataClasses = []
-        original.dataClasses.each { child ->
+        original.dataClasses.each {child ->
             copy.addToDataClasses(copyDataClass(copiedDataModel, child, copier, userSecurityPolicyManager))
         }
         copy.dataElements = []
-        original.dataElements.each { element ->
+        original.dataElements.each {element ->
             copy.addToDataElements(dataElementService.copyDataElement(copiedDataModel, element, copier, userSecurityPolicyManager))
         }
 
@@ -669,7 +653,7 @@ class DataClassService extends ModelItemService<DataClass> {
         if (!emptyReferenceTypes) return
         log.debug('Found {} empty reference types', emptyReferenceTypes.size())
         // Copy all the missing reference classes
-        emptyReferenceTypes.each { rt ->
+        emptyReferenceTypes.each {rt ->
             ReferenceType ort = originalDataModel.findDataTypeByLabel(rt.label) as ReferenceType
             String originalDataClassPath = buildPath(ort.referenceClass)
             DataClass copiedDataClass = findDataClassByPath(copiedDataModel, originalDataClassPath.split(/\|/).toList())
@@ -688,7 +672,7 @@ class DataClassService extends ModelItemService<DataClass> {
     private Set<ReferenceType> getAllNestedReferenceTypes(DataClass dataClass) {
         Set<ReferenceType> referenceTypes = []
         referenceTypes.addAll(dataClass.referenceTypes ?: [])
-        referenceTypes.addAll(dataClass.dataElements.dataType.findAll { it.instanceOf(ReferenceType) })
+        referenceTypes.addAll(dataClass.dataElements.dataType.findAll {it.instanceOf(ReferenceType)})
         dataClass.dataClasses.each {
             referenceTypes.addAll(getAllNestedReferenceTypes(it))
         }
@@ -697,7 +681,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
 
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {
-        dataModel.referenceTypes.findAll { !(it as ReferenceType).referenceClass } as Set<ReferenceType>
+        dataModel.referenceTypes.findAll {!(it as ReferenceType).referenceClass} as Set<ReferenceType>
     }
 
 
@@ -736,7 +720,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
     @Override
     List<DataClass> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataClass.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        DataClass.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
@@ -773,7 +757,7 @@ class DataClassService extends ModelItemService<DataClass> {
         if (!dataClasses || !fromDataClasses) throw new ApiInternalException('DCSXX', 'No DataClasses or FromDataClasses exist to create links')
         List<SemanticLink> alreadyExistingLinks =
             semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
-                dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
+            dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
         dataClasses.each {de ->
             fromDataClasses.each {fde ->
                 // If no link already exists then add a new one
@@ -828,40 +812,36 @@ class DataClassService extends ModelItemService<DataClass> {
      * belonging to the DataElements of the imported DataClass.
      *
      * @param currentUser The user doing the import
-     * @param imported The resource that was imported
+     * @param modelImport The resource that was imported
      *
      */
     @Override
-    void additionalModelImports(User currentUser, ModelImport imported) {
+    void performAdditionalModelImports(ModelImport modelImport) {
 
-        //The DataClass that was imported
-        DataClass dataClass = imported.importedCatalogueItem
-
-        dataClass.dataElements.each {dataElement ->
-            DataType dataType = dataElement.dataType
-
-            //The CatalogueItem (which will be a DataClass) into which the DataElement was imported
-            CatalogueItem catalogueItem = imported.catalogueItem
-
-            //The DataModel to which that DataClass belongs
-            DataModel dataModel
-            if (catalogueItem instanceof ModelItem) {
-                dataModel = catalogueItem.getModel()
-            } else {
-                dataModel = catalogueItem
-            }
-
-            if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
-                //Create a new ModelImport for the DataType into DataModel
-                ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
-                                                                  importedCatalogueItem  : dataType,
-                                                                  createdByUser          : currentUser)
-
-                //Save the additional model import, indicating that this is an additional rather than
-                //principal import and so should fail silently if it already exists.
-                modelImportService.saveResource(currentUser, modelImportDataType, true)
-            }
-        }
+        //        //The DataClass that was imported
+        //        DataClass dataClass = modelImport.importedModelItem as DataClass
+        //
+        //        //The CatalogueItem into which the dataclass was imported, could be DataModel or DataClass
+        //        CatalogueItem catalogueItem = modelImport.catalogueItem
+        //
+        //        //The DataModel to which that DataClass belongs
+        //        // Use instanceOf to get around possible proxy issues
+        //        DataModel dataModel = catalogueItem.instanceOf(DataClass) ? (catalogueItem as DataClass).getModel() : catalogueItem as DataModel
+        //
+        //        dataClass.dataElements.each {dataElement ->
+        //            DataType dataType = dataElement.dataType
+        //
+        //            if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
+        //                //Create a new ModelImport for the DataType into DataModel
+        //                ModelImport modelImportDataType = new ModelImport(catalogueItem: dataModel,
+        //                                                                  importedCatalogueItem: dataType,
+        //                                                                  createdBy: modelImport.createdBy)
+        //
+        //                //Save the additional model import, indicating that this is an additional rather than
+        //                //principal import and so should fail silently if it already exists.
+        //                modelImportService.save(modelImportDataType, false)
+        //            }
+        //        }
 
     }
 

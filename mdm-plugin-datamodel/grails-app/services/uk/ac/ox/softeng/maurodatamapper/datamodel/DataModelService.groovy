@@ -24,15 +24,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -108,26 +106,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
      * DataModel allows the import of DataType and DataClass
      */
     @Override
-    List<Class> importsDomains() {
+    List<Class> domainImportableModelItemClasses() {
         [DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]
-    }
-
-    /**
-     * Does the importedModelItem belong to a DataModel which is finalised, or does it belong to the same
-     * collection as the importing DataModel?
-     *
-     * @param importingDataModel The DataModel which is importing the importedModelItem
-     * @param importedModelItem The ModelItem which is being imported into importingDataModel
-     *
-     * @return boolean Is this import allowed by domain specific rules?
-     */
-    @Override
-    boolean isImportableByCatalogueItem(CatalogueItem importingDataModel, CatalogueItem importedModelItem) {
-        DataModel importedFromDataModel = importedModelItem.getModel()
-
-        importedFromDataModel.finalised
-
-        //TODO add OR importedFromModel is in the same collection as importingDataModel
     }
 
     Long count() {

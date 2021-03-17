@@ -15,23 +15,23 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain
+package uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.mapping
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.CatalogueItemJoinTableDynamicHibernateMappingContext
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.ModelExtendAware
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 /**
- * @since 23/12/2020
+ * @since 03/12/2020
  */
-class ModelExtendAwareMappingContext extends CatalogueItemJoinTableDynamicHibernateMappingContext {
+class ModelImportAwareMappingContext extends CatalogueItemJoinTableDynamicHibernateMappingContext {
     @Override
     boolean handlesDomainClass(Class domainClass) {
-        Utils.parentClassIsAssignableFromChild(ModelExtendAware, domainClass)
+        Utils.parentClassIsAssignableFromChild(ModelImportAware, domainClass)
     }
 
     @Override
     String getPropertyName() {
-        'modelExtends'
+        'modelImports'
     }
 }

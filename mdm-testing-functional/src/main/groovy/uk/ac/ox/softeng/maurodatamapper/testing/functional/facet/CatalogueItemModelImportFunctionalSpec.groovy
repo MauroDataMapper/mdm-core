@@ -17,14 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessWithoutUpdatingFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-
-import java.util.regex.Pattern
 
 /**
  * <pre>

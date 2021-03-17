@@ -15,9 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.model.facet
+package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
@@ -46,13 +45,13 @@ trait ModelImportAware {
         removeFrom('modelImports', modelImports)
     }
 
-    def addToModelImports(String importedCatalogueItemDomainType, UUID importedCatalogueItemId, User createdBy)  {
-        addToModelImports(importedCatalogueItemDomainType, importedCatalogueItemId, createdBy.emailAddress)
+    def addToModelImports(String importedModelItemDomainType, UUID importedModelItemId, User createdBy) {
+        addToModelImports(importedModelItemDomainType, importedModelItemId, createdBy.emailAddress)
     }
 
-    def addToModelImports(String importedCatalogueItemDomainType, UUID importedCatalogueItemId, String createdBy)  {
-        addToModelImports(new ModelImport(importedCatalogueItemDomainType: importedCatalogueItemDomainType, 
-                                          importedCatalogueItemId: importedCatalogueItemId,
+    def addToModelImports(String importedModelItemDomainType, UUID importedModelItemId, String createdBy) {
+        addToModelImports(new ModelImport(importedModelItemDomainType: importedModelItemDomainType,
+                                          importedModelItemId: importedModelItemId,
                                           createdBy: createdBy))
-    }    
+    }
 }

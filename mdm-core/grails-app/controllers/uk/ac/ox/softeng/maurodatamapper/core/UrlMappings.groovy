@@ -149,16 +149,6 @@ class UrlMappings {
                 }
 
                 /*
-                Model Imports
-                 */
-                '/modelImports'(resources: 'modelImport', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
-
-                /*
-                Model Extends
-                 */
-                '/modelExtends'(resources: 'modelExtend', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
-
-                /*
                 Reference Files
                  */
                 '/referenceFiles'(resources: 'referenceFile', excludes: DEFAULT_EXCLUDES)

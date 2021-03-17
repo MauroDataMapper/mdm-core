@@ -17,14 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtend
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessWithoutUpdatingFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
-
-import java.util.regex.Pattern
 
 /**
  * <pre>
@@ -35,7 +33,7 @@ import java.util.regex.Pattern
  *  |  PUT     | /api/${catalogueItemDomainType}/${catalogueItemId}/modelExtends/${id}  | Action: update
  *  |  GET     | /api/${catalogueItemDomainType}/${catalogueItemId}/modelExtends/${id}  | Action: show
  * </pre>
- * @see uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendController
+ * @see uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtendController
  */
 @Slf4j
 abstract class CatalogueItemModelExtendFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {

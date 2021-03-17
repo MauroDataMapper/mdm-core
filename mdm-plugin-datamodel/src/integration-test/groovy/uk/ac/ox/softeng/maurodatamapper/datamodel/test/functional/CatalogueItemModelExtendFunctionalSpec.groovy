@@ -15,9 +15,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.test.functional.facet
+package uk.ac.ox.softeng.maurodatamapper.datamodel.test.functional
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtend
+import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemFacetFunctionalSpec
 
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
@@ -25,15 +26,15 @@ import io.micronaut.http.HttpStatus
 
 /**
  *
- * @see uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportController* Controller: modelImport
- *  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports         | Action: save                                 |
- *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports         | Action: index                                |
- *  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports/${id}   | Action: delete                               |
- *  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports/${id}   | Action: update                               |
- *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports/${id}   | Action: show                                 |
+ * @see ModelExtendController* Controller: modelExtend
+ *  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/modelExtends         | Action: save                                 |
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelExtends         | Action: index                                |
+ *  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/modelExtends/${id}   | Action: delete                               |
+ *  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelExtends/${id}   | Action: update                               |
+ *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelExtends/${id}   | Action: show                                 |
  */
 @Slf4j
-abstract class CatalogueItemModelImportFunctionalSpec extends CatalogueItemFacetFunctionalSpec<ModelImport> {
+abstract class CatalogueItemModelExtendFunctionalSpec extends CatalogueItemFacetFunctionalSpec<ModelExtend> {
 
     abstract String getSourceDataModelId()
 
@@ -41,7 +42,7 @@ abstract class CatalogueItemModelImportFunctionalSpec extends CatalogueItemFacet
 
     @Override
     String getFacetResourcePath() {
-        'modelImports'
+        'modelExtends'
     }
 
     void verifyCIF01SuccessfulCatalogueItemCopy(HttpResponse response) {

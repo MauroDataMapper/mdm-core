@@ -23,7 +23,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -31,9 +30,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.ModelConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.ModelImportAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.DataTypeCollectionBindingHelper
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataModelDataClassCollectionValidator

@@ -15,10 +15,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.model.facet
+package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.compiler.GrailsCompileStatic
@@ -31,10 +30,11 @@ import org.grails.datastore.gorm.GormEntity
 @SelfType(GormEntity)
 @GrailsCompileStatic
 trait ModelExtendAware {
+
     abstract Set<ModelExtend> getModelExtends()
 
     def addToModelExtends(ModelExtend add) {
-        add.setCatalogueItem(this as CatalogueItem)
+        add.setModelItem(this as ModelItem)
         addTo('modelExtends', add)
     }
 
@@ -46,13 +46,13 @@ trait ModelExtendAware {
         removeFrom('modelExtends', modelExtend)
     }
 
-    def addToModelExtends(String extendedCatalogueItemDomainType, UUID extendedCatalogueItemId, User createdBy)  {
-        addToModelExtends(extendedCatalogueItemDomainType, extendedCatalogueItemId, createdBy.emailAddress)
+    def addToModelExtends(String extendedModelItemDomainType, UUID extendedModelItemId, User createdBy) {
+        addToModelExtends(extendedModelItemDomainType, extendedModelItemId, createdBy.emailAddress)
     }
 
-    def addToModelExtends(String extendedCatalogueItemDomainType, UUID extendedCatalogueItemId, String createdBy)  {
-        addToModelExtends(new ModelExtend(extendedCatalogueItemDomainType: extendedCatalogueItemDomainType, 
-                                          extendedCatalogueItemId: extendedCatalogueItemId,
+    def addToModelExtends(String extendedModelItemDomainType, UUID extendedModelItemId, String createdBy) {
+        addToModelExtends(new ModelExtend(extendedModelItemDomainType: extendedModelItemDomainType,
+                                          extendedModelItemId: extendedModelItemId,
                                           createdBy: createdBy))
-    }    
+    }
 }

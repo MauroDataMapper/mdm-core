@@ -20,19 +20,16 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
@@ -52,7 +49,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     SessionFactory sessionFactory
     ClassifierService classifierService
-    ModelImportService modelImportService
     GrailsApplication grailsApplication
     MetadataService metadataService
     RuleService ruleService
@@ -79,50 +75,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     boolean handlesPathPrefix(String pathPrefix) {
-        false
-    }
-
-    /**
-     * What domains does the catalogue item allow to be imported? Override this in sub-classes.
-     */
-    List<Class> importsDomains() {
-        []
-    }
-
-    /**
-     * Does the catalogue item allow a catalogue item of type importedDomainType to be imported?
-     *
-     * @param clazz Domain (Class) that something is trying to import.
-     * @return boolean Is the import of this domain type allowed or not?
-     */
-    boolean importsDomain(Class clazz) {
-        importsDomains().contains(clazz)
-    }
-
-    /**
-     * Does the catalogue item allow a catalogue item of type importedDomainType to be imported?
-     *
-     * @param importedDomainType Domain type (string) of the domain that something is trying to import.
-     * @return boolean Is the import of this domain type allowed or not?
-     */
-    boolean importsDomainType(String importedDomainType) {
-        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, importedDomainType)
-        if (!grailsClass) {
-            throw new ApiBadRequestException('CISXX', "Unrecognised domain class resource [${importedDomainType}]")
-        }
-        importsDomain(grailsClass.clazz)
-    }
-
-    /**
-     * Does the importedModelItem belong to a DataModel which is finalised, or does it belong to the same
-     * collection as the importing DataModel?
-     *
-     * @param importingDataModel The DataModel which is importing the importedModelItem
-     * @param importedModelItem The ModelItem which is being imported into importingDataModel
-     *
-     * @return boolean Is this import allowed by domain specific rules?
-     */
-    boolean isImportableByCatalogueItem(CatalogueItem importingCatalogueItem, CatalogueItem importedCatalogueItem) {
         false
     }
 
@@ -184,10 +136,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         removeFacetFromDomain(catalogueItemId, classifier.id, 'classifiers')
     }
 
-    void removeModelImportFromCatalogueItem(UUID catalogueItemId, ModelImport modelImport) {
-        removeFacetFromDomain(catalogueItemId, modelImport.id, 'modelImports')
-    }
-
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy.createdBy = copier.emailAddress
         copy.label = original.label
@@ -240,10 +188,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     K findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         null
-    }
-
-    void additionalModelImports(User currentUser, ModelImport imported) {
-        //no-op
     }
 
     void mergeMetadataIntoCatalogueItem(MergeFieldDiffData mergeFieldDiff, K targetCatalogueItem,

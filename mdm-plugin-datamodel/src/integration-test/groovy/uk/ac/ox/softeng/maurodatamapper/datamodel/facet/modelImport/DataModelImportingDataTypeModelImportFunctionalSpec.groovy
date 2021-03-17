@@ -18,11 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.modelimport
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
-import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemModelImportFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.datamodel.test.functional.CatalogueItemModelImportFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
@@ -38,7 +38,7 @@ import java.time.ZoneOffset
 /**
  * Where facet owner is a DataModel and it imports a DataType
  *
- * @see uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportController
+ * @see uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportController
  */
 @Integration
 @Slf4j
