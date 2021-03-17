@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 University of Oxford
+ * Copyright 2020 University of Oxford and Health and Social Care Information Centre, also known as NHS Digital
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.metadata
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.CatalogueItemMetadataFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.ContainerMetadataFunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration

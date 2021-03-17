@@ -133,7 +133,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         beforeValidateModelItem()
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
         }
         // If datatype is newly created with dataelement and the datamodel is not new
         // If the DM is new then DT validation will happen at the DM level

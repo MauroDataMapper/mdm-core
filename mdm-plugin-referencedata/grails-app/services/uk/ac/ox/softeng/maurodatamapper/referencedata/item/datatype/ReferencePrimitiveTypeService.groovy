@@ -20,7 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -31,10 +32,12 @@ import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
-class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveType> {
+class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveType> implements ReferenceSummaryMetadataAwareService {
 
     public static final String DEFAULT_TEXT_TYPE_LABEL = 'Text'
     public static final String DEFAULT_TEXT_TYPE_DESCRIPTION = 'Text Data Type'
+
+    ReferenceSummaryMetadataService referenceSummaryMetadataService
 
     @Override
     ReferencePrimitiveType get(Serializable id) {
@@ -69,10 +72,6 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
         primitiveType.delete(flush: flush)
     }
 
-    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
-    }
-
     @Override
     ReferencePrimitiveType findByIdJoinClassifiers(UUID id) {
         ReferencePrimitiveType.findById(id, [fetch: [classifiers: 'join']])
@@ -88,7 +87,7 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     @Override
     List<ReferencePrimitiveType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         ReferencePrimitiveType.byClassifierId(ReferencePrimitiveType, classifier.id).list().findAll {
-            userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
+            userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)
         }
     }
 
@@ -105,7 +104,7 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     @Override
     List<ReferencePrimitiveType> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                             String searchTerm, String domainType) {
-        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
+        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
         if (!readableIds) return []
 
         log.debug('Performing lucene label search')
@@ -139,7 +138,8 @@ class ReferencePrimitiveTypeService extends ModelItemService<ReferencePrimitiveT
     ReferencePrimitiveType findOrCreateDataTypeForDataModel(ReferenceDataModel referenceDataModel, String label, String description, String createdByEmailAddress,
                                                             String units = null) {
         String cleanLabel = label.trim()
-        ReferencePrimitiveType primitiveType = dataModel.findDataTypeByLabelAndType(cleanLabel, ReferenceDataType.PRIMITIVE_DOMAIN_TYPE) as ReferencePrimitiveType
+        ReferencePrimitiveType primitiveType = referenceDataModel.findReferenceDataTypeByLabelAndType(cleanLabel, ReferenceDataType
+            .PRIMITIVE_DOMAIN_TYPE) as ReferencePrimitiveType
         if (!primitiveType) {
             primitiveType = createDataType(cleanLabel, description, createdByEmailAddress, units)
             referenceDataModel.addToReferenceDataTypes(primitiveType)

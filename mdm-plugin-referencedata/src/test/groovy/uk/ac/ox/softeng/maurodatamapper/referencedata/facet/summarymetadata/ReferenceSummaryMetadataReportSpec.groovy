@@ -47,7 +47,7 @@ class ReferenceSummaryMetadataReportSpec extends CreatorAwareSpec<ReferenceSumma
 
         checkAndSave(db)
         referenceSummaryMetadata = new ReferenceSummaryMetadata(summaryMetadataType: ReferenceSummaryMetadataType.NUMBER, label: 'test',
-                                                                createdBy: StandardEmailAddress.UNIT_TEST, catalogueItem: db)
+                                                                createdBy: StandardEmailAddress.UNIT_TEST, multiFacetAwareItem: db)
         checkAndSave(referenceSummaryMetadata)
         dateTime = OffsetDateTime.now()
     }

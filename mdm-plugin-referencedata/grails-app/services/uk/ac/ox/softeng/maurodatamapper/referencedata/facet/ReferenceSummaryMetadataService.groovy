@@ -17,12 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
-
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
+import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
@@ -31,7 +30,7 @@ import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
-class ReferenceSummaryMetadataService implements CatalogueItemAwareService<ReferenceSummaryMetadata> {
+class ReferenceSummaryMetadataService implements MultiFacetItemAwareService<ReferenceSummaryMetadata> {
 
     ReferenceSummaryMetadata get(Serializable id) {
         ReferenceSummaryMetadata.get(id)
@@ -51,8 +50,9 @@ class ReferenceSummaryMetadataService implements CatalogueItemAwareService<Refer
 
     void delete(ReferenceSummaryMetadata summaryMetadata, boolean flush = false) {
         if (!summaryMetadata) return
-        CatalogueItemService service = findCatalogueItemService(summaryMetadata.catalogueItemDomainType)
-        service.removeReferenceSummaryMetadataFromCatalogueItem(summaryMetadata.catalogueItemId, summaryMetadata)
+        ReferenceSummaryMetadataAwareService service =
+            findCatalogueItemService(summaryMetadata.multiFacetAwareItemDomainType) as ReferenceSummaryMetadataAwareService
+        service.removeReferenceSummaryMetadataFromMultiFacetAware(summaryMetadata.multiFacetAwareItemId, summaryMetadata)
 
         List<ReferenceSummaryMetadataReport> reports = new ArrayList<>(summaryMetadata.summaryMetadataReports)
         reports.each {
@@ -62,28 +62,28 @@ class ReferenceSummaryMetadataService implements CatalogueItemAwareService<Refer
     }
 
     @Override
-    void saveCatalogueItem(ReferenceSummaryMetadata facet) {
+    void saveMultiFacetAwareItem(ReferenceSummaryMetadata facet) {
         if (!facet) return
-        CatalogueItemService catalogueItemService = findCatalogueItemService(facet.catalogueItemDomainType)
-        catalogueItemService.save(facet.catalogueItem)
+        MultiFacetAwareService multiFacetAwareItemService = findServiceForMultiFacetAwareDomainType(facet.multiFacetAwareItemDomainType)
+        multiFacetAwareItemService.save(facet.multiFacetAwareItem)
     }
 
     @Override
     void addFacetToDomain(ReferenceSummaryMetadata facet, String domainType, UUID domainId) {
         if (!facet) return
-        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
-        facet.catalogueItem = domain
+        ReferenceSummaryMetadataAware domain = findMultiFacetAwareItemByDomainTypeAndId(domainType, domainId)
+        facet.multiFacetAwareItem = domain as MultiFacetAware
         domain.addToReferenceSummaryMetadata(facet)
     }
 
     @Override
-    ReferenceSummaryMetadata findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
-        ReferenceSummaryMetadata.byCatalogueItemIdAndId(catalogueItemId, id).get()
+    ReferenceSummaryMetadata findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        ReferenceSummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
 
     @Override
-    List<ReferenceSummaryMetadata> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination = [:]) {
-        ReferenceSummaryMetadata.byCatalogueItemId(catalogueItemId).list(pagination)
+    List<ReferenceSummaryMetadata> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
+        ReferenceSummaryMetadata.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
     }
 
     @Override

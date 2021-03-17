@@ -1,5 +1,4 @@
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
-
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.ModelLinkTarget
 
 model{
     ModelLinkTarget modelLinkTarget

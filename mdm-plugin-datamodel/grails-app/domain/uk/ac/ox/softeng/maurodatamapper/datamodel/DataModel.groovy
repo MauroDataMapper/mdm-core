@@ -180,7 +180,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         beforeValidateCatalogueItem()
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
         }
     }
 

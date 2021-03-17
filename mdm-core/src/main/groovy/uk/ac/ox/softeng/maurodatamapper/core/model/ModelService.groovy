@@ -214,11 +214,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
         // All versionLinks which are targets of model version links
-        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(readableIds)
+        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(readableIds)
 
         // However they are only superseded if the source of this link is finalised
         modelVersionLinks.findAll {
-            K sourceModel = get(it.catalogueItemId)
+            K sourceModel = get(it.multiFacetAwareItemId)
             sourceModel.finalised
         }.collect {it.targetModelId}
     }
@@ -397,13 +397,13 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     K findModelSuperseding(K model) {
         VersionLink link = versionLinkService.findLatestLinkSupersedingModelId(getModelClass().simpleName, model.id)
         if (!link) return null
-        link.catalogueItemId == model.id ? get(link.targetModelId) : get(link.catalogueItemId)
+        link.multiFacetAwareItemId == model.id ? get(link.targetModelId) : get(link.multiFacetAwareItemId)
     }
 
     K findModelDocumentationSuperseding(K model) {
         VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingModelId(getModelClass().simpleName, model.id)
         if (!link) return null
-        link.catalogueItemId == model.id ? get(link.targetModelId) : get(link.catalogueItemId)
+        link.multiFacetAwareItemId == model.id ? get(link.targetModelId) : get(link.multiFacetAwareItemId)
     }
 
     /**
@@ -448,7 +448,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
 
         for (link in versionLinks) {
-            K linkedModel = get(link.catalogueItemId)
+            K linkedModel = get(link.multiFacetAwareItemId)
             rootVersionTreeModel.addTarget(linkedModel.id, link.linkType)
             versionTreeModelList.addAll(buildModelVersionTree(linkedModel, link.linkType, userSecurityPolicyManager))
         }
@@ -537,7 +537,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.versionLinks) {
             catalogueItem.versionLinks.each {
-                it.catalogueItem = catalogueItem
+                it.multiFacetAwareItem = catalogueItem
                 it.createdBy = it.createdBy ?: catalogueItem.createdBy
             }
         }
@@ -574,8 +574,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.versionLinks) {
             catalogueItem.versionLinks.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             VersionLink.saveAll(catalogueItem.versionLinks)
         }
@@ -632,9 +632,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        versionLinkService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        versionLinkService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     void checkDocumentationVersion(K model, boolean importAsNewDocumentationVersion, User catalogueUser) {
@@ -698,6 +698,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     void setModelIsFromModel(K source, K target, User user) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
     }
 }

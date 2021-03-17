@@ -60,7 +60,7 @@ class SemanticLinkSpec extends CreatorAwareSpec<SemanticLink> implements DomainU
         domain.createdBy = admin.emailAddress
         domain.linkType = SemanticLinkType.DOES_NOT_REFINE
         db.addToSemanticLinks(domain)
-        domain.setTargetCatalogueItem(db2)
+        domain.setTargetMultiFacetAwareItem(db2)
 
         then:
         checkAndSave(domain)
@@ -77,7 +77,7 @@ class SemanticLinkSpec extends CreatorAwareSpec<SemanticLink> implements DomainU
         d1.semanticLinks.find {it.id == domain.id}
 
         when:
-        SemanticLink tsl = SemanticLink.byTargetCatalogueItemId(d2.id).get()
+        SemanticLink tsl = SemanticLink.byTargetMultiFacetAwareItemId(d2.id).get()
 
         then:
         tsl
@@ -90,7 +90,7 @@ class SemanticLinkSpec extends CreatorAwareSpec<SemanticLink> implements DomainU
         domain.createdBy = admin.emailAddress
         domain.linkType = SemanticLinkType.DOES_NOT_REFINE
         db.addToSemanticLinks(domain)
-        domain.setTargetCatalogueItem(db2)
+        domain.setTargetMultiFacetAwareItem(db2)
 
         then:
         checkAndSave(db)
@@ -109,7 +109,7 @@ class SemanticLinkSpec extends CreatorAwareSpec<SemanticLink> implements DomainU
         d1.semanticLinks.find {it.id == item.id}
 
         when:
-        SemanticLink tsl = SemanticLink.byTargetCatalogueItemId(d2.id).get()
+        SemanticLink tsl = SemanticLink.byTargetMultiFacetAwareItemId(d2.id).get()
 
         then:
         tsl
@@ -122,7 +122,7 @@ class SemanticLinkSpec extends CreatorAwareSpec<SemanticLink> implements DomainU
         domain.createdBy = admin.emailAddress
         domain.linkType = SemanticLinkType.DOES_NOT_REFINE
         db.addToSemanticLinks(domain)
-        domain.setTargetCatalogueItem(db)
+        domain.setTargetMultiFacetAwareItem(db)
         checkAndSave(domain)
 
         then:
@@ -132,18 +132,18 @@ class SemanticLinkSpec extends CreatorAwareSpec<SemanticLink> implements DomainU
         domain.hasErrors()
 
         when:
-        def error = domain.errors.getFieldError('catalogueItemId')
+        def error = domain.errors.getFieldError('multiFacetAwareItemId')
 
         then:
         error.code == 'invalid.same.property.message'
-        error.arguments.last() == 'targetCatalogueItem'
+        error.arguments.last() == 'targetMultiFacetAwareItem'
     }
 
     @Override
     void setValidDomainOtherValues() {
         domain.linkType = SemanticLinkType.REFINES
         db.addToSemanticLinks(domain)
-        domain.setTargetCatalogueItem(db2)
+        domain.setTargetMultiFacetAwareItem(db2)
     }
 
     @Override

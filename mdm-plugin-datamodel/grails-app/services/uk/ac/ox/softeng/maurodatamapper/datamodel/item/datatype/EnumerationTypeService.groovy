@@ -22,8 +22,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -34,9 +36,10 @@ import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
-class EnumerationTypeService extends ModelItemService<EnumerationType> {
+class EnumerationTypeService extends ModelItemService<EnumerationType> implements SummaryMetadataAwareService {
 
     EnumerationValueService enumerationValueService
+    SummaryMetadataService summaryMetadataService
 
     @Override
     EnumerationType get(Serializable id) {
@@ -143,10 +146,6 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> {
             enumerationValueService.checkFacetsAfterImportingCatalogueItem(it)
         }
         enumerationType
-    }
-
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     private EnumerationType addEnumerationValueToEnumerationType(EnumerationType enumerationType, String key, String value, User createdBy) {

@@ -17,10 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.util.test
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
-import uk.ac.ox.softeng.maurodatamapper.test.unit.core.CatalogueItemAwareServiceSpec as FrameworkCatalogueItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.test.unit.core.MultiFacetItemAwareServiceSpec as FrameworkMultiFacetItemAwareServiceSpec
 
 import spock.lang.Stepwise
 
@@ -28,25 +28,25 @@ import spock.lang.Stepwise
  * @since 03/02/2020
  */
 @Stepwise
-abstract class CatalogueItemAwareServiceSpec<D extends CatalogueItemAware, T extends CatalogueItemAwareService>
-    extends FrameworkCatalogueItemAwareServiceSpec<D, T> {
+abstract class MultiFacetItemAwareServiceSpec<D extends MultiFacetItemAware, T extends MultiFacetItemAwareService>
+    extends FrameworkMultiFacetItemAwareServiceSpec<D, T> {
 
     BasicModel basicModel
 
     @Override
-    CatalogueItem getCatalogueItem() {
+    MultiFacetAware getMultiFacetAwareItem() {
         basicModel
     }
 
     @Override
-    CatalogueItem getCatalogueItemFromStorage() {
+    MultiFacetAware getMultiFacetAwareItemFromStorage() {
         BasicModel.get(basicModel.id)
     }
 
     abstract int getExpectedCountOfAwareItemsInBasicModel()
 
     @Override
-    int getExpectedCountOfAwareItemsInCatalogueItem() {
+    int getExpectedCountOfAwareItemsInMultiFacetAwareItem() {
         getExpectedCountOfAwareItemsInBasicModel()
     }
 }

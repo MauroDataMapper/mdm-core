@@ -18,13 +18,13 @@
 package uk.ac.ox.softeng.maurodatamapper.core.controller
 
 
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 
 /**
  * @since 25/02/2021
  */
-abstract class FacetController<T extends CatalogueItemAware> extends EditLoggingController<T> {
+abstract class FacetController<T extends MultiFacetItemAware> extends EditLoggingController<T> {
 
     FacetController(Class<T> resource) {
         super(resource)
@@ -34,24 +34,24 @@ abstract class FacetController<T extends CatalogueItemAware> extends EditLogging
         super(resource, readOnly)
     }
 
-    abstract CatalogueItemAwareService getFacetService()
+    abstract MultiFacetItemAwareService getFacetService()
 
     String getOwnerDomainTypeField() {
-        'catalogueItemDomainType'
+        'multiFacetAwareItemDomainType'
     }
 
     String getOwnerIdField() {
-        'catalogueItemId'
+        'multiFacetAwareItemId'
     }
 
     @Override
     protected T queryForResource(Serializable resourceId) {
-        getFacetService().findByCatalogueItemIdAndId(params[getOwnerIdField()], resourceId)
+        getFacetService().findByMultiFacetAwareItemIdAndId(params[getOwnerIdField()], resourceId)
     }
 
     @Override
     protected List<T> listAllReadableResources(Map params) {
-        getFacetService().findAllByCatalogueItemId(params[getOwnerIdField()] as UUID, params)
+        getFacetService().findAllByMultiFacetAwareItemId(params[getOwnerIdField()] as UUID, params)
     }
 
     @Override
@@ -70,8 +70,8 @@ abstract class FacetController<T extends CatalogueItemAware> extends EditLogging
     @Override
     protected T saveResource(T resource) {
         resource.save flush: true, validate: false
-        getFacetService().saveCatalogueItem(resource)
-        getFacetService().addCreatedEditToCatalogueItem(currentUser, resource, params[getOwnerDomainTypeField()], params[getOwnerIdField()])
+        getFacetService().saveMultiFacetAwareItem(resource)
+        getFacetService().addCreatedEditToMultiFacetAwareItem(currentUser, resource, params[getOwnerDomainTypeField()], params[getOwnerIdField()])
     }
 
     @Override
@@ -79,12 +79,13 @@ abstract class FacetController<T extends CatalogueItemAware> extends EditLogging
         List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
         getFacetService().
-            addUpdatedEditToCatalogueItem(currentUser, resource, params[getOwnerDomainTypeField()], params[getOwnerIdField()], dirtyPropertyNames)
+            addUpdatedEditToMultiFacetAwareItem(currentUser, resource, params[getOwnerDomainTypeField()], params[getOwnerIdField()],
+                                                dirtyPropertyNames)
     }
 
     @Override
     protected void deleteResource(T resource) {
         serviceDeleteResource(resource)
-        getFacetService().addDeletedEditToCatalogueItem(currentUser, resource, params[getOwnerDomainTypeField()], params[getOwnerIdField()])
+        getFacetService().addDeletedEditToMultiFacetAwareItem(currentUser, resource, params[getOwnerDomainTypeField()], params[getOwnerIdField()])
     }
 }

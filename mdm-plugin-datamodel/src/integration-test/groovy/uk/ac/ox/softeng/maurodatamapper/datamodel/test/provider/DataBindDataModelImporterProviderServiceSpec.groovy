@@ -178,7 +178,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
         md.key == 'SCTSImport'
         md.value == '0.1'
-        md.catalogueItemId == dm.id
+        md.multiFacetAwareItemId == dm.id
     }
 
     void 'I06 : test inc annotation data import'() {
@@ -206,7 +206,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         ann.description == 'http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1'
         ann.label == 'Link to NHS Data Dictionary element'
-        ann.catalogueItemId == dm.id
+        ann.multiFacetAwareItemId == dm.id
     }
 
     void 'I07 : test inc single primitive type data import'() {
@@ -305,7 +305,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
         md.key == 'SCTSImport'
         md.value == '0.1'
-        md.catalogueItemId == dataType.id
+        md.multiFacetAwareItemId == dataType.id
 
     }
 
@@ -344,7 +344,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         ann.description == 'http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1'
         ann.label == 'Link to NHS Data Dictionary element'
-        ann.catalogueItemId == dataType.id
+        ann.multiFacetAwareItemId == dataType.id
 
     }
 
@@ -432,7 +432,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
         md.key == 'SCTSImport'
         md.value == '0.1'
-        md.catalogueItemId == dataType.id
+        md.multiFacetAwareItemId == dataType.id
 
         and:
         !dataType.annotations
@@ -530,7 +530,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         md.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'
         md.key == 'SCTSImport'
         md.value == '0.1'
-        md.catalogueItemId == dataClass.id
+        md.multiFacetAwareItemId == dataClass.id
 
     }
 
@@ -576,7 +576,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         then:
         ann.description == 'http://www.datadictionary.nhs.uk/data_dictionary/attributes/a/at/attended_or_did_not_attend_de.asp?shownav=1'
         ann.label == 'Link to NHS Data Dictionary element'
-        ann.catalogueItemId == dataClass.id
+        ann.multiFacetAwareItemId == dataClass.id
 
     }
 
@@ -691,7 +691,7 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
         and:
         dataElement.metadata.size() == 2
         dataElement.metadata.every {it.namespace == 'ox.softeng.maurodatamapper.dataloaders.cancer.audits'}
-        dataElement.metadata.every {it.catalogueItemId == dataElement.id}
+        dataElement.metadata.every {it.multiFacetAwareItemId == dataElement.id}
         dataElement.metadata.any {it.key == 'Number' && it.value == '93'}
         dataElement.metadata.any {it.key == 'Notes'}
 

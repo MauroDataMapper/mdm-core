@@ -17,16 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
-import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -40,9 +38,7 @@ import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
-class MetadataService implements CatalogueItemAwareService<Metadata> {
-
-
+class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
     SessionFactory sessionFactory
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
@@ -66,33 +62,28 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
     @Override
     void delete(Metadata metadata, boolean flush = false) {
         if (!metadata) return
-        CatalogueItemService service = findCatalogueItemService(metadata.catalogueItemDomainType)
-        if (service) service.removeMetadataFromCatalogueItem(metadata.catalogueItemId, metadata)
-        else {
-            ContainerService containerService = containerServices.find { it.handles(metadata.catalogueItemDomainType) }
-            if (containerService) containerService.removeMetadataFromContainer(metadata.catalogueItemId, metadata)
-            else throw new ApiBadRequestException('MS01', 'Metadata removal with no supporting service')
-        }
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(metadata.multiFacetAwareItemDomainType)
+        service.removeMetadataFromMultiFacetAware(metadata.multiFacetAwareItemId, metadata)
         metadata.delete(flush: flush)
     }
 
-    void copy(CatalogueItem target, Metadata item, UserSecurityPolicyManager userSecurityPolicyManager) {
+    void copy(MultiFacetAware target, Metadata item, UserSecurityPolicyManager userSecurityPolicyManager) {
         target.addToMetadata(item.namespace, item.key, item.value, userSecurityPolicyManager.user)
     }
 
     @Override
-    void saveCatalogueItem(Metadata metadata) {
+    void saveMultiFacetAwareItem(Metadata metadata) {
         if (!metadata) return
-        CatalogueItemService catalogueItemService = findCatalogueItemService(metadata.catalogueItemDomainType)
-            catalogueItemService?.save(metadata.catalogueItem)
-        }
+        MultiFacetAwareService multiFacetAwareItemService = findServiceForMultiFacetAwareDomainType(metadata.multiFacetAwareItemDomainType)
+        multiFacetAwareItemService?.save(metadata.multiFacetAwareItem)
+    }
 
 
     @Override
     void addFacetToDomain(Metadata facet, String domainType, UUID domainId) {
         if (!facet) return
-        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
-        facet.catalogueItem = domain
+        MultiFacetAware domain = findMultiFacetAwareItemByDomainTypeAndId(domainType, domainId)
+        facet.multiFacetAwareItem = domain
         domain.addToMetadata(facet)
     }
 
@@ -121,13 +112,6 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
             batchSave(batch)
             batch.clear()
         }
-        else {
-            ContainerService containerService = containerServices.find { it.handles(metadata.catalogueItemDomainType) }
-            if (containerService){
-                metadata.catalogueItem.addToMetadata(metadata)
-                containerService.save(metadata.catalogueItem)
-            }
-        }
     }
 
     void batchSave(Collection<Metadata> metadata) {
@@ -153,10 +137,11 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         boolean valid = metadata.validate()
         if (!valid) return false
 
-        MultiFacetAware catalogueItem = metadata.catalogueItem ?: findCatalogueItemByDomainTypeAndId(metadata.catalogueItemDomainType,
-                                                                                                     metadata.catalogueItemId)
+        MultiFacetAware multiFacetAwareItem =
+            metadata.multiFacetAwareItem ?: findMultiFacetAwareItemByDomainTypeAndId(metadata.multiFacetAwareItemDomainType,
+                                                                                     metadata.multiFacetAwareItemId)
 
-        if (catalogueItem.metadata.any {md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key}) {
+        if (multiFacetAwareItem.metadata.any {md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key}) {
             metadata.errors.rejectValue('key', 'default.not.unique.message', ['key', Metadata.name, metadata.value].toArray(),
                                         'Property [{0}] of class [{1}] with value [{2}] must be unique')
             return false
@@ -165,24 +150,29 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
     }
 
     @Override
-    Metadata findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
-        Metadata.byCatalogueItemIdAndId(catalogueItemId, id).get()
+    Metadata findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        Metadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
 
     @Override
-    List<Metadata> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination = [:]) {
-        Metadata.withFilter(Metadata.byCatalogueItemId(catalogueItemId), pagination).list(pagination)
+    List<Metadata> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
+        Metadata.withFilter(Metadata.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
     }
 
-    List<Metadata> findAllByCatalogueItemIdAndNamespace(UUID catalogueItemId, String namespace, Map pagination = [:]) {
-        Metadata.byCatalogueItemIdAndNamespace(catalogueItemId, namespace).list(pagination)
+    List<Metadata> findAllByMultiFacetAwareItemIdAndNamespace(UUID multiFacetAwareItemId, String namespace, Map pagination = [:]) {
+        Metadata.byMultiFacetAwareItemIdAndNamespace(multiFacetAwareItemId, namespace).list(pagination)
     }
 
-    List<MetadataAware> findAllCatalogueItemsByNamespace(String namespace, String domainType = null, Map pagination = [:]) {
+    List<MetadataAware> findAllMultiFacetAwareItemsByNamespace(String namespace, String domainType = null, Map pagination = [:]) {
         List<MetadataAware> returnResult = []
         catalogueItemServices.each {catalogueItemService ->
             if (!domainType || catalogueItemService.handles(domainType)) {
                 returnResult.addAll(catalogueItemService.findAllByMetadataNamespace(namespace))
+            }
+        }
+        containerServices.each {containerService ->
+            if (!domainType || containerService.handles(domainType)) {
+                returnResult.addAll(containerService.findAllByMetadataNamespace(namespace))
             }
         }
         return new PaginatedResultList<MetadataAware>(returnResult, pagination)
@@ -198,11 +188,11 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         Metadata.by()
     }
 
-    List<Metadata> findAllByCatalogueItemIdAndNotNamespaces(UUID catalogueItemId, List<String> namespaces, Map pagination = [:]) {
+    List<Metadata> findAllByMultiFacetAwareItemIdAndNotNamespaces(UUID multiFacetAwareItemId, List<String> namespaces, Map pagination = [:]) {
         if (!namespaces || namespaces.size() == 0) {
-            return Metadata.byCatalogueItemId(catalogueItemId).list(pagination)
+            return Metadata.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
         }
-        Metadata.byCatalogueItemIdAndNotNamespaces(catalogueItemId, namespaces).list(pagination)
+        Metadata.byMultiFacetAwareItemIdAndNotNamespaces(multiFacetAwareItemId, namespaces).list(pagination)
     }
 
     List<NamespaceKeys> findNamespaceKeysIlikeNamespace(String namespacePrefix) {
@@ -249,7 +239,7 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
 
         if (!mergeObjectDiffData.hasDiffs()) return
 
-        Metadata targetMetadata = findByCatalogueItemIdAndId(targetCatalogueItem.id, mergeObjectDiffData.leftId)
+        Metadata targetMetadata = findByMultiFacetAwareItemIdAndId(targetCatalogueItem.id, mergeObjectDiffData.leftId)
         if (!targetMetadata) {
             log.error('Attempted to merge non-existent metadata [{}] inside target catalogue item [{}]', mergeObjectDiffData.leftId,
                       targetCatalogueItem.id)

@@ -139,7 +139,7 @@ class ModelDataTypeServiceSpec extends BaseUnitSpec implements ServiceUnitTest<M
 
         checkAndSave(dataModel)
 
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetCatalogueItem: dataClass)
+        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetMultiFacetAwareItem: dataClass)
         parent.addToSemanticLinks(link)
 
         checkAndSave(link)

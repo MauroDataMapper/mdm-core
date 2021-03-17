@@ -18,8 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
@@ -31,7 +31,7 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceSummaryMetadata implements CatalogueItemAware, InformationAware, CreatorAware {
+class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware, CreatorAware {
 
     public final static Integer BATCH_SIZE = 5000
 
@@ -42,14 +42,14 @@ class ReferenceSummaryMetadata implements CatalogueItemAware, InformationAware, 
         summaryMetadataReports: ReferenceSummaryMetadataReport
     ]
 
-    static transients = ['catalogueItem']
+    static transients = ['multiFacetAwareItem']
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
-        catalogueItemId nullable: true, validator: {val, obj ->
+        multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (val) return true
-            if (!val && obj.catalogueItem && !obj.catalogueItem.ident()) return true
+            if (!val && obj.multiFacetAwareItem && !obj.multiFacetAwareItem.ident()) return true
             ['default.null.message']
         }
         label validator: { val, obj -> new ReferenceSummaryMetadataLabelValidator(obj).isValid(val) }
@@ -76,16 +76,16 @@ class ReferenceSummaryMetadata implements CatalogueItemAware, InformationAware, 
         new DetachedCriteria<ReferenceSummaryMetadata>(ReferenceSummaryMetadata)
     }
 
-    static DetachedCriteria<ReferenceSummaryMetadata> byCatalogueItemId(Serializable catalogueItemId) {
-        new DetachedCriteria<ReferenceSummaryMetadata>(ReferenceSummaryMetadata).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    static DetachedCriteria<ReferenceSummaryMetadata> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
+        new DetachedCriteria<ReferenceSummaryMetadata>(ReferenceSummaryMetadata).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<ReferenceSummaryMetadata> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
-        new DetachedCriteria<ReferenceSummaryMetadata>(ReferenceSummaryMetadata).inList('catalogueItemId', catalogueItemIds)
+    static DetachedCriteria<ReferenceSummaryMetadata> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        new DetachedCriteria<ReferenceSummaryMetadata>(ReferenceSummaryMetadata).inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 
-    static DetachedCriteria<ReferenceSummaryMetadata> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {
-        byCatalogueItemId(catalogueItemId).idEq(Utils.toUuid(resourceId))
+    static DetachedCriteria<ReferenceSummaryMetadata> byMultiFacetAwareItemIdAndId(Serializable multiFacetAwareItemId, Serializable resourceId) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).idEq(Utils.toUuid(resourceId))
     }
 
     static DetachedCriteria<ReferenceSummaryMetadata> byLabel(String label) {

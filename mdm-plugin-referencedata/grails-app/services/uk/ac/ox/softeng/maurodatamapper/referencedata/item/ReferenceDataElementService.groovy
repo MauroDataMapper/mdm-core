@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMeta
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -46,7 +47,7 @@ import javax.persistence.EntityManager
 
 @Slf4j
 @Transactional
-class ReferenceDataElementService extends ModelItemService<ReferenceDataElement> {
+class ReferenceDataElementService extends ModelItemService<ReferenceDataElement> implements ReferenceSummaryMetadataAwareService {
 
     ReferenceDataTypeService referenceDataTypeService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
@@ -100,16 +101,12 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.referenceSummaryMetadata) {
             catalogueItem.referenceSummaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             ReferenceSummaryMetadata.saveAll(catalogueItem.referenceSummaryMetadata)
         }
         catalogueItem
-    }
-
-    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
     }
 
     @Override
@@ -328,7 +325,7 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
                                                       boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
-            referenceSummaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
@@ -387,12 +384,13 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     void addDataElementsAreFromDataElements(Collection<ReferenceDataElement> dataElements, Collection<ReferenceDataElement> fromDataElements, User user) {
         if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to create links')
-        List<SemanticLink> alreadyExistingLinks = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
-            dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
+        List<SemanticLink> alreadyExistingLinks =
+            semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
+                dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
         dataElements.each { de ->
             fromDataElements.each { fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any { it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id }) {
+                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }
@@ -409,13 +407,13 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     void removeDataElementsAreFromDataElements(Collection<ReferenceDataElement> dataElements, Collection<ReferenceDataElement> fromDataElements) {
         if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to remove links')
-        List<SemanticLink> links = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
+        List<SemanticLink> links = semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
             dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
         semanticLinkService.deleteAll(links)
     }
 
     void setDataElementIsFromDataElement(ReferenceDataElement source, ReferenceDataElement target, User user) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
     }
 
     void checkImportedReferenceDataElementAssociations(User importingUser, ReferenceDataModel referenceDataModel, ReferenceDataElement referenceDataElement) {

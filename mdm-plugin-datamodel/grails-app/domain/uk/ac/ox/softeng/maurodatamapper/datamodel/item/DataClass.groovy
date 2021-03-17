@@ -149,7 +149,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         beforeValidateModelItem()
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
         }
         log.trace('DC before validate {} took {}', this.label, Utils.timeTaken(st))
     }

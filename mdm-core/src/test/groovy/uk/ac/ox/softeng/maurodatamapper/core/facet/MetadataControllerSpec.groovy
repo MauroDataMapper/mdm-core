@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataController
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
 import uk.ac.ox.softeng.maurodatamapper.test.unit.ResourceControllerSpec
 
@@ -58,20 +58,21 @@ class MetadataControllerSpec extends ResourceControllerSpec<Metadata> implements
         checkAndSave(basicModel)
 
         controller.metadataService = Stub(MetadataService) {
-            findAllByCatalogueItemId(basicModel.id, _) >> basicModel.metadata.toList()
-            findCatalogueItemByDomainTypeAndId(BasicModel.simpleName, _) >> {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
-            findByCatalogueItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
+            findAllByMultiFacetAwareItemId(basicModel.id, _) >> basicModel.metadata.toList()
+            findMultiFacetAwareItemByDomainTypeAndId(BasicModel.simpleName, _) >>
+            {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
+            findByMultiFacetAwareItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
                 if (iid != basicModel.id) return null
                 mid == domain.id ? domain : null
             }
-            //findByCatalogueItemIdAndId(basicModelId, metadataId) >> basicModel.metadata[0]
+            //findByMultiFacetAwareItemIdAndId(basicModelId, metadataId) >> basicModel.metadata[0]
             validate(_) >> {Metadata res ->
                 boolean valid = res.validate()
                 if (!valid) return false
 
-                CatalogueItem catalogueItem = res.catalogueItem ?: basicModel
+                MultiFacetAware multiFacetAwareItem = res.multiFacetAwareItem ?: basicModel
 
-                if (catalogueItem.metadata.any {md -> md != res && md.namespace == res.namespace && md.key == res.key}) {
+                if (multiFacetAwareItem.metadata.any {md -> md != res && md.namespace == res.namespace && md.key == res.key}) {
                     res.errors.rejectValue('key', 'default.not.unique.message', ['key', Metadata.toString(), res.key].toArray(),
                                            'Property [{0}] of class [{1}] with value [{2}] must be unique')
                     return false
@@ -81,7 +82,7 @@ class MetadataControllerSpec extends ResourceControllerSpec<Metadata> implements
             addFacetToDomain(_, _, _) >> {Metadata md, String domain, UUID bid ->
                 if (basicModel.id == bid) {
                     basicModel.addToMetadata(md)
-                    md.catalogueItem = basicModel
+                    md.multiFacetAwareItem = basicModel
                 }
             }
         }
@@ -211,7 +212,7 @@ class MetadataControllerSpec extends ResourceControllerSpec<Metadata> implements
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = BasicModel.simpleName
-        params.catalogueItemId = basicModel.id
+        params.multiFacetAwareItemDomainType = BasicModel.simpleName
+        params.multiFacetAwareItemId = basicModel.id
     }
 }

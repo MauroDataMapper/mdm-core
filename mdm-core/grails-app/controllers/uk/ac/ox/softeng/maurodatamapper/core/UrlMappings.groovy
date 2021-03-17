@@ -177,6 +177,44 @@ class UrlMappings {
             }
 
             /*
+         Container accessible resources
+          All new URLs
+           */
+            group "/$containerDomainType/$containerId", {
+
+                /*
+                Metadata
+                */
+                '/metadata'(resources: 'metadata', excludes: DEFAULT_EXCLUDES)
+
+                /*
+                Annotations
+                 */
+                '/annotations'(resources: 'annotation', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE) {
+                    '/annotations'(resources: 'annotation', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
+                }
+
+                /*
+                Semantic Links
+                 */
+                '/semanticLinks'(resources: 'semanticLink', excludes: DEFAULT_EXCLUDES) {
+                    put '/confirm'(controller: 'semanticLink', action: 'confirm')
+                }
+
+                /*
+                Reference Files
+                 */
+                '/referenceFiles'(resources: 'referenceFile', excludes: DEFAULT_EXCLUDES)
+
+                /*
+                Rules
+                */
+                '/rules'(resources: 'rule', excludes: DEFAULT_EXCLUDES) {
+                    '/representations'(resources: 'ruleRepresentation', excludes: DEFAULT_EXCLUDES)
+                }
+            }
+
+            /*
             Edits
              */
             get "/$resourceDomainType/$resourceId/edits"(controller: 'edit', action: 'index')

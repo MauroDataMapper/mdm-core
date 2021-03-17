@@ -240,7 +240,7 @@ class BootstrapModels {
             checkAndSave(messageSource, dataModel)                                 
 
             SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdBy: DEVELOPMENT,
-                                                 targetCatalogueItem: DataClass.findByLabel('parent'))
+                                                 targetMultiFacetAwareItem: DataClass.findByLabel('parent'))
             DataClass.findByLabel('content').addToSemanticLinks(link)
 
             checkAndSave(messageSource, dataModel)

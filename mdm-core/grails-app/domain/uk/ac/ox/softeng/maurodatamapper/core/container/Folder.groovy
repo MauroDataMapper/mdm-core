@@ -211,4 +211,21 @@ class Folder implements Container {
             filter name: 'idSecured', params: [allowedIds: allowedIds]
         }
     }
+
+    static DetachedCriteria<Folder> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<Folder> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

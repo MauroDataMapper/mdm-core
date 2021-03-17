@@ -159,7 +159,7 @@ class TerminologyService extends ModelService<Terminology> {
         termRelationshipTypeService.deleteAllByModelId(model.id)
 
         log.trace('Removing facets')
-        deleteAllFacetsByCatalogueItemId(model.id, 'delete from terminology.join_terminology_to_facet where terminology_id=:id')
+        deleteAllFacetsByMultiFacetAwareId(model.id, 'delete from terminology.join_terminology_to_facet where terminology_id=:id')
 
         log.trace('Content removed')
         sessionFactory.currentSession

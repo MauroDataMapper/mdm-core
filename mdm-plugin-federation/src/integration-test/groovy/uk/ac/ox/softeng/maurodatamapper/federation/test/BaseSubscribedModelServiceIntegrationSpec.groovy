@@ -162,7 +162,7 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         !modelService.get(importedModelVersion1.id).versionLinks
         importedModelVersion2.versionLinks.size() == 1
         importedModelVersion2.versionLinks[0].targetModel.id == importedModelVersion1.id
-        importedModelVersion2.versionLinks[0].catalogueItem.id == importedModelVersion2.id
+        importedModelVersion2.versionLinks[0].model.id == importedModelVersion2.id
 
         when: 'we try to create the same version link again from a json response'
         subscribedModelService.addVersionLinksToImportedModel(
@@ -178,6 +178,6 @@ abstract class BaseSubscribedModelServiceIntegrationSpec<K extends Model> extend
         !modelService.get(importedModelVersion1.id).versionLinks
         importedModelVersion2.versionLinks.size() == 1
         importedModelVersion2.versionLinks[0].targetModel.id == importedModelVersion1.id
-        importedModelVersion2.versionLinks[0].catalogueItem.id == importedModelVersion2.id
+        importedModelVersion2.versionLinks[0].model.id == importedModelVersion2.id
     }
 }

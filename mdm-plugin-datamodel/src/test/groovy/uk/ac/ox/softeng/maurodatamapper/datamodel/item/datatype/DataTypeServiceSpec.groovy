@@ -109,7 +109,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
 
         checkAndSave(dataModel)
 
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetCatalogueItem: dataClass)
+        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetMultiFacetAwareItem: dataClass)
         parent.addToSemanticLinks(link)
 
         checkAndSave(link)
@@ -207,7 +207,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         !original.classifiers
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying enumeration datatype'() {
@@ -244,7 +244,7 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         !original.classifiers
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying reference datatype'() {
@@ -277,6 +277,6 @@ class DataTypeServiceSpec extends CatalogueItemServiceSpec implements ServiceUni
         !original.classifiers
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 }

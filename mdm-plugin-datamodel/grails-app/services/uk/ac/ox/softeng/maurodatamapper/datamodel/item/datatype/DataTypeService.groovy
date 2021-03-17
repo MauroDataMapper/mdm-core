@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DefaultDataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -45,7 +46,7 @@ import groovy.util.logging.Slf4j
 @SuppressWarnings("ClashingTraitMethods")
 @Slf4j
 @Transactional
-class DataTypeService extends ModelItemService<DataType> implements DefaultDataTypeProvider {
+class DataTypeService extends ModelItemService<DataType> implements DefaultDataTypeProvider, SummaryMetadataAwareService {
 
     DataElementService dataElementService
     DataClassService dataClassService
@@ -118,7 +119,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
             log.trace('Removing facets for {} DataTypes', dataTypeIds.size())
 
-            deleteAllFacetsByCatalogueItemIds(dataTypeIds, 'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataTypeIds, 'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
 
             log.trace('Removing {} DataTypes', dataTypeIds.size())
 
@@ -131,14 +132,10 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
     }
 
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
-    }
-
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
@@ -290,8 +287,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
         if (dataType.summaryMetadata) {
             dataType.summaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = dataType.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = dataType.getId()
             }
             SummaryMetadata.saveAll(dataType.summaryMetadata)
         }
@@ -417,19 +414,26 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         copy
     }
 
-    @Override
     DataType copyCatalogueItemInformation(DataType original,
                                           DataType copy,
                                           User copier,
                                           UserSecurityPolicyManager userSecurityPolicyManager,
-                                          boolean copySummaryMetadata = false) {
+                                          boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
         copy
+    }
+
+    @Override
+    DataType copyCatalogueItemInformation(DataType original,
+                                          DataType copy,
+                                          User copier,
+                                          UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
     }
 
     DataModel addDefaultListOfDataTypesToDataModel(DataModel dataModel, List<DefaultDataType> defaultDataTypes) {

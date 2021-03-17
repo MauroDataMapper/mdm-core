@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
-import uk.ac.ox.softeng.maurodatamapper.core.util.test.CatalogueItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.core.util.test.MultiFacetItemAwareServiceSpec
 
 import grails.testing.services.ServiceUnitTest
 import groovy.util.logging.Slf4j
@@ -33,7 +33,7 @@ import java.nio.file.Paths
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
 @Slf4j
-class ReferenceFileServiceSpec extends CatalogueItemAwareServiceSpec<ReferenceFile, ReferenceFileService>
+class ReferenceFileServiceSpec extends MultiFacetItemAwareServiceSpec<ReferenceFile, ReferenceFileService>
     implements ServiceUnitTest<ReferenceFileService> {
 
     UUID id

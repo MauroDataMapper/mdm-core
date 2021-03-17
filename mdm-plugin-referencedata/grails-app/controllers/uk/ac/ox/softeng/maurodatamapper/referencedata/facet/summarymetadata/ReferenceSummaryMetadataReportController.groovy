@@ -58,7 +58,8 @@ class ReferenceSummaryMetadataReportController extends EditLoggingController<Ref
     @Override
     protected ReferenceSummaryMetadataReport saveResource(ReferenceSummaryMetadataReport resource) {
         resource.save flush: true, validate: false
-        referenceSummaryMetadataReportService.addCreatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        referenceSummaryMetadataReportService.
+            addCreatedEditToCatalogueItem(currentUser, resource, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
     }
 
     @Override
@@ -66,12 +67,14 @@ class ReferenceSummaryMetadataReportController extends EditLoggingController<Ref
         List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
         referenceSummaryMetadataReportService.
-            addUpdatedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)
+            addUpdatedEditToCatalogueItem(currentUser, resource, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId,
+                                          dirtyPropertyNames)
     }
 
     @Override
     protected void deleteResource(ReferenceSummaryMetadataReport resource) {
         serviceDeleteResource(resource)
-        referenceSummaryMetadataReportService.addDeletedEditToCatalogueItem(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)
+        referenceSummaryMetadataReportService.
+            addDeletedEditToCatalogueItem(currentUser, resource, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
     }
 }

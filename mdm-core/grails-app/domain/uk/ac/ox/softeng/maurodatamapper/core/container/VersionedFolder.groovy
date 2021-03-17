@@ -124,4 +124,22 @@ class VersionedFolder extends Folder implements VersionAware {
             filter name: 'idSecured', params: [allowedIds: allowedIds]
         }
     }
+
+
+    static DetachedCriteria<VersionedFolder> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<VersionedFolder> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

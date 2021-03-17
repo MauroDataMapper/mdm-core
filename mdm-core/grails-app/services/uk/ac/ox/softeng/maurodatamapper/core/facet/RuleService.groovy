@@ -17,11 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentationService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -32,7 +33,7 @@ import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
-class RuleService implements CatalogueItemAwareService<Rule> {
+class RuleService implements MultiFacetItemAwareService<Rule> {
 
     RuleRepresentationService ruleRepresentationService
 
@@ -54,23 +55,23 @@ class RuleService implements CatalogueItemAwareService<Rule> {
 
     void delete(Rule rule, boolean flush = false) {
         if (!rule) return
-        CatalogueItemService service = findCatalogueItemService(rule.catalogueItemDomainType)
-        service.removeRuleFromCatalogueItem(rule.catalogueItemId, rule)
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(rule.multiFacetAwareItemDomainType)
+        service.removeRuleFromMultiFacetAware(rule.multiFacetAwareItemId, rule)
         rule.delete(flush: flush)
     }
 
     @Override
-    void saveCatalogueItem(Rule facet) {
+    void saveMultiFacetAwareItem(Rule facet) {
         if (!facet) return
-        CatalogueItemService catalogueItemService = findCatalogueItemService(facet.catalogueItemDomainType)
-        catalogueItemService.save(facet.catalogueItem)
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(facet.multiFacetAwareItemDomainType)
+        service.save(facet.multiFacetAwareItem)
     }
 
     @Override
     void addFacetToDomain(Rule facet, String domainType, UUID domainId) {
         if (!facet) return
-        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
-        facet.catalogueItem = domain
+        MultiFacetAware domain = findMultiFacetAwareItemByDomainTypeAndId(domainType, domainId)
+        facet.multiFacetAwareItem = domain
         domain.addToRules(facet)
     }
 
@@ -78,11 +79,11 @@ class RuleService implements CatalogueItemAwareService<Rule> {
         boolean valid = rule.validate()
         if (!valid) return false
 
-        CatalogueItem catalogueItem = rule.catalogueItem ?: findCatalogueItemByDomainTypeAndId(rule.catalogueItemDomainType,
-                                                                                               rule.catalogueItemId)
+        MultiFacetAware multiFacetAwareItem = rule.multiFacetAwareItem ?: findMultiFacetAwareItemByDomainTypeAndId(rule.multiFacetAwareItemDomainType,
+                                                                                                                   rule.multiFacetAwareItemId)
 
-        //Ensure name is unique within catalogueItem
-        if (catalogueItem.rules.any { r ->
+        //Ensure name is unique within multiFacetAwareItem
+        if (multiFacetAwareItem.rules.any {r ->
             log.debug("${r} ${rule}")
             r != rule && r.name == rule.name
         }) {
@@ -94,22 +95,22 @@ class RuleService implements CatalogueItemAwareService<Rule> {
     }
 
     @Override
-    Rule findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
-        Rule.byCatalogueItemIdAndId(catalogueItemId, id).get()
+    Rule findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        Rule.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
 
     @Override
-    List<Rule> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination = [:]) {
-        Rule.withFilter(Rule.byCatalogueItemId(catalogueItemId), pagination).list(pagination)
+    List<Rule> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
+        Rule.withFilter(Rule.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
     }
 
     @Override
     void performDeletion(List<UUID> batch) {
         long start = System.currentTimeMillis()
-        List<Rule> rules = Rule.byCatalogueItemIdInList(batch).list()
+        List<Rule> rules = Rule.byMultiFacetAwareItemIdInList(batch).list()
         if (rules) {
             ruleRepresentationService.deleteAllByRules(rules)
-            getBaseDeleteCriteria().inList('catalogueItemId', batch).deleteAll()
+            getBaseDeleteCriteria().inList('multiFacetAwareItemId', batch).deleteAll()
         }
         log.trace('{} removed took {}', Rule.simpleName, Utils.timeTaken(start))
     }
@@ -119,27 +120,30 @@ class RuleService implements CatalogueItemAwareService<Rule> {
         Rule.by()
     }
 
-    //This works around the fact the RuleRepresentation is not CatalogueItemAware
-    RuleRepresentation addCreatedEditToCatalogueItemOfRule(User creator, RuleRepresentation domain, String catalogueItemDomainType,
-                                                           UUID catalogueItemId) {
-        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally EditTitle.CREATE, creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
+    //This works around the fact the RuleRepresentation is not MultiFacetAwareItemAware
+    RuleRepresentation addCreatedEditToMultiFacetAwareItemOfRule(User creator, RuleRepresentation domain, String multiFacetAwareItemDomainType,
+                                                                 UUID multiFacetAwareItemId) {
+        EditHistoryAware multiFacetAwareItem =
+            findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware
+        multiFacetAwareItem.addToEditsTransactionally EditTitle.CREATE,creator, "[$domain.editLabel] added to component [${multiFacetAwareItem.editLabel}]"
         domain
     }
 
-    //This works around the fact the RuleRepresentation is not CatalogueItemAware
-    RuleRepresentation addUpdatedEditToCatalogueItemOfRule(User editor, RuleRepresentation domain, String catalogueItemDomainType,
-                                                           UUID catalogueItemId, List<String> dirtyPropertyNames) {
-        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally EditTitle.UPDATE, editor, domain.editLabel, dirtyPropertyNames
+    //This works around the fact the RuleRepresentation is not MultiFacetAwareItemAware
+    RuleRepresentation addUpdatedEditToMultiFacetAwareItemOfRule(User editor, RuleRepresentation domain, String multiFacetAwareItemDomainType,
+                                                                 UUID multiFacetAwareItemId, List<String> dirtyPropertyNames) {
+        EditHistoryAware multiFacetAwareItem =
+            findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware
+        multiFacetAwareItem.addToEditsTransactionally EditTitle.UPDATE,editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
-    //This works around the fact the RuleRepresentation is not CatalogueItemAware
-    RuleRepresentation addDeletedEditToCatalogueItemOfRule(User deleter, RuleRepresentation domain, String catalogueItemDomainType,
-                                                           UUID catalogueItemId) {
-        CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component [${catalogueItem.editLabel}]"
+    //This works around the fact the RuleRepresentation is not MultiFacetAwareItemAware
+    RuleRepresentation addDeletedEditToMultiFacetAwareItemOfRule(User deleter, RuleRepresentation domain, String multiFacetAwareItemDomainType,
+                                                                 UUID multiFacetAwareItemId) {
+        EditHistoryAware multiFacetAwareItem =
+            findMultiFacetAwareItemByDomainTypeAndId(multiFacetAwareItemDomainType, multiFacetAwareItemId) as EditHistoryAware
+        multiFacetAwareItem.addToEditsTransactionally EditTitle.DELETE,deleter, "[$domain.editLabel] removed from component [${multiFacetAwareItem.editLabel}]"
         domain
     }
 }

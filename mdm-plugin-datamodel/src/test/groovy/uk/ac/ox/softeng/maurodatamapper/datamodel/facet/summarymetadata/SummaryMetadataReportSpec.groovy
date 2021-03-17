@@ -44,7 +44,7 @@ class SummaryMetadataReportSpec extends CreatorAwareSpec<SummaryMetadataReport> 
         checkAndSave(misc)
         checkAndSave(db)
         summaryMetadata = new SummaryMetadata(summaryMetadataType: SummaryMetadataType.NUMBER, label: 'test',
-                                              createdBy: StandardEmailAddress.UNIT_TEST, catalogueItem: db)
+                                              createdBy: StandardEmailAddress.UNIT_TEST, multiFacetAwareItem: db)
         checkAndSave(summaryMetadata)
         dateTime = OffsetDateTime.now()
     }

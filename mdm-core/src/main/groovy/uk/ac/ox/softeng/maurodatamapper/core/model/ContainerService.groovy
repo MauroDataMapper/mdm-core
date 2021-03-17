@@ -17,18 +17,33 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+
+import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.core.GrailsApplication
 import grails.gorm.DetachedCriteria
+import org.hibernate.SessionFactory
 
 /**
  * @since 16/01/2020
  */
-abstract class ContainerService<K> implements SecurableResourceService<K> {
+abstract class ContainerService<K extends Container> implements SecurableResourceService<K>, MultiFacetAwareService<K> {
+
+    SessionFactory sessionFactory
+    GrailsApplication grailsApplication
+    MetadataService metadataService
+    RuleService ruleService
+    SemanticLinkService semanticLinkService
+    AnnotationService annotationService
+    ReferenceFileService referenceFileService
 
     abstract boolean isContainerVirtual()
 
@@ -53,6 +68,12 @@ abstract class ContainerService<K> implements SecurableResourceService<K> {
     abstract List<K> findAllWhereDirectParentOfContainer(K container)
 
     abstract K save(K domain)
+
+    abstract Class<K> getContainerClass()
+
+    Class<K> getMultiFacetAwareClass() {
+        getContainerClass()
+    }
 
     K findByPath(String path) {
         List<String> paths
@@ -83,7 +104,7 @@ abstract class ContainerService<K> implements SecurableResourceService<K> {
     }
 
     List<K> getFullPathDomains(K domain) {
-        List<UUID> ids = domain.path.split('/').findAll().collect { Utils.toUuid(it) }
+        List<UUID> ids = domain.path.split('/').findAll().collect {Utils.toUuid(it)}
         List<K> domains = []
         if (ids) domains.addAll(getAll(ids))
         domains.add(domain)
@@ -108,13 +129,5 @@ abstract class ContainerService<K> implements SecurableResourceService<K> {
         }
 
         domain.label = "${defaultLabel} (${++lastNum})"
-    }
-
-    void removeAnnotationFromContainer(UUID containerId, Annotation annotation) {
-        (get(containerId) as Container).removeFromAnnotations(annotation)
-    }
-
-    void removeMetadataFromContainer(UUID containerId, Metadata metadata) {
-        (get(containerId) as Container).removeFromMetadata(metadata)
     }
 }

@@ -17,12 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
@@ -33,7 +30,7 @@ import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
-class AnnotationService implements CatalogueItemAwareService<Annotation> {
+class AnnotationService implements MultiFacetItemAwareService<Annotation> {
 
     Annotation get(Serializable id) {
         Annotation.get(id)
@@ -53,13 +50,8 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
 
     void delete(Annotation annotation, boolean flush = false) {
         if (!annotation) return
-        CatalogueItemService service = findCatalogueItemService(annotation.catalogueItemDomainType)
-        if(service) {
-            service.removeAnnotationFromCatalogueItem(annotation.catalogueItemId, annotation)
-        }else{
-            ContainerService containerService = findContainerService(annotation.catalogueItemDomainType)
-            containerService.removeAnnotationFromContainer(annotation.catalogueItemId, annotation)
-        }
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(annotation.multiFacetAwareItemDomainType)
+        service.removeAnnotationFromMultiFacetAware(annotation.multiFacetAwareItemId, annotation)
 
         annotation.parentAnnotation?.removeFromChildAnnotations(annotation)
         List<Annotation> children = new ArrayList<>(annotation.childAnnotations)
@@ -77,13 +69,13 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
     }
 
     @Override
-    Annotation findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
-        Annotation.byCatalogueItemIdAndId(catalogueItemId, id).get()
+    Annotation findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        Annotation.byyMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
 
     @Override
-    List<Annotation> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination = [:]) {
-        Annotation.byCatalogueItemId(catalogueItemId).list(pagination)
+    List<Annotation> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
+        Annotation.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
     }
 
     @Override
@@ -92,22 +84,23 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
     }
 
     @Override
-    void saveCatalogueItem(Annotation facet) {
+    void saveMultiFacetAwareItem(Annotation facet) {
         if (!facet) return
-        CatalogueItemService catalogueItemService = findCatalogueItemService(facet.catalogueItemDomainType)
-        catalogueItemService.save(facet.catalogueItem)
+        MultiFacetAwareService multiFacetAwareItemService = findServiceForMultiFacetAwareDomainType(facet.multiFacetAwareItemDomainType)
+        multiFacetAwareItemService.save(facet.multiFacetAwareItem)
     }
 
     @Override
     void addFacetToDomain(Annotation facet, String domainType, UUID domainId) {
         if (!facet) return
-        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
-        facet.catalogueItem = domain
+        MultiFacetAware domain = findMultiFacetAwareItemByDomainTypeAndId(domainType, domainId)
         domain.addToAnnotations(facet)
+        facet.multiFacetAwareItem = domain
+        log.debug('stop')
     }
 
-    List<Annotation> findAllWhereRootAnnotationOfCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
-        Annotation.whereRootAnnotationOfCatalogueItemId(catalogueItemId).list(paginate)
+    List<Annotation> findAllWhereRootAnnotationOfMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map paginate = [:]) {
+        Annotation.whereRootAnnotationOfMultiFacetAwareItemId(multiFacetAwareItemId).list(paginate)
     }
 
     List<Annotation> findAllByParentAnnotationId(UUID parentAnnotationId, Map paginate = [:]) {
@@ -119,9 +112,7 @@ class AnnotationService implements CatalogueItemAwareService<Annotation> {
         }
     }
 
-    Number countWhereRootAnnotationOfCatalogueItemId(UUID catalogueItemId) {
-        Annotation.whereRootAnnotationOfCatalogueItemId(catalogueItemId).count()
+    Number countWhereRootAnnotationOfMultiFacetAwareItemId(UUID multiFacetAwareItemId) {
+        Annotation.whereRootAnnotationOfMultiFacetAwareItemId(multiFacetAwareItemId).count()
     }
-
-
 }

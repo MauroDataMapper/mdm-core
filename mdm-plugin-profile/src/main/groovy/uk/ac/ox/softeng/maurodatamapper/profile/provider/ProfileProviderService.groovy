@@ -117,7 +117,7 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
     }
 
     List<MetadataAware> findAllProfiledItems(String domainType = null) {
-        metadataService.findAllCatalogueItemsByNamespace(metadataNamespace, domainType)
+        metadataService.findAllMultiFacetAwareItemsByNamespace(metadataNamespace, domainType)
     }
 
 }

@@ -126,7 +126,7 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         beforeValidateModelItem()
         this.referenceSummaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
         }
         if (referenceDataType && !referenceDataType.ident()) {
             referenceDataType.referenceDataModel = model

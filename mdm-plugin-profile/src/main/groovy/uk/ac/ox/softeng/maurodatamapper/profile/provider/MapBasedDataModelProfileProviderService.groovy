@@ -43,7 +43,7 @@ abstract class MapBasedDataModelProfileProviderService<P extends MapBasedProfile
     P createProfileFromEntity(DataModel entity) {
         P profile = getNewProfile()
 
-        List<Metadata> metadataList = metadataService.findAllByCatalogueItemId(entity.id)
+        List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemId(entity.id)
 
         getKnownMetadataKeys().each { fieldName ->
 

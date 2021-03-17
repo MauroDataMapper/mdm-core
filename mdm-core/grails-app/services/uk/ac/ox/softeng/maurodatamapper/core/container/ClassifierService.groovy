@@ -29,7 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
@@ -39,8 +38,6 @@ class ClassifierService extends ContainerService<Classifier> {
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
 
-    SessionFactory sessionFactory
-
     @Override
     boolean handles(Class clazz) {
         clazz == Classifier
@@ -49,6 +46,11 @@ class ClassifierService extends ContainerService<Classifier> {
     @Override
     boolean handles(String domainType) {
         domainType == Classifier.simpleName
+    }
+
+    @Override
+    Class<Classifier> getContainerClass() {
+        Classifier
     }
 
     @Override
@@ -134,6 +136,16 @@ class ClassifierService extends ContainerService<Classifier> {
             classifiers.addAll(findAllWhereDirectParentOfContainer(classifier.parentClassifier))
         }
         classifiers
+    }
+
+    @Override
+    List<Classifier> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
+        Classifier.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<Classifier> findAllByMetadataNamespace(String namespace, Map pagination = [:]) {
+        Classifier.byMetadataNamespace(namespace).list(pagination)
     }
 
     Long count() {

@@ -42,6 +42,8 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnu
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -56,7 +58,7 @@ import java.time.OffsetDateTime
 @Slf4j
 @Transactional
 @SuppressWarnings('unused')
-class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
+class ReferenceDataModelService extends ModelService<ReferenceDataModel> implements ReferenceSummaryMetadataAwareService {
 
     ReferenceDataElementService referenceDataElementService
     ReferenceDataTypeService referenceDataTypeService
@@ -136,10 +138,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         updated
     }
 
-    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
-    }
-
     @Override
     ReferenceDataModel save(ReferenceDataModel referenceDataModel) {
         log.debug('Saving {}({}) without batching', referenceDataModel.label, referenceDataModel.ident())
@@ -151,8 +149,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.referenceSummaryMetadata) {
             catalogueItem.referenceSummaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             ReferenceSummaryMetadata.saveAll(catalogueItem.referenceSummaryMetadata)
         }
@@ -497,7 +495,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
                                                     boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager) as ReferenceDataModel
         if (copySummaryMetadata) {
-            referenceSummaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
@@ -664,7 +662,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     void setReferenceDataModelIsFromReferenceDataModel(ReferenceDataModel source, ReferenceDataModel target, User user) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
     }
 
 

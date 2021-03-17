@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendService
@@ -96,7 +96,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         id = dataModel1.id
     }
 
-    DataModel buildSimpleDataModel(Authority authority) {
+    DataModel buildSimpleDataModel() {
         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, testFolder, testAuthority)
     }
 

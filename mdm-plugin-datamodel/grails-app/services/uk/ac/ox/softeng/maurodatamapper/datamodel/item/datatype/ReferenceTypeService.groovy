@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -36,7 +37,7 @@ import org.springframework.validation.FieldError
 
 @Slf4j
 @Transactional
-class ReferenceTypeService extends ModelItemService<ReferenceType> {
+class ReferenceTypeService extends ModelItemService<ReferenceType> implements SummaryMetadataAwareService {
 
     SummaryMetadataService summaryMetadataService
 
@@ -84,8 +85,8 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
 
         if (referenceTypeIds) {
             log.trace('Removing facets for {} ReferenceTypes', referenceTypeIds.size())
-            deleteAllFacetsByCatalogueItemIds(referenceTypeIds,
-                                              'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(referenceTypeIds,
+                                                'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
 
             log.trace('Removing {} ReferenceTypes', referenceTypeIds.size())
             sessionFactory.currentSession
@@ -98,9 +99,9 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     }
 
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override

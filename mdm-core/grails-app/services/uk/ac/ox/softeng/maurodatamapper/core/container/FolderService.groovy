@@ -50,6 +50,11 @@ class FolderService extends ContainerService<Folder> {
     }
 
     @Override
+    Class<Folder> getContainerClass() {
+        Folder
+    }
+
+    @Override
     boolean isContainerVirtual() {
         false
     }
@@ -182,6 +187,16 @@ class FolderService extends ContainerService<Folder> {
             folders.addAll(findAllWhereDirectParentOfContainer(folder.parentFolder))
         }
         folders
+    }
+
+    @Override
+    List<Folder> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
+        Folder.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<Folder> findAllByMetadataNamespace(String namespace, Map pagination = [:]) {
+        Folder.byMetadataNamespace(namespace).list(pagination)
     }
 
     @Deprecated

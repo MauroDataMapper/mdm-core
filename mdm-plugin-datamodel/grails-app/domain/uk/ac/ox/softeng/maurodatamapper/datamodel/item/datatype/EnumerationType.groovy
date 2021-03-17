@@ -17,9 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
@@ -55,7 +53,7 @@ class EnumerationType extends DataType<EnumerationType> implements IndexedSiblin
 
     @Override
     void updateChildIndexes(ModelItem updated, Integer oldIndex) {
-        updateSiblingIndexes(updated, enumerationValues, oldIndex)
+        updateSiblingIndexes(updated, enumerationValues)
     }
 
     @Override

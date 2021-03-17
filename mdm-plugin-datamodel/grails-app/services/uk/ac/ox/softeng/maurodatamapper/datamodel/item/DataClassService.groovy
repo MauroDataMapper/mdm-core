@@ -56,7 +56,7 @@ class DataClassService extends ModelItemService<DataClass> {
     DataElementService dataElementService
     DataTypeService dataTypeService
     MessageSource messageSource
-    ModelExtendService modelExtendService 
+    ModelExtendService modelExtendService
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
 
@@ -93,7 +93,7 @@ class DataClassService extends ModelItemService<DataClass> {
     @Override
     List<Class> importsDomains() {
         [DataElement, DataClass]
-    }    
+    }
 
     /**
      * Does the importedModelItem belong to a DataClass belonging to a DataModel which is either finalised
@@ -120,7 +120,7 @@ class DataClassService extends ModelItemService<DataClass> {
     @Override
     List<Class> extendsDomains() {
         [DataClass]
-    }    
+    }
 
     /**
      * Does the extendedDataClass meet domain specific rules for extension?
@@ -140,7 +140,7 @@ class DataClassService extends ModelItemService<DataClass> {
         //
         //4. the extended DataClass belongs to a DataModel which is finalised
         (extendedDataClass.dataModel.finalised)
-    }      
+    }
 
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
@@ -179,8 +179,8 @@ class DataClassService extends ModelItemService<DataClass> {
             referenceTypeService.deleteAllByModelId(dataModelId)
 
             log.trace('Removing facets for {} DataClasses', dataClassIds.size())
-            deleteAllFacetsByCatalogueItemIds(dataClassIds,
-                                              'delete from datamodel.join_dataclass_to_facet where dataclass_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataClassIds,
+                                                'delete from datamodel.join_dataclass_to_facet where dataclass_id in :ids')
 
             log.trace('Removing {} DataClasses', dataClassIds.size())
             sessionFactory.currentSession
@@ -192,14 +192,10 @@ class DataClassService extends ModelItemService<DataClass> {
         }
     }
 
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
-    }
-
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
@@ -207,8 +203,8 @@ class DataClassService extends ModelItemService<DataClass> {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
             catalogueItem.summaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
@@ -218,14 +214,14 @@ class DataClassService extends ModelItemService<DataClass> {
                 it.catalogueItemId = catalogueItem.getId()
             }
             ModelImport.saveAll(catalogueItem.modelImports)
-        }   
+        }
         if (catalogueItem.modelExtends) {
             catalogueItem.modelExtends.each {
                 if (!it.isDirty('catalogueItemId')) it.trackChanges()
                 it.catalogueItemId = catalogueItem.getId()
             }
             ModelExtend.saveAll(catalogueItem.modelExtends)
-        }                 
+        }
         catalogueItem
     }
 
@@ -311,7 +307,7 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     private void removeSemanticLinks(DataClass dataClass) {
-        List<SemanticLink> semanticLinks = semanticLinkService.findAllByCatalogueItemId(dataClass.id)
+        List<SemanticLink> semanticLinks = semanticLinkService.findAllByMultiFacetAwareItemId(dataClass.id)
         semanticLinks.each { semanticLinkService.delete(it) }
     }
 
@@ -444,7 +440,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
     def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:], boolean includeImported = false) {
         DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId, includeImported), paginate).list(paginate)
-    }   
+    }
 
     List<ModelItem> findAllContentOfDataClassIdInDataModelId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
         List<ModelItem> content = []
@@ -632,31 +628,39 @@ class DataClassService extends ModelItemService<DataClass> {
 
     }
 
-    @Override
+
     DataClass copyCatalogueItemInformation(DataClass original,
                                            DataClass copy,
                                            User copier,
                                            UserSecurityPolicyManager userSecurityPolicyManager,
-                                           boolean copySummaryMetadata = false) {
+                                           boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
 
-        modelImportService.findAllByCatalogueItemId(original.id).each { 
-            copy.addToModelImports(it.importedCatalogueItemDomainType,
-                                   it.importedCatalogueItemId,
-                                   copier) 
-        }       
-
-        modelExtendService.findAllByCatalogueItemId(original.id).each { 
-            copy.addToModelExtends(it.extendedCatalogueItemDomainType,
-                                   it.extendedCatalogueItemId,
-                                   copier) 
-        }                
+        //        modelImportService.findAllByCatalogueItemId(original.id).each {
+        //            copy.addToModelImports(it.importedCatalogueItemDomainType,
+        //                                   it.importedCatalogueItemId,
+        //                                   copier)
+        //        }
+        //
+        //        modelExtendService.findAllByCatalogueItemId(original.id).each {
+        //            copy.addToModelExtends(it.extendedCatalogueItemDomainType,
+        //                                   it.extendedCatalogueItemId,
+        //                                   copier)
+        //        }
         copy
+    }
+
+    @Override
+    DataClass copyCatalogueItemInformation(DataClass original,
+                                           DataClass copy,
+                                           User copier,
+                                           UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
     }
 
     void matchUpAndAddMissingReferenceTypeClasses(DataModel copiedDataModel, DataModel originalDataModel, User copier,
@@ -767,12 +771,13 @@ class DataClassService extends ModelItemService<DataClass> {
 
     void addDataClassesAreFromDataClasses(Collection<DataClass> dataClasses, Collection<DataClass> fromDataClasses, User user) {
         if (!dataClasses || !fromDataClasses) throw new ApiInternalException('DCSXX', 'No DataClasses or FromDataClasses exist to create links')
-        List<SemanticLink> alreadyExistingLinks = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
-            dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
-        dataClasses.each { de ->
-            fromDataClasses.each { fde ->
+        List<SemanticLink> alreadyExistingLinks =
+            semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
+                dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
+        dataClasses.each {de ->
+            fromDataClasses.each {fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any { it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id }) {
+                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataClassIsFromDataClass(de, fde, user)
                 }
             }
@@ -789,13 +794,13 @@ class DataClassService extends ModelItemService<DataClass> {
 
     void removeDataClassesAreFromDataClasses(Collection<DataClass> dataClasses, Collection<DataClass> fromDataClasses) {
         if (!dataClasses || !fromDataClasses) throw new ApiInternalException('DCSXX', 'No DataClasses or FromDataClasses exist to remove links')
-        List<SemanticLink> links = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
+        List<SemanticLink> links = semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
             dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
         semanticLinkService.deleteAll(links)
     }
 
     void setDataClassIsFromDataClass(DataClass source, DataClass target, User user) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
     }
 
     /**
@@ -831,7 +836,7 @@ class DataClassService extends ModelItemService<DataClass> {
 
         //The DataClass that was imported
         DataClass dataClass = imported.importedCatalogueItem
-        
+
         dataClass.dataElements.each {dataElement ->
             DataType dataType = dataElement.dataType
 
@@ -851,13 +856,13 @@ class DataClassService extends ModelItemService<DataClass> {
                 ModelImport modelImportDataType = new ModelImport(catalogueItem          : dataModel,
                                                                   importedCatalogueItem  : dataType,
                                                                   createdByUser          : currentUser)
-        
+
                 //Save the additional model import, indicating that this is an additional rather than
                 //principal import and so should fail silently if it already exists.
-                modelImportService.saveResource(currentUser, modelImportDataType, true) 
+                modelImportService.saveResource(currentUser, modelImportDataType, true)
             }
         }
-                                                 
+
     }
 
     @Override

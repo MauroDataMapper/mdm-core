@@ -21,13 +21,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
-import uk.ac.ox.softeng.maurodatamapper.core.util.test.CatalogueItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.core.util.test.MultiFacetItemAwareServiceSpec
 
 import grails.testing.services.ServiceUnitTest
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink, SemanticLinkService>
+class SemanticLinkServiceSpec extends MultiFacetItemAwareServiceSpec<SemanticLink, SemanticLinkService>
     implements ServiceUnitTest<SemanticLinkService> {
 
     UUID id
@@ -50,10 +50,10 @@ class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink
 
         SemanticLink sl1 = new SemanticLink(createdBy: admin.emailAddress, linkType: SemanticLinkType.REFINES)
         basicModel.addToSemanticLinks(sl1)
-        sl1.setTargetCatalogueItem(basicModel2)
+        sl1.setTargetMultiFacetAwareItem(basicModel2)
         SemanticLink sl2 = new SemanticLink(createdBy: admin.emailAddress, linkType: SemanticLinkType.DOES_NOT_REFINE)
         basicModel.addToSemanticLinks(sl2)
-        sl2.setTargetCatalogueItem(basicModel3)
+        sl2.setTargetMultiFacetAwareItem(basicModel3)
 
         checkAndSave(basicModel)
 
@@ -64,7 +64,7 @@ class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink
             getAll(_) >> {List<UUID> ids -> BasicModel.getAll(ids)}
             getModelClass() >> BasicModel
             handles('BasicModel') >> true
-            removeSemanticLinkFromCatalogueItem(_, _) >> {UUID id, SemanticLink semanticLink ->
+            removeSemanticLinkFromMultiFacetAware(_, _) >> {UUID id, SemanticLink semanticLink ->
                 BasicModel bm = BasicModel.get(id)
                 bm.semanticLinks.remove(semanticLink)
             }
@@ -87,8 +87,8 @@ class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink
 
         and:
         semanticLinkList[0].linkType == SemanticLinkType.DOES_NOT_REFINE
-        semanticLinkList[0].catalogueItemId == BasicModel.findByLabel('dm1').id
-        semanticLinkList[0].targetCatalogueItemId == BasicModel.findByLabel('dm3').id
+        semanticLinkList[0].multiFacetAwareItemId == BasicModel.findByLabel('dm1').id
+        semanticLinkList[0].targetMultiFacetAwareItemId == BasicModel.findByLabel('dm3').id
     }
 
     void "test count"() {
@@ -107,85 +107,85 @@ class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink
         service.count() == 1
     }
 
-    void 'test findAllBySourceCatalogueItemId'() {
+    void 'test findAllBySourceMultiFacetAwareItemId'() {
         when:
-        List<SemanticLink> links = service.findAllBySourceCatalogueItemId(BasicModel.findByLabel('dm1').id)
+        List<SemanticLink> links = service.findAllBySourceMultiFacetAwareItemId(BasicModel.findByLabel('dm1').id)
 
         then:
         !links.isEmpty()
         links.size() == 2
 
         when:
-        links = service.findAllBySourceCatalogueItemId(BasicModel.findByLabel('dm2').id)
+        links = service.findAllBySourceMultiFacetAwareItemId(BasicModel.findByLabel('dm2').id)
 
         then:
         links.isEmpty()
 
         when:
-        links = service.findAllBySourceCatalogueItemId(BasicModel.findByLabel('dm3').id)
+        links = service.findAllBySourceMultiFacetAwareItemId(BasicModel.findByLabel('dm3').id)
 
         then:
         links.isEmpty()
     }
 
-    void 'test findAllByTargetCatalogueItemId'() {
+    void 'test findAllByTargetMultiFacetAwareItemId'() {
         when:
-        List<SemanticLink> links = service.findAllByTargetCatalogueItemId(BasicModel.findByLabel('dm1').id)
+        List<SemanticLink> links = service.findAllByTargetMultiFacetAwareItemId(BasicModel.findByLabel('dm1').id)
 
         then:
         links.isEmpty()
 
         when:
-        links = service.findAllByTargetCatalogueItemId(BasicModel.findByLabel('dm2').id)
+        links = service.findAllByTargetMultiFacetAwareItemId(BasicModel.findByLabel('dm2').id)
 
         then:
         !links.isEmpty()
         links.size() == 1
 
         when:
-        links = service.findAllByTargetCatalogueItemId(BasicModel.findByLabel('dm3').id)
+        links = service.findAllByTargetMultiFacetAwareItemId(BasicModel.findByLabel('dm3').id)
 
         then:
         !links.isEmpty()
         links.size() == 1
     }
 
-    void 'test findAllByAnyCatalogueItemId'() {
+    void 'test findAllByAnyMultiFacetAwareItemId'() {
         when:
-        List<SemanticLink> links = service.findAllBySourceOrTargetCatalogueItemId(BasicModel.findByLabel('dm1').id)
+        List<SemanticLink> links = service.findAllBySourceOrTargetMultiFacetAwareItemId(BasicModel.findByLabel('dm1').id)
 
         then:
         !links.isEmpty()
         links.size() == 2
 
         when:
-        links = service.findAllBySourceOrTargetCatalogueItemId(BasicModel.findByLabel('dm2').id)
+        links = service.findAllBySourceOrTargetMultiFacetAwareItemId(BasicModel.findByLabel('dm2').id)
 
         then:
         !links.isEmpty()
         links.size() == 1
 
         when:
-        links = service.findAllBySourceOrTargetCatalogueItemId(BasicModel.findByLabel('dm3').id)
+        links = service.findAllBySourceOrTargetMultiFacetAwareItemId(BasicModel.findByLabel('dm3').id)
 
         then:
         !links.isEmpty()
         links.size() == 1
     }
 
-    void 'test findBySourceCatalogueItemAndTargetCatalogueItemAndLinkType'() {
+    void 'test findBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType'() {
         when:
-        SemanticLink sl = service.findBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(BasicModel.findByLabel('dm1'),
-                                                                                             BasicModel.findByLabel('dm2'),
-                                                                                             SemanticLinkType.ABSTRACTS)
+        SemanticLink sl = service.findBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(BasicModel.findByLabel('dm1'),
+                                                                                                         BasicModel.findByLabel('dm2'),
+                                                                                                         SemanticLinkType.ABSTRACTS)
 
         then:
         !sl
 
         when:
-        sl = service.findBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(BasicModel.findByLabel('dm1'),
-                                                                                BasicModel.findByLabel('dm2'),
-                                                                                SemanticLinkType.REFINES)
+        sl = service.findBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(BasicModel.findByLabel('dm1'),
+                                                                                            BasicModel.findByLabel('dm2'),
+                                                                                            SemanticLinkType.REFINES)
 
         then:
         sl
@@ -193,17 +193,17 @@ class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink
 
     void 'test deleteBySourceAndTargetAndLinkType'() {
         when:
-        service.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(BasicModel.findByLabel('dm1'),
-                                                                             BasicModel.findByLabel('dm2'),
-                                                                             SemanticLinkType.ABSTRACTS)
+        service.deleteBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(BasicModel.findByLabel('dm1'),
+                                                                                         BasicModel.findByLabel('dm2'),
+                                                                                         SemanticLinkType.ABSTRACTS)
 
         then:
         service.count() == 2
 
         when:
-        service.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(BasicModel.findByLabel('dm1'),
-                                                                             BasicModel.findByLabel('dm2'),
-                                                                             SemanticLinkType.REFINES)
+        service.deleteBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(BasicModel.findByLabel('dm1'),
+                                                                                         BasicModel.findByLabel('dm2'),
+                                                                                         SemanticLinkType.REFINES)
 
         then:
         service.count() == 1
@@ -231,41 +231,41 @@ class SemanticLinkServiceSpec extends CatalogueItemAwareServiceSpec<SemanticLink
         slf
     }
 
-    void 'test loadCatalogueItemsIntoSemanticLink'() {
+    void 'test loadMultiFacetAwareItemsIntoSemanticLink'() {
         when:
         SemanticLink sl = service.get(id)
 
         then:
-        !sl.catalogueItem
-        !sl.targetCatalogueItem
+        !sl.multiFacetAwareItem
+        !sl.targetMultiFacetAwareItem
 
         when:
-        sl = service.loadCatalogueItemsIntoSemanticLink(sl)
+        sl = service.loadMultiFacetAwareItemsIntoSemanticLink(sl)
 
         then:
-        sl.catalogueItem
-        sl.targetCatalogueItem
+        sl.multiFacetAwareItem
+        sl.targetMultiFacetAwareItem
 
         and:
-        sl.catalogueItem.label == 'dm1'
-        sl.targetCatalogueItem.label == 'dm2'
+        sl.multiFacetAwareItem.label == 'dm1'
+        sl.targetMultiFacetAwareItem.label == 'dm2'
 
     }
 
-    void 'test loadCatalogueItemsIntoSemanticLinks'() {
+    void 'test loadMultiFacetAwareItemsIntoSemanticLinks'() {
         when:
         List<SemanticLink> sls = service.list()
 
         then:
-        sls.every {!it.catalogueItem}
-        sls.every {!it.targetCatalogueItem}
+        sls.every {!it.multiFacetAwareItem}
+        sls.every {!it.targetMultiFacetAwareItem}
 
         when:
-        sls = service.loadCatalogueItemsIntoSemanticLinks(sls)
+        sls = service.loadMultiFacetAwareItemsIntoSemanticLinks(sls)
 
         then:
-        sls.every {it.catalogueItem}
-        sls.every {it.targetCatalogueItem}
+        sls.every {it.multiFacetAwareItem}
+        sls.every {it.targetMultiFacetAwareItem}
     }
 
     @Override

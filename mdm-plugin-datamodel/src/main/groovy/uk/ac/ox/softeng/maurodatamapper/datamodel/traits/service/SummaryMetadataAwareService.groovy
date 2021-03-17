@@ -15,28 +15,24 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
+package uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service
 
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+
+import groovy.transform.SelfType
 
 /**
- * @since 30/01/2020
+ * @since 09/04/2021
  */
-trait CatalogueItemAware {
+@SelfType(MultiFacetAwareService)
+trait SummaryMetadataAwareService {
 
-    UUID catalogueItemId
-    String catalogueItemDomainType
-    MultiFacetAware catalogueItem
+    abstract SummaryMetadataService getSummaryMetadataService()
 
-    abstract String getEditLabel()
-
-    //static transients = ['catalogueItem']
-
-    void setCatalogueItem(MultiFacetAware multiFacetAware) {
-        this.catalogueItem = multiFacetAware
-        catalogueItemId = multiFacetAware.id
-        catalogueItemDomainType = multiFacetAware.domainType
+    void removeSummaryMetadataFromMultiFacetAware(UUID multiFacetAwareId, SummaryMetadata summaryMetadata) {
+        removeFacetFromDomain(multiFacetAwareId, summaryMetadata.id, 'summaryMetadata')
     }
-
 }

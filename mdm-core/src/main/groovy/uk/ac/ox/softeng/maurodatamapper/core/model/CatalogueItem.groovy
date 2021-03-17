@@ -64,17 +64,17 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
 
     void beforeValidateCatalogueItem() {
         metadata?.each {
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
             if (!it.createdBy) it.createdBy = createdBy
             it.beforeValidate()
         }
         annotations?.each {
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
             if (!it.createdBy) it.createdBy = createdBy
             it.beforeValidate()
         }
         referenceFiles?.each {
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
             if (!it.createdBy) it.createdBy = createdBy
             it.beforeValidate()
         }

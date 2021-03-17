@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
@@ -29,7 +29,7 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
+class Metadata implements MultiFacetItemAware, CreatorAware, Diffable<Metadata> {
 
     public final static Integer BATCH_SIZE = 5000
 
@@ -41,9 +41,9 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-        catalogueItemId nullable: true, validator: {val, obj ->
+        multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (val) return true
-            if (!val && obj.catalogueItem && !obj.catalogueItem.ident()) return true
+            if (!val && obj.multiFacetAwareItem && !obj.multiFacetAwareItem.ident()) return true
             ['default.null.message']
         }
         namespace blank: false
@@ -55,7 +55,7 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
         namespace type: 'text'
         key type: 'text'
         value type: 'text'
-        catalogueItemId index: 'metadata_catalogue_item_idx'
+        multiFacetAwareItemId index: 'metadata_catalogue_item_idx'
     }
 
     static search = {
@@ -63,7 +63,7 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
         value index: 'yes'
     }
 
-    static transients = ['catalogueItem']
+    static transients = ['multiFacetAwareItem']
 
     Metadata() {
     }
@@ -154,16 +154,16 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
         new DetachedCriteria<Metadata>(Metadata)
     }
 
-    static DetachedCriteria<Metadata> byCatalogueItemId(Serializable catalogueItemId) {
-        new DetachedCriteria<Metadata>(Metadata).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
+        new DetachedCriteria<Metadata>(Metadata).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<Metadata> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
-        new DetachedCriteria<Metadata>(Metadata).inList('catalogueItemId', catalogueItemIds)
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        new DetachedCriteria<Metadata>(Metadata).inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 
-    static DetachedCriteria<Metadata> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {
-        byCatalogueItemId(catalogueItemId).idEq(Utils.toUuid(resourceId))
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndId(Serializable multiFacetAwareItemId, Serializable resourceId) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).idEq(Utils.toUuid(resourceId))
     }
 
     static DetachedCriteria<Metadata> byNamespace(String namespace) {
@@ -178,12 +178,12 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
         byNamespaceAndKey(namespace, key).eq('value', value)
     }
 
-    static DetachedCriteria<Metadata> byCatalogueItemIdAndNamespace(Serializable catalogueItemId, String namespace) {
-        byCatalogueItemId(catalogueItemId).eq('namespace', namespace)
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNamespace(Serializable multiFacetAwareItemId, String namespace) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).eq('namespace', namespace)
     }
 
-    static DetachedCriteria<Metadata> byCatalogueItemIdAndNotNamespaces(Serializable catalogueItemId, List<String> namespaces) {
-        byCatalogueItemId(catalogueItemId).not { inList('namespace', namespaces) }
+    static DetachedCriteria<Metadata> byMultiFacetAwareItemIdAndNotNamespaces(Serializable multiFacetAwareItemId, List<String> namespaces) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).not {inList('namespace', namespaces)}
     }
 
 

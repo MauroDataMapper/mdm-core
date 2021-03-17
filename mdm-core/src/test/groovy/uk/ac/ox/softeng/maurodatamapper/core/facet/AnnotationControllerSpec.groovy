@@ -72,14 +72,15 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
         checkAndSave basicModel
 
         controller.annotationService = Mock(AnnotationService) {
-            findAllByCatalogueItemId(basicModel.id, _) >> basicModel.annotations.toList()
-            findCatalogueItemByDomainTypeAndId(BasicModel.simpleName, _) >> {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
-            findByCatalogueItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
+            findAllByMultiFacetAwareItemId(basicModel.id, _) >> basicModel.annotations.toList()
+            findMultiFacetAwareItemByDomainTypeAndId(BasicModel.simpleName, _) >>
+            {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
+            findByMultiFacetAwareItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
                 if (iid != basicModel.id) return null
                 mid == domain.id ? domain : null
             }
-            findAllWhereRootAnnotationOfCatalogueItemId(_, _) >> {
-                Annotation.whereRootAnnotationOfCatalogueItemId(basicModel.id).list()
+            findAllWhereRootAnnotationOfMultiFacetAwareItemId(_, _) >> {
+                Annotation.whereRootAnnotationOfMultiFacetAwareItemId(basicModel.id).list()
             }
             addFacetToDomain(_, _, _) >> {Annotation ann, String domain, UUID bid ->
                 if (basicModel.id == bid) {
@@ -272,7 +273,7 @@ class AnnotationControllerSpec extends ResourceControllerSpec<Annotation> implem
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = BasicModel.simpleName
-        params.catalogueItemId = basicModel.id
+        params.multiFacetAwareItemDomainType = BasicModel.simpleName
+        params.multiFacetAwareItemId = basicModel.id
     }
 }

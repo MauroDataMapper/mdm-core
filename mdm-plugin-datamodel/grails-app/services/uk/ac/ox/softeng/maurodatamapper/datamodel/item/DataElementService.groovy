@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -52,7 +53,7 @@ import javax.persistence.EntityManager
 
 @Slf4j
 @Transactional
-class DataElementService extends ModelItemService<DataElement> {
+class DataElementService extends ModelItemService<DataElement> implements SummaryMetadataAwareService {
 
     DataClassService dataClassService
     DataTypeService dataTypeService
@@ -108,8 +109,8 @@ class DataElementService extends ModelItemService<DataElement> {
 
         if (dataElementIds) {
             log.trace('Removing facets for {} DataElements', dataElementIds.size())
-            deleteAllFacetsByCatalogueItemIds(dataElementIds,
-                                              'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataElementIds,
+                                                'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
 
             log.trace('Removing {} DataElements', dataElementIds.size())
             sessionFactory.currentSession
@@ -141,14 +142,10 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement
     }
 
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
-    }
-
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
@@ -164,8 +161,8 @@ class DataElementService extends ModelItemService<DataElement> {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
             catalogueItem.summaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
@@ -407,19 +404,26 @@ class DataElementService extends ModelItemService<DataElement> {
         copy
     }
 
-    @Override
     DataElement copyCatalogueItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
-                                             boolean copySummaryMetadata = false) {
+                                             boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
         copy
+    }
+
+    @Override
+    DataElement copyCatalogueItemInformation(DataElement original,
+                                             DataElement copy,
+                                             User copier,
+                                             UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
     }
 
     DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {
@@ -506,7 +510,7 @@ class DataElementService extends ModelItemService<DataElement> {
     }
 
     void setDataElementIsFromDataElement(DataElement source, DataElement target, User user) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
     }
 
     /**

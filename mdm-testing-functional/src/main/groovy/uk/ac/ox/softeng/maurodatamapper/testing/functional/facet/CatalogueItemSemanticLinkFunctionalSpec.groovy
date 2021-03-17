@@ -123,8 +123,8 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends UserAccessFunctio
         assert response.body().id
         assert response.body().linkType == 'Refines'
         assert response.body().domainType == 'SemanticLink'
-        assert response.body().sourceCatalogueItem.id == getCatalogueItemId()
-        assert response.body().targetCatalogueItem.id == getTargetCatalogueItemId()
+        assert response.body().sourceMultiFacetAwareItem.id == getCatalogueItemId()
+        assert response.body().targetMultiFacetAwareItem.id == getTargetCatalogueItemId()
     }
 
     @Override
@@ -140,17 +140,17 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends UserAccessFunctio
     @Override
     Map getValidJson() {
         [
-            linkType                     : SemanticLinkType.REFINES.label,
-            targetCatalogueItemId        : getTargetCatalogueItemId(),
-            targetCatalogueItemDomainType: getTargetCatalogueItemDomainType()
+            linkType                           : SemanticLinkType.REFINES.label,
+            targetMultiFacetAwareItemId        : getTargetCatalogueItemId(),
+            targetMultiFacetAwareItemDomainType: getTargetCatalogueItemDomainType()
         ]
     }
 
     @Override
     Map getInvalidJson() {
         [
-            linkType           : SemanticLinkType.REFINES.label,
-            targetCatalogueItem: getCatalogueItemId().toString(),
+            linkType                 : SemanticLinkType.REFINES.label,
+            targetMultiFacetAwareItem: getCatalogueItemId().toString(),
 
         ]
     }
@@ -180,8 +180,8 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends UserAccessFunctio
   "linkType": "Refines",
   "domainType": "SemanticLink",
   "unconfirmed": false,
-  "sourceCatalogueItem": ''' + getCatalogueItemJsonString() + ''',
-  "targetCatalogueItem": ''' + getTargetCatalogueItemJsonString() + '''
+  "sourceMultiFacetAwareItem": ''' + getCatalogueItemJsonString() + ''',
+  "targetMultiFacetAwareItem": ''' + getTargetCatalogueItemJsonString() + '''
 }'''
     }
 

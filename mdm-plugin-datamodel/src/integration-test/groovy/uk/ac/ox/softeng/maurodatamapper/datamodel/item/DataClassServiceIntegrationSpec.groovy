@@ -84,7 +84,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         checkAndSave(dataModel)
 
-        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetCatalogueItem: dataClass)
+        SemanticLink link = new SemanticLink(linkType: SemanticLinkType.DOES_NOT_REFINE, createdByUser: editor, targetMultiFacetAwareItem: dataClass)
         parent.addToSemanticLinks(link)
 
         checkAndSave(link)
@@ -296,7 +296,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.referenceTypes
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying simple DataClass with simple data elements'() {
@@ -349,7 +349,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.dataElements.size() == original.dataElements.size()
 
         and:
-        copy.semanticLinks.any {it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES}
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying complex dataclass'() {
@@ -399,7 +399,7 @@ class DataClassServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !copy.referenceTypes
 
         and:
-        SemanticLink.findByTargetCatalogueItemIdAndCatalogueItemIdAndLinkType(original.id, copy.id, SemanticLinkType.REFINES)
+        SemanticLink.findByTargetMultiFacetAwareItemIdAndMultiFacetAwareItemIdAndLinkType(original.id, copy.id, SemanticLinkType.REFINES)
 
         when:
         DataClass copiedParent = copy.dataClasses.first()

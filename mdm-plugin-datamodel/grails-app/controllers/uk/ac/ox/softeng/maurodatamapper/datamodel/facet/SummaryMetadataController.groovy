@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 
 class SummaryMetadataController extends FacetController<SummaryMetadata> {
     static responseFormats = ['json', 'xml']
@@ -31,7 +31,7 @@ class SummaryMetadataController extends FacetController<SummaryMetadata> {
     }
 
     @Override
-    CatalogueItemAwareService getFacetService() {
+    MultiFacetItemAwareService getFacetService() {
         summaryMetadataService
     }
 

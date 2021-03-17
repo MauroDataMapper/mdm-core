@@ -166,4 +166,22 @@ class Classifier implements Container {
             }
         }
     }
+
+
+    static DetachedCriteria<Classifier> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<Classifier> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

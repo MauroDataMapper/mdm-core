@@ -1,0 +1,18 @@
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+
+model {
+    MultiFacetAware multiFacetAware
+}
+
+json {
+    id multiFacetAware.id
+    domainType multiFacetAware.domainType
+    label multiFacetAware.label
+
+    // Model items should render their model and breadcrumbs to allow link rebuilding in the UI
+    if (multiFacetAware instanceof ModelItem) {
+        call('model', (multiFacetAware as ModelItem).model.id)
+        breadcrumbs g.render((multiFacetAware as ModelItem).getBreadcrumbs())
+    }
+}

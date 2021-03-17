@@ -89,7 +89,8 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     }
 
     static mappedBy = [
-        dataElements: 'dataType'
+        dataElements: 'dataType',
+        metadata    : 'none',
     ]
 
     static search = {
@@ -115,7 +116,7 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         beforeValidateModelItem()
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
         }
         if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
     }
