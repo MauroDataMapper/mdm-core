@@ -164,6 +164,7 @@ class DataModelService extends ModelService<DataModel> {
         dm?.deleted = true
     }
 
+    @Override
     void delete(DataModel dm, boolean permanent, boolean flush = true) {
         if (!dm) return
         if (permanent) {
@@ -175,17 +176,6 @@ class DataModelService extends ModelService<DataModel> {
             deleteModelAndContent(dm)
             log.debug('DataModel deleted. Took {}', Utils.timeTaken(start))
         } else delete(dm)
-    }
-
-    @Override
-    DataModel softDeleteModel(DataModel model) {
-        model?.deleted = true
-        model
-    }
-
-    @Override
-    void permanentDeleteModel(DataModel model) {
-        delete(model, true)
     }
 
     List<DataModel> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {

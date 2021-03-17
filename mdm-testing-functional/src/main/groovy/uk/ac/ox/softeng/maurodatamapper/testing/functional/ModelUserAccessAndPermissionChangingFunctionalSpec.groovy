@@ -70,6 +70,8 @@ import static io.micronaut.http.HttpStatus.OK
  *
  *  |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
  *  |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
+ *
+ *  |   POST   | /api/dataModels/${dataModelId}/undoDelete  | Action: undoDelete
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
  */
@@ -1006,7 +1008,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(target, source, id)
     }
 
-    void 'Test getting versionTreeModel (as editor)'() {
+    void 'E26 : Test getting versionTreeModel (as editor)'() {
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -1116,7 +1118,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(latestDraftId)
     }
 
-    void 'Test getting versionTreeModel is same across ancestors (as editor)'() {
+    void 'E26 : Test getting versionTreeModel is same across ancestors (as editor)'() {
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -1157,5 +1159,100 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(latestDraftId)
     }
 
+    void 'L27 : Test undoing a soft delete (as not logged in)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        logout()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'N27 : Test undoing a soft delete (as authenticated/no access)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        loginAuthenticated()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'R27 : Test undoing a soft delete (as reader)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        loginReader()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E27 : Test undoing a soft delete (as editor)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        loginEditor()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'A27 : Test undoing a soft delete (as admin)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        loginAdmin()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        !responseBody().deleted
+
+        cleanup:
+        removeValidIdObject(id)
+    }
 
 }

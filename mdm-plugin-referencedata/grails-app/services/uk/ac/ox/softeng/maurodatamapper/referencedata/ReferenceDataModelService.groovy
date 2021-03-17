@@ -111,6 +111,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         dm?.deleted = true
     }
 
+    @Override
     void delete(ReferenceDataModel rdm, boolean permanent, boolean flush = true) {
         if (!rdm) return
         if (permanent) {
@@ -120,17 +121,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
             }
             rdm.delete(flush: flush)
         } else delete(rdm)
-    }
-
-    @Override
-    ReferenceDataModel softDeleteModel(ReferenceDataModel model) {
-        model?.deleted = true
-        model
-    }
-
-    @Override
-    void permanentDeleteModel(ReferenceDataModel model) {
-        delete(model, true)
     }
 
     List<ReferenceDataModel> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {

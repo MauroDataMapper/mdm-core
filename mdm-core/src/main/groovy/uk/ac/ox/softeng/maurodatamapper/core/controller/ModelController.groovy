@@ -113,8 +113,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         if (instance.finalised) return forbidden('Cannot update a finalised Model')
+        if (instance.deleted) return forbidden('Cannot update a deleted Model')
 
         instance.properties = getObjectToBind()
+
+        instance = performAdditionalUpdates(instance)
 
         if (!validateResource(instance, 'update')) return
 
@@ -143,7 +146,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
             }
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
@@ -154,6 +157,25 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         updateResource(instance)
 
         updateResponse(instance)
+    }
+
+    @Transactional
+    def undoSoftDelete() {
+        if (handleReadOnly()) {
+            return
+        }
+
+        T instance = queryForResource(params.id)
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        getModelService().undoSoftDeleteModel(instance)
+
+        updateResource instance
+        updateResponse instance
     }
 
     @Transactional
@@ -320,9 +342,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
 
-        instance = modelService.finaliseModel(instance, 
+        instance = modelService.finaliseModel(instance,
                                               currentUser,
-                                              finaliseData.version, 
+                                              finaliseData.version,
                                               finaliseData.versionChangeType,
                                               finaliseData.versionTag,
                                               finaliseData.supersededBy ?: []) as T
@@ -532,7 +554,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         log.debug('No errors in imported model')
 
-      Model savedModel = saveNewModelAndAddSecurity(model)
+        Model savedModel = saveNewModelAndAddSecurity(model)
 
         log.info('Single Model Import complete')
 
@@ -593,12 +615,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
-        result.each { m ->
+        result.each {m ->
             m.folder = folder
             getModelService().validate(m)
         }
 
-        if (result.any { it.hasErrors() }) {
+        if (result.any {it.hasErrors()}) {
             log.debug('Errors found in imported models')
             transactionStatus.setRollbackOnly()
             respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
@@ -710,5 +732,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
         }
         savedModel
+    }
+
+    protected T performAdditionalUpdates(T model) {
+        // default is no-op
+        model
     }
 }

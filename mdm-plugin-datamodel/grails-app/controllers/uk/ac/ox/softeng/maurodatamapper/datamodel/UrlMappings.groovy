@@ -29,6 +29,8 @@ class UrlMappings {
             // Allows us to control posting dataModels into folders
             post "/folders/$folderId/dataModels"(controller: 'dataModel', action: 'save') // new URL
 
+            put "/admin/dataModels/$id/undoSoftDelete"(controller: 'dataModel', action: 'undoSoftDelete')
+
             '/dataModels'(resources: 'dataModel', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
                 put '/finalise'(controller: 'dataModel', action: 'finalise')

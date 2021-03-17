@@ -99,6 +99,7 @@ class TerminologyService extends ModelService<Terminology> {
         terminology.deleted = true
     }
 
+    @Override
     void delete(Terminology terminology, boolean permanent, boolean flush = true) {
         if (!terminology) return
         if (permanent) {
@@ -110,17 +111,6 @@ class TerminologyService extends ModelService<Terminology> {
             deleteModelAndContent(terminology)
             log.debug('Terminology deleted. Took {}', Utils.timeTaken(start))
         } else delete(terminology)
-    }
-
-    @Override
-    Terminology softDeleteModel(Terminology model) {
-        model?.deleted = true
-        model
-    }
-
-    @Override
-    void permanentDeleteModel(Terminology model) {
-        delete(model, true)
     }
 
     List<Terminology> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {

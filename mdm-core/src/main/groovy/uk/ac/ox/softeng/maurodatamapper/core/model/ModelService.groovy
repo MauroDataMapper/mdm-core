@@ -100,9 +100,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract K saveModelNewContentOnly(K model)
 
-    abstract K softDeleteModel(K model)
+    abstract void delete(K model, boolean permanent)
 
-    abstract void permanentDeleteModel(K model)
+    abstract void delete(K model, boolean permanent, boolean flush)
 
     abstract int countByLabel(String label)
 
@@ -134,6 +134,20 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         long st = System.currentTimeMillis()
         model.validate(deepValidate: false)
         log.debug('Validated Model in {}', Utils.timeTaken(st))
+        model
+    }
+
+    K softDeleteModel(K model) {
+        model?.deleted = true
+        model
+    }
+
+    void permanentDeleteModel(K model) {
+        delete(model, true)
+    }
+
+    K undoSoftDeleteModel(K model) {
+        model?.deleted = false
         model
     }
 

@@ -38,6 +38,7 @@ import spock.lang.Shared
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -622,19 +623,55 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when: 'List edits for the DataModel'
         GET("$id/edits", MAP_ARG)
-        
+
         then: 'The response is OK'
         verifyResponse OK, response
 
         and: 'There is a CHANGE NOTICE edit'
         response.body().items.find {
-          it.description == "CHANGE NOTICE: Functional Test Change Notice"
+            it.description == "CHANGE NOTICE: Functional Test Change Notice"
         }
 
 
         cleanup:
         cleanUpData(id)
-    }    
+    }
+
+    void 'Test undoing a soft delete using the admin endpoint'() {
+        given: 'model is deleted'
+        String id = createNewItem(validJson)
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().deleted == null
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'Test undoing a soft delete via update'() {
+        given: 'model is deleted'
+        String id = createNewItem(validJson)
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        PUT(id, [deleted: false])
+
+        then:
+        verifyResponse(FORBIDDEN, response)
+        responseBody().additional == 'Cannot update a deleted Model'
+
+        cleanup:
+        cleanUpData(id)
+    }
 
     void 'VF01 : test creating a new fork model of a DataModel'() {
         given: 'finalised model is created'
