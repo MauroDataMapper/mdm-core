@@ -29,6 +29,8 @@ class UrlMappings {
             // Allows us to control posting referenceDataModels into folders
             post "/folders/$folderId/referenceDataModels"(controller: 'referenceDataModel', action: 'save') // new URL
 
+            put "/admin/referenceDataModels/$id/undoSoftDelete"(controller: 'referenceDataModel', action: 'undoSoftDelete')
+
             '/referenceDataModels'(resources: 'referenceDataModel', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
                 put '/finalise'(controller: 'referenceDataModel', action: 'finalise')

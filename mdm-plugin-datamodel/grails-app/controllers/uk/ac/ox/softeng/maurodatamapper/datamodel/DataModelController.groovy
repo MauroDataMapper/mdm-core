@@ -79,33 +79,6 @@ class DataModelController extends ModelController<DataModel> {
     }
 
     @Transactional
-    @Override
-    def update() {
-        log.trace('Update')
-        if (handleReadOnly()) return
-
-        DataModel instance = queryForResource(params.id)
-
-        if (instance == null) {
-            transactionStatus.setRollbackOnly()
-            notFound(params.id)
-            return
-        }
-
-        if (instance.finalised) return forbidden('Cannot update a finalised DataModel')
-
-        instance.properties = getObjectToBind()
-
-        instance = dataModelService.checkForAndAddDefaultDataTypes instance, params.defaultDataTypeProvider
-
-        if (!validateResource(instance, 'update')) return
-
-        updateResource instance
-
-        updateResponse instance
-    }
-
-    @Transactional
     def deleteAllUnusedDataClasses() {
         if (handleReadOnly()) {
             return
@@ -196,5 +169,10 @@ class DataModelController extends ModelController<DataModel> {
         DataModel model = super.createResource() as DataModel
         dataModelService.checkForAndAddDefaultDataTypes(model, params.defaultDataTypeProvider)
         model
+    }
+
+    @Override
+    protected DataModel performAdditionalUpdates(DataModel model) {
+        dataModelService.checkForAndAddDefaultDataTypes model, params.defaultDataTypeProvider
     }
 }

@@ -54,7 +54,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     @Override
     List<String> getApplicationAdminAccessMethods() {
-        ['deleteAll', 'documentSuperseded', 'modelSuperseded', 'deleted']
+        ['deleteAll', 'documentSuperseded', 'modelSuperseded', 'deleted', 'undoSoftDelete']
     }
 
     boolean checkModelActionsAuthorised() {

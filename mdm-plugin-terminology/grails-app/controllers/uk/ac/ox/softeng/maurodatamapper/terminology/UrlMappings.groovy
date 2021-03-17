@@ -42,6 +42,9 @@ class UrlMappings {
                 post "/codeSets"(controller: 'codeSet', action: 'save') // new URL
             }
 
+            put "/admin/terminologies/$id/undoSoftDelete"(controller: 'terminology', action: 'undoSoftDelete')
+            put "/admin/codeSets/$id/undoSoftDelete"(controller: 'codeSet', action: 'undoSoftDelete')
+
             '/terminologies'(resources: 'terminology', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
                 put '/finalise'(controller: 'terminology', action: 'finalise')

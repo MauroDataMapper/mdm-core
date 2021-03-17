@@ -105,6 +105,7 @@ class CodeSetService extends ModelService<CodeSet> {
         codeSet.deleted = true
     }
 
+    @Override
     void delete(CodeSet codeSet, boolean permanent, boolean flush = true) {
         if (!codeSet) return
         if (permanent) {
@@ -114,17 +115,6 @@ class CodeSetService extends ModelService<CodeSet> {
             }
             codeSet.delete(flush: flush)
         } else delete(codeSet)
-    }
-
-    @Override
-    CodeSet softDeleteModel(CodeSet model) {
-        model?.deleted = true
-        model
-    }
-
-    @Override
-    void permanentDeleteModel(CodeSet model) {
-        delete(model, true)
     }
 
     List<CodeSet> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
