@@ -120,4 +120,8 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
         metadataService.findAllMultiFacetAwareItemsByNamespace(metadataNamespace, domainType)
     }
 
+    UUID getDefiningDataModel() {
+        return null
+    }
+
 }

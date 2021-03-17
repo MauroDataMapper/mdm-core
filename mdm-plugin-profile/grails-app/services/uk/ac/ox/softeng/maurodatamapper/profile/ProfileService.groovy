@@ -153,39 +153,35 @@ class ProfileService {
     }
 
     Set<ProfileProviderService> getStaticAndDynamicProfileServices() {
-        HashSet<ProfileProviderService> services = profileProviderServices
-        services.addAll(getDynamicProfileServices())
-        return services
+        HashSet<ProfileProviderService> staticServices = profileProviderServices
+        HashSet<ProfileProviderService> dynamicServices = getDynamicProfileServices()
+
+        staticServices.addAll(dynamicServices)
+
+        return staticServices
     }
 
     Set<ProfileProviderService> getDynamicProfileServices() {
         List<DataModel> dynamicModels = dataModelService.findAllByMetadataNamespace(
                 profileSpecificationProfileService.metadataNamespace)
 
+        Set<UUID> alreadyKnownServiceDataModels = profileProviderServices.findAll{
+            it.getDefiningDataModel() != null
+        }.collect{
+            it.getDefiningDataModel()
+        }
 
-        dynamicModels.collect { dataModel ->
-            List<ProfileSection> sections = dataModel.dataClasses.sort { it.order }.collect() { dataClass ->
-                new ProfileSection(
-                        sectionName: dataClass.label,
-                        sectionDescription: dataClass.description,
-                        fields: dataClass.dataElements.sort { it.order }.collect { dataElement ->
-                            new ProfileField(
-                                    fieldName: dataElement.label,
-                                    description: dataElement.description,
-                                    metadataPropertyName: dataElement.metadata.find {
-                                        it.namespace == "uk.ac.ox.softeng.profile.field" &&
-                                                it.key == "metadataPropertyName"
-                                    }?.value,
-                                    maxMultiplicity: dataElement.maxMultiplicity,
-                                    minMultiplicity: dataElement.minMultiplicity,
-                                    dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
-                                    allowedValues: (dataElement.dataType instanceof EnumerationType) ?
-                                            ((EnumerationType) dataElement.dataType).enumerationValues.collect { it.key } : [],
-                                    currentValue: ""
-                            )
-                        }
-                )
-            }
+        List<DataModel> newDynamicModels = dynamicModels.findAll{dataModel ->
+            !alreadyKnownServiceDataModels.contains(dataModel.id)
+        }
+
+
+        newDynamicModels.collect { dataModel ->
+
+            UUID dataModelId = dataModel.id
+            String dataModelLabel = dataModel.label
+            String dataModelDescription = dataModel.description
+            String dataModelVersion = dataModel.version
 
             return new ProfileProviderService<JsonProfile, CatalogueItem>() {
 
@@ -194,7 +190,7 @@ class ProfileService {
 
                 @Override
                 void storeProfileInEntity(CatalogueItem entity, JsonProfile profile, String userEmailAddress) {
-                    JsonProfile emptyJsonProfile = new JsonProfile((sections))
+                    JsonProfile emptyJsonProfile = new JsonProfile(getSections())
 
                     emptyJsonProfile.sections.each {section ->
                         ProfileSection submittedSection = profile.sections.find{it.sectionName == section.sectionName }
@@ -218,7 +214,7 @@ class ProfileService {
 
                 @Override
                 JsonProfile createProfileFromEntity(CatalogueItem entity) {
-                    JsonProfile jsonProfile = new JsonProfile(sections)
+                    JsonProfile jsonProfile = new JsonProfile(getSections())
                     jsonProfile.catalogueItemId = entity.id
                     jsonProfile.catalogueItemDomainType = entity.domainType
                     jsonProfile.catalogueItemLabel = entity.label
@@ -240,34 +236,35 @@ class ProfileService {
 
                 @Override
                 String getMetadataNamespace() {
-                    Metadata md = dataModel.metadata.find {md ->
+                    Metadata md = getProfileDataModel().metadata.find {md ->
                         md.namespace == "uk.ac.ox.softeng.profile" &&
                             md.key == "metadataNamespace"}
                     if(md) {
                         return md.value
                     } else {
+                        log.error("Invalid namespace!!")
                         return "invalid.namespace"
                     }
                 }
 
                 @Override
                 String getDisplayName() {
-                    return dataModel.label
+                    return dataModelLabel
                 }
 
                 @Override
                 String getName() {
-                    return URLEncoder.encode(dataModel.label, StandardCharsets.UTF_8);
+                    return URLEncoder.encode(dataModelLabel, StandardCharsets.UTF_8);
                 }
 
                 @Override
                 String getVersion() {
-                    return dataModel.version
+                    return dataModelVersion
                 }
 
                 @Override
                 List<String> profileApplicableForDomains() {
-                    Metadata md = dataModel.metadata.find {md ->
+                    Metadata md = getProfileDataModel().metadata.find {md ->
                         md.namespace == "uk.ac.ox.softeng.profile" &&
                                 md.key == "domainsApplicable"}
                     if(md) {
@@ -277,6 +274,39 @@ class ProfileService {
                     }
                 }
 
+                DataModel getProfileDataModel() {
+                    DataModel.findById(dataModelId)
+                }
+
+                @Override
+                UUID getDefiningDataModel() {
+                    return dataModelId
+                }
+
+                List<ProfileSection> getSections() {
+                    dataModel.dataClasses.sort { it.order }.collect() { dataClass ->
+                        new ProfileSection(
+                                sectionName: dataClass.label,
+                                sectionDescription: dataClass.description,
+                                fields: dataClass.dataElements.sort { it.order }.collect { dataElement ->
+                                    new ProfileField(
+                                            fieldName: dataElement.label,
+                                            description: dataElement.description,
+                                            metadataPropertyName: dataElement.metadata.find {
+                                                it.namespace == "uk.ac.ox.softeng.profile.field" &&
+                                                        it.key == "metadataPropertyName"
+                                            }?.value,
+                                            maxMultiplicity: dataElement.maxMultiplicity,
+                                            minMultiplicity: dataElement.minMultiplicity,
+                                            dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
+                                            allowedValues: (dataElement.dataType instanceof EnumerationType) ?
+                                                    ((EnumerationType) dataElement.dataType).enumerationValues.collect { it.key } : [],
+                                            currentValue: ""
+                                    )
+                                }
+                        )
+                    }
+                }
             }
         }
 
