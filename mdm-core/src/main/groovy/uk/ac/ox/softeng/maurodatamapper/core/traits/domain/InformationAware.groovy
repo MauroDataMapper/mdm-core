@@ -36,14 +36,9 @@ trait InformationAware {
     }
 
     void setLabel(String label) {
-        //Replace any linebreaks with a space (when importing from Json, a literal '\n' is parsed as a line feed)
-        String cleanLabel = label?.replaceAll("\\R", " ")
-
-        //Replace any literal '\\n' with a space (when importing from Xml, a literal '\n' is escaped to '\\n')
-        cleanLabel = cleanLabel?.replace('\\n', " ")
-
-        //Replace any literal '\n' with a space
-        cleanLabel = cleanLabel?.replace('\n', " ")
-        this.label = cleanLabel
+        //When importing from Json, a literal '\n' is parsed as a line feed.
+        //When importing from Xml, a literal '\n' is escaped to '\\n'
+        //So the regex replaces any linefeed characters, \n or \\n with a space.
+        this.label = label?.replaceAll(/\R|\n|\\n/, ' ')
     }
 }
