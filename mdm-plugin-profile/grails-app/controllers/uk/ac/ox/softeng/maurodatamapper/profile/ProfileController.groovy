@@ -55,7 +55,7 @@ class ProfileController implements ResourcelessMdmController {
 
 
     def profileProviders() {
-        respond providers: profileService.getStaticAndDynamicProfileServices()
+        respond providers: profileService.getAllProfileProviderServices()
     }
 
     def profiles() {
@@ -73,7 +73,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(params.catalogueItemClass, params.catalogueItemId)
         }
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
-        Set<ProfileProviderService> allProfiles = profileService.getStaticAndDynamicProfileServices().findAll() {
+        Set<ProfileProviderService> allProfiles = profileService.getAllProfileProviderServices().findAll() {
             it.profileApplicableForDomains().size() == 0 ||
                 it.profileApplicableForDomains().contains(params.catalogueItemDomainType)
         }

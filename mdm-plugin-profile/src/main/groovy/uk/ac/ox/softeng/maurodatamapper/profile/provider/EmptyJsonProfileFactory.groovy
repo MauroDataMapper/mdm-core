@@ -20,35 +20,38 @@ package uk.ac.ox.softeng.maurodatamapper.profile.provider
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
+import grails.io.IOUtils
 import groovy.json.JsonSlurper
+
+import java.nio.charset.StandardCharsets
 
 @Singleton
 class EmptyJsonProfileFactory {
 
 
-    private Map<String, List<ProfileSection>> loadedProfiles = [:]
+    private Map<String, String> loadedProfileJsons = [:]
+
+    private JsonSlurper jsonSlurper = new JsonSlurper()
 
 
     JsonProfile getEmptyProfile(JsonProfileProviderService jsonProfileProviderService) {
-        List<ProfileSection> profileSections = []
-        if(loadedProfiles[jsonProfileProviderService.metadataNamespace]) {
-            profileSections.addAll(loadedProfiles[jsonProfileProviderService.metadataNamespace].collect { it.clone() })
-        } else {
-            List<ProfileSection> emptySections = []
-            String resourceFile = jsonProfileProviderService.getJsonResourceFile()
-            def sectionMap = new JsonSlurper().parse(jsonProfileProviderService.getClass().classLoader.getResource(resourceFile))
-            sectionMap.each { Map it ->
-                ProfileSection profileSection = new ProfileSection(it)
-                emptySections.add(profileSection)
-                profileSections.add(profileSection.clone())
-            }
-            loadedProfiles[jsonProfileProviderService.metadataNamespace] = profileSections
 
+        String jsonStructure
+        if(loadedProfileJsons[jsonProfileProviderService.metadataNamespace]) {
+            jsonStructure = loadedProfileJsons[jsonProfileProviderService.metadataNamespace]
+        } else {
+            String resourceFile = jsonProfileProviderService.getJsonResourceFile()
+            InputStream inputStream = jsonProfileProviderService.class.classLoader.getResourceAsStream(resourceFile)
+            jsonStructure = IOUtils.toString(inputStream, StandardCharsets.UTF_8 as String)
+            loadedProfileJsons[jsonProfileProviderService.metadataNamespace] = jsonStructure
+
+        }
+        def sectionList = jsonSlurper.parseText(jsonStructure)
+        List<ProfileSection> profileSections = []
+        sectionList.each { Map it ->
+            ProfileSection profileSection = new ProfileSection(it)
+            profileSections.add((ProfileSection) profileSection)
         }
         return new JsonProfile(profileSections)
     }
-
-
-
-
 }

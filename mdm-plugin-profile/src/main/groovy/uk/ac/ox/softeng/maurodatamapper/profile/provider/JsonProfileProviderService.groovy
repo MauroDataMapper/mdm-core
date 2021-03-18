@@ -36,7 +36,6 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
 
         List<Metadata> metadataList = metadataService.findAllByCatalogueItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
-        metadataList.each {}
         jsonProfile.sections.each {section ->
             section.fields.each { field ->
                 Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName }

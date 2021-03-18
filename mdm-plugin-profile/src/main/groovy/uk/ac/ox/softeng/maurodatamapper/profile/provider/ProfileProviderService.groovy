@@ -43,6 +43,7 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
     abstract String getMetadataNamespace()
 
     boolean isJsonProfileService() { return true }
+    boolean disabled = false
 
     @Override
     String getProviderType() {
