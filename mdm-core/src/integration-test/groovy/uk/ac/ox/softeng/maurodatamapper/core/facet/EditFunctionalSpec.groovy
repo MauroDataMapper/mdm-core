@@ -79,6 +79,7 @@ class EditFunctionalSpec extends BaseFunctionalSpec {
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "CREATE",
       "description": "[Folder:Functional Test Folder] created"
     }
   ]
@@ -115,6 +116,7 @@ class EditFunctionalSpec extends BaseFunctionalSpec {
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "CREATE",
       "description": "[Folder:Functional Test Folder] created"
     }
   ]
@@ -151,6 +153,7 @@ class EditFunctionalSpec extends BaseFunctionalSpec {
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "CREATE",
       "description":  "[Classifier:Functional Test Classifier] created"
     }
   ]

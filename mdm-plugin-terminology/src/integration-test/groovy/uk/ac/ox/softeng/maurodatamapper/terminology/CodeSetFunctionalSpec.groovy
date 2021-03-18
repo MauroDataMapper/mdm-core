@@ -1855,8 +1855,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       
                 ],
                 "providerType": "CodeSetImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
-                .CodeSetFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             },
             {
@@ -1869,8 +1868,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       
                 ],
                 "providerType": "CodeSetImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
-                .CodeSetFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             }
         ]'''
