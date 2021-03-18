@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFileService
 import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
@@ -261,7 +262,7 @@ class CatalogueUserService implements UserService {
     @Override
     UserImageFile addImageCreatedEditToUser(User creator, UserImageFile domain, UUID userId) {
         CatalogueUser user = get(userId)
-        user.addToEditsTransactionally creator, "[$domain.editLabel] added to component [${user.editLabel}]"
+        user.addToEditsTransactionally EditTitle.CREATE, creator, "[$domain.editLabel] added to component [${user.editLabel}]"
 
 
         domain
@@ -270,14 +271,14 @@ class CatalogueUserService implements UserService {
     @Override
     UserImageFile addImageUpdatedEditToUser(User editor, UserImageFile domain, UUID userId, List<String> dirtyPropertyNames) {
         CatalogueUser user = get(userId)
-        user.addToEditsTransactionally editor, domain.editLabel, dirtyPropertyNames
+        user.addToEditsTransactionally EditTitle.UPDATE, editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
     @Override
     UserImageFile addImageDeletedEditToUser(User deleter, UserImageFile domain, UUID userId) {
         CatalogueUser user = get(userId)
-        user.addToEditsTransactionally deleter, "[$domain.editLabel] removed from component [${user.editLabel}]"
+        user.addToEditsTransactionally EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component [${user.editLabel}]"
         domain
     }
 }

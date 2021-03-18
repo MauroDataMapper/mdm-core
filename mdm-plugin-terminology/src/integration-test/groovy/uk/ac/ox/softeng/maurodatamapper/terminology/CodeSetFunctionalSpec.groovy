@@ -397,14 +397,14 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         when: 'List edits for the CodeSet'
         GET("$id/edits", MAP_ARG)
-        
+
         then: 'The response is OK'
         verifyResponse OK, response
 
-        and: 'There is not a CHANGE NOTICE edit'
+        and: 'There is not a CHANGENOTICE edit'
         !response.body().items.find {
-          it.description == "CHANGE NOTICE: Functional Test Change Notice"
-        }          
+            it.description == "Functional Test Change Notice"
+        }
 
         cleanup:
         cleanUpData(id)
@@ -431,9 +431,9 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         then: 'The response is OK'
         verifyResponse OK, response
 
-        and: 'There is a CHANGE NOTICE edit'
+        and: 'There is a CHANGENOTICE edit'
         response.body().items.find {
-            it.description == "CHANGE NOTICE: Functional Test Change Notice"
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
         }
 
         cleanup:
@@ -1303,7 +1303,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         when:
         def requestBody = [
             changeNotice: 'Functional Test Merge Change Notice',
-            patch: [
+            patch       : [
                 leftId : target,
                 rightId: source,
                 label  : "Functional Test Model",
@@ -1311,24 +1311,24 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 diffs  : [
                     [
                         fieldName: "description",
-                        value: "DescriptionLeft"
+                        value    : "DescriptionLeft"
                     ],
                     [
                         fieldName: "terms",
                         deleted  : [
                             [
-                                id   : deleteAndModify,
+                                id: deleteAndModify,
                             ],
                             [
-                                id   : deleteLeftOnly,
+                                id: deleteLeftOnly,
                             ]
                         ],
                         created  : [
                             [
-                                id   : addLeftOnly,
+                                id: addLeftOnly,
                             ],
                             [
-                                id   : sourceModifyAndDelete,
+                                id: sourceModifyAndDelete,
                             ]
                         ],
                         modified : [
@@ -1372,14 +1372,14 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         when: 'List edits for the Target CodeSet'
         GET("$target/edits", MAP_ARG)
-        
+
         then: 'The response is OK'
         verifyResponse OK, response
 
-        and: 'There is a CHANGE NOTICE edit'
+        and: 'There is a CHANGENOTICE edit'
         response.body().items.find {
-          it.description == "CHANGE NOTICE: Functional Test Merge Change Notice"
-        }          
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
+        }
 
         cleanup:
         cleanUpData(source)
@@ -1855,7 +1855,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       
                 ],
                 "providerType": "CodeSetImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
+                .CodeSetFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             },
             {
@@ -1868,7 +1869,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
       
                 ],
                 "providerType": "CodeSetImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.CodeSetFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
+                .CodeSetFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             }
         ]'''
@@ -1910,7 +1912,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-   void 'IM02: test import single a CodeSet that was just exported'() {
+    void 'IM02: test import single a CodeSet that was just exported'() {
         given:
         String id = createNewItem(validJson)
 
@@ -2000,8 +2002,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     void 'IM03: test import basic CodeSet as new documentation version'() {
         given:
         String id = createNewItem([
-            label    : 'Functional Test Model',
-            finalised: true,
+            label       : 'Functional Test Model',
+            finalised   : true,
             modelVersion: Version.from('1.0.0')
         ])
 
@@ -2065,8 +2067,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyResponse CREATED, response
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('simpleCodeSet')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                     '"exportedBy": "Unlogged User",')
-                                                                       .replace(/Test Authority/, 'Mauro Data Mapper')
+                                                                                 '"exportedBy": "Unlogged User",')
+            .replace(/Test Authority/, 'Mauro Data Mapper')
 
 
         expect:
@@ -2132,8 +2134,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         def id = response.body().items[0].id
 
         String expected = new String(loadTestFile('codeSetFunctionalTest')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                     '"exportedBy": "Unlogged User",')
-                                                                       .replace(/Test Authority/, 'Mauro Data Mapper')
+                                                                                         '"exportedBy": "Unlogged User",')
+            .replace(/Test Authority/, 'Mauro Data Mapper')
 
 
         expect:

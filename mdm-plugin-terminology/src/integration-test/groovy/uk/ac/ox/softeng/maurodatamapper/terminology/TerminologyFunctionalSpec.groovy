@@ -667,14 +667,14 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         when: 'List edits for the Terminology'
         GET("$id/edits", MAP_ARG)
-        
+
         then: 'The response is OK'
         verifyResponse OK, response
 
-        and: 'There is not a CHANGE NOTICE edit'
+        and: 'There is not a CHANGENOTICE edit'
         !response.body().items.find {
-          it.description == "CHANGE NOTICE: Functional Test Change Notice"
-        }           
+            it.description == "Functional Test Change Notice"
+        }
 
         cleanup:
         cleanUpData(id)
@@ -701,9 +701,9 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         then: 'The response is OK'
         verifyResponse OK, response
 
-        and: 'There is a CHANGE NOTICE edit'
+        and: 'There is a CHANGENOTICE edit'
         response.body().items.find {
-            it.description == "CHANGE NOTICE: Functional Test Change Notice"
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
         }
 
         cleanup:
@@ -1674,7 +1674,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         def requestBody = [
             changeNotice: 'Functional Test Merge Change Notice',
-            patch: [
+            patch       : [
                 leftId : target,
                 rightId: source,
                 label  : "Functional Test Model",
@@ -1880,14 +1880,14 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
 
         when: 'List edits for the Target Terminology'
         GET("$target/edits", MAP_ARG)
-        
+
         then: 'The response is OK'
         verifyResponse OK, response
 
-        and: 'There is a CHANGE NOTICE edit'
+        and: 'There is a CHANGENOTICE edit'
         response.body().items.find {
-          it.description == "CHANGE NOTICE: Functional Test Merge Change Notice"
-        }          
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
+        }
 
         cleanup:
         cleanUpData(source)
@@ -2088,7 +2088,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       
                 ],
                 "providerType": "TerminologyImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
+                .TerminologyFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             },
             {
@@ -2101,7 +2102,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       
                 ],
                 "providerType": "TerminologyImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter
+                .TerminologyFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             }
         ]'''
