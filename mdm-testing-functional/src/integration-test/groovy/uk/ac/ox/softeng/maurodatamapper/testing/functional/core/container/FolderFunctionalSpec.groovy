@@ -46,6 +46,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  DELETE  | /api/folders/${id}  | Action: delete
  *  |  PUT     | /api/folders/${id}  | Action: update
  *  |  GET     | /api/folders/${id}  | Action: show
+ *  |  PUT     | /api/folders/${folderId}/folder/${destinationFolderId}      | Action: changeFolder
  *  </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.container.FolderController
  */
@@ -56,6 +57,11 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
     @Transactional
     String getTestFolderId() {
         Folder.findByLabel('Functional Test Folder').id.toString()
+    }
+
+    @Transactional
+    String getTestFolder2Id() {
+        Folder.findByLabel('Functional Test Folder 2').id.toString()
     }
 
     @Override
@@ -86,17 +92,17 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
     @Transactional
     String getEditorGroupRoleId() {
-        GroupRole editorGroupRole = GroupRole.findByName('editor')        
+        GroupRole editorGroupRole = GroupRole.findByName('editor')
         editorGroupRole.id
     }
-   
+
     @Transactional
     Map getValidJsonWithOneGroup() {
         UserGroup editorsUserGroup = UserGroup.findByName('editors')
         [
-            label: 'Functional Test Folder 4',
+            label      : 'Functional Test Folder 4',
             description: 'Description of Functional Test Folder 4',
-            groups: [
+            groups     : [
                 [groupId: editorsUserGroup.id, groupRoleId: getEditorGroupRoleId()]
             ]
         ]
@@ -107,28 +113,33 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         UserGroup editorsUserGroup = UserGroup.findByName('editors')
         UserGroup readersUserGroup = UserGroup.findByName('readers')
         [
-            label: 'Functional Test Folder 5',
+            label      : 'Functional Test Folder 5',
             description: 'Description of Functional Test Folder 5',
-            groups: [
+            groups     : [
                 [groupId: editorsUserGroup.id, groupRoleId: getEditorGroupRoleId()],
                 [groupId: readersUserGroup.id, groupRoleId: getEditorGroupRoleId()]
             ]
         ]
-    }  
+    }
 
     //With an error in the attribute names
     @Transactional
     Map getInvalidJsonWithOneGroup() {
         UserGroup editorsUserGroup = UserGroup.findByName('editors')
         [
-            label: 'Functional Test Folder 6',
+            label      : 'Functional Test Folder 6',
             description: 'Description of Functional Test Folder 6',
-            groups: [
+            groups     : [
                 [groupI: editorsUserGroup.id, groupRoleI: getEditorGroupRoleId()]
             ]
         ]
-    }    
-  
+    }
+
+    @Transactional
+    String getFolderParentFolderId(String id) {
+        Folder.get(id).parentFolder.id.toString()
+    }
+
     @Override
     Pattern getExpectedCreatedEditRegex() {
         ~/\[Folder:Functional Test Folder 3] created/
@@ -617,10 +628,10 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         cleanup:
         //Shouldn't be necessary to cleanup roles but log files indicates that occasionally they are left over
         cleanUpRoles(subFolderId)
-        cleanUpRoles(id)        
+        cleanUpRoles(id)
         cleanupUserGroups()
     }
-    
+
     void 'Test create folder with one user group specified'() {
         when: 'logged in as reader user'
         loginReader()
@@ -757,5 +768,82 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
         cleanup:
         removeValidIdObject(folderId)
+    }
+
+    void 'test changing folder (as not logged in)'() {
+        given:
+        String id = getValidId()
+
+        when: 'not logged in'
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'test changing folder (as authenticated/no access)'() {
+        given:
+        String id = getValidId()
+
+        when:
+        loginAuthenticated()
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'test changing folder (as reader)'() {
+        given:
+        String id = getValidId()
+
+        when: 'logged in as reader'
+        loginReader()
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'test changing folder (as editor)'() {
+        given:
+        String id = getValidId()
+
+        when: 'logged in as editor of the datamodel but not the folder 2'
+        loginEditor()
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
+
+        then:
+        verifyNotFound response, getTestFolder2Id()
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'test changing folder (as admin)'() {
+        given:
+        String id = getValidId()
+
+        when: 'logged in as admin'
+        loginAdmin()
+        PUT("$id/folder/${getTestFolder2Id()}", [:])
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        getFolderParentFolderId(id) == getTestFolder2Id()
+
+        cleanup:
+        removeValidIdObject(id)
     }
 }
