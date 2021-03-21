@@ -292,4 +292,76 @@ class FolderFunctionalSpec extends ResourceFunctionalSpec<Folder> {
         cleanup:
         cleanUpData(id)
     }
+
+    void 'Test saving a folder inside a folder and then moving it to another folder'() {
+        when: 'Create Parent Folder 1'
+        POST('', ["label": "Fuctional Test Parent Folder 1"])
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def parentFolder1Id = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'Create Parent Folder 2'
+        POST('', ["label": "Fuctional Test Parent Folder 2"])
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def parentFolder2Id = response.body().id
+
+        when: 'List folders inside Parent Folder 2'
+        GET("$parentFolder2Id/folders")
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0   
+
+        when: 'A child folder is added to Parent Folder 1'
+        POST("$parentFolder1Id/folders", ["label": "Functional Test Moved Folder"])
+
+        then: 'The response is correct'
+        response.status == HttpStatus.CREATED
+        def movedFolderId = response.body().id
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with one child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 1
+
+        when: 'List folders inside Parent Folder 2'
+        GET("$parentFolder2Id/folders")
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0       
+
+        when: 'The folder is moved from Parent Folder 1 to Parent Folder 2'
+        PUT("$movedFolderId/folder/$parentFolder2Id", [:])
+
+        then:
+        response.status == HttpStatus.OK
+        response.body().id == movedFolderId
+
+        when: 'List folders inside Parent Folder 1'
+        GET("$parentFolder1Id/folders")
+
+        then: 'The response is OK with no child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 0
+
+        when: 'List folders inside Parent Folder 2'
+        GET("$parentFolder2Id/folders")
+
+        then: 'The response is OK with one child folders'
+        response.status == HttpStatus.OK
+        response.body().count == 1
+    }    
 }

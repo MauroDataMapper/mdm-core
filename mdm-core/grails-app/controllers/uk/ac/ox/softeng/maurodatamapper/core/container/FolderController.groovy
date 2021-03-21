@@ -132,6 +132,28 @@ class FolderController extends EditLoggingController<Folder> {
         updateResponse(instance)
     }
 
+    @Transactional
+    def changeFolder() {
+        if (handleReadOnly()) {
+            return
+        }
+
+        def instance = queryForResource(params.folderId)
+
+        if (!instance) return notFound(params.folderId)
+
+        if (instance.deleted) return forbidden('Cannot change the folder of a deleted Folder')
+
+        Folder folder = folderService.get(params.destinationFolderId)
+        if (!folder) return notFound(Folder, params.destinationFolderId)
+
+        instance.parentFolder = folder
+
+        updateResource(instance)
+
+        updateResponse(instance)
+    }
+
     @Override
     protected Folder queryForResource(Serializable id) {
         folderService.get(id)

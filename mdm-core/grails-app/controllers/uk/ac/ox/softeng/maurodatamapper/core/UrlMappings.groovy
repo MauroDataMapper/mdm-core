@@ -83,6 +83,8 @@ class UrlMappings {
 
                 post '/search'(controller: 'folder', action: 'search')
                 get '/search'(controller: 'folder', action: 'search')
+
+                put "/folder/$destinationFolderId"(controller: 'folder', action: 'changeFolder')
             }
 
             '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES) {
@@ -154,7 +156,7 @@ class UrlMappings {
                 /*
                 Model Extends
                  */
-                '/modelExtends'(resources: 'modelExtend', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)                
+                '/modelExtends'(resources: 'modelExtend', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
 
                 /*
                 Reference Files
