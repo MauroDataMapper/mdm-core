@@ -117,10 +117,9 @@ class ProfileService {
         profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
     }
 
-    PaginatedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
+    List<Model> getAllModelsWithProfile(ProfileProviderService profileProviderService,
                                                       UserSecurityPolicyManager userSecurityPolicyManager,
-                                                      String domainType,
-                                                      Map pagination = [:]) {
+                                                      String domainType) {
 
         List<Model> models = []
         ModelService service = modelServices.find { it.handles(domainType) }
@@ -129,8 +128,18 @@ class ProfileService {
         List<Model> validModels = models.findAll {model ->
             userSecurityPolicyManager.userCanReadSecuredResourceId(model.class, model.id) && !model.deleted
         }
+        return validModels
+    }
+
+    PaginatedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
+                                                      UserSecurityPolicyManager userSecurityPolicyManager,
+                                                      String domainType,
+                                                      Map pagination = [:]) {
+
+        List<Model> models = getAllModelsWithProfile(profileProviderService, userSecurityPolicyManager, domainType)
+
         List<Profile> profiles = []
-        profiles.addAll(validModels.collect{ model ->
+        profiles.addAll(models.collect{ model ->
             profileProviderService.createProfileFromEntity(model)
         })
         new PaginatedResultList<>(profiles, pagination)
@@ -142,13 +151,18 @@ class ProfileService {
         service.get(catalogueItemId)
     }
 
-    List<String> getUsedNamespaces(CatalogueItem catalogueItem) {
-        catalogueItem.metadata.collect {it.namespace }
+    Set<String> getUsedNamespaces(CatalogueItem catalogueItem) {
+        MetadataService metadataService = grailsApplication.mainContext.getBean('metadataService')
+        List<Metadata> metadataList = metadataService.findAllByCatalogueItemId(catalogueItem.id)
+        metadataList.collect {it.namespace } as Set
     }
 
     Set<ProfileProviderService> getUsedProfileServices(CatalogueItem catalogueItem) {
-        List<String> usedNamespaces = getUsedNamespaces(catalogueItem)
-        getAllProfileProviderServices().findAll {usedNamespaces.contains(it.getMetadataNamespace())}
+        Set<String> usedNamespaces = getUsedNamespaces(catalogueItem)
+
+        getAllProfileProviderServices().findAll {
+            (usedNamespaces.contains(it.getMetadataNamespace()) &&
+        it.profileApplicableForDomains().contains(catalogueItem.domainType))}
     }
 
     ProfileProviderService createDynamicProfileServiceFromModel(DataModel dataModel) {
