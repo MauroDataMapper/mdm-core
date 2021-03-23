@@ -2248,6 +2248,144 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(id)
     }
 
+    /**
+     * In this test we create a DataModel containing one DataClass. The DataModel is finalised, and a new branch 'source'
+     * created. On the source branch, a DataElement is added to the DataClass. The source branch is then merged 
+     * back into main, and we check that the DataElement which was created on the source branch is correctly added to the
+     * DataClass on the main branch.
+     */
+    void 'VB09e : test merging diff in which a DataElement has been created on a DataClass - failing test for MC-9433'() {
+        given: 'A DataModel is created'
+        String id = createNewItem(validJson)
+
+        when: 'A DataClass is added to the DataModel'
+        POST("$id/dataClasses", ["label": "Functional Test DataClass"])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def dataClassId = response.body().id
+
+        when: 'The DataModel is finalised'
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'A new model version is created'
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def sourceDataModelId = response.body().id
+
+        when: 'Get the DataClasses on the source model'
+        GET("$sourceDataModelId/dataClasses")
+
+        then: 'The result is OK with one DataClass listed'
+        verifyResponse OK, response
+        response.body().count == 1
+        def sourceDataClassId = response.body().items[0].id
+
+        when: 'A new DataType is added to the source DataModel'
+        POST("$sourceDataModelId/dataTypes", ["label": "A", "domainType": "PrimitiveType"])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def dataTypeId = response.body().id
+        
+        when: 'A new DataElement is added to the source DataClass'
+        POST("$sourceDataModelId/dataClasses/$sourceDataClassId/dataElements", ["label": "New Data Element", "dataType": ["id": dataTypeId]])        
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def sourceDataElementId = response.body().id
+
+        when:
+        def requestBody = [
+            patch: [
+                "rightId": sourceDataModelId,
+                "leftId" : id,
+                "diffs"  : [
+                    [
+                        "fieldName": "dataClasses",
+                        "created"  : [],
+                        "deleted"  : [],
+                        "modified" : [
+                            [
+                                "leftId": sourceDataClassId,
+                                "diffs" : [
+                                    [
+                                        "fieldName": "dataClasses",
+                                        "created"  : [],
+                                        "deleted"  : [],
+                                        "modified" : []
+                                    ],
+                                    [
+                                        "fieldName": "dataTypes",
+                                        "created"  : [],
+                                        "deleted"  : [],
+                                        "modified" : []
+                                    ],
+                                    [
+                                        "fieldName": "dataElements",
+                                        "created"  : [
+                                            [
+                                                "id": sourceDataElementId
+                                            ]
+                                        ],
+                                        "deleted"  : [],
+                                        "modified" : []
+                                    ],
+                                    [
+                                        "fieldName": "metadata",
+                                        "created"  : [],
+                                        "deleted"  : [],
+                                        "modified" : []
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        "fieldName": "dataTypes",
+                        "created"  : [],
+                        "deleted"  : [],
+                        "modified" : []
+                    ],
+                    [
+                        "fieldName": "dataElements",
+                        "created"  : [],
+                        "deleted"  : [],
+                        "modified" : []
+                    ],
+                    [
+                        "fieldName": "metadata",
+                        "created"  : [],
+                        "deleted"  : [],
+                        "modified" : []
+                    ]
+                ]
+            ]
+        ]
+
+        PUT("$sourceDataModelId/mergeInto/$id", requestBody)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the DataElements on the main branch model'
+        GET("$id/dataClasses/$dataClassId/dataElements")
+
+        then: 'The response is OK and there is one DataElement'
+        verifyResponse OK, response
+        response.body().count == 1
+        response.body().items[0].label == 'New Data Element'
+
+        cleanup:
+        cleanUpData(sourceDataModelId)
+        cleanUpData(id)
+    }    
+
     void 'test changing folder from DataModel context'() {
         given: 'The save action is executed with valid data'
         String id = createNewItem(validJson)
