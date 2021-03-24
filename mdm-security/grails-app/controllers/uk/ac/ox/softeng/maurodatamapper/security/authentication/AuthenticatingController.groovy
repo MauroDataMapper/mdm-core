@@ -102,6 +102,8 @@ class AuthenticatingController implements ResourcelessMdmController {
 
     private Map<String, Object> extractAuthenticationInformation() {
         DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, Map, request)
-        dataBindingSource.propertyNames.collectEntries {key -> [key, dataBindingSource.getPropertyValue(key)]}
+        Map information = dataBindingSource.propertyNames.collectEntries {key -> [key, dataBindingSource.getPropertyValue(key)]}
+        information.session = session
+        information
     }
 }
