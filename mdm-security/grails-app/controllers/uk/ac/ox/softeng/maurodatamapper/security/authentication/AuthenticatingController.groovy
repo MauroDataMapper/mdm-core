@@ -17,11 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.UserCredentials
+
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 
+import grails.databinding.DataBindingSource
+import grails.web.databinding.DataBindingUtils
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -41,8 +43,9 @@ class AuthenticatingController implements ResourcelessMdmController {
     @Autowired
     SessionController sessionController
 
-    def login(UserCredentials credentials) {
-        def loginResponse = loginProcess(credentials)
+    def login() {
+        Map authenticationInformation = extractAuthenticationInformation()
+        def loginResponse = loginProcess(authenticationInformation)
 
         // Any errors will be commited into the response so dont continue any further
         if (!loginResponse) return
@@ -55,9 +58,9 @@ class AuthenticatingController implements ResourcelessMdmController {
         render status: NO_CONTENT
     }
 
-    def activeSessionsWithCredentials(UserCredentials credentials) {
+    def activeSessionsWithCredentials() {
         // Any errors will be commited into the response so dont continue any further
-        if (!loginProcess(credentials)) return
+        if (!loginProcess(extractAuthenticationInformation())) return
 
         if (currentUserSecurityPolicyManager.isApplicationAdministrator()) {
             // Once logged in call to the normal active sessions call
@@ -66,31 +69,28 @@ class AuthenticatingController implements ResourcelessMdmController {
         forbiddenDueToNotApplicationAdministrator()
     }
 
-    private def loginProcess(UserCredentials credentials) {
-        if (!credentials || !credentials.username) {
-            log.warn("Login attempt with no username or password")
-            errorResponse(BAD_REQUEST, "Username and/or password not provided")
+    private def loginProcess(Map<String, Object> authenticationInformation) {
+        if (!authenticationInformation) {
+            log.warn("Login attempt with authentication information")
+            errorResponse(BAD_REQUEST, "Authentication Information not provided")
             return false
         }
 
-        String username = credentials.getUsername()?.trim()
-        String password = credentials.getPassword()?.trim()
-
         if (authenticatingService.isAuthenticatedSession(session)) {
-            log.warn("Login attempt for '${username}' while a user currently logged in")
+            log.warn("Login attempt while a user currently logged in")
             errorResponse(CONFLICT, 'A user is already logged in, logout first')
             return false
         }
 
-        CatalogueUser user = authenticatingService.authenticateAndObtainUser(username, password, params.scheme)
+        CatalogueUser user = authenticatingService.authenticateAndObtainUser(authenticationInformation, params.scheme)
 
         if (!user) {
-            log.warn("Authentication attempt with username '${username}' with invalid username or password",)
+            log.warn("Authentication attempt with invalid authentication information",)
             return unauthorised('Invalid credentials')
         }
 
         if (!user) {
-            log.warn("Authentication attempt with username '${username}' with invalid username or password",)
+            log.warn("Authentication attempt with invalid authentication information",)
             return unauthorised('Invalid credentials')
         }
 
@@ -98,5 +98,10 @@ class AuthenticatingController implements ResourcelessMdmController {
 
         authenticatingService.registerUserAsLoggedIn(user, session)
         user
+    }
+
+    private Map<String, Object> extractAuthenticationInformation() {
+        DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, Map, request)
+        dataBindingSource.propertyNames.collectEntries {key -> [key, dataBindingSource.getPropertyValue(key)]}
     }
 }

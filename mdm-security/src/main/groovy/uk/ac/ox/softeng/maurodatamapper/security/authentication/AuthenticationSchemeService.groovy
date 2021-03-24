@@ -27,5 +27,5 @@ interface AuthenticationSchemeService extends Ordered {
 
     String getDisplayName()
 
-    CatalogueUser authenticateAndObtainUser(String user, String password)
+    CatalogueUser authenticateAndObtainUser(Map<String, Object> authenticationInformation)
 }

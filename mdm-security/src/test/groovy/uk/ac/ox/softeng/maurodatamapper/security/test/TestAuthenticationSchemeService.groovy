@@ -39,15 +39,15 @@ class TestAuthenticationSchemeService implements AuthenticationSchemeService {
     }
 
     @Override
-    CatalogueUser authenticateAndObtainUser(String emailAddress, String password) {
+    CatalogueUser authenticateAndObtainUser(Map<String, Object> authenticationInformation) {
 
-        log.debug("Authenticating user ${emailAddress} using basic database authentication")
-        if (!emailAddress) return null
-        CatalogueUser user = catalogueUserService.findByEmailAddress(emailAddress)
+        log.debug("Authenticating user ${authenticationInformation.emailAddress} using basic database authentication")
+        if (!authenticationInformation.emailAddress) return null
+        CatalogueUser user = catalogueUserService.findByEmailAddress(authenticationInformation.emailAddress)
         if (!user || user.isDisabled()) return null
 
-        if (catalogueUserService.validateTempPassword(user, password?.trim())) return user
-        if (catalogueUserService.validateUserPassword(user, password?.trim())) return user
+        if (catalogueUserService.validateTempPassword(user, authenticationInformation.password?.trim())) return user
+        if (catalogueUserService.validateUserPassword(user, authenticationInformation.password?.trim())) return user
         null
     }
 

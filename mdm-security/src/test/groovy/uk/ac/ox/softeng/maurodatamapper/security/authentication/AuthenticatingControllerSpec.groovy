@@ -17,9 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.UserCredentials
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
@@ -85,7 +83,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         when:
         request.method = 'POST'
-        controller.login(new UserCredentials(username: 'test@test.com', password: 'blah'))
+        controller.login(username: 'test@test.com', password: 'blah')
 
         then:
         response.status == UNAUTHORIZED.value()
@@ -105,7 +103,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         when:
         request.method = 'POST'
-        controller.login(new UserCredentials(username: admin.emailAddress, password: 'blah'))
+        controller.login(username: admin.emailAddress, password: 'blah')
 
         then:
         response.status == UNAUTHORIZED.value()
@@ -127,7 +125,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         when:
         request.method = 'POST'
-        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+        controller.login(username: admin.emailAddress, password: 'password')
         OffsetDateTime end = OffsetDateTime.now()
 
         then:
@@ -162,7 +160,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         when:
         request.method = 'POST'
-        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+        controller.login(username: admin.emailAddress, password: 'password')
 
         then:
         response.status == CONFLICT.value()
@@ -172,7 +170,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         when:
         request.method = 'PUT'
-        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+        controller.login(username: admin.emailAddress, password: 'password')
 
         then:
         response.status == METHOD_NOT_ALLOWED.value()

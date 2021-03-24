@@ -43,7 +43,7 @@ class AuthenticatingService {
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
 
     @Transactional
-    CatalogueUser authenticateAndObtainUser(String user, String password, String scheme = null) {
+    CatalogueUser authenticateAndObtainUser(Map<String, Object> authenticationInformation, String scheme = null) {
 
         if (scheme) {
             log.debug('Attempting to authenticate user via schema {}', scheme)
@@ -51,7 +51,7 @@ class AuthenticatingService {
             if (!service) {
                 throw new ApiBadRequestException('AS01', "No authentication scheme found for ${scheme}")
             }
-            return service.authenticateAndObtainUser(user, password)
+            return service.authenticateAndObtainUser(authenticationInformation)
         }
 
         if (!authenticationSchemeServices) {
@@ -60,7 +60,7 @@ class AuthenticatingService {
 
         log.debug('Trying {} authentication schemes to authenticate user', authenticationSchemeServices.size())
         for (AuthenticationSchemeService service : authenticationSchemeServices.sort {it.order}) {
-            CatalogueUser catalogueUser = service.authenticateAndObtainUser(user, password)
+            CatalogueUser catalogueUser = service.authenticateAndObtainUser(authenticationInformation)
             if (catalogueUser) return catalogueUser
         }
         null
