@@ -386,8 +386,15 @@ class DataElementService extends ModelItemService<DataElement> {
         dataElement
     }
 
+    //Put the dataClass lookup in this method for use when merging
     DataElement copy(Model copiedDataModel, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+        DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+        DataClass dataClass = copiedDataModel.getDataClasses()?.find { it.label == original.dataClass.label }
+        if (dataClass) {
+            dataClass.addToDataElements(copy)
+        }
+
+        copy
     }
 
     DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
