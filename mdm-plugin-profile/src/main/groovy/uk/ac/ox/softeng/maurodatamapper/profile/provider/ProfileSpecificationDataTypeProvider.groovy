@@ -41,6 +41,7 @@ class ProfileSpecificationDataTypeProvider extends DataTypeService {
          [label: 'time', description: 'time of day [no time zone)'],
          [label: 'folder', description: 'pointer to a folder in this Mauro instance'],
          [label: 'model', description: 'pointer to a model in this Mauro instance'],
+         [label: 'json', description: 'a text field containing valid json syntax'],
         ].collect {Map<String, String> properties -> new DefaultDataType(new PrimitiveType(properties))}
     }
 }

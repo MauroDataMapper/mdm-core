@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
+import groovy.json.JsonSlurper
 import org.apache.commons.collections.functors.ExceptionPredicate
 import org.apache.commons.lang3.time.DateUtils
 
@@ -32,6 +33,7 @@ enum ProfileFieldDataType {
     FOLDER('folder'),
     MODEL('model'),
     ENUMERATION('enumeration')
+    JSON('json')
 
     String label
 
@@ -112,6 +114,14 @@ enum ProfileFieldDataType {
                 UUID.fromString(input)
             } catch(Exception ignored) {
                 return "Field is not of type 'folder'"
+            }
+        }
+        if (this.label == "json") {
+            try {
+                JsonSlurper jsonSlurper = new JsonSlurper()
+                jsonSlurper.parseText(input)
+            } catch(Exception ignored) {
+                return "Field is not valid JSON for type 'json'"
             }
         }
 

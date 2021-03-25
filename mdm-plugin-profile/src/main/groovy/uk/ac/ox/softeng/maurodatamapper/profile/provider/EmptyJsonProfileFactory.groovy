@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
+import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
@@ -48,8 +49,14 @@ class EmptyJsonProfileFactory {
         }
         def sectionList = jsonSlurper.parseText(jsonStructure)
         List<ProfileSection> profileSections = []
-        sectionList.each { Map it ->
-            ProfileSection profileSection = new ProfileSection(it)
+        sectionList.each { Map sectionMap ->
+            List<Map> fields = (List<Map>) sectionMap.fields
+            sectionMap.fields = []
+            ProfileSection profileSection = new ProfileSection(sectionMap)
+            fields.each { Map field ->
+                ProfileField profileField = new ProfileField(field)
+                profileSection.fields.add(profileField)
+            }
             profileSections.add((ProfileSection) profileSection)
         }
         return new JsonProfile(profileSections)
