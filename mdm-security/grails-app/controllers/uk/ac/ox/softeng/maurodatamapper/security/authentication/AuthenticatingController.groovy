@@ -82,6 +82,7 @@ class AuthenticatingController implements ResourcelessMdmController {
             return false
         }
 
+        authenticationInformation.session = session
         CatalogueUser user = authenticatingService.authenticateAndObtainUser(authenticationInformation, params.scheme)
 
         if (!user) {
@@ -102,8 +103,6 @@ class AuthenticatingController implements ResourcelessMdmController {
 
     private Map<String, Object> extractAuthenticationInformation() {
         DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, Map, request)
-        Map information = dataBindingSource.propertyNames.collectEntries {key -> [key, dataBindingSource.getPropertyValue(key)]}
-        information.session = session
-        information
+        dataBindingSource.propertyNames.collectEntries {key -> [key, dataBindingSource.getPropertyValue(key)]}
     }
 }
