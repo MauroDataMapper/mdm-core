@@ -9,4 +9,13 @@ model {
 json {
     metadataNamespace profileProviderService.metadataNamespace
     domains profileProviderService.profileApplicableForDomains()
+
+
+    if(profileProviderService.definingDataModel) {
+        dataModel {
+            id profileProviderService.definingDataModel
+            label profileProviderService.definingDataModelLabel
+            description profileProviderService.definingDataModelDescription
+        }
+    }
 }

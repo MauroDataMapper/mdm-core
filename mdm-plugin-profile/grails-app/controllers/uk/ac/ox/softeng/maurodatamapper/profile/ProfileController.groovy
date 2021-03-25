@@ -58,6 +58,10 @@ class ProfileController implements ResourcelessMdmController {
         respond providers: profileService.getAllProfileProviderServices()
     }
 
+    def dynamicProfileProviders() {
+        respond providers: profileService.getAllDynamicProfileProviderServices()
+    }
+
     def profiles() {
         CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
         if (!catalogueItem) {
@@ -106,9 +110,13 @@ class ProfileController implements ResourcelessMdmController {
         if (!profileProviderService) {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
+
+        Set<Metadata> mds =
         catalogueItem.metadata
             .findAll{ it.namespace == profileProviderService.metadataNamespace }
-            .each {md ->
+
+        mds.each {md ->
+                catalogueItem.metadata.remove(md)
                 metadataService.delete(md, true)
                 metadataService.addDeletedEditToCatalogueItem(currentUser, md, params.catalogueItemDomainType, params.catalogueItemId)}
     }
@@ -153,6 +161,25 @@ class ProfileController implements ResourcelessMdmController {
         // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
         respond profileService.createProfile(profileProviderService, catalogueItem)
     }
+
+    def validate() {
+        System.err.println("validating...")
+
+        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+
+        if (!catalogueItem) {
+            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        }
+
+        ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
+                params.profileVersion)
+        if (!profileProviderService) {
+            return notFound(ProfileProviderService, getProfileProviderServiceId(params))
+        }
+
+        respond profileService.validateProfile(profileProviderService, catalogueItem, request, currentUser)
+    }
+
 
     def listModelsInProfile() {
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,

@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.EmptyJsonProfileFactory
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.JsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -63,6 +64,8 @@ class ProfileService {
     Set<ProfileProviderService> profileProviderServices
     @Autowired
     DataModelService dataModelService
+    @Autowired
+    MetadataService metadataService
     @Autowired
     ProfileSpecificationProfileService profileSpecificationProfileService
 
@@ -116,6 +119,32 @@ class ProfileService {
 
         profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
     }
+
+    def validateProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem, HttpServletRequest request, User user) {
+        Profile profile = profileProviderService.getNewProfile()
+        List<ProfileSection> profileSections = []
+        request.getJSON().sections.each { it ->
+            ProfileSection profileSection = new ProfileSection(it)
+            profileSection.fields = []
+            it['fields'].each { field ->
+                profileSection.fields.add(new ProfileField(field))
+            }
+            if (profileProviderService.isJsonProfileService()) {
+                ((JsonProfile) profile).sections.add(profileSection)
+
+            } else {
+                profileSections.add(profileSection)
+            }
+        }
+        profile.sections.each {section ->
+            section.fields.each { field ->
+                field.validate()
+            }
+        }
+        profile
+
+    }
+
 
     List<Model> getAllModelsWithProfile(ProfileProviderService profileProviderService,
                                                       UserSecurityPolicyManager userSecurityPolicyManager,
@@ -174,7 +203,7 @@ class ProfileService {
         return new ProfileProviderService<JsonProfile, CatalogueItem>() {
 
             //@Autowired(required = true)
-            MetadataService metadataService = grailsApplication.mainContext.getBean('metadataService')
+            MetadataService localMetadataService = grailsApplication.mainContext.getBean('metadataService')
 
             @Override
             void storeProfileInEntity(CatalogueItem entity, JsonProfile profile, String userEmailAddress) {
@@ -186,11 +215,19 @@ class ProfileService {
                         section.fields.each {field ->
                             ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName }
                             if(submittedField) {
-                                if(submittedField.currentValue && submittedField.metadataPropertyName) {
+                                if(submittedField.currentValue  && submittedField.metadataPropertyName) {
                                     entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue,
                                             userEmailAddress)
                                 } else if(!field.metadataPropertyName) {
                                     log.error("No metadataPropertyName set for field: " + field.fieldName)
+                                } else if(!submittedField.currentValue) {
+                                    Metadata md = entity.metadata.find{
+                                        it.namespace == metadataNamespace && it.key == field.metadataPropertyName
+                                    }
+                                    if(md) {
+                                        entity.metadata.remove(md)
+                                        localMetadataService.delete(md)
+                                    }
                                 }
                             }
                         }
@@ -206,7 +243,7 @@ class ProfileService {
                 jsonProfile.catalogueItemId = entity.id
                 jsonProfile.catalogueItemDomainType = entity.domainType
                 jsonProfile.catalogueItemLabel = entity.label
-                List<Metadata> metadataList = metadataService.findAllByCatalogueItemIdAndNamespace(entity.id, this.getMetadataNamespace())
+                List<Metadata> metadataList = localMetadataService.findAllByCatalogueItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
                 metadataList.each {}
                 jsonProfile.sections.each {section ->
@@ -217,6 +254,7 @@ class ProfileService {
                         } else {
                             field.currentValue = ""
                         }
+                        field.validate()
                     }
                 }
                 jsonProfile
@@ -274,6 +312,17 @@ class ProfileService {
                 return dataModelId
             }
 
+            @Override
+            String getDefiningDataModelLabel() {
+                return dataModelLabel
+            }
+
+            @Override
+            String getDefiningDataModelDescription() {
+                return dataModelDescription
+            }
+
+
             List<ProfileSection> getSections() {
                 DataModel dm = getProfileDataModel()
                 dm.dataClasses.sort { it.order }.collect() { dataClass ->
@@ -291,6 +340,10 @@ class ProfileService {
                                         maxMultiplicity: dataElement.maxMultiplicity,
                                         minMultiplicity: dataElement.minMultiplicity,
                                         dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
+                                        regularExpression: dataElement.metadata.find {
+                                            it.namespace == "uk.ac.ox.softeng.profile.field" &&
+                                                    it.key == "regularExpression"
+                                        }?.value,
                                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?
                                                 ((EnumerationType) dataElement.dataType).enumerationValues.collect { it.key } : [],
                                         currentValue: ""
@@ -345,5 +398,10 @@ class ProfileService {
 
     }
 
+    Set<ProfileProviderService> getAllDynamicProfileProviderServices() {
+        getAllProfileProviderServices().findAll{
+            it.definingDataModel != null
+        }
+    }
 
 }

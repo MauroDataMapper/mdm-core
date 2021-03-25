@@ -44,6 +44,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
                 } else {
                     field.currentValue = ""
                 }
+                field.validate()
             }
         }
         jsonProfile
@@ -59,10 +60,19 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
                 section.fields.each {field ->
                     ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName }
                     if(submittedField) {
+                        System.err.println(field.fieldName + " : " + submittedField.currentValue)
                         if(submittedField.currentValue && submittedField.metadataPropertyName) {
                             catalogueItem.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
                         } else if(!field.metadataPropertyName) {
                             log.error("No metadataPropertyName set for field: " + field.fieldName)
+                        } else if(!submittedField.currentValue) {
+                            Metadata md = catalogueItem.metadata.find{
+                                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
+                            }
+                            if(md) {
+                                catalogueItem.metadata.remove(md)
+                                metadataService.delete(md)
+                            }
                         }
                     }
                 }

@@ -125,4 +125,12 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
         return null
     }
 
+    String getDefiningDataModelLabel() {
+        return null
+    }
+
+    String getDefiningDataModelDescription() {
+        return null
+    }
+
 }

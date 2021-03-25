@@ -28,6 +28,9 @@ class ProfileField {
     Integer maxMultiplicity
     Integer minMultiplicity
     List<String> allowedValues
+    String regularExpression
+
+    List<String> validationErrors = []
 
     ProfileFieldDataType dataType
 
@@ -39,6 +42,29 @@ class ProfileField {
 
     void setDataType(String type) {
         dataType = ProfileFieldDataType.findForLabel(type)
+    }
+
+    void validate() {
+        List<String> errors = []
+        if(minMultiplicity > 0 && (!currentValue || currentValue == "")) {
+            errors.add("This field is mandatory")
+        }
+        if(currentValue && currentValue == "") {
+            if(allowedValues && !allowedValues.contains(currentValue)) {
+                errors.add("This field does not take of the pre-specified values")
+            }
+            if(regularExpression && regularExpression != "") {
+                if(!currentValue.matches(regularExpression)) {
+                    errors.add("This field does not match the specified regular expression")
+                }
+            }
+            String typeError = dataType.validateString(currentValue)
+            if(typeError && typeError != "") {
+                errors.add(typeError)
+            }
+        }
+
+        validationErrors = errors
     }
 
 }
