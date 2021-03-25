@@ -136,6 +136,11 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
         1 // code
     }
 
+    @Override
+    String getExpectedNewlineLabel() {
+        'TT01: A part of TT'
+    }    
+
     void 'test unique label naming with validation done at terminology level'() {
         given:
         setValidDomainValues()

@@ -112,4 +112,9 @@ class EnumerationValueSpec extends ModelItemSpec<EnumerationValue> implements Do
     int getExpectedConstrainedBlankErrors() {
         6
     }
+
+    @Override
+    String getExpectedNewlineLabel() {
+        'ev_key'
+    }
 }

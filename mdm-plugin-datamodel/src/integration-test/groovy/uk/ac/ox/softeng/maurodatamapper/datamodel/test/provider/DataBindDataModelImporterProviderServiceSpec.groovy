@@ -239,6 +239,36 @@ abstract class DataBindDataModelImporterProviderServiceSpec<K extends DataBindDa
 
     }
 
+    void 'I07a : test inc single primitive type with newline data import'() {
+        given:
+        setupData()
+
+        expect:
+        DataModel.count() == 2
+
+        when:
+        DataModel dm = importAndConfirm(loadTestFile('incSinglePrimitiveTypeWithNewline'))
+
+        then:
+        !dm.annotations
+        !dm.classifiers
+        !dm.dataClasses
+
+        and:
+        dm.dataTypes.size() == 1
+
+        when:
+        DataType dataType = dm.dataTypes[0]
+
+        then: 'the \n is replaced with a space'
+        dataType.instanceOf(PrimitiveType)
+        dataType.label == 'openworld tick'
+        (dataType as PrimitiveType).units == 'mg'
+        !dataType.annotations
+        !dataType.metadata
+
+    }    
+
     void 'I08 : test inc single primitive type with metadata data import'() {
         given:
         setupData()
