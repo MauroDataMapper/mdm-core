@@ -120,4 +120,62 @@ class FolderInterceptorSpec extends ResourceInterceptorUnitSpec implements Inter
                resourceId == readAccessId ? 'read access' :
                resourceId == writeAccessId ? 'write access' : 'broken'
     }
+    
+    @Unroll
+    void 'test access to changeFolder using destination folder: #destinationFolderIdStr folder: #folderIdStr is #allowedStr'() {
+
+        given:
+        params.destinationFolderId = destinationFolderId
+        params.folderId = folderId
+        String action = 'changeFolder'
+
+        when:
+        params.currentUserSecurityPolicyManager = publicAccessUserSecurityPolicyManager
+        withRequest(controller: controllerName)
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+
+        then:
+        interceptor.before()
+        response.status == HttpStatus.OK.code
+
+        when:
+        response.reset()
+        params.currentUserSecurityPolicyManager = noAccessUserSecurityPolicyManager
+        withRequest(controller: controllerName)
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+
+        then:
+        !interceptor.before()
+        response.status == HttpStatus.NOT_FOUND.code
+
+        when:
+        response.reset()
+        params.currentUserSecurityPolicyManager = idSecuredUserSecurityPolicyManager
+        withRequest(controller: controllerName)
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
+
+        then:
+        interceptor.before() == accepted
+        response.status == expectedStatus.code
+
+        where:
+        [destinationFolderId, folderId] << [[
+                                        unknownId, readAccessId, noAccessId, writeAccessId
+                                    ], [
+                                        unknownId, readAccessId, noAccessId, writeAccessId
+                                    ]].combinations()
+        destinationFolderIdStr = destinationFolderId == unknownId ? 'unknownId' :
+                      destinationFolderId == readAccessId ? 'readAccessId' :
+                      destinationFolderId == noAccessId ? 'noAccessId' :
+                      'writeAccessId'
+        folderIdStr = folderId == unknownId ? 'unknownId' :
+                         folderId == readAccessId ? 'readAccessId' :
+                         folderId == noAccessId ? 'noAccessId' :
+                         'writeAccessId'
+        accepted = destinationFolderId == writeAccessId && folderId == writeAccessId
+        allowedStr = accepted ? 'allowed' : 'not allowed'
+        expectedStatus = folderId == writeAccessId ?
+                         destinationFolderId == writeAccessId ? HttpStatus.OK : destinationFolderId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
+                                                      : folderId == readAccessId ? HttpStatus.FORBIDDEN : HttpStatus.NOT_FOUND
+    }  
 }

@@ -34,6 +34,7 @@ class FolderInterceptor extends SecurableResourceInterceptor {
         Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'folderId')
         Utils.toUuid(params, 'versionedFolderId')
+        Utils.toUuid(params, 'destinationFolderId')
         params.folderId = params.folderId ?: params.versionedFolderId
     }
 
@@ -48,6 +49,20 @@ class FolderInterceptor extends SecurableResourceInterceptor {
         if (actionName == 'search') {
             return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, getId()) ?:
                    notFound(Folder, getId())
+        }
+
+        if (actionName == 'changeFolder') {
+            boolean canReadDestinationFolder = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, params.destinationFolderId)
+            boolean canReadFolderBeingMoved = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Folder, getId())
+
+            if (!currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(Folder, getId(), actionName)) {
+                return forbiddenOrNotFound(canReadFolderBeingMoved, Folder, getId())
+            }
+
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(Folder, params.destinationFolderId)) {
+                return forbiddenOrNotFound(canReadDestinationFolder, Folder, params.destinationFolderId)
+            }
+            return true
         }
 
         checkActionAuthorisationOnSecuredResource(Folder, getId(), true)
