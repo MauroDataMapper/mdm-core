@@ -32,7 +32,7 @@ enum ProfileFieldDataType {
     TIME('time'),
     FOLDER('folder'),
     MODEL('model'),
-    ENUMERATION('enumeration')
+    ENUMERATION('enumeration'),
     JSON('json')
 
     String label
