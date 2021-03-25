@@ -182,6 +182,12 @@ class UrlMappings {
             get "/$resourceDomainType/$resourceId/edits"(controller: 'edit', action: 'index')
 
             /*
+            Changelogs
+             */
+            get "/$resourceDomainType/$resourceId/changelogs"(controller: 'changelog', action: 'index')
+            post "/$resourceDomainType/$resourceId/changelogs"(controller: 'changelog', action: 'save')
+
+            /*
             Get Catalogue Item by path where is ID of top Catalogue Item is not provided
             */
             get "/$catalogueItemDomainType/path/$path"(controller: 'path', action: 'show')

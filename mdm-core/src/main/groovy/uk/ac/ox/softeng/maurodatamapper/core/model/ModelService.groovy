@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -201,7 +202,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         modelVersionLinks.findAll {
             K sourceModel = get(it.catalogueItemId)
             sourceModel.finalised
-        }.collect {it.targetModelId}
+        }.collect { it.targetModelId }
     }
 
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
@@ -227,7 +228,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                     String versionTag, List<Serializable> supersedeModelIds = []) {
         log.debug('Finalising model')
         long start = System.currentTimeMillis()
-                    
+
         model.finalised = true
         model.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         // No requirement to have a breadcrumbtree
@@ -240,7 +241,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                description: "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                             "${OffsetDateTimeConverter.toString(model.dateFinalised)}")
-        editService.createAndSaveEdit(model.id, model.domainType,
+        editService.createAndSaveEdit(EditTitle.FINALISE, model.id, model.domainType,
                                       "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(model.dateFinalised)}",
                                       user)
@@ -432,7 +433,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                                             metadataService)
                                 }
                             } else {
-                                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
                                 if (modelItemService) {
                                     // apply deletions of children to target object
                                     mergeFieldDiff.deleted.each {
@@ -643,12 +644,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
             if (countByLabel(model.label)) {
                 List<K> existingModels = findAllByLabel(model.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 model.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)

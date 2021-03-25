@@ -278,11 +278,13 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "CREATE",
       "description": "[UserGroup:testers] created"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     }
   ]
@@ -298,6 +300,7 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     }
   ]
@@ -354,16 +357,19 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "CREATE",
       "description": "[UserGroup:testers] created"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     }
   ]
@@ -379,16 +385,19 @@ class UserGroupFunctionalSpec extends ResourceFunctionalSpec<UserGroup> implemen
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "unlogged_user@mdm-core.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     }
   ]

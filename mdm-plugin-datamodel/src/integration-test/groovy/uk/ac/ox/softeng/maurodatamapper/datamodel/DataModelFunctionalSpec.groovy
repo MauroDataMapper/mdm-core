@@ -593,14 +593,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when: 'List edits for the DataModel'
         GET("$id/edits", MAP_ARG)
-        
+
         then: 'The response is OK'
         verifyResponse OK, response
 
         and: 'There is not a CHANGE NOTICE edit'
         !response.body().items.find {
-          it.description == "CHANGE NOTICE: Functional Test Change Notice"
-        }      
+            it.description == "Functional Test Change Notice"
+        }
 
         cleanup:
         cleanUpData(id)
@@ -629,7 +629,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         and: 'There is a CHANGE NOTICE edit'
         response.body().items.find {
-            it.description == "CHANGE NOTICE: Functional Test Change Notice"
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
         }
 
 
@@ -1809,7 +1809,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         def requestBody = [
             changeNotice: 'Functional Test Merge Change Notice',
-            patch: [                
+            patch       : [
                 leftId : target,
                 rightId: source,
                 label  : "Functional Test Model",
@@ -1928,14 +1928,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         when: 'List edits for the Target DataModel'
         GET("$target/edits", MAP_ARG)
-        
+
         then: 'The response is OK'
         verifyResponse OK, response
 
         and: 'There is a CHANGE NOTICE edit'
         response.body().items.find {
-          it.description == "CHANGE NOTICE: Functional Test Merge Change Notice"
-        }           
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
+        }
 
         cleanup:
         cleanUpData(source)
@@ -3036,14 +3036,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'I08 : test importing 2 DataModel'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/3.0', [
-                finalised                      : true,
-                folderId                       : folderId.toString(),
-                importAsNewDocumentationVersion: false,
-                importFile                     : [
-                        fileName    : 'FT Import',
-                        fileType    : MimeType.XML.name,
-                        fileContents: loadTestFile('multiModels', 'xml').toList()
-                ]
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('multiModels', 'xml').toList()
+            ]
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
@@ -3061,12 +3061,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'E03 : test export simple DataModel'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
-                finalised                      : false,
-                folderId                       : folderId.toString(),
-                importAsNewDocumentationVersion: false,
-                importFile                     : [
-                        fileName: 'FT Import',
-                        fileType: MimeType.JSON_API.name,
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
                 fileContents: loadTestFile('simpleDataModel').toList()
             ]
         ])

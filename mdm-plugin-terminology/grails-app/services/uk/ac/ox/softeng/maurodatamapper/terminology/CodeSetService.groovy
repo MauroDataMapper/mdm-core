@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -277,7 +278,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
         if (copy.validate()) {
             save(copy, validate: false)
-            editService.createAndSaveEdit(copy.id, copy.domainType,
+            editService.createAndSaveEdit(EditTitle.COPY, copy.id, copy.domainType,
                                           "CodeSet ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
             )

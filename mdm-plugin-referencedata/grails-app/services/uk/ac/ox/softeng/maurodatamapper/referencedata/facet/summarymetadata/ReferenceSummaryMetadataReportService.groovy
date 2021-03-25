@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -62,21 +63,21 @@ class ReferenceSummaryMetadataReportService {
     ReferenceSummaryMetadataReport addCreatedEditToCatalogueItem(User creator, ReferenceSummaryMetadataReport domain, String catalogueItemDomainType,
                                                                  UUID catalogueItemId) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
+        catalogueItem.addToEditsTransactionally EditTitle.CREATE, creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
         domain
     }
 
     ReferenceSummaryMetadataReport addUpdatedEditToCatalogueItem(User editor, ReferenceSummaryMetadataReport domain, String catalogueItemDomainType,
                                                                  UUID catalogueItemId, List<String> dirtyPropertyNames) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally editor, domain.editLabel, dirtyPropertyNames
+        catalogueItem.addToEditsTransactionally EditTitle.UPDATE, editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
     ReferenceSummaryMetadataReport addDeletedEditToCatalogueItem(User deleter, ReferenceSummaryMetadataReport domain, String catalogueItemDomainType,
                                                                  UUID catalogueItemId) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally deleter, "[$domain.editLabel] removed from component [${catalogueItem.editLabel}]"
+        catalogueItem.addToEditsTransactionally EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component [${catalogueItem.editLabel}]"
         domain
     }
 

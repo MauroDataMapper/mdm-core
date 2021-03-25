@@ -54,8 +54,12 @@ class EditService {
         Edit.findAllByResource(resourceDomainType, resourceId, pagination)
     }
 
-    void createAndSaveEdit(UUID resourceId, String resourceDomainType, String description, User createdBy, boolean flush = false) {
-        Edit edit = new Edit(resourceId: resourceId, resourceDomainType: resourceDomainType,
+    List<Edit> findAllByResourceAndTitle(String resourceDomainType, UUID resourceId, EditTitle title, Map pagination = [sort: 'dateCreated', order: 'asc']) {
+        Edit.findAllByResourceAndTitle(resourceDomainType, resourceId, title, pagination)
+    }    
+
+    void createAndSaveEdit(EditTitle title, UUID resourceId, String resourceDomainType, String description, User createdBy, boolean flush = false) {
+        Edit edit = new Edit(title: title, resourceId: resourceId, resourceDomainType: resourceDomainType,
                              description: description, createdBy: createdBy.emailAddress)
         if (edit.validate()) {
             edit.save(flush: flush, validate: false)

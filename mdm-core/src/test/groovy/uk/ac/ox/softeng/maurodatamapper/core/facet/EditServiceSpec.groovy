@@ -31,13 +31,13 @@ class EditServiceSpec extends BaseUnitSpec implements ServiceUnitTest<EditServic
 
     def setup() {
         mockDomains(Classifier, Folder, Edit)
-        checkAndSave(new Edit(createdBy: admin.emailAddress, description: 'Edit 1', resourceDomainType: 'Folder', resourceId: UUID.randomUUID()))
-        checkAndSave(new Edit(createdBy: editor.emailAddress, description: 'Edit 2', resourceDomainType: 'Folder', resourceId: UUID.randomUUID()))
-        Edit edit = new Edit(createdBy: pending.emailAddress, description: 'Edit 3', resourceDomainType: 'Folder', resourceId: UUID.randomUUID())
+        checkAndSave(new Edit(title: EditTitle.UPDATE, createdBy: admin.emailAddress, description: 'Edit 1', resourceDomainType: 'Folder', resourceId: UUID.randomUUID()))
+        checkAndSave(new Edit(title: EditTitle.UPDATE, createdBy: editor.emailAddress, description: 'Edit 2', resourceDomainType: 'Folder', resourceId: UUID.randomUUID()))
+        Edit edit = new Edit(title: EditTitle.UPDATE, createdBy: pending.emailAddress, description: 'Edit 3', resourceDomainType: 'Folder', resourceId: UUID.randomUUID())
         checkAndSave(edit)
-        checkAndSave(new Edit(createdBy: reader2.emailAddress, description: 'Edit 4', resourceDomainType: 'Classifier',
+        checkAndSave(new Edit(title: EditTitle.UPDATE, createdBy: reader2.emailAddress, description: 'Edit 4', resourceDomainType: 'Classifier',
                               resourceId: UUID.randomUUID()))
-        checkAndSave(new Edit(createdBy: reader1.emailAddress, description: 'Edit 5', resourceDomainType: 'Classifier',
+        checkAndSave(new Edit(title: EditTitle.UPDATE, createdBy: reader1.emailAddress, description: 'Edit 5', resourceDomainType: 'Classifier',
                               resourceId: UUID.randomUUID()))
         id = edit.id
     }
@@ -56,10 +56,12 @@ class EditServiceSpec extends BaseUnitSpec implements ServiceUnitTest<EditServic
 
         and:
         editList[0].createdBy == pending.emailAddress
+        editList[0].title.toString() == 'UPDATE'
         editList[0].description == 'Edit 3'
 
         and:
         editList[1].createdBy == reader2.emailAddress
+        editList[1].title.toString() == 'UPDATE'
         editList[1].description == 'Edit 4'
     }
 

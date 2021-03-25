@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -121,7 +122,7 @@ class DataModelService extends ModelService<DataModel> {
         importedFromDataModel.finalised
 
         //TODO add OR importedFromModel is in the same collection as importingDataModel
-    }    
+    }
 
     Long count() {
         DataModel.count()
@@ -210,7 +211,7 @@ class DataModelService extends ModelService<DataModel> {
                 it.catalogueItemId = catalogueItem.getId()
             }
             ModelImport.saveAll(catalogueItem.modelImports)
-        }          
+        }
         catalogueItem
     }
 
@@ -604,7 +605,7 @@ class DataModelService extends ModelService<DataModel> {
 
         if (copy.validate()) {
             save(copy, validate: false)
-            editService.createAndSaveEdit(copy.id, copy.domainType,
+            editService.createAndSaveEdit(EditTitle.COPY, copy.id, copy.domainType,
                                           "DataModel ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
             )
@@ -621,7 +622,7 @@ class DataModelService extends ModelService<DataModel> {
 
         if (original.childDataClasses) {
             // Copy all the dataclasses (this will also match up the reference types)
-            original.childDataClasses.each {dc ->
+            original.childDataClasses.each { dc ->
                 dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager)
             }
         }
@@ -649,11 +650,11 @@ class DataModelService extends ModelService<DataModel> {
             }
         }
 
-        modelImportService.findAllByCatalogueItemId(original.id).each { 
+        modelImportService.findAllByCatalogueItemId(original.id).each {
             copy.addToModelImports(it.importedCatalogueItemDomainType,
                                    it.importedCatalogueItemId,
-                                   copier) 
-        }        
+                                   copier)
+        }
         copy
     }
 
@@ -723,7 +724,7 @@ class DataModelService extends ModelService<DataModel> {
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         DataModel.byClassifierId(classifier.id)
             .list()
-            .findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id)} as List<DataModel>
+            .findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) } as List<DataModel>
     }
 
     @Override

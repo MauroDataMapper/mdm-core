@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
@@ -32,20 +33,21 @@ import org.grails.datastore.gorm.GormEntity
 @GrailsCompileStatic
 trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
 
-    void addToEditsTransactionally(User createdBy, String description) {
-        createAndSaveEditInsideNewTransaction createdBy, description
+    void addToEditsTransactionally(EditTitle title, User createdBy, String description) {
+        createAndSaveEditInsideNewTransaction title, createdBy, description
     }
 
-    void addToEditsTransactionally(User createdBy, String editLabel, List<String> dirtyPropertyNames) {
+    void addToEditsTransactionally(EditTitle title, User createdBy, String editLabel, List<String> dirtyPropertyNames) {
         if (shouldAddEdit(dirtyPropertyNames)) {
-            createAndSaveEditInsideNewTransaction createdBy, "[$editLabel] changed properties ${editedPropertyNames(dirtyPropertyNames)}"
+            createAndSaveEditInsideNewTransaction title, createdBy, "[$editLabel] changed properties ${editedPropertyNames(dirtyPropertyNames)}"
         }
     }
 
-    void createAndSaveEditInsideNewTransaction(User createdBy, String description) {
+    void createAndSaveEditInsideNewTransaction(EditTitle title, User createdBy, String description) {
         Edit edit = null
         Edit.withNewTransaction {
-            edit = new Edit(createdBy: createdBy.emailAddress,
+            edit = new Edit(title: title,
+                            createdBy: createdBy.emailAddress,
                             description: description,
                             resourceId: id,
                             resourceDomainType: domainType).save(validate: false)
@@ -58,7 +60,7 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
 
     @Override
     void addCreatedEdit(User creator) {
-        addToEditsTransactionally creator, getCreatedEditDescription()
+        addToEditsTransactionally EditTitle.CREATE, creator, getCreatedEditDescription()
     }
 
     String getCreatedEditDescription() {
@@ -67,7 +69,7 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
 
     @Override
     void addUpdatedEdit(User editor, List<String> dirtyPropertyNames) {
-        addToEditsTransactionally editor, editLabel, dirtyPropertyNames
+        addToEditsTransactionally EditTitle.UPDATE, editor, editLabel, dirtyPropertyNames
     }
 
     @Override
@@ -77,7 +79,7 @@ trait EditHistoryAware extends AddsEditHistory implements CreatorAware {
 
     @Override
     void addChangeNoticeEdit(User changer, String changeNotice) {
-        addToEditsTransactionally changer, "CHANGE NOTICE: ${changeNotice}"
+        addToEditsTransactionally EditTitle.CHANGENOTICE, changer, changeNotice
     }
 
     List<Edit> getEdits() {

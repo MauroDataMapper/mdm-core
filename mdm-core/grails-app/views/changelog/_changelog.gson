@@ -5,6 +5,7 @@ model {
 }
 
 json {
+    id edit.id
     dateCreated edit.dateCreated
     createdBy edit.createdBy
     title edit.title
