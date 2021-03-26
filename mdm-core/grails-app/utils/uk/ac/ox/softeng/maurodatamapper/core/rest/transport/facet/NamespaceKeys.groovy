@@ -22,25 +22,52 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet
  */
 class NamespaceKeys implements Comparable<NamespaceKeys> {
 
+    public static Set<String> KNOWN_DEFAULT_NAMESPACE_PREFIXES = ['ox.softeng.maurodatamapper', 'uk.ac.ox.softeng.maurodatamapper']
+
     String namespace
     Boolean editable
-    Collection<String> keys
-    Boolean defaultNamespace = false
+    Set<String> keys
+    Boolean defaultNamespace
+
+    NamespaceKeys() {
+        keys = [] as Set
+        defaultNamespace = false
+        editable = true
+    }
+
+    NamespaceKeys forNamespace(String namespace) {
+        this.namespace = namespace
+        this
+    }
+
+    NamespaceKeys withKeys(Collection<String> keys) {
+        this.keys.addAll(keys)
+        this
+    }
+
+    NamespaceKeys editable(boolean editable) {
+        this.editable = editable
+        this
+    }
+
+    NamespaceKeys defaultNamespace(boolean defaultNamespace) {
+        this.defaultNamespace = defaultNamespace
+        this
+    }
 
     @Override
     int compareTo(NamespaceKeys that) {
         this.namespace <=> that.namespace
     }
 
-
     boolean equals(o) {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
-
         NamespaceKeys that = (NamespaceKeys) o
+        namespace == that.namespace
+    }
 
-        if (namespace != that.namespace) return false
-
-        return true
+    int hashCode() {
+        namespace.hashCode()
     }
 }

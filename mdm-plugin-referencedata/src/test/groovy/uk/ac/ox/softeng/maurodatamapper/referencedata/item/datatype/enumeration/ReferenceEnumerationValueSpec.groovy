@@ -111,4 +111,9 @@ class ReferenceEnumerationValueSpec extends ModelItemSpec<ReferenceEnumerationVa
     int getExpectedConstrainedBlankErrors() {
         6
     }
+
+    @Override
+    String getExpectedNewlineLabel() {
+        'ev_key'
+    }    
 }

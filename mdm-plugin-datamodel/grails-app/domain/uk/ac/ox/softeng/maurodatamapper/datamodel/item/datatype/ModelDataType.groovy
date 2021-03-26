@@ -18,8 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 
+import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
@@ -44,5 +46,22 @@ class ModelDataType extends DataType<ModelDataType> {
             .appendString('modelResourceId', this.modelResourceId.toString(), otherDataType.modelResourceId.toString())
             .appendString('modelResourceDomainType', this.modelResourceDomainType, otherDataType.modelResourceDomainType)
 
+    }
+
+    static DetachedCriteria<ModelDataType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<ModelDataType> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
     }
 }

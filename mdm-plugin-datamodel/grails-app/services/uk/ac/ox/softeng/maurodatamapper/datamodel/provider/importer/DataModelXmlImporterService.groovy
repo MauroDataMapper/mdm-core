@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
+import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -37,7 +38,8 @@ import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
 
 @Slf4j
-class DataModelXmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> {
+class DataModelXmlImporterService extends DataBindDataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> 
+    implements XmlImportMapping {
 
     AssetResourceLocator assetResourceLocator
 
@@ -108,29 +110,6 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
                 return map
         }
         throw new ApiBadRequestException('XIS03', 'Cannot import XML as dataModel is not present')
-    }
-
-    Map<String, Object> convertToMap(NodeChild nodes) {
-        Map<String, Object> map = [:]
-        if (nodes.children().isEmpty()) {
-            map[nodes.name()] = nodes.text()
-        } else {
-            map = ((NodeChildren) nodes.children()).collectEntries {NodeChild child ->
-                String name = child.name()
-                def content = name == 'id' ? null : child.text()
-
-                if (child.childNodes()) {
-                    Collection<String> childrenNames = child.children().list().collect {it.name().toLowerCase()}.toSet()
-
-                    if (childrenNames.size() == 1 && child.name().toLowerCase().contains(childrenNames[0])) content = convertToList(child)
-                    else content = convertToMap(child)
-
-                }
-
-                [name, content]
-            }
-        }
-        map
     }
 
     List convertToList(NodeChild nodeChild) {

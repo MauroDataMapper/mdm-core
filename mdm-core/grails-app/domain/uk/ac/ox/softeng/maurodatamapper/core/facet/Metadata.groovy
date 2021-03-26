@@ -103,6 +103,34 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
         "${this.namespace}.${this.key}"
     }
 
+    static DetachedCriteria<Metadata> distinctNamespacesKeys() {
+        new DetachedCriteria<Metadata>(Metadata)
+            .projections {
+                groupProperty('namespace')
+                groupProperty('key')
+            }
+            .order('namespace', 'asc')
+            .order('key', 'asc')
+    }
+
+    static Map<String, List<String>> findAllDistinctNamespacesKeys() {
+        (distinctNamespacesKeys().list() as List<List<String>>)
+            .groupBy {it[0]}
+            .collectEntries {k, v ->
+                [k, v.flatten().findAll {it != k} as List<String>]
+            } as Map<String, List<String>>
+    }
+
+    static Map<String, List<String>> findAllDistinctNamespacesKeysIlikeNamespace(String namespacePrefix) {
+        (distinctNamespacesKeys()
+            .ilike('namespace', "${namespacePrefix}%")
+            .list() as List<List<String>>)
+            .groupBy {it[0]}
+            .collectEntries {k, v ->
+                [k, v.flatten().findAll {it != k} as List<String>]
+            } as Map<String, List<String>>
+    }
+
     static Set<String> findAllDistinctKeysByNamespace(String namespace) {
         new DetachedCriteria<Metadata>(Metadata).eq('namespace', namespace)
             .distinct('key')
@@ -153,6 +181,11 @@ class Metadata implements CatalogueItemAware, CreatorAware, Diffable<Metadata> {
     static DetachedCriteria<Metadata> byCatalogueItemIdAndNamespace(Serializable catalogueItemId, String namespace) {
         byCatalogueItemId(catalogueItemId).eq('namespace', namespace)
     }
+
+    static DetachedCriteria<Metadata> byCatalogueItemIdAndNotNamespaces(Serializable catalogueItemId, List<String> namespaces) {
+        byCatalogueItemId(catalogueItemId).not { inList('namespace', namespaces) }
+    }
+
 
     static DetachedCriteria<Metadata> withFilter(DetachedCriteria<Metadata> criteria, Map filters) {
         if (filters.ns) criteria = criteria.ilike('namespace', "%${filters.ns}%")

@@ -17,6 +17,7 @@ buildscript {
 
 plugins {
     id 'project-report'
+    id 'jacoco'
 }
 
 apply plugin: "idea"
@@ -25,9 +26,7 @@ apply plugin: "org.grails.grails-web"
 apply plugin: "org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
 
-
-apply plugin: 'ox.softeng.ox-brc-base'
-apply plugin: 'ox.softeng.ox-brc-artifactory'
+apply plugin: 'ox.softeng.grails'
 
 repositories {
     mavenLocal()
@@ -120,11 +119,12 @@ grails {
         //        compile project(':mdm-plugin-email-proxy')
         compile project(':mdm-security')
         compile project(':mdm-plugin-dataflow')
+        compile project(':mdm-plugin-profile')
     }
 }
 
 apply from: 'dependencies.gradle'
-apply from: "${rootDir}/gradle/additions/grails.gradle"
+apply from: "${rootDir}/gradle/additions/staticCodeAnalysis.gradle"
 
 String testCategory = ''
 String testPackage = ''
@@ -175,4 +175,23 @@ integrationTest {
 
 artifactoryPublish {
     skip = true
+}
+afterEvaluate {
+
+
+    sonarqube {
+        properties {
+            property 'sonar.sources', ''
+            property 'sonar.java.binaries', ''
+            property 'sonar.groovy.binaries', ''
+            property 'sonar.tests', findAllExisting(project, project.sourceSets.integrationTest.allSource.srcDirs +
+                                    project.sourceSets.main.allSource.srcDirs)
+            property 'sonar.java.test.binaries', project.sourceSets.integrationTest.output.classesDirs +
+                                                 project.sourceSets.main.output.classesDirs
+        }
+    }
+}
+
+List<File> findAllExisting(Project project, Collection<File> files) {
+    files.findAll {it.exists()}.collect {project.projectDir.relativePath(it)}
 }

@@ -19,47 +19,19 @@ package uk.ac.ox.softeng.maurodatamapper.core.admin
 
 import uk.ac.ox.softeng.maurodatamapper.core.hibernate.search.LuceneIndexingService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.LuceneIndexParameters
-import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.databinding.DataBindingSource
-import grails.web.databinding.DataBindingUtils
-
 import java.sql.DriverManager
 
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import static org.springframework.http.HttpStatus.OK
 
 class AdminController implements ResourcelessMdmController {
 
     AdminService adminService
     LuceneIndexingService luceneIndexingService
-    SessionService sessionService
 
     static responseFormats = ['json', 'xml']
-
-    static allowedMethods = [editApiProperties: ['POST', 'PUT'], editApiProperty: ['POST', 'PUT'],
-                             apiProperties    : 'GET', apiVersion: 'GET', coreVersion: 'GET', isTestMode: 'GET', activeSessions: 'GET']
-
-    def editApiProperties() {
-        DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(), HashMap, request)
-        Map<String, String> newValues = [:]
-        dataBindingSource.propertyNames.each {n ->
-            newValues[n] = dataBindingSource.getPropertyValue(n)
-        }
-
-        try {
-            respond view: 'apiProperties', [apiPropertyList: adminService.getAndUpdateApiProperties(currentUser, newValues)]
-        } catch (Exception ex) {
-            log.error("AC01 - Could not update ApiProperties due to exception", ex)
-            respond view: '/error', status: INTERNAL_SERVER_ERROR, [message: ex.message, errorCode: 'AC01']
-        }
-    }
-
-    def apiProperties() {
-        respond adminService.getApiProperties()
-    }
 
     def rebuildLuceneIndexes(LuceneIndexParameters indexParameters) {
         long start = System.currentTimeMillis()

@@ -10,6 +10,7 @@ json {
     branchName terminology.branchName
     documentationVersion terminology.documentationVersion.toString()
     if (terminology.modelVersion) modelVersion terminology.modelVersion.toString()
+    if (terminology.modelVersionTag) modelVersionTag terminology.modelVersionTag
 
     if (terminology.classifiers) classifiers g.render(terminology.classifiers)
     if (terminology.deleted) deleted terminology.deleted

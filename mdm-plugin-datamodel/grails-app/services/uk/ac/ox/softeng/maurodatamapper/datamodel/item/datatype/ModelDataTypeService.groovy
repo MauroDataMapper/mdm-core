@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -155,5 +156,16 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> {
     @Override
     PersistentEntity getPersistentEntity() {
         grailsApplication.mappingContext.getPersistentEntity(DataType.name)
+    }
+
+
+    @Override
+    List<ModelDataType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ModelDataType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<ModelDataType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ModelDataType.byMetadataNamespace(namespace).list(pagination)
     }
 }

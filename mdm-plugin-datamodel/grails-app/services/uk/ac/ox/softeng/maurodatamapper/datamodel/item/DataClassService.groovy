@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -58,7 +57,6 @@ class DataClassService extends ModelItemService<DataClass> {
     DataTypeService dataTypeService
     MessageSource messageSource
     ModelExtendService modelExtendService 
-    ModelImportService modelImportService    
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
 
@@ -861,4 +859,15 @@ class DataClassService extends ModelItemService<DataClass> {
         }
                                                  
     }
+
+    @Override
+    List<DataClass> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        DataClass.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<DataClass> findAllByMetadataNamespace(String namespace, Map pagination) {
+        DataClass.byMetadataNamespace(namespace).list(pagination)
+    }
+
 }

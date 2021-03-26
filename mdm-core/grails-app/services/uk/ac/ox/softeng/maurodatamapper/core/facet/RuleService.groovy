@@ -128,7 +128,7 @@ class RuleService implements CatalogueItemAwareService<Rule> {
     RuleRepresentation addCreatedEditToCatalogueItemOfRule(User creator, RuleRepresentation domain, String catalogueItemDomainType,
                                                            UUID catalogueItemId) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
+        catalogueItem.addToEditsTransactionally EditTitle.CREATE, creator, "[$domain.editLabel] added to component [${catalogueItem.editLabel}]"
         domain
     }
 
@@ -136,7 +136,7 @@ class RuleService implements CatalogueItemAwareService<Rule> {
     RuleRepresentation addUpdatedEditToCatalogueItemOfRule(User editor, RuleRepresentation domain, String catalogueItemDomainType,
                                                            UUID catalogueItemId, List<String> dirtyPropertyNames) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally editor, domain.editLabel, dirtyPropertyNames
+        catalogueItem.addToEditsTransactionally EditTitle.UPDATE, editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
@@ -144,7 +144,7 @@ class RuleService implements CatalogueItemAwareService<Rule> {
     RuleRepresentation addDeletedEditToCatalogueItemOfRule(User deleter, RuleRepresentation domain, String catalogueItemDomainType,
                                                            UUID catalogueItemId) {
         CatalogueItem catalogueItem = findCatalogueItemByDomainTypeAndId(catalogueItemDomainType, catalogueItemId)
-        catalogueItem.addToEditsTransactionally deleter, "[$domain.editLabel] removed from component [${catalogueItem.editLabel}]"
+        catalogueItem.addToEditsTransactionally EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component [${catalogueItem.editLabel}]"
         domain
     }
 }

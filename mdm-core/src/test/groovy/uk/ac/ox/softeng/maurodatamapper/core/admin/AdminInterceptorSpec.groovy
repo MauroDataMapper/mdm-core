@@ -29,9 +29,7 @@ class AdminInterceptorSpec extends SimpleInterceptorUnitSpec implements Intercep
     @Shared
     List<String> actions = [
         'status',
-        'editApiProperties',
         'rebuildLuceneIndexes',
-        'apiProperties'
     ]
 
     @Override

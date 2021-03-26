@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -105,6 +106,7 @@ class CodeSetService extends ModelService<CodeSet> {
         codeSet.deleted = true
     }
 
+    @Override
     void delete(CodeSet codeSet, boolean permanent, boolean flush = true) {
         if (!codeSet) return
         if (permanent) {
@@ -114,17 +116,6 @@ class CodeSetService extends ModelService<CodeSet> {
             }
             codeSet.delete(flush: flush)
         } else delete(codeSet)
-    }
-
-    @Override
-    CodeSet softDeleteModel(CodeSet model) {
-        model?.deleted = true
-        model
-    }
-
-    @Override
-    void permanentDeleteModel(CodeSet model) {
-        delete(model, true)
     }
 
     List<CodeSet> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
@@ -175,14 +166,6 @@ class CodeSetService extends ModelService<CodeSet> {
     @Override
     List<UUID> findAllModelIds() {
         CodeSet.by().id().list() as List<UUID>
-    }
-
-    List<CodeSet> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
-        CodeSet.byMetadataNamespaceAndKey(namespace, key).list(pagination)
-    }
-
-    List<CodeSet> findAllByMetadataNamespace(String namespace) {
-        CodeSet.byMetadataNamespace(namespace).list()
     }
 
     List<CodeSet> findAllByFolderId(UUID folderId) {
@@ -295,7 +278,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
         if (copy.validate()) {
             save(copy, validate: false)
-            editService.createAndSaveEdit(copy.id, copy.domainType,
+            editService.createAndSaveEdit(EditTitle.COPY, copy.id, copy.domainType,
                                           "CodeSet ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
             )
@@ -480,4 +463,15 @@ class CodeSetService extends ModelService<CodeSet> {
             }
         }
     }
+
+    @Override
+    List<CodeSet> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        CodeSet.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<CodeSet> findAllByMetadataNamespace(String namespace, Map pagination) {
+        CodeSet.byMetadataNamespace(namespace).list(pagination)
+    }
+
 }

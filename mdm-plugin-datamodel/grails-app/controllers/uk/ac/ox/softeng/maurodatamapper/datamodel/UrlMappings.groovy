@@ -29,6 +29,8 @@ class UrlMappings {
             // Allows us to control posting dataModels into folders
             post "/folders/$folderId/dataModels"(controller: 'dataModel', action: 'save') // new URL
 
+            put "/admin/dataModels/$id/undoSoftDelete"(controller: 'dataModel', action: 'undoSoftDelete')
+
             '/dataModels'(resources: 'dataModel', excludes: DEFAULT_EXCLUDES_AND_NO_SAVE) {
 
                 put '/finalise'(controller: 'dataModel', action: 'finalise')
@@ -44,6 +46,7 @@ class UrlMappings {
                 get '/latestModelVersion'(controller: 'dataModel', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'dataModel', action: 'mergeDiff')
                 put "/mergeInto/$otherModelId"(controller: 'dataModel', action: 'mergeInto')
+                get '/modelVersionTree' (controller: 'dataModel', action: 'modelVersionTree')
 
                 get '/currentMainBranch'(controller: 'dataModel', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'dataModel', action: 'availableBranches')

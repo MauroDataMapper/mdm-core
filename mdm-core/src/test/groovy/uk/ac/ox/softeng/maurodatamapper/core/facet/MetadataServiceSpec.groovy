@@ -138,38 +138,6 @@ class MetadataServiceSpec extends CatalogueItemAwareServiceSpec<Metadata, Metada
         keys.find {it == 'key5'}
     }
 
-    void 'test find namespace keys by plugin or namespace'() {
-
-        when: 'non-existent namespace or plugin'
-        def result = service.findNamespaceKeysByServiceOrNamespace(null, 'https://integration.test.com/none')
-
-        then:
-        result.namespace == 'https://integration.test.com/none'
-        result.editable
-        result.keys.size() == 0
-
-        when: 'only namespace specified'
-        result = service.findNamespaceKeysByServiceOrNamespace(null, 'https://integration.test.com')
-
-        then:
-        result.namespace == 'https://integration.test.com'
-        result.editable
-        result.keys.size() == 4
-        result.keys.find {it == 'key1'}
-        result.keys.find {it == 'key2'}
-        result.keys.find {it == 'key4'}
-        result.keys.find {it == 'key5'}
-
-        when: 'namespace and plugin with no specified keys'
-        result = service.findNamespaceKeysByServiceOrNamespace(mauroDataMapperService, mauroDataMapperService.namespace)
-
-        then:
-        result.namespace == mauroDataMapperService.namespace
-        result.editable
-        result.keys.size() == 1
-        result.keys.find {it == 'email.subject'}
-    }
-
     void 'test find all namespace keys'() {
 
         when:

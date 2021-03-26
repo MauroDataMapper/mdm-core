@@ -307,4 +307,21 @@ class Term implements ModelItem<Term, Terminology> {
     {
         "te:${terminology.label}|tm:${label}"
     }
+
+    static DetachedCriteria<Term> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<Term> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

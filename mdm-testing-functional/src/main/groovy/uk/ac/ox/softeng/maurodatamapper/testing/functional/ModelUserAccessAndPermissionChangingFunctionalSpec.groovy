@@ -20,9 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpResponse
 import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
@@ -67,6 +70,8 @@ import static io.micronaut.http.HttpStatus.OK
  *
  *  |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
  *  |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
+ *
+ *  |   POST   | /api/dataModels/${dataModelId}/undoDelete  | Action: undoDelete
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
  */
@@ -206,6 +211,77 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanup:
         removeValidIdObject(id)
     }
+
+    void 'E16b : Test finalising Model (as editor) with a versionTag'() {
+        given:
+        String id = getValidId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Release'])
+
+        then:
+        verifyResponse OK, response
+        responseBody().finalised == true
+        responseBody().dateFinalised
+        responseBody().availableActions == [
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
+        ]
+        responseBody().modelVersion == '1.0.0'
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        when: 'log out and log back in again in as editor available actions are correct and modelVersionTag is set'
+        logout()
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == [
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
+        ]
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        when: 'log out and log back in again in as admin available actions are correct and modelVersionTag is set'
+        logout()
+        loginAdmin()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == [
+            "show",
+            "createNewVersions",
+            "newForkModel",
+            "comment",
+            "newModelVersion",
+            "newDocumentationVersion",
+            "newBranchModelVersion",
+            "softDelete",
+            "delete"
+        ]
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
 
     void 'L17 : test creating a new fork model of a Model<T> (as not logged in)'() {
         given:
@@ -931,4 +1007,252 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         removeValidIdObjectUsingTransaction(id)
         cleanUpRoles(target, source, id)
     }
+
+    void 'E26 : Test getting versionTreeModel (as editor)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
+        verifyResponse CREATED, response
+        String forkId = responseBody().id
+        PUT("$id/newBranchModelVersion", [ : ])
+        verifyResponse CREATED, response
+        String mainBranchId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$forkId/finalise", [versionChangeType: VersionChangeType.MINOR])
+        verifyResponse OK, response
+        PUT("$forkId/newDocumentationVersion",[ : ])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body()
+        localResponse.body().size() == 5
+
+
+        Map sourceMap = localResponse.body().find { it.modelId == id }
+        sourceMap
+        sourceMap == [branchName             : "main",
+                      label                  : "Functional Test ${getModelType()}",
+                      modelId                : id,
+                      newBranchModelVersion  : false,
+                      newDocumentationVersion: false,
+                      newFork                : false,
+                      targets                : [[
+                                                    modelId    : forkId,
+                                                    description: VersionLinkType.NEW_FORK_OF.label
+                                                ],
+                                                [
+                                                    modelId           : mainBranchId,
+                                                           description: VersionLinkType.NEW_MODEL_VERSION_OF.label
+                                                   ],
+                                                   [
+                                                            modelId: newBranchId,
+                                                            description: VersionLinkType.NEW_MODEL_VERSION_OF.label
+                                                   ]]
+                ]
+
+        Map forkMap = localResponse.body().find { it.modelId == forkId }
+        forkMap
+        forkMap == [branchName             : "main",
+                    label                  : "Functional Test ${getModelType()} v2",
+                    modelId                : forkId,
+                    newBranchModelVersion  : false,
+                    newDocumentationVersion: false,
+                    newFork                : true,
+                    targets                : [[
+                                                  modelId    : latestDraftId,
+                                                  description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
+                                              ]]
+        ]
+
+        Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
+        mainBranchMap
+        mainBranchMap == [branchName             : "main",
+                          label                  : "Functional Test ${getModelType()}",
+                          modelId                : mainBranchId,
+                          newBranchModelVersion  : true,
+                          newDocumentationVersion: false,
+                          newFork                : false,
+                          targets                : []]
+
+        Map newBranchMap = localResponse.body().find { it.modelId == newBranchId }
+        newBranchMap
+        newBranchMap == [branchName             : "newBranch",
+                         label                  : "Functional Test ${getModelType()}",
+                         modelId                : newBranchId,
+                         newBranchModelVersion  : true,
+                         newDocumentationVersion: false,
+                         newFork                : false,
+                         targets                : []]
+
+        Map latestDraftMap = localResponse.body().find { it.modelId == latestDraftId }
+        latestDraftMap
+        latestDraftMap == [branchName             : "main",
+                           label                  : "Functional Test ${getModelType()}" + " v2",
+                           modelId                : latestDraftId,
+                           newBranchModelVersion  : false,
+                           newDocumentationVersion: true,
+                           newFork                : false,
+                           targets                : []]
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(forkId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(forkId)
+        cleanUpRoles(latestDraftId)
+    }
+
+    void 'E26 : Test getting versionTreeModel is same across ancestors (as editor)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        HttpResponse<List<Map>> localResponseOldestAncestor = GET("$id/modelVersionTree", Argument.listOf(Map))
+        HttpResponse<List<Map>> localResponseYoungestAncestor = GET("$latestDraftId/modelVersionTree", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponseOldestAncestor
+        verifyResponse OK, localResponseYoungestAncestor
+
+        localResponseOldestAncestor.body() == localResponseYoungestAncestor.body()
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(finalisedId)
+        cleanUpRoles(latestDraftId)
+    }
+
+    void 'L27 : Test undoing a soft delete (as not logged in)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        logout()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'N27 : Test undoing a soft delete (as authenticated/no access)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        loginAuthenticated()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'R27 : Test undoing a soft delete (as reader)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        loginReader()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E27 : Test undoing a soft delete (as editor)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        loginEditor()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'A27 : Test undoing a soft delete (as admin)'() {
+        given: 'model is deleted'
+        String id = getValidId()
+        loginEditor()
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        loginAdmin()
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        !responseBody().deleted
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
 }

@@ -17,9 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.authentication
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.UserCredentials
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionController
 import uk.ac.ox.softeng.maurodatamapper.core.session.SessionService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
@@ -58,17 +56,18 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         given:
         controller.authenticatingService = Mock(AuthenticatingService) {
             0 * isAuthenticatedSession(_) >> false
-            0 * authenticateAndObtainUser(_, _, _)
+            0 * authenticateAndObtainUser(_, _)
             0 * registerUserAsLoggedIn(_, _)
             0 * buildUserSecurityPolicyManager(_)
         }
         when:
         request.method = 'POST'
-        controller.login(null)
+        request.setJson([:])
+        controller.login()
 
         then:
         response.status == BAD_REQUEST.value()
-        response.errorMessage == 'Username and/or password not provided'
+        response.errorMessage == 'Authentication Information not provided'
 
         and:
         !sessionService.isAuthenticatedSession(session, session.id)
@@ -78,14 +77,15 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         given:
         controller.authenticatingService = Mock(AuthenticatingService) {
             1 * isAuthenticatedSession(_) >> false
-            1 * authenticateAndObtainUser('test@test.com', 'blah', null) >> null
+            1 * authenticateAndObtainUser(_, null) >> null
             0 * registerUserAsLoggedIn(_, _)
             0 * buildUserSecurityPolicyManager(_)
         }
 
         when:
         request.method = 'POST'
-        controller.login(new UserCredentials(username: 'test@test.com', password: 'blah'))
+        request.setJson(username: 'test@test.com', password: 'blah')
+        controller.login()
 
         then:
         response.status == UNAUTHORIZED.value()
@@ -98,14 +98,15 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         given:
         controller.authenticatingService = Mock(AuthenticatingService) {
             1 * isAuthenticatedSession(_) >> false
-            1 * authenticateAndObtainUser(admin.emailAddress, 'blah', null) >> null
+            1 * authenticateAndObtainUser(_, null) >> null
             0 * registerUserAsLoggedIn(_, _)
             0 * buildUserSecurityPolicyManager(_)
         }
 
         when:
         request.method = 'POST'
-        controller.login(new UserCredentials(username: admin.emailAddress, password: 'blah'))
+        request.json = [username: admin.emailAddress, password: 'blah']
+        controller.login()
 
         then:
         response.status == UNAUTHORIZED.value()
@@ -118,16 +119,19 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         given:
         controller.authenticatingService = Mock(AuthenticatingService) {
             1 * isAuthenticatedSession(_) >> false
-            1 * authenticateAndObtainUser(admin.emailAddress, 'password', null) >> admin
-            1 * registerUserAsLoggedIn(_, _) >> {u, s -> sessionService.setUserEmailAddress(s, u.emailAddress)
-                                                         sessionService.setUserName(s, u.firstName, u.lastName)
-                                                         sessionService.setUserOrganisation(s,u.organisation)}
+            1 * authenticateAndObtainUser(_, null) >> admin
+            1 * registerUserAsLoggedIn(_, _) >> {u, s ->
+                sessionService.setUserEmailAddress(s, u.emailAddress)
+                sessionService.setUserName(s, u.firstName, u.lastName)
+                sessionService.setUserOrganisation(s, u.organisation)
+            }
             1 * buildUserSecurityPolicyManager(_)
         }
 
         when:
         request.method = 'POST'
-        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+        request.json = [username: admin.emailAddress, password: 'password']
+        controller.login()
         OffsetDateTime end = OffsetDateTime.now()
 
         then:
@@ -155,14 +159,15 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         given:
         controller.authenticatingService = Mock(AuthenticatingService) {
             1 * isAuthenticatedSession(_) >> true
-            0 * authenticateAndObtainUser(admin.emailAddress, 'password', null)
+            0 * authenticateAndObtainUser(_, null)
             0 * registerUserAsLoggedIn(_, _)
             0 * buildUserSecurityPolicyManager(_)
         }
 
         when:
         request.method = 'POST'
-        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+        request.json = [username: admin.emailAddress, password: 'password']
+        controller.login()
 
         then:
         response.status == CONFLICT.value()
@@ -172,7 +177,8 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
 
         when:
         request.method = 'PUT'
-        controller.login(new UserCredentials(username: admin.emailAddress, password: 'password'))
+        request.json = [username: admin.emailAddress, password: 'password']
+        controller.login()
 
         then:
         response.status == METHOD_NOT_ALLOWED.value()

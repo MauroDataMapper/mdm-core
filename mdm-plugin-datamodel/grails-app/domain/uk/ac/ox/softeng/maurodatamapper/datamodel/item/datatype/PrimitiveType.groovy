@@ -18,7 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 
+import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
@@ -40,4 +42,22 @@ class PrimitiveType extends DataType<PrimitiveType> {
             .appendString('units', this.units, otherDataType.units)
 
     }
+
+    static DetachedCriteria<PrimitiveType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<PrimitiveType> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
+
 }

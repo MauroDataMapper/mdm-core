@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 class Edit implements CreatorAware {
 
     UUID id
+    EditTitle title
     String description
     String resourceDomainType
     UUID resourceId
@@ -33,6 +34,7 @@ class Edit implements CreatorAware {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
         resourceDomainType nullable: false, blank: false
         resourceId nullable: false
+        title nullable: false
     }
 
     static mapping = {
@@ -51,5 +53,9 @@ class Edit implements CreatorAware {
     @SuppressWarnings("UnnecessaryQualifiedReference")
     static List<Edit> findAllByResource(String resourceDomainType, UUID resourceId, Map pagination = [:]) {
         Edit.findAllByResourceDomainTypeAndResourceId(resourceDomainType, resourceId, pagination)
+    }
+
+    static List<Edit> findAllByResourceAndTitle(String resourceDomainType, UUID resourceId, EditTitle title, Map pagination = [:]) {
+        Edit.findAllByResourceDomainTypeAndResourceIdAndTitle(resourceDomainType, resourceId, title, pagination)
     }
 }

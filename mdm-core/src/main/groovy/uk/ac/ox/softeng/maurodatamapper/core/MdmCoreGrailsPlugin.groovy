@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.ReferenceFileAw
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.RuleAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.SemanticLinkAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.VersionLinkAwareMappingContext
+import uk.ac.ox.softeng.maurodatamapper.core.markup.view.MarkupViewTemplateEngine
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmAtomModelCollectionRenderer
@@ -203,6 +204,8 @@ This is basically the backend API.
             httpSessionServletListener(ServletListenerRegistrationBean) {
                 listener = ref('sessionService')
             }
+
+            markupTemplateEngine(MarkupViewTemplateEngine, ref('markupViewConfiguration'), applicationContext.classLoader)
         }
 
     }

@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
+
+import grails.gorm.PagedResultList
+
+model {
+    Iterable<ApiProperty> apiPropertyList
+}
+
+json {
+    count apiPropertyList instanceof PagedResultList ? ((PagedResultList) apiPropertyList).getTotalCount() : apiPropertyList?.size() ?: 0
+    items tmpl.apiProperty(apiPropertyList ?: [])
+}
+

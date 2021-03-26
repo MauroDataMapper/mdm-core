@@ -61,7 +61,6 @@ class ReferenceDataTypeController extends CatalogueItemController<ReferenceDataT
             return
         }
         ReferenceDataModel referenceDataModel = referenceDataModelService.get(params.referenceDataModelId)
-        ReferenceDataModel originalReferenceDataModel = referenceDataModelService.get(params.otherReferenceDataModelId)
         ReferenceDataType original = referenceDataTypeService.findByReferenceDataModelIdAndId(params.otherReferenceDataModelId, params.referenceDataTypeId)
 
         if (!original) return notFound(params.referenceDataTypeId)

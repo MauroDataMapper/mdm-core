@@ -14,6 +14,7 @@ json {
     finalised versionedFolder.finalised
     if (versionedFolder.finalised) dateFinalised versionedFolder.dateFinalised
     if (versionedFolder.modelVersion) modelVersion versionedFolder.modelVersion.toString()
+    if (versionedFolder.modelVersionTag) modelVersionTag versionedFolder.modelVersionTag
 
     authority tmpl.'/authority/authority'(versionedFolder.authority)
 }

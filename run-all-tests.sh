@@ -32,6 +32,7 @@ echo ">> Functional Tests <<"
   :mdm-plugin-datamodel:integrationTest \
   :mdm-plugin-referencedata:integrationTest \
   :mdm-plugin-terminology:integrationTest \
+  :mdm-plugin-profile:integrationTest \
   :mdm-security:integrationTest
 echo ">> E2E Tests <<"
 ./gradlew --build-cache -Dgradle.test.package=core :mdm-testing-functional:integrationTest
@@ -42,4 +43,4 @@ echo ">> E2E Tests <<"
 ./gradlew --build-cache -Dgradle.test.package=dataflow :mdm-testing-functional:integrationTest
 ./gradlew --build-cache -Dgradle.test.package=referencedata :mdm-testing-functional:integrationTest
 echo ">> Root Test Report <<"
-./gradlew --build-cache rootTestReport
+./gradlew --build-cache -PciRun=true rootTestReport jacocoTestReport staticCodeAnalysis

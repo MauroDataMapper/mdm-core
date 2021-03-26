@@ -20,9 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -87,6 +89,33 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         domain.addToMetadata(facet)
     }
 
+    def saveAll(Collection<Metadata> metadata) {
+        Collection<Metadata> alreadySaved = metadata.findAll {it.ident() && it.isDirty()}
+        Collection<Metadata> notSaved = metadata.findAll {!it.ident()}
+        if (alreadySaved) {
+            log.debug('Straight saving {} metadata', alreadySaved.size())
+            Metadata.saveAll(alreadySaved)
+        }
+
+        if (notSaved) {
+            log.debug('Batch saving {} metadata', notSaved.size())
+            List batch = []
+            int count = 0
+
+            notSaved.each {de ->
+
+                batch += de
+                count++
+                if (count % Metadata.BATCH_SIZE == 0) {
+                    batchSave(batch)
+                    batch.clear()
+                }
+            }
+            batchSave(batch)
+            batch.clear()
+        }
+    }
+
     void batchSave(Collection<Metadata> metadata) {
         log.trace('Batch saving Metadata')
         long start = System.currentTimeMillis()
@@ -113,7 +142,7 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         CatalogueItem catalogueItem = metadata.catalogueItem ?: findCatalogueItemByDomainTypeAndId(metadata.catalogueItemDomainType,
                                                                                                    metadata.catalogueItemId)
 
-        if (catalogueItem.metadata.any { md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key }) {
+        if (catalogueItem.metadata.any {md -> md != metadata && md.namespace == metadata.namespace && md.key == metadata.key}) {
             metadata.errors.rejectValue('key', 'default.not.unique.message', ['key', Metadata.name, metadata.value].toArray(),
                                         'Property [{0}] of class [{1}] with value [{2}] must be unique')
             return false
@@ -135,74 +164,71 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         Metadata.byCatalogueItemIdAndNamespace(catalogueItemId, namespace).list(pagination)
     }
 
+    List<MetadataAware> findAllCatalogueItemsByNamespace(String namespace, String domainType = null, Map pagination = [:]) {
+        List<MetadataAware> returnResult = []
+        catalogueItemServices.each {catalogueItemService ->
+            if (!domainType || catalogueItemService.handles(domainType)) {
+                returnResult.addAll(catalogueItemService.findAllByMetadataNamespace(namespace))
+            }
+        }
+        return new PaginatedResultList<MetadataAware>(returnResult, pagination)
+    }
+
+
+    List<Metadata> findAllByNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
+        Metadata.byNamespaceAndKey(namespace, key).list(pagination)
+    }
+
     @Override
     DetachedCriteria<Metadata> getBaseDeleteCriteria() {
         Metadata.by()
     }
 
+    List<Metadata> findAllByCatalogueItemIdAndNotNamespaces(UUID catalogueItemId, List<String> namespaces, Map pagination = [:]) {
+        if (!namespaces || namespaces.size() == 0) {
+            return Metadata.byCatalogueItemId(catalogueItemId).list(pagination)
+        }
+        Metadata.byCatalogueItemIdAndNotNamespaces(catalogueItemId, namespaces).list(pagination)
+    }
+
     List<NamespaceKeys> findNamespaceKeysIlikeNamespace(String namespacePrefix) {
-
-        Set<NamespaceKeys> listOfNamespaceKeys = new HashSet<>()
-        Set<MauroDataMapperService> services = mauroDataMapperServiceProviderService.findProvidersIlikeNamespace(namespacePrefix)
-
-        Collection<String> namespaces = Metadata.findAllDistinctNamespacesIlike(namespacePrefix)
-
-        for (MauroDataMapperService service : services) {
-            listOfNamespaceKeys.add(findNamespaceKeysByServiceOrNamespace(service, service.getNamespace()))
-            namespaces.remove(service.getNamespace()) // Remove service namespaces from list
-        }
-
-        // Add remaining namespaces to list as editable
-        for (String namespace : namespaces) {
-            listOfNamespaceKeys.add(findNamespaceKeysByServiceOrNamespace(null, namespace))
-        }
-
-        return listOfNamespaceKeys.sort()
+        createListOfNamespaceKeys(Metadata.findAllDistinctNamespacesKeysIlikeNamespace(namespacePrefix),
+                                  mauroDataMapperServiceProviderService.findProvidersIlikeNamespace(namespacePrefix))
     }
 
     List<NamespaceKeys> findNamespaceKeys() {
-        Set<NamespaceKeys> listOfNamespaceKeys = new HashSet<>()
-        Set<MauroDataMapperService> services = mauroDataMapperServiceProviderService.getProviderServices()
-
-        Collection<String> namespaces = Metadata.findAllDistinctNamespaces()
-        for (MauroDataMapperService service : services) {
-            if (!(listOfNamespaceKeys.any { it.namespace == service.namespace })) {
-                listOfNamespaceKeys.add(findNamespaceKeysByServiceOrNamespace(service, service.getNamespace()))
-                namespaces.remove(service.getNamespace()) // Remove plugin namespaces from list
-            }
-        }
-
-        // Add remaining namespaces to list as editable
-        for (String namespace : namespaces) {
-            listOfNamespaceKeys.add(findNamespaceKeysByServiceOrNamespace(null, namespace))
-        }
-
-        listOfNamespaceKeys.sort()
+        createListOfNamespaceKeys(Metadata.findAllDistinctNamespacesKeys(),
+                                  mauroDataMapperServiceProviderService.getProviderServices())
     }
 
-    NamespaceKeys findNamespaceKeysByServiceOrNamespace(MauroDataMapperService service, String namespace) {
+    List<NamespaceKeys> createListOfNamespaceKeys(Map<String, List<String>> databaseNamespaceKeys, Collection<MauroDataMapperService> services) {
+        List<NamespaceKeys> namespaceKeys = databaseNamespaceKeys
+            .collect {ns, keys ->
+                createNamespaceKeys(ns, keys, services.find {it.namespace == ns})
+            }
 
+        services
+            .findAll {service ->
+                !(service.namespace in namespaceKeys.collect {it.namespace})
+            }.each {service ->
+            namespaceKeys << createNamespaceKeys(service.namespace, [], service)
+        }
+        namespaceKeys.toSet().sort()
+    }
+
+    NamespaceKeys createNamespaceKeys(String namespace, Collection<String> keys, MauroDataMapperService service) {
         NamespaceKeys namespaceKeys = new NamespaceKeys()
-        namespaceKeys.editable = service ? service.allowsExtraMetadataKeys() : true
-        namespaceKeys.namespace = namespace
-        namespaceKeys.defaultNamespace = namespace.startsWith('ox.softeng.maurodatamapper') ||
-                                         namespace.startsWith('uk.ac.ox.softeng.maurodatamapper') ||
-                                         service
-
-        if (!service) {
-            namespaceKeys.keys = Metadata.findAllDistinctKeysByNamespace(namespace).sort()
-            return namespaceKeys
+            .forNamespace(namespace)
+            .withKeys(keys)
+            .defaultNamespace(NamespaceKeys.KNOWN_DEFAULT_NAMESPACE_PREFIXES.any {namespace.startsWith(it)})
+        if (service) {
+            namespaceKeys
+                .editable(service.allowsExtraMetadataKeys())
+                .defaultNamespace(true)
+                .withKeys(service.knownMetadataKeys)
         }
-
-        // We need to ensure a set of keys but we want to return a sorted list
-        Set<String> keys = new HashSet<>()
-        keys.addAll(service.getKnownMetadataKeys())
-        if (service.allowsExtraMetadataKeys()) {
-            keys.addAll(Metadata.findAllDistinctKeysByNamespace(namespace))
-        }
-
-        namespaceKeys.keys = keys.sort()
         namespaceKeys
+
     }
 
     private void singleBatchSave(Collection<Metadata> metadata) {
@@ -216,5 +242,4 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
 
         log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
     }
-
 }

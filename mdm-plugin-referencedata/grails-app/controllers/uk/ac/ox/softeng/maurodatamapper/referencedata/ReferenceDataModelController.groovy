@@ -60,6 +60,11 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
         super(ReferenceDataModel, 'referenceDataModelId')
     }
 
+    @Override
+    protected ModelService<ReferenceDataModel> getModelService() {
+        referenceDataModelService
+    }
+
     def defaultReferenceDataTypeProviders() {
         respond providers: referenceDataModelService.defaultReferenceDataTypeProviders
     }
@@ -68,38 +73,6 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
         params.deep = true
         def resource = queryForResource(params.referenceDataModelId)
         resource ? respond(resource, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager], view: 'hierarchy']) : notFound(params.id)
-    }
-
-    @Override
-    protected ModelService<ReferenceDataModel> getModelService() {
-        referenceDataModelService
-    }
-
-    @Transactional
-    @Override
-    def update() {
-        log.trace('Update')
-        if (handleReadOnly()) return
-
-        ReferenceDataModel instance = queryForResource(params.id)
-
-        if (instance == null) {
-            transactionStatus.setRollbackOnly()
-            notFound(params.id)
-            return
-        }
-
-        if (instance.finalised) return forbidden('Cannot update a finalised ReferenceDataModel')
-
-        instance.properties = getObjectToBind()
-
-        instance = referenceDataModelService.checkForAndAddDefaultReferenceDataTypes instance, params.defaultReferenceDataTypeProvider
-
-        if (!validateResource(instance, 'update')) return
-
-        updateResource instance
-
-        updateResponse instance
     }
 
     @Transactional
@@ -188,4 +161,8 @@ class ReferenceDataModelController extends ModelController<ReferenceDataModel> {
         respond referenceDataModelService.suggestLinksBetweenModels(referenceDataModel, otherReferenceDataModel, maxResults)
     }
 
+    @Override
+    protected ReferenceDataModel performAdditionalUpdates(ReferenceDataModel model) {
+        referenceDataModelService.checkForAndAddDefaultReferenceDataTypes model, params.defaultReferenceDataTypeProvider
+    }
 }

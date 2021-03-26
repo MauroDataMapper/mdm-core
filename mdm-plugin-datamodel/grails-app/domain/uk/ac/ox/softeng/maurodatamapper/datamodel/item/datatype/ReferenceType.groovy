@@ -31,6 +31,14 @@ class ReferenceType extends DataType<ReferenceType> {
 
     static belongsTo = DataClass
 
+    static constraints = {
+        referenceClass validator: {val, obj ->
+            if (val && val.model && obj.model) {
+                val.model.id == obj.model.id ?: ['invalid.datatype.dataclass.model']
+            }
+        }
+    }
+
     static mapping = {
         referenceClass index: 'reference_type_reference_class_idx', fetch: 'join', cascade: 'none'
     }
@@ -48,5 +56,21 @@ class ReferenceType extends DataType<ReferenceType> {
         new DetachedCriteria<ReferenceType>(ReferenceType)
     }
 
+    static DetachedCriteria<ReferenceType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<ReferenceType> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 
 }

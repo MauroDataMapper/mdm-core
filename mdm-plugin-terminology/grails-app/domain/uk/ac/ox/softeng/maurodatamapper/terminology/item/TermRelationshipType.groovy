@@ -193,4 +193,20 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
         if (filters.description) criteria = criteria.ilike('description', "%${filters.description}%")
         criteria
     }
+    static DetachedCriteria<TermRelationshipType> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<TermRelationshipType> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
 }

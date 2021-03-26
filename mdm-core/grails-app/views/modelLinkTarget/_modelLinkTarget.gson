@@ -1,0 +1,11 @@
+package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
+
+
+model{
+    ModelLinkTarget modelLinkTarget
+}
+
+json {
+    modelId modelLinkTarget.modelId
+    description modelLinkTarget.description
+}

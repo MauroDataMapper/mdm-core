@@ -311,11 +311,20 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     }
 
     static DetachedCriteria<DataModel> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
-        by().in('id', Metadata.byNamespaceAndKey(metadataNamespace, metadataKey).property('catalogueItemId'))
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
     }
 
     static DetachedCriteria<DataModel> byMetadataNamespace(String metadataNamespace) {
-        by().in('id', Metadata.byNamespace(metadataNamespace).property('catalogueItemId'))
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
     }
 
     static DetachedCriteria<DataModel> withFilter(DetachedCriteria<DataModel> criteria, Map filters) {

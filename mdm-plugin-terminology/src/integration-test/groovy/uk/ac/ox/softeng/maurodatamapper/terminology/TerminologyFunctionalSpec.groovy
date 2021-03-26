@@ -35,6 +35,7 @@ import spock.lang.PendingFeature
 import spock.lang.Shared
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -663,6 +664,83 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         response.body().availableActions == ['delete', 'show', 'update']
         response.body().finalised
         response.body().dateFinalised
+
+        when: 'List edits for the Terminology'
+        GET("$id/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is not a CHANGENOTICE edit'
+        !response.body().items.find {
+            it.description == "Functional Test Change Notice"
+        }
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'test finalising Terminology with a changeNotice'() {
+        given: 'The save action is executed with valid data'
+        String id = createNewItem(validJson)
+
+        when:
+        PUT("$id/finalise", [versionChangeType: "Major", changeNotice: "Functional Test Change Notice"])
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().availableActions == ['delete', 'show', 'update']
+        response.body().finalised
+        response.body().dateFinalised
+
+        when: 'List edits for the Terminology'
+        GET("$id/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGENOTICE edit'
+        response.body().items.find {
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
+        }
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'Test undoing a soft delete using the admin endpoint'() {
+        given: 'model is deleted'
+        String id = createNewItem(validJson)
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().deleted == null
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'Test undoing a soft delete via update'() {
+        given: 'model is deleted'
+        String id = createNewItem(validJson)
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        PUT(id, [deleted: false])
+
+        then:
+        verifyResponse(FORBIDDEN, response)
+        responseBody().additional == 'Cannot update a deleted Model'
 
         cleanup:
         cleanUpData(id)
@@ -1595,7 +1673,8 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         String modifiedDescriptionSource = 'modifiedDescriptionSource'
 
         def requestBody = [
-            patch: [
+            changeNotice: 'Functional Test Merge Change Notice',
+            patch       : [
                 leftId : target,
                 rightId: source,
                 label  : "Functional Test Model",
@@ -1798,6 +1877,17 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         verifyResponse OK, response
         responseBody().sourceTerm.id == addLeftOnly
         responseBody().targetTerm.id == addAndAddReturningDifference
+
+        when: 'List edits for the Target Terminology'
+        GET("$target/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGENOTICE edit'
+        response.body().items.find {
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
+        }
 
         cleanup:
         cleanUpData(source)

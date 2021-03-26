@@ -17,6 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
+
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import spock.lang.Stepwise
@@ -24,6 +27,7 @@ import spock.lang.Stepwise
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
@@ -69,6 +73,13 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
     String getEditsFullPath(String id) {
         "${getEditsPath()}/${id}"
     }
+
+    @Transactional
+    void removeChangelogUsingTransaction(String id) {
+        log.info('Removing changelog id {} using transaction', id)
+        Edit changelog = Edit.get(id)
+        changelog.delete(flush: true)
+    }    
 
     /*
      * Logged in as editor testing
@@ -253,4 +264,47 @@ abstract class UserAccessFunctionalSpec extends UserAccessWithoutUpdatingFunctio
         cleanup:
         removeValidIdObject(id)
     }
+
+    void 'X03 : Test getting changelogs after creation (as editor)'() {
+        given:
+        def id = getValidId()
+        loginEditor()
+
+        when: 'getting initial changelogs'
+        GET("${getEditsFullPath(id)}/changelogs?sort=dateCreated&order=desc", MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+        response.body().count == 0
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'X04 : Test creating and getting a changelog (as editor)'() {
+        given:
+        def id = getValidId()
+        loginEditor()
+
+        when: 'creating a changelog'
+        POST("${getEditsFullPath(id)}/changelogs", ["description": "Functional Test Changelog"], MAP_ARG, true)
+
+        then: 'the response is created'
+        verifyResponse CREATED, response
+
+        when: 'getting changelogs after creation'
+        GET("${getEditsFullPath(id)}/changelogs?sort=dateCreated&order=desc", MAP_ARG, true)
+
+        then: 'the response is correct'
+        verifyResponse OK, response
+        response.body().count == 1
+        response.body().items[0].createdBy == userEmailAddresses.editor
+        response.body().items[0].description == "Functional Test Changelog"
+        response.body().items[0].title == "CHANGELOG"
+        def changelogId = response.body().items[0].id
+
+        cleanup:
+        removeValidIdObject(id)
+        removeChangelogUsingTransaction(changelogId)
+    }    
 }

@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
@@ -111,6 +112,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         dm?.deleted = true
     }
 
+    @Override
     void delete(ReferenceDataModel rdm, boolean permanent, boolean flush = true) {
         if (!rdm) return
         if (permanent) {
@@ -120,17 +122,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
             }
             rdm.delete(flush: flush)
         } else delete(rdm)
-    }
-
-    @Override
-    ReferenceDataModel softDeleteModel(ReferenceDataModel model) {
-        model?.deleted = true
-        model
-    }
-
-    @Override
-    void permanentDeleteModel(ReferenceDataModel model) {
-        delete(model, true)
     }
 
     List<ReferenceDataModel> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
@@ -290,14 +281,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     @Override
     List<UUID> findAllModelIds() {
         ReferenceDataModel.by().id().list() as List<UUID>
-    }
-
-    List<ReferenceDataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
-        ReferenceDataModel.byMetadataNamespaceAndKey(namespace, key).list(pagination)
-    }
-
-    List<ReferenceDataModel> findAllByMetadataNamespace(String namespace) {
-        ReferenceDataModel.byMetadataNamespace(namespace).list()
     }
 
     List<ReferenceDataModel> findAllByFolderId(UUID folderId) {
@@ -472,7 +455,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
         if (copy.validate()) {
             save(copy, validate: false)
-            editService.createAndSaveEdit(copy.id, copy.domainType,
+            editService.createAndSaveEdit(EditTitle.COPY, copy.id, copy.domainType,
                                           "ReferenceDataModel ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
             )
@@ -692,4 +675,15 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     void setReferenceDataModelIsFromReferenceDataModel(ReferenceDataModel source, ReferenceDataModel target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
     }
+
+    @Override
+    List<ReferenceDataModel> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ReferenceDataModel.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<ReferenceDataModel> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ReferenceDataModel.byMetadataNamespace(namespace).list(pagination)
+    }
+
 }

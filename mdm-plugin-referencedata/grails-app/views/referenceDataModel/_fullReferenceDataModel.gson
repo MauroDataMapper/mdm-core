@@ -23,6 +23,7 @@ json {
     if (referenceDataModel.author) author referenceDataModel.author
     if (referenceDataModel.organisation) organisation referenceDataModel.organisation
     if (referenceDataModel.modelVersion) modelVersion referenceDataModel.modelVersion.toString()
+    if (referenceDataModel.modelVersionTag) modelVersionTag referenceDataModel.modelVersionTag
 
     authority tmpl.'/authority/authority'(referenceDataModel.authority)
 }

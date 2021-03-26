@@ -23,6 +23,7 @@ json {
     if (dataModel.author) author dataModel.author
     if (dataModel.organisation) organisation dataModel.organisation
     if (dataModel.modelVersion) modelVersion dataModel.modelVersion.toString()
+    if (dataModel.modelVersionTag) modelVersionTag dataModel.modelVersionTag
 
     authority tmpl.'/authority/authority'(dataModel.authority)
 }

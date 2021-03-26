@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
+import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -181,5 +182,15 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
             referenceDataModel.addToReferenceDataTypes(enumerationType)
         }
         enumerationType
+    }
+
+    @Override
+    List<ReferenceEnumerationType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        ReferenceEnumerationType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<ReferenceEnumerationType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        ReferenceEnumerationType.byMetadataNamespace(namespace).list(pagination)
     }
 }

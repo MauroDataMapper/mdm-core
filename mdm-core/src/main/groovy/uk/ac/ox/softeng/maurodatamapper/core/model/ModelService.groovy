@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
@@ -31,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -99,9 +101,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract K saveModelNewContentOnly(K model)
 
-    abstract K softDeleteModel(K model)
+    abstract void delete(K model, boolean permanent)
 
-    abstract void permanentDeleteModel(K model)
+    abstract void delete(K model, boolean permanent, boolean flush)
 
     abstract int countByLabel(String label)
 
@@ -120,7 +122,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                          boolean throwErrors,
                          UserSecurityPolicyManager userSecurityPolicyManager)
 
-    abstract List<K> findAllByMetadataNamespace(String namespace)
+    abstract List<K> findAllByMetadataNamespace(String namespace, Map pagination = [:])
 
     abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
 
@@ -133,6 +135,20 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         long st = System.currentTimeMillis()
         model.validate(deepValidate: false)
         log.debug('Validated Model in {}', Utils.timeTaken(st))
+        model
+    }
+
+    K softDeleteModel(K model) {
+        model?.deleted = true
+        model
+    }
+
+    void permanentDeleteModel(K model) {
+        delete(model, true)
+    }
+
+    K undoSoftDeleteModel(K model) {
+        model?.deleted = false
         model
     }
 
@@ -186,7 +202,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         modelVersionLinks.findAll {
             K sourceModel = get(it.catalogueItemId)
             sourceModel.finalised
-        }.collect {it.targetModelId}
+        }.collect { it.targetModelId }
     }
 
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
@@ -209,9 +225,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
-                    List<Serializable> supersedeModelIds = []) {
+                    String versionTag, List<Serializable> supersedeModelIds = []) {
         log.debug('Finalising model')
         long start = System.currentTimeMillis()
+
         model.finalised = true
         model.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
         // No requirement to have a breadcrumbtree
@@ -219,10 +236,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         model.modelVersion = getNextModelVersion(model, modelVersion, versionChangeType)
 
+        model.modelVersionTag = versionTag
+
         model.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Model',
                                description: "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                             "${OffsetDateTimeConverter.toString(model.dateFinalised)}")
-        editService.createAndSaveEdit(model.id, model.domainType,
+        editService.createAndSaveEdit(EditTitle.FINALISE, model.id, model.domainType,
                                       "${getModelClass().simpleName} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(model.dateFinalised)}",
                                       user)
@@ -414,7 +433,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
                                                             metadataService)
                                 }
                             } else {
-                                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
                                 if (modelItemService) {
                                     // apply deletions of children to target object
                                     mergeFieldDiff.deleted.each {
@@ -448,6 +467,21 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         rightModel
     }
 
+    List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType, UserSecurityPolicyManager userSecurityPolicyManager) {
+        if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
+
+        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
+        VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType)
+        List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
+
+        for (link in versionLinks) {
+            K linkedModel = get(link.catalogueItemId)
+            rootVersionTreeModel.addTarget(linkedModel.id, link.linkType)
+            versionTreeModelList.addAll(buildModelVersionTree(linkedModel, link.linkType, userSecurityPolicyManager))
+        }
+        versionTreeModelList
+    }
+
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
         thisModel.diff(otherModel)
     }
@@ -465,6 +499,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         // Choose the finalised parent with the lowest model version
         leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
+    }
+
+    K findOldestAncestor(K model) {
+        VersionLink versionLink = versionLinkService.findBySourceModel(model)
+        if (!versionLink)
+            return model
+        K parentModel = get(versionLink.targetModelId)
+        findOldestAncestor(parentModel)
     }
 
     K findLatestFinalisedModelByLabel(String label) {
@@ -602,12 +644,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
             if (countByLabel(model.label)) {
                 List<K> existingModels = findAllByLabel(model.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
-                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null)
+                    if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 model.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)

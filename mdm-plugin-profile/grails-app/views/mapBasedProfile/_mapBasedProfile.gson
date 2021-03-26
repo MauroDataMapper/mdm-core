@@ -1,0 +1,10 @@
+import uk.ac.ox.softeng.maurodatamapper.profile.object.MapBasedProfile
+
+model {
+    MapBasedProfile mapBasedProfile
+}
+json {
+    mapBasedProfile.each { k, v ->
+        if (v) call(k, v)
+    }
+}

@@ -217,6 +217,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     abstract Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType)
 
+    abstract List<K> findAllByMetadataNamespace(String namespace, Map pagination = [:])
+
+    abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
+
+
     void addClassifierToCatalogueItem(UUID catalogueItemId, Classifier classifier) {
         get(catalogueItemId).addToClassifiers(classifier)
     }
@@ -381,8 +386,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             .setParameter('domainId', domainId)
             .setParameter('facetId', facetId)
             .executeUpdate()
-        log.warn('stop')
-
     }
 
     void deleteAllFacetsByCatalogueItemId(UUID catalogueItemId, String queryToDeleteFromJoinTable) {

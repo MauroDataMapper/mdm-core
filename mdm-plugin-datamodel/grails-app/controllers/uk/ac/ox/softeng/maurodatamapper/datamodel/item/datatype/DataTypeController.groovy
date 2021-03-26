@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
@@ -167,6 +166,18 @@ class DataTypeController extends CatalogueItemController<DataType> {
         if (request.mimeTypes.any {it == MimeType.JSON || it == MimeType.JSON_API || MimeType.HAL_JSON}) return request.JSON
         if (request.mimeTypes.any {it == MimeType.XML || it == MimeType.ATOM_XML || MimeType.HAL_XML}) return request.XML
         return super.getObjectToBind()
+    }
+
+    @Override
+    @Transactional
+    protected boolean validateResource(DataType instance, String view) {
+        DataType validated = dataTypeService.validate(instance)
+        if (validated.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond validated.errors, view: view // STATUS CODE 422
+            return false
+        }
+        true
     }
 
 }

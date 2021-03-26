@@ -38,6 +38,7 @@ import spock.lang.Shared
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -589,6 +590,84 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         response.body().availableActions == ['delete', 'show', 'update']
         response.body().finalised
         response.body().dateFinalised
+
+        when: 'List edits for the DataModel'
+        GET("$id/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is not a CHANGE NOTICE edit'
+        !response.body().items.find {
+            it.description == "Functional Test Change Notice"
+        }
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'test finalising DataModel with a changeNotice'() {
+        given: 'The save action is executed with valid data'
+        String id = createNewItem(validJson)
+
+        when:
+        PUT("$id/finalise", [versionChangeType: 'Major', changeNotice: 'Functional Test Change Notice'])
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().availableActions == ['delete', 'show', 'update']
+        response.body().finalised
+        response.body().dateFinalised
+
+        when: 'List edits for the DataModel'
+        GET("$id/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
+        }
+
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'Test undoing a soft delete using the admin endpoint'() {
+        given: 'model is deleted'
+        String id = createNewItem(validJson)
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().deleted == null
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'Test undoing a soft delete via update'() {
+        given: 'model is deleted'
+        String id = createNewItem(validJson)
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        PUT(id, [deleted: false])
+
+        then:
+        verifyResponse(FORBIDDEN, response)
+        responseBody().additional == 'Cannot update a deleted Model'
 
         cleanup:
         cleanUpData(id)
@@ -1729,7 +1808,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String modifiedDescriptionSource = 'modifiedDescriptionSource'
 
         def requestBody = [
-            patch: [
+            changeNotice: 'Functional Test Merge Change Notice',
+            patch       : [
                 leftId : target,
                 rightId: source,
                 label  : "Functional Test Model",
@@ -1845,6 +1925,17 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         responseBody().items.label as Set == ['addRightToExistingClass', 'addLeftToExistingClass'] as Set
+
+        when: 'List edits for the Target DataModel'
+        GET("$target/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGE NOTICE edit'
+        response.body().items.find {
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
+        }
 
         cleanup:
         cleanUpData(source)
@@ -2156,6 +2247,144 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanUpData(target)
         cleanUpData(id)
     }
+
+    /**
+     * In this test we create a DataModel containing one DataClass. The DataModel is finalised, and a new branch 'source'
+     * created. On the source branch, a DataElement is added to the DataClass. The source branch is then merged 
+     * back into main, and we check that the DataElement which was created on the source branch is correctly added to the
+     * DataClass on the main branch.
+     */
+    void 'VB09e : test merging diff in which a DataElement has been created on a DataClass - failing test for MC-9433'() {
+        given: 'A DataModel is created'
+        String id = createNewItem(validJson)
+
+        when: 'A DataClass is added to the DataModel'
+        POST("$id/dataClasses", ["label": "Functional Test DataClass"])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def dataClassId = response.body().id
+
+        when: 'The DataModel is finalised'
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'A new model version is created'
+        PUT("$id/newBranchModelVersion", [branchName: 'source'])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def sourceDataModelId = response.body().id
+
+        when: 'Get the DataClasses on the source model'
+        GET("$sourceDataModelId/dataClasses")
+
+        then: 'The result is OK with one DataClass listed'
+        verifyResponse OK, response
+        response.body().count == 1
+        def sourceDataClassId = response.body().items[0].id
+
+        when: 'A new DataType is added to the source DataModel'
+        POST("$sourceDataModelId/dataTypes", ["label": "A", "domainType": "PrimitiveType"])
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def dataTypeId = response.body().id
+        
+        when: 'A new DataElement is added to the source DataClass'
+        POST("$sourceDataModelId/dataClasses/$sourceDataClassId/dataElements", ["label": "New Data Element", "dataType": ["id": dataTypeId]])        
+
+        then: 'The response is CREATED'
+        verifyResponse CREATED, response
+        def sourceDataElementId = response.body().id
+
+        when:
+        def requestBody = [
+            patch: [
+                "rightId": sourceDataModelId,
+                "leftId" : id,
+                "diffs"  : [
+                    [
+                        "fieldName": "dataClasses",
+                        "created"  : [],
+                        "deleted"  : [],
+                        "modified" : [
+                            [
+                                "leftId": sourceDataClassId,
+                                "diffs" : [
+                                    [
+                                        "fieldName": "dataClasses",
+                                        "created"  : [],
+                                        "deleted"  : [],
+                                        "modified" : []
+                                    ],
+                                    [
+                                        "fieldName": "dataTypes",
+                                        "created"  : [],
+                                        "deleted"  : [],
+                                        "modified" : []
+                                    ],
+                                    [
+                                        "fieldName": "dataElements",
+                                        "created"  : [
+                                            [
+                                                "id": sourceDataElementId
+                                            ]
+                                        ],
+                                        "deleted"  : [],
+                                        "modified" : []
+                                    ],
+                                    [
+                                        "fieldName": "metadata",
+                                        "created"  : [],
+                                        "deleted"  : [],
+                                        "modified" : []
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        "fieldName": "dataTypes",
+                        "created"  : [],
+                        "deleted"  : [],
+                        "modified" : []
+                    ],
+                    [
+                        "fieldName": "dataElements",
+                        "created"  : [],
+                        "deleted"  : [],
+                        "modified" : []
+                    ],
+                    [
+                        "fieldName": "metadata",
+                        "created"  : [],
+                        "deleted"  : [],
+                        "modified" : []
+                    ]
+                ]
+            ]
+        ]
+
+        PUT("$sourceDataModelId/mergeInto/$id", requestBody)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        when: 'Get the DataElements on the main branch model'
+        GET("$id/dataClasses/$dataClassId/dataElements")
+
+        then: 'The response is OK and there is one DataElement'
+        verifyResponse OK, response
+        response.body().count == 1
+        response.body().items[0].label == 'New Data Element'
+
+        cleanup:
+        cleanUpData(sourceDataModelId)
+        cleanUpData(id)
+    }    
 
     void 'test changing folder from DataModel context'() {
         given: 'The save action is executed with valid data'
@@ -2807,14 +3036,14 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'I08 : test importing 2 DataModel'() {
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelXmlImporterService/3.0', [
-                finalised                      : true,
-                folderId                       : folderId.toString(),
-                importAsNewDocumentationVersion: false,
-                importFile                     : [
-                        fileName    : 'FT Import',
-                        fileType    : MimeType.XML.name,
-                        fileContents: loadTestFile('multiModels', 'xml').toList()
-                ]
+            finalised                      : true,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.XML.name,
+                fileContents: loadTestFile('multiModels', 'xml').toList()
+            ]
         ])
         verifyResponse CREATED, response
         def id = response.body().items[0].id
@@ -2832,12 +3061,12 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'E03 : test export simple DataModel'() {
         given:
         POST('import/uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer/DataModelJsonImporterService/2.0', [
-                finalised                      : false,
-                folderId                       : folderId.toString(),
-                importAsNewDocumentationVersion: false,
-                importFile                     : [
-                        fileName: 'FT Import',
-                        fileType: MimeType.JSON_API.name,
+            finalised                      : false,
+            folderId                       : folderId.toString(),
+            importAsNewDocumentationVersion: false,
+            importFile                     : [
+                fileName    : 'FT Import',
+                fileType    : MimeType.JSON_API.name,
                 fileContents: loadTestFile('simpleDataModel').toList()
             ]
         ])

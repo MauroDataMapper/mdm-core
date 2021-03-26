@@ -17,11 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.email
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
-import uk.ac.ox.softeng.maurodatamapper.core.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.EmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
@@ -40,17 +39,12 @@ class EmailService {
     MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
     ApiPropertyService apiPropertyService
 
-    private static EmailProviderService emailInstance
-
     List<Email> list(Map pagination = [:]) {
         Email.withFilter(pagination).list(pagination)
     }
 
     EmailProviderService getEmailer() {
-        if (!emailInstance) {
-            emailInstance = mauroDataMapperServiceProviderService.getEmailProvider()
-        }
-        emailInstance
+        mauroDataMapperServiceProviderService.getEmailProvider()
     }
 
     @Transactional

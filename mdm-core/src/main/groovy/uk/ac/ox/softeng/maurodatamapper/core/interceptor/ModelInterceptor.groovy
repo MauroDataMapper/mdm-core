@@ -54,7 +54,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     @Override
     List<String> getApplicationAdminAccessMethods() {
-        ['deleteAll', 'documentSuperseded', 'modelSuperseded', 'deleted']
+        ['deleteAll', 'documentSuperseded', 'modelSuperseded', 'deleted', 'undoSoftDelete']
     }
 
     boolean checkModelActionsAuthorised() {
@@ -119,6 +119,10 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
             }
             return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName) ?:
                    forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
+        }
+
+        if (actionName == 'modelVersionTree') {
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId()) ?: notFound(getSecuredClass(), getId())
         }
 
         checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId(), true)

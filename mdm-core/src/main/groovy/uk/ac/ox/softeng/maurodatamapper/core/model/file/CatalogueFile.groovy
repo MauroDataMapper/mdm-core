@@ -33,7 +33,7 @@ trait CatalogueFile implements EditHistoryAware {
     @BindUsing({
         obj, source ->
             if (source['fileContents'] instanceof MultipartFile) {
-                obj.fileName = obj.fileName ?: ((MultipartFile) source['fileContents']).originalFilename
+                ((MultipartFile) source['fileContents']).originalFilename
             }
             source['fileContents']
     })

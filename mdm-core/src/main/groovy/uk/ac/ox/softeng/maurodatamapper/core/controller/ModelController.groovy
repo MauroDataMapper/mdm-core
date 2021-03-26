@@ -36,6 +36,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelIm
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeIntoData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -112,8 +113,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
 
         if (instance.finalised) return forbidden('Cannot update a finalised Model')
+        if (instance.deleted) return forbidden('Cannot update a deleted Model')
 
         instance.properties = getObjectToBind()
+
+        instance = performAdditionalUpdates(instance)
 
         if (!validateResource(instance, 'update')) return
 
@@ -142,7 +146,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
             }
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
@@ -153,6 +157,25 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         updateResource(instance)
 
         updateResponse(instance)
+    }
+
+    @Transactional
+    def undoSoftDelete() {
+        if (handleReadOnly()) {
+            return
+        }
+
+        T instance = queryForResource(params.id)
+        if (instance == null) {
+            transactionStatus.setRollbackOnly()
+            notFound(params.id)
+            return
+        }
+
+        getModelService().undoSoftDeleteModel(instance)
+
+        updateResource instance
+        updateResponse instance
     }
 
     @Transactional
@@ -282,6 +305,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             }
         }
 
+        if (mergeIntoData.changeNotice) {
+            instance.addChangeNoticeEdit(currentUser, mergeIntoData.changeNotice)
+        }
+
         updateResource(instance)
 
         updateResponse(instance)
@@ -315,11 +342,18 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
 
-        instance = modelService.finaliseModel(instance, currentUser,
-                                              finaliseData.version, finaliseData.versionChangeType,
+        instance = modelService.finaliseModel(instance,
+                                              currentUser,
+                                              finaliseData.version,
+                                              finaliseData.versionChangeType,
+                                              finaliseData.versionTag,
                                               finaliseData.supersededBy ?: []) as T
 
         if (!validateResource(instance, 'update')) return
+
+        if (finaliseData.changeNotice) {
+            instance.addChangeNoticeEdit(currentUser, finaliseData.changeNotice)
+        }
 
         updateResource instance
 
@@ -520,7 +554,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         log.debug('No errors in imported model')
 
-      Model savedModel = saveNewModelAndAddSecurity(model)
+        Model savedModel = saveNewModelAndAddSecurity(model)
 
         log.info('Single Model Import complete')
 
@@ -581,12 +615,12 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
-        result.each { m ->
+        result.each {m ->
             m.folder = folder
             getModelService().validate(m)
         }
 
-        if (result.any { it.hasErrors() }) {
+        if (result.any {it.hasErrors()}) {
             log.debug('Errors found in imported models')
             transactionStatus.setRollbackOnly()
             respond(getMultiErrorResponseMap(result), view: '/error', status: UNPROCESSABLE_ENTITY)
@@ -604,6 +638,18 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         log.info('Multi-Model Import complete')
 
         respond loadedModels, status: CREATED, view: 'index'
+
+    }
+
+    def modelVersionTree() {
+        T instance = queryForResource params[alternateParamsIdKey]
+
+        if (!instance) return notFound(params[alternateParamsIdKey])
+
+        T oldestAncestor = modelService.findOldestAncestor(instance)
+
+        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null, currentUserSecurityPolicyManager)
+        respond versionTreeModelList
 
     }
 
@@ -686,5 +732,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
         }
         savedModel
+    }
+
+    protected T performAdditionalUpdates(T model) {
+        // default is no-op
+        model
     }
 }

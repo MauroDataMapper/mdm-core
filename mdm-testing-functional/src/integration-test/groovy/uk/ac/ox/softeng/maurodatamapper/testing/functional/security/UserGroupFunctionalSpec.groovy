@@ -354,11 +354,13 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "CREATE",
       "description": "[UserGroup:testers] created"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     }
   ]
@@ -374,6 +376,7 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
      {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     }
   ]
@@ -461,21 +464,25 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "CREATE",
       "description": "[UserGroup:testers] created"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     }
   ]
@@ -490,11 +497,13 @@ class UserGroupFunctionalSpec extends UserAccessFunctionalSpec {
      {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     },
     {
       "dateCreated": "${json-unit.matches:offsetDateTime}",
       "createdBy": "editor@test.com",
+      "title": "UPDATE",
       "description": "${json-unit.any-string}"
     }
   ]

@@ -36,6 +36,7 @@ import spock.lang.Shared
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -393,6 +394,83 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         response.body().availableActions == ['delete', 'show', 'update',]
         response.body().finalised
         response.body().dateFinalised
+
+        when: 'List edits for the CodeSet'
+        GET("$id/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is not a CHANGENOTICE edit'
+        !response.body().items.find {
+            it.description == "Functional Test Change Notice"
+        }
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'test finalising CodeSet with a changeNotice'() {
+        given: 'The save action is executed with valid data'
+        String id = createNewItem(validJson)
+
+        when:
+        PUT("$id/finalise", [versionChangeType: "Major", changeNotice: "Functional Test Change Notice"])
+
+        then:
+        verifyResponse OK, response
+
+        and:
+        response.body().availableActions == ['delete', 'show', 'update',]
+        response.body().finalised
+        response.body().dateFinalised
+
+        when: 'List edits for the CodeSet'
+        GET("$id/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGENOTICE edit'
+        response.body().items.find {
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Change Notice"
+        }
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'Test undoing a soft delete using the admin endpoint'() {
+        given: 'model is deleted'
+        String id = createNewItem(validJson)
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        PUT("admin/$resourcePath/$id/undoSoftDelete", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().deleted == null
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'Test undoing a soft delete via update'() {
+        given: 'model is deleted'
+        String id = createNewItem(validJson)
+        DELETE(id)
+        verifyResponse(OK, response)
+        assert responseBody().deleted
+
+        when:
+        PUT(id, [deleted: false])
+
+        then:
+        verifyResponse(FORBIDDEN, response)
+        responseBody().additional == 'Cannot update a deleted Model'
 
         cleanup:
         cleanUpData(id)
@@ -1224,7 +1302,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
         when:
         def requestBody = [
-            patch: [
+            changeNotice: 'Functional Test Merge Change Notice',
+            patch       : [
                 leftId : target,
                 rightId: source,
                 label  : "Functional Test Model",
@@ -1232,24 +1311,24 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
                 diffs  : [
                     [
                         fieldName: "description",
-                        value: "DescriptionLeft"
+                        value    : "DescriptionLeft"
                     ],
                     [
                         fieldName: "terms",
                         deleted  : [
                             [
-                                id   : deleteAndModify,
+                                id: deleteAndModify,
                             ],
                             [
-                                id   : deleteLeftOnly,
+                                id: deleteLeftOnly,
                             ]
                         ],
                         created  : [
                             [
-                                id   : addLeftOnly,
+                                id: addLeftOnly,
                             ],
                             [
-                                id   : sourceModifyAndDelete,
+                                id: sourceModifyAndDelete,
                             ]
                         ],
                         modified : [
@@ -1290,6 +1369,17 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         responseBody().items.find { dataClass -> dataClass.label == 'MAMRD: modifyAndModifyReturningDifference' }.description ==
         'DescriptionLeft'
         responseBody().items.find { dataClass -> dataClass.label == 'MLO: modifyLeftOnly' }.description == 'Description'
+
+        when: 'List edits for the Target CodeSet'
+        GET("$target/edits", MAP_ARG)
+
+        then: 'The response is OK'
+        verifyResponse OK, response
+
+        and: 'There is a CHANGENOTICE edit'
+        response.body().items.find {
+            it.title == "CHANGENOTICE" && it.description == "Functional Test Merge Change Notice"
+        }
 
         cleanup:
         cleanUpData(source)
@@ -1820,7 +1910,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         cleanUpData(id)
     }
 
-   void 'IM02: test import single a CodeSet that was just exported'() {
+    void 'IM02: test import single a CodeSet that was just exported'() {
         given:
         String id = createNewItem(validJson)
 
@@ -1910,8 +2000,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
     void 'IM03: test import basic CodeSet as new documentation version'() {
         given:
         String id = createNewItem([
-            label    : 'Functional Test Model',
-            finalised: true,
+            label       : 'Functional Test Model',
+            finalised   : true,
             modelVersion: Version.from('1.0.0')
         ])
 
@@ -1975,8 +2065,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         verifyResponse CREATED, response
         def id = response.body().items[0].id
         String expected = new String(loadTestFile('simpleCodeSet')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                     '"exportedBy": "Unlogged User",')
-                                                                       .replace(/Test Authority/, 'Mauro Data Mapper')
+                                                                                 '"exportedBy": "Unlogged User",')
+            .replace(/Test Authority/, 'Mauro Data Mapper')
 
 
         expect:
@@ -2042,8 +2132,8 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
         def id = response.body().items[0].id
 
         String expected = new String(loadTestFile('codeSetFunctionalTest')).replaceFirst('"exportedBy": "Admin User",',
-                                                                                     '"exportedBy": "Unlogged User",')
-                                                                       .replace(/Test Authority/, 'Mauro Data Mapper')
+                                                                                         '"exportedBy": "Unlogged User",')
+            .replace(/Test Authority/, 'Mauro Data Mapper')
 
 
         expect:

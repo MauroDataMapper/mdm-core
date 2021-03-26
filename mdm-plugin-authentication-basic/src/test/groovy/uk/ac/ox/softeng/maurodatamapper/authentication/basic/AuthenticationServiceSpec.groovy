@@ -39,33 +39,33 @@ class AuthenticationServiceSpec extends BaseUnitSpec implements ServiceUnitTest<
 
     void 'test authenticating user and password validation'() {
         expect: 'no user fails'
-        !service.authenticateAndObtainUser(null, 'password')
+        !service.authenticateAndObtainUser(username: null, password: 'password')
 
         and: 'user doesnt exist fails'
-        !service.authenticateAndObtainUser('newtester@email.com', 'wobble')
+        !service.authenticateAndObtainUser(username: 'newtester@email.com', password: 'wobble')
 
         and: 'user with temp password but wrong password'
-        !service.authenticateAndObtainUser(reader.emailAddress, 'wobble')
+        !service.authenticateAndObtainUser(username: reader.emailAddress, password: 'wobble')
 
         and: 'user with valid temp password'
-        service.authenticateAndObtainUser(reader.emailAddress, reader.tempPassword)
+        service.authenticateAndObtainUser(username: reader.emailAddress, password: reader.tempPassword)
 
         and: 'user with password but wrong password'
-        !service.authenticateAndObtainUser(pending.emailAddress, 'wobble')
+        !service.authenticateAndObtainUser(username: pending.emailAddress, password: 'wobble')
 
         and: 'user with password and password'
-        service.authenticateAndObtainUser(pending.emailAddress, 'test password')
+        service.authenticateAndObtainUser(username: pending.emailAddress, password: 'test password')
 
     }
 
     void 'test second user authentication'() {
         expect:
-        service.authenticateAndObtainUser(admin.emailAddress, "password")
-        !service.authenticateAndObtainUser(admin.emailAddress, "Password")
-        !service.authenticateAndObtainUser(admin.emailAddress, "password1234")
-        service.authenticateAndObtainUser(admin.emailAddress, "    password")
-        service.authenticateAndObtainUser(admin.emailAddress, "password     ")
-        !service.authenticateAndObtainUser(admin.emailAddress, "pass   word")
+        service.authenticateAndObtainUser(username: admin.emailAddress, password: "password")
+        !service.authenticateAndObtainUser(username: admin.emailAddress, password: "Password")
+        !service.authenticateAndObtainUser(username: admin.emailAddress, password: "password1234")
+        service.authenticateAndObtainUser(username: admin.emailAddress, password: "    password")
+        service.authenticateAndObtainUser(username: admin.emailAddress, password: "password     ")
+        !service.authenticateAndObtainUser(username: admin.emailAddress, password: "pass   word")
     }
 
 

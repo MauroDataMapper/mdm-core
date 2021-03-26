@@ -96,6 +96,10 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         4
     }
 
+    String getExpectedNewlineLabel() {
+        'new label'
+    }
+
     void verifyBlankConstraints() {
         assert domain.errors.getFieldError('label').code == 'blank'
         assert domain.errors.getFieldError('description').code == 'blank'
@@ -556,4 +560,18 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         diffs.deleted.size() == 1
         diffs.deleted[0].value.label == 'test annotation 3'
     }
+
+    void 'CI14 : test newline in label'() {
+
+        given:
+        setValidDomainValues()
+        domain.label = 'new\nlabel'
+        
+
+        when:
+        checkAndSave(domain)
+
+        then:
+        domain.label == getExpectedNewlineLabel()       
+    }    
 }

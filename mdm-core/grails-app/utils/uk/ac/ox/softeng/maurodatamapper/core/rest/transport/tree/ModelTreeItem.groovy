@@ -34,6 +34,7 @@ class ModelTreeItem extends TreeItem {
     String modelType
     UUID containerId
     Version modelVersion
+    String modelVersionTag
     String branchName
 
     ModelTreeItem(Model model, String containerPropertyName, Boolean childrenExist, Boolean isSuperseded) {
@@ -49,6 +50,7 @@ class ModelTreeItem extends TreeItem {
         documentationVersion = model.documentationVersion
         modelType = model.modelType
         modelVersion = model.modelVersion
+        modelVersionTag = model.modelVersionTag
         branchName = model.branchName
     }
 

@@ -144,6 +144,10 @@ class ModelImportService implements CatalogueItemAwareService<ModelImport> {
         ModelImport.withFilter(ModelImport.byAnyCatalogueItemId(catalogueItemId), paginate).list(paginate)
     }
 
+    boolean hasCatalogueItemImportedCatalogueItem(CatalogueItem catalogueItem, CatalogueItem importedCatalogueItem) {
+        ModelImport.byCatalogueItemIdAndImportedCatalogueItemId(catalogueItem.id, importedCatalogueItem.id).count()
+    }
+
     /**
      * Validate that the domain type of the imported catalogue item can be imported by the domain type
      * of the importing catalogue item.

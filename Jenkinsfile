@@ -14,6 +14,12 @@ pipeline {
         //        timeout(time: 45, unit: 'MINUTES')
         // skipStagesAfterUnstable()
         buildDiscarder(logRotator(numToKeepStr: '30'))
+        disableConcurrentBuilds()
+        throttleJobProperty(
+            categories: ['mdm-core'],
+            throttleEnabled: true,
+            throttleOption: 'category'
+        )
     }
 
     stages {
@@ -63,6 +69,13 @@ pipeline {
             }
         }
 
+        // If the flyway is broken then do NOT deploy to artifactory
+        stage('Flyway Migration Check') {
+            steps {
+                sh './gradlew --build-cache verifyFlywayMigrationVersions'
+            }
+        }
+
         // Deploy develop branch even if tests fail if the code builds, as it'll be an unstable snapshot but we should still deploy
         stage('Deploy develop to Artifactory') {
             when {
@@ -107,10 +120,11 @@ pipeline {
                     'mdm-plugin-dataflow',
                     'mdm-plugin-datamodel',
                     'mdm-plugin-email-proxy',
+                    //                    'mdm-plugin-profile',
                     'mdm-plugin-referencedata',
                     'mdm-plugin-terminology',
                     'mdm-security',
-                ].collect { ":${it}:integrationTest" }.join(' ')
+                ].collect {":${it}:integrationTest"}.join(' ')
             }
             post {
                 always {
@@ -124,7 +138,7 @@ pipeline {
          */
         stage('Functional Test: mdm-core') {
             steps {
-                sh "./gradlew -Dgrails.functionalTest=true :mdm-core:integrationTest"
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-core:integrationTest"
             }
             post {
                 always {
@@ -134,7 +148,7 @@ pipeline {
         }
         stage('Functional Test: mdm-plugin-authentication-apikey') {
             steps {
-                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-authentication-apikey:integrationTest"
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-authentication-apikey:integrationTest"
             }
             post {
                 always {
@@ -144,7 +158,7 @@ pipeline {
         }
         stage('Functional Test: mdm-plugin-authentication-basic') {
             steps {
-                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-authentication-basic:integrationTest"
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-authentication-basic:integrationTest"
             }
             post {
                 always {
@@ -154,7 +168,7 @@ pipeline {
         }
         stage('Functional Test: mdm-plugin-dataflow') {
             steps {
-                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-dataflow:integrationTest"
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-dataflow:integrationTest"
             }
             post {
                 always {
@@ -164,7 +178,7 @@ pipeline {
         }
         stage('Functional Test: mdm-plugin-datamodel') {
             steps {
-                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-datamodel:integrationTest"
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-datamodel:integrationTest"
             }
             post {
                 always {
@@ -174,7 +188,7 @@ pipeline {
         }
         stage('Functional Test: mdm-plugin-referencedata') {
             steps {
-                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-referencedata:integrationTest"
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-referencedata:integrationTest"
             }
             post {
                 always {
@@ -184,7 +198,7 @@ pipeline {
         }
         stage('Functional Test: mdm-plugin-terminology') {
             steps {
-                sh "./gradlew -Dgrails.functionalTest=true :mdm-plugin-terminology:integrationTest"
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-terminology:integrationTest"
             }
             post {
                 always {
@@ -194,11 +208,21 @@ pipeline {
         }
         stage('Functional Test: mdm-security') {
             steps {
-                sh "./gradlew -Dgrails.functionalTest=true :mdm-security:integrationTest"
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-security:integrationTest"
             }
             post {
                 always {
                     junit allowEmptyResults: true, testResults: 'mdm-security/build/test-results/functionalTest/*.xml'
+                }
+            }
+        }
+        stage('Functional Test: mdm-plugin-profile') {
+            steps {
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-profile:integrationTest"
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-profile/build/test-results/functionalTest/*.xml'
                 }
             }
         }
@@ -276,6 +300,16 @@ pipeline {
                 }
             }
         }
+//        stage('E2E Profile Functional Test') {
+//            steps {
+//                sh "./gradlew -Dgradle.test.package=profile :mdm-testing-functional:integrationTest"
+//            }
+//            post {
+//                always {
+//                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/profile/*.xml'
+//                }
+//            }
+//        }
 
         stage('Compile complete Test Report') {
             steps {
@@ -296,10 +330,27 @@ pipeline {
             }
         }
 
+        stage('Static Code Analysis') {
+            steps {
+                sh "./gradlew -PciRun=true staticCodeAnalysis jacocoTestReport"
+            }
+        }
+
+        stage('Sonarqube') {
+            when {
+                    branch 'develop'
+            }
+            steps {
+                withSonarQubeEnv('JenkinsQube') {
+                    sh "./gradlew sonarqube"
+                }
+            }
+        }
+
         stage('Deploy master to Artifactory') {
             when {
                 allOf {
-                    branch 'master'
+                    branch 'main'
                     expression {
                         currentBuild.currentResult == 'SUCCESS'
                     }
@@ -315,8 +366,15 @@ pipeline {
 
     post {
         always {
+            recordIssues enabledForFailure: true, tools: [java(), javaDoc()]
+            recordIssues enabledForFailure: true, tool: checkStyle(pattern: '**/reports/checkstyle/*.xml')
+            recordIssues enabledForFailure: true, tool: codeNarc(pattern: '**/reports/codenarc/*.xml')
+            recordIssues enabledForFailure: true, tool: spotBugs(pattern: '**/reports/spotbugs/*.xml', useRankAsPriority: true)
+            recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/reports/pmd/*.xml')
+
+            publishCoverage adapters: [jacocoAdapter('**/reports/jacoco/jacocoTestReport.xml')]
             outputTestResults()
-            jacoco execPattern: '**/build/jacoco/*.exec'
+            jacoco classPattern: '**/build/classes', execPattern: '**/build/jacoco/*.exec', sourceInclusionPattern: '**/*.java,**/*.groovy', sourcePattern: '**/src/main/groovy,**/grails-app/controllers,**/grails-app/domain,**/grails-app/services,**/grails-app/utils'
             archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.log'
             slackNotification()
         }

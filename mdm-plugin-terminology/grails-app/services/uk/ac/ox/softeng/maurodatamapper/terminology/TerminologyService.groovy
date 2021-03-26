@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -99,6 +100,7 @@ class TerminologyService extends ModelService<Terminology> {
         terminology.deleted = true
     }
 
+    @Override
     void delete(Terminology terminology, boolean permanent, boolean flush = true) {
         if (!terminology) return
         if (permanent) {
@@ -110,17 +112,6 @@ class TerminologyService extends ModelService<Terminology> {
             deleteModelAndContent(terminology)
             log.debug('Terminology deleted. Took {}', Utils.timeTaken(start))
         } else delete(terminology)
-    }
-
-    @Override
-    Terminology softDeleteModel(Terminology model) {
-        model?.deleted = true
-        model
-    }
-
-    @Override
-    void permanentDeleteModel(Terminology model) {
-        delete(model, true)
     }
 
     List<Terminology> deleteAll(List<Serializable> idsToDelete, Boolean permanent) {
@@ -210,12 +201,14 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.by().id().list() as List<UUID>
     }
 
-    List<Terminology> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
+    @Override
+    List<Terminology> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         Terminology.byMetadataNamespaceAndKey(namespace, key).list(pagination)
     }
 
-    List<Terminology> findAllByMetadataNamespace(String namespace) {
-        Terminology.byMetadataNamespace(namespace).list()
+    @Override
+    List<Terminology> findAllByMetadataNamespace(String namespace, Map pagination) {
+        Terminology.byMetadataNamespace(namespace).list(pagination)
     }
 
     List<Terminology> findAllByFolderId(UUID folderId) {
@@ -269,7 +262,7 @@ class TerminologyService extends ModelService<Terminology> {
 
         if (copy.validate()) {
             save(copy, validate: false)
-            editService.createAndSaveEdit(copy.id, copy.domainType,
+            editService.createAndSaveEdit(EditTitle.COPY, copy.id, copy.domainType,
                                           "Terminology ${original.modelType}:${original.label} created as a copy of ${original.id}",
                                           copier
             )
@@ -344,6 +337,10 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     List<ModelItem> findAllTreeTypeModelItemsIn(Terminology terminology, boolean forDiff = false, boolean includeImported = false) {
         List<Term> terms = termService.findAllByTerminologyIdAndDepth(terminology.id, 1)
+        if (terms.size() > 100) {
+            log.warn('Too many terms found to provide a stable tree {}', terms.size())
+            return []
+        }
         termService.updateChildKnowledge(terms)
     }
 

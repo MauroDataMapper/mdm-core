@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security
 
-import uk.ac.ox.softeng.maurodatamapper.core.ApiPropertyService
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams

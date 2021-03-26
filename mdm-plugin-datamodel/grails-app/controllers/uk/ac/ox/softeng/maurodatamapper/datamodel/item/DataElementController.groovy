@@ -146,4 +146,16 @@ class DataElementController extends CatalogueItemController<DataElement> {
         if (!resource.dataType.ident()) resource.dataType.save()
         super.updateResource(resource) as DataElement
     }
+
+    @Override
+    @Transactional
+    protected boolean validateResource(DataElement instance, String view) {
+        DataElement validated = dataElementService.validate(instance)
+        if (validated.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond validated.errors, view: view // STATUS CODE 422
+            return false
+        }
+        true
+    }
 }

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -107,19 +108,19 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
 
     TermRelationshipType addCreatedEditToTerminology(User creator, TermRelationshipType domain, UUID terminologyId) {
         Terminology terminology = terminologyService.get(terminologyId)
-        terminology.addToEditsTransactionally creator, "[$domain.editLabel] added to component [${terminology.editLabel}]"
+        terminology.addToEditsTransactionally EditTitle.CREATE, creator, "[$domain.editLabel] added to component [${terminology.editLabel}]"
         domain
     }
 
     TermRelationshipType addUpdatedEditToTerminology(User editor, TermRelationshipType domain, UUID terminologyId, List<String> dirtyPropertyNames) {
         Terminology terminology = terminologyService.get(terminologyId)
-        terminology.addToEditsTransactionally editor, domain.editLabel, dirtyPropertyNames
+        terminology.addToEditsTransactionally EditTitle.UPDATE, editor, domain.editLabel, dirtyPropertyNames
         domain
     }
 
     TermRelationshipType addDeletedEditToTerminology(User deleter, TermRelationshipType domain, UUID terminologyId) {
         Terminology terminology = terminologyService.get(terminologyId)
-        terminology.addToEditsTransactionally deleter, "[$domain.editLabel] removed from component [${terminology.editLabel}]"
+        terminology.addToEditsTransactionally EditTitle.DELETE, deleter, "[$domain.editLabel] removed from component [${terminology.editLabel}]"
         domain
     }
 
@@ -187,5 +188,15 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
     List<TermRelationshipType> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                           String searchTerm, String domainType) {
         []
+    }
+
+    @Override
+    List<TermRelationshipType> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
+        TermRelationshipType.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<TermRelationshipType> findAllByMetadataNamespace(String namespace, Map pagination) {
+        TermRelationshipType.byMetadataNamespace(namespace).list(pagination)
     }
 }

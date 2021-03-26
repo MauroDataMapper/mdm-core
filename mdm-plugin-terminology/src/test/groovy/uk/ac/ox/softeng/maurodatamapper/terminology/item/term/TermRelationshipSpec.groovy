@@ -121,6 +121,11 @@ class TermRelationshipSpec extends ModelItemSpec<TermRelationship> implements Do
         // #4 == breadcrumbtree.label
     }
 
+    @Override
+    String getExpectedNewlineLabel() {
+        'child of'
+    }
+
     void 'test to make sure source and target cannot be the same'() {
         given:
         TermRelationshipType type2 = new TermRelationshipType(label: 'parent to', createdBy: StandardEmailAddress.UNIT_TEST)
