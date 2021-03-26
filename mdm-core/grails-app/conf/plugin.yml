@@ -96,3 +96,10 @@ hibernate:
         batch_size: 30
     order_inserts: true
     order_updates: true
+
+environments:
+    development:
+        grails:
+            views:
+                markup:
+                    cacheTemplates: false
