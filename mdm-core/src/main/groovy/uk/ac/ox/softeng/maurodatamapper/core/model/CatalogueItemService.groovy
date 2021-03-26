@@ -386,8 +386,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             .setParameter('domainId', domainId)
             .setParameter('facetId', facetId)
             .executeUpdate()
-        log.warn('stop')
-
     }
 
     void deleteAllFacetsByCatalogueItemId(UUID catalogueItemId, String queryToDeleteFromJoinTable) {
