@@ -298,16 +298,6 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(CodeSet codeSet, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(CodeSet catalogueItem, boolean forDiff = false, boolean includeImported = false) {
-        []
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         !domainType || domainType == CodeSet.simpleName
     }

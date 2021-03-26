@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
@@ -27,6 +28,7 @@ import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
+@SuppressWarnings('GroovyAssignabilityCheck')
 class TreeItemController extends RestfulController<TreeItem> implements MdmController {
 
     private static final String INCLUDE_DELETED_PARAM = 'includeDeleted'
@@ -57,7 +59,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
         if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
 
-        respond(treeItemService.buildCatalogueItemTree(catalogueItem, params.forDiff as boolean, params.imported))
+        respond(treeItemService.buildCatalogueItemTree(catalogueItem, false, params.imported))
     }
 
     def index() {
@@ -108,6 +110,13 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
                                                                              params.modelDomainType)
     }
 
+    def fullModelTree() {
+        log.debug('Call to tree for model')
+        Model model = treeItemService.findTreeCapableCatalogueItem(params.modelClass, params.modelId)
+        if (!model) return notFound(Model, params.modelId)
+
+        respond(treeItemService.buildFullModelTree(model))
+    }
 
     private boolean shouldIncludeDeletedItems() {
         // Not admin, no see deleted items

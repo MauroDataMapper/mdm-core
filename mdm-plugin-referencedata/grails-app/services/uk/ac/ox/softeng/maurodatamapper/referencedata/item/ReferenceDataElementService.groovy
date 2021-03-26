@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
@@ -111,16 +110,6 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
 
     void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
         removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(ReferenceDataElement catalogueItem, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataElement catalogueItem, boolean forDiff, boolean includeImported = false) {
-        []
     }
 
     @Override

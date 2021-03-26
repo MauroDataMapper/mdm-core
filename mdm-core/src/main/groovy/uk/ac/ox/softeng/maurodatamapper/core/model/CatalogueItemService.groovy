@@ -170,7 +170,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     boolean isExtendableByCatalogueItem(K extendingCatalogueItem, K extendedCatalogueItem) {
         false
-    }    
+    }
 
     abstract void deleteAll(Collection<K> catalogueItems)
 
@@ -203,9 +203,13 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff, boolean includeImported)
+    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender, boolean includeImported) {
+        false
+    }
 
-    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false, boolean includeImported = false)
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender, boolean includeImported) {
+        []
+    }
 
     abstract K findByIdJoinClassifiers(UUID id)
 
@@ -241,7 +245,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     void removeSemanticLinkFromCatalogueItem(UUID catalogueItemId, SemanticLink semanticLink) {
         removeFacetFromDomain(catalogueItemId, semanticLink.id, 'semanticLinks')
-    }  
+    }
 
     void removeReferenceFileFromCatalogueItem(UUID catalogueItemId, ReferenceFile referenceFile) {
         removeFacetFromDomain(catalogueItemId, referenceFile.id, 'referenceFiles')
@@ -257,7 +261,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     void removeModelExtendFromCatalogueItem(UUID catalogueItemId, ModelExtend modelExtend) {
         removeFacetFromDomain(catalogueItemId, modelExtend.id, 'modelExtends')
-    }      
+    }
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy.createdBy = copier.emailAddress
@@ -276,7 +280,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
                                     targetCatalogueItemDomainType: link.targetCatalogueItemDomainType,
@@ -325,7 +329,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                 it.beforeValidate()
             }
             ReferenceFile.saveAll(catalogueItem.referenceFiles)
-        }      
+        }
         catalogueItem.breadcrumbTree?.trackChanges()
         catalogueItem.breadcrumbTree?.beforeValidate()
         catalogueItem.breadcrumbTree?.save(validate: false)

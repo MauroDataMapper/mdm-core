@@ -506,46 +506,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanUpData(thirdId)
     }
 
-    void 'T08 : test diff tree for datamodel with content'() {
-        when:
-        GET("folders/dataModels/${dataModelId}?forDiff=true", STRING_ARG)
-
-        then:
-        verifyJsonResponse(OK, '''[
-    {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataClass",
-        "label": "Functional Test DataClass",
-        "hasChildren": false,
-        "modelId": "${json-unit.matches:id}"
-    },
-    {
-        "id": "${json-unit.matches:id}",
-        "domainType": "PrimitiveType",
-        "label": "string",
-        "hasChildren": false,
-        "modelId": "${json-unit.matches:id}"
-    }
-]''')
-    }
-
-    void 'T09: test diff tree for dataclass with content'() {
-        when:
-        GET("folders/dataClasses/$dataClassId?forDiff=true", STRING_ARG)
-
-        then:
-        verifyJsonResponse(OK, '''[
-    {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataElement",
-        "label": "Functional Test DataElement",
-        "hasChildren": false,
-        "modelId": "${json-unit.matches:id}",
-        "parentId": "${json-unit.matches:id}"
-    }
-]''')
-    }
-
     void 'TA01 : test getting deleted models'() {
         given: 'finalised model is created'
         POST("folders/${folder.id}/dataModels", [
@@ -780,7 +740,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "parentId": "${json-unit.matches:id}"
   }
 ]''')
-    }    
+    }
 
     void 'TMI04 : test tree for datamodel classes with imports, not showing those imports'() {
         when:
@@ -788,7 +748,27 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then:
         verifyJsonResponse(OK, '''[]''')
-    }     
+    }
+
+    void 'FTR : test full tree render'() {
+        when:
+        GET("dataModels/${dataModelId}")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody()
+        responseBody().hasChildren
+        responseBody().children.size() == 2
+        responseBody().children.any {it.label == 'string' && !it.hasChildren}
+        responseBody().children.any {it.label == 'Functional Test DataClass' && it.hasChildren}
+
+        when:
+        Map dataClassTree = responseBody().children.find {it.label == 'Functional Test DataClass'}
+
+        then:
+        dataClassTree.children.size() == 1
+        dataClassTree.children.any {it.label == 'Functional Test DataElement'}
+    }
 
     @Override
     void cleanUpData(String id) {

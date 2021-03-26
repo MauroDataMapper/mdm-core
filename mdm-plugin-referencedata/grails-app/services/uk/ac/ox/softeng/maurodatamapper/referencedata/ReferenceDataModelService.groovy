@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
@@ -524,16 +523,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
             criteria.list().collectEntries { [it[0], it[1]] }
         }
     */
-
-    @Override
-    boolean hasTreeTypeModelItems(ReferenceDataModel dataModel, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataModel catalogueItem, boolean forDiff, boolean includeImported = false) {
-        []
-    }
 
     @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {

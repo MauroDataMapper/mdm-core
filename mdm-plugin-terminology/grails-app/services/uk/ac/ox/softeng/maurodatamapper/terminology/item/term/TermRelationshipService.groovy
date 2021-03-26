@@ -17,10 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item.term
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -213,16 +211,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
     @Override
     List<TermRelationship> getAll(Collection<UUID> ids) {
         TermRelationship.getAll(ids).findAll()
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(TermRelationship catalogueItem, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationship catalogueItem, boolean forDiff = false, boolean includeImported = false) {
-        []
     }
 
     @Override

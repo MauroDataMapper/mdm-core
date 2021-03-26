@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.tree
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -39,27 +40,50 @@ class TreeItemInterceptor implements MdmInterceptor {
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
     boolean before() {
-        mapDomainTypeToClass('container', true)
+        if (params.containerDomainType) {
+            mapDomainTypeToClass('container', true)
 
-        if (!params.containerClass) {
-            render status: HttpStatus.NOT_FOUND, model: [path: request.requestURI]
-            return false
-        }
-
-        if (actionName in ['documentationSupersededModels', 'modelSupersededModels', 'deletedModels']) {
-            return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
-        }
-
-        if (isShow()) {
-            mapDomainTypeToClass('catalogueItem', true)
-            // Verify the user can see the catalogue item to allow them to see the tree
-            if (Utils.parentClassIsAssignableFromChild(SecurableResource, params.catalogueItemClass)) {
-                return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, params.catalogueItemClass,
-                                                                   params.catalogueItemId)
+            if (!params.containerClass) {
+                render status: HttpStatus.NOT_FOUND, model: [path: request.requestURI]
+                return false
             }
 
-            Model model = proxyHandler.unwrapIfProxy(getOwningModel())
-            return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, model.getClass(), model.getId())
+            if (!Utils.parentClassIsAssignableFromChild(Container, params.containerClass)) {
+                throw new ApiBadRequestException('TII01', "Tree called for non-Container class ${params.containerDomainType}")
+            }
+
+            if (actionName in ['documentationSupersededModels', 'modelSupersededModels', 'deletedModels']) {
+                return currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
+            }
+
+            if (isShow()) {
+                mapDomainTypeToClass('catalogueItem', true)
+                // Verify the user can see the catalogue item to allow them to see the tree
+                if (Utils.parentClassIsAssignableFromChild(SecurableResource, params.catalogueItemClass)) {
+                    return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, params.catalogueItemClass,
+                                                                       params.catalogueItemId)
+                }
+
+                Model model = proxyHandler.unwrapIfProxy(getOwningModel())
+                return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, model.getClass(), model.getId())
+            }
+        } else if (params.modelDomainType) {
+            mapDomainTypeToClass('model', true)
+            if (!params.modelClass) {
+                render status: HttpStatus.NOT_FOUND, model: [path: request.requestURI]
+                return false
+            }
+            if (!Utils.parentClassIsAssignableFromChild(Model, params.modelClass)) {
+                throw new ApiBadRequestException('TII02', "Tree called for non-Model class ${params.modelDomainType}")
+            }
+            if (actionName == 'fullModelTree') {
+                boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(params.modelClass, params.modelId, params.modelClass,
+                                                                                         params.modelId)
+                return canRead ?: notFound(params.modelClass, params.modelId)
+            } else {
+                render status: HttpStatus.NOT_FOUND, model: [path: request.requestURI]
+                return false
+            }
         }
         // Otherwise top level action so should be allowed through
         true

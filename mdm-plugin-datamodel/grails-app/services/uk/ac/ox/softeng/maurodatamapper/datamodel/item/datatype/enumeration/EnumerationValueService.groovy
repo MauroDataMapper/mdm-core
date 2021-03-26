@@ -100,16 +100,6 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(EnumerationValue catalogueItem, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationValue catalogueItem, boolean forDiff = false, boolean includeImported = false) {
-        []
-    }
-
-    @Override
     EnumerationValue findByIdJoinClassifiers(UUID id) {
         EnumerationValue.findById(id, [fetch: [classifiers: 'join']])
     }
