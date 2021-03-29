@@ -30,15 +30,15 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
     abstract Class<K> getModelItemClass()
 
     void deleteAllByModelId(UUID modelId) {
-        throw new ApiNotYetImplementedException('MISXX', "deleteAllByModelId for ${getModelItemClass().simpleName}")
+        throw new ApiNotYetImplementedException('MIS01', "deleteAllByModelId for ${getModelItemClass().simpleName}")
     }
 
-    K copy(Model copiedModel, K original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        throw new ApiNotYetImplementedException('MISXX', "copy [for ModelItem ${getModelItemClass().simpleName}]")
+    K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        throw new ApiNotYetImplementedException('MIS02', "copy [for ModelItem ${getModelItemClass().simpleName}]")
     }
 
-    K copy(Model copiedModel, K original, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId) {
-        throw new ApiNotYetImplementedException('MISXX', "copy [for ModelItem ${getModelItemClass().simpleName}] (with parent id)")
+    K copy(Model copiedModelInto, K original, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId) {
+        throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}] (with parent id)")
     }
 
 }

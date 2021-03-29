@@ -17,18 +17,21 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration
 
-
+import org.grails.web.databinding.bindingsource.InvalidRequestBodyException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
+
 
 @Slf4j
 class EnumerationValueService extends ModelItemService<EnumerationValue> {
@@ -173,5 +176,32 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
     @Override
     List<EnumerationValue> findAllByMetadataNamespace(String namespace, Map pagination) {
         EnumerationValue.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    EnumerationValue copy(Model copiedDataModel, EnumerationValue original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    }
+
+    EnumerationValue copyDataClass(DataModel copiedDataModel, EnumerationValue original, User copier,
+                            UserSecurityPolicyManager userSecurityPolicyManager,
+                            Serializable parentDataClassId = null, boolean copySummaryMetadata = false) {
+        EnumerationValue copy = new EnumerationValue(key: original.key,
+                value: original.value)
+
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        setCatalogueItemRefinesCatalogueItem(copy, original, copier)
+
+        EnumerationType enumerationType = copiedDataModel.findEnumerationTypeByLabel(original.enumerationType.label)
+
+        // We should not have a situation where there is not an EnumerationType
+        if (!enumerationType) {
+            throw new InvalidRequestBodyException('EVS01','EnumerationType not found for the given EnumerationValue')
+        }
+
+        enumerationType.addToEnumerationValues(copy)
+
+        copy
+
     }
 }
