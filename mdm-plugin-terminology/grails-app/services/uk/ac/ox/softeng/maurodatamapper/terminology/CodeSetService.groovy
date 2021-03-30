@@ -24,8 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -33,7 +31,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -197,61 +194,67 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    CodeSet mergeModelIntoModel(CodeSet leftModel, CodeSet rightModel, MergeObjectDiffData mergeObjectDiff,
-                                UserSecurityPolicyManager userSecurityPolicyManager, DomainService itemService = this) {
+    CodeSet mergeObjectDiffIntoModel(MergeObjectDiffData modelMergeObjectDiff, CodeSet targetModel,
+                                     UserSecurityPolicyManager userSecurityPolicyManager) {
 
-        CatalogueItem catalogueItem = (itemService as CatalogueItemService).get(mergeObjectDiff.leftId)
 
-        mergeObjectDiff.diffs.each {
-            diff ->
-                diff.each {
-                    mergeFieldDiff ->
-                        if (mergeFieldDiff.value) {
-                            catalogueItem.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-                        } else {
-                            // if no value, then some combination of created, deleted, and modified may exist
-                            ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+        if (!modelMergeObjectDiff.hasDiffs()) return targetModel
 
-                            if (mergeFieldDiff.fieldName == 'terms' && modelItemService) {
-                                mergeFieldDiff.deleted.each { obj -> catalogueItem.removeFromTerms(modelItemService.get(obj.id)) }
-                                // copy additions from source to target object
-                                mergeFieldDiff.created.each { obj -> catalogueItem.addToTerms(modelItemService.get(obj.id)) }
-                                // for modifications, recursively call this method
-                                mergeFieldDiff.modified.each {
-                                    obj ->
-                                        catalogueItem.removeFromTerms(modelItemService.get(obj.leftId))
-                                        catalogueItem.addToTerms(modelItemService.get(obj.rightId))
-                                }
-                            } else if (modelItemService) {
-                                // apply deletions of children to target object
-                                mergeFieldDiff.deleted.each {
-                                    obj ->
-                                        ModelItem modelItem = modelItemService.get(obj.id) as ModelItem
-                                        modelItemService.delete(modelItem)
-                                }
+        modelMergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
 
-                                def parentId = modelItemService.class == itemService.class ? mergeObjectDiff.leftId : null
+            if (mergeFieldDiff.isFieldChange()) {
+                targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+            } else if (mergeFieldDiff.isMetadataChange()) {
+                mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+            } else {
+                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
 
-                                // copy additions from source to target object
-                                mergeFieldDiff.created.each {
-                                    obj ->
-                                        ModelItem modelItem = modelItemService.get(obj.id) as ModelItem
-                                        parentId ?
-                                        modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager, parentId) :
-                                        modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager)
-                                }
-                                // for modifications, recursively call this method
-                                mergeFieldDiff.modified.each {
-                                    obj ->
-                                        mergeModelIntoModel(leftModel, rightModel, obj,
-                                                            userSecurityPolicyManager,
-                                                            modelItemService)
-                                }
-                            }
+                if (modelItemService) {
+
+                    // Special handling for terms as CodeSets dont own terms
+                    if (mergeFieldDiff.fieldName == 'terms') {
+                        // apply deletions of children to target object
+                        mergeFieldDiff.deleted.each {mergeItemData ->
+                            Term modelItem = modelItemService.get(mergeItemData.id) as Term
+                            targetModel.removeFromTerms(modelItem)
                         }
+
+                        // copy additions from source to target object
+                        mergeFieldDiff.created.each {mergeItemData ->
+                            Term modelItem = modelItemService.get(mergeItemData.id) as Term
+                            targetModel.addToTerms(modelItem)
+                        }
+                        // for modifications, recursively call this method
+                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+                            Term termToRemove = modelItemService.get(mergeObjectDiffData.leftId) as Term
+                            Term termToAdd = modelItemService.get(mergeObjectDiffData.rightId) as Term
+                            targetModel.removeFromTerms(termToRemove)
+                            targetModel.addToTerms(termToAdd)
+                        }
+                    } else {
+                        // apply deletions of children to target object
+                        mergeFieldDiff.deleted.each {mergeItemData ->
+                            ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
+                            modelItemService.delete(modelItem)
+                        }
+
+                        // copy additions from source to target object
+                        mergeFieldDiff.created.each {mergeItemData ->
+                            ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
+                            modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
+                        }
+                        // for modifications, recursively call this method
+                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+                            ModelItem modelItem = modelItemService.get(mergeObjectDiffData.leftId) as ModelItem
+                            modelItemService.mergeObjectDiffIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
+                        }
+                    }
+                } else {
+                    log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
                 }
+            }
         }
-        rightModel
+        targetModel
     }
 
     CodeSet copyModel(CodeSet original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,

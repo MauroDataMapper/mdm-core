@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
@@ -229,6 +229,26 @@ class MetadataService implements CatalogueItemAwareService<Metadata> {
         }
         namespaceKeys
 
+    }
+
+    void mergeMetadataIntoCatalogueItem(CatalogueItem targetCatalogueItem, MergeObjectDiffData mergeObjectDiffData) {
+
+        if (!mergeObjectDiffData.hasDiffs()) return
+
+        Metadata targetMetadata = findByCatalogueItemIdAndId(targetCatalogueItem.id, mergeObjectDiffData.leftId)
+        if (!targetMetadata) {
+            log.error('Attempted to merge non-existent metadata [{}] inside target catalogue item [{}]', mergeObjectDiffData.leftId,
+                      targetCatalogueItem.id)
+        }
+
+        mergeObjectDiffData.getValidDiffs().each {mergeFieldDiffData ->
+            if (mergeFieldDiffData.value) {
+                targetMetadata.setProperty(mergeFieldDiffData.fieldName, mergeFieldDiffData.value)
+            } else {
+                log.error('Only field diff types can be handled inside MetadataService')
+            }
+        }
+        targetMetadata.save(validate: false, flush: true)
     }
 
     private void singleBatchSave(Collection<Metadata> metadata) {

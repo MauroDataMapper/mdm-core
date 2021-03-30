@@ -284,17 +284,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
+        newDocVersion.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
 
         and:
-        dataModel.dataTypes.every { odt ->
+        dataModel.dataTypes.every {odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        dataModel.dataClasses.every {odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -351,17 +351,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
+        newDocVersion.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
 
         and:
-        dataModel.dataTypes.every { odt ->
+        dataModel.dataTypes.every {odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        dataModel.dataClasses.every {odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -459,14 +459,14 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         }
 
         and:
-        dataModel.dataTypes.every { odt ->
+        dataModel.dataTypes.every {odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        dataModel.dataClasses.every {odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -522,17 +522,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
+        newVersion.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF}
 
         and:
-        dataModel.dataTypes.every { odt ->
+        dataModel.dataTypes.every {odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        dataModel.dataClasses.every {odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -629,17 +629,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newBranch.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newBranch.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+        newBranch.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
 
         and:
-        dataModel.dataTypes.every { odt ->
+        dataModel.dataTypes.every {odt ->
             newBranch.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        def missing = dataModel.dataClasses.findAll { odc ->
+        def missing = dataModel.dataClasses.findAll {odc ->
             !newBranch.dataClasses.find {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -700,17 +700,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newBranch.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newBranch.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
+        newBranch.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
 
         and:
-        dataModel.dataTypes.every { odt ->
+        dataModel.dataTypes.every {odt ->
             newBranch.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every { odc ->
+        dataModel.dataClasses.every {odc ->
             newBranch.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -768,7 +768,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find { it.code == 'model.label.branch.name.already.exists' }
+        result.errors.allErrors.find {it.code == 'model.label.branch.name.already.exists'}
     }
 
     void 'DMSF01 : test finding common ancestor of two datamodels'() {
@@ -929,8 +929,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         availableBranches.size() == 2
-        availableBranches.each { it.id in [draftModel.id, testModel.id] }
-        availableBranches.each { it.label == dataModel.label }
+        availableBranches.each {it.id in [draftModel.id, testModel.id]}
+        availableBranches.each {it.label == dataModel.label}
     }
 
 
@@ -1044,47 +1044,47 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergeDiff.diffs
         mergeDiff.numberOfDiffs == 11
         mergeDiff.diffs.fieldName as Set == ['branchName', 'dataClasses'] as Set
-        def branchNameDiff = mergeDiff.diffs.find { it.fieldName == 'branchName' }
+        def branchNameDiff = mergeDiff.diffs.find {it.fieldName == 'branchName'}
         branchNameDiff.left == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         branchNameDiff.right == 'test'
         !branchNameDiff.isMergeConflict
-        def dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' }
+        def dataClassesDiff = mergeDiff.diffs.find {it.fieldName == 'dataClasses'}
         dataClassesDiff.created.size == 3
         dataClassesDiff.deleted.size == 2
         dataClassesDiff.modified.size == 4
         dataClassesDiff.created.value.label as Set == ['addLeftOnly', 'leftParentDataClass', 'modifyAndDelete'] as Set
-        !dataClassesDiff.created.find { it.value.label == 'addLeftOnly' }.isMergeConflict
-        !dataClassesDiff.created.find { it.value.label == 'addLeftOnly' }.commonAncestorValue
-        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.isMergeConflict
-        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.commonAncestorValue
-        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.isMergeConflict
-        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestorValue
+        !dataClassesDiff.created.find {it.value.label == 'addLeftOnly'}.isMergeConflict
+        !dataClassesDiff.created.find {it.value.label == 'addLeftOnly'}.commonAncestorValue
+        !dataClassesDiff.created.find {it.value.label == 'leftParentDataClass'}.isMergeConflict
+        !dataClassesDiff.created.find {it.value.label == 'leftParentDataClass'}.commonAncestorValue
+        dataClassesDiff.created.find {it.value.label == 'modifyAndDelete'}.isMergeConflict
+        dataClassesDiff.created.find {it.value.label == 'modifyAndDelete'}.commonAncestorValue
         dataClassesDiff.deleted.value.label as Set == ['deleteAndModify', 'deleteLeftOnly'] as Set
-        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.isMergeConflict
-        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.commonAncestorValue
-        !dataClassesDiff.deleted.find { it.value.label == 'deleteLeftOnly' }.isMergeConflict
-        !dataClassesDiff.deleted.find { it.value.label == 'deleteLeftOnly' }.commonAncestorValue
+        dataClassesDiff.deleted.find {it.value.label == 'deleteAndModify'}.isMergeConflict
+        dataClassesDiff.deleted.find {it.value.label == 'deleteAndModify'}.commonAncestorValue
+        !dataClassesDiff.deleted.find {it.value.label == 'deleteLeftOnly'}.isMergeConflict
+        !dataClassesDiff.deleted.find {it.value.label == 'deleteLeftOnly'}.commonAncestorValue
         dataClassesDiff.modified.left.diffIdentifier as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                                                 'addAndAddReturningDifference'] as Set
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.diffs[0].fieldName == 'description'
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.isMergeConflict
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.commonAncestorValue
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].fieldName == 'dataClasses'
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.isMergeConflict
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.commonAncestorValue
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].value.label == 'addLeftToExistingClass'
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].value.label ==
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.isMergeConflict
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.commonAncestorValue
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].fieldName == 'dataClasses'
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.isMergeConflict
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.commonAncestorValue
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].value.label == 'addLeftToExistingClass'
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].value.label ==
         'deleteLeftOnlyFromExistingClass'
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].isMergeConflict
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].commonAncestorValue
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].isMergeConflict
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].commonAncestorValue
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].fieldName == 'description'
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].isMergeConflict
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].commonAncestorValue
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].fieldName == 'description'
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].isMergeConflict
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].commonAncestorValue
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].isMergeConflict
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].commonAncestorValue
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].isMergeConflict
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].commonAncestorValue
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].isMergeConflict
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].commonAncestorValue
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].fieldName == 'description'
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].isMergeConflict
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].commonAncestorValue
     }
 
     void 'DMSM02 : test merging diff into draft model'() {
@@ -1181,47 +1181,47 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergeDiff.diffs
         mergeDiff.numberOfDiffs == 12
         mergeDiff.diffs.fieldName as Set == ['branchName', 'dataClasses', 'description'] as Set
-        def branchNameDiff = mergeDiff.diffs.find { it.fieldName == 'branchName' }
+        def branchNameDiff = mergeDiff.diffs.find {it.fieldName == 'branchName'}
         branchNameDiff.left == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         branchNameDiff.right == 'test'
         !branchNameDiff.isMergeConflict
-        def dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' }
+        def dataClassesDiff = mergeDiff.diffs.find {it.fieldName == 'dataClasses'}
         dataClassesDiff.created.size == 3
         dataClassesDiff.deleted.size == 2
         dataClassesDiff.modified.size == 4
         dataClassesDiff.created.value.label as Set == ['addLeftOnly', 'leftParentDataClass', 'modifyAndDelete'] as Set
-        !dataClassesDiff.created.find { it.value.label == 'addLeftOnly' }.isMergeConflict
-        !dataClassesDiff.created.find { it.value.label == 'addLeftOnly' }.commonAncestorValue
-        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.isMergeConflict
-        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.commonAncestorValue
-        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.isMergeConflict
-        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestorValue
+        !dataClassesDiff.created.find {it.value.label == 'addLeftOnly'}.isMergeConflict
+        !dataClassesDiff.created.find {it.value.label == 'addLeftOnly'}.commonAncestorValue
+        !dataClassesDiff.created.find {it.value.label == 'leftParentDataClass'}.isMergeConflict
+        !dataClassesDiff.created.find {it.value.label == 'leftParentDataClass'}.commonAncestorValue
+        dataClassesDiff.created.find {it.value.label == 'modifyAndDelete'}.isMergeConflict
+        dataClassesDiff.created.find {it.value.label == 'modifyAndDelete'}.commonAncestorValue
         dataClassesDiff.deleted.value.label as Set == ['deleteAndModify', 'deleteLeftOnly'] as Set
-        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.isMergeConflict
-        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.commonAncestorValue
-        !dataClassesDiff.deleted.find { it.value.label == 'deleteLeftOnly' }.isMergeConflict
-        !dataClassesDiff.deleted.find { it.value.label == 'deleteLeftOnly' }.commonAncestorValue
+        dataClassesDiff.deleted.find {it.value.label == 'deleteAndModify'}.isMergeConflict
+        dataClassesDiff.deleted.find {it.value.label == 'deleteAndModify'}.commonAncestorValue
+        !dataClassesDiff.deleted.find {it.value.label == 'deleteLeftOnly'}.isMergeConflict
+        !dataClassesDiff.deleted.find {it.value.label == 'deleteLeftOnly'}.commonAncestorValue
         dataClassesDiff.modified.left.diffIdentifier as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                                                 'addAndAddReturningDifference'] as Set
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.diffs[0].fieldName == 'description'
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.isMergeConflict
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.commonAncestorValue
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].fieldName == 'dataClasses'
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.isMergeConflict
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.commonAncestorValue
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].value.label == 'addLeftToExistingClass'
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].value.label ==
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.isMergeConflict
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.commonAncestorValue
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].fieldName == 'dataClasses'
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.isMergeConflict
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.commonAncestorValue
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].value.label == 'addLeftToExistingClass'
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].value.label ==
         'deleteLeftOnlyFromExistingClass'
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].isMergeConflict
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].commonAncestorValue
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].isMergeConflict
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].commonAncestorValue
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].fieldName == 'description'
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].isMergeConflict
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].commonAncestorValue
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].fieldName == 'description'
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].isMergeConflict
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].commonAncestorValue
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].isMergeConflict
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].commonAncestorValue
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].isMergeConflict
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].commonAncestorValue
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].isMergeConflict
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].commonAncestorValue
+        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].fieldName == 'description'
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].isMergeConflict
+        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].commonAncestorValue
 
         when:
         DataClass addLeftOnly = dataClassService.findByDataModelIdAndLabel(testId, 'addLeftOnly')
@@ -1319,7 +1319,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 )
             ]
         )
-        def mergedModel = dataModelService.mergeModelIntoModel(test, draft, patch, adminSecurityPolicyManager)
+        def mergedModel = dataModelService.mergeObjectDiffIntoModel(patch, draft, adminSecurityPolicyManager)
 
         then:
         mergedModel.description == 'DescriptionLeft'
@@ -1327,10 +1327,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergedModel.dataClasses.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly', 'sdmclass',
                                                  'addAndAddReturningDifference', 'addLeftOnly', 'modifyAndDelete', 'addLeftToExistingClass',
                                                  'addRightToExistingClass'] as Set
-        mergedModel.dataClasses.find { it.label == 'existingClass' }.dataClasses.label as Set == ['addRightToExistingClass',
-                                                                                                  'addLeftToExistingClass'] as Set
-        mergedModel.dataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
-        mergedModel.dataClasses.find { it.label == 'modifyLeftOnly' }.description == 'Description'
+        mergedModel.dataClasses.find {it.label == 'existingClass'}.dataClasses.label as Set == ['addRightToExistingClass',
+                                                                                                'addLeftToExistingClass'] as Set
+        mergedModel.dataClasses.find {it.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
+        mergedModel.dataClasses.find {it.label == 'modifyLeftOnly'}.description == 'Description'
     }
 
 
@@ -1467,7 +1467,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.fieldErrors.any { it.field == 'dataClasses[0].label' }
+        invalid.errors.fieldErrors.any {it.field == 'dataClasses[0].label'}
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1589,9 +1589,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         results.size() == 3
 
         when:
-        DataElementSimilarityResult childRes = results.find { it.source.label == 'child' }
-        DataElementSimilarityResult ele1Res = results.find { it.source.label == 'ele1' }
-        DataElementSimilarityResult ele2Res = results.find { it.source.label == 'element2' }
+        DataElementSimilarityResult childRes = results.find {it.source.label == 'child'}
+        DataElementSimilarityResult ele1Res = results.find {it.source.label == 'ele1'}
+        DataElementSimilarityResult ele2Res = results.find {it.source.label == 'element2'}
 
         then:
         ele1Res
