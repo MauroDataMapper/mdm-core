@@ -330,4 +330,8 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     static DetachedCriteria<DataModel> withFilter(DetachedCriteria<DataModel> criteria, Map filters) {
         withCatalogueItemFilter(criteria, filters)
     }
+
+    DataType findEnumerationTypeByLabel(String label) {
+        getEnumerationTypes()?.find { it.label == label }
+    }
 }

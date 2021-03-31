@@ -33,7 +33,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProvi
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -202,7 +201,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         modelVersionLinks.findAll {
             K sourceModel = get(it.catalogueItemId)
             sourceModel.finalised
-        }.collect { it.targetModelId }
+        }.collect {it.targetModelId}
     }
 
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
@@ -391,80 +390,35 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     /**
      * Merges changes made to {@code leftModel} in {@code mergeObjectDiff} into {@code rightModel}. {@code mergeObjectDiff} is based on the return
      * from ObjectDiff.mergeDiff(), customised by the user.
-     * @param leftModel Source model
-     * @param rightModel Target model
-     * @param mergeObjectDiff Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
+     * @param sourceModel Source model
+     * @param targetModel Target model
+     * @param modelMergeObjectDiff Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
      * @param userSecurityPolicyManager To get user details and permissions when copying "added" items
-     * @param itemService Service which handles catalogueItems of the leftModel and rightModel type.
+     * @param domainService Service which handles catalogueItems of the leftModel and rightModel type.
      * @return The model resulting from the merging of changes.
      */
-    K mergeModelIntoModel(K leftModel, K rightModel, MergeObjectDiffData mergeObjectDiff,
-                          UserSecurityPolicyManager userSecurityPolicyManager, DomainService itemService = this) {
+    K mergeObjectDiffIntoModel(MergeObjectDiffData modelMergeObjectDiff, K targetModel,
+                               UserSecurityPolicyManager userSecurityPolicyManager) {
+        //TODO validation on saving merges
+        if (!modelMergeObjectDiff.hasDiffs()) return targetModel
+        log.debug('Merging {} diffs into model {}', modelMergeObjectDiff.getValidDiffs().size(), targetModel.label)
+        modelMergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
+            log.debug('{}', mergeFieldDiff.summary)
 
-        def item = itemService.get(mergeObjectDiff.leftId)
-
-        mergeObjectDiff.diffs.each {
-            diff ->
-                diff.each {
-                    mergeFieldDiff ->
-                        if (mergeFieldDiff.value) {
-                            item.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-                        } else {
-                            // if no value, then some combination of created, deleted, and modified may exist
-                            if (mergeFieldDiff.fieldName == 'metadata') {
-                                // call metadataService version of below
-                                mergeFieldDiff.deleted.each {
-                                    obj ->
-                                        def metadata = metadataService.get(obj.id)
-                                        metadataService.delete(metadata)
-                                }
-
-                                // copy additions from source to target object
-                                mergeFieldDiff.created.each {
-                                    obj ->
-                                        def metadata = metadataService.get(obj.id)
-                                        metadataService.copy(item as CatalogueItem, metadata, userSecurityPolicyManager)
-                                }
-                                // for modifications, recursively call this method
-                                mergeFieldDiff.modified.each {
-                                    obj ->
-                                        mergeModelIntoModel(leftModel, rightModel, obj,
-                                                            userSecurityPolicyManager,
-                                                            metadataService)
-                                }
-                            } else {
-                                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
-                                if (modelItemService) {
-                                    // apply deletions of children to target object
-                                    mergeFieldDiff.deleted.each {
-                                        obj ->
-                                            def modelItem = modelItemService.get(obj.id) as ModelItem
-                                            modelItemService.delete(modelItem)
-                                    }
-
-                                    def parentId = modelItemService.class == itemService.class ? mergeObjectDiff.leftId : null
-
-                                    // copy additions from source to target object
-                                    mergeFieldDiff.created.each {
-                                        obj ->
-                                            def modelItem = modelItemService.get(obj.id) as ModelItem
-                                            parentId ?
-                                            modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager, parentId) :
-                                            modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager)
-                                    }
-                                    // for modifications, recursively call this method
-                                    mergeFieldDiff.modified.each {
-                                        obj ->
-                                            mergeModelIntoModel(leftModel, rightModel, obj,
-                                                                userSecurityPolicyManager,
-                                                                modelItemService)
-                                    }
-                                }
-                            }
-                        }
+            if (mergeFieldDiff.isFieldChange()) {
+                targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+            } else if (mergeFieldDiff.isMetadataChange()) {
+                mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+            } else {
+                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                if (modelItemService) {
+                    modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+                } else {
+                    log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
                 }
+            }
         }
-        rightModel
+        targetModel
     }
 
     List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType, UserSecurityPolicyManager userSecurityPolicyManager) {
@@ -644,12 +598,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
             if (countByLabel(model.label)) {
                 List<K> existingModels = findAllByLabel(model.label)
-                existingModels.each { existing ->
+                existingModels.each {existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
+                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
                 model.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)

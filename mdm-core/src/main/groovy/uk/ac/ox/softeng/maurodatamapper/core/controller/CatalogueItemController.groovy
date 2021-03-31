@@ -44,4 +44,13 @@ abstract class CatalogueItemController<T extends CatalogueItem> extends EditLogg
         if (!params.boolean('noHistory')) resource.addCreatedEdit(currentUser)
         resource
     }
+
+    @Override
+    protected T updateResource(T resource) {
+        log.trace('update {}', resource.ident())
+        List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
+        serviceInsertResource(resource)
+        if (!params.boolean('noHistory')) resource.addUpdatedEdit(getCurrentUser(), dirtyPropertyNames)
+        resource
+    }
 }
