@@ -48,4 +48,11 @@ public @interface ImportParameterConfig {
     boolean password() default false;
 
     String descriptionJoinDelimiter() default "\n";
+
+    /**
+     * If set to true will hide this parameter from the list of possible parameters they are described
+     *
+     * @return boolean
+     */
+    boolean hidden() default false;
 }

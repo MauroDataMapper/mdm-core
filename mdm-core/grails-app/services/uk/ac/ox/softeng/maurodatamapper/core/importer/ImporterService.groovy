@@ -76,33 +76,37 @@ class ImporterService implements DataBinder {
 
             ImportParameterConfig config = field.getAnnotation(ImportParameterConfig)
 
-            String fieldType
+            // Only describe the parameters that arent hidden
+            if (!config.hidden()) {
 
-            switch (field.getType().getSimpleName()) {
-                case 'FileParameter':
-                    fieldType = 'File'
-                    break
-                case 'UUID':
-                    fieldType = 'Folder'
-                    break
-                default:
-                    fieldType = field.getType().getSimpleName()
-            }
+                String fieldType
 
-            if (config.password()) fieldType = 'Password'
+                switch (field.getType().getSimpleName()) {
+                    case 'FileParameter':
+                        fieldType = 'File'
+                        break
+                    case 'UUID':
+                        fieldType = 'Folder'
+                        break
+                    default:
+                        fieldType = field.getType().getSimpleName()
+                }
 
-            ImportParameterGroup group = groups.getOrDefault(config.group().name(), new ImportParameterGroup(name: config.group().name(),
-                                                                                                             order: config.group().order()))
+                if (config.password()) fieldType = 'Password'
 
-            group.addToImportParameters(
-                name: field.name,
-                type: fieldType,
-                order: config.order(),
-                optional: config.optional(),
-                displayName: config.displayName(),
-                description: config.description().join(config.descriptionJoinDelimiter()),
+                ImportParameterGroup group = groups.getOrDefault(config.group().name(), new ImportParameterGroup(name: config.group().name(),
+                                                                                                                 order: config.group().order()))
+
+                group.addToImportParameters(
+                    name: field.name,
+                    type: fieldType,
+                    order: config.order(),
+                    optional: config.optional(),
+                    displayName: config.displayName(),
+                    description: config.description().join(config.descriptionJoinDelimiter())
                 )
-            groups[group.name] = group
+                groups[group.name] = group
+            }
         }
 
         groups.values().sort()
