@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.converters.DataTypeValueConverter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.mapping.MdmPluginDatamodelSchemaMappingContext
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.mapping.SummaryMetadataAwareMappingContext
@@ -72,8 +71,8 @@ The DataModel domain, services and controllers for the Mauro Data Mapper backend
             dataTypeValueConverter DataTypeValueConverter
 
             summaryMetadataAwareMappingContext SummaryMetadataAwareMappingContext
-            modelImportAwareMappingContext ModelImportAwareMappingContext
-            modelExtendAwareMappingContext ModelExtendAwareMappingContext
+            //            modelImportAwareMappingContext ModelImportAwareMappingContext
+            //            modelExtendAwareMappingContext ModelExtendAwareMappingContext
         }
     }
 

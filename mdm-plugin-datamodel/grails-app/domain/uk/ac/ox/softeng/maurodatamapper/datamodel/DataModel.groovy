@@ -32,8 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.DataTypeCollectionBindingHelper
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataModelDataClassCollectionValidator
@@ -57,7 +55,7 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblingAware, ModelImportAware {
+class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblingAware {
 
     UUID id
 
@@ -67,7 +65,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     Required for binding during importing, this allows the import code to send a dataTypes collection object which is then bound to the correct
     datatype collections. This object should only be accessed using the getter method as the collection itself is transient and will not be populated
      */
-    @BindUsing({ obj, source -> new DataTypeCollectionBindingHelper().getPropertyValue(obj, 'dataTypes', source) })
+    @BindUsing({obj, source -> new DataTypeCollectionBindingHelper().getPropertyValue(obj, 'dataTypes', source)})
     private Set<DataType> dataTypes
 
     static hasMany = [
@@ -84,7 +82,7 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         primitiveTypes  : PrimitiveType,
         modelDataTypes  : ModelDataType,
         rules           : Rule,
-        modelImports    : ModelImport
+        //        modelImports    : ModelImport
     ]
 
     static belongsTo = [Folder]

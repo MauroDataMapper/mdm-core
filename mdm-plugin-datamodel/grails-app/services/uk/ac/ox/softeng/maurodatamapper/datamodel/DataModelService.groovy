@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -71,6 +72,8 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataTypeService dataTypeService
     DataClassService dataClassService
     DataElementService dataElementService
+//    ModelImportService modelImportService
+    AuthorityService authorityService
     SummaryMetadataService summaryMetadataService
     DataModelJsonImporterService dataModelJsonImporterService
 
@@ -104,12 +107,12 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
     /**
      * DataModel allows the import of DataType and DataClass
-     */
+     *
     @Override
     List<Class> domainImportableModelItemClasses() {
         [DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]
     }
-
+     */
     Long count() {
         DataModel.count()
     }
@@ -191,13 +194,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
-        if (catalogueItem.modelImports) {
-            catalogueItem.modelImports.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
-            }
-            ModelImport.saveAll(catalogueItem.modelImports)
-        }
+        //        if (catalogueItem.modelImports) {
+        //            catalogueItem.modelImports.each {
+        //                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+        //                it.catalogueItemId = catalogueItem.getId()
+        //            }
+        //            ModelImport.saveAll(catalogueItem.modelImports)
+        //        }
         catalogueItem
     }
 
@@ -631,11 +634,11 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
         }
 
-        modelImportService.findAllByCatalogueItemId(original.id).each {
-            copy.addToModelImports(it.importedCatalogueItemDomainType,
-                                   it.importedCatalogueItemId,
-                                   copier)
-        }
+        //        modelImportService.findAllByCatalogueItemId(original.id).each {
+        //            copy.addToModelImports(it.importedCatalogueItemDomainType,
+        //                                   it.importedCatalogueItemId,
+        //                                   copier)
+        //        }
         copy
     }
 
@@ -659,13 +662,13 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender, boolean includeImported = false) {
-        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && fullTreeRender) || (dataModel.modelImports && includeImported)
+    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender) {
+        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && fullTreeRender)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender = false, boolean includeImported = false) {
-        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id, [:], includeImported) +
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender = false) {
+        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id) +
          (fullTreeRender ? DataType.byDataModelId(catalogueItem.id).list() : []) as List<ModelItem>)
     }
 

@@ -17,18 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.facet
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.CatalogueItemModelImportFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-
 import io.micronaut.http.HttpResponse
+import spock.lang.Ignore
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
@@ -47,6 +44,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
  */
 @Integration
 @Slf4j
+@Ignore('No longer relevant')
 class DataModelImportingDataTypeModelImportFunctionalSpec extends CatalogueItemModelImportFunctionalSpec {
 
     @Transactional

@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.facet.CatalogueItemFacet
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+import spock.lang.Ignore
 
 /**
  *
@@ -34,6 +35,7 @@ import io.micronaut.http.HttpStatus
  *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/modelImports/${id}   | Action: show                                 |
  */
 @Slf4j
+@Ignore('No longer relevant')
 abstract class CatalogueItemModelImportFunctionalSpec extends CatalogueItemFacetFunctionalSpec<ModelImport> {
 
     abstract String getSourceDataModelId()

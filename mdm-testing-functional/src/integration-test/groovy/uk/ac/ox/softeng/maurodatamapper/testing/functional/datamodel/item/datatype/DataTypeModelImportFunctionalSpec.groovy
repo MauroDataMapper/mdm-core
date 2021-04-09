@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelImportFunctional
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.Ignore
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -49,6 +50,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
+@Ignore('No longer relevant')
 class DataTypeModelImportFunctionalSpec extends ModelImportFunctionalSpec {
 
     @Override

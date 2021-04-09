@@ -26,6 +26,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import spock.lang.Ignore
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
@@ -43,6 +44,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
  */
 @Integration
 @Slf4j
+@Ignore('No longer relevant')
 class DataClassExtendingDataClassModelExtendFunctionalSpec extends CatalogueItemModelExtendFunctionalSpec {
 
     @Transactional

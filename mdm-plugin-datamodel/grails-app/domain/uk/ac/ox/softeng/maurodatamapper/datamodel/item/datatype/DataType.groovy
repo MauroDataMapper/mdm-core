@@ -29,7 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataTypeLabelValidator
@@ -182,7 +181,7 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
      *
      * @param ID of DataModel which has imported other catalogue items
      * @return DetachedCriteria<DataType> for id in IDs of catalogue items which have been imported into the DataModel
-     */
+     *
     static DetachedCriteria<DataType> importedByDataModelId(Serializable dataModelId) {
         new DetachedCriteria<DataType>(DataType)
         .in('id', ModelImport.importedByCatalogueItemId(dataModelId))
@@ -194,19 +193,13 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
      * @param dataModelId The ID of the DataModel we are looking at
      * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
      *                        addition to DataTypes directly belonging to the DataModel)?
-     * @return DetachedCriteria<DataType>    
-     */
-    static DetachedCriteria<DataType> byDataModelId(Serializable dataModelId, boolean includeImported = false) {
-        DetachedCriteria criteria = new DetachedCriteria<DataType>(DataType)
+     * @return DetachedCriteria<DataType>
+     *
+     static DetachedCriteria<DataType> byDataModelId(Serializable dataModelId) {DetachedCriteria criteria = new DetachedCriteria<DataType>(DataType)
 
-        if (includeImported) {
-            criteria
-            .or {
-                inList('id', ModelImport.importedByCatalogueItemId(dataModelId))
-                eq('dataModel.id', Utils.toUuid(dataModelId))                
-            }
-        } else {
-            criteria
+     if (includeImported) {criteria
+     .or {inList('id', ModelImport.importedByCatalogueItemId(dataModelId))
+     eq('dataModel.id', Utils.toUuid(dataModelId))                }} else {criteria
             .eq('dataModel.id', Utils.toUuid(dataModelId))
         }
         
@@ -220,10 +213,18 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
      * @param searchTerm Search string which is applied against the label and description of the DataType
      * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
      *                        addition to DataTypes directly belonging to the DataModel)?
-     * @return DetachedCriteria<DataType>      
+     * @return DetachedCriteria<DataType>
+     *
+     static DetachedCriteria<DataType> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm) {byDataModelId
+     (dataModelId, includeImported).or {ilike('label', "%${searchTerm}%")
+     ilike('description', "%${searchTerm}%")}}
      */
-    static DetachedCriteria<DataType> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, boolean includeImported = false) {
-        byDataModelId(dataModelId, includeImported).or {
+    static DetachedCriteria<DataType> byDataModelId(Serializable dataModelId) {
+        new DetachedCriteria<DataType>(DataType).eq('dataModel.id', Utils.toUuid(dataModelId))
+    }
+
+    static DetachedCriteria<DataType> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm) {
+        byDataModelId(dataModelId).or {
             ilike('label', "%${searchTerm}%")
             ilike('description', "%${searchTerm}%")
         }

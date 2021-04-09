@@ -30,10 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtend
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtendAware
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataClassLabelValidator
@@ -56,7 +52,7 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware, IndexedSiblingAware, ModelImportAware, ModelExtendAware {
+class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, SummaryMetadataAware, IndexedSiblingAware /*, ModelImportAware*/ {
 
     public final static Integer BATCH_SIZE = 1000
 
@@ -75,8 +71,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         referenceTypes : ReferenceType,
         summaryMetadata: SummaryMetadata,
         rules          : Rule,
-        modelImports   : ModelImport,
-        modelExtends   : ModelExtend
+        //        modelImports       : ModelImport,
     ]
 
     static belongsTo = [DataClass, DataModel]
@@ -106,6 +101,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         dataClasses   : 'parentDataClass',
         referenceTypes: 'referenceClass',
         dataElements  : 'dataClass',
+        //  extendedDataClasses: 'none'
     ]
 
     static search = {
@@ -139,7 +135,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         } else {
             this.dataClasses == null ? false : !this.dataClasses.isEmpty()
         }
-    } 
+    }
 
     @Override
     def beforeValidate() {
@@ -210,20 +206,20 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     }
 
     DataClass findDataClass(String label) {
-        this.dataClasses.find { it.label == label }
+        this.dataClasses.find {it.label == label}
     }
 
     DataElement findDataElement(String label) {
-        dataElements.find { it.label == label }
+        dataElements.find {it.label == label}
     }
 
     int countDataElementsByLabel(String label) {
-        dataElements?.count { it.label == label } ?: 0
+        dataElements?.count {it.label == label} ?: 0
     }
 
     Set<DataClass> getAllUnsavedChildren() {
-        Set<DataClass> children = dataClasses.findAll { !it.id }
-        children + children.collectMany { it.getAllUnsavedChildren() }
+        Set<DataClass> children = dataClasses.findAll {!it.id}
+        children + children.collectMany {it.getAllUnsavedChildren()}
     }
 
     static String buildLabelPath(DataClass dataClass) {
@@ -236,75 +232,66 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      * DataClasses which have been imported into a DataModel i.e. excluding DataClasses owned directly by the DataModel.
      *
      * @param ID of DataModel which has imported other catalogue items
-     * @return DetachedCriteria<DataClass> for id in IDs of catalogue items which have been imported into the DataModel
-     */
-    static DetachedCriteria<DataClass> importedByDataModelId(Serializable dataModelId) {
-        new DetachedCriteria<DataClass>(DataClass)
-        .in('id', ModelImport.importedByCatalogueItemId(dataModelId))
-    }
-
-    /**
+     * @return DetachedCriteria<DataClass>     for id in IDs of catalogue items which have been imported into the DataModel
+     *
+     static DetachedCriteria<DataClass> importedByDataModelId(Serializable dataModelId) {new DetachedCriteria<DataClass>(DataClass)
+     .in('id', ModelImport.importedByCatalogueItemId(dataModelId))}/**
      * If we want to include imported DataClasses then do a logical OR on imported and directly owned DataClasses.
      *
      * @param dataModelId The ID of the DataModel we are looking at
      * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in
      *                        addition to DataClasses directly belonging to the DataModel)?
      * @return DetachedCriteria<DataClass>
-     */
-    static DetachedCriteria<DataClass> byDataModelId(Serializable dataModelId, boolean includeImported = false) {
-        DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
+     *
+     static DetachedCriteria<DataClass> byDataModelId(Serializable dataModelId) {DetachedCriteria criteria = new DetachedCriteria<DataClass>
+     (DataClass)
 
-        if (includeImported) {
-            criteria
-            .or {
-                inList('id', ModelImport.importedByCatalogueItemId(dataModelId))
-                eq('dataModel.id', Utils.toUuid(dataModelId))
-            }
-        } else {
-            criteria
-            .eq('dataModel.id', Utils.toUuid(dataModelId))
-        }
-
-        criteria
-    }
-
-    /**
+     if (includeImported) {criteria
+     .or {inList('id', ModelImport.importedByCatalogueItemId(dataModelId))
+     eq('dataModel.id', Utils.toUuid(dataModelId))}} else {criteria
+     .eq('dataModel.id', Utils.toUuid(dataModelId))}criteria}/**
      * If we want to include imported DataClasses then do a logical OR on imported and directly owned DataClasses.
      *
      * @param dataClassId The ID of the DataClass we are looking at
      * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataClass (in
      *                        addition to DataClasses directly belonging to the DataClass)?
      * @return DetachedCriteria<DataClass>
+     *
+     static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId,
+     boolean includeExtends = false) {DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
+
+     criteria
+     .or {if (!includeImported) {criteria.eq('dataModel.id', Utils.toUuid(dataModelId))}}.or {//DataClasses whose parent DataClass is dataClassId
+     criteria.eq('parentDataClass.id', dataClassId)
+
+     //DataClasses which have been imported into dataClassId
+     if (includeImported) {inList('id', ModelImport.importedByCatalogueItemId(dataClassId))}//DataClasses whose parent is extended by dataClassId
+     //            if (includeExtends) {//                inList('parentDataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))
+     //            }}criteria}static DetachedCriteria<DataClass> byRootDataClassOfDataModelId(UUID dataModelId) {byDataModelId(dataModelId,
+     includeImported).isNull('parentDataClass')}* Get DataClasses for a DataModel by the DataModel id and a search string, including imported data
+     classes if required.
+     *
+     * @param dataModelId The ID of the DataModel we are looking at
+     * @param searchTerm Search string which is applied against the label and description of the DataClass
+     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in
+     *                        addition to DataClasses directly belonging to the DataModel)?
+     * @return DetachedCriteria<DataClass>
+     *
+     static DetachedCriteria<DataClass> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm,
+     boolean includeImported = false) {byDataModelId(dataModelId, includeImported).or {ilike('label', "%${searchTerm}%")
+     ilike('description', "%${searchTerm}%")}}
      */
-    static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId, boolean includeImported = false, boolean includeExtends = false) {
-        DetachedCriteria criteria = new DetachedCriteria<DataClass>(DataClass)
 
-        criteria
-        .or {
-            if (!includeImported) {
-                criteria.eq('dataModel.id', Utils.toUuid(dataModelId))
-            }
-        }
-        .or {
-            //DataClasses whose parent DataClass is dataClassId
-            criteria.eq('parentDataClass.id', dataClassId)
-
-            //DataClasses which have been imported into dataClassId
-            if (includeImported) {
-                inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
-            }
-
-            //DataClasses whose parent is extended by dataClassId
-            if (includeExtends) {
-                inList('parentDataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))
-            }
-        }
-
-        criteria
+    static DetachedCriteria<DataClass> byDataModelId(UUID dataModelId) {
+        new DetachedCriteria<DataClass>(DataClass).eq('dataModel.id', dataModelId)
     }
 
-    static DetachedCriteria<DataClass> byRootDataClassOfDataModelId(UUID dataModelId, boolean includeImported = false) {
-        byDataModelId(dataModelId, includeImported).isNull('parentDataClass')
+    static DetachedCriteria<DataClass> byDataModelIdAndParentDataClassId(UUID dataModelId, UUID dataClassId) {
+        byDataModelId(dataModelId).eq('parentDataClass.id', dataClassId)
+    }
+
+    static DetachedCriteria<DataClass> byRootDataClassOfDataModelId(UUID dataModelId) {
+        byDataModelId(dataModelId).isNull('parentDataClass')
     }
 
     static DetachedCriteria<DataClass> byDataModelIdAndChildOfDataClassId(UUID dataModelId, UUID dataClassId) {
@@ -319,17 +306,8 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         byDataModelId(dataModelId).eq('label', label)
     }
 
-    /**
-     * Get DataClasses for a DataModel by the DataModel id and a search string, including imported data classes if required.
-     *
-     * @param dataModelId The ID of the DataModel we are looking at
-     * @param searchTerm Search string which is applied against the label and description of the DataClass
-     * @param includeImported Do we want to retrieve DataClasses which have been imported into the DataModel (in
-     *                        addition to DataClasses directly belonging to the DataModel)?
-     * @return DetachedCriteria<DataClass>
-     */
-    static DetachedCriteria<DataClass> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, boolean includeImported = false) {
-        byDataModelId(dataModelId, includeImported).or {
+    static DetachedCriteria<DataClass> byDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm) {
+        byDataModelId(dataModelId).or {
             ilike('label', "%${searchTerm}%")
             ilike('description', "%${searchTerm}%")
         }

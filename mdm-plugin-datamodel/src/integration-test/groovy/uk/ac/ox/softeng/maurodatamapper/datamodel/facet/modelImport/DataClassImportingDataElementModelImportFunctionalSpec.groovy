@@ -31,6 +31,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
+import spock.lang.Ignore
 import spock.lang.Shared
 
 import java.time.OffsetDateTime
@@ -43,6 +44,7 @@ import java.time.ZoneOffset
  */
 @Integration
 @Slf4j
+@Ignore('No longer relevant')
 class DataClassImportingDataElementModelImportFunctionalSpec extends CatalogueItemModelImportFunctionalSpec {
 
     @Shared

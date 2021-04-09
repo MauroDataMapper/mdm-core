@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -75,12 +74,12 @@ class EnumerationTypeService extends ModelItemService<EnumerationType> implement
     }
 
     @Override
-    boolean hasTreeTypeModelItems(EnumerationType catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    boolean hasTreeTypeModelItems(EnumerationType catalogueItem, boolean fullTreeRender) {
         fullTreeRender && catalogueItem.enumerationValues
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationType catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(EnumerationType catalogueItem, boolean fullTreeRender) {
         fullTreeRender ? catalogueItem.enumerationValues.toList() : [] as List<ModelItem>
     }
 

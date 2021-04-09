@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessWithoutUpda
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import spock.lang.Ignore
 
 /**
  * <pre>
@@ -36,6 +37,7 @@ import io.micronaut.http.HttpResponse
  * @see uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtendController
  */
 @Slf4j
+@Ignore('No longer relevant')
 abstract class CatalogueItemModelExtendFunctionalSpec extends UserAccessWithoutUpdatingFunctionalSpec {
 
     abstract String getModelId()

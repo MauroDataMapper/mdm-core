@@ -26,6 +26,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import spock.lang.Ignore
 
 /**
  * <pre>
@@ -42,6 +43,7 @@ import io.micronaut.http.HttpStatus
  */
 @Integration
 @Slf4j
+@Ignore('No longer relevant')
 class DataClassModelExtendFunctionalSpec extends FunctionalSpec {
 
     @Override

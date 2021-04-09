@@ -139,12 +139,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean fullTreeRender) {
         fullTreeRender && catalogueItem instanceof EnumerationType ? catalogueItem.enumerationValues : false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean fullTreeRender) {
         fullTreeRender && catalogueItem instanceof EnumerationType ? catalogueItem.enumerationValues : []
     }
 
@@ -327,12 +327,12 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         throw new ApiNotYetImplementedException('DTSXX', 'DataType setting created by')
     }
 
-    private def findAllByDataModelId(Serializable dataModelId, Map paginate = [:], boolean includeImported = false) {
-        DataType.withFilter(DataType.byDataModelId(dataModelId, includeImported), paginate).list(paginate)
-    }   
+    private def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
+        DataType.withFilter(DataType.byDataModelId(dataModelId), paginate).list(paginate)
+    }
 
-    private def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:], boolean includeImported = false) {
-        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm, includeImported).list(paginate)
+    private def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
+        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
     }
 
     void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {

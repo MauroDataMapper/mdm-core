@@ -29,8 +29,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.search.ModelItemSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.DataTypeBindingHelper
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtend
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataElementLabelValidator
@@ -214,27 +212,22 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
      * @param dataModelId The ID of the DataModel we are looking at
      * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
      *                        addition to DataTypes directly belonging to the DataModel)?
-     * @param includeExtends  Do we want to retrieve DataElements belonging to classes which are extended?
-     * @return DetachedCriteria<DataElement>    
+     * @param includeExtends Do we want to retrieve DataElements belonging to classes which are extended?
+     * @return DetachedCriteria<DataElement>
+     *
+     static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId, boolean includeExtended = false) {DetachedCriteria criteria = new
+     DetachedCriteria<DataElement>(DataElement)
+     criteria
+     .or {//DataElements belonging directly to dataClassIs
+     eq('dataClass.id', Utils.toUuid(dataClassId))
+     if (includeImported) {//DataElements which have been imported into dataClassId
+     inList('id', ModelImport.importedByCatalogueItemId(dataClassId))}if (includeExtended) {//DataElements belonging to a DataClass which has been
+     extended by dataClassId
+     inList('dataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))}}criteria}
      */
-    static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId, boolean includeImported = false, boolean includeExtended = false) {
-        DetachedCriteria criteria = new DetachedCriteria<DataElement>(DataElement)
-        criteria
-        .or {
-            //DataElements belonging directly to dataClassIs
-            eq('dataClass.id', Utils.toUuid(dataClassId)) 
-            if (includeImported) {
-                //DataElements which have been imported into dataClassId
-                inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
-            }
-            if (includeExtended) {
-                //DataElements belonging to a DataClass which has been extended by dataClassId
-                inList('dataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))
-            }
-        }
-        
-        criteria
-    }    
+    static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId) {
+        new DetachedCriteria<DataElement>(DataElement).eq('dataClass.id', Utils.toUuid(dataClassId))
+    }
 
     static DetachedCriteria<DataElement> byDataClass(DataClass dataClass) {
         new DetachedCriteria<DataElement>(DataElement).eq('dataClass', dataClass)

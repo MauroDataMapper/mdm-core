@@ -26,8 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
@@ -58,6 +56,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     DataClassService dataClassService
     DataTypeService dataTypeService
+//    ModelImportService modelImportService
     SummaryMetadataService summaryMetadataService
 
     @Override
@@ -296,14 +295,12 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         DataElement.byDataTypeIdAndId(dataTypeId, id).find()
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:], boolean includeImported = false,
-                                           boolean includeExtends = false) {
-        findAllByDataClassId(dataClassId, pagination, pagination, includeImported, includeExtends)
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:]) {
+        findAllByDataClassId(dataClassId, pagination, pagination)
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination, boolean includeImported = false,
-                                           boolean includeExtends = false) {
-        DataElement.withFilter(DataElement.byDataClassId(dataClassId, includeImported, includeExtends), filter).list(pagination)
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination) {
+        DataElement.withFilter(DataElement.byDataClassId(dataClassId), filter).list(pagination)
     }
 
     List<DataElement> findAllByDataClassIdJoinDataType(Serializable dataClassId) {
@@ -542,7 +539,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
      * @param currentUser The user doing the import
      * @param modelImport The resource that was imported
      *
-     */
+     *
     @Override
     void performAdditionalModelImports(ModelImport modelImport) {
 
@@ -570,7 +567,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
             modelImportService.save(modelImportDataType, false)
         }
     }
-
+     */
     @Override
     List<DataElement> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         DataElement.byMetadataNamespaceAndKey(namespace, key).list(pagination)
