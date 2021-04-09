@@ -30,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 
 import grails.core.GrailsApplication
+import groovy.transform.SelfType
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.JoinTable
@@ -41,6 +42,7 @@ import org.hibernate.SessionFactory
 /**
  * @since 17/03/2021
  */
+@SelfType(DomainService)
 @Slf4j
 trait MultiFacetAwareService<K extends MultiFacetAware> {
 

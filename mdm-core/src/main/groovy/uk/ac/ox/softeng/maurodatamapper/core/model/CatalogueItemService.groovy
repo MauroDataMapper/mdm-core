@@ -80,12 +80,6 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     abstract void deleteAll(Collection<K> catalogueItems)
 
-    @Override
-    K save(K catalogueItem) {
-        // Default behaviours for save in GormEntity
-        save(flush: false, validate: true, catalogueItem)
-    }
-
     K save(Map args, K catalogueItem) {
         Map saveArgs = new HashMap(args)
         if (args.flush) {

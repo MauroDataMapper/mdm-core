@@ -130,7 +130,7 @@ trait MultiFacetItemAwareService<K> extends DomainService<K> {
         return service
     }
 
-    private CatalogueItemService findCatalogueItemService(String catalogueItemDomainType) {
+    CatalogueItemService findCatalogueItemService(String catalogueItemDomainType) {
         catalogueItemServices.find {it.handles(catalogueItemDomainType)}
 
     }

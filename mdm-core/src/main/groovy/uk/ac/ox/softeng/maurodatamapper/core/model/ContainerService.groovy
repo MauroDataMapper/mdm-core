@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -35,7 +36,7 @@ import org.hibernate.SessionFactory
 /**
  * @since 16/01/2020
  */
-abstract class ContainerService<K extends Container> implements SecurableResourceService<K>, MultiFacetAwareService<K> {
+abstract class ContainerService<K extends Container> implements SecurableResourceService<K>, MultiFacetAwareService<K>, DomainService<K> {
 
     SessionFactory sessionFactory
     GrailsApplication grailsApplication
@@ -66,8 +67,6 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
     abstract List<K> findAllWhereDirectParentOfModel(Model model)
 
     abstract List<K> findAllWhereDirectParentOfContainer(K container)
-
-    abstract K save(K domain)
 
     abstract Class<K> getContainerClass()
 
