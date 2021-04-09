@@ -59,7 +59,7 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
         CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
         if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
 
-        respond(treeItemService.buildCatalogueItemTree(catalogueItem, false, params.imported))
+        respond(treeItemService.buildCatalogueItemTree(catalogueItem, false))
     }
 
     def index() {

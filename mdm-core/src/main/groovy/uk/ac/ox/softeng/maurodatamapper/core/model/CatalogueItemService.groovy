@@ -80,6 +80,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     abstract void deleteAll(Collection<K> catalogueItems)
 
+    @Override
     K save(K catalogueItem) {
         // Default behaviours for save in GormEntity
         save(flush: false, validate: true, catalogueItem)
@@ -109,12 +110,20 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender) {
         false
     }
 
-    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    boolean hasTreeTypeModelItems(K catalogueItem) {
+        hasTreeTypeModelItems(catalogueItem, false)
+    }
+
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender) {
         []
+    }
+
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem) {
+        findAllTreeTypeModelItemsIn(catalogueItem, false)
     }
 
     abstract K findByIdJoinClassifiers(UUID id)
@@ -176,7 +185,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     K checkFacetsAfterImportingCatalogueItem(K catalogueItem) {
-        updateFacetsAfterInsertingMultiFacetAware(catalogueItem)
+        checkFacetsAfterImportingMultiFacetAware(catalogueItem)
         catalogueItem
     }
 
