@@ -283,8 +283,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         newDocVersion
     }
 
-    K createNewForkModel(String label, K model, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+    K createNewForkModel(String label, K model, User user, boolean copyPermissions,
+                         UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
 
         K newForkModel = copyModelAsNewForkModel(model, user, copyPermissions, label,
