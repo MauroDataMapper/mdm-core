@@ -44,16 +44,16 @@ class ImporterService implements DataBinder {
 
     // ClassifierService classifierService
 
-    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<M> importModels(
+    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> List<M> importDomains(
         User currentUser, T importer, P importParams) {
         importer.importDomains(currentUser, importParams).findAll()
     }
 
-    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> M importModel(
+    public <M extends Model, P extends ImporterProviderServiceParameters, T extends ImporterProviderService<M, P>> M importDomain(
         User currentUser, T importer, P importParams) {
         M model = importer.importDomain(currentUser, importParams)
 
-        if (!model) throw new ApiBadRequestException('IS01', "Failed to import Model using ${importer.name} importer")
+        if (!model) throw new ApiBadRequestException('IS01', "Failed to import domain using ${importer.name} importer")
         model
     }
 
