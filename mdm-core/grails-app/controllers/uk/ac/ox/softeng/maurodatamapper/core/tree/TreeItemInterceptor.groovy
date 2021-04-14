@@ -49,7 +49,11 @@ class TreeItemInterceptor implements MdmInterceptor {
             }
 
             if (!Utils.parentClassIsAssignableFromChild(Container, params.containerClass)) {
-                throw new ApiBadRequestException('TII01', "Tree called for non-Container class ${params.containerDomainType}")
+                log.warn('TII01 Tree called for non-Container class {}. ' +
+                         'Invalid action will be banned in the future and an exception will be thrown please update code',
+                         params.containerDomainType)
+                // TODO enable exception
+                // throw new ApiBadRequestException('TII01', "Tree called for non-Container class ${params.containerDomainType}")
             }
 
             if (actionName in ['documentationSupersededModels', 'modelSupersededModels', 'deletedModels']) {
@@ -67,6 +71,8 @@ class TreeItemInterceptor implements MdmInterceptor {
                 Model model = proxyHandler.unwrapIfProxy(getOwningModel())
                 return checkActionAuthorisationOnUnsecuredResource(params.catalogueItemClass, params.catalogueItemId, model.getClass(), model.getId())
             }
+            // Otherwise top level action so should be allowed through
+            return true
         } else if (params.modelDomainType) {
             mapDomainTypeToClass('model', true)
             if (!params.modelClass) {
@@ -85,8 +91,7 @@ class TreeItemInterceptor implements MdmInterceptor {
                 return false
             }
         }
-        // Otherwise top level action so should be allowed through
-        true
+        throw new ApiBadRequestException('MCI01', "No domain class resource provided")
     }
 
     Model getOwningModel() {
