@@ -507,15 +507,14 @@ class DataModelService extends ModelService<DataModel> {
         }
     }
 
-    void checkImportedDataModelAssociations(User importingUser, DataModel dataModel, Map bindingMap = [:], boolean forceDefaultAuthority = true) {
+    void checkImportedDataModelAssociations(User importingUser, DataModel dataModel, Map bindingMap = [:]) {
         dataModel.createdBy = importingUser.emailAddress
-        checkAuthorityAfterImportingModel(importingUser, dataModel, forceDefaultAuthority)
         checkFacetsAfterImportingCatalogueItem(dataModel)
 
         if (dataModel.dataClasses) {
             dataModel.fullSortOfChildren(dataModel.childDataClasses)
             Collection<DataClass> dataClasses = dataModel.childDataClasses
-            dataClasses.each { dc ->
+            dataClasses.each {dc ->
                 dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
             }
         }

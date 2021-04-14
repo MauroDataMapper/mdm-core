@@ -567,11 +567,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
      * After importing a model, either force the authority to be the default authority, or otherwise create or use an existing authority
      * @param importingUser
      * @param model
-     * @param forceDefaultAuthority If true then any imported authority will be overwritten with the default authority
+     * @param useDefaultAuthority If true then any imported authority will be overwritten with the default authority
      * @return The model with its authority checked
      */
-    K checkAuthorityAfterImportingModel(User importingUser, K model, boolean forceDefaultAuthority) {
-        if (forceDefaultAuthority) {
+    K checkAuthority(User importingUser, K model, boolean useDefaultAuthority) {
+        if (useDefaultAuthority || !model.authority) {
             model.authority = authorityService.getDefaultAuthority()
         } else {
             //If the authority already exists then use it, otherwise create a new one but set the createdBy property

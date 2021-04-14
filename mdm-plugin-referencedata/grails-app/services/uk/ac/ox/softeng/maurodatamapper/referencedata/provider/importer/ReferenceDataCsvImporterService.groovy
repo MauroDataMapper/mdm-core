@@ -56,7 +56,7 @@ class ReferenceDataCsvImporterService
     }
 
     @Override
-    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
+    ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('JIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('JIS02', 'Cannot import empty content')
 
@@ -101,8 +101,7 @@ class ReferenceDataCsvImporterService
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error at line "
-                                           + parser.getCurrentLineNumber(), e)
+            throw new RuntimeException("Error at line " + parser.getCurrentLineNumber(), e)
         }
 
         parser.close()

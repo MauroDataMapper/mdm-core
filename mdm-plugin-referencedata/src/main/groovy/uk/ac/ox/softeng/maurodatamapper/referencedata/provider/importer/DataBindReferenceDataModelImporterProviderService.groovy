@@ -33,7 +33,7 @@ import org.springframework.core.GenericTypeResolver
 abstract class DataBindReferenceDataModelImporterProviderService<T extends ReferenceDataModelFileImporterProviderServiceParameters> extends
     ReferenceDataModelImporterProviderService<T> {
 
-    abstract ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true)
+    abstract ReferenceDataModel importReferenceDataModel(User currentUser, byte[] content)
 
     List<ReferenceDataModel> importReferenceDataModels(User currentUser, byte[] content) {
         throw new ApiBadRequestException('FBIP04', "${getName()} cannot import multiple Reference Data Models")
@@ -57,26 +57,23 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         importReferenceDataModels(currentUser, params.importFile.fileContents)
     }
 
+    @Override
     ReferenceDataModel importModel(User currentUser, ReferenceDataModelFileImporterProviderServiceParameters params) {
-        importModel(currentUser, params, true)
-    }
-
-    ReferenceDataModel importModel(User currentUser, ReferenceDataModelFileImporterProviderServiceParameters params, boolean forceDefaultAuthority) {
         if (!currentUser) throw new ApiUnauthorizedException('FBIP01', 'User must be logged in to import model')
         if (params.importFile.fileContents.size() == 0) throw new ApiBadRequestException('FBIP02', 'Cannot import empty file')
-        log.info('Importing {} as {} with forceDefaultAuthority {}', params.importFile.fileName, currentUser.emailAddress, forceDefaultAuthority)
-        importReferenceDataModel(currentUser, params.importFile.fileContents, forceDefaultAuthority)
+        log.info('Importing {} as {}', params.importFile.fileName, currentUser.emailAddress)
+        importReferenceDataModel(currentUser, params.importFile.fileContents)
     }
 
-    ReferenceDataModel bindMapToReferenceDataModel(User currentUser, Map referenceDataModelMap, boolean forceDefaultAuthority) {
+    ReferenceDataModel bindMapToReferenceDataModel(User currentUser, Map referenceDataModelMap) {
         if (!referenceDataModelMap) throw new ApiBadRequestException('FBIP03', 'No ReferenceDataModelMap supplied to import')
 
         log.debug('Setting map referenceDataTypes')
         referenceDataModelMap.referenceDataTypes = referenceDataModelMap.remove('referenceDataTypes')
-        
+
         log.debug('Setting map referenceDataElements')
         referenceDataModelMap.referenceDataElements = referenceDataModelMap.remove('referenceDataElements')
-  
+
         List mappedReferenceDataValues = referenceDataModelMap.remove('referenceDataValues')
 
         ReferenceDataModel referenceDataModel = new ReferenceDataModel()
@@ -103,7 +100,7 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
 
 
         log.debug('Fixing bound ReferenceDataModel')
-        referenceDataModelService.checkImportedReferenceDataModelAssociations(currentUser, referenceDataModel, referenceDataModelMap, forceDefaultAuthority)
+        referenceDataModelService.checkImportedReferenceDataModelAssociations(currentUser, referenceDataModel, referenceDataModelMap)
 
         log.info('Import complete')
         referenceDataModel

@@ -474,9 +474,8 @@ class TerminologyService extends ModelService<Terminology> {
      * @param importingUser The importing user, who will be used to set createdBy
      * @param terminology The terminology to be imported
      */
-    void checkImportedTerminologyAssociations(User importingUser, Terminology terminology, boolean forceDefaultAuthority = true) {
+    void checkImportedTerminologyAssociations(User importingUser, Terminology terminology) {
         terminology.createdBy = importingUser.emailAddress
-        checkAuthorityAfterImportingModel(importingUser, terminology, forceDefaultAuthority)
         checkFacetsAfterImportingCatalogueItem(terminology)
 
         if (terminology.termRelationshipTypes) {

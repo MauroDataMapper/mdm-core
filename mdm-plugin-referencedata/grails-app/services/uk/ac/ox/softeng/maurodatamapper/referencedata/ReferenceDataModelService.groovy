@@ -360,10 +360,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
      * thus also Reference Data Type) to the entity imported at the model level, rather than creating duplicated entities by creating
      * a new Reference Data Element and Reference Data Type for every value. This is done in the call to checkImportedReferenceDataValueAssociations.
      */
-    void checkImportedReferenceDataModelAssociations(User importingUser, ReferenceDataModel referenceDataModel, Map bindingMap = [:], boolean
-        forceDefaultAuthority = true) {
+    void checkImportedReferenceDataModelAssociations(User importingUser, ReferenceDataModel referenceDataModel, Map bindingMap = [:]) {
         referenceDataModel.createdBy = importingUser.emailAddress
-        checkAuthorityAfterImportingModel(importingUser, referenceDataModel, forceDefaultAuthority)
         checkFacetsAfterImportingCatalogueItem(referenceDataModel)
 
         if (referenceDataModel.referenceDataTypes) {

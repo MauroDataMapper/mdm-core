@@ -29,15 +29,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelIm
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
-
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.OffsetDateTime
 
-import org.springframework.beans.factory.annotation.Autowired
-
-import static org.springframework.http.HttpStatus.OK
 import static org.springframework.http.HttpStatus.NO_CONTENT
+import static org.springframework.http.HttpStatus.OK
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
@@ -122,10 +120,9 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         parameters.importFile = new FileParameter(fileContents: exportedJson.getBytes())
         parameters.folderId = folder.id
         parameters.finalised = true
+        parameters.useDefaultAuthority = false
 
-        Model model = modelImporterProviderService.importModel(currentUser, parameters, false)
-        model = modelImporterProviderService.updateImportedModelFromParameters(model, parameters, false)
-        model = modelImporterProviderService.checkImport(currentUser, model, parameters)
+        Model model = modelImporterProviderService.importDomain(currentUser, parameters)
 
         if (!model) {
             transactionStatus.setRollbackOnly()

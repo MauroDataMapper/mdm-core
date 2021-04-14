@@ -39,14 +39,9 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
 
     abstract List<M> importModels(User currentUser, P params)
 
-    M importModel(User currentUser, P params, boolean forceDefaultAuthority) {
-        //no-op
-        //Implement in providers that give the option of not forcing the authority
-        //to be set to the default
-    }
-
-    M importDomain(User currentUser, ModelImporterProviderServiceParameters params, boolean forceDefaultAuthority) {
-        M model = importModel(currentUser, params)
+    @Override
+    M importDomain(User currentUser, ModelImporterProviderServiceParameters params) {
+        M model = importModel(currentUser, params as P)
         if (!model) return null
         M updated = updateImportedModelFromParameters(model, params as P, false)
         checkImport(currentUser, updated, params as P)
@@ -64,6 +59,7 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
 
     M checkImport(User currentUser, M importedModel, P params) {
         classifierService.checkClassifiers(currentUser, importedModel)
+        modelService.checkAuthority(currentUser, importedModel, params.useDefaultAuthority)
         modelService.checkfinaliseModel(importedModel, params.finalised)
         modelService.checkDocumentationVersion(importedModel, params.importAsNewDocumentationVersion, currentUser)
         modelService.checkBranchModelVersion(importedModel, params.importAsNewBranchModelVersion, params.newBranchName, currentUser)

@@ -141,4 +141,9 @@ class ModelImporterProviderServiceParameters implements ImporterProviderServiceP
         )
     )
     String organisation
+
+    @ImportParameterConfig(
+        hidden = true
+    )
+    Boolean useDefaultAuthority = true
 }

@@ -32,8 +32,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProvi
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
-import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
@@ -429,11 +427,10 @@ class CodeSetService extends ModelService<CodeSet> {
      * @param codeSet The codeSet to be imported
      * @param bindingMap The binding map, which is necessary for looking up terms
      */
-    void checkImportedCodeSetAssociations(User importingUser, CodeSet codeSet, Map bindingMap = [:], boolean forceDefaultAuthority) throws
+    void checkImportedCodeSetAssociations(User importingUser, CodeSet codeSet, Map bindingMap = [:]) throws
         ApiBadRequestException {
         codeSet.createdBy = importingUser.emailAddress
 
-        checkAuthorityAfterImportingModel(importingUser, codeSet, forceDefaultAuthority)
         checkFacetsAfterImportingCatalogueItem(codeSet)
 
         //Terms are imported by use of a path such as "te:my-terminology-label|tm:my-term-label"

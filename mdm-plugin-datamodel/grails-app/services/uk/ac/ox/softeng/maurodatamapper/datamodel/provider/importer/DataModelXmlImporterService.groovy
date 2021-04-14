@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
@@ -29,7 +28,6 @@ import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
 import groovy.util.slurpersupport.NodeChild
-import groovy.util.slurpersupport.NodeChildren
 import org.springframework.core.io.Resource
 
 import java.nio.charset.Charset
@@ -59,7 +57,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
     }
 
     @Override
-    DataModel importDataModel(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
+    DataModel importDataModel(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('XIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XIS02', 'Cannot import empty content')
 
@@ -72,7 +70,7 @@ class DataModelXmlImporterService extends DataBindDataModelImporterProviderServi
         Map map = convertToMap(result)
 
         log.debug('Importing DataModel map')
-        bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map), forceDefaultAuthority
+        bindMapToDataModel currentUser, backwardsCompatibleExtractDataModelMap(result, map)
     }
 
     @Override

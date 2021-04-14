@@ -48,7 +48,7 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
     }
 
     @Override
-    CodeSet importCodeSet(User currentUser, byte[] content, boolean forceDefaultAuthority = true) {
+    CodeSet importCodeSet(User currentUser, byte[] content) {
         if (!currentUser) throw new ApiUnauthorizedException('XTIS01', 'User must be logged in to import model')
         if (content.size() == 0) throw new ApiBadRequestException('XTIS02', 'Cannot import empty content')
 
@@ -61,6 +61,6 @@ class CodeSetXmlImporterService extends DataBindCodeSetImporterProviderService<C
         Map map = convertToMap(result)
 
         log.debug('Importing CodeSet map')
-        bindMapToCodeSet currentUser, map.codeSet as Map, forceDefaultAuthority
+        bindMapToCodeSet currentUser, map.codeSet as Map
     }
 }
