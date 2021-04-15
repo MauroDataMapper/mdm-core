@@ -96,7 +96,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     }
 
     @Override
-    String getPrefix() {
+    String getUrlResourceName() {
         "referenceDataModels"
     }
 

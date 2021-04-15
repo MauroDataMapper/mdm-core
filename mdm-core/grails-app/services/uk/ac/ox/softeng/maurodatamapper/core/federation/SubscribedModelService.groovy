@@ -17,19 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.federation
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.transactions.Transactional
-
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-
-import io.micronaut.http.HttpResponse
-import static io.micronaut.http.HttpStatus.OK
-
 import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
@@ -51,7 +46,7 @@ class SubscribedModelService {
 
     SubscribedModel findBySubscribedModelId(UUID subscribedModelId) {
         SubscribedModel.bySubscribedModelId(subscribedModelId).get()
-    }    
+    }
 
     List<SubscribedModel> list(Map pagination) {
         pagination ? SubscribedModel.list(pagination) : SubscribedModel.list()
@@ -70,66 +65,17 @@ class SubscribedModelService {
     }
 
     /**
-     * Find an exporter for the domain type that we want to export from the subscribed catalogue
-     * 1. Create a URL for {modelDomainType}/providers/exporters
-     * 2. Slurp the Json returned by this endpoint
-     * 3. Return an exporter from this slurped json which has a file extension of json
-     *
-     * @param subscribedCatalogue
-     * @param prefix
-     * @return An exporter
-     */ 
-    private SubscribedCatalogueExporter getExporter(SubscribedCatalogue subscribedCatalogue, String prefix) {
-        SubscribedCatalogueExporter exporter
-
-        String endpoint = makeExporterProviderUrl(subscribedCatalogue.url, prefix)
-        HttpResponse response = subscribedCatalogueService.GET(endpoint, subscribedCatalogue.apiKey)
-
-        if (response.status() == OK) {
-            JsonSlurper slurper = new JsonSlurper()
-
-            //Make an object by slurping json
-            def exporters = slurper.parseText(response.body())
-
-            //Find a json exporter
-            def object = exporters.find {it.fileExtension == 'json'}
-
-            //Can't use DataBindingUtils because of a clash with grails 'version' property
-            if (object && object.namespace && object.name && object.version) {
-                exporter = new SubscribedCatalogueExporter(object.namespace, object.name, object.version)
-            }
-        }
-
-        exporter
-    }
-
-
-    /**
      * Get version links from the subscribed catalogue for the specified subscribed model
      * 1. Create a URL for {modelDomainType}/{modelId}/versionLinks
      * 2. Slurp the Json returned by this endpoint and return the object
      *
-     * @param prefix
+     * @param urlModelResourceType
      * @param subscribedModel
      * @return A map of slurped version links
      */
-    Map getVersionLinks(String prefix, SubscribedModel subscribedModel) {
-        Map versionLinks
-
-        String endpoint = makeVersionLinkUrl(subscribedModel, prefix)
-
-        HttpResponse response = subscribedCatalogueService.GET(endpoint, subscribedModel.subscribedCatalogue.apiKey)
-
-        log.debug("Response status {}", response.status())
-            
-        if (response.status() == OK) {
-            JsonSlurper slurper = new JsonSlurper()
-
-            //Make an object by slurping json
-            versionLinks = slurper.parseText(response.body())
-        }
-
-        versionLinks
+    Map getVersionLinks(String urlModelResourceType, SubscribedModel subscribedModel) {
+        subscribedCatalogueService.
+            getVersionLinksForModel(subscribedModel.subscribedCatalogue, urlModelResourceType, subscribedModel.subscribedModelId)
     }
 
     /**
@@ -140,35 +86,15 @@ class SubscribedModelService {
      * @param subscribedModel
      * @return String of the exported json
      */
-    String exportSubscribedModelFromSubscribedCatalogue(SubscribedModel subscribedModel) {        
-        String json
-        
+    String exportSubscribedModelFromSubscribedCatalogue(SubscribedModel subscribedModel) {
+
         //Get a ModelService to handle the domain type we are dealing with
         ModelService modelService = modelServices.find {it.handles(subscribedModel.subscribedModelType)}
 
-        def exporter = getExporter(subscribedModel.subscribedCatalogue, modelService.getPrefix())
+        Map exporter = getJsonExporter(subscribedModel.subscribedCatalogue, modelService.getUrlResourceName())
 
-        if (exporter) {
-            log.debug("Create an export URL")
-            String endpoint = String.format("%s/%s/%s/%s/export/%s/%s/%s",
-                                            subscribedModel.subscribedCatalogue.url,
-                                            SubscribedCatalogueService.BASE_PATH,
-                                            modelService.getPrefix(),
-                                            subscribedModel.subscribedModelId,
-                                            exporter.exporterNamespace,
-                                            exporter.exporterName,
-                                            exporter.exporterVersion)
-
-            HttpResponse response = subscribedCatalogueService.GET(endpoint, subscribedModel.subscribedCatalogue.apiKey)
-
-            log.debug("Response status {}", response.status())
-            
-            if (response.status() == OK) {
-                json = response.body()
-            }
-        }
-
-        json
+        subscribedCatalogueService.getStringResourceExport(subscribedModel.subscribedCatalogue, modelService.getUrlResourceName(),
+                                                           subscribedModel.subscribedModelId, exporter)
     }
 
     /**
@@ -176,14 +102,14 @@ class SubscribedModelService {
      * @return
      */
     void addVersionLinksToImportedModel(User currentUser, Map versionLinks, ModelService modelService, SubscribedModel subscribedModel) {
-        log.debug("addVersionLinksToImportedModel") 
+        log.debug("addVersionLinksToImportedModel")
         List matches = []
         if (versionLinks && versionLinks.items) {
             matches = versionLinks.items.findAll {
                 it.sourceModel.id == subscribedModel.subscribedModelId.toString() && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
             }
         }
-        
+
         if (matches) {
             matches.each {vl ->
                 log.debug("matched")
@@ -203,45 +129,43 @@ class SubscribedModelService {
                     if (localSourceModel && localTargetModel) {
                         //Do we alreday have a version link between these two model versions?
                         boolean exists = localSourceModel.versionLinks && localSourceModel.versionLinks.find {
-                            it.catalogueItem.id == localSourceModel.id && it.targetModel.id == localTargetModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF
+                            it.catalogueItem.id == localSourceModel.id && it.targetModel.id == localTargetModel.id && it.linkType ==
+                            VersionLinkType.NEW_MODEL_VERSION_OF
                         }
 
                         if (!exists) {
                             log.debug("setModelIsNewBranch")
                             modelService.setModelIsNewBranchModelVersionOfModel(localSourceModel, localTargetModel, currentUser)
-                        }                        
+                        }
                     }
                 }
             }
         }
-        log.debug("exit addVersionLinksToImportedModel") 
-    }    
-
-
-    /**
-     * Make a URL for an endpoint on the subscribed catalogue which will return a list of exporters for the specified
-     * domain type
-     *
-     * @param url The root URL of the subscribed catalogue
-     * @param prefix The model prefix
-     * @return a URL for the /{domainType}/providers/exporters endpoint
-     */
-    private static String makeExporterProviderUrl(String url, String prefix) {
-        return String.format("%s/%s/%s/providers/exporters", url, SubscribedCatalogueService.BASE_PATH, prefix)
+        log.debug("exit addVersionLinksToImportedModel")
     }
 
     /**
-     * Make a URL for an endpoint on the subscribed catalogue which will return a list of version links
+     * Find an exporter for the domain type that we want to export from the subscribed catalogue
+     * 1. Create a URL for {modelDomainType}/providers/exporters
+     * 2. Slurp the Json returned by this endpoint
+     * 3. Return an exporter from this slurped json which has a file extension of json
      *
-     * @param subscribedModel The SubscribedModel we want version links for
-     * @param prefix The model prefix
-     * @return a URL for the /{domainType}/providers/exporters endpoint
+     * @param subscribedCatalogue
+     * @param urlModelType
+     * @return An exporter
      */
-    private static String makeVersionLinkUrl(SubscribedModel subscribedModel, String prefix) {
-        return String.format("%s/%s/%s/%s/versionLinks",
-                             subscribedModel.subscribedCatalogue.url,
-                             SubscribedCatalogueService.BASE_PATH,
-                             prefix,
-                             subscribedModel.subscribedModelId)
-    }      
+    private Map getJsonExporter(SubscribedCatalogue subscribedCatalogue, String urlModelType) {
+
+        //Make an object by slurping json
+        List<Map<String, Object>> exporters = subscribedCatalogueService.getAvailableExportersForResourceType(subscribedCatalogue, urlModelType)
+
+        //Find a json exporter
+        Map exporterMap = exporters.find {it.fileType == 'text/json'}
+
+        //Can't use DataBindingUtils because of a clash with grails 'version' property
+        if (!exporterMap) {
+            throw new ApiBadRequestException('SMSXX', 'Cannot export model from subscribed catalogue as no JSON exporter available')
+        }
+        exporterMap
+    }
 }

@@ -21,15 +21,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.Informatio
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
-import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
-import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 import grails.gorm.DetachedCriteria
+import org.apache.commons.validator.routines.UrlValidator
 
 import java.time.OffsetDateTime
 
-class SubscribedCatalogue  implements CreatorAware, SecurableResource, EditHistoryAware, InformationAware {
+class SubscribedCatalogue implements SecurableResource, EditHistoryAware, InformationAware {
 
     private static final int DEFAULT_REFRESH_PERIOD = 7
 
@@ -38,7 +37,7 @@ class SubscribedCatalogue  implements CreatorAware, SecurableResource, EditHisto
     UUID apiKey
     Boolean readableByEveryone
     Boolean readableByAuthenticatedUsers
-    
+
     //Refresh period is assumed to be in units of days
     Integer refreshPeriod
 
@@ -47,10 +46,13 @@ class SubscribedCatalogue  implements CreatorAware, SecurableResource, EditHisto
 
     static hasMany = [
         subscribedModels: SubscribedModel
-    ]      
+    ]
 
     static constraints = {
         CallableConstraints.call(InformationAwareConstraints, delegate)
+        url blank: false, validator: {val ->
+            new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS).isValid(val) ?: ['default.invalid.url.message']
+        }
         label unique: true
         refreshPeriod nullable: true
         lastRead nullable: true
@@ -58,7 +60,7 @@ class SubscribedCatalogue  implements CreatorAware, SecurableResource, EditHisto
 
     static mapping = {
         subscribedModels cascade: 'all-delete-orphan'
-    }    
+    }
 
     SubscribedCatalogue() {
         readableByAuthenticatedUsers = false
@@ -77,12 +79,12 @@ class SubscribedCatalogue  implements CreatorAware, SecurableResource, EditHisto
     @Override
     String getDomainType() {
         SubscribedCatalogue.simpleName
-    }   
+    }
 
     @Override
     String getEditLabel() {
         "SubscribedCatalogue:${url}"
-    }     
+    }
 
     static DetachedCriteria<SubscribedCatalogue> by() {
         new DetachedCriteria<SubscribedCatalogue>(SubscribedCatalogue)

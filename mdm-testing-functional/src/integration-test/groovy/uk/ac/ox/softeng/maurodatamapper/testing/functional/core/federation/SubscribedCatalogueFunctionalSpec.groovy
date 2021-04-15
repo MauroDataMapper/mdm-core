@@ -23,26 +23,21 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
-import grails.util.BuildSettings
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.regex.Pattern
+
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.ADMIN
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
-import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
-
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.ADMIN
 
 @Integration
 @Slf4j
@@ -76,23 +71,23 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     void cleanUpRoles(String... ids) {
         log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
-        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect { Utils.toUuid(it) }).deleteAll()
+        SecurableResourceGroupRole.bySecurableResourceIds(ids.collect {Utils.toUuid(it)}).deleteAll()
         sessionFactory.currentSession.flush()
-    }    
+    }
 
     Map getValidJson() {
         [
-            url: 'http://localhost:' + serverPort,
-            apiKey: '67421316-66a5-4830-9156-b1ba77bba5d1',
-            label: 'Functional Test Label',
-            description: 'Functional Test Description',
+            url          : "http://localhost:$serverPort".toString(),
+            apiKey       : '67421316-66a5-4830-9156-b1ba77bba5d1',
+            label        : 'Functional Test Label',
+            description  : 'Functional Test Description',
             refreshPeriod: 7
         ]
     }
 
     Map getInvalidJson() {
         [
-            url: null,
+            url   : 'wibble',
             apiKey: '67421316-66a5-4830-9156-b1ba77bba5d1'
         ]
     }
@@ -101,11 +96,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         [
             description: 'Functional Test Description Updated'
         ]
-    }   
+    }
 
     /*
       * Logged in as editor testing
       */
+
     void 'E02 : Test the show and index action correctly renders an instance for set user (as editor)'() {
         given:
         String id = getValidId()
@@ -121,7 +117,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         GET('')
 
         then:
-        verifyResponse OK, response        
+        verifyResponse OK, response
 
         cleanup:
         removeValidIdObject(id)
@@ -131,6 +127,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     /*
      * Logged out testing
      */
+
     void 'L02 : Test the show and index action does not render an instance for set user (not logged in)'() {
         given:
         String id = getValidId()
@@ -145,7 +142,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         GET('')
 
         then:
-        verifyResponse NOT_FOUND, response        
+        verifyResponse NOT_FOUND, response
 
         cleanup:
         removeValidIdObject(id)
@@ -155,6 +152,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     /*
      * Logged out testing
      */
+
     void 'L02a : Test the index action for format opml responds when not logged in'() {
         given:
         String id = getValidId()
@@ -164,13 +162,13 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         response = GET('?format=opml', STRING_ARG)
 
         then:
-        verifyResponse OK, response     
-        assert response.body().startsWith('<?xml version="1.0" encoding="UTF-8"?><opml version="2.0">')   
+        verifyResponse OK, response
+        assert response.body().startsWith('<?xml version="1.0" encoding="UTF-8"?><opml version="2.0">')
 
         cleanup:
         removeValidIdObject(id)
         cleanUpRoles(id)
-    }    
+    }
 
     /**
      * Testing when logged in as a no access/authenticated user
@@ -190,7 +188,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         GET('')
 
         then:
-        verifyResponse OK, response        
+        verifyResponse OK, response
 
         cleanup:
         removeValidIdObject(id)
@@ -215,16 +213,17 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         GET('')
 
         then:
-        verifyResponse OK, response        
+        verifyResponse OK, response
 
         cleanup:
         removeValidIdObject(id)
         cleanUpRoles(id)
     }
 
-   /*
-    * Logged in as admin testing
-    */
+    /*
+     * Logged in as admin testing
+     */
+
     void 'A02 : Test the show action correctly renders an instance for set user (as admin)'() {
         given:
         String id = getValidId()
@@ -241,10 +240,11 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-  /*
-   * Logged in as editor testing
-   */
-   void 'E03a : Test the save action is forbidden (as editor)'() {
+    /*
+     * Logged in as editor testing
+     */
+
+    void 'E03a : Test the save action is forbidden (as editor)'() {
         given:
         loginEditor()
 
@@ -267,7 +267,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
     }
 
-   void 'E03b : Test the save action is forbidden when using  PUT (as editor)'() {
+    void 'E03b : Test the save action is forbidden when using  PUT (as editor)'() {
         given:
         String id = getValidId()
         loginEditor()
@@ -285,9 +285,9 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
 
         cleanup:
-        removeValidIdObject(id)   
-        cleanUpRoles(id)     
-    }    
+        removeValidIdObject(id)
+        cleanUpRoles(id)
+    }
 
     void 'E04 : Test the delete action is forbidden (as editor)'() {
         given:
@@ -301,15 +301,15 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
 
         cleanup:
-        removeValidIdObject(id)   
-        cleanUpRoles(id)       
+        removeValidIdObject(id)
+        cleanUpRoles(id)
     }
 
     /*
      * Logged out testing
      */
 
-   void 'L03a : Test the save action is not found (as not logged in)'() {
+    void 'L03a : Test the save action is not found (as not logged in)'() {
         given:
 
         when: 'The save action is executed with no content'
@@ -331,7 +331,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
     }
 
-   void 'L03b : Test the save action is not found when using  PUT (as not logged in)'() {
+    void 'L03b : Test the save action is not found when using  PUT (as not logged in)'() {
         given:
         String id = getValidId()
 
@@ -348,9 +348,9 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(id) 
-        cleanUpRoles(id)       
-    }    
+        removeValidIdObject(id)
+        cleanUpRoles(id)
+    }
 
     void 'L04 : Test the delete action is not found (as not logged in)'() {
         given:
@@ -363,15 +363,15 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse NOT_FOUND, response
 
         cleanup:
-        removeValidIdObject(id)  
-        cleanUpRoles(id)        
+        removeValidIdObject(id)
+        cleanUpRoles(id)
     }
 
     /**
      * Testing when logged in as a no access/authenticated user
      */
 
-   void 'N03a : Test the save action is forbidden (as authenticated)'() {
+    void 'N03a : Test the save action is forbidden (as authenticated)'() {
         given:
         loginAuthenticated()
 
@@ -394,7 +394,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
     }
 
-   void 'N03b : Test the save action is forbidden when using  PUT (as authenticated)'() {
+    void 'N03b : Test the save action is forbidden when using  PUT (as authenticated)'() {
         given:
         String id = getValidId()
         loginAuthenticated()
@@ -413,8 +413,8 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-        cleanUpRoles(id)    
-    }    
+        cleanUpRoles(id)
+    }
 
     void 'N04 : Test the delete action is forbidden (as authenticated)'() {
         given:
@@ -429,14 +429,14 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-        cleanUpRoles(id)      
+        cleanUpRoles(id)
     }
 
     /**
      * Testing when logged in as a reader only user
      */
 
-   void 'R03a : Test the save action is forbidden (as reader)'() {
+    void 'R03a : Test the save action is forbidden (as reader)'() {
         given:
         loginReader()
 
@@ -459,7 +459,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse FORBIDDEN, response
     }
 
-   void 'R03b : Test the save action is forbidden when using  PUT (as reader)'() {
+    void 'R03b : Test the save action is forbidden when using  PUT (as reader)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -479,7 +479,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanup:
         removeValidIdObject(id)
         cleanUpRoles(id)
-    }    
+    }
 
     void 'R04 : Test the delete action is forbidden (as reader)'() {
         given:
@@ -494,14 +494,15 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-        cleanUpRoles(id)   
+        cleanUpRoles(id)
     }
 
     /*
     * Logged in as admin testing
     * This proves that admin users can mess with items created by other users
     */
-   void 'A03a : Test the save action is ok (as admin)'() {
+
+    void 'A03a : Test the save action is ok (as admin)'() {
         given:
         loginAdmin()
 
@@ -529,7 +530,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         cleanUpRoles(id)
     }
 
-   void 'A03b : Test the save action is OK when using PUT (as admin)'() {
+    void 'A03b : Test the save action is OK when using PUT (as admin)'() {
         given:
         String id = getValidId()
         loginAdmin()
@@ -548,10 +549,10 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-        cleanUpRoles(id) 
+        cleanUpRoles(id)
     }
 
-   void 'A03c : Test that duplicate label is unprocessable (as admin)'() {
+    void 'A03c : Test that duplicate label is unprocessable (as admin)'() {
         given:
         loginAdmin()
 
@@ -566,12 +567,12 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         POST('', validJson)
 
         then: 'The response is correct'
-        verifyResponse UNPROCESSABLE_ENTITY, response    
+        verifyResponse UNPROCESSABLE_ENTITY, response
 
         cleanup:
         removeValidIdObject(id)
         cleanUpRoles(id)
-    }       
+    }
 
     void 'A04 : Test the delete action is ok (as admin)'() {
         given:
@@ -585,7 +586,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         verifyResponse NO_CONTENT, response
 
         cleanup:
-        cleanUpRoles(id) 
+        cleanUpRoles(id)
     }
 
     /**
@@ -598,11 +599,11 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
      * 4. Cleanup
      */
     void 'Test the availableModels endpoint'() {
-        
+
         given:
         Map apiKeyJson = [
-            name: "Functional Test",
-            expiryDate : LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
+            name      : "Functional Test",
+            expiryDate: LocalDate.now().plusDays(5).format(DateTimeFormatter.ISO_LOCAL_DATE)
         ]
 
         when:
@@ -616,14 +617,14 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         when:
         //note: using a groovy string like "http://localhost:$serverPort/" causes the url to be stripped when saving
         Map subscriptionJson = [
-            url: 'http://localhost:' + serverPort + '/',
-            apiKey: apiKey,
-            label: 'Functional Test Label',
-            description: 'Functional Test Description',
+            url          : "http://localhost:$serverPort/".toString(),
+            apiKey       : apiKey,
+            label        : 'Functional Test Label',
+            description  : 'Functional Test Description',
             refreshPeriod: 7
         ]
         POST('', subscriptionJson)
-        
+
         then:
         verifyResponse CREATED, response
         String subscribedCatalogueId = responseBody().id
@@ -634,16 +635,29 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         then:
         verifyJsonResponse OK, '''
         {
-            "count": 1,
-            "items": [
-                {
-                    "modelId": "${json-unit.matches:id}",
-                    "label": "Simple Test CodeSet 1.0.0",
-                    "description": "Simple Test CodeSet",
-                    "modelType": "CodeSet"
-                }
-            ]
-        }'''
+  "count": 3,
+  "items": [
+    {
+      "modelId": "${json-unit.matches:id}",
+      "label": "Simple Test CodeSet 1.0.0",
+      "description": null,
+      "modelType": "CodeSet"
+    },
+    {
+      "modelId": "${json-unit.matches:id}",
+      "label": "Extendable DataModel 1.0.0",
+      "description": null,
+      "modelType": "DataModel"
+    },
+    {
+      "modelId": "${json-unit.matches:id}",
+      "label": "Finalised Example Test DataModel 1.0.0",
+      "description": null,
+      "modelType": "DataModel"
+    }
+  ]
+}
+'''
 
         cleanup:
         DELETE("/api/catalogueUsers/${getUserByEmailAddress(ADMIN).id}/apiKeys/${apiKey}", MAP_ARG, true)

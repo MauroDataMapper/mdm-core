@@ -95,7 +95,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract Class<K> getModelClass()
 
-    abstract String getPrefix()
+    abstract String getUrlResourceName()
 
     abstract List<K> findAllByContainerId(UUID containerId)
 

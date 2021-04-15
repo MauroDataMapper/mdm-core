@@ -17,39 +17,29 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.federation
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
-
 import groovy.util.logging.Slf4j
+import groovy.util.slurpersupport.GPathResult
+import io.micronaut.http.client.HttpClientConfiguration
+import io.micronaut.http.client.ssl.NettyClientSslBuilder
+import io.micronaut.http.codec.MediaTypeCodecRegistry
+import org.springframework.beans.factory.annotation.Autowired
 
-import io.micronaut.core.type.Argument
-import io.micronaut.http.HttpRequest
-import io.micronaut.http.HttpResponse
-import io.micronaut.http.MutableHttpRequest
-import io.micronaut.http.client.DefaultHttpClient
-import io.micronaut.http.client.DefaultHttpClientConfiguration
-import io.micronaut.http.client.HttpClient
-import io.micronaut.http.client.exceptions.HttpClientResponseException
-
-import java.time.Duration
-import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
-
-import org.xml.sax.SAXParseException
-
-import static io.micronaut.http.HttpStatus.OK
 
 @Transactional
 @Slf4j
 class SubscribedCatalogueService implements XmlImportMapping {
 
-    static final String API_KEY_HEADER = 'apiKey'
-    static final String BASE_PATH = 'api'
-    static final String FEED_PATH = 'feeds/all'
+    @Autowired
+    HttpClientConfiguration httpClientConfiguration
+    @Autowired
+    NettyClientSslBuilder nettyClientSslBuilder
+    @Autowired
+    MediaTypeCodecRegistry mediaTypeCodecRegistry
 
     SubscribedCatalogue get(Serializable id) {
         SubscribedCatalogue.get(id)
@@ -71,6 +61,11 @@ class SubscribedCatalogueService implements XmlImportMapping {
         subscribedCatalogue.save(failOnError: true, validate: false)
     }
 
+    boolean verifyConnectionToSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
+        FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
+        client.isConnectionPossible(subscribedCatalogue.apiKey)
+    }
+
     /**
      * Return a list of models available on the subscribed catalogue. 
      * 1. Connect to the endpoint /api/feeds/all on the remote, authenticating by setting an api key in the header
@@ -79,100 +74,49 @@ class SubscribedCatalogueService implements XmlImportMapping {
      * 4. Return the list of AvailableModel, in order that this can be rendered as json
      *
      * @param subscribedCatalogue The catalogue we want to query
-     * @return List<AvailableModel>  The list of available models returned by the catalogue
+     * @return List<AvailableModel>        The list of available models returned by the catalogue
      *
      */
     List<AvailableModel> listAvailableModels(SubscribedCatalogue subscribedCatalogue) {
-        List<AvailableModel> models = []
 
-        String endpoint = makeFeedUrl(subscribedCatalogue.url)
-        try {
-            HttpResponse response = GET(endpoint, subscribedCatalogue.apiKey)
+        FederationClient client = getFederationClientForSubscribedCatalogue(subscribedCatalogue)
 
-            log.debug("response.status() {}", response.status())
-            //Iterate the <entry> nodes, making an AvailableModel for each one
-            if (response.status() == OK) {
-                def rootNode = new XmlParser().parseText(response.body())
-                def entries = rootNode.children().findAll { it.name().localPart == 'entry' }
-                entries.each { entry ->
-                    AvailableModel model = new AvailableModel()
-                    if (entry.id) {
-                        model.id = Utils.toUuid(extractUuidFromUrn(entry.id.text()))
-                    }
+        GPathResult feedData = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
 
-                    if (entry.title) {
-                        model.label = entry.title.text()
-                    }
+        //Iterate the <entry> nodes, making an AvailableModel for each one
+        def entries = feedData.'*'.findAll {node -> node.name() == 'entry'}
 
-                    if (entry.summary) {
-                        model.description = entry.summary.text()
-                    }
+        if (entries.isEmpty()) return []
 
-                    if (entry.category) {
-                        if (entry.category.@term) {
-                            model.modelType = entry.category.@term[0]
-                        }
-                    }
-
-                    //When the lastUpdated of the model was written to Atom, we converted it to epoch seconds.
-                    //So this gets it back to a OffsetDateTime
-                    if (entry.updated) {
-                        model.lastUpdated = OffsetDateTime.ofInstant(Instant.parse(entry.updated.text()), ZoneOffset.UTC)
-                    }
-
-                    models += model
-                }
-            } else {
-                throw new ApiBadRequestException('SCAT01', "Response from ${endpoint} was ${response.status()}")
-            }
-        } 
-        catch (SAXParseException exception) {
-            throw new ApiBadRequestException('SCAT02', 'Could not parse XML returned by endpoint - is the provided URL correct?')
+        entries.collect {entry ->
+            new AvailableModel(
+                id: Utils.toUuid(extractUuidFromUrn(entry.id.text())),
+                label: entry.title.text(),
+                description: entry.summary.text(),
+                modelType: entry.category.@term,
+                lastUpdated: OffsetDateTime.parse(entry.updated.text())
+            )
         }
-
-        return models
     }
 
-    /**
-     * GET a resource from an endpoint, using an apiKey for authentication
-     *
-     * @param resourceEndpoint The URL of the endpoint
-     * @param apiKey API key to use for authentication
-     * @return HttpResponse<String> The response as a String
-     *
-     */
-    HttpResponse<String> GET(String resourceEndpoint, UUID apiKey) {
-        log.debug("GET {}", resourceEndpoint)
-        exchange(HttpRequest.GET(resourceEndpoint).header(API_KEY_HEADER, apiKey.toString()), Argument.of(String))
+    List<Map<String, Object>> getAvailableExportersForResourceType(SubscribedCatalogue subscribedCatalogue, String urlResourceType) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getAvailableExporters(subscribedCatalogue.apiKey, urlResourceType)
     }
 
-    private <B> HttpResponse<B> exchange(MutableHttpRequest request, Argument<B> bodyType) {
-        
-        HttpClient client = new DefaultHttpClient(request.getUri().toURL(),
-                                                  new DefaultHttpClientConfiguration().with {
-                                                      setReadTimeout(Duration.ofMinutes(30))
-                                                      setReadIdleTimeout(Duration.ofMinutes(30))
-                                                      it
-                                                  })
-        
-        try {
-            HttpResponse<B> response = client.toBlocking().exchange(request, bodyType)
-            response
+    Map<String, Object> getVersionLinksForModel(SubscribedCatalogue subscribedCatalogue, String urlModelType, UUID modelId) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getVersionLinksForModel(subscribedCatalogue.apiKey, urlModelType, modelId)
+    }
 
-        } catch (HttpClientResponseException responseException) {
-            return responseException.response as HttpResponse<B>
-        }
-    }    
+    String getStringResourceExport(SubscribedCatalogue subscribedCatalogue, String urlResourceType, UUID resourceId, Map exporterInfo) {
+        getFederationClientForSubscribedCatalogue(subscribedCatalogue).getStringResourceExport(subscribedCatalogue.apiKey, urlResourceType,
+                                                                                               resourceId, exporterInfo)
+    }
 
-
-    /**
-     * Make a URL for an endpoint on the subscribed catalogue which will return an Atom feed of available models
-     *
-     * @param String The root URL of the subscribed catalogue
-     * @return a String for the /feeds/all endpoint
-     */
-    private static String makeFeedUrl(String url) {
-        return String.format("%s/%s/%s", url, BASE_PATH, FEED_PATH)
+    private FederationClient getFederationClientForSubscribedCatalogue(SubscribedCatalogue subscribedCatalogue) {
+        new FederationClient(subscribedCatalogue.url,
+                             httpClientConfiguration,
+                             nettyClientSslBuilder,
+                             mediaTypeCodecRegistry)
     }
 
     /**
@@ -190,8 +134,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
     }
 
     /**
-     * An ID in the atom feed looks like urn:uuid:{model.id}
-     * So get everything after the last :
+     * An ID in the atom feed looks like urn:uuid:{model.id}* So get everything after the last :
      *
      * @param url A urn url
      * @return A UUID as a string

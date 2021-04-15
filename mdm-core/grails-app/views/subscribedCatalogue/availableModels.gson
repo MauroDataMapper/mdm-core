@@ -8,5 +8,5 @@ model {
 
 json {
     count availableModelList instanceof PagedResultList ? ((PagedResultList) availableModelList).getTotalCount() : availableModelList?.size() ?: 0
-    items tmpl.availableModel(availableModelList ?: [])
+    items g.render(availableModelList ?: [])
 }

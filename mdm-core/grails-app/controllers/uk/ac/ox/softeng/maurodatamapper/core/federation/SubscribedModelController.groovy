@@ -46,7 +46,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
     FolderService folderService
 
     @Autowired(required = false)
-    List<ModelService> modelServices    
+    List<ModelService> modelServices
 
     SubscribedCatalogueService subscribedCatalogueService
     SubscribedModelService subscribedModelService
@@ -86,17 +86,18 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
                 return notFound(Folder, subscribedModel.folderId)
             }
             return forbiddenDueToPermissions()
-        }  
+        }
 
-        Folder folder = folderService.get(subscribedModel.folderId)           
+        Folder folder = folderService.get(subscribedModel.folderId)
 
         //Export the requested model from the SubscribedCatalogue
         log.debug("Exporting SubscribedModel ${params.subscribedModelId} as Json")
-        String exportedJson = subscribedModelService.exportSubscribedModelFromSubscribedCatalogue(subscribedModelService.get(params.subscribedModelId))
+        String exportedJson =
+            subscribedModelService.exportSubscribedModelFromSubscribedCatalogue(subscribedModelService.get(params.subscribedModelId))
         if (!exportedJson) {
             log.debug("No Json exported")
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
@@ -110,7 +111,8 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         ModelImporterProviderService modelImporterProviderService = modelService.getJsonModelImporterProviderService()
 
         //Import the model
-        ModelImporterProviderServiceParameters parameters = modelImporterProviderService.createNewImporterProviderServiceParameters()
+        ModelImporterProviderServiceParameters parameters =
+            modelImporterProviderService.createNewImporterProviderServiceParameters() as ModelImporterProviderServiceParameters
 
         if (parameters.hasProperty('importFile')?.type != FileParameter) {
             throw new ApiInternalException('MSXX', "Assigned JSON importer ${modelImporterProviderService.class.simpleName} " +
@@ -146,9 +148,9 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         if (securityPolicyManagerService) {
             log.debug("add security to saved model")
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedModel, currentUser, savedModel.label)
-        }    
+        }
 
-        
+
         //Record the ID of the imported model against the subscription makes it easier to track version links later.
         subscribedModel.lastRead = OffsetDateTime.now()
         subscribedModel.localModelId = savedModel.id
@@ -157,7 +159,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
 
 
         //Handle version linking
-        Map versionLinks = subscribedModelService.getVersionLinks(modelService.getPrefix(), subscribedModel)
+        Map versionLinks = subscribedModelService.getVersionLinks(modelService.getUrlResourceName(), subscribedModel)
         if (versionLinks) {
             log.debug("add version links")
             subscribedModelService.addVersionLinksToImportedModel(currentUser, versionLinks, modelService, subscribedModel)
@@ -165,7 +167,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
 
         //Respond with the subscribed model
         respond subscribedModel, status: OK, view: 'show'
-    }    
+    }
 
     @Override
     protected SubscribedModel createResource() {
@@ -176,7 +178,7 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         subscribedCatalogueService.get(params.subscribedCatalogueId)?.addToSubscribedModels(resource)
 
         resource
-    }     
+    }
 
     @Override
     protected SubscribedModel saveResource(SubscribedModel resource) {
@@ -184,7 +186,8 @@ class SubscribedModelController extends EditLoggingController<SubscribedModel> {
         if (securityPolicyManagerService) {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(subscribedModel,
                                                                                                             currentUser,
-                                                                                                            subscribedModel.subscribedModelId.toString())
+                                                                                                            subscribedModel.subscribedModelId.
+                                                                                                                toString())
         }
         subscribedModel
     }

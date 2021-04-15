@@ -97,7 +97,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    String getPrefix() {
+    String getUrlResourceName() {
         "dataModels"
     }
 

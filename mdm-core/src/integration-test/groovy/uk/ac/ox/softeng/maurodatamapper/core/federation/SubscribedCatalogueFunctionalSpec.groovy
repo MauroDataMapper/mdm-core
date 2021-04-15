@@ -44,17 +44,17 @@ class SubscribedCatalogueFunctionalSpec extends ResourceFunctionalSpec<Subscribe
     //note: using a groovy string like "http://localhost:$serverPort/" causes the url to be stripped when saving
     Map getValidJson() {
         [
-            url: 'http://localhost:' + serverPort,
-            apiKey: '67421316-66a5-4830-9156-b1ba77bba5d1',
-            label: 'Functional Test Label',
-            description: 'Functional Test Description',
+            url          : "http://localhost:$serverPort".toString(),
+            apiKey       : '67421316-66a5-4830-9156-b1ba77bba5d1',
+            label        : 'Functional Test Label',
+            description  : 'Functional Test Description',
             refreshPeriod: 7
         ]
     }
 
     Map getInvalidJson() {
         [
-            url: null,
+            url   : 'wibble',
             apiKey: '67421316-66a5-4830-9156-b1ba77bba5d1'
         ]
     }

@@ -74,7 +74,7 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    String getPrefix() {
+    String getUrlResourceName() {
         "terminologies"
     }
 

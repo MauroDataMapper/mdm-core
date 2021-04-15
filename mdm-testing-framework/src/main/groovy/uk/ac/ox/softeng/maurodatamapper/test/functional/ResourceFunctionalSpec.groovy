@@ -175,6 +175,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         List<String> createdIds = []
 
         when: 'The save action is executed with no content'
+        log.debug('No content save')
         POST(getSavePath(), [:], MAP_ARG, true)
 
         then: 'The response is correct'
@@ -190,6 +191,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         }
 
         when: 'The save action is executed with invalid data'
+        log.debug('Invalid content save')
         POST(getSavePath(), invalidJson, MAP_ARG, true)
 
         then: 'The response is correct'
@@ -205,6 +207,7 @@ abstract class ResourceFunctionalSpec<D extends GormEntity> extends BaseFunction
         }
 
         when: 'The save action is executed with valid data'
+        log.debug('Valid content save')
         createNewItem(validJson)
 
         then: 'The response is correct'

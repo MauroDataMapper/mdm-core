@@ -77,7 +77,7 @@ class CodeSetService extends ModelService<CodeSet> {
     }
 
     @Override
-    String getPrefix() {
+    String getUrlResourceName() {
         "codeSets"
     }
 
@@ -292,7 +292,7 @@ class CodeSetService extends ModelService<CodeSet> {
         copy.trackChanges()
 
         // Copy all the terms
-        original.terms?.each { term ->
+        original.terms?.each {term ->
             copy.addToTerms(term)
         }
 
@@ -333,7 +333,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        CodeSet.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
+        CodeSet.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
     }
 
     @Override
@@ -427,8 +427,7 @@ class CodeSetService extends ModelService<CodeSet> {
      * @param codeSet The codeSet to be imported
      * @param bindingMap The binding map, which is necessary for looking up terms
      */
-    void checkImportedCodeSetAssociations(User importingUser, CodeSet codeSet, Map bindingMap = [:]) throws
-        ApiBadRequestException {
+    void checkImportedCodeSetAssociations(User importingUser, CodeSet codeSet, Map bindingMap = [:]) {
         codeSet.createdBy = importingUser.emailAddress
 
         checkFacetsAfterImportingCatalogueItem(codeSet)

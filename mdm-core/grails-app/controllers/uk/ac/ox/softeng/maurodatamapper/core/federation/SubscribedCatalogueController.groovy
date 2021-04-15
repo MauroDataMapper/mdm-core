@@ -21,11 +21,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
-
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
-
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 @Slf4j
 class SubscribedCatalogueController extends EditLoggingController<SubscribedCatalogue> {
@@ -51,25 +48,40 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
     void serviceDeleteResource(SubscribedCatalogue resource) {
         subscribedCatalogueService.delete(resource)
     }
-    
+
     /**
      * Read available models from the subscribed catalogue and return as json.
      *
      */
-    def availableModels() {        
+    def availableModels() {
         SubscribedCatalogue subscribedCatalogue = queryForResource(params.subscribedCatalogueId)
 
         if (!subscribedCatalogue) {
             return notFound(SubscribedCatalogue, params.subscribedCatalogueId)
         }
+        respond subscribedCatalogueService.listAvailableModels(subscribedCatalogue)
+    }
 
+    @Override
+    protected boolean validateResource(SubscribedCatalogue instance, String view) {
+        boolean valid = super.validateResource(instance, view)
+        // Dont try and test connection if the instance fails basic validation
+        if (!valid) return false
+        // If the instance is valid then confirm the connection is possible,
+        // i.e. there is a catalogue at the URL and the ApiKey works
         try {
-            respond subscribedCatalogueService.listAvailableModels(subscribedCatalogue)
+            valid = subscribedCatalogueService.verifyConnectionToSubscribedCatalogue(instance)
         } catch (Exception exception) {
-            return errorResponse(UNPROCESSABLE_ENTITY, "Unable to get available models. Exception ${exception.toString()}")
+            valid = false
+            log.warn('Unable to confirm catalogue subscription due to exception', exception)
         }
-
-    }    
+        if (!valid) {
+            instance.errors.reject('invalid.subscription.url.apikey',
+                                   [instance.url].toArray(),
+                                   'Invalid subscription to catalogue at [{0}] cannot connect using provided Api Key')
+        }
+        valid
+    }
 
     @Override
     @Transactional
@@ -79,14 +91,6 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(subscribedCatalogue,
                                                                                                             currentUser,
                                                                                                             subscribedCatalogue.url)
-        }
-
-        try {
-            subscribedCatalogueService.listAvailableModels(subscribedCatalogue)
-        } catch (Exception exception) {
-            transactionStatus.setRollbackOnly()
-            return errorResponse(UNPROCESSABLE_ENTITY,
-                                 "Not able to retrieve list of models from the provided URL and API key. Exception ${exception.toString()}")
         }
         subscribedCatalogue
     }
@@ -100,14 +104,6 @@ class SubscribedCatalogueController extends EditLoggingController<SubscribedCata
             currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(subscribedCatalogue,
                                                                                                                changedProperties,
                                                                                                                currentUser)
-        }
-
-        try {
-            subscribedCatalogueService.listAvailableModels(subscribedCatalogue)
-        } catch (Exception exception) {
-            transactionStatus.setRollbackOnly()
-            return errorResponse(UNPROCESSABLE_ENTITY,
-                                 "Not able to retrieve list of models from the provided URL and API key. Exception ${exception.toString()}")
         }
         subscribedCatalogue
     }
