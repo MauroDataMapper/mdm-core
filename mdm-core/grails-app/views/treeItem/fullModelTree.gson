@@ -1,0 +1,8 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
+
+model {
+    ModelTreeItem modelTreeItem
+}
+
+json tmpl.treeItem(modelTreeItem)
+

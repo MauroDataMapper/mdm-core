@@ -24,7 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -171,16 +170,6 @@ class DataElementService extends ModelItemService<DataElement> {
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
         catalogueItem
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(DataElement catalogueItem, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataElement catalogueItem, boolean forDiff = false, boolean includeImported = false) {
-        []
     }
 
     @Override

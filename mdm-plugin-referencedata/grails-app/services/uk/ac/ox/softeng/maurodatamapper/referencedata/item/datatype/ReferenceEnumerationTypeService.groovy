@@ -17,12 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
-import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -74,16 +71,6 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
 
     void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
         removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(ReferenceEnumerationType catalogueItem, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceEnumerationType catalogueItem, boolean forDiff, boolean includeImported = false) {
-        []
     }
 
     @Override

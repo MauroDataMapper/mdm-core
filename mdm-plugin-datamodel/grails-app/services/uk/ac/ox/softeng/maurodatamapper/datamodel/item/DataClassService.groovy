@@ -708,14 +708,14 @@ class DataClassService extends ModelItemService<DataClass> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataClass dataClass, boolean forDiff, boolean includeImported = false) {
-        dataClass.dataClasses || (dataClass.dataElements && forDiff) || (dataClass.modelImports && includeImported)
+    boolean hasTreeTypeModelItems(DataClass dataClass, boolean fullTreeRender, boolean includeImported = false) {
+        dataClass.dataClasses || (dataClass.dataElements && fullTreeRender) || (dataClass.modelImports && includeImported)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean forDiff = false, boolean includeImported = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataClass dataClass, boolean fullTreeRender = false, boolean includeImported = false) {
         (DataClass.byDataModelIdAndParentDataClassId(dataClass.dataModel.id, dataClass.id, includeImported).list() +
-         (forDiff ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
+         (fullTreeRender ? DataElement.byDataClassId(dataClass.id).list() : []) as List<ModelItem>)
     }
 
     @Override

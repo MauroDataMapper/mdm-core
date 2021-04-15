@@ -17,11 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -149,16 +147,6 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
             log.trace('TermRelationshipTypes removed')
 
         }
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(TermRelationshipType term, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(TermRelationshipType term, boolean forDiff = false, boolean includeImported = false) {
-        []
     }
 
     @Override

@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
@@ -90,16 +89,6 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
 
     void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
         removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(ReferenceDataType catalogueItem, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataType catalogueItem, boolean forDiff, boolean includeImported = false) {
-        []
     }
 
     @Override

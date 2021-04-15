@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
@@ -102,16 +101,6 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
         super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
         summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(ReferenceType catalogueItem, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceType catalogueItem, boolean forDiff = false, boolean includeImported = false) {
-        []
     }
 
     @Override

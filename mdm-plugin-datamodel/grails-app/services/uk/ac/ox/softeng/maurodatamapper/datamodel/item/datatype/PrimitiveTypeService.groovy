@@ -17,9 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
@@ -69,16 +67,6 @@ class PrimitiveTypeService extends ModelItemService<PrimitiveType> {
 
     void delete(PrimitiveType primitiveType, boolean flush) {
         primitiveType.delete(flush: flush)
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(PrimitiveType catalogueItem, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(PrimitiveType catalogueItem, boolean forDiff = false, boolean includeImported = false) {
-        []
     }
 
     @Override

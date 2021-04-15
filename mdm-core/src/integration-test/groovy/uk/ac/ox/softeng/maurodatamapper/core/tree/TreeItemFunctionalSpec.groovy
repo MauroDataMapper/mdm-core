@@ -76,7 +76,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'The response is correct'
         def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.NOT_FOUND
+        e.response.status == HttpStatus.BAD_REQUEST
     }
 
     void '3 : Test the delete action correctly deletes an instance'() {
@@ -86,7 +86,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'The response is correct'
         def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.NOT_FOUND
+        e.response.status == HttpStatus.BAD_REQUEST
     }
 
     void '4 : test call to full tree no containers'() {
@@ -178,7 +178,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void '7 : Test the show action for a folder id returns not found'() {
+    void '7 : Test the show action for a folder id returns bad request'() {
         when: 'When the show action is called to retrieve a resource which doesnt exist'
         def id = '1'
         String path = "$newTreeResourcePath/${id}"
@@ -186,7 +186,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
 
         then: 'The response is correct'
         def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.NOT_FOUND
+        e.response.status == HttpStatus.BAD_REQUEST
 
         when: 'creating new folder'
         POST('folders', [label: 'Functional Test Folder'])
@@ -200,7 +200,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         GET("$newTreeResourcePath/${id}")
 
         then: 'The response is correct'
-        verifyResponse(HttpStatus.NOT_FOUND, response)
+        verifyResponse(HttpStatus.BAD_REQUEST, response)
 
         cleanup:
         DELETE("folders/$folderId?permanent=true")

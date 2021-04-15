@@ -21,6 +21,8 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.tree
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelItemTreeItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.ModelTreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -688,9 +690,50 @@ class TreeItemServiceSpec extends BaseDataModelIntegrationSpec {
         tf.size() == 1
 
         when:
-        TreeItem tree1 = tf.find { it.label == 'Complex Test DataModel' }
+        TreeItem tree1 = tf.find {it.label == 'Complex Test DataModel'}
 
         then:
         tree1
+    }
+
+    void 'R01 - test full model tree rendering'() {
+        given:
+        setupData()
+
+        when:
+        ModelTreeItem modelTreeItem = treeItemService.buildFullModelTree(complexDataModel)
+
+        then:
+        modelTreeItem
+        modelTreeItem.children.size() == 7
+
+        modelTreeItem.children.collect {it.label} == ['emptyclass', 'integer', 'string', 'child', 'yesnounknown', 'parent', 'content']
+
+        when:
+        ModelItemTreeItem et = modelTreeItem.children.find {it.label == 'yesnounknown'}
+
+        then:
+        et
+        et.children.size() == 3
+        et.children.collect {it.label} == ['Y', 'N', 'U']
+
+        when:
+        ModelItemTreeItem parent = modelTreeItem.children.find {it.label == 'parent'}
+
+        then:
+        parent
+        parent.children.size() == 2
+        parent.children.any {it.label == 'child' && it.domainType == 'DataClass'}
+        parent.children.any {it.label == 'child' && it.domainType == 'DataElement'}
+
+        when:
+        ModelItemTreeItem content = modelTreeItem.children.find {it.label == 'content'}
+
+        then:
+        content
+        content.children.size() == 2
+        content.children.any {it.label == 'ele1' && it.domainType == 'DataElement'}
+        content.children.any {it.label == 'element2' && it.domainType == 'DataElement'}
+
     }
 }
