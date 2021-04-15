@@ -87,7 +87,29 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         GET('profiles/providers', STRING_ARG)
 
         then:
-        verifyJsonResponse OK, '''[]'''
+        verifyJsonResponse OK, '''
+[{
+    "name":"ProfileSpecificationProfileService",
+    "version":"1.0.0",
+    "displayName":"Profile Specification Profile (Data Model)",
+    "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys":false,
+    "knownMetadataKeys": ["metadataNamespace","domainsApplicable"],
+    "providerType":"Profile",
+    "metadataNamespace":"uk.ac.ox.softeng.profile",
+    "domains":["DataModel"]
+}, 
+{
+    "name":"ProfileSpecificationProfileFieldService",
+    "version":"1.0.0",
+    "displayName":"Profile Specification Profile (Data Element)",
+    "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
+    "allowsExtraMetadataKeys":false,
+    "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editedAfterFinalisation"],
+    "providerType":"Profile",
+    "metadataNamespace":"uk.ac.ox.softeng.profile.field",
+    "domains":["DataElement"]
+}]'''
     }
 
     void 'test get all models in profile which doesnt exist'() {
