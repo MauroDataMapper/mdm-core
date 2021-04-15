@@ -343,68 +343,16 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Second Simple Reference Data Model",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Simple Reference Data Model",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel",
-        "branchName": "main"
-      },      
-      {
-        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Simple Test DataModel",
+        "label": "Extendable DataModel",
         "hasChildren": false,
         "deleted": false,
-        "finalised": false,
+        "finalised": true,
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "SourceFlowDataModel",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "TargetFlowDataModel",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset",
-        "branchName": "main"
+        "modelVersion": "1.0.0"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -456,6 +404,71 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Simple Test DataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "SourceFlowDataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "TargetFlowDataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Third Importing DataModel",
         "hasChildren": false,
@@ -466,7 +479,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
         "branchName": "main"
-      }       
+      }
     ]
   }
 ]
@@ -502,68 +515,16 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Second Simple Reference Data Model",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Simple Reference Data Model",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel",
-        "branchName": "main"
-      },      
-      {
-        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Simple Test DataModel",
+        "label": "Extendable DataModel",
         "hasChildren": false,
         "deleted": false,
-        "finalised": false,
+        "finalised": true,
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "SourceFlowDataModel",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "TargetFlowDataModel",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset",
-        "branchName": "main"
+        "modelVersion": "1.0.0"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -615,6 +576,71 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Simple Test DataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "SourceFlowDataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "TargetFlowDataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Third Importing DataModel",
         "hasChildren": false,
@@ -625,7 +651,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
         "branchName": "main"
-      }    
+      }
     ]
   }
 ]
@@ -661,68 +687,16 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Second Simple Reference Data Model",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Simple Reference Data Model",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel",
-        "branchName": "main"
-      },      
-      {
-        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Simple Test DataModel",
+        "label": "Extendable DataModel",
         "hasChildren": false,
         "deleted": false,
-        "finalised": false,
+        "finalised": true,
         "superseded": false,
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "SourceFlowDataModel",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset",
-        "branchName": "main"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "TargetFlowDataModel",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset",
-        "branchName": "main"
+        "modelVersion": "1.0.0"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -774,6 +748,71 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       },
       {
         "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Simple Test DataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "SourceFlowDataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "TargetFlowDataModel",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset",
+        "branchName": "main"
+      },
+      {
+        "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
         "label": "Third Importing DataModel",
         "hasChildren": false,
@@ -784,7 +823,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
         "branchName": "main"
-      }     
+      }
     ]
   }
 ]

@@ -17,18 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.facet
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.CatalogueItemModelExtendFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
-import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
-
 import io.micronaut.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -122,7 +118,7 @@ class DataClassExtendingDataClassModelExtendFunctionalSpec extends CatalogueItem
     "breadcrumbs": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "Extendable DataM0del",
+        "label": "Extendable DataModel",
         "domainType": "DataModel",
         "finalised": true
       }
