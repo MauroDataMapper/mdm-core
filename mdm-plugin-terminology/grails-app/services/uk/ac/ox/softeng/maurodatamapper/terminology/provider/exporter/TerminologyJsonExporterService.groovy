@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
@@ -55,7 +56,7 @@ class TerminologyJsonExporterService extends TerminologyExporterProviderService 
     @Override
     ByteArrayOutputStream exportTerminology(User currentUser, Terminology terminology) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new TerminologyExportModel(terminology, exportMetadata, false), fileType
+        exportModel new ExportModel(terminology, 'terminology', version, exportMetadata), fileType
     }
 
     @Override

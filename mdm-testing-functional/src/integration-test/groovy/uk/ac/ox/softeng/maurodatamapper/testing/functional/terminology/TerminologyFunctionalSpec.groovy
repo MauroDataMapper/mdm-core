@@ -285,7 +285,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         verifyJsonResponse OK, '''[
             {
                 "name": "TerminologyJsonExporterService",
-                "version": "3.0",
+                "version": "${json-unit.matches:version}",
                 "displayName": "JSON Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -297,7 +297,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
             },
             {
                 "name": "TerminologyXmlExporterService",
-                "version": "3.0",
+                "version": "${json-unit.matches:version}",
                 "displayName": "XML Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,
@@ -326,7 +326,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
         verifyJsonResponse OK, '''[
             {
                 "name": "TerminologyXmlImporterService",
-                "version": "3.0",
+                "version": "${json-unit.matches:version}",
                 "displayName": "XML Terminology Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
@@ -334,12 +334,13 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
       
                 ],
                 "providerType": "TerminologyImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
+                               '''.TerminologyFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             },
             {
                 "name": "TerminologyJsonImporterService",
-                "version": "3.0",
+                "version": "${json-unit.matches:version}",
                 "displayName": "JSON Terminology Importer",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
                 "allowsExtraMetadataKeys": true,
@@ -347,7 +348,8 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
       
                 ],
                 "providerType": "TerminologyImporter",
-                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter.TerminologyFileImporterProviderServiceParameters",
+                "paramClassType": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.parameter''' +
+                               '''.TerminologyFileImporterProviderServiceParameters",
                 "canImportMultipleDomains": false
             }
         ]'''
@@ -643,7 +645,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "TerminologyJsonExporterService",
-                    "version": "3.0"
+                    "version": "${json-unit.matches:version}"
                 }
             }
         }'''
@@ -714,7 +716,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
                 "exporter": {
                     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                     "name": "TerminologyJsonExporterService",
-                    "version": "3.0"
+                    "version": "${json-unit.matches:version}"
                 }
             }
         }'''

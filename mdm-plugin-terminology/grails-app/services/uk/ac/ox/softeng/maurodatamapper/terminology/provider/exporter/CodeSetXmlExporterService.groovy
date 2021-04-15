@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
@@ -52,13 +53,13 @@ class CodeSetXmlExporterService extends CodeSetExporterProviderService implement
 
     @Override
     String getVersion() {
-        '3.0'
+        '3.1'
     }
 
     @Override
     ByteArrayOutputStream exportCodeSet(User currentUser, CodeSet codeSet) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new CodeSetExportModel(codeSet, exportMetadata, true), fileType
+        exportModel new ExportModel(codeSet, 'codeSet', version, '3.0', 'gml', exportMetadata), fileType
     }
 
     @Override

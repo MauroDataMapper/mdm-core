@@ -1826,7 +1826,7 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
             },
             {
                 "name": "CodeSetXmlExporterService",
-                "version": "3.0",
+                "version": "3.1",
                 "displayName": "XML CodeSet Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,

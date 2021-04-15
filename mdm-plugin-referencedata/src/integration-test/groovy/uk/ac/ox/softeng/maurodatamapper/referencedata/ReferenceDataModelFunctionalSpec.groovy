@@ -191,7 +191,7 @@ class ReferenceDataModelFunctionalSpec extends ResourceFunctionalSpec<ReferenceD
   },
   {
     "name": "ReferenceDataXmlExporterService",
-    "version": "3.0",
+    "version": "3.1",
     "displayName": "XML Reference Data Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,

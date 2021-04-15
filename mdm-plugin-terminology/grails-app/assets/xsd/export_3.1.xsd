@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exp="http://maurodatamapper.com/export/3.0"
-           xmlns:mdm="http://maurodatamapper.com/codeSet/3.0" elementFormDefault="qualified"
-           targetNamespace="http://maurodatamapper.com/export/3.0">
-  <xs:import namespace="http://maurodatamapper.com/codeSet/3.0" schemaLocation="codeSet_1.0.xsd" />
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exp="http://maurodatamapper.com/export/3.1"
+           xmlns:mdmt="http://maurodatamapper.com/terminology/3.1" xmlns:mdmc="http://maurodatamapper.com/codeSet/3.0" elementFormDefault="qualified"
+           targetNamespace="http://maurodatamapper.com/export/3.1">
+  <xs:import namespace="http://maurodatamapper.com/terminology/3.1" schemaLocation="terminology_3.1.xsd" />
+  <xs:import namespace="http://maurodatamapper.com/codeSet/3.0" schemaLocation="codeSet_3.0.xsd" />
   <xs:element name="exportModel" type="exp:exportType" />
   <xs:complexType name="exportType">
     <xs:sequence>
-      <xs:element ref="mdm:codeSet" />
+      <xs:choice>
+        <xs:element ref="mdmt:terminology" />
+        <xs:element ref="mdmc:codeSet" />
+      </xs:choice>
       <xs:element name="exportMetadata" type="exp:exportMetadata" />
     </xs:sequence>
   </xs:complexType>

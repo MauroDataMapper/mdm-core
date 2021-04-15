@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -55,7 +56,7 @@ class DataModelJsonExporterService extends DataModelExporterProviderService impl
     @Override
     ByteArrayOutputStream exportDataModel(User currentUser, DataModel dataModel) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new DataModelExportModel(dataModel, exportMetadata, false), fileType
+        exportModel new ExportModel(dataModel, 'dataModel', version, exportMetadata), fileType
     }
 
     @Override
