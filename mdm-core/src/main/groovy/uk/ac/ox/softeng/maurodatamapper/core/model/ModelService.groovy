@@ -242,21 +242,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         findAllReadableModels(constrainedIds, includeDeleted)
     }
 
-    /**
-     * List models that are suitable for another catalogue to subscribe to. i.e. the model is
-     * readable, finalised, and has an authority equal to the default authority of this catalogue.
-     * List superseded models in order that when a new model version is created, we can still see its ancestors.
-     *
-     * @param userSecurityPolicyManager
-     * @return List<K>    a list of subscribable models
-     */
-    List<K> findAllSubscribableModels(UserSecurityPolicyManager userSecurityPolicyManager) {
-        List<K> readableModels = findAllReadableModels(userSecurityPolicyManager, false, true, false)
-
-        readableModels.findAll {it.finalised && it.authority.id == authorityService.getDefaultAuthority().id}
-
-    }
-
     K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
                     String versionTag, List<Serializable> supersedeModelIds = []) {
         log.debug('Finalising model')

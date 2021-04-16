@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation
 
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -29,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired
 @Slf4j
 class FeedService {
 
+    AuthorityService authorityService
+
     @Autowired(required = false)
     List<ModelService> modelServices
 
@@ -37,9 +40,14 @@ class FeedService {
         List<Model> models = []
 
         modelServices.each {
-            models.addAll(it.findAllSubscribableModels(userSecurityPolicyManager))
+            List<Model> readableModels = it.findAllReadableModels(userSecurityPolicyManager, false, true, false)
+            // Only publish finalised models which belong to this instance of MDM
+            List<Model> publishableModels = readableModels.findAll {Model model ->
+                model.finalised && model.authority.id == authorityService.getDefaultAuthority().id
+            } as List<Model>
+            models.addAll(publishableModels)
         }
-        
+
         models
     }
 
