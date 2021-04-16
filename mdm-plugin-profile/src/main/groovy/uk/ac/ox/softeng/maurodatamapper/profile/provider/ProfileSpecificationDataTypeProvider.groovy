@@ -17,12 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DefaultDataType
 
 // @CompileStatic
-class ProfileSpecificationDataTypeProvider extends DataTypeService {
+class ProfileSpecificationDataTypeProvider implements DefaultDataTypeProvider {
 
     @Override
     String getDisplayName() {
@@ -43,5 +43,10 @@ class ProfileSpecificationDataTypeProvider extends DataTypeService {
          [label: 'model', description: 'pointer to a model in this Mauro instance'],
          [label: 'json', description: 'a text field containing valid json syntax'],
         ].collect {Map<String, String> properties -> new DefaultDataType(new PrimitiveType(properties))}
+    }
+
+    @Override
+    String getVersion() {
+        return "1.0.0"
     }
 }
