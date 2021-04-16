@@ -433,7 +433,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     DataModel addDefaultListOfDataTypesToDataModel(DataModel dataModel, List<DefaultDataType> defaultDataTypes) {
-        defaultListOfDataTypes.each {
+        defaultDataTypes.each {
             DataType dataType
             switch (it.domainType) {
                 case PrimitiveType.simpleName:
