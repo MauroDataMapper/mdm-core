@@ -116,6 +116,7 @@ grails {
         compile project(':mdm-plugin-datamodel')
         compile project(':mdm-plugin-terminology')
         compile project(':mdm-plugin-referencedata')
+        compile project(':mdm-plugin-federation')
         //        compile project(':mdm-plugin-email-proxy')
         compile project(':mdm-security')
         compile project(':mdm-plugin-dataflow')

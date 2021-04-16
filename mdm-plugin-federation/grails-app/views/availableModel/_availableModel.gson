@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.federation.AvailableModel
+
+model {
+    AvailableModel availableModel
+}
+
+json {
+    modelId availableModel.id
+    label availableModel.label
+    description availableModel.description
+    modelType availableModel.modelType
+}

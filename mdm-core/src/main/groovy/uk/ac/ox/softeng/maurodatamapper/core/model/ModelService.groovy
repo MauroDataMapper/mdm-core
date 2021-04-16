@@ -30,7 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.federation.SubscribedModelService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
@@ -84,9 +83,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
-
-    @Autowired(required = false)
-    SubscribedModelService subscribedModelService
 
     @Override
     Class<K> getCatalogueItemClass() {

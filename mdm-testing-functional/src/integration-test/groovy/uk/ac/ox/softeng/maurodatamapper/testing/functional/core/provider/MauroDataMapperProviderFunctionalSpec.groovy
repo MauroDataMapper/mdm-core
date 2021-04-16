@@ -85,6 +85,10 @@ class MauroDataMapperProviderFunctionalSpec extends FunctionalSpec {
      "version": "${json-unit.matches:version}"
   },
   {
+    "name": "mdm.pluginFederation",
+    "version": "4.4.0-SNAPSHOT"
+  },
+  {
     "name": "mdm.pluginReferencedata",
      "version": "${json-unit.matches:version}"
   },

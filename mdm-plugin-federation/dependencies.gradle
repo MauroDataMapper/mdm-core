@@ -1,0 +1,16 @@
+dependencies {
+
+    runtimeOnly "io.methvin:directory-watcher", {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+
+    // Postgres database
+    runtimeOnly "org.hibernate:hibernate-jcache"
+    runtimeOnly group: 'org.ehcache', name: 'ehcache'
+    runtimeOnly group: 'org.postgresql', name: 'postgresql'
+
+    testImplementation project(':mdm-testing-framework')
+    integrationTestImplementation project(':mdm-plugin-datamodel')
+    integrationTestImplementation project(':mdm-plugin-terminology')
+    integrationTestImplementation project(':mdm-plugin-referencedata')
+}

@@ -111,12 +111,6 @@ class UrlMappings {
 
             '/authorities'(resources: 'authority', includes: INCLUDES_READ_ONLY)
 
-            '/subscribedCatalogues'(resources: 'subscribedCatalogue') {
-                get '/availableModels'(controller: 'subscribedCatalogue', action: 'availableModels')
-                '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
-            }          
-            post "/subscribedModels/$subscribedModelId/federate" (controller: 'subscribedModel', action: 'federate')
-
             /*
              Full Searching
              */
@@ -224,11 +218,6 @@ class UrlMappings {
             User Images
              */
             get "/userImageFiles/$id"(controller: 'userImageFile', action: 'show')
-
-            /*
-            ATOM feed
-            */
-            get "/feeds/all"(controller: 'feed', action: 'index')
         }
     }
 }
