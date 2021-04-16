@@ -19,15 +19,19 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
+import org.checkerframework.checker.units.qual.K
 import org.springframework.beans.factory.annotation.Autowired
 
+import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 class VersionedFolderController extends EditLoggingController<VersionedFolder> {
@@ -117,6 +121,29 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         if (!instance) return notFound(params.versionedFolderId)
 
         instance.readableByAuthenticatedUsers = request.method == 'PUT'
+
+        updateResource(instance)
+        updateResponse(instance)
+    }
+
+    @Transactional
+    def finalise(FinaliseData finaliseData) {
+
+        if (!finaliseData.validate()) {
+            respond finaliseData.errors
+            return
+        }
+
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+
+        if (!instance) return notFound(params.versionedFolderId)
+
+        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
+
+        instance = versionedFolderService.finaliseFolder(instance, currentUser,
+                                            finaliseData.version, finaliseData.versionChangeType)
+
+        if (!validateResource(instance, 'update')) return
 
         updateResource(instance)
         updateResponse(instance)

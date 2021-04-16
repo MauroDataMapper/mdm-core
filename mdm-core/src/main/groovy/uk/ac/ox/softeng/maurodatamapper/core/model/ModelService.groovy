@@ -195,7 +195,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
-                    String versionTag, List<Serializable> supersedeModelIds = []) {
+                    String versionTag) {
         log.debug('Finalising model')
         long start = System.currentTimeMillis()
 

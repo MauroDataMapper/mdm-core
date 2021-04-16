@@ -335,6 +335,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
+        //TODO isModelInsideVersionedFolder
+
         T instance = queryForResource params[alternateParamsIdKey]
 
         if (!instance) return notFound(params[alternateParamsIdKey])
@@ -345,8 +347,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                                               currentUser,
                                               finaliseData.version,
                                               finaliseData.versionChangeType,
-                                              finaliseData.versionTag,
-                                              finaliseData.supersededBy ?: []) as T
+                                              finaliseData.versionTag) as T
 
         if (!validateResource(instance, 'update')) return
 

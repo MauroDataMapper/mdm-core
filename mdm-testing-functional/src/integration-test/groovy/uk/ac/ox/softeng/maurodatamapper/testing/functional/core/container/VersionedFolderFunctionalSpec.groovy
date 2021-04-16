@@ -486,4 +486,38 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanup:
         removeValidIdObject(folderId)
     }
+
+    void 'V01 : finalisation endpoint for Versioned Folder'() {
+        String id = getValidId()
+
+        loginEditor()
+
+        when: 'The save action is executed with valid data for a datamodel'
+        POST("folders/$id/dataModels", [
+            label: 'Functional Test DataModel 1'
+        ], MAP_ARG, true)
+        POST("folders/$id/dataModels", [
+            label: 'Functional Test DataModel 2'
+        ], MAP_ARG, true)
+
+        then: 'The response is correct'
+        response.status == CREATED
+        response.body().id
+
+        String DataModel1Id = response.body().id
+
+        when:'The folder gets finalised'
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        response.status == OK
+        response.body().availableActions.sort() == ['delete', 'show', 'update', 'save', 'softDelete'].sort()
+        response.body().finalised
+        response.body().domainType == 'VersionedFolder'
+        responseBody().modelVersion == '1.0.0'
+
+        String modelVersion = responseBody().modelVersion
+
+        //TODO cleanup
+    }
 }

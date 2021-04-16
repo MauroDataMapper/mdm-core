@@ -17,28 +17,40 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
+import uk.ac.ox.softeng.maurodatamapper.util.Version
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.checkerframework.checker.units.qual.K
 import org.springframework.beans.factory.annotation.Autowired
+
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 @Transactional
 @Slf4j
 class VersionedFolderService extends ContainerService<VersionedFolder> implements VersionLinkAwareService<VersionedFolder> {
 
     FolderService folderService
+    ModelService modelService
 
     @Autowired(required = false)
     List<ModelService> modelServices
+
+    EditService editService
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -120,6 +132,65 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     @Override
     List<VersionedFolder> findAllReadableByAuthenticatedUsers() {
         VersionedFolder.findAllByReadableByAuthenticatedUsers(true)
+    }
+
+    VersionedFolder finaliseFolder(folder, User user, Version folderVersion, VersionChangeType versionChangeType) {
+
+        folder.finalised = true
+        folder.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+
+        folder.modelVersion = getNextFolderVersion(folder, folderVersion, versionChangeType)
+
+        modelServices.each{service ->
+            Collection<Model> modelsInFolder = service.findAllByFolderId(folder.id)
+            modelsInFolder.each { model ->
+                service.finaliseModel(model as Model, user, folder.modelVersion as Version, null)
+            }
+        }
+
+        //folder.addToAnnotations(as follows) was non-functional, ergo
+        folder.createdBy = user.emailAddress
+        folder.label = 'Finalised Versioned Folder'
+        folder.description = "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
+                             "${OffsetDateTimeConverter.toString(folder.dateFinalised)}"
+
+        editService.createAndSaveEdit(folder.id, folder.domainType,
+                                      "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
+                                      "${OffsetDateTimeConverter.toString(folder.dateFinalised)}",
+                                      user)
+        folder
+    }
+
+    Version getNextFolderVersion(folder, Version requestedFolderVersion, VersionChangeType requestedVersionChangeType) {
+        if (requestedFolderVersion) {
+            // Prefer requested folder version
+            return requestedFolderVersion
+        }
+
+        //TODO version folders do not have parent data models, and may not have parent folders
+        //version = getParent(folder) ???
+        //therefore where should base Version be sourced from?
+        //for now, this is a placeholder:
+
+        Version baseFolderVersion = Version.from('0.0.0')
+
+        if (requestedVersionChangeType) {
+            // Someone requests a type change
+            // Increment the parent version by that amount
+            switch (requestedVersionChangeType) {
+                case VersionChangeType.MAJOR:
+                    return Version.nextMajorVersion(baseFolderVersion)
+                    break
+                case VersionChangeType.MINOR:
+                    return Version.nextMinorVersion(baseFolderVersion)
+                    break
+                case VersionChangeType.PATCH:
+                    return Version.nextPatchVersion(baseFolderVersion)
+                    break
+            }
+        }
+        // If no requested version change type then just increment by the next major version
+        Version.nextMajorVersion(baseFolderVersion)
     }
 
     @Override
