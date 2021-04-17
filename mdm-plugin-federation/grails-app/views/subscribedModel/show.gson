@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.federation.SubscribedModel
+
+model {
+    SubscribedModel subscribedModel
+}
+
+json {
+    id subscribedModel.id
+    subscribedModelId subscribedModel.subscribedModelId
+    folderId subscribedModel.folderId
+}

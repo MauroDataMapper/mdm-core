@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -31,6 +30,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -45,8 +46,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
-import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -69,14 +70,11 @@ class DataModelService extends ModelService<DataModel> {
     DataTypeService dataTypeService
     DataClassService dataClassService
     DataElementService dataElementService
-    AuthorityService authorityService
     SummaryMetadataService summaryMetadataService
+    DataModelJsonImporterService dataModelJsonImporterService
 
     @Autowired
     Set<DefaultDataTypeProvider> defaultDataTypeProviders
-
-    @Autowired(required = false)
-    SecurityPolicyManagerService securityPolicyManagerService
 
     @Override
     DataModel get(Serializable id) {
@@ -96,6 +94,11 @@ class DataModelService extends ModelService<DataModel> {
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
         pathPrefix == "dm"
+    }
+
+    @Override
+    String getUrlResourceName() {
+        "dataModels"
     }
 
     /**
@@ -506,13 +509,12 @@ class DataModelService extends ModelService<DataModel> {
 
     void checkImportedDataModelAssociations(User importingUser, DataModel dataModel, Map bindingMap = [:]) {
         dataModel.createdBy = importingUser.emailAddress
-        dataModel.authority = authorityService.getDefaultAuthority()
         checkFacetsAfterImportingCatalogueItem(dataModel)
 
         if (dataModel.dataClasses) {
             dataModel.fullSortOfChildren(dataModel.childDataClasses)
             Collection<DataClass> dataClasses = dataModel.childDataClasses
-            dataClasses.each { dc ->
+            dataClasses.each {dc ->
                 dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
             }
         }
@@ -821,5 +823,10 @@ class DataModelService extends ModelService<DataModel> {
      */
     DataModel findByLabel(String label) {
         DataModel.findByLabel(label)
+    }
+
+    @Override
+    ModelImporterProviderService<DataModel, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
+        dataModelJsonImporterService
     }
 }

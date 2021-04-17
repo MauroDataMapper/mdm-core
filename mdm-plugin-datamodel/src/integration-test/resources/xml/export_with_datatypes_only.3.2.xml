@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.2">
+<!--
+
+    Copyright 2020 University of Oxford
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    SPDX-License-Identifier: Apache-2.0
+
+-->
+  <mdm:dataModel xmlns:mdm="http://maurodatamapper.com/dataModel/3.2">
+    <mdm:id>8396bdd5-79bf-4fa5-9b70-0dc194166d29</mdm:id>
+    <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
+    <mdm:lastUpdated>2019-09-18T13:59:32.81Z</mdm:lastUpdated>
+    <mdm:metadata>
+      <mdm:metadata>
+        <mdm:id>5e2bf6f5-42c8-445c-ae88-97a2e3e87399</mdm:id>
+        <mdm:namespace>ox.softeng.maurodatamapper.dataloaders.cancer.audits</mdm:namespace>
+        <mdm:key>SCTSImport</mdm:key>
+        <mdm:value>0.1</mdm:value>
+        <mdm:lastUpdated>2019-09-18T14:59:32.810+01:00</mdm:lastUpdated>
+      </mdm:metadata>
+    </mdm:metadata>
+    <mdm:type>Data Standard</mdm:type>
+    <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
+    <mdm:finalised>false</mdm:finalised>
+    <mdm:authority>
+      <mdm:id>04b2fb71-539b-4273-988b-6f440d0139ce</mdm:id>
+      <mdm:label>Test Authority</mdm:label>
+      <mdm:url>http://localhost</mdm:url>
+      <mdm:lastUpdated>2020-08-12T11:40:05.038Z</mdm:lastUpdated>
+    </mdm:authority>
+    <mdm:dataTypes>
+      <mdm:dataType>
+        <mdm:id>27f2803c-c426-49a3-9dff-219fb884bc5a</mdm:id>
+        <mdm:label>ddmmyyyy</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.811Z</mdm:lastUpdated>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>4e323cd2-1d25-4eb5-a7f1-ca3827735342</mdm:id>
+        <mdm:label>mainly_numeric</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.811Z</mdm:lastUpdated>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>2232748f-cdd7-41af-9749-96c5d04b8114</mdm:id>
+        <mdm:label>Performance status (ECOG)</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.812Z</mdm:lastUpdated>
+        <mdm:domainType>EnumerationType</mdm:domainType>
+        <mdm:enumerationValues>
+          <mdm:enumerationValue>
+            <mdm:id>bd5ea066-3c02-49f1-a054-b921c7fdfb2f</mdm:id>
+            <mdm:index>0</mdm:index>
+            <mdm:key>0</mdm:key>
+            <mdm:value>Fully active, able to carry on all pre-disease performance without restriction</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.813Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>d1c54b38-6ece-4d94-9694-709c93989e8a</mdm:id>
+            <mdm:index>1</mdm:index>
+            <mdm:key>1</mdm:key>
+            <mdm:value>Restricted in physically strenuous activity but ambulatory and able to carry out work of a light or sedentary nature, e.g., light house work, office work</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.813Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>134ca38d-4af6-477f-b14e-da36194ac90d</mdm:id>
+            <mdm:index>2</mdm:index>
+            <mdm:key>2</mdm:key>
+            <mdm:value>Ambulatory and capable of all selfcare but unable to carry out any work activities; up and about more than 50% of waking hours</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.813Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>66a9d4e0-72e2-47db-9db4-d1752b3dd4fd</mdm:id>
+            <mdm:index>3</mdm:index>
+            <mdm:key>3</mdm:key>
+            <mdm:value>Capable of only limited selfcare; confined to bed or chair more than 50% of waking hours</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.814Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>27191763-de54-4250-851a-83307b750376</mdm:id>
+            <mdm:index>4</mdm:index>
+            <mdm:key>4</mdm:key>
+            <mdm:value>Completely disabled; cannot carry on any selfcare; totally confined to bed or chair</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.814Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+        </mdm:enumerationValues>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>9e0d3b36-3163-4a3e-a48b-1b64a3707c10</mdm:id>
+        <mdm:label>24hrTime</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.814Z</mdm:lastUpdated>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>8545e4b4-5b3f-43f7-9182-83350c2e2774</mdm:id>
+        <mdm:label>text</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.815Z</mdm:lastUpdated>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>b8e3d64d-58bf-497f-82aa-1ba3073aa083</mdm:id>
+        <mdm:label>Sex</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.815Z</mdm:lastUpdated>
+        <mdm:domainType>EnumerationType</mdm:domainType>
+        <mdm:enumerationValues>
+          <mdm:enumerationValue>
+            <mdm:id>fd6a47d6-70a5-4829-9e53-3ad333afd78a</mdm:id>
+            <mdm:index>0</mdm:index>
+            <mdm:key>M</mdm:key>
+            <mdm:value>male</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.816Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>f69acc0b-6ad8-4648-a4e7-dd3abac0c042</mdm:id>
+            <mdm:index>1</mdm:index>
+            <mdm:key>F</mdm:key>
+            <mdm:value>female</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.816Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+        </mdm:enumerationValues>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>ecf86130-db0a-4ccb-9868-28d2d4aaa918</mdm:id>
+        <mdm:label>Dyspnoea score</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.817Z</mdm:lastUpdated>
+        <mdm:domainType>EnumerationType</mdm:domainType>
+        <mdm:enumerationValues>
+          <mdm:enumerationValue>
+            <mdm:id>7ab15dca-b7de-455b-b44f-253b8558f21b</mdm:id>
+            <mdm:index>0</mdm:index>
+            <mdm:key>1</mdm:key>
+            <mdm:value>dyspnoea on strenuous exercise</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.818Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>a2bf81e8-d4ca-40a6-b01a-724ac779460e</mdm:id>
+            <mdm:index>1</mdm:index>
+            <mdm:key>2</mdm:key>
+            <mdm:value>when hurrying or walking uphill</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.818Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>1aed83fa-4061-4d83-8d71-4a9b09cda801</mdm:id>
+            <mdm:index>2</mdm:index>
+            <mdm:key>3</mdm:key>
+            <mdm:value>Walks slower than contemporaries on level ground because of breathlessness or has to stop for breath when walking at own pace</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.818Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>fcd6643f-e441-407f-b832-0ad897a71461</mdm:id>
+            <mdm:index>3</mdm:index>
+            <mdm:key>4</mdm:key>
+            <mdm:value>Stops for breath after walking about 100 meters or after a few minutes on level ground</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.819Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>dcd3549b-ca04-4239-ae81-02be74dd649a</mdm:id>
+            <mdm:index>4</mdm:index>
+            <mdm:key>5</mdm:key>
+            <mdm:value>Too breathless to leave the house or breathless when dressing or undressing</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.819Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+        </mdm:enumerationValues>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>5be049d4-0109-4724-9755-b317661af14c</mdm:id>
+        <mdm:label>external_code</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.819Z</mdm:lastUpdated>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>2f2c0865-a476-43cd-8d10-cafeb7d06132</mdm:id>
+        <mdm:label>openworld_tick</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.82Z</mdm:lastUpdated>
+        <mdm:domainType>PrimitiveType</mdm:domainType>
+      </mdm:dataType>
+      <mdm:dataType>
+        <mdm:id>c0f9948f-e775-417a-8eb9-e4590bd19eeb</mdm:id>
+        <mdm:label>ASA Grade American Society of Anaesthetists grade</mdm:label>
+        <mdm:lastUpdated>2019-09-18T13:59:32.82Z</mdm:lastUpdated>
+        <mdm:domainType>EnumerationType</mdm:domainType>
+        <mdm:enumerationValues>
+          <mdm:enumerationValue>
+            <mdm:id>e7edf1f7-5972-4014-9cf5-9310924f4fcf</mdm:id>
+            <mdm:index>0</mdm:index>
+            <mdm:key>1</mdm:key>
+            <mdm:value>Healthy person</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.821Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>942cbf74-cc0d-4ee3-890c-75d6c4b02b5e</mdm:id>
+            <mdm:index>1</mdm:index>
+            <mdm:key>2</mdm:key>
+            <mdm:value>Mild systemic disease</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.822Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>c9610043-4c9e-4054-9031-2d52ed407580</mdm:id>
+            <mdm:index>2</mdm:index>
+            <mdm:key>3</mdm:key>
+            <mdm:value>Severe systemic disease</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.822Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>8f0af57a-0fcc-4f56-9f5a-54f39a194db4</mdm:id>
+            <mdm:index>3</mdm:index>
+            <mdm:key>4</mdm:key>
+            <mdm:value>Severe systemic disease that is a constant threat to life</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.822Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+          <mdm:enumerationValue>
+            <mdm:id>b812ddf3-0a47-40bb-b277-98abfb15a23a</mdm:id>
+            <mdm:index>4</mdm:index>
+            <mdm:key>5</mdm:key>
+            <mdm:value>A moribund person who is not expected to survive without the operation</mdm:value>
+            <mdm:lastUpdated>2019-09-18T13:59:32.823Z</mdm:lastUpdated>
+          </mdm:enumerationValue>
+        </mdm:enumerationValues>
+      </mdm:dataType>
+    </mdm:dataTypes>
+  </mdm:dataModel>
+  <exp:exportMetadata>
+    <exp:exportedBy>Admin User</exp:exportedBy>
+    <exp:exportedOn>2019-09-18T14:59:32.827+01:00</exp:exportedOn>
+    <exp:exporter>
+      <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
+      <exp:name>DataModelXmlExporterService</exp:name>
+      <exp:version>3.2</exp:version>
+    </exp:exporter>
+  </exp:exportMetadata>
+</exp:exportModel>

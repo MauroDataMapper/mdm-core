@@ -218,11 +218,6 @@ class UrlMappings {
             User Images
              */
             get "/userImageFiles/$id"(controller: 'userImageFile', action: 'show')
-
-            /*
-            ATOM feed
-            */
-            get "/feeds/all"(controller: 'feed', action: 'index')
         }
     }
 }

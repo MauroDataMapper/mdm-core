@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.terminology
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
-import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -27,7 +26,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
-import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipTypeService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationshipService
+import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.TerminologyJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
@@ -42,7 +43,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.hibernate.engine.spi.SessionFactoryImplementor
-import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @Transactional
@@ -51,10 +51,7 @@ class TerminologyService extends ModelService<Terminology> {
     TermRelationshipTypeService termRelationshipTypeService
     TermService termService
     TermRelationshipService termRelationshipService
-    AuthorityService authorityService
-
-    @Autowired(required = false)
-    SecurityPolicyManagerService securityPolicyManagerService
+    TerminologyJsonImporterService terminologyJsonImporterService
 
     @Override
     Terminology get(Serializable id) {
@@ -74,6 +71,11 @@ class TerminologyService extends ModelService<Terminology> {
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
         pathPrefix == "te"
+    }
+
+    @Override
+    String getUrlResourceName() {
+        "terminologies"
     }
 
     Long count() {
@@ -463,7 +465,7 @@ class TerminologyService extends ModelService<Terminology> {
     /**
      * When importing a terminology, do checks and setting of required values as follows:
      * (1) Set the createdBy of the terminology to be the importing user
-     * (2) Always set authority to the default authority, overriding any authority that is set in the import data
+     * (2) Check authority
      * (3) Check facets
      * (4) For each terminologyRelationshipType, set the terminology and if not provided the createdBy
      * (5) For each term, if not provided set the createdBy
@@ -474,11 +476,6 @@ class TerminologyService extends ModelService<Terminology> {
      */
     void checkImportedTerminologyAssociations(User importingUser, Terminology terminology) {
         terminology.createdBy = importingUser.emailAddress
-
-        //At the time of writing, there is, and can only be, one authority. So here we set the authority, overriding any authority provided in the
-        // import.
-        terminology.authority = authorityService.getDefaultAuthority()
-
         checkFacetsAfterImportingCatalogueItem(terminology)
 
         if (terminology.termRelationshipTypes) {
@@ -494,10 +491,15 @@ class TerminologyService extends ModelService<Terminology> {
             }
         }
 
-        terminology.getAllTermRelationships().each { tr ->
+        terminology.getAllTermRelationships().each {tr ->
             tr.createdBy = tr.createdBy ?: terminology.createdBy
         }
 
         log.debug("Terminology associations checked")
+    }
+
+    @Override
+    ModelImporterProviderService<Terminology, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
+        terminologyJsonImporterService
     }
 }

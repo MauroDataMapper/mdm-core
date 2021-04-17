@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:exp="http://maurodatamapper.com/export/3.0"
            xmlns:mdm="http://maurodatamapper.com/terminology/3.0" elementFormDefault="qualified"
            targetNamespace="http://maurodatamapper.com/export/3.0">
-  <xs:import namespace="http://maurodatamapper.com/terminology/3.0" schemaLocation="terminology_2.0.xsd" />
+  <xs:import namespace="http://maurodatamapper.com/terminology/3.0" schemaLocation="terminology_3.0.xsd" />
   <xs:element name="exportModel" type="exp:exportType" />
   <xs:complexType name="exportType">
     <xs:sequence>

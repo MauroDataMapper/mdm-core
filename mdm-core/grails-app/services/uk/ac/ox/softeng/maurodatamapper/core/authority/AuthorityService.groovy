@@ -53,4 +53,8 @@ class AuthorityService {
     boolean defaultAuthorityExists() {
         Authority.countByLabel(grailsApplication.config.getProperty(Authority.DEFAULT_NAME_CONFIG_PROPERTY)) > 0
     }
+
+    Authority findByLabel(String label) {
+        Authority.findByLabel(label)
+    }
 }

@@ -534,7 +534,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
-        T model = importerService.importModel(currentUser, importer, importerProviderServiceParameters)
+        T model = importerService.importDomain(currentUser, importer, importerProviderServiceParameters)
 
         if (!model) {
             transactionStatus.setRollbackOnly()
@@ -607,7 +607,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
-        List<T> result = importerService.importModels(currentUser, importer, importerProviderServiceParameters)
+        List<T> result = importerService.importDomains(currentUser, importer, importerProviderServiceParameters)
 
         if (!result) {
             transactionStatus.setRollbackOnly()

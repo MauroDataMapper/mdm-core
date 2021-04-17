@@ -14,6 +14,7 @@ json {
 
     finalised export.finalised
     if (export.finalised) dateFinalised OffsetDateTimeConverter.toString(export.dateFinalised)
+    if (export.modelVersion) modelVersion export.modelVersion.toString()
     if (export.authority) authority tmpl.'/authority/export'(export.authority)
 
     if (export.termRelationshipTypes) termRelationshipTypes tmpl.'/termRelationshipType/export'(export.termRelationshipTypes)

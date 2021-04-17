@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
 import uk.ac.ox.softeng.maurodatamapper.core.traits.provider.importer.XmlImportMapping
@@ -29,7 +28,6 @@ import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
 import groovy.util.slurpersupport.NodeChild
-import groovy.util.slurpersupport.NodeChildren
 import org.springframework.core.io.Resource
 
 import java.nio.charset.Charset

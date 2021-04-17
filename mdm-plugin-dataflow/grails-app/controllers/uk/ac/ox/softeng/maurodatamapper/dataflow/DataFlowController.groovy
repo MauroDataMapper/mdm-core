@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
@@ -30,19 +29,16 @@ import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.parameter.Dat
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import grails.web.mime.MimeType
 import grails.gorm.transactions.Transactional
-
+import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 
 import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
-
-import groovy.util.logging.Slf4j
 
 @Slf4j
 @SuppressWarnings('GroovyAssignabilityCheck')
@@ -130,7 +126,7 @@ class DataFlowController extends EditLoggingController<DataFlow> {
         }
 
         log.info("Exporting DataFlows using ${exporter.displayName}")
-        ByteArrayOutputStream outputStream = exporterService.exportDomains(currentUser, exporter, dataFlowIds)
+        ByteArrayOutputStream outputStream = exporterService.exportDomains(currentUser, exporter, params.dataFlowIds)
         log.info('Export complete')
 
         if (!outputStream) {
@@ -238,7 +234,7 @@ class DataFlowController extends EditLoggingController<DataFlow> {
             return
         }
 
-        List<DataFlow> result = importerService.importModels(currentUser, importer, importerProviderServiceParameters)
+        List<DataFlow> result = importerService.importDomains(currentUser, importer, importerProviderServiceParameters)
 
         if (!result) {
             transactionStatus.setRollbackOnly()

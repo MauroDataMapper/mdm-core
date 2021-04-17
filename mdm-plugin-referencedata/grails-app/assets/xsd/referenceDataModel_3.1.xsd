@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mdm="http://maurodatamapper.com/referenceDataModel/3.1" elementFormDefault="qualified"
+           targetNamespace="http://maurodatamapper.com/referenceDataModel/3.1">
+  <xs:element name="referenceDataModel" type="mdm:referenceDataModelType" />
+  <xs:complexType name="catalogueItem">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="label" type="mdm:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="aliases" type="mdm:aliasesType" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element minOccurs="0" name="classifiers" type="mdm:classifiersType" />
+      <xs:element name="metadata" type="mdm:metadataCollectionType" minOccurs="0" />
+      <xs:element minOccurs="0" name="annotations" type="mdm:annotationsType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="referenceDataModelType">
+    <xs:complexContent>
+      <xs:extension base="mdm:catalogueItem">
+        <xs:sequence>
+          <xs:element name="type" type="mdm:referenceDataModelTypeEnum" />
+          <xs:element name="author" type="xs:string" minOccurs="0" />
+          <xs:element name="organisation" type="xs:string" minOccurs="0" />
+          <xs:element name="documentationVersion" type="mdm:mandatoryString">
+            <xs:annotation>
+              <xs:documentation>If adding a ReferenceDataModel which already exists in the Mauro Data Mapper then this must be provided and be a later version to the one in the Catalogue.
+Otherwise you will get an import error due to non-unique labels</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="finalised" type="xs:boolean" />
+          <xs:element minOccurs="0" name="dateFinalised" type="xs:dateTime">
+            <xs:annotation>
+              <xs:documentation>If finalised is true then this element is NOT optional</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" name="modelVersion" type="xs:string">
+            <xs:annotation>
+            <xs:documentation>ModelVersion must only be set if the ReferenceDataModel is finalised.</xs:documentation>
+          </xs:annotation>
+          </xs:element>
+          <xs:element name="authority" type="mdm:authorityType" />
+          <xs:element name="referenceDataTypes" type="mdm:referenceDataTypesType" maxOccurs="1" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Whilst it is preferable to provide the list of DataTypes here and then use the label and domainType to link from the DataElement, you can provide the DataType information at the DataElement level.
+
+However be aware that any DataTypes which use the same label will use the first set of information found for all DataElements which use this DataType, therefore any differences in, say enumerations, will be lost. This is why it is better to provide the list of DataTypes upfront.</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="referenceDataElements" type="mdm:referenceDataElementsType" maxOccurs="1" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Provide a list of Reference Data Elements</xs:documentation>
+            </xs:annotation>
+          </xs:element>    
+          <xs:element name="referenceDataValues" type="mdm:referenceDataValuesType" maxOccurs="1" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Provide a list of Reference Data Values</xs:documentation>
+            </xs:annotation>
+          </xs:element>                 
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="aliasesType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="alias" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="classifiersType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="classifier" type="mdm:classifierType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="classifierType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="label" type="mdm:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="annotationsType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:annotationType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="annotationType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="createdBy" type="mdm:mandatoryString" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element name="label" type="mdm:mandatoryString">
+        <xs:annotation>
+          <xs:documentation />
+        </xs:annotation>
+      </xs:element>
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="childAnnotations" type="mdm:childAnnotationsType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="childAnnotationsType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="annotation" type="mdm:childAnnotationType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="childAnnotationType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="label" type="mdm:mandatoryString" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation />
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="createdBy" type="mdm:mandatoryString" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element minOccurs="0" name="childAnnotations" type="mdm:annotationsType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="referenceDataTypesType">
+    <xs:sequence>
+      <xs:element name="referenceDataType" maxOccurs="unbounded" type="mdm:referenceDataTypeType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="referenceDataTypeType">
+    <xs:complexContent>
+      <xs:extension base="mdm:catalogueItem">
+        <xs:sequence>
+          <xs:element name="domainType" type="mdm:referenceDataTypeDomainTypeEnum" />
+          <xs:element name="referenceEnumerationValues" minOccurs="0" type="mdm:referenceEnumerationValuesType">
+            <xs:annotation>
+              <xs:documentation>Mandatory if domainType is "ReferenceEnumerationType".
+Ignored otherwise</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element maxOccurs="1" minOccurs="0" name="units" type="mdm:mandatoryString">
+            <xs:annotation>
+              <xs:documentation>Optional if domainType is "PrimitiveType". Ignored otherwise</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="referenceDataElementsType">
+    <xs:sequence>
+      <xs:element name="referenceDataElement" maxOccurs="unbounded" type="mdm:referenceDataElementType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="referenceDataElementType">
+    <xs:complexContent>
+      <xs:extension base="mdm:catalogueItem">
+        <xs:sequence>
+          <xs:element name="referenceDataType" type="mdm:referenceDataTypeType">
+            <xs:annotation>
+              <xs:documentation>If you've already provided the full DataType information in the DataModel list of DataTypes, then you need only provide the label and domainType here to link to the DataType.
+
+If you have not provided all the information at the DataModel level then a DataType will be created using the information provided.</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="maxMultiplicity" type="mdm:multiplicity" maxOccurs="1" minOccurs="0" default="1">
+            <xs:annotation>
+              <xs:documentation />
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="minMultiplicity" type="mdm:multiplicity" maxOccurs="1" minOccurs="0" default="1">
+            <xs:annotation>
+              <xs:documentation />
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="referenceDataValuesType">
+    <xs:sequence>
+      <xs:element name="referenceDataValue" maxOccurs="unbounded" type="mdm:referenceDataValueType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="referenceDataValueType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="rowNumber" type="xs:integer" />
+      <xs:element name="value" type="xs:string" />
+      <xs:element name="referenceDataElement" type="mdm:referenceDataElementType">
+        <xs:annotation>
+          <xs:documentation>If you've already provided the full DataType information in the DataModel list of DataTypes, then you need only provide the label and domainType here to link to the DataType.
+If you have not provided all the information at the DataModel level then a DataType will be created using the information provided.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>  
+  <xs:complexType name="referenceEnumerationValuesType">
+    <xs:sequence>
+      <xs:element name="referenceEnumerationValue" maxOccurs="unbounded" type="mdm:referenceEnumerationValueType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="referenceEnumerationValueType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="index" type="xs:integer" />
+      <xs:element name="key" type="xs:string" />
+      <xs:element name="value" type="xs:string" />
+      <xs:element name="category" type="xs:string" minOccurs="0" />
+      <xs:element minOccurs="0" name="aliases" type="mdm:aliasesType" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+      <xs:element minOccurs="0" name="classifiers" type="mdm:classifiersType" />
+      <xs:element name="metadata" type="mdm:metadataCollectionType" minOccurs="0" />
+      <xs:element minOccurs="0" name="annotations" type="mdm:annotationsType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="metadataCollectionType">
+    <xs:sequence>
+      <xs:element name="metadata" maxOccurs="unbounded" type="mdm:metadataType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="metadataType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="namespace" type="xs:string" />
+      <xs:element name="key" type="xs:string" />
+      <xs:element name="value" type="xs:string" minOccurs="1" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="exporterType">
+    <xs:all>
+      <xs:element name="namespace" type="xs:string" />
+      <xs:element name="name" type="xs:string" />
+      <xs:element name="version" type="xs:decimal" />
+    </xs:all>
+  </xs:complexType>
+  <xs:simpleType name="mandatoryString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="multiplicity">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="-1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="referenceDataModelTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ReferenceDataModel" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="referenceDataTypeDomainTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ReferencePrimitiveType" />
+      <xs:enumeration value="ReferenceEnumerationType" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="uuid">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-fF0-9]{4}-[a-f0-9]{12}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="authorityType">
+    <xs:sequence>
+      <xs:element name="id" type="mdm:uuid" minOccurs="0" />
+      <xs:element name="label" type="mdm:mandatoryString" />
+      <xs:element name="url" type="mdm:mandatoryString" />
+      <xs:element maxOccurs="1" minOccurs="0" name="description" type="xs:string" />
+      <xs:element name="lastUpdated" type="xs:dateTime" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

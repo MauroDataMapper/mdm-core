@@ -70,10 +70,10 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
 
         log.debug('Setting map referenceDataTypes')
         referenceDataModelMap.referenceDataTypes = referenceDataModelMap.remove('referenceDataTypes')
-        
+
         log.debug('Setting map referenceDataElements')
         referenceDataModelMap.referenceDataElements = referenceDataModelMap.remove('referenceDataElements')
-  
+
         List mappedReferenceDataValues = referenceDataModelMap.remove('referenceDataValues')
 
         ReferenceDataModel referenceDataModel = new ReferenceDataModel()
@@ -81,10 +81,10 @@ abstract class DataBindReferenceDataModelImporterProviderService<T extends Refer
         DataBindingUtils.bindObjectToInstance(referenceDataModel, referenceDataModelMap, null, getImportBlacklistedProperties(), null)
 
         /**
-         * Bind each Reference Data Value. Somehow the JsonSluper and XmlSlurper produce different results. For Json, it is sufficient to do
+         * Bind each Reference Data Value. Somehow the JsonSlurper and XmlSlurper produce different results. For Json, it is sufficient to do
          * referenceDataModelMap.referenceDataValues = referenceDataModelMap.remove('referenceDataValues')
          *
-         * But when referenceDataModelMap has come from the XmlSluper, using the line above does not set the referenceDataElement 
+         * But when referenceDataModelMap has come from the XmlSlurper, using the line above does not set the referenceDataElement
          * attribute of each ReferenceDataValue.
          */
         mappedReferenceDataValues.each { rdv ->

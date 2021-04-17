@@ -109,8 +109,9 @@ trait CatalogueItem<D extends Diffable> implements InformationAware, EditHistory
         criteria
     }
 
-    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneStandardSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds, Map
-        pagination, @DelegatesTo(HibernateSearchApi) Closure additional = null) {
+    static <T extends CatalogueItem> PaginatedLuceneResult<T> luceneStandardSearch(Class<T> clazz, String searchTerm, List<UUID> allowedIds,
+                                                                                   Map pagination,
+                                                                                   @DelegatesTo(HibernateSearchApi) Closure additional = null) {
         Lucene.securedPaginatedList(clazz, allowedIds, pagination) {
             if (searchTerm) {
                 simpleQueryString(searchTerm, 'label', 'description', 'aliasesString', 'metadata.key', 'metadata.value')

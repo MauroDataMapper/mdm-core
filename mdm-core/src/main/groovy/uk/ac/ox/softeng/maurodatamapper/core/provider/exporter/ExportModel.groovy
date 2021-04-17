@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.provider.exporter
 
+import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+
 import groovy.xml.Namespace
 
 class ExportModel {
@@ -28,14 +30,29 @@ class ExportModel {
     String exportModelType
     Namespace modelXmlNamespace
 
-    ExportModel(String version) {
-        xmlNamespace = new Namespace("http://maurodatamapper.com/export/${version}", 'xmlns:exp')
+    ExportModel(CatalogueItem model, String modelType, String version, ExportMetadata exportMetadata) {
+        this(model, modelType, version, '', exportMetadata)
+    }
+
+    ExportModel(CatalogueItem model, String modelType, String version, String templatePathFileExtension, ExportMetadata exportMetadata) {
+        this(model, modelType, version, version, templatePathFileExtension, exportMetadata)
+    }
+
+    ExportModel(CatalogueItem model, String modelType, String version, String modelVersion, String templatePathFileExtension,
+                ExportMetadata exportMetadata) {
+        this.exportMetadata = exportMetadata
+        this.exportModelType = modelType
+        this.xmlNamespace = new Namespace("http://maurodatamapper.com/export/${version}", 'xmlns:exp')
+        this.modelXmlNamespace = new Namespace("http://maurodatamapper.com/$exportModelType/$modelVersion", 'xmlns:mdm')
+        this.modelExportTemplatePath = "/$exportModelType/export${templatePathFileExtension ? ".$templatePathFileExtension" : ''}"
+        this.modelExportMap = [export: model]
+        this.modelExportMap[exportModelType] = model
     }
 
     Map getXmlNamespaces() {
         Map ns = [:]
-        ns.put(xmlNamespace.prefix, xmlNamespace.uri)
-        ns.put(modelXmlNamespace.prefix, modelXmlNamespace.uri)
+        ns[xmlNamespace.prefix] = xmlNamespace.uri
+        ns[modelXmlNamespace.prefix] = modelXmlNamespace.uri
         ns
     }
 }

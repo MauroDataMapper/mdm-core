@@ -35,9 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.RuleAwareMappin
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.SemanticLinkAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.domain.VersionLinkAwareMappingContext
 import uk.ac.ox.softeng.maurodatamapper.core.markup.view.MarkupViewTemplateEngine
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperProviderService
-import uk.ac.ox.softeng.maurodatamapper.core.rest.render.MdmAtomModelCollectionRenderer
 import uk.ac.ox.softeng.maurodatamapper.provider.plugin.MauroDataMapperPlugin
 import uk.ac.ox.softeng.maurodatamapper.search.filter.IdPathFilterFactory
 import uk.ac.ox.softeng.maurodatamapper.search.filter.IdPathSecureFilterFactory
@@ -111,7 +109,7 @@ This is basically the backend API.
     ]
 
     Closure doWithSpring() {
-        {->
+        { ->
             // Dynamically update the Flyway Schemas
             mdmFlywayMigationStrategy MdmFlywayMigationStrategy
 
@@ -180,19 +178,9 @@ This is basically the backend API.
             modelExtendAwareMappingContext ModelExtendAwareMappingContext
 
             /*
-             * Define the ATOM model feed renderer beans
-             */
-            halModelListRenderer(MdmAtomModelCollectionRenderer, Collection) {
-                includes = []
-            }
-            halModelRenderer(MdmAtomModelCollectionRenderer, Model) {
-                includes = []
-            }
-
-            /*
              * Get all MDM Plugins to execute their doWithSpring
              */
-            MauroDataMapperProviderService.getServices(MauroDataMapperPlugin).each {MauroDataMapperPlugin plugin ->
+            MauroDataMapperProviderService.getServices(MauroDataMapperPlugin).each { MauroDataMapperPlugin plugin ->
                 if (plugin.doWithSpring()) {
                     log.info("Adding plugin {} beans", plugin.name)
                     def c = plugin.doWithSpring()
@@ -231,11 +219,11 @@ This is basically the backend API.
         List<String> arguments = runtimeMxBean.getInputArguments()
 
         log.warn("Running with {} JVM args", arguments.size())
-        Map<String, String> map = arguments.collectEntries {arg ->
+        Map<String, String> map = arguments.collectEntries { arg ->
             arg.split('=').toList()
         }.sort() as Map<String, String>
 
-        map.findAll {k, v ->
+        map.findAll { k, v ->
             k.startsWith('-Denv') ||
             k.startsWith('-Dgrails') ||
             k.startsWith('-Dinfo') ||
@@ -243,7 +231,7 @@ This is basically the backend API.
             k.startsWith('-Dspring') ||
             k.startsWith('-Duser.timezone') ||
             k.startsWith('-X')
-        }.each {k, v ->
+        }.each { k, v ->
             if (v) log.warn('{}={}', k, v)
             else log.warn('{}', k)
         }
@@ -251,14 +239,12 @@ This is basically the backend API.
         log.warn("Running with {} Grails config args", config.size())
         config.findAll {
             String prefix = it.key.indexOf('.') > 0 ? it.key.substring(0, it.key.indexOf('.')) : it.key
-            !(it.value instanceof Map) && (
-                prefix in ['database', 'apiUser', 'dataSource', 'env', 'simplejavamail'] ||
-                it.key.startsWith('grails.cors') ||
-                it.key.startsWith('hibernate.search') ||
-                it.key.startsWith('emailService')
-            )
+            !(it.value instanceof Map) && (prefix in ['database', 'apiUser', 'dataSource', 'env', 'simplejavamail'] ||
+                                           it.key.startsWith('grails.cors') ||
+                                           it.key.startsWith('hibernate.search') ||
+                                           it.key.startsWith('emailService'))
 
-        }.sort().each {k, v ->
+        }.sort().each { k, v ->
             log.warn('{}={}', k, v)
         }
     }

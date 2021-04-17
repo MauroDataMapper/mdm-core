@@ -101,8 +101,7 @@ class ReferenceDataCsvImporterService
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error at line "
-                                           + parser.getCurrentLineNumber(), e)
+            throw new RuntimeException("Error at line " + parser.getCurrentLineNumber(), e)
         }
 
         parser.close()

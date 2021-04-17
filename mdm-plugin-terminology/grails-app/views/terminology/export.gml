@@ -15,6 +15,7 @@ Terminology export = terminology as Terminology
 
     'mdm:finalised'(export.finalised)
      if (export.finalised) 'mdm:dateFinalised'(convertDate(export.dateFinalised))
+     if (export.modelVersion) 'mdm:modelVersion' export.modelVersion.toString()
 
      layout '/authority/export.gml', authority: export.authority, ns: 'mdm'
 

@@ -18,7 +18,7 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.1" xmlns:mdm="http://maurodatamapper.com/dataModel/3.1">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.2" xmlns:mdm="http://maurodatamapper.com/dataModel/3.2">
   <mdm:dataModel>
     <mdm:id>e91daf08-dcda-4dd7-9be6-11f303622aaa</mdm:id>
     <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
@@ -55,7 +55,7 @@
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>3.1</exp:version>
+      <exp:version>3.2</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>
