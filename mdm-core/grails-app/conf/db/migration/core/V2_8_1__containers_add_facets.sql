@@ -6,6 +6,7 @@ CREATE TABLE core.join_classifier_to_facet (
     reference_file_id UUID,
     metadata_id       UUID
 );
+
 CREATE TABLE core.join_folder_to_facet (
     folder_id         UUID NOT NULL,
     annotation_id     UUID,
@@ -27,6 +28,8 @@ ALTER TABLE IF EXISTS core.join_classifier_to_facet
     ADD CONSTRAINT FK5owmrlff8c3f3bf2e7om5xkfj FOREIGN KEY (reference_file_id) REFERENCES core.reference_file;
 ALTER TABLE IF EXISTS core.join_classifier_to_facet
     ADD CONSTRAINT FK6531dcod746lwh2v7k4fatx7b FOREIGN KEY (metadata_id) REFERENCES core.metadata;
+
+
 ALTER TABLE IF EXISTS core.join_folder_to_facet
     ADD CONSTRAINT FKohkkmadsw0xtk5qs2mx0y0npo FOREIGN KEY (annotation_id) REFERENCES core.annotation;
 ALTER TABLE IF EXISTS core.join_folder_to_facet
