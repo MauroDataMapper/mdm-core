@@ -357,28 +357,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Finalised Example Test DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "modelVersion": "1.0.0",
-        "children": [
-          {
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "first class on example finalised model",
-            "hasChildren": false,
-            "modelId": "${json-unit.matches:id}"
-          }
-        ]
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
         "label": "First Importing DataModel",
         "hasChildren": false,
         "deleted": false,
@@ -529,28 +507,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Finalised Example Test DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "modelVersion": "1.0.0",
-        "children": [
-          {
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "first class on example finalised model",
-            "hasChildren": false,
-            "modelId": "${json-unit.matches:id}"
-          }
-        ]
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
         "label": "First Importing DataModel",
         "hasChildren": false,
         "deleted": false,
@@ -697,28 +653,6 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
         "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Finalised Example Test DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "modelVersion": "1.0.0",
-        "children": [
-          {
-            "id": "${json-unit.matches:id}",
-            "domainType": "DataClass",
-            "label": "first class on example finalised model",
-            "hasChildren": false,
-            "modelId": "${json-unit.matches:id}"
-          }
-        ]
       },
       {
         "id": "${json-unit.matches:id}",

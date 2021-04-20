@@ -72,7 +72,6 @@ The DataModel domain, services and controllers for the Mauro Data Mapper backend
 
             summaryMetadataAwareMappingContext SummaryMetadataAwareMappingContext
             //            modelImportAwareMappingContext ModelImportAwareMappingContext
-            //            modelExtendAwareMappingContext ModelExtendAwareMappingContext
         }
     }
 

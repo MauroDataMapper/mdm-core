@@ -218,8 +218,64 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 10,
+  "count": 8,
   "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "TargetFlowDataModel",
+      "type": "Data Asset",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Third Importing DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Extendable DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "modelVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "SourceFlowDataModel",
+      "type": "Data Asset",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Simple Test DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "classifiers": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "test classifier simple",
+          "lastUpdated": "${json-unit.matches:offsetDateTime}"
+        }
+      ]
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Second Importing DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -245,83 +301,10 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
-      "label": "Simple Test DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0",
-      "classifiers": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "test classifier simple",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}"
-        }
-      ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "SourceFlowDataModel",
-      "type": "Data Asset",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "TargetFlowDataModel",
-      "type": "Data Asset",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Finalised Example Test DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0",
-      "modelVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
       "label": "First Importing DataModel",
       "type": "Data Standard",
       "branchName": "main",
       "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Second Importing DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Third Importing DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Xtending DataM0del 1",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Extendable DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0",
-      "modelVersion": "1.0.0"
     }
   ]
 }'''

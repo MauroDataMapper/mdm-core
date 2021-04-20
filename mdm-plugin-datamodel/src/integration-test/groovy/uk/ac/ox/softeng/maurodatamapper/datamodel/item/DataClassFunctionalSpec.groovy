@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.OrderedResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
@@ -33,11 +34,14 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
+import java.time.OffsetDateTime
+
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * @see DataClassController* Controller: dataClass
@@ -67,6 +71,9 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     UUID otherDataModelId
 
     @Shared
+    UUID finalisedDataModelId
+
+    @Shared
     UUID dataTypeId
 
     @Shared
@@ -87,6 +94,10 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
                                          folder: folder, authority: testAuthority).save(flush: true).id
 
+        finalisedDataModelId = new DataModel(label: 'Functional Test DataModel 3', createdBy: FUNCTIONAL_TEST,
+                                             finalised: true, dateFinalised: OffsetDateTime.now(), modelVersion: Version.from('1'),
+                                             folder: folder, authority: testAuthority).save(flush: true).id
+
         dataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                        dataModel: dataModel).save(flush: true).id
 
@@ -105,7 +116,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         if (otherDataModelId) {
             sleep(20)
             GET(getResourcePath(otherDataModelId), MAP_ARG, true)
-            def items = response.body().items
+            def items = responseBody().items
             items.each {i ->
                 DELETE("${getResourcePath(otherDataModelId)}/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
@@ -169,22 +180,22 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     @Override
     void verifyR4UpdateResponse() {
         super.verifyR4UpdateResponse()
-        response.body().description == 'Adding a description to the DataClass'
+        responseBody().description == 'Adding a description to the DataClass'
     }
 
     void 'Test getting all content of an empty DataClass'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
 
         when:
         GET("$id/content")
 
         then:
         response.status() == OK
-        response.body().count == 0
-        response.body().items.size() == 0
+        responseBody().count == 0
+        responseBody().items.size() == 0
 
     }
 
@@ -192,10 +203,10 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         given: 'setup some dataclasses and dataelements'
         POST('', validJson)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
         POST("$id/dataClasses", validJson)
         verifyResponse CREATED, response
-        String childId = response.body().id
+        String childId = responseBody().id
         POST("$id/dataElements", [
             label          : 'Functional Test DataElement',
             maxMultiplicity: 2,
@@ -203,7 +214,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
             dataType       : dataTypeId.toString()
         ])
         verifyResponse CREATED, response
-        String elementId = response.body().id
+        String elementId = responseBody().id
 
         expect:
         id
@@ -215,31 +226,31 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         response.status() == OK
-        response.body().count == 2
-        response.body().items.size() == 2
+        responseBody().count == 2
+        responseBody().items.size() == 2
 
         and:
-        response.body().items[0].id == childId
-        response.body().items[0].label == validJson.label
-        response.body().items[0].breadcrumbs.size() == 2
+        responseBody().items[0].id == childId
+        responseBody().items[0].label == validJson.label
+        responseBody().items[0].breadcrumbs.size() == 2
 
         and:
-        response.body().items[1].id == elementId
-        response.body().items[1].label == 'Functional Test DataElement'
-        response.body().items[1].maxMultiplicity == 2
-        response.body().items[1].minMultiplicity == 0
-        response.body().items[1].dataType.id == dataTypeId.toString()
-        response.body().items[1].breadcrumbs.size() == 2
+        responseBody().items[1].id == elementId
+        responseBody().items[1].label == 'Functional Test DataElement'
+        responseBody().items[1].maxMultiplicity == 2
+        responseBody().items[1].minMultiplicity == 0
+        responseBody().items[1].dataType.id == dataTypeId.toString()
+        responseBody().items[1].breadcrumbs.size() == 2
     }
 
     void 'Test getting all DataClasses of the test DataModel'() {
         given: 'setup some dataclasses'
         POST('', validJson)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
         POST("$id/dataClasses", validJson)
         verifyResponse CREATED, response
-        String childId = response.body().id
+        String childId = responseBody().id
 
         expect:
         id
@@ -250,23 +261,23 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         response.status() == OK
-        response.body().count == 2
-        response.body().items.size() == 2
+        responseBody().count == 2
+        responseBody().items.size() == 2
 
         and:
-        response.body().items.any {it.id == id}
-        response.body().items.any {it.id == childId}
+        responseBody().items.any {it.id == id}
+        responseBody().items.any {it.id == childId}
 
         and:
-        response.body().items.find {it.id == id}.breadcrumbs.size() == 1
-        response.body().items.find {it.id == childId}.breadcrumbs.size() == 2
+        responseBody().items.find {it.id == id}.breadcrumbs.size() == 1
+        responseBody().items.find {it.id == childId}.breadcrumbs.size() == 2
     }
 
     void 'test copying from datamodel root to other datamodel root'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
 
         expect:
         id
@@ -282,22 +293,22 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         response.status() == CREATED
-        response.body().id != id
-        response.body().label == validJson.label
-        response.body().availableActions == ['delete', 'show', 'update']
-        response.body().model == otherDataModelId.toString()
-        response.body().breadcrumbs.size() == 1
-        response.body().breadcrumbs[0].id == otherDataModelId.toString()
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
     }
 
     void 'test copying from datamodel to dataclass'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
-        String id = response.body().id
+        String id = responseBody().id
         POST("${getResourcePath(otherDataModelId)}", validJson, MAP_ARG, true)
         verifyResponse CREATED, response
-        String otherId = response.body().id
+        String otherId = responseBody().id
 
         expect:
         id
@@ -314,13 +325,13 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         response.status() == CREATED
-        response.body().id != id
-        response.body().label == validJson.label
-        response.body().availableActions == ['delete', 'show', 'update']
-        response.body().model == otherDataModelId.toString()
-        response.body().breadcrumbs.size() == 2
-        response.body().breadcrumbs[0].id == otherDataModelId.toString()
-        response.body().breadcrumbs[1].id == otherId
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 2
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
+        responseBody().breadcrumbs[1].id == otherId
     }
 
     @Rollback
@@ -338,7 +349,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         ], MAP_ARG, true)
 
         verifyResponse CREATED, response
-        def importedId = response.body().items[0].id
+        def importedId = responseBody().items[0].id
         def term = 'mdk1'
         def id = DataClass.findByLabel('content').id
 
@@ -393,7 +404,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         ], MAP_ARG, true)
 
         verifyResponse CREATED, response
-        def importedId = response.body().items[0].id
+        def importedId = responseBody().items[0].id
         def term = 'mdk1'
         def id = DataClass.findByLabel('emptyclass').id
 
@@ -405,8 +416,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         verifyResponse OK, response
-        response.body().count == 0
-        response.body().items.size() == 0
+        responseBody().count == 0
+        responseBody().items.size() == 0
 
         cleanup:
         sessionFactory.currentSession.flush()
@@ -416,10 +427,10 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
     void 'OR5: Test ordering when there are parent and child data classes, and that the children of a child are ordered separately to children'() {
         /**
-        dataModel
-            -> dataClass "emptyclass" @ 0
-            -> dataClass "parent" @ 1
-            -> dataClass "content" @ 2
+         dataModel
+         -> dataClass "emptyclass" @ 0
+         -> dataClass "parent" @ 1
+         -> dataClass "content" @ 2
          */
         given: 'Three resources with indices 0, 1 and 2'
         String aId = createNewItem(getValidLabelJson('emptyclass', 0))
@@ -427,52 +438,52 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         String cId = createNewItem(getValidLabelJson('content', 2))
 
         /**
-        dataModel
-            -> dataClass "emptyclass" @ 0
-            -> dataClass "parent" @ 1
-                 -> dataClass "child1" @ 0
-                 -> dataClass "child2" @ 1
-                 -> dataClass "child3" @ 2
-            -> dataClass "content" @ 2
+         dataModel
+         -> dataClass "emptyclass" @ 0
+         -> dataClass "parent" @ 1
+         -> dataClass "child1" @ 0
+         -> dataClass "child2" @ 1
+         -> dataClass "child3" @ 2
+         -> dataClass "content" @ 2
          */
         when: 'Three children are added to parent and are then listed'
         POST("${bId}/dataClasses", [label: "child1", index: 0])
-        String child1Id = response.body().id
+        String child1Id = responseBody().id
         POST("${bId}/dataClasses", [label: "child2", index: 1])
-        String child2Id = response.body().id
+        String child2Id = responseBody().id
         POST("${bId}/dataClasses", [label: "child3", index: 2])
-        String child3Id = response.body().id
-        GET("${bId}/dataClasses")      
+        String child3Id = responseBody().id
+        GET("${bId}/dataClasses")
 
         then: 'All children of parent are listed correctly'
-        response.body().items[0].id == child1Id
-        response.body().items[0].parentDataClass == bId
-        response.body().items[1].id == child2Id
-        response.body().items[1].parentDataClass == bId
-        response.body().items[2].id == child3Id
-        response.body().items[2].parentDataClass == bId
+        responseBody().items[0].id == child1Id
+        responseBody().items[0].parentDataClass == bId
+        responseBody().items[1].id == child2Id
+        responseBody().items[1].parentDataClass == bId
+        responseBody().items[2].id == child3Id
+        responseBody().items[2].parentDataClass == bId
 
-        
+
         when: 'All items are listed'
         GET('')
 
         then: 'They are in the order emptyclass, parent, content'
-        response.body().items[0].label == 'emptyclass'
-        response.body().items[1].label == 'parent'
-        response.body().items[2].label == 'content'
+        responseBody().items[0].label == 'emptyclass'
+        responseBody().items[1].label == 'parent'
+        responseBody().items[2].label == 'content'
 
         /**
-        dataModel            
-            -> dataClass "parent" @ 0
-                 -> dataClass "child1" @ 0
-                 -> dataClass "child2" @ 1
-                 -> dataClass "child3" @ 2
-            -> dataClass "content" @ 1
-            -> dataClass "emptyclass" @ 2
+         dataModel
+         -> dataClass "parent" @ 0
+         -> dataClass "child1" @ 0
+         -> dataClass "child2" @ 1
+         -> dataClass "child3" @ 2
+         -> dataClass "content" @ 1
+         -> dataClass "emptyclass" @ 2
          */
         when: 'emptyclass is PUT at the bottom of the list'
         PUT(aId, getValidLabelJson('emptyclass', 2))
-        
+
         then: 'The item is updated'
         response.status == HttpStatus.OK
 
@@ -480,21 +491,94 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         GET('')
 
         then: 'They are in the order parent, content, emptyclass'
-        log.debug(response.body().toString())
-        response.body().items[0].label == 'parent'
-        response.body().items[1].label == 'content'
-        response.body().items[2].label == 'emptyclass'
+        log.debug(responseBody().toString())
+        responseBody().items[0].label == 'parent'
+        responseBody().items[1].label == 'content'
+        responseBody().items[2].label == 'emptyclass'
 
 
         when: 'All children of parent are listed'
         GET("${bId}/dataClasses")
 
         then: 'All children of parent are listed correctly'
-        response.body().items[0].id == child1Id
-        response.body().items[0].parentDataClass == bId
-        response.body().items[1].id == child2Id
-        response.body().items[1].parentDataClass == bId
-        response.body().items[2].id == child3Id
-        response.body().items[2].parentDataClass == bId
-   }
+        responseBody().items[0].id == child1Id
+        responseBody().items[0].parentDataClass == bId
+        responseBody().items[1].id == child2Id
+        responseBody().items[1].parentDataClass == bId
+        responseBody().items[2].id == child3Id
+        responseBody().items[2].parentDataClass == bId
+    }
+
+    void 'Test extending a DataClass'() {
+        given:
+        // Get a DC which we will a DC as an extension
+        POST('', validJson)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        // Get a DC which inside the same DM we can extend
+        POST('', [
+            label: 'Another DataClass'
+        ])
+        verifyResponse CREATED, response
+        String internalExtendableId = responseBody().id
+
+
+        // Get a DC which we will not be able to extend
+        POST(getResourcePath(otherDataModelId), validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String nonExtendableId = responseBody().id
+
+        // Get a DC which we will extend
+        POST(getResourcePath(finalisedDataModelId), validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String externalExtendableId = responseBody().id
+
+        expect:
+        id
+        internalExtendableId
+        nonExtendableId
+        externalExtendableId
+
+        when: 'trying to extend non-existent'
+        PUT("${id}/extends/$otherDataModelId/${UUID.randomUUID()}", [:])
+
+        then:
+        response.status() == NOT_FOUND
+
+        when: 'trying to extend existing DC but not finalised model'
+        PUT("${id}/extends/$otherDataModelId/$nonExtendableId", [:])
+
+        then:
+        response.status() == UNPROCESSABLE_ENTITY
+        responseBody().errors.first().message == "DataClass [${nonExtendableId}] to be extended does not belong to a finalised DataModel"
+
+        when: 'trying to extend existing DC in finalised model'
+        PUT("${id}/extends/$finalisedDataModelId/$externalExtendableId", [:])
+
+        then:
+        response.status() == OK
+        responseBody().extendsDataClasses.size() == 1
+        responseBody().extendsDataClasses.first().id == externalExtendableId
+        responseBody().extendsDataClasses.first().model == finalisedDataModelId.toString()
+
+        when: 'trying to extend existing DC in same model'
+        PUT("${id}/extends/$dataModelId/$internalExtendableId", [:])
+
+        then:
+        response.status() == OK
+        responseBody().extendsDataClasses.size() == 2
+        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString()}
+        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == dataModelId.toString()}
+
+        cleanup:
+        DELETE(getDeleteEndpoint(id))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE(getDeleteEndpoint(internalExtendableId))
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("dataModels/$otherDataModelId/dataClasses/$nonExtendableId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("dataModels/$finalisedDataModelId/dataClasses/$externalExtendableId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
 }

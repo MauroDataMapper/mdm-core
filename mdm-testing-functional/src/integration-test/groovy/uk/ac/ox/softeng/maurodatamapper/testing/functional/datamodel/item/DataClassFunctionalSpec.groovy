@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -28,7 +28,11 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 
+import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.FORBIDDEN
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * <pre>
@@ -69,6 +73,21 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
     @Transactional
     String getDataClassIdByLabel(String label) {
         DataClass.byDataModelIdAndLabel(Utils.toUuid(complexDataModelId), label).get().id.toString()
+    }
+
+    @Transactional
+    String getSimpleDataClassId() {
+        DataClass.byDataModelIdAndLabel(Utils.toUuid(simpleDataModelId), 'simple').get().id.toString()
+    }
+
+    @Transactional
+    String getFinalisedDataModelId() {
+        DataModel.findByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME).id.toString()
+    }
+
+    @Transactional
+    String getFinalisedDataClassId() {
+        DataClass.byDataModelIdAndLabel(Utils.toUuid(getFinalisedDataModelId()), 'finalised Data Class').get().id.toString()
     }
 
     @Override
@@ -293,6 +312,125 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         responseBody().items[1].domainType == 'DataElement'
         responseBody().items[1].label == 'element2'
         responseBody().items[1].breadcrumbs.size() == 2
+    }
+
+    void 'R06 : Test extending a DataClass (as reader)'() {
+        given:
+        // Get a DC which we will a DC as an extension
+        String id = getValidId()
+
+        // Get a DC which inside the same DM we can extend
+        loginEditor()
+        POST('', [
+            label: 'Another DataClass'
+        ])
+        verifyResponse CREATED, response
+        String internalExtendableId = responseBody().id
+        logout()
+
+        // Get a DC which we will not be able to extend
+        String nonExtendableId = getSimpleDataClassId()
+
+        // Get a DC which we will extend
+        String externalExtendableId = getFinalisedDataClassId()
+
+        expect:
+        id
+        internalExtendableId
+        nonExtendableId
+        externalExtendableId
+
+        when: 'trying to extend non-existent'
+        loginReader()
+        PUT("${id}/extends/$simpleDataModelId/${UUID.randomUUID()}", [:])
+
+        then:
+        response.status() == FORBIDDEN
+
+        when: 'trying to extend existing DC but not finalised model'
+        PUT("${id}/extends/$simpleDataModelId/$nonExtendableId", [:])
+
+        then:
+        response.status() == FORBIDDEN
+
+        when: 'trying to extend existing DC in finalised model'
+        PUT("${id}/extends/$finalisedDataModelId/$externalExtendableId", [:])
+
+        then:
+        response.status() == FORBIDDEN
+
+        when: 'trying to extend existing DC in same model'
+        PUT("${id}/extends/$complexDataModelId/$internalExtendableId", [:])
+
+        then:
+        response.status() == FORBIDDEN
+
+        cleanup:
+        removeValidIdObject(id)
+        removeValidIdObject(internalExtendableId)
+    }
+
+    void 'E06 : Test extending a DataClass (as editor)'() {
+        given:
+        // Get a DC which we will a DC as an extension
+        String id = getValidId()
+
+        // Get a DC which inside the same DM we can extend
+        loginEditor()
+        POST('', [
+            label: 'Another DataClass'
+        ])
+        verifyResponse CREATED, response
+        String internalExtendableId = responseBody().id
+        logout()
+
+        // Get a DC which we will not be able to extend
+        String nonExtendableId = getSimpleDataClassId()
+
+        // Get a DC which we will extend
+        String externalExtendableId = getFinalisedDataClassId()
+
+        expect:
+        id
+        internalExtendableId
+        nonExtendableId
+        externalExtendableId
+
+        when: 'trying to extend non-existent'
+        loginEditor()
+        PUT("${id}/extends/$simpleDataModelId/${UUID.randomUUID()}", [:])
+
+        then:
+        response.status() == NOT_FOUND
+
+        when: 'trying to extend existing DC but not finalised model'
+        PUT("${id}/extends/$simpleDataModelId/$nonExtendableId", [:])
+
+        then:
+        response.status() == UNPROCESSABLE_ENTITY
+        responseBody().errors.first().message == "DataClass [${nonExtendableId}] to be extended does not belong to a finalised DataModel"
+
+        when: 'trying to extend existing DC in finalised model'
+        PUT("${id}/extends/$finalisedDataModelId/$externalExtendableId", [:])
+
+        then:
+        response.status() == OK
+        responseBody().extendsDataClasses.size() == 1
+        responseBody().extendsDataClasses.first().id == externalExtendableId
+        responseBody().extendsDataClasses.first().model == finalisedDataModelId.toString()
+
+        when: 'trying to extend existing DC in same model'
+        PUT("${id}/extends/$complexDataModelId/$internalExtendableId", [:])
+
+        then:
+        response.status() == OK
+        responseBody().extendsDataClasses.size() == 2
+        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString()}
+        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == complexDataModelId.toString()}
+
+        cleanup:
+        removeValidIdObject(id)
+        removeValidIdObject(internalExtendableId)
     }
 
     /*

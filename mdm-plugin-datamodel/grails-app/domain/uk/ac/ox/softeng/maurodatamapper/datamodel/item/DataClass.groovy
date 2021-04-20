@@ -61,16 +61,17 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
     DataModel dataModel
 
     static hasMany = [
-        classifiers    : Classifier,
-        metadata       : Metadata,
-        annotations    : Annotation,
-        semanticLinks  : SemanticLink,
-        referenceFiles : ReferenceFile,
-        dataClasses    : DataClass,
-        dataElements   : DataElement,
-        referenceTypes : ReferenceType,
-        summaryMetadata: SummaryMetadata,
-        rules          : Rule,
+        classifiers        : Classifier,
+        metadata           : Metadata,
+        annotations        : Annotation,
+        semanticLinks      : SemanticLink,
+        referenceFiles     : ReferenceFile,
+        dataClasses        : DataClass,
+        dataElements       : DataElement,
+        referenceTypes     : ReferenceType,
+        summaryMetadata    : SummaryMetadata,
+        rules              : Rule,
+        extendedDataClasses: DataClass
         //        modelImports       : ModelImport,
     ]
 
@@ -86,6 +87,13 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         label validator: {val, obj -> new DataClassLabelValidator(obj).isValid(val)}
         dataElements validator: {val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataElements').isValid(val)}
         dataClasses validator: {val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataClasses').isValid(val)}
+        extendedDataClasses validator: {val, obj ->
+            if (!val) return true
+            Set<DataClass> dataClassesInAnotherModel = val.findAll {it.modelId != obj.modelId}
+            if (!dataClassesInAnotherModel) return true
+            int count = dataClassesInAnotherModel.count {!it.model.finalised}
+            if (count > 0) return ['invalid.extended.dataclasses.model.not.finalised', count]
+        }
     }
 
     static mapping = {
@@ -95,13 +103,18 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_class_data_model_idx' //, cascade: 'none', cascadeValidate: 'none'
         parentDataClass index: 'data_class_parent_data_class_idx', cascade: 'save-update'
+        extendedDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
+            name  : 'join_dataclass_to_extended_data_class',
+            key   : 'dataclass_id',
+            column: 'extended_dataclass_id'
+        ]
     }
 
     static mappedBy = [
-        dataClasses   : 'parentDataClass',
-        referenceTypes: 'referenceClass',
-        dataElements  : 'dataClass',
-        //  extendedDataClasses: 'none'
+        dataClasses        : 'parentDataClass',
+        referenceTypes     : 'referenceClass',
+        dataElements       : 'dataClass',
+        extendedDataClasses: 'none'
     ]
 
     static search = {
@@ -232,7 +245,7 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
      * DataClasses which have been imported into a DataModel i.e. excluding DataClasses owned directly by the DataModel.
      *
      * @param ID of DataModel which has imported other catalogue items
-     * @return DetachedCriteria<DataClass>     for id in IDs of catalogue items which have been imported into the DataModel
+     * @return DetachedCriteria<DataClass>       for id in IDs of catalogue items which have been imported into the DataModel
      *
      static DetachedCriteria<DataClass> importedByDataModelId(Serializable dataModelId) {new DetachedCriteria<DataClass>(DataClass)
      .in('id', ModelImport.importedByCatalogueItemId(dataModelId))}/**
@@ -342,4 +355,11 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         }
     }
 
+    static DetachedCriteria<DataClass> byExtendedDataClassId(UUID dataClassId) {
+        where {
+            extendedDataClasses {
+                eq 'id', dataClassId
+            }
+        }
+    }
 }

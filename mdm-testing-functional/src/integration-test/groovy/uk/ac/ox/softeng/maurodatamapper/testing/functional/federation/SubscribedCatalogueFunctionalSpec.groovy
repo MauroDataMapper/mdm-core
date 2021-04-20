@@ -633,7 +633,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
         then:
         verifyJsonResponse OK, '''
         {
-  "count": 3,
+  "count": 2,
   "items": [
     {
       "modelId": "${json-unit.matches:id}",
@@ -644,12 +644,6 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     {
       "modelId": "${json-unit.matches:id}",
       "label": "Extendable DataModel 1.0.0",
-      "description": null,
-      "modelType": "DataModel"
-    },
-    {
-      "modelId": "${json-unit.matches:id}",
-      "label": "Finalised Example Test DataModel 1.0.0",
       "description": null,
       "modelType": "DataModel"
     }

@@ -52,7 +52,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     DataElementService dataElementService
     DataTypeService dataTypeService
     MessageSource messageSource
-    //    ModelExtendService modelExtendService
     //    ModelImportService modelImportService
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
@@ -93,26 +92,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         [DataElement, DataClass]
     }
 
-    /**
-     * Does the extendedDataClass meet domain specific rules for extension?
-     *
-     * @param extendingDataClass The DataClass which is extending the extendedDataClass
-     * @param extendedDataClass The DataClass which is being extended by extendingDataClass
-     *
-     * @return boolean Is this extend allowed by domain specific rules?
-     *
-    @Override
-    boolean isExtendableByCatalogueItem(DataClass extendingDataClass, DataClass extendedDataClass) {
-        //1. The extended DataClass must directly belong to the same DataModel as the extending DataClass, or
-        (extendingDataClass.dataModelId == extendedDataClass.dataModelId) ||
-        //2. the extended DataClass is imported into the same DataModel as owns the extending DataClass, or
-        (extendingDataClass.dataModel.modelImports.any {it.catalogueItemId == extendedDataClass.dataModelId}) ||
-        //3. TODO the two DataClasses belong to the same collection, or
-        //
-        //4. the extended DataClass belongs to a DataModel which is finalised
-        (extendedDataClass.dataModel.finalised)
-    }
-     */
+*/
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = proxyHandler.unwrapIfProxy(dataClass.dataModel)
@@ -186,13 +166,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         //            }
         //            ModelImport.saveAll(catalogueItem.modelImports)
         //        }
-        //        if (catalogueItem.modelExtends) {
-        //            catalogueItem.modelExtends.each {
-        //                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-        //                it.catalogueItemId = catalogueItem.getId()
-        //            }
-        //            ModelExtend.saveAll(catalogueItem.modelExtends)
-        //        }
+
         catalogueItem
     }
 
@@ -274,6 +248,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         removeReferenceTypes(dataClass)
         dataClass.breadcrumbTree.removeFromParent()
         dataClass.dataModel.removeFromDataClasses(dataClass)
+        dataClass.extendedDataClasses
         dataClass.dataClasses?.each {removeAssociations(it)}
     }
 
@@ -620,11 +595,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         //                                   copier)
         //        }
         //
-        //        modelExtendService.findAllByCatalogueItemId(original.id).each {
-        //            copy.addToModelExtends(it.extendedCatalogueItemDomainType,
-        //                                   it.extendedCatalogueItemId,
-        //                                   copier)
-        //        }
         copy
     }
 
@@ -844,4 +814,11 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         DataClass.byMetadataNamespace(namespace).list(pagination)
     }
 
+    boolean isExtendableDataClassInSameModelOrInFinalisedModel(DataClass extendableDataClass, DataClass extendingDataClass) {
+        extendingDataClass.modelId == extendableDataClass.modelId || extendableDataClass.model.finalised
+    }
+
+    boolean isDataClassBeingUsedAsExtension(DataClass dataClass) {
+        DataClass.byExtendedDataClassId(dataClass.id).count()
+    }
 }

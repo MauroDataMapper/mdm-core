@@ -47,7 +47,7 @@ class UrlMappings {
                 get '/latestModelVersion'(controller: 'dataModel', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'dataModel', action: 'mergeDiff')
                 put "/mergeInto/$otherModelId"(controller: 'dataModel', action: 'mergeInto')
-                get '/modelVersionTree' (controller: 'dataModel', action: 'modelVersionTree')
+                get '/modelVersionTree'(controller: 'dataModel', action: 'modelVersionTree')
 
                 get '/currentMainBranch'(controller: 'dataModel', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'dataModel', action: 'availableBranches')
@@ -78,6 +78,9 @@ class UrlMappings {
                     '/dataClasses'(resources: 'dataClass', excludes: DEFAULT_EXCLUDES)
                     get '/content'(controller: 'dataClass', action: 'content')
                     post "/dataClasses/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'copyDataClass')
+
+                    put "/extends/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'extendDataClass')
+                    delete "/extends/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'extendDataClass')
 
                     post '/search'(controller: 'dataClass', action: 'search')
                     get '/search'(controller: 'dataClass', action: 'search')

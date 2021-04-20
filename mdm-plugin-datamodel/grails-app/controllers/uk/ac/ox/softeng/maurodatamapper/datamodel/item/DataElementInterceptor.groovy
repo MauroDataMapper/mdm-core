@@ -41,7 +41,7 @@ class DataElementInterceptor extends DataModelSecuredInterceptor {
         }
 
         if (actionName == 'copyDataElement') {
-            return canCopyFromDataModelToOtherDataModel()
+            return canEditDataModelAndReadOtherDataModel()
         }
 
         checkStandardActions()

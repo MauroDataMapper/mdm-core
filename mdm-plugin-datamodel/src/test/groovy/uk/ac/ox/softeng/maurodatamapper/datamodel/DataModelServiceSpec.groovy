@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelExtendService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -56,7 +55,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         mockArtefact(DataClassService)
         mockArtefact(DataElementService)
         mockArtefact(DataTypeService)
-        mockArtefact(ModelExtendService)
         mockArtefact(ModelImportService)
         mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType,

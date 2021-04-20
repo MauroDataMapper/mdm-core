@@ -1008,7 +1008,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(target, source, id)
     }
 
-    void 'E26 : Test getting versionTreeModel (as editor)'() {
+    void 'E26a : Test getting versionTreeModel (as editor)'() {
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
@@ -1118,7 +1118,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(latestDraftId)
     }
 
-    void 'E26 : Test getting versionTreeModel is same across ancestors (as editor)'() {
+    void 'E26b : Test getting versionTreeModel is same across ancestors (as editor)'() {
         /*
         id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
           \_ newBranchId (draft)
