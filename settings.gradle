@@ -15,7 +15,8 @@ include(
     'mdm-plugin-terminology',
     'mdm-plugin-dataflow',
     'mdm-plugin-referencedata',
-    'mdm-plugin-profile'
+    'mdm-plugin-profile',
+    'mdm-plugin-federation',
     )
 
 //if(hasProperty('isJenkins')) {

@@ -18,6 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.datamodel.test.provider.DataBindDataModelImporterProviderServiceSpec
 
 import grails.gorm.transactions.Rollback
@@ -57,5 +59,14 @@ class DataModelJsonImporterServiceSpec extends DataBindDataModelImporterProvider
         then:
         ApiBadRequestException exception = thrown(ApiBadRequestException)
         exception.message.contains('cannot import multiple DataModels')
+    }
+
+    void 'test parameters for federation'() {
+        when:
+        ModelImporterProviderServiceParameters parameters = dataModelJsonImporterService.createNewImporterProviderServiceParameters()
+
+        then:
+        parameters.hasProperty('importFile')
+        parameters.hasProperty('importFile').type == FileParameter
     }
 }

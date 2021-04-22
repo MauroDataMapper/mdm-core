@@ -157,8 +157,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         this
     }
 
-    GroupBasedUserSecurityPolicyManager removeVirtualRoleIf(@ClosureParams(value =
-        SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole') Closure predicate) {
+    GroupBasedUserSecurityPolicyManager removeVirtualRoleIf(@ClosureParams(
+        value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.security.role.VirtualSecurableResourceGroupRole') Closure predicate
+                                                           ) {
         virtualSecurableResourceGroupRoles.removeIf([test: predicate] as Predicate)
         this
     }
@@ -168,8 +170,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         this
     }
 
-    GroupBasedUserSecurityPolicyManager removeAssignedRoleIf(@ClosureParams(value =
-        SimpleType, options = 'uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole') Closure predicate) {
+    GroupBasedUserSecurityPolicyManager removeAssignedRoleIf(@ClosureParams(
+        value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole') Closure predicate
+                                                            ) {
         securableResourceGroupRoles.removeIf([test: predicate] as Predicate)
         this
     }

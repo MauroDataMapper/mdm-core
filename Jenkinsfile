@@ -120,6 +120,7 @@ pipeline {
                     'mdm-plugin-dataflow',
                     'mdm-plugin-datamodel',
                     'mdm-plugin-email-proxy',
+                    'mdm-plugin-federation',
                     //                    'mdm-plugin-profile',
                     'mdm-plugin-referencedata',
                     'mdm-plugin-terminology',
@@ -226,6 +227,16 @@ pipeline {
                 }
             }
         }
+        stage('Functional Test: mdm-plugin-federation') {
+            steps {
+                sh "./gradlew -Dgradle.functionalTest=true :mdm-plugin-federation:integrationTest"
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'mdm-plugin-federation/build/test-results/functionalTest/*.xml'
+                }
+            }
+        }
 
         /*
         E2E Functional Tests
@@ -297,6 +308,16 @@ pipeline {
             post {
                 always {
                     junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/referencedata/*.xml'
+                }
+            }
+        }
+        stage('E2E Federation Functional Test') {
+            steps {
+                sh "./gradlew -Dgradle.test.package=federation :mdm-testing-functional:integrationTest"
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'mdm-testing-functional/build/test-results/federation/*.xml'
                 }
             }
         }
@@ -377,6 +398,7 @@ pipeline {
             jacoco classPattern: '**/build/classes', execPattern: '**/build/jacoco/*.exec', sourceInclusionPattern: '**/*.java,**/*.groovy', sourcePattern: '**/src/main/groovy,**/grails-app/controllers,**/grails-app/domain,**/grails-app/services,**/grails-app/utils'
             archiveArtifacts allowEmptyArchive: true, artifacts: '**/*.log'
             slackNotification()
+            zulipNotification(topic: 'mdm-core')
         }
     }
 }

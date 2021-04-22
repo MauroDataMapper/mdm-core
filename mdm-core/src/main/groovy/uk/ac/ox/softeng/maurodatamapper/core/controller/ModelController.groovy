@@ -284,22 +284,21 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'Target model id passed in request body does not match target model id in URI.')
         }
 
-        T left = queryForResource params[alternateParamsIdKey]
-        if (!left) return notFound(params[alternateParamsIdKey])
+        T sourceModel = queryForResource params[alternateParamsIdKey]
+        if (!sourceModel) return notFound(params[alternateParamsIdKey])
 
-        T right = queryForResource params.otherModelId
-        if (!right) return notFound(params.otherModelId)
+        T targetModel = queryForResource params.otherModelId
+        if (!targetModel) return notFound(params.otherModelId)
 
-        T instance =
-            modelService.mergeModelIntoModel(left, right, mergeIntoData.patch, currentUserSecurityPolicyManager) as T
+        T instance = modelService.mergeObjectDiffIntoModel(mergeIntoData.patch, targetModel, currentUserSecurityPolicyManager) as T
 
         if (!validateResource(instance, 'merge')) return
 
         if (mergeIntoData.deleteBranch) {
-            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(left.class, left.id)) {
-                return forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(left.class, left.id))
+            if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(sourceModel.class, sourceModel.id)) {
+                return forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(sourceModel.class, sourceModel.id))
             }
-            modelService.permanentDeleteModel(left)
+            modelService.permanentDeleteModel(sourceModel)
             if (securityPolicyManagerService) {
                 currentUserSecurityPolicyManager = securityPolicyManagerService.retrieveUserSecurityPolicyManager(currentUser.emailAddress)
             }
@@ -535,7 +534,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
-        T model = importerService.importModel(currentUser, importer, importerProviderServiceParameters)
+        T model = importerService.importDomain(currentUser, importer, importerProviderServiceParameters)
 
         if (!model) {
             transactionStatus.setRollbackOnly()
@@ -608,7 +607,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         }
         Folder folder = folderService.get(importerProviderServiceParameters.folderId)
 
-        List<T> result = importerService.importModels(currentUser, importer, importerProviderServiceParameters)
+        List<T> result = importerService.importDomains(currentUser, importer, importerProviderServiceParameters)
 
         if (!result) {
             transactionStatus.setRollbackOnly()

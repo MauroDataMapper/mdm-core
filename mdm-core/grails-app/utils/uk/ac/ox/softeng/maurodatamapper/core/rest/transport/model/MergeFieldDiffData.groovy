@@ -30,4 +30,33 @@ class MergeFieldDiffData<T, K> implements Validateable {
     Collection<MergeItemData> created
     Collection<MergeItemData> deleted
     Collection<MergeObjectDiffData> modified
+
+    MergeFieldDiffData() {
+        created = []
+        deleted = []
+        modified = []
+    }
+
+    boolean hasDiffs() {
+        value || !created.isEmpty() || !deleted.isEmpty() || modified.any {it.hasDiffs()}
+    }
+
+
+    boolean isFieldChange() {
+        value
+    }
+
+    boolean isMetadataChange() {
+        fieldName == 'metadata'
+    }
+
+    String getSummary() {
+        String prefix = "Merge Summary on field [${fieldName}]"
+        if (isFieldChange()) return "${prefix}: Changing value"
+        "${prefix}: Creating ${created.size()} Deleting ${deleted.size()} Modifying ${modified.size()}"
+    }
+
+    String toString() {
+        "Merge on field [${fieldName}]"
+    }
 }

@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow.provider.exporter
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportMetadata
+import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExportModel
 import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.TemplateBasedExporter
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -58,7 +59,7 @@ class DataFlowJsonExporterService extends DataFlowExporterProviderService implem
     @Override
     ByteArrayOutputStream exportDataFlow(User currentUser, DataFlow dataFlow) throws ApiException {
         ExportMetadata exportMetadata = new ExportMetadata(this, currentUser.firstName, currentUser.lastName)
-        exportModel new DataFlowExportModel(dataFlow, exportMetadata, false), fileType
+        exportModel new ExportModel(dataFlow, 'dataFlow', version, exportMetadata), fileType
     }
 
     @Override

@@ -29,4 +29,16 @@ class MergeObjectDiffData<T> implements Validateable {
     UUID rightId
     String label
     List<MergeFieldDiffData> diffs
+
+    MergeObjectDiffData() {
+        diffs = []
+    }
+
+    boolean hasDiffs() {
+        diffs.any {it.hasDiffs()}
+    }
+
+    List<MergeFieldDiffData> getValidDiffs() {
+        diffs.findAll {it.hasDiffs()}
+    }
 }

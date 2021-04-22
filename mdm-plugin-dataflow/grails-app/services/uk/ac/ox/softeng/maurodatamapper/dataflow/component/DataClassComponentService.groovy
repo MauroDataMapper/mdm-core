@@ -17,17 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
@@ -157,16 +154,6 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
     @Override
     Class<DataClassComponent> getModelItemClass() {
         DataClassComponent
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(DataClassComponent dataClassComponent, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataClassComponent dataClassComponent, boolean forDiff = false, boolean includeImported = false) {
-        []
     }
 
     @Override

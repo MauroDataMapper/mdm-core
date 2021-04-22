@@ -17,18 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
-
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 
 /**
@@ -214,7 +210,7 @@ class DataClassModelExtendFunctionalSpec extends FunctionalSpec {
     "breadcrumbs": [
       {
         "id": "${json-unit.matches:id}",
-        "label": "Extendable DataM0del",
+        "label": "Extendable DataModel",
         "domainType": "DataModel",
         "finalised": true
       }
@@ -317,7 +313,7 @@ class DataClassModelExtendFunctionalSpec extends FunctionalSpec {
       "breadcrumbs": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "Extendable DataM0del",
+          "label": "Extendable DataModel",
           "domainType": "DataModel",
           "finalised": true
         },
@@ -336,7 +332,7 @@ class DataClassModelExtendFunctionalSpec extends FunctionalSpec {
         "breadcrumbs": [
           {
             "id": "${json-unit.matches:id}",
-            "label": "Extendable DataM0del",
+            "label": "Extendable DataModel",
             "domainType": "DataModel",
             "finalised": true
           }
@@ -372,7 +368,7 @@ class DataClassModelExtendFunctionalSpec extends FunctionalSpec {
       "breadcrumbs": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "Extendable DataM0del",
+          "label": "Extendable DataModel",
           "domainType": "DataModel",
           "finalised": true
         },

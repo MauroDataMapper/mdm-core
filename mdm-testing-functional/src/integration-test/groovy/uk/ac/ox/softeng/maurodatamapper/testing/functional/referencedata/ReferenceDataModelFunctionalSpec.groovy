@@ -318,7 +318,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         verifyJsonResponse OK, '''[
   {
     "name": "ReferenceDataJsonExporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "JSON Reference Data Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -332,7 +332,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
   },
   {
     "name": "ReferenceDataXmlExporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "XML Reference Data Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -363,7 +363,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
         verifyJsonResponse OK, '''[
   {
     "name": "ReferenceDataJsonImporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "JSON Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -377,7 +377,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
   },
   {
     "name": "ReferenceDataXmlImporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "XML Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -391,7 +391,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
   },
   {
     "name": "ReferenceDataCsvImporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "CSV Reference Data Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer",
     "allowsExtraMetadataKeys": false,
@@ -466,7 +466,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
       "name": "ReferenceDataJsonExporterService",
-      "version": "3.0"
+      "version": "${json-unit.matches:version}"
     }
   }
 }'''
@@ -538,7 +538,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.referencedata.provider.exporter",
       "name": "ReferenceDataJsonExporterService",
-      "version": "3.0"
+      "version": "${json-unit.matches:version}"
     }
   }
 }'''

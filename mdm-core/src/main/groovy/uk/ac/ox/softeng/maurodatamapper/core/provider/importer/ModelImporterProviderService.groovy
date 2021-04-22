@@ -59,6 +59,7 @@ abstract class ModelImporterProviderService<M extends Model, P extends ModelImpo
 
     M checkImport(User currentUser, M importedModel, P params) {
         classifierService.checkClassifiers(currentUser, importedModel)
+        modelService.checkAuthority(currentUser, importedModel, params.useDefaultAuthority)
         modelService.checkfinaliseModel(importedModel, params.finalised)
         modelService.checkDocumentationVersion(importedModel, params.importAsNewDocumentationVersion, currentUser)
         modelService.checkBranchModelVersion(importedModel, params.importAsNewBranchModelVersion, params.newBranchName, currentUser)

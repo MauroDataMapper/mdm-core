@@ -76,7 +76,7 @@ class EnumerationValueSpec extends ModelItemSpec<EnumerationValue> implements Do
 
     @Override
     int getExpectedBaseLevelOfDiffs() {
-        3 // Key and Value
+        4 // Key and Value and order
     }
 
     @Override

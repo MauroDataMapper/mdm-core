@@ -195,10 +195,13 @@ class UrlMappings {
             /*
             Tree
             */
-            group "/tree/$containerDomainType", {
-                get '/'(controller: 'treeItem', action: 'index')
-                get "/${catalogueItemDomainType}/$catalogueItemId"(controller: 'treeItem', action: 'show')
-                get "/search/$searchTerm"(controller: 'treeItem', action: 'search')
+            group '/tree', {
+                group "/$containerDomainType", {
+                    get '/'(controller: 'treeItem', action: 'index')
+                    get "/${catalogueItemDomainType}/$catalogueItemId"(controller: 'treeItem', action: 'show')
+                    get "/search/$searchTerm"(controller: 'treeItem', action: 'search')
+                }
+                "/$modelDomainType/$modelId"(controller: 'treeItem', action: 'fullModelTree')
             }
 
             /*
@@ -215,11 +218,6 @@ class UrlMappings {
             User Images
              */
             get "/userImageFiles/$id"(controller: 'userImageFile', action: 'show')
-
-            /*
-            ATOM feed
-            */
-            get "/feeds/all"(controller: 'feed', action: 'index')
         }
     }
 }

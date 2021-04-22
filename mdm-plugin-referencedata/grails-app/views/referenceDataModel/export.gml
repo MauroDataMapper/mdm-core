@@ -15,6 +15,7 @@ ReferenceDataModel rdm = referenceDataModel as ReferenceDataModel
 
     'mdm:finalised'(rdm.finalised)
     if (rdm.finalised) 'mdm:dateFinalised'(OffsetDateTimeConverter.toString(rdm.dateFinalised))
+    if (rdm.modelVersion) 'mdm:modelVersion' rdm.modelVersion.toString()
 
     layout '/authority/export.gml', authority: rdm.authority, ns: 'mdm'
 

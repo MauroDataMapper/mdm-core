@@ -222,7 +222,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Extendable DataM0del",
+        "label": "Extendable DataModel",
         "hasChildren": true,
         "deleted": false,
         "finalised": true,
@@ -437,7 +437,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Extendable DataM0del",
+        "label": "Extendable DataModel",
         "hasChildren": true,
         "deleted": false,
         "finalised": true,

@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -30,11 +32,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
+import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -50,10 +54,14 @@ import org.springframework.context.MessageSource
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+
 @Slf4j
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
 
     protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
+
+    @Autowired(required = false)
+    AuthorityService authorityService
 
     @Autowired(required = false)
     Set<ModelItemService> modelItemServices
@@ -70,12 +78,20 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     @Autowired
     MessageSource messageSource
 
+    @Autowired(required = false)
+    Set<ModelImporterProviderService> modelImporterProviderServices
+
+    @Autowired(required = false)
+    SecurityPolicyManagerService securityPolicyManagerService
+
     @Override
     Class<K> getCatalogueItemClass() {
         getModelClass()
     }
 
     abstract Class<K> getModelClass()
+
+    abstract String getUrlResourceName()
 
     abstract List<K> findAllByContainerId(UUID containerId)
 
@@ -125,6 +141,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract List<K> findAllByMetadataNamespace(String namespace, Map pagination = [:])
 
     abstract List<K> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:])
+
+    abstract ModelImporterProviderService<K, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService()
 
     void deleteModelAndContent(K model) {
         throw new ApiNotYetImplementedException('MSXX', 'deleteModelAndContent')
@@ -202,7 +220,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         modelVersionLinks.findAll {
             K sourceModel = get(it.catalogueItemId)
             sourceModel.finalised
-        }.collect { it.targetModelId }
+        }.collect {it.targetModelId}
     }
 
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
@@ -284,8 +302,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         newDocVersion
     }
 
-    K createNewForkModel(String label, K model, User user, boolean copyPermissions, UserSecurityPolicyManager
-        userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+    K createNewForkModel(String label, K model, User user, boolean copyPermissions,
+                         UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
 
         K newForkModel = copyModelAsNewForkModel(model, user, copyPermissions, label,
@@ -391,80 +409,35 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     /**
      * Merges changes made to {@code leftModel} in {@code mergeObjectDiff} into {@code rightModel}. {@code mergeObjectDiff} is based on the return
      * from ObjectDiff.mergeDiff(), customised by the user.
-     * @param leftModel Source model
-     * @param rightModel Target model
-     * @param mergeObjectDiff Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
+     * @param sourceModel Source model
+     * @param targetModel Target model
+     * @param modelMergeObjectDiff Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
      * @param userSecurityPolicyManager To get user details and permissions when copying "added" items
-     * @param itemService Service which handles catalogueItems of the leftModel and rightModel type.
+     * @param domainService Service which handles catalogueItems of the leftModel and rightModel type.
      * @return The model resulting from the merging of changes.
      */
-    K mergeModelIntoModel(K leftModel, K rightModel, MergeObjectDiffData mergeObjectDiff,
-                          UserSecurityPolicyManager userSecurityPolicyManager, DomainService itemService = this) {
+    K mergeObjectDiffIntoModel(MergeObjectDiffData modelMergeObjectDiff, K targetModel,
+                               UserSecurityPolicyManager userSecurityPolicyManager) {
+        //TODO validation on saving merges
+        if (!modelMergeObjectDiff.hasDiffs()) return targetModel
+        log.debug('Merging {} diffs into model {}', modelMergeObjectDiff.getValidDiffs().size(), targetModel.label)
+        modelMergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
+            log.debug('{}', mergeFieldDiff.summary)
 
-        def item = itemService.get(mergeObjectDiff.leftId)
-
-        mergeObjectDiff.diffs.each {
-            diff ->
-                diff.each {
-                    mergeFieldDiff ->
-                        if (mergeFieldDiff.value) {
-                            item.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
-                        } else {
-                            // if no value, then some combination of created, deleted, and modified may exist
-                            if (mergeFieldDiff.fieldName == 'metadata') {
-                                // call metadataService version of below
-                                mergeFieldDiff.deleted.each {
-                                    obj ->
-                                        def metadata = metadataService.get(obj.id)
-                                        metadataService.delete(metadata)
-                                }
-
-                                // copy additions from source to target object
-                                mergeFieldDiff.created.each {
-                                    obj ->
-                                        def metadata = metadataService.get(obj.id)
-                                        metadataService.copy(item as CatalogueItem, metadata, userSecurityPolicyManager)
-                                }
-                                // for modifications, recursively call this method
-                                mergeFieldDiff.modified.each {
-                                    obj ->
-                                        mergeModelIntoModel(leftModel, rightModel, obj,
-                                                            userSecurityPolicyManager,
-                                                            metadataService)
-                                }
-                            } else {
-                                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
-                                if (modelItemService) {
-                                    // apply deletions of children to target object
-                                    mergeFieldDiff.deleted.each {
-                                        obj ->
-                                            def modelItem = modelItemService.get(obj.id) as ModelItem
-                                            modelItemService.delete(modelItem)
-                                    }
-
-                                    def parentId = modelItemService.class == itemService.class ? mergeObjectDiff.leftId : null
-
-                                    // copy additions from source to target object
-                                    mergeFieldDiff.created.each {
-                                        obj ->
-                                            def modelItem = modelItemService.get(obj.id) as ModelItem
-                                            parentId ?
-                                            modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager, parentId) :
-                                            modelItemService.copy(rightModel, modelItem, userSecurityPolicyManager)
-                                    }
-                                    // for modifications, recursively call this method
-                                    mergeFieldDiff.modified.each {
-                                        obj ->
-                                            mergeModelIntoModel(leftModel, rightModel, obj,
-                                                                userSecurityPolicyManager,
-                                                                modelItemService)
-                                    }
-                                }
-                            }
-                        }
+            if (mergeFieldDiff.isFieldChange()) {
+                targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
+            } else if (mergeFieldDiff.isMetadataChange()) {
+                mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+            } else {
+                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                if (modelItemService) {
+                    modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+                } else {
+                    log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
                 }
+            }
         }
-        rightModel
+        targetModel
     }
 
     List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType, UserSecurityPolicyManager userSecurityPolicyManager) {
@@ -571,6 +544,31 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         catalogueItem
     }
 
+    /**
+     * After importing a model, either force the authority to be the default authority, or otherwise create or use an existing authority
+     * @param importingUser
+     * @param model
+     * @param useDefaultAuthority If true then any imported authority will be overwritten with the default authority
+     * @return The model with its authority checked
+     */
+    K checkAuthority(User importingUser, K model, boolean useDefaultAuthority) {
+        if (useDefaultAuthority || !model.authority) {
+            model.authority = authorityService.getDefaultAuthority()
+        } else {
+            //If the authority already exists then use it, otherwise create a new one but set the createdBy property
+            Authority exists = authorityService.findByLabel(model.authority.label)
+            if (exists) {
+                model.authority = exists
+            } else {
+                model.authority.createdBy = importingUser.emailAddress
+
+                //Save this new authority so that it is available later for ModelLabelValidator
+                authorityService.save(model.authority)
+            }
+        }
+        model
+    }
+
     @Override
     K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
@@ -644,12 +642,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
             if (countByLabel(model.label)) {
                 List<K> existingModels = findAllByLabel(model.label)
-                existingModels.each { existing ->
+                existingModels.each {existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
+                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
                 model.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)

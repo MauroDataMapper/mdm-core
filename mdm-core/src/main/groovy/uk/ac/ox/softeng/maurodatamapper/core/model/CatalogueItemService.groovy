@@ -34,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -169,7 +170,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     boolean isExtendableByCatalogueItem(K extendingCatalogueItem, K extendedCatalogueItem) {
         false
-    }    
+    }
 
     abstract void deleteAll(Collection<K> catalogueItems)
 
@@ -202,9 +203,13 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
      */
     abstract List<K> getAll(Collection<UUID> ids)
 
-    abstract boolean hasTreeTypeModelItems(K catalogueItem, boolean forDiff, boolean includeImported)
+    boolean hasTreeTypeModelItems(K catalogueItem, boolean fullTreeRender, boolean includeImported) {
+        false
+    }
 
-    abstract List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean forDiff = false, boolean includeImported = false)
+    List<ModelItem> findAllTreeTypeModelItemsIn(K catalogueItem, boolean fullTreeRender, boolean includeImported) {
+        []
+    }
 
     abstract K findByIdJoinClassifiers(UUID id)
 
@@ -240,7 +245,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     void removeSemanticLinkFromCatalogueItem(UUID catalogueItemId, SemanticLink semanticLink) {
         removeFacetFromDomain(catalogueItemId, semanticLink.id, 'semanticLinks')
-    }  
+    }
 
     void removeReferenceFileFromCatalogueItem(UUID catalogueItemId, ReferenceFile referenceFile) {
         removeFacetFromDomain(catalogueItemId, referenceFile.id, 'referenceFiles')
@@ -256,7 +261,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
 
     void removeModelExtendFromCatalogueItem(UUID catalogueItemId, ModelExtend modelExtend) {
         removeFacetFromDomain(catalogueItemId, modelExtend.id, 'modelExtends')
-    }      
+    }
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         copy.createdBy = copier.emailAddress
@@ -275,7 +280,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceCatalogueItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetCatalogueItemId: link.targetCatalogueItemId,
                                     targetCatalogueItemDomainType: link.targetCatalogueItemDomainType,
@@ -324,7 +329,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                 it.beforeValidate()
             }
             ReferenceFile.saveAll(catalogueItem.referenceFiles)
-        }      
+        }
         catalogueItem.breadcrumbTree?.trackChanges()
         catalogueItem.breadcrumbTree?.beforeValidate()
         catalogueItem.breadcrumbTree?.save(validate: false)
@@ -426,9 +431,29 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     Table getDomainEntityTable(PersistentEntity persistentEntity) {
         Mapping mapping = persistentEntity.mapping.mappedForm as Mapping
         mapping.table
-    }    
+    }
 
     void additionalModelImports(User currentUser, ModelImport imported) {
         //no-op
+    }
+
+    void mergeMetadataIntoCatalogueItem(MergeFieldDiffData mergeFieldDiff, K targetCatalogueItem,
+                                        UserSecurityPolicyManager userSecurityPolicyManager) {
+        log.debug('Merging Metadata into Catalogue Item')
+        // call metadataService version of below
+        mergeFieldDiff.deleted.each {mergeItemData ->
+            Metadata metadata = metadataService.get(mergeItemData.id)
+            metadataService.delete(metadata)
+        }
+
+        // copy additions from source to target object
+        mergeFieldDiff.created.each {mergeItemData ->
+            Metadata metadata = metadataService.get(mergeItemData.id)
+            metadataService.copy(targetCatalogueItem, metadata, userSecurityPolicyManager)
+        }
+        // for modifications, recursively call this method
+        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+            metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, mergeObjectDiffData)
+        }
     }
 }

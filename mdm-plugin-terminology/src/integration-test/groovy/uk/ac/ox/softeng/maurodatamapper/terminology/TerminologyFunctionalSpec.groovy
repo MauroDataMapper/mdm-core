@@ -2059,7 +2059,7 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
             },
             {
                 "name": "TerminologyXmlExporterService",
-                "version": "3.0",
+                "version": "3.1",
                 "displayName": "XML Terminology Exporter",
                 "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
                 "allowsExtraMetadataKeys": true,

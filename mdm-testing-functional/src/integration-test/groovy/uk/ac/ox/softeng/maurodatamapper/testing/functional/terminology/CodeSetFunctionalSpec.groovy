@@ -270,7 +270,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         verifyJsonResponse OK, '''[
   {
     "name": "CodeSetXmlExporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "XML CodeSet Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -284,7 +284,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
   },
   {
     "name": "CodeSetJsonExporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "JSON CodeSet Exporter",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
     "allowsExtraMetadataKeys": true,
@@ -315,7 +315,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
         verifyJsonResponse OK, '''[
   {
     "name": "CodeSetXmlImporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "XML CodeSet Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -328,7 +328,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
   },
   {
     "name": "CodeSetJsonImporterService",
-    "version": "3.0",
+    "version": "${json-unit.matches:version}",
     "displayName": "JSON CodeSet Importer",
     "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer",
     "allowsExtraMetadataKeys": true,
@@ -636,7 +636,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "CodeSetJsonExporterService",
-      "version": "3.0"
+      "version": "${json-unit.matches:version}"
     }
   }
 }'''
@@ -707,7 +707,7 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "CodeSetJsonExporterService",
-      "version": "3.0"
+      "version": "${json-unit.matches:version}"
     }
   }
 }'''

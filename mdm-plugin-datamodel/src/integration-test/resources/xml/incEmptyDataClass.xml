@@ -18,11 +18,11 @@
     SPDX-License-Identifier: Apache-2.0
 
 -->
-<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.1" xmlns:mdm="http://maurodatamapper.com/dataModel/3.1">
+<exp:exportModel xmlns:exp="http://maurodatamapper.com/export/3.2" xmlns:mdm="http://maurodatamapper.com/dataModel/3.2">
   <mdm:dataModel>
     <mdm:id>c6f68155-a881-4642-ac79-940b1a89ab49</mdm:id>
     <mdm:label>National Minimum Data Set for Thoracic Surgery and Lung Cancer Surgery</mdm:label>
-    <mdm:lastUpdated>2017-11-21T13:17:03.131Z</mdm:lastUpdated>
+    <mdm:lastUpdated>2017-11-21T13:17:03.231Z</mdm:lastUpdated>
     <mdm:type>Data Standard</mdm:type>
     <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
     <mdm:finalised>false</mdm:finalised>
@@ -36,7 +36,7 @@
       <mdm:dataClass>
         <mdm:id>be8af6dc-1b6a-4a7b-b4f5-b6f7f5465124</mdm:id>
         <mdm:label>Core</mdm:label>
-        <mdm:lastUpdated>2017-11-21T13:17:03.132Z</mdm:lastUpdated>
+        <mdm:lastUpdated>2017-11-21T13:17:03.232Z</mdm:lastUpdated>
         <mdm:maxMultiplicity>1</mdm:maxMultiplicity>
         <mdm:minMultiplicity>1</mdm:minMultiplicity>
       </mdm:dataClass>
@@ -44,11 +44,11 @@
   </mdm:dataModel>
   <exp:exportMetadata>
     <exp:exportedBy>Admin User</exp:exportedBy>
-    <exp:exportedOn>2017-11-21T13:17:03.135Z</exp:exportedOn>
+    <exp:exportedOn>2017-11-21T13:17:03.235Z</exp:exportedOn>
     <exp:exporter>
       <exp:namespace>uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter</exp:namespace>
       <exp:name>DataModelXmlExporterService</exp:name>
-      <exp:version>3.1</exp:version>
+      <exp:version>3.2</exp:version>
     </exp:exporter>
   </exp:exportMetadata>
 </exp:exportModel>

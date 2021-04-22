@@ -48,7 +48,7 @@ class BootstrapModels {
     public static final String IMPORTING_DATAMODEL_NAME_2 = 'Second Importing DataModel'
     public static final String IMPORTING_DATAMODEL_NAME_3 = 'Third Importing DataModel'
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
-    public static final String FINALISED_EXTENDABLE_DATAMODEL_NAME = 'Extendable DataM0del'
+    public static final String FINALISED_EXTENDABLE_DATAMODEL_NAME = 'Extendable DataModel'
     public static final String EXTENDING_DATAMODEL_NAME_1 = 'Xtending DataM0del 1'
     public static final String EXTENDING_DATAMODEL_NAME_2 = 'Xtending DataM0del 2'
     public static final String FIRST_CLASS_LABEL_ON_FINALISED_EXAMPLE_DATAMODEL = 'first class on example finalised model'

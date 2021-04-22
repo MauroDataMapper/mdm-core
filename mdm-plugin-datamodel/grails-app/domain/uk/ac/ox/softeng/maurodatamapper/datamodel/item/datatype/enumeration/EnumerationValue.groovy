@@ -156,6 +156,7 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
             .appendString('key', this.key, otherEnumerationValue.key)
             .appendString('value', this.value, otherEnumerationValue.value)
             .appendString('category', this.category, otherEnumerationValue.category)
+            .appendNumber('order', this.order, otherEnumerationValue.order)
     }
 
     void setKey(String key) {

@@ -21,15 +21,15 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
@@ -40,8 +40,8 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDat
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceEnumerationType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
+import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
-import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -61,14 +61,11 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     ReferenceDataElementService referenceDataElementService
     ReferenceDataTypeService referenceDataTypeService
     ReferenceDataValueService referenceDataValueService
-    AuthorityService authorityService
     ReferenceSummaryMetadataService referenceSummaryMetadataService
+    ReferenceDataJsonImporterService referenceDataJsonImporterService
 
     @Autowired
     Set<DefaultReferenceDataTypeProvider> defaultReferenceDataTypeProviders
-
-    @Autowired(required = false)
-    SecurityPolicyManagerService securityPolicyManagerService
 
     @Override
     ReferenceDataModel get(Serializable id) {
@@ -96,6 +93,11 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     ReferenceDataModel validate(ReferenceDataModel referenceDataModel) {
         referenceDataModel.validate()
         referenceDataModel
+    }
+
+    @Override
+    String getUrlResourceName() {
+        "referenceDataModels"
     }
 
     @Override
@@ -192,7 +194,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
         if (referenceDataModel.referenceDataValues) {
             referenceDataValues.addAll referenceDataModel.referenceDataValues
             referenceDataModel.referenceDataValues.clear()
-        }        
+        }
 
         save(referenceDataModel)
         sessionFactory.currentSession.flush()
@@ -224,7 +226,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
         if (referenceDataModel.referenceDataValues) {
             referenceDataValues.addAll referenceDataModel.referenceDataValues.findAll {!it.id}
-        }         
+        }
 
         saveContent(referenceDataTypes, referenceDataElements, referenceDataValues)
         log.debug('saveModelNewContentOnly took {}', Utils.timeTaken(start))
@@ -354,13 +356,12 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
      *      etc....
      *
      * In other words, Reference Data Element and Reference Data Type are stated at the model level, and then restated for every
-     * Reference Data Value. When importing the Reference Data Values, we want to set an assocation for Reference Data Element (and 
+     * Reference Data Value. When importing the Reference Data Values, we want to set an association for Reference Data Element (and
      * thus also Reference Data Type) to the entity imported at the model level, rather than creating duplicated entities by creating
      * a new Reference Data Element and Reference Data Type for every value. This is done in the call to checkImportedReferenceDataValueAssociations.
      */
     void checkImportedReferenceDataModelAssociations(User importingUser, ReferenceDataModel referenceDataModel, Map bindingMap = [:]) {
         referenceDataModel.createdBy = importingUser.emailAddress
-        referenceDataModel.authority = authorityService.getDefaultAuthority()
         checkFacetsAfterImportingCatalogueItem(referenceDataModel)
 
         if (referenceDataModel.referenceDataTypes) {
@@ -526,16 +527,6 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
     */
 
     @Override
-    boolean hasTreeTypeModelItems(ReferenceDataModel dataModel, boolean forDiff, boolean includeImported = false) {
-        false
-    }
-
-    @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(ReferenceDataModel catalogueItem, boolean forDiff, boolean includeImported = false) {
-        []
-    }
-
-    @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         !domainType || domainType == ReferenceDataModel.simpleName
     }
@@ -674,6 +665,12 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> {
 
     void setReferenceDataModelIsFromReferenceDataModel(ReferenceDataModel source, ReferenceDataModel target, User user) {
         source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+    }
+
+
+    @Override
+    ModelImporterProviderService<ReferenceDataModel, ? extends ModelImporterProviderServiceParameters> getJsonModelImporterProviderService() {
+        referenceDataJsonImporterService
     }
 
     @Override
