@@ -49,8 +49,8 @@ class BootStrap {
                     if (DataModel.countByLabel(BootstrapModels.SIMPLE_DATAMODEL_NAME) == 0) {
                         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
                     }
-                    if (DataModel.countByLabel(BootstrapModels.EXTENDABLE_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveExtendableDataModel(messageSource, folder, authority)
+                    if (DataModel.countByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME) == 0) {
+                        BootstrapModels.buildAndSaveFinalisedSimpleDataModel(messageSource, folder, authority)
                     }
                     if (DataModel.countByAuthorityIsNull() != 0) {
                         log.warn('DataModels missing authority, updating with default authority')

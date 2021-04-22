@@ -36,6 +36,9 @@ class DataModelInterceptor extends ModelInterceptor {
     void checkIds() {
         super.checkIds()
         Utils.toUuid(params, 'dataModelId')
+        Utils.toUuid(params, 'otherDataModelId')
+        Utils.toUuid(params, 'otherDataTypeId')
+        Utils.toUuid(params, 'otherDataClassId')
     }
 
     @Override
@@ -80,12 +83,24 @@ class DataModelInterceptor extends ModelInterceptor {
     boolean before() {
         securableResourceChecks()
 
+        boolean canReadId = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, getId())
+
         if (actionName in ['suggestLinks']) {
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, getId())) {
+            if (!canReadId) {
                 return notFound(DataModel, getId())
             }
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.otherModelId)) {
                 return notFound(DataModel, params.otherModelId)
+            }
+            return true
+        }
+
+        if (actionName in ['importDataType', 'importDataClass']) {
+            if (!currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), 'import')) {
+                return forbiddenOrNotFound(canReadId, getSecuredClass(), getId())
+            }
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), params.otherDataModelId)) {
+                return notFound(getSecuredClass(), params.otherDataModelId)
             }
             return true
         }

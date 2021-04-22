@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.DataTypeCollection
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.DataModelDataClassCollectionValidator
+import uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator.ImportLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.datamodel.hibernate.search.DataModelSearch
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
@@ -69,20 +70,21 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     private Set<DataType> dataTypes
 
     static hasMany = [
-        dataClasses     : DataClass,
-        classifiers     : Classifier,
-        metadata        : Metadata,
-        annotations     : Annotation,
-        semanticLinks   : SemanticLink,
-        versionLinks    : VersionLink,
-        referenceFiles  : ReferenceFile,
-        summaryMetadata : SummaryMetadata,
-        referenceTypes  : ReferenceType,
-        enumerationTypes: EnumerationType,
-        primitiveTypes  : PrimitiveType,
-        modelDataTypes  : ModelDataType,
-        rules           : Rule,
-        //        modelImports    : ModelImport
+        dataClasses        : DataClass,
+        classifiers        : Classifier,
+        metadata           : Metadata,
+        annotations        : Annotation,
+        semanticLinks      : SemanticLink,
+        versionLinks       : VersionLink,
+        referenceFiles     : ReferenceFile,
+        summaryMetadata    : SummaryMetadata,
+        referenceTypes     : ReferenceType,
+        enumerationTypes   : EnumerationType,
+        primitiveTypes     : PrimitiveType,
+        modelDataTypes     : ModelDataType,
+        rules              : Rule,
+        importedDataTypes  : DataType,
+        importedDataClasses: DataClass,
     ]
 
     static belongsTo = [Folder]
@@ -91,8 +93,14 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
 
     static constraints = {
         CallableConstraints.call(ModelConstraints, delegate)
-        dataTypes validator: { val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataTypes').isValid(val) }
-        dataClasses validator: { val, obj -> new DataModelDataClassCollectionValidator(obj).isValid(val) }
+        dataTypes validator: {val, obj -> new ParentOwnedLabelCollectionValidator(obj, 'dataTypes').isValid(val)}
+        dataClasses validator: {val, obj -> new DataModelDataClassCollectionValidator(obj).isValid(val)}
+        importedDataTypes validator: {val, obj ->
+            new ImportLabelValidator(obj, 'dataTypes').isValid(val)
+        }
+        importedDataClasses validator: {val, obj ->
+            new ImportLabelValidator(obj, 'childDataClasses').isValid(val)
+        }
     }
 
     static mapping = {
@@ -107,16 +115,27 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         primitiveTypes cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
         modelDataTypes cascade: 'all-delete-orphan', cascadeValidate: 'dirty'
         summaryMetadata cascade: 'all-delete-orphan'
+        importedDataTypes cascade: 'none', cascadeValidate: 'none', joinTable: [
+            name  : 'join_datamodel_to_imported_data_type',
+            key   : 'datamodel_id',
+            column: 'imported_datatype_id'
+        ]
+        importedDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
+            name  : 'join_datamodel_to_imported_data_class',
+            key   : 'datamodel_id',
+            column: 'imported_dataclass_id'
+        ]
     }
 
     static mappedBy = [
-        metadata        : 'none',
-        dataClasses     : 'dataModel',
-        //        dataTypes       : 'dataModel',
-        referenceTypes  : 'dataModel',
-        enumerationTypes: 'dataModel',
-        primitiveTypes  : 'dataModel',
-        modelDataTypes  : 'dataModel'
+        metadata           : 'none',
+        dataClasses        : 'dataModel',
+        referenceTypes     : 'dataModel',
+        enumerationTypes   : 'dataModel',
+        primitiveTypes     : 'dataModel',
+        modelDataTypes     : 'dataModel',
+        importedDataTypes  : 'none',
+        importedDataClasses: 'none',
     ]
 
     static search = {
@@ -155,16 +174,16 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     /**
      * Gets all DataClasses which are immediate children of the DataModel,
      * not including DataClasses nested within other DataClasses.
-     * @return List<DataClass>                of immediate children of the DataModel
+     * @return List<DataClass>                  of immediate children of the DataModel
      */
     List<DataClass> getChildDataClasses() {
-        dataClasses?.findAll { !it.parentDataClass }?.sort() ?: [] as List<DataClass>
+        dataClasses?.findAll {!it.parentDataClass}?.sort() ?: [] as List<DataClass>
     }
 
     /**
      * Generate differences between {@code this} DataModel and some {@code otherDataModel}
      * @param otherDataModel DataModel to compare to {@code this} DataModel
-     * @return ObjectDiff<DataModel>                containing field differences and arrays of child differences
+     * @return ObjectDiff<DataModel>                  containing field differences and arrays of child differences
      */
     ObjectDiff<DataModel> diff(DataModel otherDataModel) {
         modelDiffBuilder(DataModel, this, otherDataModel)
@@ -183,19 +202,19 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     }
 
     DataType findDataTypeByLabel(String label) {
-        getDataTypes()?.find { it.label == label }
+        getDataTypes()?.find {it.label == label}
     }
 
     DataType findDataTypeByLabelAndType(String label, String type) {
-        getDataTypes()?.find { it.domainType == type && it.label == label }
+        getDataTypes()?.find {it.domainType == type && it.label == label}
     }
 
     int countDataTypesByLabel(String label) {
-        getDataTypes()?.count { it.label == label } ?: 0
+        getDataTypes()?.count {it.label == label} ?: 0
     }
 
     Set<DataElement> getAllDataElements() {
-        dataClasses.collect { it.dataElements }.findAll().flatten().toSet() as Set<DataElement>
+        dataClasses.collect {it.dataElements}.findAll().flatten().toSet() as Set<DataElement>
     }
 
     List<DataType> getSortedDataTypes() {
@@ -287,14 +306,22 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         (primitiveTypes + enumerationTypes + referenceTypes + modelDataTypes).asUnmodifiable() as Set<DataType>
     }
 
+    Set<DataType> getDataTypesAndImportedDataTypes() {
+        getDataTypes() + importedDataTypes
+    }
+
+    Set<DataClass> getChildDataClassesAndImportedDataClasses() {
+        getChildDataClasses() + importedDataClasses
+    }
+
     @Override
     void updateChildIndexes(ModelItem updated, Integer oldIndex) {
         if (updated.instanceOf(DataClass)) {
-            updateSiblingIndexes(updated, getChildDataClasses(), oldIndex)
+            updateSiblingIndexes(updated, getChildDataClasses())
             return
         }
         if (updated.instanceOf(DataType)) {
-            updateSiblingIndexes(updated, getDataTypes() ?: [], oldIndex)
+            updateSiblingIndexes(updated, getDataTypes() ?: [])
             return
         }
         log.warn('Unknown model item type cannot update child indexes: {}', updated.domainType)
@@ -330,6 +357,22 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
     }
 
     DataType findEnumerationTypeByLabel(String label) {
-        getEnumerationTypes()?.find { it.label == label }
+        getEnumerationTypes()?.find {it.label == label}
+    }
+
+    static DetachedCriteria<DataClass> byImportedDataClassId(UUID dataClassId) {
+        where {
+            importedDataClasses {
+                eq 'id', dataClassId
+            }
+        }
+    }
+
+    static DetachedCriteria<DataClass> byImportedDataTypeId(UUID dataTypeId) {
+        where {
+            importedDataTypes {
+                eq 'id', dataTypeId
+            }
+        }
     }
 }

@@ -76,7 +76,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Extendable DataModel",
+        "label": "Finalised Example Test DataModel",
         "hasChildren": true,
         "deleted": false,
         "finalised": true,
@@ -85,30 +85,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
         "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "First Importing DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Second Importing DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -194,18 +170,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Asset"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Third Importing DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -266,7 +230,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
       {
         "id": "${json-unit.matches:id}",
         "domainType": "DataModel",
-        "label": "Extendable DataModel",
+        "label": "Finalised Example Test DataModel",
         "hasChildren": true,
         "deleted": false,
         "finalised": true,
@@ -275,30 +239,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "folder": "${json-unit.matches:id}",
         "type": "Data Standard",
         "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "First Importing DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Second Importing DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
       },
       {
         "id": "${json-unit.matches:id}",
@@ -384,18 +324,6 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "documentationVersion": "1.0.0",
         "folder": "${json-unit.matches:id}",
         "type": "Data Asset"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Third Importing DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
       },
       {
         "id": "${json-unit.matches:id}",

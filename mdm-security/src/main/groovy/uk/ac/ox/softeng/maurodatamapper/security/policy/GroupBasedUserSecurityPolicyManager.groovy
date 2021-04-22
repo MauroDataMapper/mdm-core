@@ -49,6 +49,7 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.C
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.DELETE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FINALISE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.FULL_DELETE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.IMPORT_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MERGE_INTO_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODELITEM_DISALLOWED_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.MODEL_AUTHOR_ACTIONS
@@ -339,6 +340,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
                 case SOFT_DELETE_ACTION:
                     return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                case IMPORT_ACTION:
                 case UPDATE_ACTION:
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
                     return role ? !role.isFinalisedModel() : false

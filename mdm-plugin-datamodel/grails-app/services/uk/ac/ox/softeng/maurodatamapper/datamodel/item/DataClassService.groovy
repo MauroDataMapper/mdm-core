@@ -52,7 +52,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     DataElementService dataElementService
     DataTypeService dataTypeService
     MessageSource messageSource
-    //    ModelImportService modelImportService
     SummaryMetadataService summaryMetadataService
     ReferenceTypeService referenceTypeService
 
@@ -84,15 +83,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         delete(get(id))
     }
 
-    /**
-     * DataClass allows the import of DataClass and DataElement
-     *
-    @Override
-    List<Class> domainImportableModelItemClasses() {
-        [DataElement, DataClass]
-    }
-
-*/
     void delete(DataClass dataClass, boolean flush = false) {
         if (!dataClass) return
         DataModel dataModel = proxyHandler.unwrapIfProxy(dataClass.dataModel)
@@ -159,13 +149,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
-        //        if (catalogueItem.modelImports) {
-        //            catalogueItem.modelImports.each {
-        //                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-        //                it.catalogueItemId = catalogueItem.getId()
-        //            }
-        //            ModelImport.saveAll(catalogueItem.modelImports)
-        //        }
 
         catalogueItem
     }
@@ -385,8 +368,16 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             list(paginate)
     }
 
+    def findAllByDataModelIdAndParentDataClassIdIncludingImported(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
+        DataClass.withFilter(DataClass.byDataModelIdAndParentDataClassIdIncludingImported(dataModelId, dataClassId), paginate).list(paginate)
+    }
+
     def findAllWhereRootDataClassOfDataModelId(UUID dataModelId, Map paginate = [:]) {
         DataClass.withFilter(DataClass.byRootDataClassOfDataModelId(dataModelId), paginate).list(paginate)
+    }
+
+    def findAllWhereRootDataClassOfDataModelIdIncludingImported(UUID dataModelId, Map paginate = [:]) {
+        DataClass.withFilter(DataClass.byRootDataClassOfDataModelIdIncludingImported(dataModelId), paginate).list(paginate)
     }
 
     List<ModelItem> findAllContentOfDataClassIdInDataModelId(UUID dataModelId, UUID dataClassId, Map paginate = [:]) {
@@ -404,9 +395,16 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         DataClass.withFilter(DataClass.byDataModelId(dataModelId), paginate).list(paginate)
     }
 
-    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:],
-                                                            boolean includeImported = false) {
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(UUID dataModelId, String searchTerm, Map paginate = [:]) {
         DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
+    }
+
+    def findAllByDataModelIdIncludingImported(UUID dataModelId, Map paginate = [:]) {
+        DataClass.withFilter(DataClass.byDataModelIdIncludingImported(dataModelId), paginate).list(paginate)
+    }
+
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(UUID dataModelId, String searchTerm, Map paginate = [:]) {
+        DataClass.byDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(dataModelId, searchTerm).list(paginate)
     }
 
     private CatalogueItem findCommonParent(DataClass leftDataClass, DataClass rightDataClass) {
@@ -588,13 +586,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
-
-        //        modelImportService.findAllByCatalogueItemId(original.id).each {
-        //            copy.addToModelImports(it.importedCatalogueItemDomainType,
-        //                                   it.importedCatalogueItemId,
-        //                                   copier)
-        //        }
-        //
         copy
     }
 
@@ -766,44 +757,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         DataClass.findByLabel(label)
     }
 
-    /**
-     * When a DataClass is imported into a DataClass or DataModel, we also want to import any DataTypes
-     * belonging to the DataElements of the imported DataClass.
-     *
-     * @param currentUser The user doing the import
-     * @param modelImport The resource that was imported
-     *
-     *
-    @Override
-    void performAdditionalModelImports(ModelImport modelImport) {
-
-        //        //The DataClass that was imported
-        //        DataClass dataClass = modelImport.importedModelItem as DataClass
-        //
-        //        //The CatalogueItem into which the dataclass was imported, could be DataModel or DataClass
-        //        CatalogueItem catalogueItem = modelImport.catalogueItem
-        //
-        //        //The DataModel to which that DataClass belongs
-        //        // Use instanceOf to get around possible proxy issues
-        //        DataModel dataModel = catalogueItem.instanceOf(DataClass) ? (catalogueItem as DataClass).getModel() : catalogueItem as DataModel
-        //
-        //        dataClass.dataElements.each {dataElement ->
-        //            DataType dataType = dataElement.dataType
-        //
-        //            if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
-        //                //Create a new ModelImport for the DataType into DataModel
-        //                ModelImport modelImportDataType = new ModelImport(catalogueItem: dataModel,
-        //                                                                  importedCatalogueItem: dataType,
-        //                                                                  createdBy: modelImport.createdBy)
-        //
-        //                //Save the additional model import, indicating that this is an additional rather than
-        //                //principal import and so should fail silently if it already exists.
-        //                modelImportService.save(modelImportDataType, false)
-        //            }
-        //        }
-
-    }
-     */
     @Override
     List<DataClass> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         DataClass.byMetadataNamespaceAndKey(namespace, key).list(pagination)
@@ -815,10 +768,14 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     boolean isExtendableDataClassInSameModelOrInFinalisedModel(DataClass extendableDataClass, DataClass extendingDataClass) {
-        extendingDataClass.modelId == extendableDataClass.modelId || extendableDataClass.model.finalised
+        isModelItemInSameModelOrInFinalisedModel(extendableDataClass, extendingDataClass)
     }
 
     boolean isDataClassBeingUsedAsExtension(DataClass dataClass) {
         DataClass.byExtendedDataClassId(dataClass.id).count()
+    }
+
+    boolean isDataClassBeingUsedAsImport(DataClass dataClass) {
+        DataClass.byImportedDataClassId(dataClass.id).count() || DataModel.byImportedDataClassId(dataClass.id).count()
     }
 }

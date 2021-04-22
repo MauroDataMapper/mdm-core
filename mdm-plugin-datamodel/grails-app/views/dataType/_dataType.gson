@@ -7,6 +7,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataType]
 model {
     DataType dataType
+    UUID owningDataModelId
 }
 
 json {
@@ -24,4 +25,5 @@ json {
         modelResourceId dataType.getProperty('modelResourceId')
         modelResourceDomainType dataType.getProperty('modelResourceDomainType')
     }
+    if (owningDataModelId && dataType.model.id != owningDataModelId) imported true
 }

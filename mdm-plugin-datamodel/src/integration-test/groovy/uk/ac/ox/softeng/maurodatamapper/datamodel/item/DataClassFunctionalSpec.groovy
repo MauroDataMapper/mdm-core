@@ -77,6 +77,12 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     UUID dataTypeId
 
     @Shared
+    UUID finalisedDataTypeId
+
+    @Shared
+    UUID otherDataTypeId
+
+    @Shared
     Folder folder
 
     @OnceBefore
@@ -91,15 +97,21 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         DataModel dataModel = new DataModel(label: 'Functional Test DataModel', createdBy: FUNCTIONAL_TEST,
                                             folder: folder, authority: testAuthority).save(flush: true)
         dataModelId = dataModel.id
-        otherDataModelId = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
-                                         folder: folder, authority: testAuthority).save(flush: true).id
+        DataModel otherDataModel = new DataModel(label: 'Functional Test DataModel 2', createdBy: FUNCTIONAL_TEST,
+                                                 folder: folder, authority: testAuthority).save(flush: true)
+        otherDataModelId = otherDataModel.id
 
-        finalisedDataModelId = new DataModel(label: 'Functional Test DataModel 3', createdBy: FUNCTIONAL_TEST,
-                                             finalised: true, dateFinalised: OffsetDateTime.now(), modelVersion: Version.from('1'),
-                                             folder: folder, authority: testAuthority).save(flush: true).id
+        DataModel finalisedDataModel = new DataModel(label: 'Functional Test DataModel 3', createdBy: FUNCTIONAL_TEST,
+                                                     finalised: true, dateFinalised: OffsetDateTime.now(), modelVersion: Version.from('1'),
+                                                     folder: folder, authority: testAuthority).save(flush: true)
+        finalisedDataModelId = finalisedDataModel.id
 
         dataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                        dataModel: dataModel).save(flush: true).id
+        finalisedDataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
+                                                dataModel: finalisedDataModel).save(flush: true).id
+        otherDataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
+                                            dataModel: otherDataModel).save(flush: true).id
 
         sessionFactory.currentSession.flush()
     }
@@ -181,6 +193,12 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     void verifyR4UpdateResponse() {
         super.verifyR4UpdateResponse()
         responseBody().description == 'Adding a description to the DataClass'
+    }
+
+    String createNewItem(String savePath, Map model) {
+        POST(savePath, model, MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        response.body().id
     }
 
     void 'Test getting all content of an empty DataClass'() {
@@ -485,7 +503,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         PUT(aId, getValidLabelJson('emptyclass', 2))
 
         then: 'The item is updated'
-        response.status == HttpStatus.OK
+        verifyResponse OK, response
 
         when: 'All items are listed'
         GET('')
@@ -544,20 +562,20 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         PUT("${id}/extends/$otherDataModelId/${UUID.randomUUID()}", [:])
 
         then:
-        response.status() == NOT_FOUND
+        verifyResponse NOT_FOUND, response
 
         when: 'trying to extend existing DC but not finalised model'
         PUT("${id}/extends/$otherDataModelId/$nonExtendableId", [:])
 
         then:
-        response.status() == UNPROCESSABLE_ENTITY
+        verifyResponse UNPROCESSABLE_ENTITY, response
         responseBody().errors.first().message == "DataClass [${nonExtendableId}] to be extended does not belong to a finalised DataModel"
 
         when: 'trying to extend existing DC in finalised model'
         PUT("${id}/extends/$finalisedDataModelId/$externalExtendableId", [:])
 
         then:
-        response.status() == OK
+        verifyResponse OK, response
         responseBody().extendsDataClasses.size() == 1
         responseBody().extendsDataClasses.first().id == externalExtendableId
         responseBody().extendsDataClasses.first().model == finalisedDataModelId.toString()
@@ -566,19 +584,339 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         PUT("${id}/extends/$dataModelId/$internalExtendableId", [:])
 
         then:
-        response.status() == OK
+        verifyResponse OK, response
         responseBody().extendsDataClasses.size() == 2
         responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString()}
         responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == dataModelId.toString()}
 
         cleanup:
-        DELETE(getDeleteEndpoint(id))
-        assert response.status() == HttpStatus.NO_CONTENT
-        DELETE(getDeleteEndpoint(internalExtendableId))
-        assert response.status() == HttpStatus.NO_CONTENT
+        cleanUpData(id)
+        cleanUpData(internalExtendableId)
         DELETE("dataModels/$otherDataModelId/dataClasses/$nonExtendableId", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
         DELETE("dataModels/$finalisedDataModelId/dataClasses/$externalExtendableId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'IMI01 : test importing DataElement'() {
+        given:
+        // Get DataClass
+        String id = createNewItem(validJson)
+        String sameModelDataClassId = createNewItem([
+            label: 'Functional Test DataClass 2'
+        ])
+
+        // Get an other DataModel DataClass
+        String otherId = createNewItem(getResourcePath(otherDataModelId), [
+            label: 'Functional Test DataClass 3'
+        ])
+
+        // Get finalised DataModel DataClass
+        String finalisedId = createNewItem(getResourcePath(finalisedDataModelId), [
+            label: 'Functional Test DataClass 4'
+        ])
+
+        // Get internal DE
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement',
+            dataType: dataTypeId])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$sameModelDataClassId/dataElements", [
+            label   : 'Functional Test DataElement 2',
+            dataType: dataTypeId])
+        verifyResponse CREATED, response
+        String sameModelImportableId = responseBody().id
+
+        POST("${getResourcePath(finalisedDataModelId)}/$finalisedId/dataElements", [
+            label   : 'Functional Test DataElement 3',
+            dataType: finalisedDataTypeId], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        POST("${getResourcePath(finalisedDataModelId)}/$finalisedId/dataElements", [
+            label   : 'Functional Test DataElement',
+            dataType: finalisedDataTypeId], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String sameLabelId = responseBody().id
+
+        POST("${getResourcePath(otherDataModelId)}/$otherId/dataElements", [
+            label   : 'Functional Test DataElement 4',
+            dataType: otherDataTypeId], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String nonImportableId = responseBody().id
+
+        when: 'importing non-existent'
+        PUT("$id/dataElements/$finalisedDataModelId/$finalisedId/${nonImportableId}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'importing non importable id'
+        PUT("$id/dataElements/$otherDataModelId/$otherId/$nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataElement [${nonImportableId}] to be imported does not belong to a finalised DataModel"
+
+        when: 'importing internal id'
+        PUT("$id/dataElements/$dataModelId/$id/$internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataElement [${internalId}] to be imported belongs to the DataClass already"
+
+        when: 'importing with same label id'
+        PUT("$id/dataElements/$finalisedDataModelId/$finalisedId/$sameLabelId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "Property [importedDataElements] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel." +
+        "item.DataClass] has non-unique values [Functional Test DataElement] on property [label]"
+
+        when: 'importing same model importableId id'
+        PUT("$id/dataElements/$dataModelId/$sameModelDataClassId/$sameModelImportableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'importing importable id'
+        PUT("$id/dataElements/$finalisedDataModelId/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataelements'
+        log.info 'getting list of dataelements'
+        GET("$id/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 3
+        responseBody().items.any {it.id == internalId && !it.imported}
+        responseBody().items.any {it.id == sameModelImportableId && it.imported}
+        responseBody().items.any {it.id == importableId && it.imported}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(sameModelDataClassId)
+        DELETE("dataModels/$otherDataModelId/dataClasses/$otherId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("dataModels/$finalisedDataModelId/dataClasses/$finalisedId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'IMI02 : test importing DataElement and removing'() {
+        given:
+        // Get DataClass
+        String id = createNewItem(validJson)
+
+        // Get finalised DataModel DataClass
+        String finalisedId = createNewItem(getResourcePath(finalisedDataModelId), [
+            label: 'Functional Test DataClass 3'
+        ])
+
+        // Get internal DE
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement',
+            dataType: dataTypeId])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("${getResourcePath(finalisedDataModelId)}/$finalisedId/dataElements", [
+            label   : 'Functional Test DataElement 2',
+            dataType: finalisedDataTypeId], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        when: 'importing importable id'
+        PUT("$id/dataElements/$finalisedDataModelId/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'removing non-existent'
+        DELETE("$id/dataElements/$finalisedDataModelId/$finalisedId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'removing internal id'
+        DELETE("$id/dataElements/$dataModelId/$id/$internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataElement [${internalId}] belongs to the DataClass and cannot be removed as an import"
+
+        when: 'removing importable id'
+        DELETE("$id/dataElements/$finalisedDataModelId/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of datatypes'
+        GET("$id/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == internalId}
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("dataModels/$finalisedDataModelId/dataClasses/$finalisedId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'IMI03 : test importing DataClasses'() {
+        given:
+        // Get DataClass
+        String id = createNewItem(validJson)
+
+        String sameModelImportableId = createNewItem([
+            label: 'Functional Test DataClass 4'])
+
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass'])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("${getResourcePath(finalisedDataModelId)}", [
+            label: 'Functional Test DataClass 2'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        POST("${getResourcePath(finalisedDataModelId)}", [
+            label: 'Functional Test DataClass',], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String sameLabelId = responseBody().id
+
+        POST("${getResourcePath(otherDataModelId)}", [
+            label: 'Functional Test DataClass 3'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String nonImportableId = responseBody().id
+
+        when: 'importing non-existent'
+        PUT("$id/dataClasses/$finalisedDataModelId/${nonImportableId}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'importing non importable id'
+        PUT("$id/dataClasses/$otherDataModelId/$nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${nonImportableId}] to be imported does not belong to a finalised DataModel"
+
+        when: 'importing internal id'
+        PUT("$id/dataClasses/$dataModelId/$internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${internalId}] to be imported belongs to the DataClass already"
+
+        when: 'importing with same label id'
+        PUT("$id/dataClasses/$finalisedDataModelId/$sameLabelId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "Property [importedDataClasses] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel." +
+        "item.DataClass] has non-unique values [Functional Test DataClass] on property [label]"
+
+        when: 'importing dc into itself id'
+        PUT("$id/dataClasses/$dataModelId/$id", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${id}] cannot be imported into itself"
+
+        when: 'importing same model importableId id'
+        PUT("$id/dataClasses/$dataModelId/$sameModelImportableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'importing importable id'
+        PUT("$id/dataClasses/$finalisedDataModelId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 3
+        responseBody().items.any {it.id == internalId && !it.imported}
+        responseBody().items.any {it.id == importableId && it.imported}
+        responseBody().items.any {it.id == sameModelImportableId && it.imported}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(sameModelImportableId)
+        DELETE("dataModels/$otherDataModelId/dataClasses/$nonImportableId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("dataModels/$finalisedDataModelId/dataClasses/$sameLabelId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("dataModels/$finalisedDataModelId/dataClasses/$importableId", MAP_ARG, true)
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void 'IMI04 : test importing DataClass and removing'() {
+        given:
+        // Get DataClass
+        String id = createNewItem(validJson)
+
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass'])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("${getResourcePath(finalisedDataModelId)}", [
+            label: 'Functional Test DataClass 2'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        when: 'importing importable id'
+        PUT("$id/dataClasses/$finalisedDataModelId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'removing non-existent'
+        DELETE("$id/dataClasses/$finalisedDataModelId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'removing internal id'
+        DELETE("$id/dataClasses/$dataModelId/$internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${internalId}] belongs to the DataClass and cannot be removed as an import"
+
+        when: 'removing importable id'
+        DELETE("$id/dataClasses/$finalisedDataModelId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataclasses'
+        GET("$id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == internalId}
+
+        cleanup:
+        cleanUpData(id)
+        DELETE("dataModels/$finalisedDataModelId/dataClasses/$importableId", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
     }
 }

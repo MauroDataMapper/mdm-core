@@ -34,7 +34,11 @@ class ReferenceType extends DataType<ReferenceType> {
     static constraints = {
         referenceClass validator: {val, obj ->
             if (val && val.model && obj.model) {
-                val.model.id == obj.model.id ?: ['invalid.datatype.dataclass.model']
+                // In the same model is okay
+                if (val.model.id == obj.model.id) return true
+                // Imported into model is okay
+                if (obj.model.importedDataClasses.any {it.id == val.id}) return true
+                ['invalid.datatype.dataclass.model']
             }
         }
     }

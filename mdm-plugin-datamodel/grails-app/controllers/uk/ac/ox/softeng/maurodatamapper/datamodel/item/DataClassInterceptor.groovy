@@ -43,7 +43,7 @@ class DataClassInterceptor extends DataModelSecuredInterceptor {
             return canReadDataModel()
         }
 
-        if (actionName in ['copyDataClass', 'extendDataClass']) {
+        if (actionName in ['copyDataClass', 'extendDataClass', 'importDataElement', 'importDataClass']) {
             return canEditDataModelAndReadOtherDataModel()
         }
 

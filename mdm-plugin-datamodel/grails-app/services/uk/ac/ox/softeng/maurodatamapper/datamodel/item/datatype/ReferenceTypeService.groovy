@@ -31,9 +31,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.validation.ValidationErrors
-import org.springframework.validation.Errors
-import org.springframework.validation.FieldError
 
 @Slf4j
 @Transactional
@@ -193,26 +190,5 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> implements Su
     @Override
     List<ReferenceType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceType.byMetadataNamespace(namespace).list(pagination)
-    }
-
-    ReferenceType validate(ReferenceType referenceType) {
-        referenceType.validate()
-        if (referenceType.hasErrors()) {
-            FieldError invalidOwnerError = referenceType.errors.getFieldErrors('referenceClass')?.find {it.code == 'invalid.datatype.dataclass.model'}
-            if (invalidOwnerError) {
-                if (modelImportService.hasCatalogueItemImportedCatalogueItem(referenceType.model, referenceType.referenceClass)) {
-                    Errors existingErrors = referenceType.errors
-                    Errors cleanedErrors = new ValidationErrors(referenceType)
-
-                    existingErrors.fieldErrors.each {fe ->
-                        if (fe.field != 'referenceClass' && fe.code != 'invalid.datatype.dataclass.model') {
-                            cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
-                        }
-                    }
-                    referenceType.errors = cleanedErrors
-                }
-            }
-        }
-        referenceType
     }
 }

@@ -44,7 +44,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  |  PUT     | /api/dataModels/${dataModelId}/dataTypes/${id}  | Action: update
  *  |  GET     | /api/dataModels/${dataModelId}/dataTypes/${id}  | Action: show
  *
- *  |  POST    | /api/dataModels/${dataModelId}/dataTypes/${otherDataModelId}/${dataTypeId}  | Action: copyDataType
+ *  |  POST    | /api/dataModels/${dataModelId}/dataTypes/${otherModelId}/${dataTypeId}  | Action: copyDataType
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeController
  */

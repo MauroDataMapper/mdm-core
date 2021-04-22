@@ -39,14 +39,11 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.lucene.search.Query
-import org.grails.datastore.mapping.validation.ValidationErrors
 import org.hibernate.search.engine.ProjectionConstants
 import org.hibernate.search.jpa.FullTextEntityManager
 import org.hibernate.search.jpa.FullTextQuery
 import org.hibernate.search.jpa.Search
 import org.hibernate.search.query.dsl.QueryBuilder
-import org.springframework.validation.Errors
-import org.springframework.validation.FieldError
 
 import javax.persistence.EntityManager
 
@@ -56,7 +53,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     DataClassService dataClassService
     DataTypeService dataTypeService
-//    ModelImportService modelImportService
     SummaryMetadataService summaryMetadataService
 
     @Override
@@ -124,20 +120,21 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement validate(DataElement dataElement) {
         dataElement.validate()
         if (dataElement.hasErrors()) {
-            FieldError invalidOwnerError = dataElement.errors.getFieldErrors('dataType')?.find {it.code == 'invalid.dataelement.datatype.model'}
-            if (invalidOwnerError) {
-                if (modelImportService.hasCatalogueItemImportedCatalogueItem(dataElement.model, dataElement.dataType)) {
-                    Errors existingErrors = dataElement.errors
-                    Errors cleanedErrors = new ValidationErrors(dataElement)
-
-                    existingErrors.fieldErrors.each {fe ->
-                        if (fe.field != 'dataType' && fe.code != 'invalid.dataelement.datatype.model') {
-                            cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
-                        }
-                    }
-                    dataElement.errors = cleanedErrors
-                }
-            }
+            //            FieldError invalidOwnerError = dataElement.errors.getFieldErrors('dataType')?.find {it.code == 'invalid.dataelement
+            //            .datatype.model'}
+            //            if (invalidOwnerError) {
+            //                if (modelImportService.hasCatalogueItemImportedCatalogueItem(dataElement.model, dataElement.dataType)) {
+            //                    Errors existingErrors = dataElement.errors
+            //                    Errors cleanedErrors = new ValidationErrors(dataElement)
+            //
+            //                    existingErrors.fieldErrors.each {fe ->
+            //                        if (fe.field != 'dataType' && fe.code != 'invalid.dataelement.datatype.model') {
+            //                            cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
+            //                        }
+            //                    }
+            //                    dataElement.errors = cleanedErrors
+            //                }
+            //            }
         }
         dataElement
     }
@@ -303,6 +300,10 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         DataElement.withFilter(DataElement.byDataClassId(dataClassId), filter).list(pagination)
     }
 
+    List<DataElement> findAllByDataClassIdIncludingImported(UUID dataClassId, Map filter, Map pagination) {
+        DataElement.withFilter(DataElement.byDataClassIdIncludingImported(dataClassId), filter).list(pagination)
+    }
+
     List<DataElement> findAllByDataClassIdJoinDataType(Serializable dataClassId) {
         DataElement.byDataClassId(dataClassId).join('dataType').sort('label').list()
     }
@@ -373,7 +374,7 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     //Put the dataClass lookup in this method for use when merging
     DataElement copy(Model copiedDataModel, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
-        DataClass dataClass = copiedDataModel.getDataClasses()?.find { it.label == original.dataClass.label }
+        DataClass dataClass = copiedDataModel.getDataClasses()?.find {it.label == original.dataClass.label}
         if (dataClass) {
             dataClass.addToDataElements(copy)
         }
@@ -483,8 +484,8 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         List<SemanticLink> alreadyExistingLinks =
             semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
                 dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
-        dataElements.each { de ->
-            fromDataElements.each { fde ->
+        dataElements.each {de ->
+            fromDataElements.each {fde ->
                 // If no link already exists then add a new one
                 if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataElementIsFromDataElement(de, fde, user)
@@ -532,42 +533,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         findDataElement(parentCatalogueItem, label)
     }
 
-    /**
-     * When a DataElement is imported into a DataClass, we also want to import the DataElement's
-     * DataType into the DataModel to which the importing DataClass belongs.
-     *
-     * @param currentUser The user doing the import
-     * @param modelImport The resource that was imported
-     *
-     *
-    @Override
-    void performAdditionalModelImports(ModelImport modelImport) {
-
-        //The DataElement that was imported
-        DataElement dataElement = modelImport.importedModelItem as DataElement
-
-        //The DataType of that DataElement
-        DataType dataType = dataElement.dataType
-
-        //The CatalogueItem (which will be a DataClass) into which the DataElement was imported
-        DataClass dataClass = modelImport.catalogueItem as DataClass
-
-        //The DataModel to which that DataClass belongs
-        DataModel dataModel = dataClass.getModel()
-
-        if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
-            //Create a new ModelImport for the DataType into DataModel
-            ModelImport modelImportDataType = new ModelImport(catalogueItem: dataModel,
-                                                              importedCatalogueItem: dataType,
-                                                              createdBy: modelImport.createdBy)
-            dataModel.addToModelImports(modelImportDataType)
-
-            //Save the additional model import, indicating that this is an additional rather than
-            //principal import and so should fail silently if it already exists.
-            modelImportService.save(modelImportDataType, false)
-        }
-    }
-     */
     @Override
     List<DataElement> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination) {
         DataElement.byMetadataNamespaceAndKey(namespace, key).list(pagination)

@@ -113,4 +113,8 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
             mergeObjectDiffIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
         }
     }
+
+    boolean isModelItemInSameModelOrInFinalisedModel(K modelItem, K otherModelItem) {
+        otherModelItem.model.id == modelItem.model.id || modelItem.model.finalised
+    }
 }

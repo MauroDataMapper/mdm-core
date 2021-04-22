@@ -39,6 +39,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddre
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -57,7 +58,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  | PUT    | /api/dataModels/${dataModelId}/newBranchModelVersion  | Action: newBranchModelVersion |
  *  | PUT    | /api/dataModels/${dataModelId}/newDocumentationVersion  | Action: newDocumentationVersion |
  *  | PUT    | /api/dataModels/${dataModelId}/finalise                  | Action: finalise                 |
- *  | GET    | /api/dataModels/${dataModelId}/diff/${otherDataModelId} | Action: diff                    |
+ *  | GET    | /api/dataModels/${dataModelId}/diff/${otherModelId} | Action: diff                    |
  *
  *  | POST   | /api/dataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                | Action: exportDataModels |
  *  | POST   | /api/dataModels/import/${importerNamespace}/${importerName}/${importerVersion}                | Action: importDataModels |
@@ -1915,10 +1916,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         responseBody().items.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                               'addAndAddReturningDifference', 'modifyAndDelete', 'addLeftOnly'] as Set
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndDelete' }.description == 'Description'
-        responseBody().items.find { dataClass -> dataClass.label == 'addAndAddReturningDifference' }.description == 'addedDescriptionSource'
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyAndModifyReturningDifference' }.description == modifiedDescriptionSource
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndDelete'}.description == 'Description'
+        responseBody().items.find {dataClass -> dataClass.label == 'addAndAddReturningDifference'}.description == 'addedDescriptionSource'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyAndModifyReturningDifference'}.description == modifiedDescriptionSource
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'modifiedDescriptionSourceOnly'
 
         when:
         GET("$target/dataClasses/$existingClass/dataClasses")
@@ -1972,8 +1973,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         GET("$source/metadata")
         verifyResponse OK, response
-        String deleteMetadataSource = responseBody().items.find { it.key == 'deleteMetadataSource' }.id
-        String modifyMetadataSource = responseBody().items.find { it.key == 'modifyMetadataSource' }.id
+        String deleteMetadataSource = responseBody().items.find {it.key == 'deleteMetadataSource'}.id
+        String modifyMetadataSource = responseBody().items.find {it.key == 'modifyMetadataSource'}.id
 
         then:
         //dataModel description
@@ -2015,8 +2016,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         GET("$target/metadata")
         verifyResponse OK, response
-        deleteMetadataSource = responseBody().items.find { it.key == "deleteMetadataSource" }.id
-        modifyMetadataSource = responseBody().items.find { it.key == "modifyMetadataSource" }.id
+        deleteMetadataSource = responseBody().items.find {it.key == "deleteMetadataSource"}.id
+        modifyMetadataSource = responseBody().items.find {it.key == "modifyMetadataSource"}.id
 
         GET("$source/mergeDiff/$target", STRING_ARG)
 
@@ -2225,7 +2226,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then:
         verifyResponse OK, response
         responseBody().items.label as Set == ['modifyLeftOnly'] as Set
-        responseBody().items.find { dataClass -> dataClass.label == 'modifyLeftOnly' }.description == 'modifiedDescriptionSourceOnly'
+        responseBody().items.find {dataClass -> dataClass.label == 'modifyLeftOnly'}.description == 'modifiedDescriptionSourceOnly'
 
         when:
         verifyResponse OK, response
@@ -2233,7 +2234,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         then:
         responseBody().items.key as Set == ['addMetadataSource', 'modifyMetadataSource'] as Set
-        responseBody().items.find { metadata -> metadata.key == 'modifyMetadataSource' }.value == 'modifiedDescriptionSource'
+        responseBody().items.find {metadata -> metadata.key == 'modifyMetadataSource'}.value == 'modifiedDescriptionSource'
 
         when:
         GET("dataClasses/$modifyLeftOnly/metadata", MAP_ARG, true)
@@ -2292,9 +2293,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         then: 'The response is CREATED'
         verifyResponse CREATED, response
         def dataTypeId = response.body().id
-        
+
         when: 'A new DataElement is added to the source DataClass'
-        POST("$sourceDataModelId/dataClasses/$sourceDataClassId/dataElements", ["label": "New Data Element", "dataType": ["id": dataTypeId]])        
+        POST("$sourceDataModelId/dataClasses/$sourceDataClassId/dataElements", ["label": "New Data Element", "dataType": ["id": dataTypeId]])
 
         then: 'The response is CREATED'
         verifyResponse CREATED, response
@@ -2384,7 +2385,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         cleanup:
         cleanUpData(sourceDataModelId)
         cleanUpData(id)
-    }    
+    }
 
     void 'test changing folder from DataModel context'() {
         given: 'The save action is executed with valid data'
@@ -2536,8 +2537,8 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         //Change child DC label
         GET("$testId/dataClasses")
         verifyResponse(OK, response)
-        parentId = responseBody().items.find { it.label == 'parent' }.id
-        String contentId = responseBody().items.find { it.label == 'content' }.id
+        parentId = responseBody().items.find {it.label == 'parent'}.id
+        String contentId = responseBody().items.find {it.label == 'content'}.id
         GET("$testId/dataClasses/${parentId}/dataClasses")
         verifyResponse(OK, response)
         assert responseBody().items.first().id
@@ -2563,13 +2564,13 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         dataClassesDiffs.modified.size() == 2
 
         and:
-        Map contentDiff = dataClassesDiffs.modified.find { it.label == 'content' }
+        Map contentDiff = dataClassesDiffs.modified.find {it.label == 'content'}
         contentDiff.diffs.size() == 1
         contentDiff.diffs.first().description.left == 'a change to the description'
         contentDiff.diffs.first().description.right == 'some interesting content'
 
         and:
-        Map parentDiff = dataClassesDiffs.modified.find { it.label == 'parent' }
+        Map parentDiff = dataClassesDiffs.modified.find {it.label == 'parent'}
         parentDiff.diffs.size() == 1
         parentDiff.diffs.first().dataClasses.deleted.size() == 1
         parentDiff.diffs.first().dataClasses.created.size() == 1
@@ -2901,7 +2902,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
     void 'test delete multiple models'() {
         given:
         def idstoDelete = []
-        (1..4).each { n ->
+        (1..4).each {n ->
             idstoDelete << createNewItem([
                 folder: folderId,
                 label : UUID.randomUUID().toString()
@@ -4039,6 +4040,305 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
         cleanup:
         cleanUpData(id)
+    }
+
+    void 'IMI01 : test importing DataType'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+        // Get second DataModel
+        String otherId = createNewItem([
+            label: 'Functional Test Model 1'
+        ])
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType 2',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String sameLabelId = responseBody().id
+
+        POST("$otherId/dataTypes", [
+            label     : 'Functional Test DataType 3',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String nonImportableId = responseBody().id
+
+        when: 'importing non-existent'
+        PUT("$id/dataTypes/$finalisedId/${nonImportableId}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'importing non importable id'
+        PUT("$id/dataTypes/$otherId/$nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "PrimitiveType [${nonImportableId}] to be imported does not belong to a finalised DataModel"
+
+        when: 'importing internal id'
+        PUT("$id/dataTypes/$id/$internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "PrimitiveType [${internalId}] to be imported belongs to the DataModel already"
+
+        when: 'importing with same label id'
+        PUT("$id/dataTypes/$finalisedId/$sameLabelId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "Property [importedDataTypes] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel." +
+        "DataModel] has non-unique values [Functional Test DataType] on property [label]"
+
+        when: 'importing importable id'
+        PUT("$id/dataTypes/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of datatypes'
+        log.info 'getting list of datatypes'
+        GET("$id/dataTypes")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.any {it.id == internalId && !it.imported}
+        responseBody().items.any {it.id == importableId && it.imported}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(otherId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'IMI02 : test importing DataType and removing'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 1'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataTypes", [
+            label     : 'Functional Test DataType 2',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+
+        when: 'importing importable id'
+        PUT("$id/dataTypes/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+
+        when: 'removing non-existent'
+        DELETE("$id/dataTypes/$finalisedId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'removing internal id'
+        DELETE("$id/dataTypes/$id/$internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "PrimitiveType [${internalId}] belongs to the DataModel and cannot be removed as an import"
+
+        when: 'removing importable id'
+        DELETE("$id/dataTypes/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of datatypes'
+        GET("$id/dataTypes")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == internalId}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(finalisedId)
+    }
+
+    void 'IMI03 : test importing DataClasses'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+        // Get second DataModel
+        String otherId = createNewItem([
+            label: 'Functional Test Model 1'
+        ])
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 2'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String sameLabelId = responseBody().id
+
+        POST("$otherId/dataClasses", [
+            label: 'Functional Test DataClass 3',])
+        verifyResponse CREATED, response
+        String nonImportableId = responseBody().id
+
+        when: 'importing non-existent'
+        PUT("$id/dataClasses/$finalisedId/${nonImportableId}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'importing non importable id'
+        PUT("$id/dataClasses/$otherId/$nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${nonImportableId}] to be imported does not belong to a finalised DataModel"
+
+        when: 'importing internal id'
+        PUT("$id/dataClasses/$id/$internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${internalId}] to be imported belongs to the DataModel already"
+
+        when: 'importing with same label id'
+        PUT("$id/dataClasses/$finalisedId/$sameLabelId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "Property [importedDataClasses] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel." +
+        "DataModel] has non-unique values [Functional Test DataClass] on property [label]"
+
+        when: 'importing importable id'
+        PUT("$id/dataClasses/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataclasses'
+        log.info 'getting list of dataclasses'
+        GET("$id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.any {it.id == internalId && !it.imported}
+        responseBody().items.any {it.id == importableId && it.imported}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(otherId)
+        cleanUpData(finalisedId)
+    }
+
+    void 'IMI04 : test importing DataClass and removing'() {
+        given:
+        // Get DataModel
+        String id = createNewItem(validJson)
+        // Get finalised DataModel
+        String finalisedId = createNewItem([
+            label: 'Functional Test Model 1'
+        ])
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+
+        // Get internal DT
+        POST("$id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        String internalId = responseBody().id
+
+        POST("$finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        String importableId = responseBody().id
+
+        when: 'importing importable id'
+        PUT("$id/dataClasses/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'removing non-existent'
+        DELETE("$id/dataClasses/$finalisedId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'removing internal id'
+        DELETE("$id/dataClasses/$id/$internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${internalId}] belongs to the DataModel and cannot be removed as an import"
+
+        when: 'removing importable id'
+        DELETE("$id/dataClasses/$finalisedId/$importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataClasses'
+        GET("$id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == internalId}
+
+        cleanup:
+        cleanUpData(id)
+        cleanUpData(finalisedId)
     }
 
     @Transactional

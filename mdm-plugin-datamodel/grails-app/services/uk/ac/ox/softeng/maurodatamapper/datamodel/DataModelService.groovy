@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -31,7 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -49,7 +47,6 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvid
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
-import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -72,8 +69,6 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataTypeService dataTypeService
     DataClassService dataClassService
     DataElementService dataElementService
-//    ModelImportService modelImportService
-    AuthorityService authorityService
     SummaryMetadataService summaryMetadataService
     DataModelJsonImporterService dataModelJsonImporterService
 

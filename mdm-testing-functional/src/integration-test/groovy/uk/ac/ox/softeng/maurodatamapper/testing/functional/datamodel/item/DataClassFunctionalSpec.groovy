@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -27,6 +29,8 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
+import spock.lang.Unroll
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -87,7 +91,32 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
 
     @Transactional
     String getFinalisedDataClassId() {
-        DataClass.byDataModelIdAndLabel(Utils.toUuid(getFinalisedDataModelId()), 'finalised Data Class').get().id.toString()
+        DataClass.byDataModelIdAndLabel(Utils.toUuid(getFinalisedDataModelId()), 'Finalised Data Class').get().id.toString()
+    }
+
+    @Transactional
+    String getFinalisedDataClass2Id() {
+        DataClass.byDataModelIdAndLabel(Utils.toUuid(getFinalisedDataModelId()), 'Another Data Class').get().id.toString()
+    }
+
+    @Transactional
+    String getFinalisedDataElementId() {
+        DataElement.byDataClassIdAndLabel(Utils.toUuid(getFinalisedDataClassId()), 'Finalised Data Element').get().id.toString()
+    }
+
+    @Transactional
+    String getFinalisedDataElementId2() {
+        DataElement.byDataClassIdAndLabel(Utils.toUuid(getFinalisedDataClassId()), 'Another DataElement').get().id.toString()
+    }
+
+    @Transactional
+    String getFinalisedDataTypeId() {
+        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getFinalisedDataModelId()), 'Finalised Data Type').get().id.toString()
+    }
+
+    @Transactional
+    String getComplexStringDataTypeId() {
+        PrimitiveType.byDataModelIdAndLabel(Utils.toUuid(getComplexDataModelId()), 'string').get().id.toString()
     }
 
     @Override
@@ -432,6 +461,685 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         removeValidIdObject(id)
         removeValidIdObject(internalExtendableId)
     }
+
+    @Unroll
+    void 'IMI01 : test importing DataElement (as #info)'() {
+        given:
+        Map data = configureImportDataElement()
+        if (user) loginUser(userEmailAddresses[user])
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataElements/$simpleDataModelId/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing internal id'
+        PUT("$data.id/dataElements/$complexDataModelId/$data.id/$data.internalId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing same model importableId id'
+        PUT("$data.id/dataElements/$complexDataModelId/$data.sameModelDataClassId/$data.sameModelImportableId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing importable id'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << [null, 'authenticated']
+        info = user ?: 'not logged in'
+    }
+
+    void 'IMI02 : test importing DataElement (as reader)'() {
+        given:
+        Map data = configureImportDataElement()
+        loginReader()
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataElements/$simpleDataModelId/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing internal id'
+        PUT("$data.id/dataElements/$complexDataModelId/$data.id/$data.internalId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing same model importableId id'
+        PUT("$data.id/dataElements/$complexDataModelId/$data.sameModelDataClassId/$data.sameModelImportableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing importable id'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'getting list of dataelements'
+        GET("$data.id/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == data.internalId && !it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+    }
+
+    @Unroll
+    void 'IMI03 : test importing DataElement (as #info)'() {
+        given:
+        Map data = configureImportDataElement()
+        loginUser(userEmailAddresses[user])
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataElements/$simpleDataModelId/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataElement [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+
+        when: 'importing internal id'
+        PUT("$data.id/dataElements/$complexDataModelId/$data.id/$data.internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataElement [${data.internalId}] to be imported belongs to the DataClass already"
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "Property [importedDataElements] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel." +
+        "item.DataClass] has non-unique values [Another DataElement] on property [label]"
+
+        when: 'importing same model importableId id'
+        PUT("$data.id/dataElements/$complexDataModelId/$data.sameModelDataClassId/$data.sameModelImportableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'importing importable id'
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataelements'
+        GET("$data.id/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 3
+        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any {it.id == data.sameModelImportableId && it.imported}
+        responseBody().items.any {it.id == data.importableId && it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['admin', 'editor']
+        info = user
+    }
+
+    @Unroll
+    void 'IMI04 : test importing DataElement and removing (as #info)'() {
+        given:
+        Map data = configureImportDataElement()
+        loginEditor()
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        if (user) loginUser(userEmailAddresses[user])
+        String randomId = UUID.randomUUID().toString()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$randomId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataElements/$complexDataModelId/$data.id/$data.internalId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << [null, 'authenticated']
+        info = user ?: 'not logged in'
+    }
+
+    void 'IMI05 : test importing DataElement and removing (as reader)'() {
+        given:
+        Map data = configureImportDataElement()
+        loginEditor()
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        loginReader()
+        String randomId = UUID.randomUUID().toString()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$randomId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataElements/$complexDataModelId/$data.id/$data.internalId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'getting list of dataElements'
+        GET("$data.id/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.any {it.id == data.internalId}
+        responseBody().items.any {it.id == data.importableId && it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+
+    }
+
+    @Unroll
+    void 'IMI06 : test importing DataElement and removing (as #info)'() {
+        given:
+        Map data = configureImportDataElement()
+        loginEditor()
+        PUT("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        loginUser(userEmailAddresses[user])
+        String randomId = UUID.randomUUID().toString()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$randomId", [:])
+
+        then:
+        verifyNotFound(response, data.randomId)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataElements/$complexDataModelId/$data.id/$data.internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataElement [${data.internalId}] belongs to the DataClass and cannot be removed as an import"
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataElements/$finalisedDataModelId/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataElements'
+        GET("$data.id/dataElements")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == data.internalId}
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['admin', 'editor']
+        info = user
+    }
+
+    @Unroll
+    void 'IMI07 : test importing DataClasses (as #info)'() {
+        given:
+        Map data = configureImportDataClass()
+        if (user) loginUser(userEmailAddresses[user])
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/${data.nonImportableId}", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataClasses/$simpleDataModelId/$data.nonImportableId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing internal id'
+        PUT("$data.id/dataClasses/$complexDataModelId/$data.internalId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.sameLabelId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing same model importableId id'
+        PUT("$data.id/dataClasses/$complexDataModelId/$data.sameModelImportableId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'importing importable id'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << [null, 'authenticated']
+        info = user ?: 'not logged in'
+    }
+
+    void 'IMI08 : test importing DataClasses (as reader)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginReader()
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/${data.nonImportableId}", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataClasses/$simpleDataModelId/$data.nonImportableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing internal id'
+        PUT("$data.id/dataClasses/$complexDataModelId/$data.internalId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.sameLabelId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing same model importableId id'
+        PUT("$data.id/dataClasses/$complexDataModelId/$data.sameModelImportableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing importable id'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'getting list of dataclasses'
+        GET("$data.id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == data.internalId && !it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+    }
+
+    @Unroll
+    void 'IMI09 : test importing DataClasses (as #info)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginUser(userEmailAddresses[user])
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/${data.nonImportableId}", [:])
+
+        then:
+        verifyNotFound(response, data.nonImportableId)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataClasses/$simpleDataModelId/$data.nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+
+        when: 'importing internal id'
+        PUT("$data.id/dataClasses/$complexDataModelId/$data.internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${data.internalId}] to be imported belongs to the DataClass already"
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.sameLabelId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "Property [importedDataClasses] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel." +
+        "item.DataClass] has non-unique values [Another Data Class] on property [label]"
+
+        when: 'importing same model importableId id'
+        PUT("$data.id/dataClasses/$complexDataModelId/$data.sameModelImportableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'importing importable id'
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataclasses'
+        GET("$data.id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 3
+        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any {it.id == data.sameModelImportableId && it.imported}
+        responseBody().items.any {it.id == data.importableId && it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['admin', 'editor']
+        info = user
+    }
+
+    @Unroll
+    void 'IMI10 : test importing DataClass and removing (as #info)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginEditor()
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        if (user) loginUser(userEmailAddresses[user])
+        String randomId = UUID.randomUUID().toString()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataClasses/$finalisedDataModelId/$randomId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataClasses/$data.dataModelId/$data.internalId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+
+        then:
+        verifyNotFound(response, complexDataModelId)
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << [null, 'authenticated']
+        info = user ?: 'not logged in'
+    }
+
+    void 'IMI11 : test importing DataClass and removing (as reader)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginEditor()
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        loginReader()
+        String randomId = UUID.randomUUID().toString()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataClasses/$finalisedDataModelId/$randomId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataClasses/$data.dataModelId/$data.internalId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'getting list of dataclasses'
+        GET("$data.id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.any {it.id == data.internalId}
+        responseBody().items.any {it.id == data.importableId && it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['admin', 'editor']
+        info = user
+    }
+
+    @Unroll
+    void 'IMI12 : test importing DataClass and removing (as #info)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginEditor()
+        PUT("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        loginUser(userEmailAddresses[user])
+        String randomId = UUID.randomUUID().toString()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataClasses/$finalisedDataModelId/$randomId", [:])
+
+        then:
+        verifyNotFound(response, randomId)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataClasses/$complexDataModelId/$data.internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${data.internalId}] belongs to the DataClass and cannot be removed as an import"
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataClasses/$finalisedDataModelId/$data.importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataclasses'
+        GET("$data.id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == data.internalId}
+
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['admin', 'editor']
+        info = user
+    }
+
+    Map configureImportDataClass() {
+
+        Map data = [:]
+
+        data.id = getValidId()
+        loginEditor()
+        POST('', [
+            label: 'Functional Test DataClass 2'
+        ])
+        verifyResponse CREATED, response
+        data.sameModelImportableId = responseBody().id
+        // Get internal DT
+        POST("$data.id/dataClasses", [
+            label: 'Another Data Class'])
+        verifyResponse CREATED, response
+        data.internalId = responseBody().id
+
+        data.importableId = getFinalisedDataClassId()
+
+        data.sameLabelId = getFinalisedDataClass2Id()
+
+        data.nonImportableId = getSimpleDataClassId()
+
+        logout()
+        data
+    }
+
+    Map configureImportDataElement() {
+        Map data = [:]
+        // Get DataClass
+        data.id = getValidId()
+        loginEditor()
+        POST('', [
+            label: 'Functional Test DataClass 2'
+        ])
+        verifyResponse CREATED, response
+        data.sameModelDataClassId = responseBody().id
+
+        // Get an other DataModel DataClass
+        data.otherId = getSimpleDataClassId()
+
+        // Get finalised DataModel DataClass
+        data.finalisedId = getFinalisedDataClassId()
+
+        // Get other DataType
+        POST("dataModels/$simpleDataModelId/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        data.otherDataTypeId = responseBody().id
+
+        // Get internal DE
+        POST("$data.id/dataElements", [
+            label   : 'Another DataElement',
+            dataType: getComplexStringDataTypeId()])
+        verifyResponse CREATED, response
+        data.internalId = responseBody().id
+
+        POST("$data.sameModelDataClassId/dataElements", [
+            label   : 'Functional Test DataElement 2',
+            dataType: getComplexStringDataTypeId()])
+        verifyResponse CREATED, response
+        data.sameModelImportableId = responseBody().id
+
+        data.importableId = getFinalisedDataElementId()
+
+        data.sameLabelId = getFinalisedDataElementId2()
+
+        POST("dataModels/$simpleDataModelId/dataClasses/$data.otherId/dataElements", [
+            label   : 'Functional Test DataElement 4',
+            dataType: data.otherDataTypeId], MAP_ARG, true)
+        verifyResponse CREATED, response
+        data.nonImportableId = responseBody().id
+        logout()
+        data
+    }
+
+    void cleanupImportData(Map data) {
+        removeValidIdObject(data.id)
+        if (data.otherDataTypeId) {
+            removeValidIdObject(data.sameModelDataClassId)
+            loginEditor()
+            DELETE("dataModels/$simpleDataModelId/dataTypes/$data.otherDataTypeId", MAP_ARG, true)
+            assert response.status() == HttpStatus.NO_CONTENT
+            logout()
+        } else {
+            removeValidIdObject(data.sameModelImportableId)
+        }
+    }
+
 
     /*
     void 'Test getting all DataClasses of a DataModel'() {

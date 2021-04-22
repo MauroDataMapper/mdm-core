@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -273,7 +272,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     DataType validate(DataType dataType) {
-        if (dataType.domainType == ReferenceType.simpleName) return referenceTypeService.validate(dataType as ReferenceType)
         dataType.validate()
         dataType
     }
@@ -323,16 +321,20 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         checkFacetsAfterImportingCatalogueItem(dataType)
     }
 
-    private void setCreatedBy(User creator, DataType dataType) {
-        throw new ApiNotYetImplementedException('DTSXX', 'DataType setting created by')
-    }
-
-    private def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
+    def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
         DataType.withFilter(DataType.byDataModelId(dataModelId), paginate).list(paginate)
     }
 
-    private def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
         DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
+    }
+
+    def findAllByDataModelIdIncludingImported(Serializable dataModelId, Map paginate = [:]) {
+        DataType.withFilter(DataType.byDataModelIdIncludingImported(dataModelId), paginate).list(paginate)
+    }
+
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
+        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(dataModelId, searchTerm).list(paginate)
     }
 
     void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {
@@ -507,4 +509,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.byMetadataNamespace(namespace).list(pagination)
     }
 
+    boolean isDataTypeBeingUsedAsImport(DataType dataType) {
+        DataModel.byImportedDataTypeId(dataType.id).count()
+    }
 }

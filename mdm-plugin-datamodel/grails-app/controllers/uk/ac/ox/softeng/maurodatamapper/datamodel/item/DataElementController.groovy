@@ -37,6 +37,23 @@ class DataElementController extends CatalogueItemController<DataElement> {
         super(DataElement)
     }
 
+    @Override
+    def index(Integer max) {
+        params.max = Math.min(max ?: 10, 100)
+        def res = listAllResources(params)
+        // The new grails-views code sets the modelAndView object rather than writing the response
+        // Therefore if thats written then we dont want to try and re-write it
+        if (response.isCommitted() || modelAndView) return
+        respond res, [
+            model: [
+                owningDataModelId        : params.dataModelId,
+                owningDataClassId        : params.dataClassId,
+                userSecurityPolicyManager: currentUserSecurityPolicyManager,
+            ],
+            view : 'index'
+        ]
+    }
+
     @Transactional
     def copyDataElement() {
         if (handleReadOnly()) {
@@ -106,7 +123,6 @@ class DataElementController extends CatalogueItemController<DataElement> {
     @Override
     protected List<DataElement> listAllReadableResources(Map params) {
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
-//        params.imported = params.boolean('imported', true)
         if (params.dataTypeId) {
             if (!dataTypeService.findByDataModelIdAndId(params.dataModelId, params.dataTypeId)) {
                 notFound(params.dataTypeId)
@@ -120,8 +136,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
             notFound(params.dataClassId)
             return null
         }
-        //return dataElementService.findAllByDataClassId(params.dataClassId, params, params.imported, params.extended)
-        return dataElementService.findAllByDataClassId(params.dataClassId, params)
+        return dataElementService.findAllByDataClassIdIncludingImported(params.dataClassId, params, params)
     }
 
     @Override

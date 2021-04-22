@@ -643,7 +643,7 @@ class SubscribedCatalogueFunctionalSpec extends FunctionalSpec {
     },
     {
       "modelId": "${json-unit.matches:id}",
-      "label": "Extendable DataModel 1.0.0",
+      "label": "Finalised Example Test DataModel 1.0.0",
       "description": null,
       "modelType": "DataModel"
     }

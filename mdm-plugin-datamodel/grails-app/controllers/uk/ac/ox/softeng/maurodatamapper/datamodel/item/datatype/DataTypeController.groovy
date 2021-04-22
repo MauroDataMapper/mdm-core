@@ -45,7 +45,8 @@ class DataTypeController extends CatalogueItemController<DataType> {
     @Override
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        respond dataTypeList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager
+        respond dataTypeList: listAllResources(params), userSecurityPolicyManager: currentUserSecurityPolicyManager,
+                owningDataModelId: params.dataModelId
     }
 
     @Override
@@ -125,14 +126,10 @@ class DataTypeController extends CatalogueItemController<DataType> {
     @Override
     protected List<DataType> listAllReadableResources(Map params) {
         params.sort = params.sort ?: ['idx': 'asc', 'label': 'asc']
-        //        params.imported = params.boolean('imported', true)
         if (params.search) {
-            //            return dataTypeService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(params.dataModelId, params.search, params,
-            //            params.imported)
-            return dataTypeService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(params.dataModelId, params.search, params)
+            return dataTypeService.findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(params.dataModelId, params.search, params)
         }
-        //        return dataTypeService.findAllByDataModelId(params.dataModelId, params, params.imported)
-        return dataTypeService.findAllByDataModelId(params.dataModelId, params)
+        return dataTypeService.findAllByDataModelIdIncludingImported(params.dataModelId, params)
     }
 
     @Override
@@ -183,4 +180,17 @@ class DataTypeController extends CatalogueItemController<DataType> {
         true
     }
 
+    @Override
+    @Transactional
+    protected boolean validateResourceDeletion(DataType resource, String view) {
+        if (dataTypeService.isDataTypeBeingUsedAsImport(resource)) {
+            transactionStatus.setRollbackOnly()
+            resource.errors.reject('invalid.deletion.modelitem.used.as.import',
+                                   ['DataType', resource.id].toArray(),
+                                   'Cannot delete {0} [{1}] as it is still used as an import')
+            respond resource.errors, view: view1 // STATUS CODE 422
+            return false
+        }
+        true
+    }
 }

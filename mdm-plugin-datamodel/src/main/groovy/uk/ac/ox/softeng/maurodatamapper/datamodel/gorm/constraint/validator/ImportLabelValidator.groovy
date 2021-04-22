@@ -15,23 +15,31 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.mapping
+package uk.ac.ox.softeng.maurodatamapper.datamodel.gorm.constraint.validator
 
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.CatalogueItemJoinTableDynamicHibernateMappingContext
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.ModelImportAware
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
+
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
+
+import org.grails.datastore.gorm.GormEntity
 
 /**
- * @since 03/12/2020
+ * @since 21/04/2021
  */
-class ModelImportAwareMappingContext extends CatalogueItemJoinTableDynamicHibernateMappingContext {
-    @Override
-    boolean handlesDomainClass(Class domainClass) {
-        Utils.parentClassIsAssignableFromChild(ModelImportAware, domainClass)
+class ImportLabelValidator extends UniqueValuesValidator {
+
+    String nonImportProperty
+    GormEntity parent
+
+    ImportLabelValidator(GormEntity parent, String nonImportProperty) {
+        super('label')
+        this.nonImportProperty = nonImportProperty
+        this.parent = parent
     }
 
     @Override
-    String getPropertyName() {
-        'modelImports'
+    Object isValid(Collection value) {
+        if (!value) return true
+        Collection completeCollection = (parent."$nonImportProperty" ?: []) + (value ?: [])
+        super.isValid(completeCollection)
     }
 }

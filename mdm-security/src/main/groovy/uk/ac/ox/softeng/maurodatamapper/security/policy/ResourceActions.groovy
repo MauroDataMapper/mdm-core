@@ -27,6 +27,7 @@ class ResourceActions {
     public static final String INDEX_ACTION = 'index'
     public static final String SAVE_ACTION = 'save'
     public static final String COMMENT_ACTION = 'comment'
+    public static final String IMPORT_ACTION = 'import'
     public static final String EDIT_DESCRIPTION_ACTION = 'editDescription'
     public static final String SOFT_DELETE_ACTION = 'softDelete'
     public static final String NEW_DOCUMENTATION_ACTION = 'newDocumentationVersion'

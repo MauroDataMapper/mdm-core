@@ -62,7 +62,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  GET     | /api/dataModels/providers/defaultDataTypeProviders       | Action: defaultDataTypeProviders
  *  |  GET     | /api/dataModels/providers/importers                      | Action: importerProviders
  *  |  GET     | /api/dataModels/providers/exporters                      | Action: exporterProviders
- *  |  GET     | /api/dataModels/${dataModelId}/diff/${otherDataModelId}  | Action: diff
+ *  |  GET     | /api/dataModels/${dataModelId}/diff/${otherModelId}  | Action: diff
  *
  *  |  POST    | /api/dataModels/import/${importerNamespace}/${importerName}/${importerVersion}                 | Action: importDataModels
  *  |  POST    | /api/dataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                 | Action: exportDataModels
