@@ -45,7 +45,6 @@ import java.time.ZoneOffset
 class VersionedFolderService extends ContainerService<VersionedFolder> implements VersionLinkAwareService<VersionedFolder> {
 
     FolderService folderService
-    ModelService modelService
 
     @Autowired(required = false)
     List<ModelService> modelServices
@@ -134,7 +133,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         VersionedFolder.findAllByReadableByAuthenticatedUsers(true)
     }
 
-    VersionedFolder finaliseFolder(folder, User user, Version folderVersion, VersionChangeType versionChangeType) {
+    VersionedFolder finaliseFolder(VersionedFolder folder, User user, Version folderVersion, VersionChangeType versionChangeType) {
 
         folder.finalised = true
         folder.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
@@ -148,11 +147,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             }
         }
 
-        //folder.addToAnnotations(as follows) was non-functional, ergo
-        folder.createdBy = user.emailAddress
-        folder.label = 'Finalised Versioned Folder'
-        folder.description = "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
-                             "${OffsetDateTimeConverter.toString(folder.dateFinalised)}"
+        //TODO uncomment once addAnnotations is resolved
+//        folder.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Versioned Folder',
+//                               description: "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
+//                                            "${OffsetDateTimeConverter.toString(folder.dateFinalised)}")
 
         editService.createAndSaveEdit(folder.id, folder.domainType,
                                       "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
@@ -161,7 +159,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folder
     }
 
-    Version getNextFolderVersion(folder, Version requestedFolderVersion, VersionChangeType requestedVersionChangeType) {
+    Version getNextFolderVersion(VersionedFolder folder, Version requestedFolderVersion, VersionChangeType requestedVersionChangeType) {
         if (requestedFolderVersion) {
             // Prefer requested folder version
             return requestedFolderVersion

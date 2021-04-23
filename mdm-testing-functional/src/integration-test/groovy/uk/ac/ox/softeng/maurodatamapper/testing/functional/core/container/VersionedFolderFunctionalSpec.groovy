@@ -18,6 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
@@ -27,6 +30,7 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.PendingFeature
 
 import java.util.regex.Pattern
@@ -52,6 +56,10 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 @Slf4j
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+
+
+    @Autowired(required = false)
+    List<ModelService> modelServices
 
     @Transactional
     String getTestFolderId() {
@@ -488,36 +496,110 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     void 'V01 : finalisation endpoint for Versioned Folder'() {
+        given:
         String id = getValidId()
-
         loginEditor()
 
-        when: 'The save action is executed with valid data for a datamodel'
         POST("folders/$id/dataModels", [
             label: 'Functional Test DataModel 1'
         ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String dataModel1Id = responseBody().id
+
         POST("folders/$id/dataModels", [
             label: 'Functional Test DataModel 2'
         ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String dataModel2Id = responseBody().id
 
-        then: 'The response is correct'
-        response.status == CREATED
-        response.body().id
+        when: 'getting the folder before finalisation'
+        GET(id)
 
-        String DataModel1Id = response.body().id
+        then:
+        response.status == OK
+        responseBody().availableActions.sort() == ['delete', /*'finalise',*/ 'save', 'show', 'softDelete', 'update',]
+        !responseBody().finalised
+        responseBody().domainType == 'VersionedFolder'
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
-        when:'The folder gets finalised'
+        when: 'getting the datamodel 1 before finalisation'
+        GET("dataModels/$dataModel1Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().availableActions == ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
+        !responseBody().finalised
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'getting the datamodel 2 before finalisation'
+        GET("dataModels/$dataModel2Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().availableActions ==  ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
+        !responseBody().finalised
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'The folder gets finalised'
         PUT("$id/finalise", [versionChangeType: 'Major'])
 
         then:
         response.status == OK
-        response.body().availableActions.sort() == ['delete', 'show', 'update', 'save', 'softDelete'].sort()
-        response.body().finalised
-        response.body().domainType == 'VersionedFolder'
+        responseBody().availableActions.sort() == ['delete', 'show', 'update', 'save', 'softDelete'].sort()
+        responseBody().finalised
+        responseBody().domainType == 'VersionedFolder'
         responseBody().modelVersion == '1.0.0'
 
-        String modelVersion = responseBody().modelVersion
+        when:
+        GET("dataModels/$dataModel1Id", MAP_ARG, true)
 
-        //TODO cleanup
+        then:
+        response.status == OK
+        responseBody().finalised
+        responseBody().domainType == 'DataModel'
+        responseBody().modelVersion == '1.0.0'
+        responseBody().availableActions == [
+            'show',
+            'createNewVersions',
+            'newForkModel',
+            'comment',
+            'newModelVersion',
+            'newDocumentationVersion',
+            'newBranchModelVersion',
+            'softDelete',
+            'delete'
+        ]
+
+        when:
+        GET("dataModels/$dataModel2Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().finalised
+        responseBody().domainType == 'DataModel'
+        responseBody().modelVersion == '1.0.0'
+        responseBody().availableActions == [
+            'show',
+            'createNewVersions',
+            'newForkModel',
+            'comment',
+            'newModelVersion',
+            'newDocumentationVersion',
+            'newBranchModelVersion',
+            'softDelete',
+            'delete'
+        ]
+
+        cleanup:
+        // We use transactions to clear folder which means the DMs don't get deleted so have to do that manually
+        DELETE("dataModels/$dataModel1Id?permanent=true", MAP_ARG, true)
+        response.status == HttpStatus.NO_CONTENT
+        DELETE("dataModels/$dataModel2Id?permanent=true", MAP_ARG, true)
+        response.status == HttpStatus.NO_CONTENT
+        removeValidIdObject(id)
     }
+
 }

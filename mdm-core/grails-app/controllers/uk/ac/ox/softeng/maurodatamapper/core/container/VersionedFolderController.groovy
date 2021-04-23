@@ -21,11 +21,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import org.checkerframework.checker.units.qual.K
@@ -41,6 +45,9 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     AuthorityService authorityService
     VersionedFolderService versionedFolderService
     SearchService mdmCoreSearchService
+
+    @Autowired(required = false)
+    List<ModelService> modelServices
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -145,7 +152,10 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!validateResource(instance, 'update')) return
 
+        Set<String> changedProperties = instance.getDirtyPropertyNames()
+
         updateResource(instance)
+        updateSecurity(instance, changedProperties)
         updateResponse(instance)
     }
 
@@ -208,4 +218,20 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
         versionedFolderService.delete(resource)
     }
+
+    protected VersionedFolder updateSecurity(VersionedFolder instance, Set<String> changedProperties) {
+        modelServices.each{service ->
+            Collection<Model> modelsInFolder = service.findAllByFolderId(instance.id)
+            modelsInFolder.each { model ->
+                if (securityPolicyManagerService) {
+                    currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(model as SecurableResource,
+                                                                                                                       changedProperties,
+                                                                                                                       currentUser)
+                }
+            }
+        }
+        instance
+    }
+
+
 }
