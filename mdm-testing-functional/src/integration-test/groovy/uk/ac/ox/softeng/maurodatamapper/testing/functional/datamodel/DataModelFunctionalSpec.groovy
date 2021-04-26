@@ -184,15 +184,6 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     }
 
     @Override
-    List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
-    }
-
-    List<String> getReaderAvailableActions() {
-        ['show', 'comment']
-    }
-
-    @Override
     Pattern getExpectedCreatedEditRegex() {
         ~/\[Data Standard:Functional Test DataModel] created/
     }

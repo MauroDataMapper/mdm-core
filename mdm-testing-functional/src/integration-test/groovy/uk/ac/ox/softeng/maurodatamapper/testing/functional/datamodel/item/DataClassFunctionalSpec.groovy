@@ -239,9 +239,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         assert body.breadcrumbs.first().domainType == 'DataModel'
         assert body.breadcrumbs.first().finalised == false
 
-        assert body.availableActions == [
-            'show', 'comment', 'editDescription', 'update', 'save', 'delete'
-        ]
+        assert body.availableActions == getEditorModelItemAvailableActions().sort()
         assert body.lastUpdated
         assert body.maxMultiplicity == -1
         assert body.minMultiplicity == 1

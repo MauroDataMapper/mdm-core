@@ -185,9 +185,7 @@ class NestedDataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunc
         assert body.breadcrumbs[1].label == 'simple'
         assert body.breadcrumbs[1].domainType == 'DataClass'
 
-        assert body.availableActions == [
-            'show', 'comment', 'editDescription', 'update', 'save', 'delete'
-        ]
+        assert body.availableActions == getEditorModelItemAvailableActions().sort()
         assert body.lastUpdated
         assert body.maxMultiplicity == -1
         assert body.minMultiplicity == 1

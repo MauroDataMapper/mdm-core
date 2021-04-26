@@ -193,6 +193,10 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         verifyForbidden response
     }
 
+    List<String> getEditorModelItemAvailableActions() {
+        ['show', 'comment', 'editDescription', 'update', 'save', 'delete']
+    }
+
     void 'C01 : test copying (as writer to both DataModels)'() {
         given:
         loginEditor()

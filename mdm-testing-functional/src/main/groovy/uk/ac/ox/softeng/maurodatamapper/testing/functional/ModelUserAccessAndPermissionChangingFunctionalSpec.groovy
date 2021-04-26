@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
@@ -26,7 +27,6 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
-import spock.lang.PendingFeature
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -102,6 +102,29 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         false
     }
 
+    @Override
+    List<String> getEditorAvailableActions() {
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
+    }
+
+    List<String> getReaderAvailableActions() {
+        ['show', 'comment']
+    }
+
+    List<String> getFinalisedEditorAvailableActions() {
+        [
+            'show',
+            'createNewVersions',
+            'newForkModel',
+            'comment',
+            'newModelVersion',
+            'newDocumentationVersion',
+            'newBranchModelVersion',
+            'softDelete',
+            'delete'
+        ]
+    }
+
     void 'L16 : Test finalising Model (as not logged in)'() {
         given:
         String id = getValidId()
@@ -157,17 +180,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         verifyResponse OK, response
         responseBody().finalised == true
         responseBody().dateFinalised
-        responseBody().availableActions == [
-            "show",
-            "createNewVersions",
-            "newForkModel",
-            "comment",
-            "newModelVersion",
-            "newDocumentationVersion",
-            "newBranchModelVersion",
-            "softDelete",
-            "delete"
-        ]
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
         responseBody().modelVersion == '1.0.0'
 
         when: 'log out and log back in again in as editor available actions are correct'
@@ -177,17 +190,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse OK, response
-        responseBody().availableActions == [
-            "show",
-            "createNewVersions",
-            "newForkModel",
-            "comment",
-            "newModelVersion",
-            "newDocumentationVersion",
-            "newBranchModelVersion",
-            "softDelete",
-            "delete"
-        ]
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
 
         when: 'log out and log back in again in as admin available actions are correct'
         logout()
@@ -196,17 +199,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse OK, response
-        responseBody().availableActions == [
-            "show",
-            "createNewVersions",
-            "newForkModel",
-            "comment",
-            "newModelVersion",
-            "newDocumentationVersion",
-            "newBranchModelVersion",
-            "softDelete",
-            "delete"
-        ]
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
 
         cleanup:
         removeValidIdObject(id)
@@ -224,17 +217,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         verifyResponse OK, response
         responseBody().finalised == true
         responseBody().dateFinalised
-        responseBody().availableActions == [
-            "show",
-            "createNewVersions",
-            "newForkModel",
-            "comment",
-            "newModelVersion",
-            "newDocumentationVersion",
-            "newBranchModelVersion",
-            "softDelete",
-            "delete"
-        ]
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
         responseBody().modelVersion == '1.0.0'
         responseBody().modelVersionTag == 'Functional Test Release'
 
@@ -245,17 +228,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse OK, response
-        responseBody().availableActions == [
-            "show",
-            "createNewVersions",
-            "newForkModel",
-            "comment",
-            "newModelVersion",
-            "newDocumentationVersion",
-            "newBranchModelVersion",
-            "softDelete",
-            "delete"
-        ]
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
         responseBody().modelVersionTag == 'Functional Test Release'
 
         when: 'log out and log back in again in as admin available actions are correct and modelVersionTag is set'
@@ -265,17 +238,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse OK, response
-        responseBody().availableActions == [
-            "show",
-            "createNewVersions",
-            "newForkModel",
-            "comment",
-            "newModelVersion",
-            "newDocumentationVersion",
-            "newBranchModelVersion",
-            "softDelete",
-            "delete"
-        ]
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
         responseBody().modelVersionTag == 'Functional Test Release'
 
         cleanup:
@@ -613,17 +576,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         verifyResponse OK, response
         responseBody().finalised == true
         responseBody().dateFinalised
-        responseBody().availableActions == [
-            "show",
-            "createNewVersions",
-            "newForkModel",
-            "comment",
-            "newModelVersion",
-            "newDocumentationVersion",
-            "newBranchModelVersion",
-            "softDelete",
-            "delete"
-        ]
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
         responseBody().modelVersion == '2.0.0'
 
         cleanup:
@@ -632,7 +585,6 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         cleanUpRoles(id, branchId)
     }
 
-    @PendingFeature(reason = 'Finalise needs to be removed from available actions after model is finalised')
     void 'E19d : test creating a new branch model version of a Model<T> and trying to finalise(as editor)'() {
         given:
         String id = getValidFinalisedId()
@@ -643,6 +595,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         then:
         verifyResponse CREATED, response
+        responseBody().availableActions == getEditorAvailableActions().sort()
         String mainBranchId = responseBody().id
 
         when:
@@ -656,7 +609,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         responseBody().documentationVersion == '1.0.0'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
-        !responseBody().availableActions.contains('finalise') // TODO Functionality to satisfy this condition needs to be implemented
+        responseBody().availableActions == (getEditorAvailableActions() - [ResourceActions.FINALISE_ACTION]).sort()
 
         when:
         PUT("$branchId/finalise", [versionChangeType: 'Major'])
