@@ -387,6 +387,69 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "displayName": "Basic Default DataTypes",
     "name": "DataTypeService",
     "version": "1.0.0"
+  },
+  {
+    "name":"ProfileSpecificationDataTypeProvider",
+    "version":"1.0.0",
+    "displayName":"Profile Specification DataTypes",
+    "dataTypes":
+    [
+        {
+            "domainType":"PrimitiveType",
+            "label":"boolean",
+            "description":"logical Boolean [true/false)"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"string",
+            "description":"short variable-length character string (plain-text)"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"text",
+            "description":"long variable-length character string (may include html / markdown)"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"int",
+            "description":"integer"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"decimal",
+            "description":"decimal"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"date",
+            "description":"calendar date [year, month, day)"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"datetime",
+            "description":"date and time, excluding time zone"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"time",
+            "description":"time of day [no time zone)"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"folder",
+            "description":"pointer to a folder in this Mauro instance"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"model",
+            "description":"pointer to a model in this Mauro instance"
+        },
+        {
+            "domainType":"PrimitiveType",
+            "label":"json",
+            "description":"a text field containing valid json syntax"
+        }
+    ]
   }
 ]'''
     }

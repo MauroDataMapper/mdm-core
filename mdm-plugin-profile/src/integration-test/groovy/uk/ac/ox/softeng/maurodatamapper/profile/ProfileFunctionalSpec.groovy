@@ -90,24 +90,24 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyJsonResponse OK, '''
 [{
     "name":"ProfileSpecificationProfileService",
-    "version":"1.0.0",
+    "version":"SNAPSHOT",
     "displayName":"Profile Specification Profile (Data Model)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
     "knownMetadataKeys": ["metadataNamespace","domainsApplicable"],
     "providerType":"Profile",
-    "metadataNamespace":"uk.ac.ox.softeng.profile",
+    "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "domains":["DataModel"]
 }, 
 {
-    "name":"ProfileSpecificationProfileFieldService",
-    "version":"1.0.0",
+    "name":"ProfileSpecificationFieldProfileService",
+    "version":"SNAPSHOT",
     "displayName":"Profile Specification Profile (Data Element)",
     "namespace":"uk.ac.ox.softeng.maurodatamapper.profile",
     "allowsExtraMetadataKeys":false,
     "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editedAfterFinalisation"],
     "providerType":"Profile",
-    "metadataNamespace":"uk.ac.ox.softeng.profile.field",
+    "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
     "domains":["DataElement"]
 }]'''
     }

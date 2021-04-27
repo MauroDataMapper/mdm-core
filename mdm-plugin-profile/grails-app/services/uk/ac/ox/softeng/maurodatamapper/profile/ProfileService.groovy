@@ -266,7 +266,7 @@ class ProfileService {
                     return null
                 }
                 Metadata md = getProfileDataModel().metadata.find {md ->
-                    md.namespace == "uk.ac.ox.softeng.profile" &&
+                    md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
                         md.key == "metadataNamespace"}
                 if(md) {
                     return md.value
@@ -294,7 +294,7 @@ class ProfileService {
             @Override
             List<String> profileApplicableForDomains() {
                 Metadata md = getProfileDataModel().metadata.find {md ->
-                    md.namespace == "uk.ac.ox.softeng.profile" &&
+                    md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
                             md.key == "domainsApplicable"}
                 if(md) {
                     return md.value.tokenize(";")
@@ -334,14 +334,14 @@ class ProfileService {
                                         fieldName: dataElement.label,
                                         description: dataElement.description,
                                         metadataPropertyName: dataElement.metadata.find {
-                                            it.namespace == "uk.ac.ox.softeng.profile.field" &&
+                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
                                                     it.key == "metadataPropertyName"
                                         }?.value,
                                         maxMultiplicity: dataElement.maxMultiplicity,
                                         minMultiplicity: dataElement.minMultiplicity,
                                         dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
                                         regularExpression: dataElement.metadata.find {
-                                            it.namespace == "uk.ac.ox.softeng.profile.field" &&
+                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
                                                     it.key == "regularExpression"
                                         }?.value,
                                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?
