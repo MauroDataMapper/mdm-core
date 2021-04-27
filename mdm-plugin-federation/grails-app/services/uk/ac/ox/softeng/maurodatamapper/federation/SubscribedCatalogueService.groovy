@@ -86,7 +86,7 @@ class SubscribedCatalogueService implements XmlImportMapping {
         GPathResult feedData = client.getSubscribedCatalogueModels(subscribedCatalogue.apiKey)
 
         //Iterate the <entry> nodes, making an AvailableModel for each one
-        def entries = feedData.'*'.findAll {node -> node.name() == 'entry'}
+        def entries = feedData.entry
 
         if (entries.isEmpty()) return []
 

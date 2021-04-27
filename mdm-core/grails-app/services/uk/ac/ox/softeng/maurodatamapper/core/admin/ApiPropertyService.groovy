@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import asset.pipeline.grails.AssetResourceLocator
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.web.mapping.DefaultLinkGenerator
 import org.springframework.core.io.Resource
 
 import java.nio.file.Files
@@ -35,6 +36,9 @@ import java.nio.file.Paths
 class ApiPropertyService {
 
     AssetResourceLocator assetResourceLocator
+
+    // This is autowired does not need the annotation
+    DefaultLinkGenerator grailsLinkGenerator
 
     List<ApiProperty> list(Map pagination = [:]) {
         ApiProperty.by().list(pagination)
@@ -108,6 +112,28 @@ class ApiPropertyService {
     ApiProperty save(ApiProperty apiProperty, User updatedBy) {
         apiProperty.lastUpdatedBy = updatedBy.emailAddress
         apiProperty.save(flush: true)
+    }
+
+    void updateLinkGeneratorWithSiteUrl(ApiProperty apiProperty) {
+        if (!apiProperty) return
+        if (apiProperty.key != ApiPropertyEnum.SITE_URL.key) return
+        grailsLinkGenerator.setConfiguredServerBaseURL(apiProperty.value)
+    }
+
+    void checkAndSetSiteUrl(configServerUrl, configContextPath, User user) {
+        ApiProperty siteUrlProperty = findByApiPropertyEnum(ApiPropertyEnum.SITE_URL)
+        // If no site url property but a config server url then create a new property
+        if (!siteUrlProperty && configServerUrl) {
+            String contextPathPart = configContextPath ? "/$configContextPath" : ''
+            siteUrlProperty = new ApiProperty(key: ApiPropertyEnum.SITE_URL.key,
+                                              value: "${configServerUrl}${contextPathPart}",
+                                              createdBy: user.emailAddress,
+                                              category: ApiProperty.extractDefaultCategoryFromKey(ApiPropertyEnum.SITE_URL.key)).save()
+        }
+        // If a site url property exists either from db or now created then update the link generator
+        if (siteUrlProperty) {
+            updateLinkGeneratorWithSiteUrl(siteUrlProperty)
+        }
     }
 
     void loadLegacyPropertiesFromDefaultsFileIntoDatabase(String path, User createdBy) {

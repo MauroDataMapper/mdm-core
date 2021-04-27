@@ -116,6 +116,11 @@ class BootStrap {
         apiPropertyService.findAndUpdateByApiPropertyEnum(ApiPropertyEnum.EMAIL_FROM_ADDRESS,
                                                           grailsApplication?.config?.simplejavamail?.smtp?.username,
                                                           bootstrapUser)
+        // Check for site url and set if provided by config
+        // We do not override any site url which has already been set
+        apiPropertyService.checkAndSetSiteUrl(grailsApplication?.config?.grails?.serverURL,
+                                              grailsApplication?.config?.grails?.contextPath,
+                                              bootstrapUser)
     }
 
     boolean configureEmailers(Config config) {

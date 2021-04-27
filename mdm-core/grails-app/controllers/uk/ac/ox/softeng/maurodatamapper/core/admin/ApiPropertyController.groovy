@@ -44,6 +44,13 @@ class ApiPropertyController extends EditLoggingController<ApiProperty> {
     }
 
     @Override
+    protected ApiProperty saveResource(ApiProperty resource) {
+        ApiProperty apiProperty = super.saveResource(resource)
+        apiPropertyService.updateLinkGeneratorWithSiteUrl(apiProperty)
+        apiProperty
+    }
+
+    @Override
     protected void serviceDeleteResource(ApiProperty resource) {
         apiPropertyService.delete(resource)
     }

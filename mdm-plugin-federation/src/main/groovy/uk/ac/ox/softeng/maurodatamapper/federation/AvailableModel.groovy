@@ -50,6 +50,6 @@ class AvailableModel {
     }
 
     void setDescription(String description) {
-        if (description != modelLabel) this.description = description
+        if (description && description != modelLabel) this.description = description
     }
 }

@@ -17,12 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.federation
 
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import groovy.util.slurpersupport.GPathResult
+import io.micronaut.http.HttpResponse
 
+import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -32,7 +35,7 @@ import static io.micronaut.http.HttpStatus.OK
  * </pre>
  *
  *
- * @see FeedController
+ * @see uk.ac.ox.softeng.maurodatamapper.federation.FeedController
  */
 @Integration
 @Slf4j
@@ -46,46 +49,100 @@ class FeedFunctionalSpec extends FunctionalSpec {
     void 'Get Atom feed when not logged in'() {
 
         when:
-        GET("/api/feeds/all", STRING_ARG, true)
+        HttpResponse<String> xmlResponse = GET("feeds/all", STRING_ARG)
 
         then: "The response is OK with no entries"
-        verifyAtomResponse(false)
+        verifyBaseAtomResponse(xmlResponse, false, 'localhost')
     }
 
     void 'Get Atom feed when logged in as reader'() {
-    
+
         given:
         loginReader()
-       
-        when:
-        GET("/api/feeds/all", STRING_ARG, true)
 
-        then: "The response is OK with no entries"
-        verifyAtomResponse(true)
+        when:
+        HttpResponse<String> xmlResponse = GET("feeds/all", STRING_ARG)
+
+        then:
+        GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'localhost')
+        feed.entry.size() == 2
+        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet',
+                    "http://localhost:$serverPort", 'codeSets')
+        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel',
+                    "http://localhost:$serverPort", 'dataModels')
+    }
+
+    void 'test links render when site url property set'() {
+        given:
+        loginAdmin()
+        POST('admin/properties', [
+            key  : ApiPropertyEnum.SITE_URL.toString(),
+            value: 'https://www.mauro-data-mapper.com/cdw'
+        ])
+        verifyResponse CREATED, response
+
+        when:
+        HttpResponse<String> xmlResponse = GET("feeds/all", STRING_ARG)
+
+        then:
+        GPathResult feed = verifyBaseAtomResponse(xmlResponse, true, 'www.mauro-data-mapper.com', '/cdw')
+
+        when:
+        def selfLink = feed.link.find {it.@rel == 'self'}
+
+        then:
+        selfLink
+        selfLink.@href == 'https://www.mauro-data-mapper.com/cdw/api/feeds/all'
+
+        and:
+        verifyEntry(feed.entry.find {it.title == 'Simple Test CodeSet 1.0.0'}, 'CodeSet',
+                    'https://www.mauro-data-mapper.com/cdw',
+                    'codeSets')
+        verifyEntry(feed.entry.find {it.title == 'Finalised Example Test DataModel 1.0.0'}, 'DataModel',
+                    'https://www.mauro-data-mapper.com/cdw',
+                    'dataModels')
     }
 
     /**
      * Check that the response - which is expected to be XML as Atom, looks OK.
-     * Despite the use of jsonCapableResponse below, this is actually XML.
-     *
      */
-    private void verifyAtomResponse(boolean expectEntries) {
+    private GPathResult verifyBaseAtomResponse(HttpResponse<String> xmlResponse, boolean expectEntries, String host, String contextPath = '') {
+        log.warn('XML \n{}', xmlResponse.body())
+
         //Use the jsonCapableResponse even though it is a string of XML
-        jsonCapableResponse.status() == OK
+        xmlResponse.status() == OK
 
         //Slurp the response
-        GPathResult result = new XmlSlurper().parseText(jsonCapableResponse.body.value.toString())
-        result.name() == "feed"
-        result.namespaceURI() == "http://www.w3.org/2005/Atom"
-        result.title == "Mauro Data Mapper - All Models"
+        GPathResult result = new XmlSlurper().parseText(xmlResponse.body())
+        assert result.name() == 'feed'
+        assert result.namespaceURI() == 'http://www.w3.org/2005/Atom'
+        assert result.title == 'Mauro Data Mapper - All Models'
+        assert result.id == "tag:$host,2021-01-27:$contextPath/api/feeds/all"
+        assert result.author.name == 'Mauro Data Mapper'
+        assert result.author.uri == 'http://localhost'
+
+        assert result.link.size() == 2
 
         if (expectEntries) {
-            result.depthFirst().findAll{it.name() == "entry"}.size() > 0
+            assert result.entry.size() > 0
         } else {
-            result.depthFirst().findAll{it.name() == "entry"}.size() == 0
+            assert result.entry.size() == 0
         }
-        
+        result
     }
 
-      
+    private void verifyEntry(def entry, String category, String linkBaseUrl, String modelEndpoint) {
+        assert entry.id.text() ==~ /urn:uuid:\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+        assert entry.updated.text()
+        assert entry.published.text()
+        assert entry.category.@term == category
+        assert entry.link.size() == 2
+
+        def selfLink = entry.link.find {it.@rel == 'self'}
+        assert selfLink.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+
+        def altLink = entry.link.find {it.@rel == 'alternate'}
+        assert altLink.@href ==~ /$linkBaseUrl\/api\/${modelEndpoint}\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/
+
+    }
 }

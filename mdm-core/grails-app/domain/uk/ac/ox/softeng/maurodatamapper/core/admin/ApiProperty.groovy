@@ -39,7 +39,16 @@ class ApiProperty implements CreatorAware {
         key blank: false, unique: true, validator: {val ->
             !val.matches(/[a-z._]+/) ? ['invalid.api.property.format'] : true
         }
-        value blank: false
+        value blank: false, validator: {val, obj ->
+            if (obj.key == ApiPropertyEnum.SITE_URL.key) {
+                try {
+                    val.toURL()
+                    true
+                } catch (MalformedURLException ignored) {
+                    ['default.invalid.url.message']
+                }
+            }
+        }
         category nullable: true, blank: false
     }
 
@@ -72,7 +81,7 @@ class ApiProperty implements CreatorAware {
         by().eq('publiclyVisible', true)
     }
 
-    static String extractDefaultCategoryFromKey(String key){
+    static String extractDefaultCategoryFromKey(String key) {
         key.split(/\./)[0].capitalize()
     }
 }

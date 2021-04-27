@@ -17,6 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.rest.render
 
+
+import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
+import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 
 import grails.converters.XML
@@ -29,6 +33,7 @@ import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.web.xml.PrettyPrintXMLStreamWriter
 import org.grails.web.xml.StreamingMarkupWriter
 import org.grails.web.xml.XMLStreamWriter
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 
 import java.text.SimpleDateFormat
@@ -38,8 +43,7 @@ import java.time.OffsetDateTime
  * Extend AtomRenderer, dealing with OffsetDateTimes, adding a summary tag and overriding various methods in order
  * to get closer to an output which passes W3C atom validation at https://validator.w3.org/feed/
  * @since 04/01/2021
- * @see https://github.com/grails/grails-core/blob/master/grails-plugin-rest/src/main/groovy/grails/rest/render/atom/AtomRenderer.groovy
- * for inspiration. 
+ * @see grails.rest.render.atom.AtomRenderer
  */
 @Slf4j
 class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
@@ -47,26 +51,29 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
     //Make our own Atom date format because AtomRenderer.ATOM_DATE_FORMAT does not pass validation
     public static SimpleDateFormat MDM_ATOM_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
-    public static final Date MINTED_DATE =  new Date(121, 0, 27)
+    public static final Date MINTED_DATE = new Date(121, 0, 27)
     public static final String AUTHOR_TAG = 'author'
     public static final String AUTHOR_NAME_TAG = 'name'
+    public static final String AUTHOR_URI_TAG = 'uri'
     public static final String CATEGORY_TAG = 'category'
     public static final String CATEGORY_TERM_ATTRIBUTE = 'term'
     public static final String SUMMARY_TAG = 'summary'
 
+    @Autowired
+    ApiPropertyService apiPropertyService
+
+    @Autowired
+    AuthorityService authorityService
+
     MdmAtomModelRenderer(Class<T> targetType) {
         super(targetType)
-
-        //In AbstractLinkingRenderer we have boolean prettyPrint = Environment.isDevelopmentMode()
-        //But prettyPrint adds whitespace which causes the rendered XML to fail W3C validation. This makes
-        //testing development difficult, so here we turn prettyPrint off.
-        prettyPrint = false
     }
 
     /**
      *
      * Override the AtomRenderer.renderInternal so that we can set the updated tag for the feed.
-     * Copied from AtomRenderer but with the addition for setting the updated tag
+     * Copied from {@link grails.rest.render.atom.AtomRenderer#renderInternal(java.lang.Object, grails.rest.render.RenderContext)}
+     * but with the addition for setting the updated tag
      */
     @Override
     void renderInternal(T object, RenderContext context) {
@@ -77,6 +84,8 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         final entity = mappingContext.getPersistentEntity(object.class.name)
         boolean isDomain = entity != null
 
+        Authority authority = authorityService.defaultAuthority
+
         Set writtenObjects = []
         w.startDocument(encoding, "1.0")
 
@@ -84,22 +93,48 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
             writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects)
         } else if (object instanceof Collection) {
             final locale = context.locale
-            String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET, absolute:true)
+            String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET, absolute: true)
             final title = getResourceTitle(context.resourcePath, locale)
             XMLStreamWriter writer = xml.getWriter()
             writer
-                    .startNode(FEED_TAG)
-                    .attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
-                    .startNode(TITLE_ATTRIBUTE)
-                    .characters(title)
+                .startNode(FEED_TAG)
+                .attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
+                .startNode(TITLE_ATTRIBUTE)
+                .characters(title)
+                .end()
+                .startNode(ID_TAG)
+                .characters(generateIdForURI(resourceHref, MINTED_DATE))
+                .end()
+
+            // Render in the authority as an author for all models
+            writer.startNode(AUTHOR_TAG)
+                .startNode(AUTHOR_NAME_TAG)
+                .characters(authority.label)
+                .end()
+                .startNode(AUTHOR_URI_TAG)
+                .characters(authority.url)
+                .end()
+                .end()
+
+            /*
+            Set the updated of the feed to be the most recent updated of elements in the collection
+            This is missing from AtomRenderer and is required by Atom standards
+            https://validator.w3.org/feed/docs/atom.html#requiredEntryElements
+            */
+            if (object.size() > 0) {
+                def mostRecentlyUpdated = object.max {it.lastUpdated}
+                writer.startNode(UPDATED_TAG)
+                    .characters(formatLastUpdated(mostRecentlyUpdated))
                     .end()
-                    .startNode(ID_TAG)
-                    .characters(generateIdForURI(resourceHref))
+            } else {
+                writer.startNode(UPDATED_TAG)
+                    .characters(formatAtomDate(OffsetDateTime.now()))
                     .end()
+            }
 
             def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
             linkSelf.title = title
-            linkSelf.contentType=mimeTypes[0].name
+            linkSelf.contentType = mimeTypes[0].name
             linkSelf.hreflang = locale
             writeLink(linkSelf, locale, xml)
             def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
@@ -107,72 +142,46 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
             linkAlt.hreflang = locale
             writeLink(linkAlt, locale, xml)
 
-            //Set the updated of the feed to be the most recent updated of elements in the collection
-            if (object.size() > 0) {
-                Model mostRecentlyUpdated = object[0]
-                object.each {
-                    if (it.lastUpdated > mostRecentlyUpdated.lastUpdated) {
-                        mostRecentlyUpdated = it
-                    }
-                }
-                writer.startNode(UPDATED_TAG)
-                      .characters(formatLastUpdated(mostRecentlyUpdated))
-                      .end()
-
-            }
-
             for (o in ((Collection) object)) {
                 final currentEntity = mappingContext.getPersistentEntity(o.class.name)
                 if (currentEntity) {
                     writeDomainWithEmbeddedAndLinks(currentEntity, o, context, xml, writtenObjects, false)
                 } else {
-                    throw new IllegalArgumentException("Cannot render object [$o] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
+                    throw new IllegalArgumentException(
+                        "Cannot render object [$o] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and" +
+                        " 'lastUpdated' properties")
                 }
             }
             writer.end()
             context.writer.flush()
         } else {
-            throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
+            throw new IllegalArgumentException(
+                "Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and " +
+                "'lastUpdated' properties")
         }
 
-    }
-
-    /**
-     * Overload the base method, which requires a Date rather than OffsetDateTime, and format a date string
-     * which passes W3C validation
-     */
-    String formatAtomDate(OffsetDateTime timeToFormat) {
-        Date dateToFormat = new Date(timeToFormat.toEpochSecond() * 1000)
-        return MDM_ATOM_DATE_FORMAT.format(dateToFormat)
-    }
-
-    /**
-     * Overload the base method, which requires a Date rather than OffsetDateTime
-     *
-     */
-    String generateIdForURI(String url, OffsetDateTime dateCreated, UUID id) {
-        generateIdForURI(url, new Date(dateCreated.toEpochSecond() * 1000), id)
     }
 
     /**
      * Override the base method in HalXmlRenderer, removing the contentType
      * attribute from this link. (The base method writes something like
      *
-     *  <link rel="self" href="http://localhost:8080/api/terminologies/3472b192-ac49-4495-85cd-f00db153e595" hreflang="c.u" type="application/atom+xml" />
+     *  <link rel="self" href="http://localhost:8080/api/terminologies/3472b192-ac49-4495-85cd-f00db153e595" hreflang="c.u"
+     *  type="application/atom+xml" />
      *  <link rel="alternate" href="http://localhost:8080/api/terminologies/3472b192-ac49-4495-85cd-f00db153e595" hreflang="c.u" />
      *
      * but a type of application/atom+xml on the self link is not correct)
      *
-     * Copied from https://github.com/grails/grails-core/blob/master/grails-plugin-rest/src/main/groovy/grails/rest/render/hal/HalXmlRenderer.groovy
+     * Copied from {@link grails.rest.render.hal.HalXmlRenderer#writeLink(grails.rest.Link, java.util.Locale, java.lang.Object)}
      * with minor changes.
      */
     @Override
     void writeLink(Link link, Locale locale, writerObject) {
         XMLStreamWriter writer = ((XML) writerObject).getWriter()
         writer.startNode(LINK_TAG)
-              .attribute(RELATIONSHIP_ATTRIBUTE, link.rel)
-              .attribute(HREF_ATTRIBUTE, link.href)
-              .attribute(HREFLANG_ATTRIBUTE, (link.hreflang ?: locale).language)
+            .attribute(RELATIONSHIP_ATTRIBUTE, link.rel)
+            .attribute(HREF_ATTRIBUTE, link.href)
+            .attribute(HREFLANG_ATTRIBUTE, (link.hreflang ?: locale).language)
 
         final title = link.title
         if (title) {
@@ -180,10 +189,10 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         }
 
         if (link.templated) {
-            writer.attribute(TEMPLATED_ATTRIBUTE,"true")
+            writer.attribute(TEMPLATED_ATTRIBUTE, "true")
         }
         if (link.deprecated) {
-            writer.attribute(DEPRECATED_ATTRIBUTE,"true")
+            writer.attribute(DEPRECATED_ATTRIBUTE, "true")
         }
         writer.end()
     }
@@ -193,20 +202,81 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
      *
      */
     @Override
-    void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, Object object, RenderContext context, XML xml, Set writtenObjects, boolean isFirst = true) {
-        writeModelWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects, isFirst)
+    void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, Object object, RenderContext context, XML xml, Set writtenObjects,
+                                         boolean isFirst = true) {
+        writeModelWithEmbeddedAndLinks(entity, object as Model, context, xml, writtenObjects, isFirst)
     }
 
     /**
-     * Write a model. Copied from AtomRenderer#writeDomainWithEmbeddedAndLinks with minor tweaks.
+     * Overload the base method, which requires a Date rather than OffsetDateTime, and format a date string
+     * which passes W3C validation
+     */
+    protected String formatAtomDate(OffsetDateTime timeToFormat) {
+        formatAtomDate(Date.from(timeToFormat.toInstant()))
+    }
+
+    /**
+     * The date MUST include the offset and the AtomRender format does not.
+     *
+     * @param dateCreated
+     * @return string of formatted date
+     */
+    @Override
+    protected String formatAtomDate(Date dateCreated) {
+        MDM_ATOM_DATE_FORMAT.format(dateCreated)
+    }
+
+    /**
+     * Overload the base method, which requires a Date rather than OffsetDateTime
      *
      */
-    void writeModelWithEmbeddedAndLinks(PersistentEntity entity, Model object, RenderContext context, XML xml, Set writtenObjects, boolean isFirst = true) {
+    @SuppressWarnings('unused')
+    String generateIdForURI(String url, OffsetDateTime dateCreated, UUID id) {
+        generateIdForURI(url, Date.from(dateCreated.toInstant()), id)
+    }
+
+    /**
+     * The ID tag must include a 'minted date'
+     *
+     * @param url
+     * @return String ID including the minted date
+     */
+    @Override
+    String generateIdForURI(String url) {
+        generateIdForURI(url, MINTED_DATE)
+    }
+
+    /**
+     * Override to provide better handling for actual URLs. We can convert them to a URL and then extract the parts we want in the tag
+     * rather than using substring cleaning
+     * @param url
+     * @param dateCreated
+     * @param id
+     * @return
+     */
+    @Override
+    String generateIdForURI(String url, Date dateCreated, Object id = null) {
+        try {
+            URL actualUrl = url.toURL()
+            return "tag:${actualUrl.host},${ID_DATE_FORMAT.format(dateCreated)}:${id ?: actualUrl.path}"
+        } catch (MalformedURLException ignored) {
+            super.generateIdForURI(url, dateCreated, id)
+        }
+    }
+
+    /**
+     * Write a model. Copied from {@link grails.rest.render.atom.AtomRenderer#writeDomainWithEmbeddedAndLinks} with minor tweaks.
+     *
+     */
+    void writeModelWithEmbeddedAndLinks(PersistentEntity entity, Model object, RenderContext context, XML xml, Set writtenObjects,
+                                        boolean isFirst = true) {
         if (!entity.getPropertyByName('lastUpdated')) {
-            throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
+            throw new IllegalArgumentException(
+                "Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and " +
+                "'lastUpdated' properties")
         }
         final locale = context.locale
-        String resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute:true)
+        String resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: true)
         final title = getLinkTitle(entity, locale)
         XMLStreamWriter writer = xml.getWriter()
         writer.startNode(isFirst ? FEED_TAG : ENTRY_TAG)
@@ -214,55 +284,64 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
             writer.attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
         }
 
+        /*
+         Required Fields
+         */
+        writer.startNode(ID_TAG)
+            .characters(getModelUrn(object))
+            .end()
+
         //Use model label as the title
         writer.startNode(TITLE_ATTRIBUTE)
-              .characters(object.label + " " + object.modelVersion.toString())
-              .end()
+            .characters(object.label + " " + object.modelVersion.toString())
+            .end()
 
-        final dateCreated = formatDateCreated(object)
-        if (dateCreated) {
-            writer.startNode(PUBLISHED_TAG)
-                    .characters(dateCreated)
-                    .end()
-        }
-        final lastUpdated = formatLastUpdated(object)
-        if (lastUpdated) {
-            writer.startNode(UPDATED_TAG)
-                    .characters(lastUpdated)
-                    .end()
-        }
-        writer.startNode(ID_TAG)
-                .characters(getModelUrn(object))
-                .end()
+        writer.startNode(UPDATED_TAG)
+            .characters(formatLastUpdated(object))
+            .end()
 
-        writer.startNode(SUMMARY_TAG)
-                .characters(object.description ?: object.label)
-                .end()
-
-        writer.startNode(CATEGORY_TAG)
-                .attribute(CATEGORY_TERM_ATTRIBUTE, object.class.simpleName)
-                .end()
-
+        /*
+        Recommended fields
+         */
         if (object.author) {
             writer.startNode(AUTHOR_TAG)
-                    .startNode(AUTHOR_NAME_TAG)
-                    .characters(object.author)
-                    .end()
-                    .end()
+                .startNode(AUTHOR_NAME_TAG)
+                .characters(object.author)
+                .end()
+                .end()
+        }
+        if (object.description) {
+            writer.startNode(SUMMARY_TAG)
+                .characters(object.description)
+                .end()
         }
 
+        /*
+        Optional fields
+         */
+        writer.startNode(PUBLISHED_TAG)
+            .characters(formatDateCreated(object))
+            .end()
+
+        writer.startNode(CATEGORY_TAG)
+            .attribute(CATEGORY_TERM_ATTRIBUTE, object.domainType)
+            .end()
+
+        /*
+        Links are recommended
+         */
         def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
         linkSelf.title = title
-        linkSelf.contentType=mimeTypes[0].name
+        linkSelf.contentType = mimeTypes[0].name
         linkSelf.hreflang = locale
         writeLink(linkSelf, locale, xml)
         def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
         linkAlt.title = title
         linkAlt.hreflang = locale
 
-        writeLink(linkAlt,locale, xml)
+        writeLink(linkAlt, locale, xml)
         final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
-        final associationMap = writeAssociationLinks(context,object, locale, xml, entity, metaClass)
+        final associationMap = writeAssociationLinks(context, object, locale, xml, entity, metaClass)
         writeDomain(context, metaClass, entity, object, xml)
 
         if (associationMap) {
@@ -300,22 +379,10 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
     }
 
     /**
-     * The ID tag must include a 'minted date'
-     * 
-     * @param url
-     * @return String ID including the minted date
-     */
-    String generateIdForURI(String url) {
-        generateIdForURI(url, MINTED_DATE)
-    }
-
-    /**
-     * Generate the value of an ID tag that looks like urn:uuid:{model.id}
-     * @param model
+     * Generate the value of an ID tag that looks like urn:uuid:{model.id}* @param model
      * @return A string like urn:uuid:{model.id}
      */
     String getModelUrn(Model model) {
         return "urn:uuid:${model.id}"
     }
-
 }
