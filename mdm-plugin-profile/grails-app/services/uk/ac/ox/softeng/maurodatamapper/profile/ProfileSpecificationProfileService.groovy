@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.JsonProfileProviderService
-
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -26,7 +25,7 @@ class ProfileSpecificationProfileService extends JsonProfileProviderService {
 
     @Override
     String getMetadataNamespace() {
-        'uk.ac.ox.softeng.profile'
+        getNamespace()
     }
 
     @Override
@@ -36,7 +35,7 @@ class ProfileSpecificationProfileService extends JsonProfileProviderService {
 
     @Override
     String getVersion() {
-        '1.0.0'
+        getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
     }
 
     @Override

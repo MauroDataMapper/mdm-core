@@ -8,7 +8,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.BaseUnitSpec
 
 import grails.testing.services.ServiceUnitTest
 
-class ProfileSpecificationProfileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<ProfileSpecificationProfileService>{
+class ProfileSpecificationFieldProfileServiceSpec extends BaseUnitSpec implements ServiceUnitTest<ProfileSpecificationFieldProfileService>{
 
     def setup() {
         mockArtefact(MetadataService)
@@ -22,9 +22,9 @@ class ProfileSpecificationProfileServiceSpec extends BaseUnitSpec implements Ser
     void "Profile correctly loaded"() {
         JsonProfile jsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(service)
         expect: "2 fields in the profile specification profile"
-            service.profileApplicableForDomains() == ["DataModel"]
+            service.profileApplicableForDomains() == ["DataElement"]
 
             jsonProfile.sections.size() == 1
-            jsonProfile.sections[0].fields.size() == 2
+            jsonProfile.sections[0].fields.size() == 4
     }
 }
