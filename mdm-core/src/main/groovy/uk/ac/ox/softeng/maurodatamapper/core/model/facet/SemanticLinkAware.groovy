@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
@@ -34,7 +33,7 @@ trait SemanticLinkAware {
     abstract Set<SemanticLink> getSemanticLinks()
 
     def addToSemanticLinks(SemanticLink add) {
-        add.setCatalogueItem(this as CatalogueItem)
+        add.setMultiFacetAwareItem(this as MultiFacetAware)
         addTo('semanticLinks', add)
     }
 

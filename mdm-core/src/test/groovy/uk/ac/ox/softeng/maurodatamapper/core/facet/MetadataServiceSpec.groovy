@@ -23,14 +23,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.email.BasicEmailProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
-import uk.ac.ox.softeng.maurodatamapper.core.util.test.CatalogueItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.core.util.test.MultiFacetItemAwareServiceSpec
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 
 import grails.testing.services.ServiceUnitTest
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class MetadataServiceSpec extends CatalogueItemAwareServiceSpec<Metadata, MetadataService> implements ServiceUnitTest<MetadataService> {
+class MetadataServiceSpec extends MultiFacetItemAwareServiceSpec<Metadata, MetadataService> implements ServiceUnitTest<MetadataService> {
 
     MauroDataMapperService mauroDataMapperService
     UUID id
@@ -67,7 +67,7 @@ class MetadataServiceSpec extends CatalogueItemAwareServiceSpec<Metadata, Metada
             get(_) >> basicModel
             getModelClass() >> BasicModel
             handles('BasicModel') >> true
-            removeMetadataFromCatalogueItem(basicModel.id, metadata) >> {
+            removeMetadataFromMultiFacetAware(basicModel.id, metadata) >> {
                 basicModel.removeFromMetadata(metadata)
             }
         }
@@ -206,15 +206,15 @@ class MetadataServiceSpec extends CatalogueItemAwareServiceSpec<Metadata, Metada
         nk.keys.find {it == 'email.subject'}
     }
 
-    void 'test findByCatalogueItemIdAndId for root metadata'() {
+    void 'test findByMultiFacetAwareItemIdAndId for root metadata'() {
         when:
-        Metadata metadata = service.findByCatalogueItemIdAndId(UUID.randomUUID(), id)
+        Metadata metadata = service.findByMultiFacetAwareItemIdAndId(UUID.randomUUID(), id)
 
         then:
         !metadata
 
         when:
-        metadata = service.findByCatalogueItemIdAndId(basicModel.id, id)
+        metadata = service.findByMultiFacetAwareItemIdAndId(basicModel.id, id)
 
         then:
         metadata

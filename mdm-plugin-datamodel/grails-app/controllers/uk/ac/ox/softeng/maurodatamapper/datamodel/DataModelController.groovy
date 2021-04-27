@@ -21,6 +21,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.controller.ModelController
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.exporter.DataModelExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DeleteAllParams
@@ -45,6 +49,10 @@ class DataModelController extends ModelController<DataModel> {
     ]
 
     DataModelService dataModelService
+
+    DataTypeService dataTypeService
+
+    DataClassService dataClassService
 
     @Autowired
     SearchService mdmPluginDataModelSearchService
@@ -154,14 +162,72 @@ class DataModelController extends ModelController<DataModel> {
 
     def suggestLinks() {
         DataModel dataModel = queryForResource params.dataModelId
-        DataModel otherDataModel = queryForResource params.otherModelId
+        DataModel otherDataModel = queryForResource params.otherDataModelId
 
         if (!dataModel) return notFound(params.dataModelId)
-        if (!otherDataModel) return notFound(params.otherModelId)
+        if (!otherDataModel) return notFound(params.otherDataModelId)
 
         int maxResults = params.max ?: 5
 
         respond dataModelService.suggestLinksBetweenModels(dataModel, otherDataModel, maxResults)
+    }
+
+    @Transactional
+    def importDataType() {
+        if (handleReadOnly()) {
+            return
+        }
+        log.debug('Importing DataType')
+        DataModel instance = dataModelService.get(params.dataModelId)
+        if (!instance) return notFound(params.dataModelId)
+
+        DataType dataTypeToBeImported = dataTypeService.findByDataModelIdAndId(params.otherDataModelId, params.otherDataTypeId)
+        if (!dataTypeToBeImported) return notFound(DataType, params.otherDataTypeId)
+
+        if (request.method == 'PUT') {
+            if (!validateImportAddition(instance, dataTypeToBeImported)) return
+            log.debug('Importing DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
+            instance.addToImportedDataTypes(dataTypeToBeImported)
+        } else {
+            if (!validateImportRemoval(instance, dataTypeToBeImported)) return
+            log.debug('Removing import of DataType {} from {}', params.otherDataTypeId, params.otherDataModelId)
+            instance.removeFromImportedDataTypes(dataTypeToBeImported)
+        }
+
+        if (!validateResource(instance, 'update')) return
+
+        updateResource instance
+
+        updateResponse instance
+    }
+
+    @Transactional
+    def importDataClass() {
+        if (handleReadOnly()) {
+            return
+        }
+        log.debug('Importing DataClass')
+        DataModel instance = dataModelService.get(params.dataModelId)
+        if (!instance) return notFound(params.dataModelId)
+
+        DataClass dataClassToBeImported = dataClassService.findByDataModelIdAndId(params.otherDataModelId, params.otherDataClassId)
+        if (!dataClassToBeImported) return notFound(DataClass, params.otherDataClassId)
+
+        if (request.method == 'PUT') {
+            if (!validateImportAddition(instance, dataClassToBeImported)) return
+            log.debug('Importing DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
+            instance.addToImportedDataClasses(dataClassToBeImported)
+        } else {
+            if (!validateImportRemoval(instance, dataClassToBeImported)) return
+            log.debug('Removing import of DataClass {} from {}', params.otherDataClassId, params.otherDataModelId)
+            instance.removeFromImportedDataClasses(dataClassToBeImported)
+        }
+
+        if (!validateResource(instance, 'update')) return
+
+        updateResource instance
+
+        updateResponse instance
     }
 
     @Override
@@ -174,5 +240,34 @@ class DataModelController extends ModelController<DataModel> {
     @Override
     protected DataModel performAdditionalUpdates(DataModel model) {
         dataModelService.checkForAndAddDefaultDataTypes model, params.defaultDataTypeProvider
+    }
+
+    protected boolean validateImportAddition(DataModel instance, ModelItem importingItem) {
+        if (importingItem.model.id == instance.id) {
+            instance.errors.reject('invalid.imported.modelitem.same.datamodel',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported belongs to the DataModel already')
+            respond instance.errors, view: 'update' // STATUS CODE 422
+            return false
+        }
+        if (!importingItem.model.finalised) {
+            instance.errors.reject('invalid.imported.modelitem.model.not.finalised',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] to be imported does not belong to a finalised DataModel')
+            respond instance.errors, view: 'update' // STATUS CODE 422
+            return false
+        }
+        return true
+    }
+
+    protected boolean validateImportRemoval(DataModel instance, ModelItem importingItem) {
+        if (importingItem.model.id == instance.id) {
+            instance.errors.reject('invalid.imported.deletion.modelitem.same.datamodel',
+                                   [importingItem.class.simpleName, importingItem.id].toArray(),
+                                   '{0} [{1}] belongs to the DataModel and cannot be removed as an import')
+            respond instance.errors, view: 'update' // STATUS CODE 422
+            return false
+        }
+        return true
     }
 }

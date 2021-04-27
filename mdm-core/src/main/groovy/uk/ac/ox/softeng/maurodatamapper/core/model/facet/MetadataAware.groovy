@@ -50,7 +50,7 @@ trait MetadataAware {
             markDirty('metadata', existing)
             this as CatalogueItem
         } else {
-            add.setCatalogueItem(this as CatalogueItem)
+            add.setMultiFacetAwareItem(this as MultiFacetAware)
             addTo('metadata', add)
         }
     }

@@ -1,4 +1,4 @@
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 
 model {
     VersionTreeModel versionTreeModel

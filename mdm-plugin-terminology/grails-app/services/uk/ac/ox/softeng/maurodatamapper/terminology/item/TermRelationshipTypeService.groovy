@@ -135,8 +135,8 @@ class TermRelationshipTypeService extends ModelItemService<TermRelationshipType>
             // Assume relationships have been removed by this point
 
             log.trace('Removing facets for {} TermRelationshipTypes', termRelationshipTypeIds.size())
-            deleteAllFacetsByCatalogueItemIds(termRelationshipTypeIds,
-                                              'delete from terminology.join_termrelationshiptype_to_facet where termrelationshiptype_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(termRelationshipTypeIds,
+                                                'delete from terminology.join_termrelationshiptype_to_facet where termrelationshiptype_id in :ids')
 
             log.trace('Removing {} TermRelationshipTypes', termRelationshipTypeIds.size())
             sessionFactory.currentSession

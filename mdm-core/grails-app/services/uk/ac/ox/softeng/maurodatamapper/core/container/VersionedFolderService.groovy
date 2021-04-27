@@ -52,6 +52,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> {
     }
 
     @Override
+    Class<Folder> getContainerClass() {
+        VersionedFolder
+    }
+
+    @Override
     boolean isContainerVirtual() {
         folderService.isContainerVirtual()
     }
@@ -119,6 +124,16 @@ class VersionedFolderService extends ContainerService<VersionedFolder> {
         folderService.findAllWhereDirectParentOfContainer(folder)
     }
 
+    @Override
+    List<VersionedFolder> findAllByMetadataNamespaceAndKey(String namespace, String key, Map pagination = [:]) {
+        VersionedFolder.byMetadataNamespaceAndKey(namespace, key).list(pagination)
+    }
+
+    @Override
+    List<VersionedFolder> findAllByMetadataNamespace(String namespace, Map pagination = [:]) {
+        VersionedFolder.byMetadataNamespace(namespace).list(pagination)
+    }
+
     VersionedFolder get(Serializable id) {
         if (Utils.toUuid(id)) return VersionedFolder.get(id)
         if (id instanceof String) return findByPath(id)
@@ -159,5 +174,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> {
 
     void generateDefaultFolderLabel(VersionedFolder folder) {
         generateDefaultLabel(folder, Folder.DEFAULT_FOLDER_LABEL)
+    }
+
+    VersionedFolder save(VersionedFolder folder) {
+        folder.save()
     }
 }

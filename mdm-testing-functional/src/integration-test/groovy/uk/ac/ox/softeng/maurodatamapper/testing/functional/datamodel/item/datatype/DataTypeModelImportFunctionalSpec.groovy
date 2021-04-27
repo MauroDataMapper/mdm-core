@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelImportFunctional
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.Ignore
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -43,12 +44,13 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  *  |  PUT     | /api/dataModels/${dataModelId}/dataTypes/${id}  | Action: update
  *  |  GET     | /api/dataModels/${dataModelId}/dataTypes/${id}  | Action: show
  *
- *  |  POST    | /api/dataModels/${dataModelId}/dataTypes/${otherDataModelId}/${dataTypeId}  | Action: copyDataType
+ *  |  POST    | /api/dataModels/${dataModelId}/dataTypes/${otherModelId}/${dataTypeId}  | Action: copyDataType
  * </pre>
  * @see uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeController
  */
 @Integration
 @Slf4j
+@Ignore('No longer relevant')
 class DataTypeModelImportFunctionalSpec extends ModelImportFunctionalSpec {
 
     @Override

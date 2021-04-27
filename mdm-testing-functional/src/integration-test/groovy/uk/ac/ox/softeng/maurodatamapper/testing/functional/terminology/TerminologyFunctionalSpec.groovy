@@ -173,15 +173,6 @@ class TerminologyFunctionalSpec extends ModelUserAccessAndPermissionChangingFunc
     }
 
     @Override
-    List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
-    }
-
-    List<String> getReaderAvailableActions() {
-        ['show', 'comment']
-    }
-
-    @Override
     Boolean isDisabledNotDeleted() {
         true
     }

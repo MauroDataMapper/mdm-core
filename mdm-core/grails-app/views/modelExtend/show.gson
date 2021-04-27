@@ -1,7 +1,0 @@
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
-
-model {
-    ModelExtend modelExtend
-}
-
-json tmpl.modelExtend(modelExtend)

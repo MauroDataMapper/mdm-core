@@ -18,8 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
@@ -30,40 +30,40 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class SemanticLink implements CatalogueItemAware, CreatorAware {
+class SemanticLink implements MultiFacetItemAware, CreatorAware {
 
     UUID id
 
     @BindUsing({obj, source -> SemanticLinkType.findFromMap(source)})
     SemanticLinkType linkType
-    CatalogueItem targetCatalogueItem
-    UUID targetCatalogueItemId
-    String targetCatalogueItemDomainType
+    MultiFacetAware targetMultiFacetAwareItem
+    UUID targetMultiFacetAwareItemId
+    String targetMultiFacetAwareItemDomainType
     Boolean unconfirmed
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-        catalogueItemId nullable: true, validator: {val, obj ->
-            if (!val && !obj.catalogueItem) return ['default.null.message']
-            if (val == obj.targetCatalogueItemId && obj.catalogueItemDomainType == obj.targetCatalogueItemDomainType) {
-                return ['invalid.same.property.message', 'targetCatalogueItem']
+        multiFacetAwareItemId nullable: true, validator: {val, obj ->
+            if (!val && !obj.multiFacetAwareItem) return ['default.null.message']
+            if (val == obj.targetMultiFacetAwareItemId && obj.multiFacetAwareItemDomainType == obj.targetMultiFacetAwareItemDomainType) {
+                return ['invalid.same.property.message', 'targetMultiFacetAwareItem']
             }
         }
     }
 
     static mapping = {
         batchSize 20
-        catalogueItemId index: 'semantic_link_catalogue_item_idx'
-        targetCatalogueItemId index: 'semantic_link_target_catalogue_item_idx'
+        multiFacetAwareItemId index: 'semantic_link_catalogue_item_idx'
+        targetMultiFacetAwareItemId index: 'semantic_link_target_catalogue_item_idx'
     }
 
     // Required to prevent bidirectional mapping to catalogue items
     static mappedBy = [
-        'catalogueItem'      : 'none',
-        'targetCatalogueItem': 'none'
+        'multiFacetAwareItem'      : 'none',
+        'targetMultiFacetAwareItem': 'none'
     ]
 
-    static transients = ['targetCatalogueItem', 'catalogueItem']
+    static transients = ['targetMultiFacetAwareItem', 'multiFacetAwareItem']
 
     SemanticLink() {
         unconfirmed = false
@@ -77,59 +77,61 @@ class SemanticLink implements CatalogueItemAware, CreatorAware {
 
     @Override
     String getEditLabel() {
-        "SemanticLink:${linkType}:${targetCatalogueItemId}"
+        "SemanticLink:${linkType}:${targetMultiFacetAwareItemId}"
     }
 
-    void setTargetCatalogueItem(CatalogueItem catalogueItem) {
-        targetCatalogueItem = catalogueItem
-        targetCatalogueItemDomainType = catalogueItem.domainType
-        targetCatalogueItemId = catalogueItem.id
+    void setTargetMultiFacetAwareItem(MultiFacetAware multiFacetAware) {
+        targetMultiFacetAwareItem = multiFacetAware
+        targetMultiFacetAwareItemDomainType = multiFacetAware.domainType
+        targetMultiFacetAwareItemId = multiFacetAware.id
     }
 
     static DetachedCriteria<SemanticLink> by() {
         new DetachedCriteria<SemanticLink>(SemanticLink)
     }
 
-    static DetachedCriteria<SemanticLink> byCatalogueItemId(Serializable catalogueItemId) {
-        by().eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    static DetachedCriteria<SemanticLink> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
+        by().eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<SemanticLink> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {
-        byCatalogueItemId(catalogueItemId).idEq(Utils.toUuid(resourceId))
+    static DetachedCriteria<SemanticLink> byMultiFacetAwareItemIdAndId(Serializable multiFacetAwareItemId, Serializable resourceId) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).idEq(Utils.toUuid(resourceId))
     }
 
-    static DetachedCriteria<SemanticLink> byTargetCatalogueItemId(Serializable catalogueItemId) {
-        by().eq('targetCatalogueItemId', Utils.toUuid(catalogueItemId))
+    static DetachedCriteria<SemanticLink> byTargetMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
+        by().eq('targetMultiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<SemanticLink> byAnyCatalogueItemId(Serializable catalogueItemId) {
+    static DetachedCriteria<SemanticLink> byAnyMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
         by().or {
-            eq 'catalogueItemId', Utils.toUuid(catalogueItemId)
-            eq 'targetCatalogueItemId', Utils.toUuid(catalogueItemId)
+            eq 'multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId)
+            eq 'targetMultiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId)
         }
     }
 
-    static DetachedCriteria<SemanticLink> byAnyCatalogueItemIdInList(List<UUID> catalogueItemIds) {
+    static DetachedCriteria<SemanticLink> byAnyMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
         by().or {
-            inList 'catalogueItemId', catalogueItemIds
-            inList 'targetCatalogueItemId', catalogueItemIds
+            inList 'multiFacetAwareItemId', multiFacetAwareItemIds
+            inList 'targetMultiFacetAwareItemId', multiFacetAwareItemIds
         }
     }
 
-    static DetachedCriteria<SemanticLink> bySourceCatalogueItemAndTargetCatalogueItemAndLinkType(CatalogueItem source, CatalogueItem target,
-                                                                                                 SemanticLinkType linkType) {
-        by().eq('catalogueItemId', Utils.toUuid(source.id))
-            .eq('catalogueItemDomainType', source.domainType)
-            .eq('targetCatalogueItemId', Utils.toUuid(target.id))
-            .eq('targetCatalogueItemDomainType', target.domainType)
+    static DetachedCriteria<SemanticLink> bySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(MultiFacetAware source,
+                                                                                                             MultiFacetAware target,
+                                                                                                             SemanticLinkType linkType) {
+        by().eq('multiFacetAwareItemId', Utils.toUuid(source.id))
+            .eq('multiFacetAwareItemDomainType', source.domainType)
+            .eq('targetMultiFacetAwareItemId', Utils.toUuid(target.id))
+            .eq('targetMultiFacetAwareItemDomainType', target.domainType)
             .eq('linkType', linkType)
     }
 
-    static DetachedCriteria<SemanticLink> bySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(List<UUID> sourceCatalogueItemIds,
-        List<UUID> targetCatalogueItemIds,
+    static DetachedCriteria<SemanticLink> bySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
+        List<UUID> sourceMultiFacetAwareItemIds,
+        List<UUID> targetMultiFacetAwareItemIds,
         SemanticLinkType linkType) {
-        by().inList('catalogueItemId', sourceCatalogueItemIds)
-            .inList('targetCatalogueItemId',targetCatalogueItemIds)
+        by().inList('multiFacetAwareItemId', sourceMultiFacetAwareItemIds)
+            .inList('targetMultiFacetAwareItemId', targetMultiFacetAwareItemIds)
             .eq('linkType', linkType)
     }
 

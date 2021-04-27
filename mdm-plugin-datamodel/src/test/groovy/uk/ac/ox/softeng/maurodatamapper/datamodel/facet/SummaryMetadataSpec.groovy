@@ -51,23 +51,23 @@ class SummaryMetadataSpec extends CreatorAwareSpec<SummaryMetadata> implements D
         then:
         thrown(InternalSpockError)
         domain.hasErrors()
-        domain.errors.getFieldError('catalogueItemId')
-        domain.errors.getFieldError('catalogueItemDomainType')
+        domain.errors.getFieldError('multiFacetAwareItemId')
+        domain.errors.getFieldError('multiFacetAwareItemDomainType')
     }
 
     @Override
     void setValidDomainOtherValues() {
         domain.summaryMetadataType = SummaryMetadataType.NUMBER
         domain.label = 'test'
-        domain.catalogueItem = db
+        domain.multiFacetAwareItem = db
     }
 
     @Override
     void verifyDomainOtherConstraints(SummaryMetadata domain) {
         assert domain.summaryMetadataType == SummaryMetadataType.NUMBER
-        assert domain.catalogueItem.id
-        assert domain.catalogueItemDomainType == DataModel.simpleName
-        assert domain.catalogueItem.id == db.id
+        assert domain.multiFacetAwareItem.id
+        assert domain.multiFacetAwareItemDomainType == DataModel.simpleName
+        assert domain.multiFacetAwareItem.id == db.id
         assert domain.createdBy == admin.emailAddress
         assert domain.label == 'test'
     }

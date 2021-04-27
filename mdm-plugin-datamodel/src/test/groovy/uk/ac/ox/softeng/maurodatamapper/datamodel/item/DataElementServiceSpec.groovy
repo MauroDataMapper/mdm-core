@@ -195,7 +195,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         copy.dataType.label == original.dataType.label
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying DataElement with metadata and classifiers'() {
@@ -234,7 +234,7 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         !original.classifiers
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
 
     }
 
@@ -274,6 +274,6 @@ class DataElementServiceSpec extends CatalogueItemServiceSpec implements Service
         copy.dataType.label == original.dataType.label
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 }

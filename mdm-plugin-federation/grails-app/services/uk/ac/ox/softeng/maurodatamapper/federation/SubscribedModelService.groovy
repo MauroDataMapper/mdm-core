@@ -129,7 +129,7 @@ class SubscribedModelService {
                     if (localSourceModel && localTargetModel) {
                         //Do we alreday have a version link between these two model versions?
                         boolean exists = localSourceModel.versionLinks && localSourceModel.versionLinks.find {
-                            it.catalogueItem.id == localSourceModel.id && it.targetModel.id == localTargetModel.id && it.linkType ==
+                            it.model.id == localSourceModel.id && it.targetModel.id == localTargetModel.id && it.linkType ==
                             VersionLinkType.NEW_MODEL_VERSION_OF
                         }
 

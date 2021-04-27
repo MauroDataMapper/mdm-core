@@ -21,13 +21,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
-import uk.ac.ox.softeng.maurodatamapper.core.util.test.CatalogueItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.core.util.test.MultiFacetItemAwareServiceSpec
 
 import grails.testing.services.ServiceUnitTest
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class AnnotationServiceSpec extends CatalogueItemAwareServiceSpec<Annotation, AnnotationService> implements ServiceUnitTest<AnnotationService> {
+class AnnotationServiceSpec extends MultiFacetItemAwareServiceSpec<Annotation, AnnotationService> implements ServiceUnitTest<AnnotationService> {
 
     UUID id
     Annotation parent
@@ -58,7 +58,7 @@ class AnnotationServiceSpec extends CatalogueItemAwareServiceSpec<Annotation, An
             get(_) >> basicModel
             getModelClass() >> BasicModel
             handles('BasicModel') >> true
-            removeAnnotationFromCatalogueItem(basicModel.id, _) >> {UUID bmid, Annotation annotation ->
+            removeAnnotationFromMultiFacetAware(basicModel.id, _) >> {UUID bmid, Annotation annotation ->
                 basicModel.annotations.remove(annotation)
             }
         }
@@ -112,15 +112,15 @@ class AnnotationServiceSpec extends CatalogueItemAwareServiceSpec<Annotation, An
         service.count() == 3
     }
 
-    void 'test findAllWhereRootAnnotationOfCatalogueItemId'() {
+    void 'test findAllWhereRootAnnotationOfMultiFacetAwareItemId'() {
         when:
-        List<Annotation> annotations = service.findAllWhereRootAnnotationOfCatalogueItemId(UUID.randomUUID())
+        List<Annotation> annotations = service.findAllWhereRootAnnotationOfMultiFacetAwareItemId(UUID.randomUUID())
 
         then:
         !annotations
 
         when:
-        annotations = service.findAllWhereRootAnnotationOfCatalogueItemId(basicModel.id)
+        annotations = service.findAllWhereRootAnnotationOfMultiFacetAwareItemId(basicModel.id)
 
         then:
         annotations.size() == 2
@@ -152,15 +152,15 @@ class AnnotationServiceSpec extends CatalogueItemAwareServiceSpec<Annotation, An
         annotations.size() == 1
     }
 
-    void 'test findByCatalogueItemIdAndId for root annotation'() {
+    void 'test findByMultiFacetAwareItemIdAndId for root annotation'() {
         when:
-        Annotation annotation = service.findByCatalogueItemIdAndId(UUID.randomUUID(), id)
+        Annotation annotation = service.findByMultiFacetAwareItemIdAndId(UUID.randomUUID(), id)
 
         then:
         !annotation
 
         when:
-        annotation = service.findByCatalogueItemIdAndId(basicModel.id, parent.id)
+        annotation = service.findByMultiFacetAwareItemIdAndId(basicModel.id, parent.id)
 
         then:
         annotation
@@ -168,10 +168,10 @@ class AnnotationServiceSpec extends CatalogueItemAwareServiceSpec<Annotation, An
         annotation.label == parent.label
     }
 
-    void 'test findByCatalogueItemIdAndId for nested annotation'() {
+    void 'test findByMultiFacetAwareItemIdAndId for nested annotation'() {
 
         when:
-        Annotation annotation = service.findByCatalogueItemIdAndId(basicModel.id, id)
+        Annotation annotation = service.findByMultiFacetAwareItemIdAndId(basicModel.id, id)
 
         then:
         annotation

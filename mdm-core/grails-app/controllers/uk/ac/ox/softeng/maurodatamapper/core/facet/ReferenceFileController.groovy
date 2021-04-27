@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 
 import grails.web.mime.MimeType
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -43,7 +43,7 @@ class ReferenceFileController extends FacetController<ReferenceFile> {
     }
 
     @Override
-    CatalogueItemAwareService getFacetService() {
+    MultiFacetItemAwareService getFacetService() {
         referenceFileService
     }
 

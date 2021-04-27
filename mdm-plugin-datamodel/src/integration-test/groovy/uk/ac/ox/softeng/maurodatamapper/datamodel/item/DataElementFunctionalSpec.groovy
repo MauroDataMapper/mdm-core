@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.OrderedResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -31,11 +32,14 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
+import java.time.OffsetDateTime
+
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * @see DataElementController* Controller: dataElement
@@ -83,6 +87,12 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     @Shared
     Folder folder
 
+    @Shared
+    UUID finalisedDataModelId
+
+    @Shared
+    UUID finalisedDataTypeId
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -114,6 +124,16 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
 
         otherDataTypeId = new PrimitiveType(label: 'string', createdBy: FUNCTIONAL_TEST,
                                             dataModel: otherDataModel).save(flush: true).id
+
+
+        DataModel finalisedDataModel = new DataModel(label: 'Functional Test DataModel 3', createdBy: FUNCTIONAL_TEST,
+                                                     finalised: true, dateFinalised: OffsetDateTime.now(), modelVersion: Version.from('1'),
+                                                     folder: folder, authority: testAuthority).save(flush: true)
+        finalisedDataModelId = finalisedDataModel.id
+
+        finalisedDataTypeId = new PrimitiveType(label: 'a finalised datatype', createdBy: FUNCTIONAL_TEST,
+                                                dataModel: finalisedDataModel).save(flush: true).id
+
 
         sessionFactory.currentSession.flush()
 
@@ -563,6 +583,39 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         response.body().dataType.id != differentDataTypeId.toString()
         response.body().dataType.id != dtId
         response.body().dataType.label == 'Reference Test DataType To Copy'
+    }
+
+    void 'IMI01 : test creating using imported datatype'() {
+
+        when: 'creating using DT outside model'
+        POST('', [
+            label   : 'Functional Test DataElement',
+            dataType: finalisedDataTypeId
+        ])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == 'DataType assigned to DataElement must belong to the same DataModel or be imported'
+
+        when: 'importing datatype id'
+        PUT("dataModels/$dataModelId/dataTypes/$finalisedDataModelId/$finalisedDataTypeId", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+
+        when: 'creating using the imported DT'
+        POST('', [
+            label   : 'Functional Test DataElement',
+            dataType: finalisedDataTypeId
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id
+        responseBody().dataType.id == finalisedDataTypeId.toString()
+
+        cleanup:
+        cleanUpData(responseBody().id)
     }
 
 

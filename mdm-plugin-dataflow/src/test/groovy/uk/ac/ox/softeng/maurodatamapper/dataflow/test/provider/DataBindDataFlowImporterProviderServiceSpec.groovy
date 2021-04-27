@@ -17,15 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.test.provider
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
-import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataElementComponent
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlowService
+import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
+import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataElementComponent
 import uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer.DataBindDataFlowImporterProviderService
 
 import grails.gorm.transactions.Rollback
@@ -159,7 +157,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         md.namespace == 'Metadata namespace'
         md.key == 'Metadata key'
         md.value == 'Metadata value'
-        md.catalogueItemId == df.id
+        md.multiFacetAwareItemId == df.id
     }
 
     void 'I06 : test inc annotation data import'() {
@@ -184,7 +182,7 @@ abstract class DataBindDataFlowImporterProviderServiceSpec<K extends DataBindDat
         then:
         ann.description == 'Annotation description'
         ann.label == 'Annotation label'
-        ann.catalogueItemId == df.id
+        ann.multiFacetAwareItemId == df.id
     }
 
     void 'I07 : test inc data class components and classifiers import'() {

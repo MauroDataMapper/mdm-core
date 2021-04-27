@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 
 import groovy.transform.CompileStatic
 import groovy.transform.SelfType
@@ -33,7 +34,7 @@ trait ReferenceSummaryMetadataAware {
     abstract Set<ReferenceSummaryMetadata> getReferenceSummaryMetadata()
 
     def addToReferenceSummaryMetadata(ReferenceSummaryMetadata referenceSummaryMetadata) {
-        referenceSummaryMetadata.setCatalogueItem(this as CatalogueItem)
+        referenceSummaryMetadata.setMultiFacetAwareItem(this as MultiFacetAware)
         addTo('referenceSummaryMetadata', referenceSummaryMetadata)
     }
 

@@ -288,7 +288,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         item.annotations.size() == 1
 
         and:
-        ann.catalogueItemId == item.id
+        ann.multiFacetAwareItemId == item.id
         ann.path == ''
         ann.depth == 0
     }
@@ -378,7 +378,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         checkAndSave(domain)
 
         when:
-        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: target)
+        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetMultiFacetAwareItem: target)
 
         then:
         checkAndSave(domain)
@@ -387,7 +387,7 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
 
         when:
         item = findById()
-        SemanticLink link_item = SemanticLink.byCatalogueItemId(domain.id).get()
+        SemanticLink link_item = SemanticLink.byMultiFacetAwareItemId(domain.id).get()
 
         then:
         link_item
@@ -407,13 +407,13 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         checkAndSave(domain)
 
         when:
-        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetCatalogueItem: domain)
+        domain.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: admin.emailAddress, targetMultiFacetAwareItem: domain)
         check(domain)
 
         then:
         thrown(InternalSpockError)
         domain.hasErrors()
-        domain.errors.getFieldError('semanticLinks[0].catalogueItemId').code == 'invalid.same.property.message'
+        domain.errors.getFieldError('semanticLinks[0].multiFacetAwareItemId').code == 'invalid.same.property.message'
     }
 
     void 'CI09 : test add reference files'() {

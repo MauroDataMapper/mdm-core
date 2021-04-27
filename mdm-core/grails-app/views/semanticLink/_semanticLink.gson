@@ -10,6 +10,6 @@ json {
     domainType semanticLink.domainType
     unconfirmed semanticLink.unconfirmed
 
-    sourceCatalogueItem tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: semanticLink.catalogueItem)
-    targetCatalogueItem tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: semanticLink.targetCatalogueItem)
+    sourceMultiFacetAwareItem tmpl.'/multiFacetAware/multiFacetAware'(multiFacetAware: semanticLink.multiFacetAwareItem)
+    targetMultiFacetAwareItem tmpl.'/multiFacetAware/multiFacetAware'(multiFacetAware: semanticLink.targetMultiFacetAwareItem)
 }

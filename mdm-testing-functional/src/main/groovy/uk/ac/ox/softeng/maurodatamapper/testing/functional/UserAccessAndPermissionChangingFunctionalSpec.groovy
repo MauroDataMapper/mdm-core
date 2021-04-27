@@ -179,7 +179,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByEveryone == true
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
 
         when: 'removing readable by everyone'
         loginEditor()
@@ -194,7 +194,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByEveryone == false
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
 
         cleanup:
         removeValidIdObject(id)
@@ -395,7 +395,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse(OK, response)
         response.body().readableByEveryone == true
-        response.body().availableActions == getReaderAvailableActions()
+        response.body().availableActions == getReaderAvailableActions().sort()
 
         when: 'removing readable by everyone'
         loginEditor()
@@ -410,7 +410,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByEveryone == false
-        response.body().availableActions == getReaderAvailableActions()
+        response.body().availableActions == getReaderAvailableActions().sort()
 
 
         cleanup:
@@ -475,7 +475,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByEveryone == true
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
 
         when: 'removing readable by everyone'
         loginEditor()
@@ -490,7 +490,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByEveryone == false
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
 
         cleanup:
         removeValidIdObject(id)
@@ -554,7 +554,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByAuthenticatedUsers == true
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
 
         when: 'removing readable by everyone'
         loginEditor()
@@ -569,7 +569,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByAuthenticatedUsers == false
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
 
         cleanup:
         removeValidIdObject(id)
@@ -768,7 +768,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse(OK, response)
         response.body().readableByAuthenticatedUsers == true
-        response.body().availableActions == getReaderAvailableActions()
+        response.body().availableActions == getReaderAvailableActions().sort()
 
         when: 'removing readable by authenticated'
         loginEditor()
@@ -783,7 +783,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByAuthenticatedUsers == false
-        response.body().availableActions == getReaderAvailableActions()
+        response.body().availableActions == getReaderAvailableActions().sort()
 
         cleanup:
         removeValidIdObject(id)
@@ -847,7 +847,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByAuthenticatedUsers == true
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
 
         when: 'removing readable by authenticated'
         loginEditor()
@@ -862,7 +862,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         then:
         verifyResponse OK, response
         response.body().readableByAuthenticatedUsers == false
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
 
         cleanup:
         removeValidIdObject(id)
@@ -1194,7 +1194,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
         response.body().id == id
 
         cleanup:
@@ -1279,7 +1279,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
         response.body().id == id
 
         cleanup:
@@ -1338,7 +1338,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
         response.body().id == id
 
         cleanup:
@@ -1397,7 +1397,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
         response.body().id == id
 
         cleanup:
@@ -1431,7 +1431,7 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
 
         then:
         verifyResponse OK, response
-        response.body().availableActions == getEditorAvailableActions()
+        response.body().availableActions == getEditorAvailableActions().sort()
         response.body().id == id
 
         cleanup:

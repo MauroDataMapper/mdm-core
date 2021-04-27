@@ -17,10 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.search.PathTokenizerAnalyzer
 import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
 
@@ -41,6 +47,11 @@ class Classifier implements Container {
 
     static hasMany = [
         childClassifiers: Classifier,
+        metadata        : Metadata,
+        annotations     : Annotation,
+        semanticLinks   : SemanticLink,
+        referenceFiles  : ReferenceFile,
+        rules           : Rule
     ]
 
     static belongsTo = [
@@ -51,7 +62,9 @@ class Classifier implements Container {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
         label unique: true
-        parentClassifier nullable: true
+        metadata validator: {val, obj ->
+            if (val) new UniqueValuesValidator('namespace:key').isValid(val.groupBy {"${it.namespace}:${it.key}"})
+        }
     }
 
     static mapping = {
@@ -150,6 +163,24 @@ class Classifier implements Container {
         luceneList {
             should {
                 keyword 'path', classifierId.toString()
+            }
+        }
+    }
+
+
+    static DetachedCriteria<Classifier> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<Classifier> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
             }
         }
     }

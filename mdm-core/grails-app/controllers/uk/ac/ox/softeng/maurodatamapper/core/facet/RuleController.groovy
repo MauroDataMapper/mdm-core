@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 
 class RuleController extends FacetController<Rule> {
 
@@ -32,7 +32,7 @@ class RuleController extends FacetController<Rule> {
     }
 
     @Override
-    CatalogueItemAwareService getFacetService() {
+    MultiFacetItemAwareService getFacetService() {
         ruleService
     }
 

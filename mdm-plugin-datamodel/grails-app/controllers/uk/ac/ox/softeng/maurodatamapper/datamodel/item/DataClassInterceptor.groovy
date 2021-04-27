@@ -21,7 +21,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.controller.DataModelSecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-
 class DataClassInterceptor extends DataModelSecuredInterceptor {
 
     @Override
@@ -33,6 +32,8 @@ class DataClassInterceptor extends DataModelSecuredInterceptor {
     void checkIds() {
         super.checkIds()
         Utils.toUuid(params, 'dataClassId')
+        Utils.toUuid(params, 'otherDataClassId')
+        Utils.toUuid(params, 'otherDataElementId')
     }
 
     boolean before() {
@@ -42,12 +43,10 @@ class DataClassInterceptor extends DataModelSecuredInterceptor {
             return canReadDataModel()
         }
 
-        if (actionName in ['copyDataClass']) {
-            return canCopyFromDataModelToOtherDataModel()
+        if (actionName in ['copyDataClass', 'extendDataClass', 'importDataElement', 'importDataClass']) {
+            return canEditDataModelAndReadOtherDataModel()
         }
 
         checkStandardActions()
     }
-
-
 }

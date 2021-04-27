@@ -171,19 +171,19 @@ class ReferenceDataModelSemanticLinkFunctionalSpec extends CatalogueItemSemantic
         responseBody().count == 2
         responseBody().items.any { Map m ->
             m.linkType == SemanticLinkType.REFINES.label &&
-            m.targetCatalogueItem.id == targetCatalogueItemId &&
+            m.targetMultiFacetAwareItem.id == targetCatalogueItemId &&
             m.unconfirmed
         }
         responseBody().items.any { Map m ->
             m.linkType == SemanticLinkType.REFINES.label &&
-            m.targetCatalogueItem.id == referenceDataModel.id.toString() &&
+            m.targetMultiFacetAwareItem.id == referenceDataModel.id.toString() &&
             !m.unconfirmed
         }
 
         when:
         String semanticLinkId = responseBody().items.find { Map m ->
             m.linkType == SemanticLinkType.REFINES.label &&
-            m.targetCatalogueItem.id == targetCatalogueItemId &&
+            m.targetMultiFacetAwareItem.id == targetCatalogueItemId &&
             m.unconfirmed
         }.id
         PUT("referenceDataModels/${forkId}/semanticLinks/${semanticLinkId}/confirm", [:], MAP_ARG, true)

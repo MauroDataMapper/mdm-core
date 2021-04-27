@@ -82,7 +82,8 @@ class ReferenceDataElementReferenceSummaryMetadataReportFunctionalSpec extends C
         referenceDataElement = new ReferenceDataElement(label: 'Functional Test DataElement', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                       referenceDataModel: referenceDataModel, referenceDataType: referenceDataType).save(flush: true)
         summaryMetadata = new ReferenceSummaryMetadata(label: 'Functional Test Summary Metadata', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                                       catalogueItem: referenceDataElement, summaryMetadataType: ReferenceSummaryMetadataType.NUMBER).
+                                                       multiFacetAwareItem: referenceDataElement,
+                                                       summaryMetadataType: ReferenceSummaryMetadataType.NUMBER).
             save(flush: true)
         sessionFactory.currentSession.flush()
     }

@@ -28,12 +28,14 @@ import grails.testing.mixin.integration.Integration
 import grails.web.mime.MimeType
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
+import spock.lang.Unroll
 
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * <pre>
@@ -63,7 +65,7 @@ import static io.micronaut.http.HttpStatus.OK
  *  |  GET     | /api/dataModels/providers/defaultDataTypeProviders       | Action: defaultDataTypeProviders
  *  |  GET     | /api/dataModels/providers/importers                      | Action: importerProviders
  *  |  GET     | /api/dataModels/providers/exporters                      | Action: exporterProviders
- *  |  GET     | /api/dataModels/${dataModelId}/diff/${otherDataModelId}  | Action: diff
+ *  |  GET     | /api/dataModels/${dataModelId}/diff/${otherModelId}  | Action: diff
  *
  *  |  POST    | /api/dataModels/import/${importerNamespace}/${importerName}/${importerVersion}                 | Action: importDataModels
  *  |  POST    | /api/dataModels/export/${exporterNamespace}/${exporterName}/${exporterVersion}                 | Action: exportDataModels
@@ -182,15 +184,6 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     }
 
     @Override
-    List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
-    }
-
-    List<String> getReaderAvailableActions() {
-        ['show', 'comment']
-    }
-
-    @Override
     Pattern getExpectedCreatedEditRegex() {
         ~/\[Data Standard:Functional Test DataModel] created/
     }
@@ -218,8 +211,25 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 10,
+  "count": 5,
   "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "Finalised Example Test DataModel",
+      "type": "Data Standard",
+      "branchName": "main",
+      "documentationVersion": "1.0.0",
+      "modelVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "TargetFlowDataModel",
+      "type": "Data Asset",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
     {
       "id": "${json-unit.matches:id}",
       "domainType": "DataModel",
@@ -230,17 +240,25 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
       "classifiers": [
         {
           "id": "${json-unit.matches:id}",
-          "label": "test classifier2",
+          "label": "test classifier",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         },
         {
           "id": "${json-unit.matches:id}",
-          "label": "test classifier",
+          "label": "test classifier2",
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ],
       "author": "admin person",
       "organisation": "brc"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "DataModel",
+      "label": "SourceFlowDataModel",
+      "type": "Data Asset",
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -256,72 +274,6 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
           "lastUpdated": "${json-unit.matches:offsetDateTime}"
         }
       ]
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "SourceFlowDataModel",
-      "type": "Data Asset",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "TargetFlowDataModel",
-      "type": "Data Asset",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Finalised Example Test DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0",
-      "modelVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "First Importing DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Second Importing DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Third Importing DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Xtending DataM0del 1",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "DataModel",
-      "label": "Extendable DataModel",
-      "type": "Data Standard",
-      "branchName": "main",
-      "documentationVersion": "1.0.0",
-      "modelVersion": "1.0.0"
     }
   ]
 }'''
@@ -1872,6 +1824,639 @@ class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFuncti
         responseBody().items[1].label == 'content'
         responseBody().items[1].domainType == 'DataClass'
     }
+
+    @Unroll
+    void 'IMI01 : test importing DataType (as #info)'() {
+        given:
+        Map data = configureImportDataType()
+        if (user) loginUser(userEmailAddresses[user])
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataTypes/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataTypes/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'importing internal id'
+        PUT("$data.id/dataTypes/$data.id/$data.internalId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'importing importable id'
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'getting list of datatypes'
+        GET("$data.id/dataTypes")
+
+        then:
+        verifyNotFound(response, data.id)
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << [null, 'authenticated']
+        info = user ?: 'not logged in'
+    }
+
+    void 'IMI02 : test importing DataType (as reader)'() {
+        given:
+        Map data = configureImportDataType()
+
+        when: 'importing non-existent'
+        loginReader()
+        PUT("$data.id/dataTypes/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataTypes/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing internal id'
+        PUT("$data.id/dataTypes/$data.id/$data.internalId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing importable id'
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'getting list of datatypes'
+        GET("$data.id/dataTypes")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == data.internalId && !it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+    }
+
+    @Unroll
+    void 'IMI03 : test importing DataType (as #info)'() {
+        given:
+        Map data = configureImportDataType()
+        loginUser(userEmailAddresses[user])
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataTypes/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyNotFound(response, data.nonImportableId)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataTypes/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "PrimitiveType [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+
+        when: 'importing internal id'
+        PUT("$data.id/dataTypes/$data.id/$data.internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "PrimitiveType [${data.internalId}] to be imported belongs to the DataModel already"
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "Property [importedDataTypes] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel." +
+        "DataModel] has non-unique values [Functional Test DataType] on property [label]"
+
+        when: 'importing importable id'
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of datatypes'
+        GET("$data.id/dataTypes")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any {it.id == data.importableId && it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['editor', 'admin']
+        info = user ?: 'not logged in'
+    }
+
+    @Unroll
+    void 'IMI04 : test importing DataType and removing (as #info)'() {
+        given:
+        Map data = configureImportDataType()
+        loginEditor()
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        if (user) loginUser(userEmailAddresses[user])
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataTypes/$data.finalisedId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataTypes/$data.id/$data.internalId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << [null, 'authenticated']
+        info = user ?: 'not logged in'
+    }
+
+    void 'IMI05 : test importing DataType and removing (as reader)'() {
+        given:
+        Map data = configureImportDataType()
+        loginEditor()
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        loginReader()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataTypes/$data.finalisedId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataTypes/$data.id/$data.internalId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        cleanup:
+        cleanupImportData(data)
+    }
+
+    @Unroll
+    void 'IMI06 : test importing DataType and removing (as #info)'() {
+        given:
+        Map data = configureImportDataType()
+        loginEditor()
+        PUT("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        loginUser(userEmailAddresses[user])
+        String randomId = UUID.randomUUID().toString()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataTypes/$data.finalisedId/$randomId", [:])
+
+        then:
+        verifyNotFound(response, data.randomId)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataTypes/$data.id/$data.internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "PrimitiveType [${data.internalId}] belongs to the DataModel and cannot be removed as an import"
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataTypes/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of datatypes'
+        GET("$data.id/dataTypes")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == data.internalId}
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['admin', 'editor']
+        info = user
+    }
+
+    @Unroll
+    void 'IMI07 : test importing DataClasses (as #info)'() {
+        given:
+        Map data = configureImportDataClass()
+        if (user) loginUser(userEmailAddresses[user])
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataClasses/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataClasses/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'importing internal id'
+        PUT("$data.id/dataClasses/$data.id/$data.internalId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'importing importable id'
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << [null, 'authenticated']
+        info = user ?: 'not logged in'
+    }
+
+    void 'IMI08 : test importing DataClasses (as reader)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginReader()
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataClasses/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataClasses/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing internal id'
+        PUT("$data.id/dataClasses/$data.id/$data.internalId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'importing importable id'
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'getting list of dataclasses'
+        GET("$data.id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == data.internalId && !it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+    }
+
+    @Unroll
+    void 'IMI09 : test importing DataClasses (as #info)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginUser(userEmailAddresses[user])
+
+        when: 'importing non-existent'
+        PUT("$data.id/dataClasses/$data.finalisedId/${data.nonImportableId}", [:])
+
+        then:
+        verifyNotFound(response, data.nonImportableId)
+
+        when: 'importing non importable id'
+        PUT("$data.id/dataClasses/$data.otherId/$data.nonImportableId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${data.nonImportableId}] to be imported does not belong to a finalised DataModel"
+
+        when: 'importing internal id'
+        PUT("$data.id/dataClasses/$data.id/$data.internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${data.internalId}] to be imported belongs to the DataModel already"
+
+        when: 'importing with same label id'
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.sameLabelId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "Property [importedDataClasses] of class [class uk.ac.ox.softeng.maurodatamapper.datamodel." +
+        "DataModel] has non-unique values [Functional Test DataClass] on property [label]"
+
+        when: 'importing importable id'
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataclasses'
+        GET("$data.id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any {it.id == data.importableId && it.imported}
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['admin', 'editor']
+        info = user
+    }
+
+    @Unroll
+    void 'IMI10 : test importing DataClass and removing (as #info)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginEditor()
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        if (user) loginUser(userEmailAddresses[user])
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataClasses/$data.finalisedId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataClasses/$data.id/$data.internalId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyNotFound(response, data.id)
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << [null, 'authenticated']
+        info = user ?: 'not logged in'
+    }
+
+    void 'IMI11 : test importing DataClass and removing (as reader)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginEditor()
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        loginReader()
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataClasses/$data.finalisedId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataClasses/$data.id/$data.internalId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyForbidden(response)
+
+        when: 'getting list of dataClasses'
+        GET("$data.id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 2
+        responseBody().items.any {it.id == data.internalId}
+        responseBody().items.any {it.id == data.importableId}
+
+        cleanup:
+        cleanupImportData(data)
+    }
+
+    @Unroll
+    void 'IMI12 : test importing DataClass and removing (as #info)'() {
+        given:
+        Map data = configureImportDataClass()
+        loginEditor()
+        PUT("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+        verifyResponse OK, response
+        logout()
+        loginUser(userEmailAddresses[user])
+
+        when: 'removing non-existent'
+        DELETE("$data.id/dataClasses/$data.finalisedId/${UUID.randomUUID()}", [:])
+
+        then:
+        verifyResponse NOT_FOUND, response
+
+        when: 'removing internal id'
+        DELETE("$data.id/dataClasses/$data.id/$data.internalId", [:])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == "DataClass [${data.internalId}] belongs to the DataModel and cannot be removed as an import"
+
+        when: 'removing importable id'
+        DELETE("$data.id/dataClasses/$data.finalisedId/$data.importableId", [:])
+
+        then:
+        verifyResponse OK, response
+
+        when: 'getting list of dataClasses'
+        GET("$data.id/dataClasses")
+
+        then:
+        verifyResponse OK, response
+        responseBody().items.size() == 1
+        responseBody().items.any {it.id == data.internalId}
+
+        cleanup:
+        cleanupImportData(data)
+
+        where:
+        user << ['admin', 'editor']
+        info = user
+    }
+
+    void cleanupImportData(Map data) {
+        removeValidIdObjectUsingTransaction(data.id)
+        removeValidIdObjectUsingTransaction(data.otherId)
+        removeValidIdObjectUsingTransaction(data.finalisedId)
+        cleanUpRoles(data.id, data.otherId, data.finalisedId)
+    }
+
+    Map configureImportDataType() {
+        Map data = configureImportDataModels()
+
+        // Get internal DT
+        POST("$data.id/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        data.internalId = responseBody().id
+
+        POST("$data.finalisedId/dataTypes", [
+            label     : 'Functional Test DataType 2',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        data.importableId = responseBody().id
+
+        POST("$data.finalisedId/dataTypes", [
+            label     : 'Functional Test DataType',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        data.sameLabelId = responseBody().id
+
+        POST("$data.otherId/dataTypes", [
+            label     : 'Functional Test DataType 3',
+            domainType: 'PrimitiveType',])
+        verifyResponse CREATED, response
+        data.nonImportableId = responseBody().id
+
+        // Finalise DM
+        PUT("$data.finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        logout()
+        data
+    }
+
+    Map configureImportDataClass() {
+
+        Map data = configureImportDataModels()
+        // Get internal DT
+        POST("$data.id/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        data.internalId = responseBody().id
+
+        POST("$data.finalisedId/dataClasses", [
+            label: 'Functional Test DataClass 2',])
+        verifyResponse CREATED, response
+        data.importableId = responseBody().id
+        POST("$data.finalisedId/dataClasses", [
+            label: 'Functional Test DataClass',])
+        verifyResponse CREATED, response
+        data.sameLabelId = responseBody().id
+
+        POST("$data.otherId/dataClasses", [
+            label: 'Functional Test DataClass 3',])
+        verifyResponse CREATED, response
+        data.nonImportableId = responseBody().id
+
+        // Finalise DM
+        PUT("$data.finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        logout()
+        data
+    }
+
+    Map configureImportDataModels() {
+        Map data = [:]
+        // Get DataModel
+        data.id = getValidId()
+        loginEditor()
+
+        // Get second DataModel
+        POST(getSavePath(), [
+            label: 'Functional Test Model 1'
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        data.otherId = response.body().id
+        addReaderShare(data.otherId)
+
+        // Get finalised DataModel
+        POST(getSavePath(), [
+            label: 'Functional Test Model 2'
+        ], MAP_ARG, true)
+        verifyResponse CREATED, response
+        data.finalisedId = response.body().id
+        addReaderShare(data.finalisedId)
+        data
+    }
+
 
     /*
             void 'test deleting multiple models'() {

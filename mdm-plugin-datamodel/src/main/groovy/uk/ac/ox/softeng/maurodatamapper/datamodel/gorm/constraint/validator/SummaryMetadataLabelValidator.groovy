@@ -31,13 +31,13 @@ class SummaryMetadataLabelValidator extends UniqueStringValidator<SummaryMetadat
 
     @Override
     boolean objectParentIsNotSaved() {
-        !object.catalogueItemId
+        !object.multiFacetAwareItemId
     }
 
     @Override
     boolean valueIsNotUnique(String value) {
-        if (object.catalogueItem?.summaryMetadata) {
-            if (object.catalogueItem.summaryMetadata.count {it.label == value} > 1) return true
+        if (object.multiFacetAwareItem?.summaryMetadata) {
+            if (object.multiFacetAwareItem.summaryMetadata.count {it.label == value} > 1) return true
         }
         false
     }

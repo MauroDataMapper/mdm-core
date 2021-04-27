@@ -75,7 +75,7 @@ class SummaryMetadataReportFunctionalSpec extends UserAccessFunctionalSpec {
         DataModel dataModel = DataModel.findByLabel(BootstrapModels.COMPLEX_DATAMODEL_NAME)
         new SummaryMetadata(summaryMetadataType: SummaryMetadataType.NUMBER,
                             label: 'Functional Test Summary Metadata',
-                            catalogueItem: dataModel,
+                            multiFacetAwareItem: dataModel,
                             createdBy: userEmailAddresses.functionalTest).save(flush: true)
     }
 

@@ -21,7 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -47,6 +46,8 @@ import org.hibernate.search.annotations.FieldBridge
 import org.hibernate.search.annotations.Index
 import org.hibernate.search.bridge.builtin.UUIDBridge
 
+import javax.persistence.criteria.JoinType
+
 @Resource(readOnly = false, formats = ['json', 'xml'])
 @Slf4j
 abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAware, IndexedSiblingAware {
@@ -62,14 +63,15 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
     String domainType
 
     static hasMany = [
-        classifiers    : Classifier,
-        metadata       : Metadata,
-        annotations    : Annotation,
-        semanticLinks  : SemanticLink,
-        referenceFiles : ReferenceFile,
-        dataElements   : DataElement,
-        summaryMetadata: SummaryMetadata,
-        rules          : Rule
+        classifiers        : Classifier,
+        metadata           : Metadata,
+        annotations        : Annotation,
+        semanticLinks      : SemanticLink,
+        referenceFiles     : ReferenceFile,
+        dataElements       : DataElement,
+        summaryMetadata    : SummaryMetadata,
+        rules              : Rule,
+        importingDataModels: DataModel,
     ]
 
     static belongsTo = [dataModel: DataModel]
@@ -86,10 +88,17 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         dataElements cascade: 'delete,lock,refresh,evict,replicate', cascadeValidate: 'none'
         summaryMetadata cascade: 'all-delete-orphan'
         dataModel index: 'data_type_data_model_idx', cascade: 'none'
+        importingDataModels cascade: 'none', cascadeValidate: 'none', joinTable: [
+            name  : 'join_datamodel_to_imported_data_type',
+            column: 'datamodel_id',
+            key   : 'imported_datatype_id'
+        ]
     }
 
     static mappedBy = [
-        dataElements: 'dataType'
+        dataElements       : 'dataType',
+        metadata           : 'none',
+        importingDataModels: 'none'
     ]
 
     static search = {
@@ -115,7 +124,7 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         beforeValidateModelItem()
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
         }
         if (domainType != ENUMERATION_DOMAIN_TYPE) log.trace('DT before validate {} took {}', this.label, Utils.timeTaken(st))
     }
@@ -175,54 +184,29 @@ abstract class DataType<D> implements ModelItem<D, DataModel>, SummaryMetadataAw
         res
     }
 
-    /**
-     * Where the DataType has been imported into the specified DataModel. Use this method if you want only those 
-     * DataTypes which have been imported into a DataModel i.e. excluding DataTypes owned directly by the DataModel.
-     *
-     * @param ID of DataModel which has imported other catalogue items
-     * @return DetachedCriteria<DataType> for id in IDs of catalogue items which have been imported into the DataModel
-     */
-    static DetachedCriteria<DataType> importedByDataModelId(Serializable dataModelId) {
-        new DetachedCriteria<DataType>(DataType)
-        .in('id', ModelImport.importedByCatalogueItemId(dataModelId))
+    static DetachedCriteria<DataType> byDataModelId(Serializable dataModelId) {
+        new DetachedCriteria<DataType>(DataType).eq('dataModel.id', Utils.toUuid(dataModelId))
     }
 
-    /**
-     * If we want to include imported DataTypes then do a logical OR on imported and directly owned DataTypes.
-     *
-     * @param dataModelId The ID of the DataModel we are looking at
-     * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
-     *                        addition to DataTypes directly belonging to the DataModel)?
-     * @return DetachedCriteria<DataType>    
-     */
-    static DetachedCriteria<DataType> byDataModelId(Serializable dataModelId, boolean includeImported = false) {
-        DetachedCriteria criteria = new DetachedCriteria<DataType>(DataType)
-
-        if (includeImported) {
-            criteria
-            .or {
-                inList('id', ModelImport.importedByCatalogueItemId(dataModelId))
-                eq('dataModel.id', Utils.toUuid(dataModelId))                
+    static DetachedCriteria<DataType> byDataModelIdIncludingImported(Serializable dataModelId) {
+        new DetachedCriteria<DataType>(DataType).or {
+            eq('dataModel.id', Utils.toUuid(dataModelId))
+            importingDataModels {
+                eq 'id', dataModelId
             }
-        } else {
-            criteria
-            .eq('dataModel.id', Utils.toUuid(dataModelId))
+            join('importingDataModels', JoinType.LEFT)
         }
-        
-        criteria
     }
 
-    /**
-     * Get DataTypes for a DataModel by the DataModel id and a search string, including imported data types if required.
-     *
-     * @param dataModelId The ID of the DataModel we are looking at
-     * @param searchTerm Search string which is applied against the label and description of the DataType
-     * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
-     *                        addition to DataTypes directly belonging to the DataModel)?
-     * @return DetachedCriteria<DataType>      
-     */
-    static DetachedCriteria<DataType> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, boolean includeImported = false) {
-        byDataModelId(dataModelId, includeImported).or {
+    static DetachedCriteria<DataType> byDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm) {
+        byDataModelId(dataModelId).or {
+            ilike('label', "%${searchTerm}%")
+            ilike('description', "%${searchTerm}%")
+        }
+    }
+
+    static DetachedCriteria<DataType> byDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(Serializable dataModelId, String searchTerm) {
+        byDataModelIdIncludingImported(dataModelId).or {
             ilike('label', "%${searchTerm}%")
             ilike('description', "%${searchTerm}%")
         }

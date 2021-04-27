@@ -31,18 +31,18 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModelService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.ReferenceSummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataTypeService
-import uk.ac.ox.softeng.maurodatamapper.test.unit.core.CatalogueItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.core.MultiFacetItemAwareServiceSpec
 
 import grails.testing.services.ServiceUnitTest
 
 import java.time.OffsetDateTime
 
-class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<ReferenceSummaryMetadata, ReferenceSummaryMetadataService>
+class ReferenceSummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec<ReferenceSummaryMetadata, ReferenceSummaryMetadataService>
     implements ServiceUnitTest<ReferenceSummaryMetadataService> {
 
     UUID id
@@ -85,7 +85,7 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
             get(_) >> referenceDataModel
             getModelClass() >> referenceDataModel
             handles('ReferenceDataModel') >> true
-            removeReferenceSummaryMetadataFromCatalogueItem(referenceDataModel.id, _) >> {UUID bmid, ReferenceSummaryMetadata sm ->
+            removeReferenceFileFromMultiFacetAware(referenceDataModel.id, _) >> {UUID bmid, ReferenceSummaryMetadata sm ->
                 referenceDataModel.referenceSummaryMetadata.remove(sm)
             }
         }
@@ -110,13 +110,13 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
         summaryMetadata[0].label == 'summary metadata 2'
         summaryMetadata[0].description == 'a description'
         !summaryMetadata[0].summaryMetadataReports
-        summaryMetadata[0].catalogueItemId == referenceDataModel.id
+        summaryMetadata[0].multiFacetAwareItemId == referenceDataModel.id
 
         and:
         summaryMetadata[1].label == 'summary metadata 3'
         !summaryMetadata[1].description
         summaryMetadata[1].summaryMetadataReports.size() == 1
-        summaryMetadata[1].catalogueItemId == referenceDataModel.id
+        summaryMetadata[1].multiFacetAwareItemId == referenceDataModel.id
 
     }
 
@@ -137,12 +137,12 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
     }
 
     @Override
-    CatalogueItem getCatalogueItem() {
+    MultiFacetAware getMultiFacetAwareItem() {
         referenceDataModel
     }
 
     @Override
-    CatalogueItem getCatalogueItemFromStorage() {
+    MultiFacetAware getMultiFacetAwareItemFromStorage() {
         ReferenceDataModel.get(referenceDataModel.id)
     }
 
@@ -159,7 +159,7 @@ class ReferenceSummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<
     }
 
     @Override
-    int getExpectedCountOfAwareItemsInCatalogueItem() {
+    int getExpectedCountOfAwareItemsInMultiFacetAwareItem() {
         3
     }
 

@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 
 class VersionLinkController extends FacetController<VersionLink> {
 
@@ -32,7 +32,7 @@ class VersionLinkController extends FacetController<VersionLink> {
     }
 
     @Override
-    CatalogueItemAwareService getFacetService() {
+    MultiFacetItemAwareService getFacetService() {
         versionLinkService
     }
 

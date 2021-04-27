@@ -81,8 +81,8 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         if (termRelationshipIds) {
 
             log.trace('Removing facets for {} TermRelationships', termRelationshipIds.size())
-            deleteAllFacetsByCatalogueItemIds(termRelationshipIds,
-                                              'delete from terminology.join_term_to_facet where term_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(termRelationshipIds,
+                                                'delete from terminology.join_term_to_facet where term_id in :ids')
 
             log.trace('Removing {} TermRelationships', termRelationshipIds.size())
             sessionFactory.currentSession

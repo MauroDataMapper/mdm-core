@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -35,6 +34,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElementService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValueService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.rest.transport.DefaultDataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -45,7 +45,7 @@ import groovy.util.logging.Slf4j
 @SuppressWarnings("ClashingTraitMethods")
 @Slf4j
 @Transactional
-class DataTypeService extends ModelItemService<DataType> implements DefaultDataTypeProvider {
+class DataTypeService extends ModelItemService<DataType> implements DefaultDataTypeProvider, SummaryMetadataAwareService {
 
     DataElementService dataElementService
     DataClassService dataClassService
@@ -118,7 +118,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
 
             log.trace('Removing facets for {} DataTypes', dataTypeIds.size())
 
-            deleteAllFacetsByCatalogueItemIds(dataTypeIds, 'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataTypeIds, 'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
 
             log.trace('Removing {} DataTypes', dataTypeIds.size())
 
@@ -131,23 +131,19 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
     }
 
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
+    @Override
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
-    }
-
-    @Override
-    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    boolean hasTreeTypeModelItems(DataType catalogueItem, boolean fullTreeRender) {
         fullTreeRender && catalogueItem instanceof EnumerationType ? catalogueItem.enumerationValues : false
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataType catalogueItem, boolean fullTreeRender) {
         fullTreeRender && catalogueItem instanceof EnumerationType ? catalogueItem.enumerationValues : []
     }
 
@@ -276,7 +272,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     DataType validate(DataType dataType) {
-        if (dataType.domainType == ReferenceType.simpleName) return referenceTypeService.validate(dataType as ReferenceType)
         dataType.validate()
         dataType
     }
@@ -290,8 +285,8 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
         if (dataType.summaryMetadata) {
             dataType.summaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = dataType.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = dataType.getId()
             }
             SummaryMetadata.saveAll(dataType.summaryMetadata)
         }
@@ -326,16 +321,20 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         checkFacetsAfterImportingCatalogueItem(dataType)
     }
 
-    private void setCreatedBy(User creator, DataType dataType) {
-        throw new ApiNotYetImplementedException('DTSXX', 'DataType setting created by')
+    def findAllByDataModelId(Serializable dataModelId, Map paginate = [:]) {
+        DataType.withFilter(DataType.byDataModelId(dataModelId), paginate).list(paginate)
     }
 
-    private def findAllByDataModelId(Serializable dataModelId, Map paginate = [:], boolean includeImported = false) {
-        DataType.withFilter(DataType.byDataModelId(dataModelId, includeImported), paginate).list(paginate)
-    }   
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
+        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm).list(paginate)
+    }
 
-    private def findAllByDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable dataModelId, String searchTerm, Map paginate = [:], boolean includeImported = false) {
-        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlike(dataModelId, searchTerm, includeImported).list(paginate)
+    def findAllByDataModelIdIncludingImported(Serializable dataModelId, Map paginate = [:]) {
+        DataType.withFilter(DataType.byDataModelIdIncludingImported(dataModelId), paginate).list(paginate)
+    }
+
+    def findAllByDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(Serializable dataModelId, String searchTerm, Map paginate = [:]) {
+        DataType.byDataModelIdAndLabelIlikeOrDescriptionIlikeIncludingImported(dataModelId, searchTerm).list(paginate)
     }
 
     void matchReferenceClasses(DataModel dataModel, Collection<ReferenceType> referenceTypes, Collection<Map> bindingMaps = []) {
@@ -417,19 +416,26 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         copy
     }
 
-    @Override
     DataType copyCatalogueItemInformation(DataType original,
                                           DataType copy,
                                           User copier,
                                           UserSecurityPolicyManager userSecurityPolicyManager,
-                                          boolean copySummaryMetadata = false) {
+                                          boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
         copy
+    }
+
+    @Override
+    DataType copyCatalogueItemInformation(DataType original,
+                                          DataType copy,
+                                          User copier,
+                                          UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
     }
 
     DataModel addDefaultListOfDataTypesToDataModel(DataModel dataModel, List<DefaultDataType> defaultDataTypes) {
@@ -503,4 +509,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         DataType.byMetadataNamespace(namespace).list(pagination)
     }
 
+    boolean isDataTypeBeingUsedAsImport(DataType dataType) {
+        DataModel.byImportedDataTypeId(dataType.id).count()
+    }
 }

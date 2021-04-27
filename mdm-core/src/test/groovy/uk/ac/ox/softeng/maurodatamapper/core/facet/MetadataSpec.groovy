@@ -56,8 +56,8 @@ class MetadataSpec extends CreatorAwareSpec<Metadata> implements DomainUnitTest<
         then:
         thrown(InternalSpockError)
         domain.hasErrors()
-        domain.errors.getFieldError('catalogueItemId')
-        domain.errors.getFieldError('catalogueItemDomainType')
+        domain.errors.getFieldError('multiFacetAwareItemId')
+        domain.errors.getFieldError('multiFacetAwareItemDomainType')
     }
 
     @Override
@@ -65,7 +65,7 @@ class MetadataSpec extends CreatorAwareSpec<Metadata> implements DomainUnitTest<
         domain.namespace = "http://test.com/valid"
         domain.key = 'test_key'
         domain.value = 'a value'
-        domain.catalogueItem = db
+        domain.multiFacetAwareItem = db
     }
 
     @Override
@@ -73,9 +73,9 @@ class MetadataSpec extends CreatorAwareSpec<Metadata> implements DomainUnitTest<
         assert domain.namespace == "http://test.com/valid"
         assert domain.key == 'test_key'
         assert domain.value == 'a value'
-        assert domain.catalogueItem.id
-        assert domain.catalogueItemDomainType == BasicModel.simpleName
-        assert domain.catalogueItem.id == db.id
+        assert domain.multiFacetAwareItem.id
+        assert domain.multiFacetAwareItemDomainType == BasicModel.simpleName
+        assert domain.multiFacetAwareItem.id == db.id
         assert domain.createdBy == admin.emailAddress
     }
 }

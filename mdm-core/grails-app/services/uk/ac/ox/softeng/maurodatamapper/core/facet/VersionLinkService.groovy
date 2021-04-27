@@ -18,10 +18,9 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -35,10 +34,7 @@ import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
-class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
-
-    @Autowired(required = false)
-    List<CatalogueItemService> catalogueItemServices
+class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
 
     @Autowired(required = false)
     List<ModelService> modelServices
@@ -66,8 +62,8 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     void delete(VersionLink versionLink, boolean flush = false) {
         if (!versionLink) return
 
-        ModelService service = findModelService(versionLink.catalogueItemDomainType)
-        service.removeVersionLinkFromModel(versionLink.catalogueItemId, versionLink)
+        ModelService service = findModelService(versionLink.multiFacetAwareItemDomainType)
+        service.removeVersionLinkFromModel(versionLink.multiFacetAwareItemId, versionLink)
 
         versionLink.delete(flush: flush)
     }
@@ -79,10 +75,10 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     }
 
     @Override
-    void saveCatalogueItem(VersionLink facet) {
+    void saveMultiFacetAwareItem(VersionLink facet) {
         if (!facet) return
         ModelService modelService = findModelService(facet.modelDomainType)
-        modelService.save(facet.catalogueItem)
+        modelService.save(facet.model)
     }
 
     @Override
@@ -111,17 +107,17 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         log.debug('Collecting all catalogue items for {} semantic links', versionLinks.size())
         versionLinks.each { sl ->
 
-            itemIdsMap.compute(sl.catalogueItemDomainType, [
-                apply: { String s, Set<UUID> uuids ->
-                    uuids = uuids ?: new HashSet<>()
-                    uuids.add(sl.catalogueItemId)
+            itemIdsMap.compute(sl.multiFacetAwareItemDomainType, [
+                apply: {String s, Set<UUID> uuids ->
+                    uuids = uuids ?: new HashSet<>() as Set<UUID>
+                    uuids.add(sl.multiFacetAwareItemId)
                     uuids
                 }
             ] as BiFunction)
 
             itemIdsMap.compute(sl.targetModelDomainType, [
                 apply: { String s, Set<UUID> uuids ->
-                    uuids = uuids ?: new HashSet<>()
+                    uuids = uuids ?: new HashSet<>() as Set<UUID>
                     uuids.add(sl.targetModelId)
                     uuids
                 }
@@ -139,7 +135,7 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
 
         log.debug('Loading {} retrieved catalogue items into semantic links', itemMap.size())
         versionLinks.each { sl ->
-            sl.model = itemMap.get(new Pair(sl.catalogueItemDomainType, sl.catalogueItemId))
+            sl.model = itemMap.get(new Pair(sl.multiFacetAwareItemDomainType, sl.multiFacetAwareItemId))
             sl.targetModel = itemMap.get(new Pair(sl.targetModelDomainType, sl.targetModelId))
         }
 
@@ -155,13 +151,13 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
     }
 
     @Override
-    VersionLink findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
-        findBySourceModelIdAndId(catalogueItemId, id)
+    VersionLink findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        findBySourceModelIdAndId(multiFacetAwareItemId, id)
     }
 
     @Override
-    List<VersionLink> findAllByCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
-        findAllBySourceOrTargetModelId(catalogueItemId, paginate)
+    List<VersionLink> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map paginate = [:]) {
+        findAllBySourceOrTargetModelId(multiFacetAwareItemId, paginate)
     }
 
     @Override
@@ -206,8 +202,8 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         VersionLink.by().or {
             and {
                 inList('linkType', VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
-                    .eq('catalogueItemDomainType', modelType)
-                    .eq('catalogueItemId', modelId)
+                    .eq('multiFacetAwareItemDomainType', modelType)
+                    .eq('multiFacetAwareItemId', modelId)
             }
             and {
                 inList('linkType', VersionLinkType.NEW_MODEL_VERSION_OF, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
@@ -232,8 +228,8 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         VersionLink.by().or {
             and {
                 eq('linkType', VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
-                    .eq('catalogueItemDomainType', modelType)
-                    .eq('catalogueItemId', modelId)
+                    .eq('multiFacetAwareItemDomainType', modelType)
+                    .eq('multiFacetAwareItemId', modelId)
             }
             and {
                 eq('linkType', VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
@@ -273,9 +269,9 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
         if (!modelIds) return []
         List<UUID> sourceForSupersededByIds = VersionLink.by()
             .eq('linkType', VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
-            .eq('catalogueItemDomainType', modelType)
-            .inList('catalogueItemId', modelIds)
-            .property('catalogueItemId').list() as List<UUID>
+            .eq('multiFacetAwareItemDomainType', modelType)
+            .inList('multiFacetAwareItemId', modelIds)
+            .property('multiFacetAwareItemId').list() as List<UUID>
 
         List<UUID> targetOfNewVersionOf = VersionLink.by()
             .eq('linkType', VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
@@ -290,10 +286,10 @@ class VersionLinkService implements CatalogueItemAwareService<VersionLink> {
 
     List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(String modelType, List<UUID> modelIds) {
         if (!modelIds) return []
-        findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(modelIds).collect {it.targetModelId}
+        findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(modelIds).collect {it.targetModelId}
     }
 
-    List<VersionLink> findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(List<UUID> modelIds) {
+    List<VersionLink> findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(List<UUID> modelIds) {
         if (!modelIds) return []
 
         VersionLink.by()

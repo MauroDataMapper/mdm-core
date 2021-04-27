@@ -56,7 +56,7 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
 
         when:
         domain.createdBy = admin.emailAddress
-        domain.linkType = VersionLinkType.SUPERSEDED_BY_FORK
+        domain.linkType = VersionLinkType.NEW_FORK_OF
         db.addToVersionLinks(domain)
         domain.setTargetModel(db2)
 
@@ -86,7 +86,7 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
 
         when:
         domain.createdBy = admin.emailAddress
-        domain.linkType = VersionLinkType.SUPERSEDED_BY_FORK
+        domain.linkType = VersionLinkType.NEW_FORK_OF
         db.addToVersionLinks(domain)
         domain.setTargetModel(db2)
 
@@ -118,7 +118,7 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
     void 'test invalid term link between the same model'() {
         when:
         domain.createdBy = admin.emailAddress
-        domain.linkType = VersionLinkType.SUPERSEDED_BY_FORK
+        domain.linkType = VersionLinkType.NEW_FORK_OF
         db.addToVersionLinks(domain)
         domain.setTargetModel(db)
         checkAndSave(domain)
@@ -130,7 +130,7 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
         domain.hasErrors()
 
         when:
-        def error = domain.errors.getFieldError('catalogueItemId')
+        def error = domain.errors.getFieldError('multiFacetAwareItemId')
 
         then:
         error.code == 'invalid.same.property.message'
@@ -139,13 +139,13 @@ class VersionLinkSpec extends CreatorAwareSpec<VersionLink> implements DomainUni
 
     @Override
     void setValidDomainOtherValues() {
-        domain.linkType = VersionLinkType.SUPERSEDED_BY_FORK
+        domain.linkType = VersionLinkType.NEW_FORK_OF
         db.addToVersionLinks(domain)
         domain.setTargetModel(db2)
     }
 
     @Override
     void verifyDomainOtherConstraints(VersionLink domain) {
-        assert domain.linkType == VersionLinkType.SUPERSEDED_BY_FORK
+        assert domain.linkType == VersionLinkType.NEW_FORK_OF
     }
 }

@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 
 import groovy.transform.CompileStatic
@@ -27,14 +27,14 @@ import groovy.transform.SelfType
 /**
  * @since 30/01/2020
  */
-@SelfType(CatalogueItem)
+@SelfType(MultiFacetAware)
 @CompileStatic
 trait SummaryMetadataAware {
 
     abstract Set<SummaryMetadata> getSummaryMetadata()
 
     def addToSummaryMetadata(SummaryMetadata summaryMetadata) {
-        summaryMetadata.setCatalogueItem(this as CatalogueItem)
+        summaryMetadata.setMultiFacetAwareItem(this as MultiFacetAware)
         addTo('summaryMetadata', summaryMetadata)
     }
 

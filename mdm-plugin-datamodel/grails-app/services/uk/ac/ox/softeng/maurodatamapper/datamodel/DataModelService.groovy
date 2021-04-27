@@ -24,8 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -48,6 +46,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.Enum
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -65,7 +64,7 @@ import org.springframework.validation.Errors
 @Slf4j
 @Transactional
 @SuppressWarnings('unused')
-class DataModelService extends ModelService<DataModel> {
+class DataModelService extends ModelService<DataModel> implements SummaryMetadataAwareService {
 
     DataTypeService dataTypeService
     DataClassService dataClassService
@@ -103,30 +102,12 @@ class DataModelService extends ModelService<DataModel> {
 
     /**
      * DataModel allows the import of DataType and DataClass
-     */
+     *
     @Override
-    List<Class> importsDomains() {
+    List<Class> domainImportableModelItemClasses() {
         [DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]
     }
-
-    /**
-     * Does the importedModelItem belong to a DataModel which is finalised, or does it belong to the same
-     * collection as the importing DataModel?
-     *
-     * @param importingDataModel The DataModel which is importing the importedModelItem
-     * @param importedModelItem The ModelItem which is being imported into importingDataModel
-     *
-     * @return boolean Is this import allowed by domain specific rules?
      */
-    @Override
-    boolean isImportableByCatalogueItem(CatalogueItem importingDataModel, CatalogueItem importedModelItem) {
-        DataModel importedFromDataModel = importedModelItem.getModel()
-
-        importedFromDataModel.finalised
-
-        //TODO add OR importedFromModel is in the same collection as importingDataModel
-    }
-
     Long count() {
         DataModel.count()
     }
@@ -142,7 +123,7 @@ class DataModelService extends ModelService<DataModel> {
         if (dataModel.hasErrors()) {
             Errors existingErrors = dataModel.errors
             Errors cleanedErrors = new ValidationErrors(dataModel)
-            existingErrors.fieldErrors.each { fe ->
+            existingErrors.fieldErrors.each {fe ->
                 if (!fe.field.contains('dataModel')) {
                     cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
                 }
@@ -203,25 +184,25 @@ class DataModelService extends ModelService<DataModel> {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
             catalogueItem.summaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
-        if (catalogueItem.modelImports) {
-            catalogueItem.modelImports.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
-            }
-            ModelImport.saveAll(catalogueItem.modelImports)
-        }
+        //        if (catalogueItem.modelImports) {
+        //            catalogueItem.modelImports.each {
+        //                if (!it.isDirty('catalogueItemId')) it.trackChanges()
+        //                it.catalogueItemId = catalogueItem.getId()
+        //            }
+        //            ModelImport.saveAll(catalogueItem.modelImports)
+        //        }
         catalogueItem
     }
 
     @Override
     DataModel saveModelWithContent(DataModel dataModel) {
 
-        if (dataModel.dataTypes.any { it.id } || dataModel.dataClasses.any { it.id }) {
+        if (dataModel.dataTypes.any {it.id} || dataModel.dataClasses.any {it.id}) {
             throw new ApiInternalException('DMSXX', 'Cannot use saveWithBatching method to save DataModel',
                                            new IllegalStateException('DataModel has previously saved content'))
         }
@@ -257,7 +238,7 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         if (dataModel.breadcrumbTree.children) {
-            dataModel.breadcrumbTree.children.each { it.skipValidation(true) }
+            dataModel.breadcrumbTree.children.each {it.skipValidation(true)}
         }
 
         save(dataModel)
@@ -287,15 +268,15 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         if (dataModel.dataTypes) {
-            enumerationTypes.addAll dataModel.enumerationTypes.findAll { !it.id }
-            primitiveTypes.addAll dataModel.primitiveTypes.findAll { !it.id }
-            modelDataTypes.addAll dataModel.modelDataTypes.findAll { !it.id }
-            referenceTypes.addAll dataModel.referenceTypes.findAll { !it.id }
+            enumerationTypes.addAll dataModel.enumerationTypes.findAll {!it.id}
+            primitiveTypes.addAll dataModel.primitiveTypes.findAll {!it.id}
+            modelDataTypes.addAll dataModel.modelDataTypes.findAll {!it.id}
+            referenceTypes.addAll dataModel.referenceTypes.findAll {!it.id}
         }
 
         if (dataModel.dataClasses) {
-            dataClasses.addAll dataModel.dataClasses.findAll { !it.id }
-            dataElements.addAll dataModel.dataClasses.collectMany { it.dataElements.findAll { !it.id } }
+            dataClasses.addAll dataModel.dataClasses.findAll {!it.id}
+            dataElements.addAll dataModel.dataClasses.collectMany {it.dataElements.findAll {!it.id}}
         }
 
         saveContent(dataModel, enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses, dataElements)
@@ -314,18 +295,18 @@ class DataModelService extends ModelService<DataModel> {
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
         log.trace('Disabling validation on contents')
-        enumerationTypes.each { dt ->
+        enumerationTypes.each {dt ->
             dt.skipValidation(true)
-            dt.enumerationValues.each { ev -> ev.skipValidation(true) }
+            dt.enumerationValues.each {ev -> ev.skipValidation(true)}
         }
-        primitiveTypes.each { it.skipValidation(true) }
-        referenceTypes.each { it.skipValidation(true) }
-        modelDataTypes.each { it.skipValidation(true) }
-        dataClasses.each { dc ->
+        primitiveTypes.each {it.skipValidation(true)}
+        referenceTypes.each {it.skipValidation(true)}
+        modelDataTypes.each {it.skipValidation(true)}
+        dataClasses.each {dc ->
             dc.skipValidation(true)
-            dc.dataElements.each { de -> de.skipValidation(true) }
+            dc.dataElements.each {de -> de.skipValidation(true)}
         }
-        referenceTypes.each { it.skipValidation(true) }
+        referenceTypes.each {it.skipValidation(true)}
 
         long subStart = System.currentTimeMillis()
         dataTypeService.saveAll(enumerationTypes)
@@ -358,7 +339,7 @@ class DataModelService extends ModelService<DataModel> {
         modelItemServices.findAll {
             !(it.modelItemClass in [DataClass, DataElement, DataType, EnumerationType, ModelDataType, PrimitiveType,
                                     ReferenceType, EnumerationValue])
-        }.each { modelItemService ->
+        }.each {modelItemService ->
             try {
                 modelItemService.deleteAllByModelId(dataModel.id)
             } catch (ApiNotYetImplementedException ignored) {
@@ -372,11 +353,11 @@ class DataModelService extends ModelService<DataModel> {
         dataTypeService.deleteAllByModelId(dataModel.id)
 
         log.trace('Removing facets')
-        deleteAllFacetsByCatalogueItemId(dataModel.id, 'delete from datamodel.join_datamodel_to_facet where datamodel_id=:id')
+        deleteAllFacetsByMultiFacetAwareId(dataModel.id, 'delete from datamodel.join_datamodel_to_facet where datamodel_id=:id')
 
         log.trace('Content removed')
         sessionFactory.currentSession
-            .createSQLQuery('delete from datamodel.data_model where id = :id')
+            .createSQLQuery('DELETE FROM datamodel.data_model WHERE id = :id')
             .setParameter('id', dataModel.id)
             .executeUpdate()
 
@@ -392,19 +373,15 @@ class DataModelService extends ModelService<DataModel> {
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
 
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
-    }
-
     @Override
     List<DataModel> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
         DataModel.withReadable(DataModel.by(), constrainedIds, includeDeleted).list()
     }
 
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
@@ -484,7 +461,7 @@ class DataModelService extends ModelService<DataModel> {
 
     DataModel checkForAndAddDefaultDataTypes(DataModel resource, String defaultDataTypeProvider) {
         if (defaultDataTypeProvider) {
-            DefaultDataTypeProvider provider = defaultDataTypeProviders.find { it.name == defaultDataTypeProvider }
+            DefaultDataTypeProvider provider = defaultDataTypeProviders.find {it.name == defaultDataTypeProvider}
             if (provider) {
                 log.debug("Adding ${provider.displayName} default DataTypes")
                 return dataTypeService.addDefaultListOfDataTypesToDataModel(resource, provider.defaultListOfDataTypes)
@@ -495,14 +472,14 @@ class DataModelService extends ModelService<DataModel> {
 
     void deleteAllUnusedDataTypes(DataModel dataModel) {
         log.debug('Cleaning DataModel {} of DataTypes', dataModel.label)
-        dataModel.dataTypes.findAll { !it.dataElements }.each {
+        dataModel.dataTypes.findAll {!it.dataElements}.each {
             dataTypeService.delete(it)
         }
     }
 
     void deleteAllUnusedDataClasses(DataModel dataModel) {
         log.debug('Cleaning DataModel {} of DataClasses', dataModel.label)
-        dataModel.dataClasses.findAll { dataClassService.isUnusedDataClass(it) }.each {
+        dataModel.dataClasses.findAll {dataClassService.isUnusedDataClass(it)}.each {
             dataClassService.delete(it)
         }
     }
@@ -520,18 +497,18 @@ class DataModelService extends ModelService<DataModel> {
         }
 
         if (bindingMap && dataModel.dataTypes) {
-            Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll { it.instanceOf(ReferenceType) } as Set<ReferenceType>
+            Set<ReferenceType> referenceTypes = dataModel.dataTypes.findAll {it.instanceOf(ReferenceType)} as Set<ReferenceType>
             if (referenceTypes) {
                 log.debug('Matching {} ReferenceType referenceClasses', referenceTypes.size())
                 dataTypeService.matchReferenceClasses(dataModel, referenceTypes,
-                                                      bindingMap.dataTypes.findAll { it.domainType == DataType.REFERENCE_DOMAIN_TYPE })
+                                                      bindingMap.dataTypes.findAll {it.domainType == DataType.REFERENCE_DOMAIN_TYPE})
             }
         }
 
         // Make sure we have all the DTs inside the DM first as some will have been imported from the DEs
         if (dataModel.dataTypes) {
             dataModel.fullSortOfChildren(dataModel.dataTypes)
-            dataModel.dataTypes.each { dt ->
+            dataModel.dataTypes.each {dt ->
                 dataTypeService.checkImportedDataTypeAssociations(importingUser, dataModel, dt)
             }
         }
@@ -540,7 +517,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     DataModel ensureAllEnumerationTypesHaveValues(DataModel dataModel) {
-        dataModel.dataTypes.findAll { it.instanceOf(EnumerationType) && !(it as EnumerationType).getEnumerationValues() }.each { EnumerationType et ->
+        dataModel.dataTypes.findAll {it.instanceOf(EnumerationType) && !(it as EnumerationType).getEnumerationValues()}.each {EnumerationType et ->
             et.addToEnumerationValues(key: '-', value: '-')
         }
         dataModel
@@ -548,7 +525,7 @@ class DataModelService extends ModelService<DataModel> {
 
     List<DataElement> getAllDataElementsOfDataModel(DataModel dataModel) {
         List<DataElement> allElements = []
-        dataModel.dataClasses.each { allElements += it.dataElements ?: [] }
+        dataModel.dataClasses.each {allElements += it.dataElements ?: []}
         allElements
     }
 
@@ -556,16 +533,16 @@ class DataModelService extends ModelService<DataModel> {
         if (!dataElementNames) return []
         getAllDataElementsOfDataModel(dataModel).findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in dataElementNames.collect { it.toLowerCase() } :
+            it.label.toLowerCase() in dataElementNames.collect {it.toLowerCase()} :
             it.label in dataElementNames
         }
     }
 
     Set<EnumerationType> findAllEnumerationTypeByNames(DataModel dataModel, Set<String> enumerationTypeNames, boolean caseInsensitive) {
         if (!enumerationTypeNames) return []
-        dataModel.dataTypes.findAll { it.instanceOf(EnumerationType) }.findAll {
+        dataModel.dataTypes.findAll {it.instanceOf(EnumerationType)}.findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in enumerationTypeNames.collect { it.toLowerCase() } :
+            it.label.toLowerCase() in enumerationTypeNames.collect {it.toLowerCase()} :
             it.label in enumerationTypeNames
         } as Set<EnumerationType>
     }
@@ -617,14 +594,14 @@ class DataModelService extends ModelService<DataModel> {
 
         if (original.dataTypes) {
             // Copy all the datatypes
-            original.dataTypes.each { dt ->
+            original.dataTypes.each {dt ->
                 dataTypeService.copyDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
 
         if (original.childDataClasses) {
             // Copy all the dataclasses (this will also match up the reference types)
-            original.childDataClasses.each { dc ->
+            original.childDataClasses.each {dc ->
                 dataClassService.copyDataClass(copy, dc, copier, userSecurityPolicyManager)
             }
         }
@@ -647,21 +624,21 @@ class DataModelService extends ModelService<DataModel> {
                                            boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager) as DataModel
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
 
-        modelImportService.findAllByCatalogueItemId(original.id).each {
-            copy.addToModelImports(it.importedCatalogueItemDomainType,
-                                   it.importedCatalogueItemId,
-                                   copier)
-        }
+        //        modelImportService.findAllByCatalogueItemId(original.id).each {
+        //            copy.addToModelImports(it.importedCatalogueItemDomainType,
+        //                                   it.importedCatalogueItemId,
+        //                                   copier)
+        //        }
         copy
     }
 
     List<DataElementSimilarityResult> suggestLinksBetweenModels(DataModel dataModel, DataModel otherDataModel, int maxResults) {
-        dataModel.getAllDataElements().collect { de ->
+        dataModel.getAllDataElements().collect {de ->
             dataElementService.findAllSimilarDataElementsInDataModel(otherDataModel, de, maxResults)
         }
     }
@@ -676,17 +653,17 @@ class DataModelService extends ModelService<DataModel> {
                 groupProperty('dataModel.id')
                 count()
             }.order('dataModel')
-        criteria.list().collectEntries { [it[0], it[1]] }
+        criteria.list().collectEntries {[it[0], it[1]]}
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender, boolean includeImported = false) {
-        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && fullTreeRender) || (dataModel.modelImports && includeImported)
+    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender) {
+        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && fullTreeRender)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender = false, boolean includeImported = false) {
-        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id, [:], includeImported) +
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender = false) {
+        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id) +
          (fullTreeRender ? DataType.byDataModelId(catalogueItem.id).list() : []) as List<ModelItem>)
     }
 
@@ -726,7 +703,7 @@ class DataModelService extends ModelService<DataModel> {
     List<DataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         DataModel.byClassifierId(classifier.id)
             .list()
-            .findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id) } as List<DataModel>
+            .findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.id)} as List<DataModel>
     }
 
     @Override
@@ -766,7 +743,7 @@ class DataModelService extends ModelService<DataModel> {
 
     @Override
     List<UUID> findAllModelIdsWithTreeChildren(List<DataModel> models) {
-        models.collect { it.id }.findAll { dataClassService.countByDataModelId(it) }
+        models.collect {it.id}.findAll {dataClassService.countByDataModelId(it)}
     }
 
     @Override

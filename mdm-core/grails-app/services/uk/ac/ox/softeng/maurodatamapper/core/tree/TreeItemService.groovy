@@ -171,11 +171,11 @@ class TreeItemService {
      * @param catalogueItem
      * @return
      */
-    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean includeImported = false) {
-        buildCatalogueItemTree(catalogueItem, false, includeImported)
+    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem) {
+        buildCatalogueItemTree(catalogueItem, false)
     }
 
-    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean fullTreeRender, boolean includeImported) {
+    List<ModelItemTreeItem> buildCatalogueItemTree(CatalogueItem catalogueItem, boolean fullTreeRender) {
         log.info("Building tree for ${catalogueItem.class.simpleName}")
         long start = System.currentTimeMillis()
 
@@ -183,16 +183,16 @@ class TreeItemService {
 
         if (!service) throw new ApiBadRequestException('TIS01', 'Tree requested for catalogue item with no supporting service')
 
-        if (!service.hasTreeTypeModelItems(catalogueItem, fullTreeRender, includeImported)) {
+        if (!service.hasTreeTypeModelItems(catalogueItem, fullTreeRender)) {
             log.debug('Catalogue Item has no model items')
             return []
         }
 
-        List<ModelItem> content = service.findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender, includeImported)
+        List<ModelItem> content = service.findAllTreeTypeModelItemsIn(catalogueItem, fullTreeRender)
         log.debug('Catalogue item has {} model items', content.size())
         List<ModelItemTreeItem> tree = content.collect {mi ->
             if (fullTreeRender) {
-                List<ModelItemTreeItem> children = buildCatalogueItemTree(mi, true, includeImported)
+                List<ModelItemTreeItem> children = buildCatalogueItemTree(mi, true)
                 ModelItemTreeItem modelItemTreeItem = new ModelItemTreeItem(mi, !children.isEmpty()).withRenderChildren()
                 modelItemTreeItem.addAllToChildren(children) as ModelItemTreeItem
             } else new ModelItemTreeItem(mi, mi.hasChildren())
@@ -210,12 +210,12 @@ class TreeItemService {
         ModelService service = catalogueItemServices.find {it.handles(model.class)} as ModelService
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for model with no supporting service')
 
-        if (!service.hasTreeTypeModelItems(model, true, true)) {
+        if (!service.hasTreeTypeModelItems(model, true)) {
             return new ModelTreeItem(model, model.folder.id, false, false)
         }
 
         ModelTreeItem modelTreeItem = new ModelTreeItem(model, model.folder.id, true, false).withRenderChildren() as ModelTreeItem
-        modelTreeItem.addAllToChildren buildCatalogueItemTree(model, true, true)
+        modelTreeItem.addAllToChildren buildCatalogueItemTree(model, true)
 
         log.debug("Tree build took ${Utils.timeTaken(start)}")
         modelTreeItem

@@ -177,17 +177,17 @@ class DataModelSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
         responseBody().count == 2
         responseBody().items.any { Map m ->
             m.linkType == SemanticLinkType.REFINES.label &&
-            m.targetCatalogueItem.id == targetCatalogueItemId &&
+            m.targetMultiFacetAwareItem.id == targetCatalogueItemId &&
             m.unconfirmed
         }
         responseBody().items.any { Map m ->
             m.linkType == SemanticLinkType.REFINES.label &&
-            m.targetCatalogueItem.id == dataModel.id.toString() &&
+            m.targetMultiFacetAwareItem.id == dataModel.id.toString() &&
             !m.unconfirmed
         }
         String semanticLinkId = responseBody().items.find { Map m ->
             m.linkType == SemanticLinkType.REFINES.label &&
-            m.targetCatalogueItem.id == targetCatalogueItemId &&
+            m.targetMultiFacetAwareItem.id == targetCatalogueItemId &&
             m.unconfirmed
         }.id
         assert semanticLinkId

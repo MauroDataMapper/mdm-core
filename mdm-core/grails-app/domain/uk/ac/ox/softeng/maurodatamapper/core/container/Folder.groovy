@@ -17,11 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.FolderLabelValidator
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.search.PathTokenizerAnalyzer
 import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -47,6 +53,11 @@ class Folder implements Container {
 
     static hasMany = [
         childFolders: Folder,
+        metadata        : Metadata,
+        annotations     : Annotation,
+        semanticLinks   : SemanticLink,
+        referenceFiles  : ReferenceFile,
+        rules           : Rule
     ]
 
     static belongsTo = [Folder]
@@ -56,6 +67,9 @@ class Folder implements Container {
         CallableConstraints.call(InformationAwareConstraints, delegate)
         label validator: { val, obj -> new FolderLabelValidator(obj).isValid(val) }
         parentFolder nullable: true
+        metadata validator: {val, obj ->
+            if (val) new UniqueValuesValidator('namespace:key').isValid(val.groupBy {"${it.namespace}:${it.key}"})
+        }
     }
 
     static mapping = {
@@ -195,6 +209,23 @@ class Folder implements Container {
         luceneList {
             keyword 'label', searchTerm
             filter name: 'idSecured', params: [allowedIds: allowedIds]
+        }
+    }
+
+    static DetachedCriteria<Folder> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<Folder> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
         }
     }
 }

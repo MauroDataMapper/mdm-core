@@ -79,7 +79,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
         dataClassComponentService.deleteAll(dataClassComponents)
         dataFlow.dataClassComponents = []
 
-        semanticLinkService.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
+        semanticLinkService.deleteBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
         dataFlow.breadcrumbTree.removeFromParent()
         dataFlow.target = null
         dataFlow.source = null

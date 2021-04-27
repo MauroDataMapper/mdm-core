@@ -54,7 +54,7 @@ abstract class DataModelSecuredInterceptor implements MdmInterceptor {
         )
     }
 
-    boolean canCopyFromDataModelToOtherDataModel() {
+    boolean canEditDataModelAndReadOtherDataModel() {
         boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.dataModelId)
         if (!currentUserSecurityPolicyManager.userCanEditSecuredResourceId(DataModel, params.dataModelId)) {
             return forbiddenOrNotFound(canRead, DataModel, params.dataModelId)

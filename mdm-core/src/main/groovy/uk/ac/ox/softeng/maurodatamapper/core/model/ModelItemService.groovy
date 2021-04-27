@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
+
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
@@ -111,5 +112,9 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
             ModelItem modelItem = get(mergeObjectDiffData.leftId) as ModelItem
             mergeObjectDiffIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
         }
+    }
+
+    boolean isModelItemInSameModelOrInFinalisedModel(K modelItem, K otherModelItem) {
+        otherModelItem.model.id == modelItem.model.id || modelItem.model.finalised
     }
 }

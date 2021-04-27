@@ -108,7 +108,7 @@ abstract class ReferenceDataType<D> implements ModelItem<D, ReferenceDataModel>,
         beforeValidateModelItem()
         referenceSummaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
         }
     }
 

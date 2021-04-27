@@ -74,7 +74,7 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
 
         dataElementComponent.sourceDataElements.each { source ->
             dataElementComponent.targetDataElements.each { target ->
-                semanticLinkService.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
+                semanticLinkService.deleteBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
             }
         }
 

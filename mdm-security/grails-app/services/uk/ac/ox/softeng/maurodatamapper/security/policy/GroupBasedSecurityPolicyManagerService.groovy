@@ -454,16 +454,14 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
     GroupBasedUserSecurityPolicyManager buildUserSecurityPolicyManager(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager,
                                                                        Set<UserGroup> userGroups, Set<GroupRole> assignedApplicationGroupRoles,
-                                                                       Set<VirtualSecurableResourceGroupRole>
-                                                                           virtualSecurableResourceGroupRoles) {
-
+                                                                       Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
 
         Set<GroupRole> inheritedApplicationGroupRoles = new HashSet<>()
 
         VirtualGroupRole fullSecureableResourceAccessRole = null
 
         // Build the full list of application level roles, this will contain the assigned roles and all their children
-        assignedApplicationGroupRoles.each { gr ->
+        assignedApplicationGroupRoles.each {gr ->
             VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(gr.name)
 
             // Application admin and site admin are the roles we know about, store the highest level present as we need it later to define

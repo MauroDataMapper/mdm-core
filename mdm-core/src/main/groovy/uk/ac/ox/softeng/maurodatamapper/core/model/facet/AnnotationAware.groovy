@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
@@ -34,7 +33,7 @@ trait AnnotationAware {
     abstract Set<Annotation> getAnnotations()
 
     def addToAnnotations(Annotation add) {
-        add.setCatalogueItem(this as CatalogueItem)
+        add.setMultiFacetAwareItem(this as MultiFacetAware)
         addTo('annotations', add)
     }
 

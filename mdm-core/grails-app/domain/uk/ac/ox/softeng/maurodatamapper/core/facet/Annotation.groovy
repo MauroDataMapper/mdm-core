@@ -20,8 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
@@ -32,7 +32,7 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Annotation implements CatalogueItemAware, PathAware, InformationAware, CreatorAware, Diffable<Annotation> {
+class Annotation implements MultiFacetItemAware, PathAware, InformationAware, CreatorAware, Diffable<Annotation> {
 
     UUID id
     Annotation parentAnnotation
@@ -48,14 +48,14 @@ class Annotation implements CatalogueItemAware, PathAware, InformationAware, Cre
         childAnnotations: 'parentAnnotation'
     ]
 
-    static transients = ['catalogueItem']
+    static transients = ['multiFacetAwareItem']
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
         CallableConstraints.call(InformationAwareConstraints, delegate)
-        catalogueItemId nullable: true, validator: {val, obj ->
+        multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (val) return true
-            if (!val && obj.catalogueItem && !obj.catalogueItem.ident()) return true
+            if (!val && obj.multiFacetAwareItem && !obj.multiFacetAwareItem.ident()) return true
             ['default.null.message']
         }
         description validator: {String val, Annotation obj ->
@@ -85,11 +85,11 @@ class Annotation implements CatalogueItemAware, PathAware, InformationAware, Cre
         buildPath()
         childAnnotations.eachWithIndex {ann, i ->
             if (!ann.label) ann.label = "$label [$i]"
-            if (catalogueItem) {
-                ann.setCatalogueItem(this.catalogueItem)
+            if (multiFacetAwareItem) {
+                ann.setMultiFacetAwareItem(this.multiFacetAwareItem)
             } else {
-                ann.catalogueItemId = this.catalogueItemId
-                ann.catalogueItemDomainType = this.catalogueItemDomainType
+                ann.multiFacetAwareItemId = this.multiFacetAwareItemId
+                ann.multiFacetAwareItemDomainType = this.multiFacetAwareItemDomainType
             }
             ann.beforeValidate()
         }
@@ -129,20 +129,20 @@ class Annotation implements CatalogueItemAware, PathAware, InformationAware, Cre
         new DetachedCriteria<Annotation>(Annotation)
     }
 
-    static DetachedCriteria<Annotation> byCatalogueItemId(Serializable catalogueItemId) {
-        new DetachedCriteria<Annotation>(Annotation).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    static DetachedCriteria<Annotation> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
+        new DetachedCriteria<Annotation>(Annotation).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<Annotation> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
-        new DetachedCriteria<Annotation>(Annotation).inList('catalogueItemId', catalogueItemIds)
+    static DetachedCriteria<Annotation> byyMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        new DetachedCriteria<Annotation>(Annotation).inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 
-    static DetachedCriteria<Annotation> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {
-        byCatalogueItemId(catalogueItemId).idEq(Utils.toUuid(resourceId))
+    static DetachedCriteria<Annotation> byyMultiFacetAwareItemIdAndId(Serializable multiFacetAwareItemId, Serializable resourceId) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).idEq(Utils.toUuid(resourceId))
     }
 
-    static DetachedCriteria<Annotation> whereRootAnnotationOfCatalogueItemId(Serializable catalogueItemId) {
-        byCatalogueItemId(catalogueItemId).isNull('parentAnnotation')
+    static DetachedCriteria<Annotation> whereRootAnnotationOfMultiFacetAwareItemId(Serializable catalogueItemId) {
+        byMultiFacetAwareItemId(catalogueItemId).isNull('parentAnnotation')
     }
 
     static DetachedCriteria<Annotation> byParentAnnotationId(Serializable parentAnnotationId) {

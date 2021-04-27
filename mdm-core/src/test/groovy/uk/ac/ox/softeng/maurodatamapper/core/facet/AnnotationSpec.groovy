@@ -80,7 +80,7 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         and:
         item2.depth == 1
         item2.path == "/${item.id}"
-        item2.catalogueItemId
+        item2.multiFacetAwareItemId
         item2.description == 'child'
 
         when:
@@ -104,19 +104,19 @@ class AnnotationSpec extends CreatorAwareSpec<Annotation> implements DomainUnitT
         then:
         thrown(InternalSpockError)
         domain.hasErrors()
-        domain.errors.getFieldError('catalogueItemId')
-        domain.errors.getFieldError('catalogueItemDomainType')
+        domain.errors.getFieldError('multiFacetAwareItemId')
+        domain.errors.getFieldError('multiFacetAwareItemDomainType')
     }
 
     @Override
     void setValidDomainOtherValues() {
         domain.label = 'test'
-        domain.setCatalogueItem(db)
+        domain.setMultiFacetAwareItem(db)
     }
 
     @Override
     void verifyDomainOtherConstraints(Annotation domain) {
         assert domain.label == 'test'
-        assert domain.catalogueItemId == db.id
+        assert domain.multiFacetAwareItemId == db.id
     }
 }

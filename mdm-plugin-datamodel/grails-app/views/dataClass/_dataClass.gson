@@ -3,6 +3,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataClass]
 model {
     DataClass dataClass
+    UUID owningDataModelId
+    UUID owningDataClassId
 }
 
 json {
@@ -10,4 +12,9 @@ json {
     if (dataClass.minMultiplicity != null) minMultiplicity dataClass.minMultiplicity
 
     if (dataClass.parentDataClass) parentDataClass dataClass.parentDataClassId
+    if ((owningDataModelId &&
+         dataClass.model.id != owningDataModelId) ||
+        (owningDataClassId &&
+         dataClass.parentDataClass?.id != owningDataClassId)
+    ) imported true
 }

@@ -23,8 +23,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -34,7 +34,7 @@ import groovy.util.logging.Slf4j
 
 
 @Slf4j
-class EnumerationValueService extends ModelItemService<EnumerationValue> {
+class EnumerationValueService extends ModelItemService<EnumerationValue> implements SummaryMetadataAwareService {
 
     SummaryMetadataService summaryMetadataService
 
@@ -80,8 +80,8 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
         if (enumerationValueIds) {
 
             log.trace('Removing facets for {} Enumeration Values', enumerationValueIds.size())
-            deleteAllFacetsByCatalogueItemIds(enumerationValueIds,
-                                              'delete from datamodel.join_enumerationvalue_to_facet where enumerationvalue_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(enumerationValueIds,
+                                                'delete from datamodel.join_enumerationvalue_to_facet where enumerationvalue_id in :ids')
 
             log.trace('Removing {} EnumerationValues', enumerationValueIds.size())
             sessionFactory.currentSession
@@ -94,9 +94,9 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
     }
 
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
@@ -116,10 +116,6 @@ class EnumerationValueService extends ModelItemService<EnumerationValue> {
         EnumerationValue.byClassifierId(classifier.id).list().findAll {
             userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
         }
-    }
-
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override

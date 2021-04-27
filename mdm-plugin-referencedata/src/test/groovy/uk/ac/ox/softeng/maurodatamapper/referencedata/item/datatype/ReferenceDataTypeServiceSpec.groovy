@@ -170,7 +170,7 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         copy.classifiers == original.classifiers
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying enumeration datatype'() {
@@ -205,6 +205,6 @@ class ReferenceDataTypeServiceSpec extends CatalogueItemServiceSpec implements S
         copy.classifiers == original.classifiers
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 }
