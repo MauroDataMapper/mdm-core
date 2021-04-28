@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
@@ -163,6 +164,38 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         updateResponse(instance)
     }
 
+    @Transactional
+    def newBranchModelVersion(CreateNewVersionData createNewVersionData) {
+
+        createNewVersionData.label = 'newBranchModelVersion'
+
+        if (!createNewVersionData.validate()) {
+            respond createNewVersionData.errors
+            return
+        }
+
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+
+        if (!instance) return notFound(params.versionedFolderId)
+
+        VersionedFolder copy = getVersionedFolderService().
+            createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser, createNewVersionData.copyPermissions,
+                                        currentUserSecurityPolicyManager)
+
+        if (!validateResource(copy, 'create')) return
+
+        //this only applies to DMs??
+        VersionedFolder savedCopy = versionedFolderService.saveFolderWithContent(copy)
+        savedCopy.addCreatedEdit(currentUser)
+
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, currentUser, savedCopy.label)
+        }
+
+        saveResponse savedCopy
+    }
+
+
     @Override
     protected VersionedFolder queryForResource(Serializable id) {
         versionedFolderService.get(id)
@@ -236,6 +269,5 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
         instance
     }
-
 
 }

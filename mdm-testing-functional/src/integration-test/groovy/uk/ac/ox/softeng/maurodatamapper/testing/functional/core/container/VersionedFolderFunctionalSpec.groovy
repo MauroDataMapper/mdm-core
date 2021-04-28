@@ -137,6 +137,15 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         ]
     }
 
+    String getValidFinalisedId() {
+        String id = getValidId()
+        loginEditor()
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        logout()
+        id
+    }
+
     @Override
     Pattern getExpectedCreatedEditRegex() {
         ~/\[VersionedFolder:Functional Test Folder 3] created/
@@ -664,4 +673,19 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse HttpStatus.NO_CONTENT, response
         removeValidIdObject(data.id)
     }
+
+    void 'V02 : newBranchModelVersion endpoint for VersionedFolder'() {
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+
+
+        when: 'The folder gets newBranchModelVersion'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        response.status == OK
+
+    }
+
 }

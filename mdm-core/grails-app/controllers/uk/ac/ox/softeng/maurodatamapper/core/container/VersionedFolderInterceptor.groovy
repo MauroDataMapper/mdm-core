@@ -53,6 +53,11 @@ class VersionedFolderInterceptor extends SecurableResourceInterceptor {
             return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(VersionedFolder, id, actionName) ?:
                    forbiddenOrNotFound(canRead, VersionedFolder, id)
         }
+        //TODO confirm this is all that is necessary here
+        if (actionName == 'newBranchModelVersion') {
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(VersionedFolder, id, actionName) ?:
+                   forbiddenOrNotFound(canRead, VersionedFolder, id)
+        }
 
         checkActionAuthorisationOnSecuredResource(VersionedFolder, getId(), true)
     }
