@@ -47,9 +47,6 @@ import javax.servlet.http.HttpServletRequest
 @Transactional
 class ProfileService {
 
-    GrailsApplication grailsApplication
-
-    @Autowired
     ApplicationContext applicationContext
 
     @Autowired
