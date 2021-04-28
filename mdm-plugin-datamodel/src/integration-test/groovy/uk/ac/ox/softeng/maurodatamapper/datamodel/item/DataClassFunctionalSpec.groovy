@@ -291,7 +291,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items.find {it.id == childId}.breadcrumbs.size() == 2
     }
 
-    void 'test copying from datamodel root to other datamodel root'() {
+    void 'CC01 : test copying from datamodel root to other datamodel root'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
@@ -319,7 +319,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().breadcrumbs[0].id == otherDataModelId.toString()
     }
 
-    void 'test copying from datamodel to dataclass'() {
+    void 'CC02 : test copying from datamodel to dataclass'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
@@ -350,6 +350,58 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().breadcrumbs.size() == 2
         responseBody().breadcrumbs[0].id == otherDataModelId.toString()
         responseBody().breadcrumbs[1].id == otherId
+    }
+
+    void 'CC03 : test copying to a datamodel with a data element and datatype'() {
+        // There is an error around hibernate search in this scenario
+        // The metadata and classifiers of the datatype arent initialised and cause a "could not initialize proxy - no Session" exception
+        given:
+        POST('', validJson)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement',
+            dataType: dataTypeId
+        ])
+        verifyResponse CREATED, response
+
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement 2',
+            dataType: [label: 'wibble', domainType: 'PrimitiveType']
+        ])
+        verifyResponse CREATED, response
+
+        when: 'trying to copy valid'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", [:], MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
+        String copyId = responseBody().id
+
+        when:
+        GET("${getResourcePath(otherDataModelId)}/$copyId/dataElements", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.label == 'Functional Test DataElement'}
+        responseBody().items.any {it.label == 'Functional Test DataElement 2'}
+
+
+        when:
+        GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {it.label == 'wibble'}
+        responseBody().items.any {it.label == 'string'}
     }
 
     @Rollback

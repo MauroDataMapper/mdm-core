@@ -119,23 +119,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
 
     DataElement validate(DataElement dataElement) {
         dataElement.validate()
-        if (dataElement.hasErrors()) {
-            //            FieldError invalidOwnerError = dataElement.errors.getFieldErrors('dataType')?.find {it.code == 'invalid.dataelement
-            //            .datatype.model'}
-            //            if (invalidOwnerError) {
-            //                if (modelImportService.hasCatalogueItemImportedCatalogueItem(dataElement.model, dataElement.dataType)) {
-            //                    Errors existingErrors = dataElement.errors
-            //                    Errors cleanedErrors = new ValidationErrors(dataElement)
-            //
-            //                    existingErrors.fieldErrors.each {fe ->
-            //                        if (fe.field != 'dataType' && fe.code != 'invalid.dataelement.datatype.model') {
-            //                            cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
-            //                        }
-            //                    }
-            //                    dataElement.errors = cleanedErrors
-            //                }
-            //            }
-        }
         dataElement
     }
 
