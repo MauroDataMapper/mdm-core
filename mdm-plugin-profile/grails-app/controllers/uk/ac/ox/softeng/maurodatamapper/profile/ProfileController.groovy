@@ -95,7 +95,8 @@ class ProfileController implements ResourcelessMdmController {
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
         Set<String> profileNamespaces = usedProfiles.collect{it.metadataNamespace}
         render(view: "/metadata/index",
-               model: [metadataList: metadataService.findAllByCatalogueItemIdAndNotNamespaces(catalogueItem.id, profileNamespaces.asList(), params)])
+               model: [metadataList: metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(catalogueItem.id, profileNamespaces.asList(),
+                                                                                                params)])
     }
 
     @Transactional
@@ -118,7 +119,7 @@ class ProfileController implements ResourcelessMdmController {
         mds.each {md ->
                 catalogueItem.metadata.remove(md)
                 metadataService.delete(md, true)
-                metadataService.addDeletedEditToCatalogueItem(currentUser, md, params.catalogueItemDomainType, params.catalogueItemId)}
+                metadataService.addDeletedEditToMultiFacetAwareItem(currentUser, md, params.catalogueItemDomainType, params.catalogueItemId)}
     }
 
     def show() {

@@ -182,7 +182,7 @@ class ProfileService {
 
     Set<String> getUsedNamespaces(CatalogueItem catalogueItem) {
         MetadataService metadataService = grailsApplication.mainContext.getBean('metadataService')
-        List<Metadata> metadataList = metadataService.findAllByCatalogueItemId(catalogueItem.id)
+        List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemId(catalogueItem.id)
         metadataList.collect {it.namespace } as Set
     }
 
@@ -243,7 +243,7 @@ class ProfileService {
                 jsonProfile.catalogueItemId = entity.id
                 jsonProfile.catalogueItemDomainType = entity.domainType
                 jsonProfile.catalogueItemLabel = entity.label
-                List<Metadata> metadataList = localMetadataService.findAllByCatalogueItemIdAndNamespace(entity.id, this.getMetadataNamespace())
+                List<Metadata> metadataList = localMetadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
                 metadataList.each {}
                 jsonProfile.sections.each {section ->
