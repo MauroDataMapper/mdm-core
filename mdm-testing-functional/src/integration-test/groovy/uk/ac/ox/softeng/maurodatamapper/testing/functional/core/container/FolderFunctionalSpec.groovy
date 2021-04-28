@@ -200,6 +200,11 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
         assert response.body().readableByAuthenticatedUsers == false
     }
 
+    @Override
+    int getExpectedCountOfGroupsWithAccess() {
+        2
+    }
+
     @Transactional
     @Override
     void removeValidIdObjectUsingTransaction(String id) {

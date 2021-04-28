@@ -40,6 +40,7 @@ class SecurableResourceGroupRoleControllerSpec extends ResourceControllerSpec<Se
     GroupRole editorRole
     UserGroup editors
     UserGroup readers
+    UserGroup addtl
 
     def setup() {
         log.debug('Setting up SecurableResourceGroupRoleControllerSpec')
@@ -54,6 +55,8 @@ class SecurableResourceGroupRoleControllerSpec extends ResourceControllerSpec<Se
         readers = new UserGroup(createdBy: userEmailAddresses.unitTest, name: 'readers').addToGroupMembers(reader).
             addToGroupMembers(reviewer)
         checkAndSave(readers)
+        addtl = new UserGroup(createdBy: userEmailAddresses.unitTest, name: 'addtl').addToGroupMembers(reader)
+        checkAndSave(addtl)
         UserGroup folderAdmins = new UserGroup(createdBy: userEmailAddresses.unitTest, name: 'folderAdmins').addToGroupMembers(admin)
         checkAndSave(folderAdmins)
 
@@ -181,10 +184,15 @@ class SecurableResourceGroupRoleControllerSpec extends ResourceControllerSpec<Se
 
     @Override
     String getExpectedInvalidSavedJson() {
-        '{"total": 1, "errors": [' +
-        '{"message": "Property [groupRole] of class [class uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole]' +
-        ' cannot be an application level GroupRole"}' +
-        ']}'
+        '''{
+  "total": 2,
+  "errors": [
+    {"message": "Property [securableResourceId] of class [class uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole] ''' +
+        """with value [${folder.id}] must be unique by usergroup with value [${readers.id}]"},
+    {"message": "Property [groupRole] of class [class uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole] """ +
+        '''cannot be an application level GroupRole"}
+  ]
+}'''
     }
 
     @Override
@@ -196,7 +204,7 @@ class SecurableResourceGroupRoleControllerSpec extends ResourceControllerSpec<Se
   "availableActions": ["delete","show","update"],
   "id": "${json-unit.matches:id}",
   "userGroup": {
-    "name": "readers",
+    "name": "addtl",
     "id": "${json-unit.matches:id}"
   },
   "groupRole": {
@@ -229,10 +237,19 @@ class SecurableResourceGroupRoleControllerSpec extends ResourceControllerSpec<Se
 
     @Override
     String getExpectedInvalidUpdatedJson() {
-        '{"total": 1,"errors": [' +
-        '{"message": "Property [userGroup] of class [class uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole] cannot be ' +
-        'changed once set"}' +
-        ']}'
+        '''{
+  "total": 2,
+  "errors": [
+    {
+      "message": "Property [securableResourceId] of class [class uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole] ''' +
+        """with value [${folder.id}] must be unique by usergroup with value [${readers.id}]"
+    },
+    {
+      "message": "Property [userGroup] of class [class uk.ac.ox.softeng.maurodatamapper.security.role.SecurableResourceGroupRole] """ +
+        '''cannot be changed once set"
+    }
+  ]
+}'''
     }
 
     @Override
@@ -274,7 +291,7 @@ class SecurableResourceGroupRoleControllerSpec extends ResourceControllerSpec<Se
 
     @Override
     SecurableResourceGroupRole getValidUnsavedInstance() {
-        new SecurableResourceGroupRole(securableResource: folder, userGroup: readers, groupRole: GroupRole.findByName('reader'))
+        new SecurableResourceGroupRole(securableResource: folder, userGroup: addtl, groupRole: GroupRole.findByName('reader'))
     }
 
     @Override

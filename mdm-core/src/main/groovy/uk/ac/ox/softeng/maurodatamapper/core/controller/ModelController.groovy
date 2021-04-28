@@ -689,6 +689,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
     }
 
     @Override
+    protected void serviceUpdateResource(T resource) {
+        getModelService().save(DEFAULT_SAVE_ARGS, resource) as T
+    }
+
+    @Override
     protected T updateResource(T resource) {
         long start = System.currentTimeMillis()
         Set<String> changedProperties = resource.getDirtyPropertyNames()
