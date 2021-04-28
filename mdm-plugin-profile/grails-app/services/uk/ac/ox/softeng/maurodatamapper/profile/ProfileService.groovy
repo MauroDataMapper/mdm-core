@@ -38,7 +38,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
-import io.micronaut.context.ApplicationContext
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.nio.charset.StandardCharsets
@@ -47,7 +46,7 @@ import javax.servlet.http.HttpServletRequest
 @Transactional
 class ProfileService {
 
-    ApplicationContext applicationContext
+    GrailsApplication grailsApplication
 
     @Autowired
     List<CatalogueItemService> catalogueItemServices
@@ -197,8 +196,8 @@ class ProfileService {
 
         return new ProfileProviderService<JsonProfile, CatalogueItem>() {
 
-            //@Autowired(required = true)
-            MetadataService localMetadataService = applicationContext.getBean(MetadataService.class)
+            MetadataService localMetadataService = grailsApplication.mainContext.getBean('metadataService')
+
 
             @Override
             void storeProfileInEntity(CatalogueItem entity, JsonProfile profile, String userEmailAddress) {
@@ -329,14 +328,14 @@ class ProfileService {
                                         fieldName: dataElement.label,
                                         description: dataElement.description,
                                         metadataPropertyName: dataElement.metadata.find {
-                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
+                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
                                                     it.key == "metadataPropertyName"
                                         }?.value,
                                         maxMultiplicity: dataElement.maxMultiplicity,
                                         minMultiplicity: dataElement.minMultiplicity,
                                         dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
                                         regularExpression: dataElement.metadata.find {
-                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
+                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
                                                     it.key == "regularExpression"
                                         }?.value,
                                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?

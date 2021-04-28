@@ -107,7 +107,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     "allowsExtraMetadataKeys":false,
     "knownMetadataKeys":["metadataPropertyName","defaultValue","regularExpression","editedAfterFinalisation"],
     "providerType":"Profile",
-    "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile",
+    "metadataNamespace":"uk.ac.ox.softeng.maurodatamapper.profile.dataelement",
     "domains":["DataElement"]
 }]'''
     }

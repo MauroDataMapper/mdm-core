@@ -26,7 +26,7 @@ class ProfileSpecificationFieldProfileService extends JsonProfileProviderService
 
     @Override
     String getMetadataNamespace() {
-        getNamespace()
+        getNamespace() + ".dataelement"
     }
 
     @Override
