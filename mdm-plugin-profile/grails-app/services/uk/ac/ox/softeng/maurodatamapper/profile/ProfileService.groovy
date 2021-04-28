@@ -29,21 +29,16 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
-import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileFieldDataType
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
-import uk.ac.ox.softeng.maurodatamapper.profile.provider.EmptyJsonProfileFactory
-import uk.ac.ox.softeng.maurodatamapper.profile.provider.JsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.core.GrailsApplication
-import grails.databinding.DataBindingSource
 import grails.gorm.transactions.Transactional
-import grails.web.databinding.DataBindingUtils
-import groovy.json.JsonSlurper
+import io.micronaut.context.ApplicationContext
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.nio.charset.StandardCharsets
@@ -53,6 +48,9 @@ import javax.servlet.http.HttpServletRequest
 class ProfileService {
 
     GrailsApplication grailsApplication
+
+    @Autowired
+    ApplicationContext applicationContext
 
     @Autowired
     List<CatalogueItemService> catalogueItemServices
@@ -181,7 +179,7 @@ class ProfileService {
     }
 
     Set<String> getUsedNamespaces(CatalogueItem catalogueItem) {
-        MetadataService metadataService = grailsApplication.mainContext.getBean('metadataService')
+        //MetadataService metadataService = grailsApplication.mainContext.getBean('metadataService')
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemId(catalogueItem.id)
         metadataList.collect {it.namespace } as Set
     }
@@ -203,7 +201,7 @@ class ProfileService {
         return new ProfileProviderService<JsonProfile, CatalogueItem>() {
 
             //@Autowired(required = true)
-            MetadataService localMetadataService = grailsApplication.mainContext.getBean('metadataService')
+            MetadataService localMetadataService = applicationContext.getBean(MetadataService.class)
 
             @Override
             void storeProfileInEntity(CatalogueItem entity, JsonProfile profile, String userEmailAddress) {
@@ -334,14 +332,14 @@ class ProfileService {
                                         fieldName: dataElement.label,
                                         description: dataElement.description,
                                         metadataPropertyName: dataElement.metadata.find {
-                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
+                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
                                                     it.key == "metadataPropertyName"
                                         }?.value,
                                         maxMultiplicity: dataElement.maxMultiplicity,
                                         minMultiplicity: dataElement.minMultiplicity,
                                         dataType: (dataElement.dataType instanceof EnumerationType) ? 'enumeration' : dataElement.dataType.label,
                                         regularExpression: dataElement.metadata.find {
-                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile.dataelement" &&
+                                            it.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
                                                     it.key == "regularExpression"
                                         }?.value,
                                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?

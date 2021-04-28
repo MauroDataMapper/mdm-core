@@ -34,7 +34,7 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile.catalogueItemDomainType = entity.domainType
         jsonProfile.catalogueItemLabel = entity.label
 
-        List<Metadata> metadataList = metadataService.findAllByCatalogueItemIdAndNamespace(entity.id, this.getMetadataNamespace())
+        List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
         jsonProfile.sections.each {section ->
             section.fields.each { field ->
@@ -87,6 +87,11 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     @Override
     Set<String> getKnownMetadataKeys() {
         EmptyJsonProfileFactory.instance.getEmptyProfile(this).getKnownFields()
+    }
+
+    @Override
+    String getVersion() {
+        getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
     }
 
 

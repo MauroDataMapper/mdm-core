@@ -33,10 +33,6 @@ class ProfileSpecificationProfileService extends JsonProfileProviderService {
         'Profile Specification Profile (Data Model)'
     }
 
-    @Override
-    String getVersion() {
-        getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
-    }
 
     @Override
     String getJsonResourceFile() {
