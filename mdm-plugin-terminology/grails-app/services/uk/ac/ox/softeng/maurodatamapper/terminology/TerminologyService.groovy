@@ -199,7 +199,7 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    List<UUID> findAllModelIds() {
+    List<UUID> getAllModelIds() {
         Terminology.by().id().list() as List<UUID>
     }
 
@@ -428,7 +428,7 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.byDeleted().list(pagination)
     }
 
-    List<Terminology> findAllSupersededModels(List<UUID> ids, Map pagination) {
+    List<Terminology> findAllModelsByIdInList(List<UUID> ids, Map pagination) {
         if (!ids) return []
         Terminology.byIdInList(ids).list(pagination)
     }

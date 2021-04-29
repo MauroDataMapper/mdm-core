@@ -37,6 +37,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelIm
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -56,7 +57,7 @@ import java.time.ZoneOffset
 
 
 @Slf4j
-abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
+abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
 
     protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
@@ -89,6 +90,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         getModelClass()
     }
 
+    Class<K> getVersionLinkAwareClass() {
+        getModelClass()
+    }
+
     abstract Class<K> getModelClass()
 
     abstract String getUrlResourceName()
@@ -109,8 +114,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract List<K> findAllByFolderId(UUID folderId)
 
-    abstract List<K> findAllSupersededModels(List<UUID> ids, Map pagination)
-
     abstract K validate(K model)
 
     abstract K saveModelWithContent(K model)
@@ -124,8 +127,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract int countByLabel(String label)
 
     abstract List<K> findAllByLabel(String label)
-
-    abstract List<UUID> findAllModelIds()
 
     abstract int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName)
 
@@ -172,55 +173,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     List<K> findAllByDataLoaderPlugin(DataLoaderProviderService dataLoaderProviderService, Map pagination = [:]) {
         findAllByMetadataNamespaceAndKey(dataLoaderProviderService.namespace, dataLoaderProviderService.name, pagination)
-    }
-
-    void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink) {
-        removeFacetFromDomain(modelId, versionLink.id, 'versionLinks')
-    }
-
-    List<UUID> findAllSupersededModelIds(List<K> models) {
-        findAllSupersededIds(models.id)
-    }
-
-    List<K> findAllDocumentationSupersededModels(Map pagination) {
-        List<UUID> ids = findAllDocumentSupersededIds(findAllModelIds())
-        findAllSupersededModels(ids, pagination)
-    }
-
-    List<K> findAllModelSupersededModels(Map pagination) {
-        List<UUID> ids = findAllModelSupersededIds(findAllModelIds())
-        findAllSupersededModels(ids, pagination)
-    }
-
-    List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllDocumentSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllExcludingModelSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllModelSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllExcludingDocumentAndModelSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllSupersededIds(List<UUID> readableIds) {
-        (findAllDocumentSupersededIds(readableIds) + findAllModelSupersededIds(readableIds)).toSet().toList()
-    }
-
-    List<UUID> findAllDocumentSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsDocumentSuperseded(getModelClass().simpleName, readableIds)
-    }
-
-    List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
-        // All versionLinks which are targets of model version links
-        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(readableIds)
-
-        // However they are only superseded if the source of this link is finalised
-        modelVersionLinks.findAll {
-            K sourceModel = get(it.multiFacetAwareItemId)
-            sourceModel.finalised
-        }.collect {it.targetModelId}
     }
 
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,

@@ -19,8 +19,9 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -37,7 +38,7 @@ import javax.transaction.Transactional
 class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
 
     @Autowired(required = false)
-    List<ModelService> modelServices
+    List<VersionLinkAwareService> versionLinkAwareServices
 
     VersionLink get(Serializable id) {
         VersionLink.get(id)
@@ -62,7 +63,7 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     void delete(VersionLink versionLink, boolean flush = false) {
         if (!versionLink) return
 
-        ModelService service = findModelService(versionLink.multiFacetAwareItemDomainType)
+        VersionLinkAwareService service = findServiceForVersionLinkAwareDomainType(versionLink.modelDomainType)
         service.removeVersionLinkFromModel(versionLink.multiFacetAwareItemId, versionLink)
 
         versionLink.delete(flush: flush)
@@ -75,16 +76,16 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     }
 
     @Override
-    void saveMultiFacetAwareItem(VersionLink facet) {
-        if (!facet) return
-        ModelService modelService = findModelService(facet.modelDomainType)
-        modelService.save(facet.model)
+    void saveMultiFacetAwareItem(VersionLink versionLink) {
+        if (!versionLink) return
+        VersionLinkAwareService service = findServiceForVersionLinkAwareDomainType(versionLink.modelDomainType)
+        service.save(versionLink.model)
     }
 
     @Override
     void addFacetToDomain(VersionLink facet, String domainType, UUID domainId) {
         if (!facet) return
-        Model domain = findModelByDomainTypeAndId(domainType, domainId)
+        VersionLinkAware domain = findVersionLinkAwareByDomainTypeAndId(domainType, domainId)
         facet.model = domain
         domain.addToVersionLinks(facet)
     }
@@ -92,10 +93,10 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     VersionLink loadModelsIntoVersionLink(VersionLink versionLink) {
         if (!versionLink) return null
         if (!versionLink.model) {
-            versionLink.model = findModelByDomainTypeAndId(versionLink.modelDomainType, versionLink.modelId)
+            versionLink.model = findVersionLinkAwareByDomainTypeAndId(versionLink.modelDomainType, versionLink.modelId)
         }
         if (!versionLink.targetModel) {
-            versionLink.targetModel = findModelByDomainTypeAndId(versionLink.targetModelDomainType, versionLink.targetModelId)
+            versionLink.targetModel = findVersionLinkAwareByDomainTypeAndId(versionLink.targetModelDomainType, versionLink.targetModelId)
         }
         versionLink
     }
@@ -104,13 +105,13 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         if (!versionLinks) return []
         Map<String, Set<UUID>> itemIdsMap = [:]
 
-        log.debug('Collecting all catalogue items for {} semantic links', versionLinks.size())
+        log.debug('Collecting all items for {} version links', versionLinks.size())
         versionLinks.each { sl ->
 
-            itemIdsMap.compute(sl.multiFacetAwareItemDomainType, [
+            itemIdsMap.compute(sl.modelDomainType, [
                 apply: {String s, Set<UUID> uuids ->
                     uuids = uuids ?: new HashSet<>() as Set<UUID>
-                    uuids.add(sl.multiFacetAwareItemId)
+                    uuids.add(sl.modelId)
                     uuids
                 }
             ] as BiFunction)
@@ -124,12 +125,11 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
             ] as BiFunction)
         }
 
-        log.debug('Loading required catalogue items from database')
+        log.debug('Loading required items from database')
         Map<Pair<String, UUID>, Model> itemMap = [:]
         itemIdsMap.each { domain, ids ->
-            ModelService service = modelServices.find { it.handles(domain) }
-            if (!service) throw new ApiBadRequestException('VLS02', 'Semantic link loading for model item with no supporting service')
-            List<Model> items = service.getAll(ids)
+            VersionLinkAwareService service = findServiceForVersionLinkAwareDomainType(domain)
+            List<VersionLinkAware> items = service.getAll(ids)
             itemMap.putAll(items.collectEntries { i -> [new Pair<String, UUID>(domain, i.id), i] })
         }
 
@@ -253,11 +253,10 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         findAllBySourceOrTargetModelId(modelId, paginate)
     }
 
-    Model findModelByDomainTypeAndId(String domainType, UUID modelId) {
-        ModelService service = modelServices.find { it.handles(domainType) }
-        if (!service) throw new ApiBadRequestException('VLS03', "Retrieval of model of type [${domainType}] with no supporting service")
-        Model model = service.get(modelId)
-        if (!model) throw new ApiBadRequestException('VLS04', "Model of type [${domainType}] id [${modelId}] cannot be found")
+    VersionLinkAware findVersionLinkAwareByDomainTypeAndId(String domainType, UUID modelId) {
+        VersionLinkAwareService service = findServiceForVersionLinkAwareDomainType(domainType)
+        VersionLinkAware model = service.get(modelId)
+        if (!model) throw new ApiBadRequestException('VLS04', "VersionLinkAware of type [${domainType}] id [${modelId}] cannot be found")
         model
     }
 
@@ -284,9 +283,9 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     }
 
 
-    List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(String modelType, List<UUID> modelIds) {
+    List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(List<UUID> modelIds) {
         if (!modelIds) return []
-        findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(modelIds).collect {it.targetModelId}
+        findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(modelIds).collect { it.targetModelId }
     }
 
     List<VersionLink> findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(List<UUID> modelIds) {
@@ -297,13 +296,13 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
             .inList('targetModelId', modelIds).list()
     }
 
-    VersionLink findBySourceModel(Model source){
+    VersionLink findBySourceModel(Model source) {
         VersionLink.byModelId(source.id).get()
     }
 
-    ModelService findModelService(String modelDomainType) {
-        ModelService service = modelServices.find {it.handles(modelDomainType)}
-        if (!service) throw new ApiBadRequestException('FS01', "No supporting service for ${modelDomainType}")
+    VersionLinkAwareService findServiceForVersionLinkAwareDomainType(String domainType) {
+        VersionLinkAwareService service = versionLinkAwareServices.find {it.handles(domainType)}
+        if (!service) throw new ApiBadRequestException('FS01', "No supporting service for ${domainType}")
         return service
     }
 }

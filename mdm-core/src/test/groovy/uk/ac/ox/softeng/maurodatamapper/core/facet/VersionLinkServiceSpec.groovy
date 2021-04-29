@@ -72,7 +72,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
             }
         }
         service.catalogueItemServices = [basicModelService]
-        service.modelServices = [basicModelService]
+        service.versionLinkAwareServices = [basicModelService]
 
     }
 
@@ -337,7 +337,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         // bm1 SUPERSEDED_BY_FORK bm2 -- bm1
         // bm1 NEW_MODEL_VERSION_OF bm3 -- bm3 supersed
         when:
-        List<UUID> ids = service.filterModelIdsWhereModelIdIsModelSuperseded('BasicModel', BasicModel.list().id)
+        List<UUID> ids = service.filterModelIdsWhereModelIdIsModelSuperseded(BasicModel.list().id)
 
         then:
         ids.size() == 1
@@ -350,7 +350,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
                                                       targetModel: BasicModel.findByLabel('dm2')))
 
         checkAndSave(basicModel3)
-        ids = service.filterModelIdsWhereModelIdIsModelSuperseded('BasicModel', BasicModel.list().id)
+        ids = service.filterModelIdsWhereModelIdIsModelSuperseded(BasicModel.list().id)
 
         then:
         ids.size() == 2
@@ -368,7 +368,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
                                                       targetModel: BasicModel.findByLabel('dm3')))
         checkAndSave(basicModel3)
         checkAndSave(basicModel4)
-        ids = service.filterModelIdsWhereModelIdIsModelSuperseded('BasicModel', BasicModel.list().id)
+        ids = service.filterModelIdsWhereModelIdIsModelSuperseded(BasicModel.list().id)
 
         then:
         ids.size() == 2

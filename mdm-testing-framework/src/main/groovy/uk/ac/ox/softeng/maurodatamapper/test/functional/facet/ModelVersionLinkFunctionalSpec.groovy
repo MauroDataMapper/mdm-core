@@ -23,14 +23,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import groovy.util.logging.Slf4j
 
 /**
- * Where facet owner is a DataClass
- *
- * @see uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkController* Controller: versionLink
- *  |   POST   | /api/${catalogueItemDomainType}/${catalogueItemId}/versionLinks       | Action: save                                 |
- *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/versionLinks       | Action: index                                |
- *  |  DELETE  | /api/${catalogueItemDomainType}/${catalogueItemId}/versionLinks/${id} | Action: delete                               |
- *  |   PUT    | /api/${catalogueItemDomainType}/${catalogueItemId}/versionLinks/${id} | Action: update                               |
- *  |   GET    | /api/${catalogueItemDomainType}/${catalogueItemId}/versionLinks/${id} | Action: show                                 |
+ * <pre>
+ * Controller: versionLink
+ *  |  POST    | /api/${modelDomainType}/${modelId}/versionLinks        | Action: save
+ *  |  GET     | /api/${modelDomainType}/${modelId}/versionLinks        | Action: index
+ *  |  DELETE  | /api/${modelDomainType}/${modelId}/versionLinks/${id}  | Action: delete
+ *  |  PUT     | /api/${modelDomainType}/${modelId}/versionLinks/${id}  | Action: update
+ *  |  GET     | /api/${modelDomainType}/${modelId}/versionLinks/${id}  | Action: show
+ * </pre>
+ * @see uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkController
  */
 @Slf4j
 abstract class ModelVersionLinkFunctionalSpec extends CatalogueItemFacetFunctionalSpec<VersionLink> {

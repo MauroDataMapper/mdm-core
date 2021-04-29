@@ -416,7 +416,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     }
 
     @Override
-    List<UUID> findAllModelIds() {
+    List<UUID> getAllModelIds() {
         DataModel.by().id().list() as List<UUID>
     }
 
@@ -751,7 +751,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
         DataModel.byDeleted().list(pagination) as List<DataModel>
     }
 
-    List<DataModel> findAllSupersededModels(List<UUID> ids, Map pagination) {
+    List<DataModel> findAllModelsByIdInList(List<UUID> ids, Map pagination) {
         if (!ids) return []
         DataModel.byIdInList(ids).list(pagination) as List<DataModel>
     }
