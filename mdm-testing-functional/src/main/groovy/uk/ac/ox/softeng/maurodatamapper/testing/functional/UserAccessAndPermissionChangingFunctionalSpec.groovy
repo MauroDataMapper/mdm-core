@@ -121,6 +121,10 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
     }'''
     }
 
+    int getExpectedCountOfGroupsWithAccess() {
+        1
+    }
+
     /*
     * Logged in as editor testing
     */
@@ -129,14 +133,28 @@ abstract class UserAccessAndPermissionChangingFunctionalSpec extends UserAccessF
         given:
         String id = getValidId()
         def endpoint = "$id/readByEveryone"
-
-        when: 'logged in as user with write access'
         loginEditor()
+
+        when: 'getting the list of groups'
+        GET("$id/securableResourceGroupRoles")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == getExpectedCountOfGroupsWithAccess()
+
+        when: 'logged in as user with write access add the read by everyone'
         PUT(endpoint, [:])
 
         then:
         verifyResponse(OK, response)
         response.body().readableByEveryone == true
+
+        when: 'getting the list of groups'
+        GET("$id/securableResourceGroupRoles")
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == getExpectedCountOfGroupsWithAccess()
 
         cleanup:
         removeValidIdObject(id)

@@ -44,6 +44,19 @@ class SecurableResourceGroupRole implements EditHistoryAware {
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
+        securableResourceId validator: { val, obj ->
+            if (val && obj.userGroup) {
+                if (obj.id) {
+                    if (SecurableResourceGroupRole.bySecurableResourceIdAndUserGroupAndNotId(val, obj.userGroup, obj.id).count()) {
+                        ['invalid.securableresourcegrouprole.not.unique.message', obj.userGroup.id]
+                    }
+                } else {
+                    if (SecurableResourceGroupRole.bySecurableResourceIdAndUserGroup(val, obj.userGroup).count()) {
+                        ['invalid.securableresourcegrouprole.not.unique.message', obj.userGroup.id]
+                    }
+                }
+            }
+        }
         groupRole validator: { val -> if (val && val.applicationLevelRole) ['invalid.grouprole.cannot.be.application.level.message'] }
         userGroup validator: { val, obj ->
             if (val && obj.ident() && obj.isDirty('userGroup')) ['invalid.grouprole.cannot.change.usergroup.message']
@@ -118,6 +131,23 @@ class SecurableResourceGroupRole implements EditHistoryAware {
 
     static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceIds(List<UUID> securableResourceIds) {
         by().inList('securableResourceId', securableResourceIds)
+    }
+
+    static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceAndUserGroupId(String securableResourceDomainType,
+                                                                                          UUID securableResourceId,
+                                                                                          UUID userGroupId) {
+        bySecurableResource(securableResourceDomainType, securableResourceId).eq('userGroup.id', userGroupId)
+    }
+
+    static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceIdAndUserGroupAndNotId(UUID securableResourceId,
+                                                                                                  UserGroup userGroup,
+                                                                                                  UUID id) {
+        bySecurableResourceId(securableResourceId).eq('userGroup', userGroup).ne('id', id)
+    }
+
+    static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceIdAndUserGroup(UUID securableResourceId,
+                                                                                          UserGroup userGroup) {
+        bySecurableResourceId(securableResourceId).eq('userGroup', userGroup)
     }
 
     static DetachedCriteria<SecurableResourceGroupRole> bySecurableResourceAndGroupRoleId(String securableResourceDomainType,

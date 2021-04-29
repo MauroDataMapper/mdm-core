@@ -37,6 +37,10 @@ abstract class CatalogueItemController<T extends CatalogueItem> extends EditLogg
 
     abstract protected void serviceInsertResource(T resource)
 
+    protected void serviceUpdateResource(T resource) {
+        serviceInsertResource(resource)
+    }
+
     @Override
     protected T saveResource(T resource) {
         log.trace('save resource')
@@ -49,7 +53,7 @@ abstract class CatalogueItemController<T extends CatalogueItem> extends EditLogg
     protected T updateResource(T resource) {
         log.trace('update {}', resource.ident())
         List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
-        serviceInsertResource(resource)
+        serviceUpdateResource(resource)
         if (!params.boolean('noHistory')) resource.addUpdatedEdit(getCurrentUser(), dirtyPropertyNames)
         resource
     }

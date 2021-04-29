@@ -169,6 +169,11 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     @Override
+    int getExpectedCountOfGroupsWithAccess() {
+        2
+    }
+
+    @Override
     void verifyL01Response(HttpResponse<Map> response) {
         verifyResponse OK, response
         assert response.body().count == 0

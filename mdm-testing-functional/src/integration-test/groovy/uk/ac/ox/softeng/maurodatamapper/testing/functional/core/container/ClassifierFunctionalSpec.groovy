@@ -128,6 +128,11 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
     }
 
     @Override
+    int getExpectedCountOfGroupsWithAccess() {
+        2
+    }
+
+    @Override
     String getEditorIndexJson() {
         '''{
   "count": 4,
