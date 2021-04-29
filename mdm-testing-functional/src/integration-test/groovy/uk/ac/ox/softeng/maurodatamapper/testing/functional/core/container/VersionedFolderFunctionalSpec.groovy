@@ -679,12 +679,14 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         String id = getValidFinalisedId()
         loginEditor()
 
-
         when: 'The folder gets newBranchModelVersion'
         PUT("$id/newBranchModelVersion", [:])
 
         then:
-        response.status == OK
+        response.status == CREATED
+        //TODO more test checks here, check VersionLinks and dataModels inside the VersionedFolder
+        //will require populating the VersionedFolder
+        //suggestion: check ModelUserAccessAndPermissionChangingFunctionalSpec.groovy, test E19
 
     }
 

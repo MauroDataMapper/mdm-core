@@ -294,9 +294,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         // Check if the branch name is already being used
         if (countAllByLabelAndBranchNameAndNotFinalised(folder.label, branchName) > 0) {
-            //TODO remove placeholder in error message, sort getModelClass()
+            //TODO remove placeholder in error message
             (folder as GormValidateable).errors.reject('placeholder.label.branch.name.already.exists',
-                                                       ['branchName', getFolderClass(), branchName, folder.label] as Object[],
+                                                       ['branchName', getFolderClass().simpleName, branchName, folder.label] as Object[],
                                                        'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
             return folder
         }
@@ -386,15 +386,19 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     VersionedFolder findFolderDocumentationSuperseding(VersionedFolder folder) {
-        //TODO simpleName corresponding folder variable
-        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingFolderId(getModelClass().simpleName, folder.id)
+        return null
+        //TODO uncomment
+        /*
+        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingFolderId(getFolderClass().simpleName, folder.id)
         if (!link) return null
         link.catalogueItemId == folder.id ? get(link.targetModelId) : get(link.catalogueItemId)
+         */
     }
 
-    //TODO countByLabelAnd... is not found for either folders or datamodels, check it's okay
     int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
-        VersionedFolder.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+        //TODO remove return 0, resolve countBy method
+        return 0
+        //VersionedFolder.countByLabelAndBranchNameAndFinalised(label, branchName, false)
     }
 
     VersionedFolder copyFolderAsNewBranchFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, String branchName,
@@ -427,8 +431,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                 setCatalogueItemRefinesCatalogueItem(copy, original, copier)
         */
         if (copy.validate()) {
-            save(copy, validate: false)
-            //TODO check original.domainType is the correct variable
+            copy.save()
+            //TODO copy.save() may be missing some crucial functionality provided by validate:false, check
+            //save(copy, validate: false)
+            //TODO this currently reads VF VF:..., change description?
             editService.createAndSaveEdit(copy.id, copy.domainType,
                                           "VersionedFolder ${original.domainType}:${original.label} created as a copy of ${original.id}",
                                           copier
@@ -439,11 +445,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void setFolderIsNewBranchModelVersionOfFolder(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
+        //TODO this currently non-functional, needs versionLinks
+        /*
         newFolder.addToVersionLinks(
-            //TODO don't see why addToVersionLinks can't be used for folders as well, check it though
             linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
             targetFolder: oldFolder
         )
+        */
     }
 }
