@@ -1014,4 +1014,50 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         }
         cleanUpRoles(ids)
     }
+
+    void 'V03 : newForkModel endpoint for VersionedFolder'() {
+        //TODO E17 of ModelUserAccessAndPermissionChangingFunctionalSpec
+        given:
+        String id = getValidFinalisedId()
+        String label = "Functional Test newForkModel for ${folderType}"
+        loginEditor()
+
+        when: 'The folder gets newForkModel'
+        PUT("$id/newForkModel", [label: label])
+
+        then:
+        response.status == CREATED
+
+        //TODO uncomment post-versionLinks, as currently will fail, remove uncommented cleanup
+        /*
+        responseBody().id != id
+        responseBody().label == label
+
+        when:
+        String forkId = responseBody().id
+        GET("$forkId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
+        responseBody().items.first().sourceModel.id == forkId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(forkId)
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(forkId, id)
+         */
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(id)
+    }
+
+    String getFolderType() {
+        'Versioned Folder'
+    }
+
 }

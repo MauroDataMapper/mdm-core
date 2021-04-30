@@ -93,6 +93,7 @@ class UrlMappings {
 
                 put '/finalise'(controller: 'versionedFolder', action: 'finalise')
                 put '/newBranchModelVersion'(controller: 'versionedFolder', action: 'newBranchModelVersion')
+                put '/newForkModel'(controller: 'versionedFolder', action: 'newForkModel')
 
                 put '/readByEveryone'(controller: 'versionedFolder', action: 'readByEveryone')
                 delete '/readByEveryone'(controller: 'versionedFolder', action: 'readByEveryone')

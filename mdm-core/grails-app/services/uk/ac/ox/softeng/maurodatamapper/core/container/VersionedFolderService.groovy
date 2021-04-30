@@ -481,4 +481,36 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     void setFolderRefinesFolder(VersionedFolder source, VersionedFolder target, User catalogueUser) {
         source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
     }
+
+    VersionedFolder createNewForkModel(String label, VersionedFolder folder, User user, boolean copyPermissions,
+                                       UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        if (!newVersionCreationIsAllowed(folder)) return folder
+
+        VersionedFolder newForkModel = copyModelAsNewForkModel(folder, user, copyPermissions, label,
+                                                 additionalArguments.throwErrors as boolean,
+                                                 userSecurityPolicyManager)
+        setFolderIsNewForkModelOfVersionedFolder(newForkModel, folder, user)
+        //TODO delete?
+        if (additionalArguments.copyDataFlows) {
+            throw new ApiNotYetImplementedException('VFSXX', 'VersionedFolder copying of DataFlows')
+            //copyTargetDataFlows(dataModel, newForkModel, user)
+        }
+        newForkModel
+    }
+
+    VersionedFolder copyModelAsNewForkModel(VersionedFolder original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                              UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyFolder(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    void setFolderIsNewForkModelOfVersionedFolder(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
+        //TODO this currently non-functional, needs versionlinks
+        /*
+        newFolder.addToVersionLinks(
+            linkType: VersionLinkType.NEW_FORK_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetFolder: oldFolder
+        )
+        */
+    }
 }
