@@ -505,4 +505,42 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     void setFolderRefinesFolder(VersionedFolder source, VersionedFolder target, User catalogueUser) {
         source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
     }
+
+    VersionedFolder createNewDocumentationVersion(VersionedFolder folder, User user, boolean copyPermissions,
+                                    UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        if (!newVersionCreationIsAllowed(folder)) return folder
+
+        VersionedFolder newDocVersion = copyFolderAsNewDocumentationModel(folder,
+                                                           user,
+                                                           copyPermissions,
+                                                           folder.label,
+                                                           Version.nextMajorVersion(folder.documentationVersion),
+                                                           folder.branchName,
+                                                           additionalArguments.throwErrors as boolean,
+                                                           userSecurityPolicyManager,)
+        setModelIsNewDocumentationVersionOfModel(newDocVersion, folder, user)
+        //TODO delete?
+        if (additionalArguments.moveDataFlows) {
+            throw new ApiNotYetImplementedException('VFSXX', 'VersionedFolder moving of DataFlows')
+            //            moveTargetDataFlows(dataModel, newDocVersion)
+        }
+        newDocVersion
+    }
+
+    void setModelIsNewDocumentationVersionOfModel(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
+        //TODO this currently non-functional, needs versionlinks
+        /*
+        newFolder.addToVersionLinks(
+            linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetFolder: oldFolder
+        )
+         */
+    }
+
+    VersionedFolder copyFolderAsNewDocumentationModel(VersionedFolder original, User copier, boolean copyPermissions, String label,
+                                                     Version copyDocVersion, String branchName, boolean throwErrors,
+                                                     UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyFolder(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
+    }
 }

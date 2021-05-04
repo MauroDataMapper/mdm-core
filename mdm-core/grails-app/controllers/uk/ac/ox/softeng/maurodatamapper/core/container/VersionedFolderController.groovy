@@ -218,6 +218,38 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         saveResponse(copy)
     }
 
+    @Transactional
+    def newDocumentationVersion(CreateNewVersionData createNewVersionData) {
+
+        createNewVersionData.label = 'newDocumentationVersion'
+
+        if (!createNewVersionData.validate()) {
+            respond createNewVersionData.errors
+            return
+        }
+
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+
+        if (!instance) return notFound(params.versionedFolderId)
+
+        //TODO is casting actually necessary?
+        VersionedFolder copy = getVersionedFolderService().
+            createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager) as
+            VersionedFolder
+
+        if (!validateResource(copy, 'create')) return
+
+        //TODO casting necessary?
+        VersionedFolder savedCopy = versionedFolderService.saveFolderWithContent(copy) as VersionedFolder
+        savedCopy.addCreatedEdit(currentUser)
+
+        if (securityPolicyManagerService) {
+            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, currentUser, savedCopy.label)
+        }
+
+        saveResponse savedCopy
+    }
+
     @Override
     protected VersionedFolder queryForResource(Serializable id) {
         versionedFolderService.get(id)
