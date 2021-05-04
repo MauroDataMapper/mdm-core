@@ -91,7 +91,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         dataType.breadcrumbTree.removeFromParent()
 
         List<DataElement> dataElements = dataElementService.findAllByDataType(dataType)
-        dataElements.each { dataElementService.delete(it) }
+        dataElements.each {dataElementService.delete(it)}
 
         switch (dataType.domainType) {
             case DataType.PRIMITIVE_DOMAIN_TYPE:
@@ -203,7 +203,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             new PrimitiveType(label: 'Timestamp', description: 'A timestamp'),
             new PrimitiveType(label: 'Boolean', description: 'A true or false value'),
             new PrimitiveType(label: 'Duration', description: 'A time period in arbitrary units')
-        ].collect { new DefaultDataType(it) }
+        ].collect {new DefaultDataType(it)}
     }
 
     @Override
@@ -221,15 +221,26 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         if (dataType) delete(dataType)
     }
 
-    def saveAll(Collection<DataType> dataTypes) {
-        List<Classifier> classifiers = dataTypes.collectMany { it.classifiers ?: [] } as List<Classifier>
+    @Override
+    DataType save(Map args, DataType domain) {
+        // If RT make sure the reference class is saved but dont try and save the datatypes as part of this
+        // otherwise we end up in a loop
+        if (domain.instanceOf(ReferenceType)) {
+            Map dcArgs = [flush: false, validate: false, saveDataTypes: false]
+            dataClassService.save(dcArgs, (domain as ReferenceType).referenceClass)
+        }
+        super.save(args, domain)
+    }
+
+    def saveAll(Collection<DataType> dataTypes, boolean batching = true) {
+        List<Classifier> classifiers = dataTypes.collectMany {it.classifiers ?: []} as List<Classifier>
         if (classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(classifiers)
         }
 
-        Collection<DataType> alreadySaved = dataTypes.findAll { it.ident() && it.isDirty() }
-        Collection<DataType> notSaved = dataTypes.findAll { !it.ident() }
+        Collection<DataType> alreadySaved = dataTypes.findAll {it.ident() && it.isDirty()}
+        Collection<DataType> notSaved = dataTypes.findAll {!it.ident()}
 
         if (alreadySaved) {
             log.trace('Straight saving {} already saved DataTypes ', alreadySaved.size())
@@ -237,22 +248,30 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         }
 
         if (notSaved) {
-            log.trace('Batch saving {} new DataTypes in batches of {}', notSaved.size(), DataType.BATCH_SIZE)
-            List batch = []
-            int count = 0
+            if (batching) {
+                log.trace('Batch saving {} new DataTypes in batches of {}', notSaved.size(), DataType.BATCH_SIZE)
+                List batch = []
+                int count = 0
 
-            notSaved.each { dt ->
-                dt.dataElements?.clear()
-                batch += dt
-                count++
-                if (count % DataType.BATCH_SIZE == 0) {
-                    batchSave(batch)
-                    batch.clear()
+                notSaved.each {dt ->
+                    dt.dataElements?.clear()
+                    batch += dt
+                    count++
+                    if (count % DataType.BATCH_SIZE == 0) {
+                        batchSave(batch)
+                        batch.clear()
+                    }
+
                 }
-
+                batchSave(batch)
+                batch.clear()
+            } else {
+                log.trace('Straight saving {} new DataTypes', notSaved.size())
+                notSaved.each {dt ->
+                    save(flush: false, validate: false, dt)
+                    updateFacetsAfterInsertingCatalogueItem(dt)
+                }
             }
-            batchSave(batch)
-            batch.clear()
         }
     }
 
@@ -313,7 +332,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         if (dataType.instanceOf(EnumerationType)) {
             EnumerationType enumerationType = (dataType as EnumerationType)
             enumerationType.fullSortOfChildren(enumerationType.enumerationValues)
-            enumerationType.enumerationValues.each { ev ->
+            enumerationType.enumerationValues.each {ev ->
                 ev.createdBy = importingUser.emailAddress
                 ev.buildPath()
             }
@@ -358,7 +377,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             else {
                 log.
                     trace('No referenceClass could be found to match label tree for {}, attempting no label tree', referenceType.referenceClass.label)
-                def possibles = dataModel.dataClasses.findAll { it.label == referenceType.referenceClass.label }
+                def possibles = dataModel.dataClasses.findAll {it.label == referenceType.referenceClass.label}
                 if (possibles.size() == 1) {
                     log.trace('Single possible referenceClass found, safely using')
                     possibles.first().addToReferenceTypes(referenceType)
@@ -372,7 +391,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
             }
         } else {
             log.trace('Making best guess for matching reference class as no path nor bound class')
-            DataClass dataClass = dataModel.dataClasses.find { it.label == bindingMap.referenceClass.label }
+            DataClass dataClass = dataModel.dataClasses.find {it.label == bindingMap.referenceClass.label}
             if (dataClass) dataClass.addToReferenceTypes(referenceType)
         }
     }
@@ -393,7 +412,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 break
             case DataType.ENUMERATION_DOMAIN_TYPE:
                 copy = new EnumerationType()
-                original.enumerationValues.each { ev ->
+                original.enumerationValues.each {ev ->
                     copy.addToEnumerationValues(key: ev.key, value: ev.value, category: ev.category)
                 }
                 break
@@ -472,19 +491,19 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     private void mergeDataTypes(DataType keep, DataType replace) {
-        replace.dataElements?.each { de ->
+        replace.dataElements?.each {de ->
             keep.addToDataElements(de)
         }
         List<Metadata> mds = []
         mds += replace.metadata ?: []
-        mds.findAll { !keep.findMetadataByNamespaceAndKey(it.namespace, it.key) }.each { md ->
+        mds.findAll {!keep.findMetadataByNamespaceAndKey(it.namespace, it.key)}.each {md ->
             replace.removeFromMetadata(md)
             keep.addToMetadata(md.namespace, md.key, md.value, md.createdBy)
         }
     }
 
     DataType findDataType(DataModel dataModel, String label) {
-        dataModel.dataTypes.find { it.label == label.trim() }
+        dataModel.dataTypes.find {it.label == label.trim()}
     }
 
     /*

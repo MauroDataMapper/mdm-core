@@ -73,6 +73,9 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     UUID dataClassId
 
     @Shared
+    UUID secondDataClassId
+
+    @Shared
     UUID otherDataClassId
 
     @Shared
@@ -112,6 +115,9 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         DataClass dataClass = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
                                             dataModel: dataModel).save(flush: true)
         dataClassId = dataClass.id
+        secondDataClassId = new DataClass(label: 'Functional Test DataClass 3', createdBy: FUNCTIONAL_TEST,
+                                          dataModel: dataModel).save(flush: true).id
+
         DataClass otherDataClass = new DataClass(label: 'Functional Test DataClass 2', createdBy: FUNCTIONAL_TEST,
                                                  dataModel: otherDataModel).save(flush: true)
         otherDataClassId = otherDataClass.id
@@ -555,7 +561,8 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
                  dataType       : [
                      label         : 'Reference Test DataType To Copy',
                      domainType    : DataType.REFERENCE_DOMAIN_TYPE,
-                     referenceClass: dataClassId.toString()
+                     referenceClass: secondDataClassId.toString() //Originally tested the dataClassId which is what this DE is added to making an
+                     // infinite loop. this is not realistic
                  ]
              ])
         verifyResponse CREATED, response

@@ -87,8 +87,6 @@ class DataElementController extends CatalogueItemController<DataElement> {
             return
         }
 
-        dataModelService.saveModelNewContentOnly(destinationDataModel)
-
         saveResource copy
 
         saveResponse copy

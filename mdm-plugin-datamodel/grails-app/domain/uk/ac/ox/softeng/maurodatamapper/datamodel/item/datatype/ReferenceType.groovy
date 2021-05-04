@@ -33,6 +33,7 @@ class ReferenceType extends DataType<ReferenceType> {
 
     static constraints = {
         referenceClass validator: {val, obj ->
+            if (!val) return ['default.null.message']
             if (val && val.model && obj.model) {
                 // In the same model is okay
                 if (val.model.id == obj.model.id) return true

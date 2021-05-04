@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
@@ -77,6 +78,68 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     @Override
     boolean handlesPathPrefix(String pathPrefix) {
         pathPrefix == "dc"
+    }
+
+    @Override
+    DataClass save(Map args, DataClass domain) {
+        // If not previously saved then allow a deep save and/or datatype save
+        if (!domain.ident()) {
+            if (args.deepSave) {
+                saveDataClassHierarchy(domain)
+            }
+
+            // If ignore datatypes then skip this bit or DC already been saved as this is designed to handle full builds or copies
+            if (args.saveDataTypes) {
+                saveDataTypesUsedInDataClass(domain)
+            }
+        }
+        super.save(args, domain)
+    }
+
+    void saveDataTypesUsedInDataClass(DataClass dataClass) {
+        // Make sure all datatypes are saved
+        Set<DataType> dataTypes = extractAllUsedNewOrDirtyDataTypes(dataClass)
+        log.debug('{} new or dirty used datatypes inside dataclass', dataTypes.size())
+        // Validation should have already been done
+        dataTypes.each {it.skipValidation(true)}
+        dataTypeService.saveAll(dataTypes, false)
+    }
+
+    Set<DataType> extractAllUsedNewOrDirtyDataTypes(DataClass dataClass) {
+        Set<DataType> dataTypes = dataClass.dataElements.collect {it.dataType}.findAll {it.isDirty() || !it.ident()}.toSet()
+        dataTypes.addAll(dataClass.dataClasses.collect {extractAllUsedNewOrDirtyDataTypes(it)}.flatten().toSet() as Collection<DataType>)
+        dataTypes
+    }
+
+    /**
+     * Save the dataclasses in the hierarchy of this dataclass in advance of saving the content of the DataClass.
+     * This is necessary to handle reference types used by DataElements where the ReferenceClass is defined inside the DataClass
+     * @param dataClass
+     */
+    void saveDataClassHierarchy(DataClass dataClass) {
+        // If nothing in this dataclass then no need to save hierarchy
+        if (!dataClass.dataElements && !dataClass.dataClasses) return
+
+        // Preserve the content
+        Set<DataClass> dataClasses = new HashSet<>(dataClass.dataClasses ?: [])
+        dataClass.dataClasses?.clear()
+        Set<DataElement> dataElements = new HashSet<>(dataClass.dataElements ?: [])
+        dataClass.dataElements?.clear()
+        Set<ReferenceType> referenceTypes = new HashSet<>(dataClass.referenceTypes ?: [])
+        dataClass.referenceTypes?.clear()
+
+        // Save the DC without flushing
+        dataClass.save(flush: false, validate: false)
+
+        // Recurse through the hierarchy
+        dataClasses?.each {dc ->
+            saveDataClassHierarchy(dc)
+        }
+
+        // Add the content back in
+        dataClass.dataClasses = dataClasses
+        dataClass.dataElements = dataElements
+        dataClass.referenceTypes = referenceTypes
     }
 
     void delete(UUID id) {
@@ -241,14 +304,12 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     private void removeReferenceTypes(DataClass dataClass) {
-        List<ReferenceType> referenceTypes = []
-        referenceTypes += dataClass.referenceTypes.findAll()
+        List<ReferenceType> referenceTypes = new ArrayList<>(dataClass.referenceTypes.findAll())
         referenceTypes.each {dataTypeService.delete(it)}
     }
 
     private void removeAllDataElementsWithNoLabel(DataClass dataClass) {
-        List<DataElement> dataElements = []
-        dataElements += dataClass.dataElements.findAll {!it.label}
+        List<DataElement> dataElements = new ArrayList<>(dataClass.dataElements.findAll {!it.label})
         dataElements.each {dataElementService.delete(it)}
     }
 
@@ -707,7 +768,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         if (!dataClasses || !fromDataClasses) throw new ApiInternalException('DCSXX', 'No DataClasses or FromDataClasses exist to create links')
         List<SemanticLink> alreadyExistingLinks =
             semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
-            dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
+                dataClasses*.id, fromDataClasses*.id, SemanticLinkType.IS_FROM)
         dataClasses.each {de ->
             fromDataClasses.each {fde ->
                 // If no link already exists then add a new one
