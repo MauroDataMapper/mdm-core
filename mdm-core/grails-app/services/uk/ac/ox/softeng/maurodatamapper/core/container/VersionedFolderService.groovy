@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -31,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
 @Slf4j
-class VersionedFolderService extends ContainerService<VersionedFolder> {
+class VersionedFolderService extends ContainerService<VersionedFolder> implements VersionLinkAwareService<VersionedFolder> {
 
     FolderService folderService
 
@@ -40,6 +42,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> {
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
+
+    VersionLinkService versionLinkService
 
     @Override
     boolean handles(Class clazz) {
@@ -53,6 +57,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> {
 
     @Override
     Class<Folder> getContainerClass() {
+        VersionedFolder
+    }
+
+    Class<VersionedFolder> getVersionLinkAwareClass() {
         VersionedFolder
     }
 
@@ -132,6 +140,17 @@ class VersionedFolderService extends ContainerService<VersionedFolder> {
     @Override
     List<VersionedFolder> findAllByMetadataNamespace(String namespace, Map pagination = [:]) {
         VersionedFolder.byMetadataNamespace(namespace).list(pagination)
+    }
+
+    @Override
+    List<VersionedFolder> findAllModelsByIdInList(List<UUID> ids, Map pagination) {
+        if (!ids) return []
+        VersionedFolder.byIdInList(ids).list(pagination) as List<VersionedFolder>
+    }
+
+    @Override
+    List<UUID> getAllModelIds() {
+        VersionedFolder.by().id().list() as List<UUID>
     }
 
     VersionedFolder get(Serializable id) {

@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.facet.versionlink
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.facet.ModelVersionLinkFunctionalSpec
 
 import grails.gorm.transactions.Transactional
@@ -37,38 +37,36 @@ import groovy.util.logging.Slf4j
  */
 @Integration
 @Slf4j
-class DataModelVersionLinkFunctionalSpec extends ModelVersionLinkFunctionalSpec {
-
-    @Transactional
-    String getComplexDataModelId() {
-        DataModel.findByLabel('Complex Test DataModel').id.toString()
-    }
+class VersionedFolderVersionLinkFunctionalSpec extends ModelVersionLinkFunctionalSpec {
 
     @Override
     String getModelDomainType() {
-        'dataModels'
+        'versionedFolders'
     }
 
     @Override
+    @Transactional
     String getModelId() {
-        getComplexDataModelId()
+        VersionedFolder.findByLabel('Functional Test VersionedFolder').id.toString()
     }
 
     @Transactional
+    @Override
     String getTargetModelId() {
-        DataModel.findByLabel('Simple Test DataModel').id.toString()
+        VersionedFolder.findByLabel('Functional Test VersionedFolder 2').id.toString()
     }
 
+    @Override
     String getTargetModelDomainType() {
-        'DataModel'
+        'VersionedFolder'
     }
 
     @Override
     String getModelJsonString() {
         '''{
     "id": "${json-unit.matches:id}",
-    "domainType": "DataModel",
-    "label": "Complex Test DataModel"
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder"
   }'''
     }
 
@@ -76,8 +74,8 @@ class DataModelVersionLinkFunctionalSpec extends ModelVersionLinkFunctionalSpec 
     String getTargetModelJsonString() {
         '''{
     "id": "${json-unit.matches:id}",
-    "domainType": "DataModel",
-    "label": "Simple Test DataModel"
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2"
   }'''
     }
 }
