@@ -89,8 +89,8 @@ class DataModelInterceptor extends ModelInterceptor {
             if (!canReadId) {
                 return notFound(DataModel, getId())
             }
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.otherModelId)) {
-                return notFound(DataModel, params.otherModelId)
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, params.otherDataModelId)) {
+                return notFound(DataModel, params.otherDataModelId)
             }
             return true
         }

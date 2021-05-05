@@ -48,7 +48,7 @@ Controller: dataModel
  |   PUT    | /api/dataModels/${dataModelId}/readByEveryone  | Action: readByEveryone
  |   GET    | /api/dataModels/${dataModelId}/search  | Action: search
  |   POST   | /api/dataModels/${dataModelId}/search  | Action: search
- |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherModelId}  | Action: suggestLinks
+ |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherDataModelId}  | Action: suggestLinks
  |  DELETE  | /api/dataModels  | Action: deleteAll
 
 Controller: folder
