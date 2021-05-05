@@ -9,6 +9,6 @@ json {
     linkType versionLink.linkType.label
     domainType versionLink.domainType
 
-    sourceModel tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: versionLink.model)
-    targetModel tmpl.'/catalogueItem/baseCatalogueItem'(catalogueItem: versionLink.targetModel)
+    sourceModel tmpl.'/multiFacetAware/multiFacetAware'(multiFacetAware: versionLink.model)
+    targetModel tmpl.'/multiFacetAware/multiFacetAware'(multiFacetAware: versionLink.targetModel)
 }

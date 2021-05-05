@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
@@ -36,7 +38,7 @@ class VersionLink implements MultiFacetItemAware, CreatorAware {
 
     @BindUsing({obj, source -> VersionLinkType.findFromMap(source)})
     VersionLinkType linkType
-    Model targetModel
+    VersionLinkAware targetModel
     UUID targetModelId
     String targetModelDomainType
 
@@ -78,12 +80,12 @@ class VersionLink implements MultiFacetItemAware, CreatorAware {
         "VersionLink:${linkType}:${targetModelId}"
     }
 
-    void setModel(Model model) {
-        setMultiFacetAwareItem(model)
+    void setModel(VersionLinkAware model) {
+        setMultiFacetAwareItem(model as MultiFacetAware)
     }
 
-    Model getModel() {
-        multiFacetAwareItem as Model
+    VersionLinkAware getModel() {
+        multiFacetAwareItem as VersionLinkAware
     }
 
     UUID getModelId() {
@@ -94,7 +96,7 @@ class VersionLink implements MultiFacetItemAware, CreatorAware {
         multiFacetAwareItemDomainType
     }
 
-    void setTargetModel(Model targetModel) {
+    void setTargetModel(VersionLinkAware targetModel) {
         this.targetModel = targetModel
         this.targetModelDomainType = targetModel.domainType
         this.targetModelId = targetModel.id

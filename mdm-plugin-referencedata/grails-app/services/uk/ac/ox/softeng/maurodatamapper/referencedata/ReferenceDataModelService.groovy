@@ -43,7 +43,6 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceD
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.importer.ReferenceDataJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.similarity.ReferenceDataElementSimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
-import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -279,7 +278,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     }
 
     @Override
-    List<UUID> findAllModelIds() {
+    List<UUID> getAllModelIds() {
         ReferenceDataModel.by().id().list() as List<UUID>
     }
 
@@ -607,7 +606,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         ReferenceDataModel.byDeleted().list(pagination)
     }
 
-    List<ReferenceDataModel> findAllSupersededModels(List<UUID> ids, Map pagination) {
+    List<ReferenceDataModel> findAllModelsByIdInList(List<UUID> ids, Map pagination) {
         if (!ids) return []
         ReferenceDataModel.byIdInList(ids).list(pagination)
     }

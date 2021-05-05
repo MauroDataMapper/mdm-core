@@ -18,9 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.VersionedFolderLabelValidator
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
@@ -30,9 +32,13 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
 
-class VersionedFolder extends Folder implements VersionAware {
+class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
 
     Authority authority
+
+    static hasMany = [
+        versionLinks: VersionLink,
+    ]
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
@@ -141,5 +147,9 @@ class VersionedFolder extends Folder implements VersionAware {
                 eq 'namespace', metadataNamespace
             }
         }
+    }
+
+    static DetachedCriteria<VersionedFolder> byIdInList(Collection<UUID> ids) {
+        by().inList('id', ids.toList())
     }
 }
