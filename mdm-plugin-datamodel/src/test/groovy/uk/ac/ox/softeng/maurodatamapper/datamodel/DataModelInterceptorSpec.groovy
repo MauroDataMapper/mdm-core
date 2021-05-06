@@ -129,6 +129,7 @@ class DataModelInterceptorSpec extends TieredAccessCheckResourceInterceptorUnitS
         given:
         params.dataModelId = dataModelId
         params.otherModelId = otherDataModelId
+        params.otherDataModelId = otherDataModelId
 
         when:
         params.currentUserSecurityPolicyManager = publicAccessUserSecurityPolicyManager
