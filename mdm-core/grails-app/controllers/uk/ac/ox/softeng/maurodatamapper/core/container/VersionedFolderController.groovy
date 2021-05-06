@@ -178,13 +178,12 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!instance) return notFound(params.versionedFolderId)
 
-        VersionedFolder copy = getVersionedFolderService().
-            createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser, createNewVersionData.copyPermissions,
-                                        currentUserSecurityPolicyManager)
+        VersionedFolder copy = versionedFolderService.createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
+                                                                                  createNewVersionData.copyPermissions,
+                                                                                  currentUserSecurityPolicyManager)
 
         if (!validateResource(copy, 'create')) return
 
-        //this only applies to DMs??
         VersionedFolder savedCopy = versionedFolderService.saveFolderWithContent(copy)
         savedCopy.addCreatedEdit(currentUser)
 

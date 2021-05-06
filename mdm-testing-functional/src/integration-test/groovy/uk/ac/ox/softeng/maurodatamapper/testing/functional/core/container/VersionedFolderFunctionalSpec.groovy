@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
@@ -135,15 +136,6 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 [groupI: editorsUserGroup.id, groupRoleI: getEditorGroupRoleId()]
             ]
         ]
-    }
-
-    String getValidFinalisedId() {
-        String id = getValidId()
-        loginEditor()
-        PUT("$id/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        logout()
-        id
     }
 
     @Override
@@ -628,6 +620,210 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIdWithContent(data)
     }
 
+    void 'BMV01 : newBranchModelVersion endpoint for VersionedFolder'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        loginEditor()
+
+        when: 'The folder gets newBranchModelVersion'
+        PUT("$data.id/newBranchModelVersion", [:])
+
+        then:
+        response.status == CREATED
+        //TODO more test checks here, check VersionLinks and dataModels inside the VersionedFolder
+        //will require populating the VersionedFolder
+        //suggestion: check ModelUserAccessAndPermissionChangingFunctionalSpec.groovy, test E19
+
+        cleanup:
+        cleanupIdWithContent(data)
+    }
+
+    void 'R19 : test creating a new branch model version of a Model<T> (as reader)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when:
+        loginReader()
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E19a : test creating a new model version of a Model<T> (no branch name) (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        !responseBody().modelVersion
+
+        when:
+        String branchId = responseBody().id
+        GET("$branchId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == branchId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(branchId)
+        cleanUpRoles(id, branchId)
+    }
+
+    void 'E19b : test creating a new branch model version of a Model<T> (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion'])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'newBranchModelVersion'
+        !responseBody().modelVersion
+
+        when:
+        String branchId = responseBody().id
+        GET("$branchId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == branchId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        when:
+        //get all so that if there are more than 10 items, we can be sure of finding the correct one in the when block below
+        GET("?all=true")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 3
+
+        when:
+        log.debug(responseBody().toString())
+        String mainBranchId = responseBody().items.find {
+            it.label == validJson.label &&
+            !(it.id in [branchId, id])
+        }?.id
+
+        then:
+        mainBranchId
+
+        when:
+        GET(mainBranchId)
+
+        then:
+        verifyResponse OK, response
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        !responseBody().modelVersion
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(branchId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id, branchId, mainBranchId)
+    }
+
+    void 'E19c : test creating a new model version of a Model<T> and finalising (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+
+        when:
+        String branchId = responseBody().id
+        PUT("$branchId/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse OK, response
+        responseBody().finalised == true
+        responseBody().dateFinalised
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().modelVersion == '2.0.0'
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(branchId)
+        cleanUpRoles(id, branchId)
+    }
+
+    void 'E19d : test creating a new branch model version of a Model<T> and trying to finalise(as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().availableActions == getEditorAvailableActions().sort()
+        String mainBranchId = responseBody().id
+
+        when:
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion'])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'newBranchModelVersion'
+        !responseBody().modelVersion
+        responseBody().availableActions == (getEditorAvailableActions() - [ResourceActions.FINALISE_ACTION]).sort()
+
+        when:
+        PUT("$branchId/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyForbidden response
+
+        when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 3
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(branchId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id, branchId, mainBranchId)
+    }
+
     List<String> getFinalisedEditorAvailableActions() {
         [
             'show',
@@ -640,6 +836,15 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             'softDelete',
             'delete'
         ].sort()
+    }
+
+    Map<String, String> getValidFinalisedIdWithContent() {
+        Map data = getValidIdWithContent()
+        loginEditor()
+        PUT("$data.id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        logout()
+        data
     }
 
     Map<String, String> getValidIdWithContent() {
@@ -657,7 +862,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         ], MAP_ARG, true)
         verifyResponse(CREATED, response)
         String dataModel2Id = responseBody().id
-
+        logout()
         [id          : id,
          dataModel1Id: dataModel1Id,
          dataModel2Id: dataModel2Id
@@ -673,21 +878,4 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse HttpStatus.NO_CONTENT, response
         removeValidIdObject(data.id)
     }
-
-    void 'V02 : newBranchModelVersion endpoint for VersionedFolder'() {
-        given:
-        String id = getValidFinalisedId()
-        loginEditor()
-
-        when: 'The folder gets newBranchModelVersion'
-        PUT("$id/newBranchModelVersion", [:])
-
-        then:
-        response.status == CREATED
-        //TODO more test checks here, check VersionLinks and dataModels inside the VersionedFolder
-        //will require populating the VersionedFolder
-        //suggestion: check ModelUserAccessAndPermissionChangingFunctionalSpec.groovy, test E19
-
-    }
-
 }

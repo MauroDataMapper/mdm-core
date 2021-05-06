@@ -241,13 +241,12 @@ class TerminologyService extends ModelService<Terminology> {
         latest
     }
 
-    Terminology copyModel(Terminology original, User copier, boolean copyPermissions, String label, Version copyVersion, String branchName,
-                          boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
+    Terminology copyModel(Terminology original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyVersion,
+                          String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         Terminology copy = new Terminology(author: original.author,
                                            organisation: original.organisation,
                                            finalised: false, deleted: false, documentationVersion: copyVersion,
-                                           folder: folder, authority: original.authority, branchName: branchName
+                                           folder: folderToCopyTo, authority: original.authority, branchName: branchName
         )
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label

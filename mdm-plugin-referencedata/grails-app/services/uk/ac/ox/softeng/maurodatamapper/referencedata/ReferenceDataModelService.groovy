@@ -214,15 +214,15 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         }
 
         if (referenceDataModel.referenceDataTypes) {
-            referenceDataTypes.addAll referenceDataModel.referenceDataTypes.findAll {!it.id}
+            referenceDataTypes.addAll referenceDataModel.referenceDataTypes.findAll { !it.id }
         }
 
         if (referenceDataModel.referenceDataElements) {
-            referenceDataElements.addAll referenceDataModel.referenceDataElements.findAll {!it.id}
+            referenceDataElements.addAll referenceDataModel.referenceDataElements.findAll { !it.id }
         }
 
         if (referenceDataModel.referenceDataValues) {
-            referenceDataValues.addAll referenceDataModel.referenceDataValues.findAll {!it.id}
+            referenceDataValues.addAll referenceDataModel.referenceDataValues.findAll { !it.id }
         }
 
         saveContent(referenceDataTypes, referenceDataElements, referenceDataValues)
@@ -231,7 +231,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         get(referenceDataModel.id)
     }
 
-    void saveContent(Collection<ReferenceDataType> referenceDataTypes, Collection<ReferenceDataElement> referenceDataElements, Collection<ReferenceDataValue> referenceDataValues) {
+    void saveContent(Collection<ReferenceDataType> referenceDataTypes, Collection<ReferenceDataElement> referenceDataElements,
+                     Collection<ReferenceDataValue> referenceDataValues) {
         sessionFactory.currentSession.clear()
 
         //Skip validation on all contents
@@ -326,7 +327,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     void deleteAllUnusedDataTypes(ReferenceDataModel referenceDataModel) {
         log.debug('Cleaning ReferenceDataModel {} of DataTypes', referenceDataModel.label)
-        referenceDataModel.referenceDataTypes.findAll {!it.referenceDataElements}.each {
+        referenceDataModel.referenceDataTypes.findAll { !it.referenceDataElements }.each {
             referenceDataTypeService.delete(it)
         }
     }
@@ -362,19 +363,19 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         checkFacetsAfterImportingCatalogueItem(referenceDataModel)
 
         if (referenceDataModel.referenceDataTypes) {
-            referenceDataModel.referenceDataTypes.each {rdt ->
+            referenceDataModel.referenceDataTypes.each { rdt ->
                 referenceDataTypeService.checkImportedReferenceDataTypeAssociations(importingUser, referenceDataModel, rdt)
             }
         }
 
         if (referenceDataModel.referenceDataElements) {
-            referenceDataModel.referenceDataElements.each {rde ->
+            referenceDataModel.referenceDataElements.each { rde ->
                 referenceDataElementService.checkImportedReferenceDataElementAssociations(importingUser, referenceDataModel, rde)
             }
         }
 
         if (referenceDataModel.referenceDataValues) {
-            referenceDataModel.referenceDataValues.each {rdv ->
+            referenceDataModel.referenceDataValues.each { rdv ->
                 referenceDataValueService.checkImportedReferenceDataValueAssociations(importingUser, referenceDataModel, rdv)
             }
         }
@@ -383,8 +384,8 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
     ReferenceDataModel ensureAllEnumerationTypesHaveValues(ReferenceDataModel referenceDataModel) {
         referenceDataModel.referenceDataTypes.
-            findAll {it.instanceOf(ReferenceEnumerationType) && !(it as ReferenceEnumerationType).getReferenceEnumerationValues()}.
-            each {ReferenceEnumerationType et ->
+            findAll { it.instanceOf(ReferenceEnumerationType) && !(it as ReferenceEnumerationType).getReferenceEnumerationValues() }.
+            each { ReferenceEnumerationType et ->
                 et.addToReferenceEnumerationValues(key: '-', value: '-')
             }
         referenceDataModel
@@ -398,7 +399,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
         if (!dataElementNames) return []
         getAllDataElementsOfDataModel(dataModel).findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in dataElementNames.collect {it.toLowerCase()} :
+            it.label.toLowerCase() in dataElementNames.collect { it.toLowerCase() } :
             it.label in dataElementNames
         }
     }
@@ -406,34 +407,35 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     Set<ReferenceEnumerationType> findAllEnumerationTypeByNames(ReferenceDataModel referenceDataModel, Set<String> enumerationTypeNames,
                                                                 boolean caseInsensitive) {
         if (!enumerationTypeNames) return []
-        referenceDataModel.referenceDataTypes.findAll {it.instanceOf(ReferenceEnumerationType)}.findAll {
+        referenceDataModel.referenceDataTypes.findAll { it.instanceOf(ReferenceEnumerationType) }.findAll {
             caseInsensitive ?
-            it.label.toLowerCase() in enumerationTypeNames.collect {it.toLowerCase()} :
+            it.label.toLowerCase() in enumerationTypeNames.collect { it.toLowerCase() } :
             it.label in enumerationTypeNames
         } as Set<ReferenceEnumerationType>
     }
 
     ReferenceDataModel copyModelAsNewForkModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                                                UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager,
+        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
+        copyModel(original, folder, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors,
+                  userSecurityPolicyManager,
                   false)
     }
 
-    ReferenceDataModel copyModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
-                                 String branchName,
-                                 boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, true)
+    ReferenceDataModel copyModel(ReferenceDataModel original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label,
+                                 Version copyDocVersion, String branchName, boolean throwErrors,
+                                 UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyModel(original, folderToCopyTo, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, true)
     }
 
-    ReferenceDataModel copyModel(ReferenceDataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
-                                 String branchName,
+    ReferenceDataModel copyModel(ReferenceDataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label,
+                                 Version copyDocVersion, String branchName,
                                  boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
 
-        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
         Authority authority = proxyHandler.unwrapIfProxy(original.authority) as Authority
         ReferenceDataModel copy = new ReferenceDataModel(author: original.author, organisation: original.organisation, modelType: original.modelType,
                                                          finalised: false,
-                                                         deleted: false, documentationVersion: copyDocVersion, folder: folder,
+                                                         deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto,
                                                          authority: authority,
                                                          branchName: branchName
         )
@@ -463,14 +465,14 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
 
         if (original.referenceDataTypes) {
             // Copy all the referencedatatypes
-            original.referenceDataTypes.each {dt ->
+            original.referenceDataTypes.each { dt ->
                 referenceDataTypeService.copyReferenceDataType(copy, dt, copier, userSecurityPolicyManager)
             }
         }
 
         if (original.referenceDataElements) {
             // Copy all the referencedataelements
-            original.referenceDataElements.each {de ->
+            original.referenceDataElements.each { de ->
                 log.debug("copy element ${de}")
                 referenceDataElementService.copyReferenceDataElement(copy, de, copier, userSecurityPolicyManager)
             }
@@ -504,7 +506,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     List<ReferenceDataElementSimilarityResult> suggestLinksBetweenModels(ReferenceDataModel referenceDataModel,
                                                                          ReferenceDataModel otherReferenceDataModel,
                                                                          int maxResults) {
-        referenceDataModel.referenceDataElements.collect {de ->
+        referenceDataModel.referenceDataElements.collect { de ->
             referenceDataElementService.findAllSimilarReferenceDataElementsInReferenceDataModel(otherReferenceDataModel, de, maxResults)
         }
     }
@@ -558,7 +560,7 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
     @Override
     List<ReferenceDataModel> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         ReferenceDataModel.byClassifierId(classifier.id).list().
-            findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id)}
+            findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.id) }
     }
 
     @Override
