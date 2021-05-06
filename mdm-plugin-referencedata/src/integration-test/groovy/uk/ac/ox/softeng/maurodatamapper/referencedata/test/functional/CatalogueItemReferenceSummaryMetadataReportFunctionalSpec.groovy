@@ -28,6 +28,7 @@ import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoField
 
 /**
  * <pre>
@@ -42,7 +43,8 @@ import java.time.OffsetDateTime
 @Slf4j
 abstract class CatalogueItemReferenceSummaryMetadataReportFunctionalSpec extends CatalogueItemFacetFunctionalSpec<ReferenceSummaryMetadataReport> {
 
-    static final OffsetDateTime dateTime = OffsetDateTime.now()
+    // Need to make sure this never gets set to anything which is less than 3 digits when formatted as then the test fails
+    static final OffsetDateTime dateTime = OffsetDateTime.now().with(ChronoField.MILLI_OF_SECOND, 414)
     static final OffsetDateTimeConverter offsetDateTimeConverter = new OffsetDateTimeConverter()
 
     abstract String getSourceDataModelId()

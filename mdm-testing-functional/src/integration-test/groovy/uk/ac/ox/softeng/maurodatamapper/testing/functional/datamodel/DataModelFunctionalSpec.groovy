@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermissionChangingAndVersioningFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -78,7 +78,7 @@ import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
  */
 @Integration
 @Slf4j
-class DataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFunctionalSpec {
+class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
     @Transactional
     String getTestFolderId() {

@@ -31,7 +31,7 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.springframework.beans.factory.annotation.Autowired
-import spock.lang.PendingFeature
+import spock.lang.Ignore
 
 import java.util.regex.Pattern
 
@@ -228,7 +228,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
   "label": "Functional Test Folder 3",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+  "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
   "branchName": "main",
   "documentationVersion": "1.0.0",
   "finalised": false,
@@ -353,7 +353,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -393,7 +393,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -409,7 +409,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 },
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -454,7 +454,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         removeValidIdObject(folderId)
     }
 
-    @PendingFeature
+    @Ignore
     void 'G04 : Test create folder with one user group specified can be accessed through the folders group roles endpoint'() {
         when: 'logged in as reader user'
         loginReader()
@@ -474,7 +474,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",

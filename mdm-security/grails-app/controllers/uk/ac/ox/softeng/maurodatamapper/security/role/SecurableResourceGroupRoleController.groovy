@@ -65,8 +65,15 @@ class SecurableResourceGroupRoleController extends EditLoggingController<Securab
             securableResourceGroupRole.groupRole = groupRoleService.get(params.groupRoleId)
         }
         if (params.containsKey('securableResourceId')) {
-            securableResourceGroupRole.securableResource = securableResourceGroupRoleService.findSecurableResource(params.securableResourceClass,
-                                                                                                                   params.securableResourceId)
+            securableResourceGroupRole.securableResource = securableResourceGroupRoleService.findSecurableResource(
+                params.securableResourceClass as Class, params.securableResourceId)
+        }
+        // If the securable resource hasnt been loaded then try and load from whats saved in the domain
+        if (!securableResourceGroupRole.securableResource &&
+            securableResourceGroupRole.securableResourceId &&
+            securableResourceGroupRole.securableResourceDomainType) {
+            securableResourceGroupRole.securableResource = securableResourceGroupRoleService
+                .findSecurableResource(securableResourceGroupRole.securableResourceDomainType, securableResourceGroupRole.securableResourceId)
         }
         securableResourceGroupRole
     }

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.policy
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
@@ -300,6 +301,66 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     boolean userCanWriteSecuredResourceId(Class<? extends SecurableResource> securableResourceClass, UUID id, String action) {
 
+        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
+            switch (action) {
+                case DELETE_ACTION:
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+                case SOFT_DELETE_ACTION:
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                case CHANGE_FOLDER_ACTION:
+                    //Changing folder is like an update, but without checking if the model is finalised
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
+                case READ_BY_AUTHENTICATED_ACTION:
+                case READ_BY_EVERYONE_ACTION:
+                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                case FINALISE_ACTION:
+                    // Can the model be finalised
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? role.canFinalise() : false
+                case NEW_MODEL_VERSION_ACTION:
+                case NEW_BRANCH_MODEL_VERSION_ACTION:
+                case NEW_DOCUMENTATION_ACTION:
+                    // If model is finalised then these actions are allowed
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? role.canVersion() : false
+                case MERGE_INTO_ACTION:
+                case SAVE_ACTION:
+                    // If the model is finalised then these actions are NOT allowed
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? !role.isFinalised() : false
+                case IMPORT_ACTION:
+                case UPDATE_ACTION:
+                    // An author can update a model description, but once a model is finalised the model can NOT be updated
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
+                    return role ? !role.isFinalised() : false
+                default:
+                    log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
+                    return false
+            }
+        }
+
+        // Custom handling for VersionedFolder for the versioning stuff
+        // If doesnt match then falls through to the container switch
+        if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResourceClass)) {
+            switch (action) {
+                case FINALISE_ACTION:
+                    // Can the model be finalised
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? role.canFinalise() : false
+                    //                case NEW_MODEL_VERSION_ACTION:
+                    //                case NEW_BRANCH_MODEL_VERSION_ACTION:
+                    //                case NEW_DOCUMENTATION_ACTION:
+                    //                    // If model is finalised then these actions are allowed
+                    //                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass,
+                    //                    id, EDITOR_ROLE_NAME)
+                    //                    return role ? role.isFinalised() : false
+                    //                case MERGE_INTO_ACTION:
+                    //                    // If the model is finalised then these actions are NOT allowed
+                    //                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass,
+                    //                    id, EDITOR_ROLE_NAME)
+            }
+        }
+
         if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
             // If no id then its a top level container and therefore anyone who's logged in can create
             if (!id) return isAuthenticated()
@@ -324,44 +385,6 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     return hasApplicationLevelRole(CONTAINER_GROUP_ADMIN_ROLE_NAME)
                 default:
                     return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, GROUP_ADMIN_ROLE_NAME)
-            }
-        }
-
-        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
-            switch (action) {
-                case DELETE_ACTION:
-                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
-                case SOFT_DELETE_ACTION:
-                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                case CHANGE_FOLDER_ACTION:
-                    //Changing folder is like an update, but without checking if the model is finalised
-                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
-                case READ_BY_AUTHENTICATED_ACTION:
-                case READ_BY_EVERYONE_ACTION:
-                    return getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                case FINALISE_ACTION:
-                    // Can the model be finalised
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                    return role ? role.canFinaliseModel() : false
-                case NEW_MODEL_VERSION_ACTION:
-                case NEW_BRANCH_MODEL_VERSION_ACTION:
-                case NEW_DOCUMENTATION_ACTION:
-                    // If model is finalised then these actions are allowed
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                    return role ? role.isFinalisedModel() : false
-                case MERGE_INTO_ACTION:
-                case SAVE_ACTION:
-                    // If the model is finalised then these actions are NOT allowed
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
-                    return role ? !role.isFinalisedModel() : false
-                case IMPORT_ACTION:
-                case UPDATE_ACTION:
-                    // An author can update a model description, but once a model is finalised the model can NOT be updated
-                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, AUTHOR_ROLE_NAME)
-                    return role ? !role.isFinalisedModel() : false
-                default:
-                    log.warn('Attempt to access secured class {} id {} to {}', securableResourceClass.simpleName, id, action)
-                    return false
             }
         }
 
@@ -473,20 +496,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             return getStandardActionsWithControlRole(securableResourceClass, id, GROUP_ADMIN_ROLE_NAME)
         }
 
-        if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
-            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)) {
-                return CONTAINER_ADMIN_ACTIONS
-            }
-            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)) {
-                return EDITOR_ACTIONS
-            }
-            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, READER_ROLE_NAME)) {
-                return READ_ONLY_ACTIONS
-            }
-            return []
-        }
-
-        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
+        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass) ||
+            Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResourceClass)) {
             // The below should get editor level versioning and finalisation rights
             VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
             if (role) {
@@ -515,15 +526,32 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
             // No actions are allowed directly on GroupRole
             return READ_ONLY_ACTIONS
         }
+
+        if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)) {
+                return CONTAINER_ADMIN_ACTIONS
+            }
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)) {
+                return EDITOR_ACTIONS
+            }
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, READER_ROLE_NAME)) {
+                return READ_ONLY_ACTIONS
+            }
+            return []
+        }
+
+
         log.warn('Attempt to gain available actions for unknown secured class {} id {}', securableResourceClass.simpleName, id)
         []
     }
 
     private List<String> updateBaseModelActionsForEditor(List<String> baseActions, VirtualSecurableResourceGroupRole role) {
         List<String> updatedActions = new ArrayList<>(baseActions)
-        if (role.canFinaliseModel()) updatedActions << FINALISE_ACTION
-        if (role.isFinalisedModel()) {
+        if (role.canFinalise()) updatedActions << FINALISE_ACTION
+        if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
+        }
+        if (role.canVersion()) {
             updatedActions.addAll(EDITOR_VERSIONING_ACTIONS)
         }
         updatedActions
@@ -531,8 +559,10 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
 
     private List<String> updateBaseModelActionsForReader(List<String> baseActions, VirtualSecurableResourceGroupRole role) {
         List<String> updatedActions = new ArrayList<>(baseActions)
-        if (role.isFinalisedModel()) {
+        if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
+        }
+        if (role.canVersion()) {
             updatedActions.addAll(READER_VERSIONING_ACTIONS)
         }
         updatedActions

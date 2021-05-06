@@ -151,9 +151,5 @@ class BootStrap implements SecurityDefinition {
     }
 
     void performPostMigrationChecks() {
-        // Update roles after migration for adding can finalise model, SQL already handled finalised models so we just need to worry about branches
-        if (SecurableResourceGroupRole.countByCanFinaliseModelIsNullAndFinalisedModelIsNotNull()) {
-            securableResourceGroupRoleService.updateModelFinalisationCapabilities()
-        }
     }
 }

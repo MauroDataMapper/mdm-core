@@ -77,7 +77,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
     String getValidFinalisedId() {
         String id = getValidId()
@@ -243,6 +243,28 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
 
         cleanup:
         removeValidIdObject(id)
+    }
+
+    void 'E16c : Test attempting to finalise a model inside a versioned folder (as editor)'() {
+        given:
+        loginEditor()
+        POST('versionedFolders', [label: 'Functional Test Versioned Folder',], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String versionedFolderId = responseBody().id
+        POST("folders/$versionedFolderId/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        when:
+        loginEditor()
+        PUT("$id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Release'])
+
+        then:
+        verifyResponse(FORBIDDEN, response)
+
+        cleanup:
+        DELETE("folders/$versionedFolderId?permanent=true", MAP_ARG, true)
+        verifyResponse NO_CONTENT, response
     }
 
 
@@ -972,7 +994,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
         verifyResponse CREATED, response
         String forkId = responseBody().id
-        PUT("$id/newBranchModelVersion", [ : ])
+        PUT("$id/newBranchModelVersion", [:])
         verifyResponse CREATED, response
         String mainBranchId = responseBody().id
         PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
@@ -980,7 +1002,7 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
         String newBranchId = responseBody().id
         PUT("$forkId/finalise", [versionChangeType: VersionChangeType.MINOR])
         verifyResponse OK, response
-        PUT("$forkId/newDocumentationVersion",[ : ])
+        PUT("$forkId/newDocumentationVersion", [:])
         verifyResponse CREATED, response
         String latestDraftId = responseBody().id
 
@@ -1006,14 +1028,14 @@ abstract class ModelUserAccessAndPermissionChangingFunctionalSpec extends UserAc
                                                     description: VersionLinkType.NEW_FORK_OF.label
                                                 ],
                                                 [
-                                                    modelId           : mainBranchId,
-                                                           description: VersionLinkType.NEW_MODEL_VERSION_OF.label
-                                                   ],
-                                                   [
-                                                            modelId: newBranchId,
-                                                            description: VersionLinkType.NEW_MODEL_VERSION_OF.label
-                                                   ]]
-                ]
+                                                    modelId    : mainBranchId,
+                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
+                                                ],
+                                                [
+                                                    modelId    : newBranchId,
+                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
+                                                ]]
+        ]
 
         Map forkMap = localResponse.body().find { it.modelId == forkId }
         forkMap
