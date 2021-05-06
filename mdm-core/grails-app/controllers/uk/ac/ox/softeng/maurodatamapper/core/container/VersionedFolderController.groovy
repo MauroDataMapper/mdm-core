@@ -29,10 +29,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
-import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
-import org.checkerframework.checker.units.qual.K
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
@@ -148,9 +146,15 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
 
         instance = versionedFolderService.finaliseFolder(instance, currentUser,
-                                            finaliseData.version, finaliseData.versionChangeType)
+                                                         finaliseData.version,
+                                                         finaliseData.versionChangeType,
+                                                         finaliseData.getVersionTag())
 
         if (!validateResource(instance, 'update')) return
+
+        if (finaliseData.changeNotice) {
+            instance.addChangeNoticeEdit(currentUser, finaliseData.changeNotice)
+        }
 
         Set<String> changedProperties = instance.getDirtyPropertyNames()
 
@@ -220,7 +224,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     }
 
     protected VersionedFolder updateSecurity(VersionedFolder instance, Set<String> changedProperties) {
-        modelServices.each{service ->
+        modelServices.each { service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(instance.id)
             modelsInFolder.each { model ->
                 if (securityPolicyManagerService) {

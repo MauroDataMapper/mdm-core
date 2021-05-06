@@ -19,9 +19,9 @@ package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
@@ -168,7 +168,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
+        ['show', 'comment', 'editDescription', 'finalise', 'update', 'save', 'softDelete', 'delete'].sort()
     }
 
     @Override
@@ -495,8 +495,145 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         removeValidIdObject(folderId)
     }
 
-    void 'V01 : finalisation endpoint for Versioned Folder'() {
+    void 'F01 : Test finalising Model (as reader)'() {
         given:
+        Map data = getValidIdWithContent()
+
+        when: 'logged in as reader'
+        loginReader()
+        PUT("$data.id/finalise", ["version": "3.9.0"])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        cleanupIdWithContent(data)
+    }
+
+    void 'F02 : finalisation endpoint for Versioned Folder (as editor)'() {
+        given:
+        Map data = getValidIdWithContent()
+
+        when: 'getting the folder before finalisation'
+        GET(data.id)
+
+        then:
+        response.status == OK
+        responseBody().availableActions == getEditorAvailableActions()
+        !responseBody().finalised
+        responseBody().domainType == 'VersionedFolder'
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'getting the datamodel 1 before finalisation'
+        GET("dataModels/$data.dataModel1Id", MAP_ARG, true)
+
+        then: 'cannot finalise model inside versioned folder'
+        response.status == OK
+        responseBody().availableActions == (getEditorAvailableActions() - ResourceActions.FINALISE_ACTION)
+        !responseBody().finalised
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'getting the datamodel 2 before finalisation'
+        GET("dataModels/$data.dataModel2Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().availableActions == (getEditorAvailableActions() - ResourceActions.FINALISE_ACTION)
+        !responseBody().finalised
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'The folder gets finalised'
+        PUT("$data.id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        response.status == OK
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
+        responseBody().finalised
+        responseBody().domainType == 'VersionedFolder'
+        responseBody().modelVersion == '1.0.0'
+
+        when:
+        GET("dataModels/$data.dataModel1Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().finalised
+        responseBody().domainType == 'DataModel'
+        responseBody().modelVersion == '1.0.0'
+        responseBody().availableActions == getFinalisedEditorAvailableActions() - ResourceActions.EDITOR_VERSIONING_ACTIONS
+
+        when:
+        GET("dataModels/$data.dataModel2Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().finalised
+        responseBody().domainType == 'DataModel'
+        responseBody().modelVersion == '1.0.0'
+        responseBody().availableActions == getFinalisedEditorAvailableActions() - ResourceActions.EDITOR_VERSIONING_ACTIONS
+
+        cleanup:
+        cleanupIdWithContent(data)
+    }
+
+    void 'F03 : Test finalising Model (as editor) with a versionTag'() {
+        given:
+        Map data = getValidIdWithContent()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$data.id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Release'])
+
+        then:
+        verifyResponse OK, response
+        responseBody().finalised == true
+        responseBody().dateFinalised
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
+        responseBody().modelVersion == '1.0.0'
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        when: 'log out and log back in again in as editor available actions are correct and modelVersionTag is set'
+        logout()
+        loginEditor()
+        GET(data.id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        when: 'log out and log back in again in as admin available actions are correct and modelVersionTag is set'
+        logout()
+        loginAdmin()
+        GET(data.id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        cleanup:
+        cleanupIdWithContent(data)
+    }
+
+    List<String> getFinalisedEditorAvailableActions() {
+        [
+            'show',
+            //            'createNewVersions',
+            //            'newForkModel',
+            'comment',
+            //            'newModelVersion',
+            //            'newDocumentationVersion',
+            //            'newBranchModelVersion',
+            'softDelete',
+            'delete'
+        ].sort()
+    }
+
+    Map<String, String> getValidIdWithContent() {
         String id = getValidId()
         loginEditor()
 
@@ -512,94 +649,19 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse(CREATED, response)
         String dataModel2Id = responseBody().id
 
-        when: 'getting the folder before finalisation'
-        GET(id)
-
-        then:
-        response.status == OK
-        responseBody().availableActions.sort() == ['delete', /*'finalise',*/ 'save', 'show', 'softDelete', 'update',]
-        !responseBody().finalised
-        responseBody().domainType == 'VersionedFolder'
-        !responseBody().modelVersion
-        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-
-        when: 'getting the datamodel 1 before finalisation'
-        GET("dataModels/$dataModel1Id", MAP_ARG, true)
-
-        then:
-        response.status == OK
-        responseBody().availableActions == ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
-        !responseBody().finalised
-        !responseBody().modelVersion
-        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-
-        when: 'getting the datamodel 2 before finalisation'
-        GET("dataModels/$dataModel2Id", MAP_ARG, true)
-
-        then:
-        response.status == OK
-        responseBody().availableActions ==  ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
-        !responseBody().finalised
-        !responseBody().modelVersion
-        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-
-        when: 'The folder gets finalised'
-        PUT("$id/finalise", [versionChangeType: 'Major'])
-
-        then:
-        response.status == OK
-        responseBody().availableActions.sort() == ['delete', 'show', 'update', 'save', 'softDelete'].sort()
-        responseBody().finalised
-        responseBody().domainType == 'VersionedFolder'
-        responseBody().modelVersion == '1.0.0'
-
-        when:
-        GET("dataModels/$dataModel1Id", MAP_ARG, true)
-
-        then:
-        response.status == OK
-        responseBody().finalised
-        responseBody().domainType == 'DataModel'
-        responseBody().modelVersion == '1.0.0'
-        responseBody().availableActions == [
-            'show',
-            'createNewVersions',
-            'newForkModel',
-            'comment',
-            'newModelVersion',
-            'newDocumentationVersion',
-            'newBranchModelVersion',
-            'softDelete',
-            'delete'
+        [id          : id,
+         dataModel1Id: dataModel1Id,
+         dataModel2Id: dataModel2Id
         ]
-
-        when:
-        GET("dataModels/$dataModel2Id", MAP_ARG, true)
-
-        then:
-        response.status == OK
-        responseBody().finalised
-        responseBody().domainType == 'DataModel'
-        responseBody().modelVersion == '1.0.0'
-        responseBody().availableActions == [
-            'show',
-            'createNewVersions',
-            'newForkModel',
-            'comment',
-            'newModelVersion',
-            'newDocumentationVersion',
-            'newBranchModelVersion',
-            'softDelete',
-            'delete'
-        ]
-
-        cleanup:
-        // We use transactions to clear folder which means the DMs don't get deleted so have to do that manually
-        DELETE("dataModels/$dataModel1Id?permanent=true", MAP_ARG, true)
-        response.status == HttpStatus.NO_CONTENT
-        DELETE("dataModels/$dataModel2Id?permanent=true", MAP_ARG, true)
-        response.status == HttpStatus.NO_CONTENT
-        removeValidIdObject(id)
     }
 
+    void cleanupIdWithContent(Map<String, String> data) {
+        loginEditor()
+        // We use transactions to clear folder which means the DMs don't get deleted so have to do that manually
+        DELETE("dataModels/$data.dataModel1Id?permanent=true", MAP_ARG, true)
+        verifyResponse HttpStatus.NO_CONTENT, response
+        DELETE("dataModels/$data.dataModel2Id?permanent=true", MAP_ARG, true)
+        verifyResponse HttpStatus.NO_CONTENT, response
+        removeValidIdObject(data.id)
+    }
 }

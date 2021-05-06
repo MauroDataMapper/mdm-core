@@ -335,8 +335,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
-        //TODO isModelInsideVersionedFolder
-
         T instance = queryForResource params[alternateParamsIdKey]
 
         if (!instance) return notFound(params[alternateParamsIdKey])

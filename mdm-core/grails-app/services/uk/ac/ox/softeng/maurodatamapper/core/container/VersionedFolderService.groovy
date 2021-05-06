@@ -18,7 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -34,7 +37,6 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.checkerframework.checker.units.qual.K
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.time.OffsetDateTime
@@ -133,30 +135,42 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         VersionedFolder.findAllByReadableByAuthenticatedUsers(true)
     }
 
-    VersionedFolder finaliseFolder(VersionedFolder folder, User user, Version folderVersion, VersionChangeType versionChangeType) {
+    VersionedFolder finaliseFolder(VersionedFolder folder, User user, Version folderVersion, VersionChangeType versionChangeType,
+                                   String versionTag) {
+        log.debug('Finalising folder')
+        long start = System.currentTimeMillis()
 
         folder.finalised = true
         folder.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
 
         folder.modelVersion = getNextFolderVersion(folder, folderVersion, versionChangeType)
 
-        modelServices.each{service ->
+        folder.modelVersionTag = versionTag
+
+        modelServices.each { service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(folder.id)
             modelsInFolder.each { model ->
-                service.finaliseModel(model as Model, user, folder.modelVersion as Version, null)
+                service.finaliseModel(model as Model, user, folder.modelVersion, null, folder.modelVersionTag)
             }
         }
 
-        //TODO uncomment once addAnnotations is resolved
-//        folder.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Versioned Folder',
-//                               description: "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
-//                                            "${OffsetDateTimeConverter.toString(folder.dateFinalised)}")
+        folder.addToAnnotations(createdBy: user.emailAddress, label: 'Finalised Versioned Folder',
+                                description: "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
+                                             "${OffsetDateTimeConverter.toString(folder.dateFinalised)}")
 
-        editService.createAndSaveEdit(folder.id, folder.domainType,
+        editService.createAndSaveEdit(EditTitle.FINALISE, folder.id, folder.domainType,
                                       "${folder.label} finalised by ${user.firstName} ${user.lastName} on " +
                                       "${OffsetDateTimeConverter.toString(folder.dateFinalised)}",
                                       user)
+        log.debug('Folder finalised took {}', Utils.timeTaken(start))
         folder
+    }
+
+    Version getParentModelVersion(VersionedFolder currentFolder) {
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(currentFolder.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+        if (!versionLink) return null
+        VersionedFolder parent = get(versionLink.targetModelId)
+        parent.modelVersion
     }
 
     Version getNextFolderVersion(VersionedFolder folder, Version requestedFolderVersion, VersionChangeType requestedVersionChangeType) {
@@ -165,30 +179,31 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             return requestedFolderVersion
         }
 
-        //TODO version folders do not have parent data models, and may not have parent folders
-        //version = getParent(folder) ???
-        //therefore where should base Version be sourced from?
-        //for now, this is a placeholder:
+        // We need to get the parent model version first so we can work out what to increment
+        Version parentModelVersion = getParentModelVersion(folder)
 
-        Version baseFolderVersion = Version.from('0.0.0')
+        if (!parentModelVersion) {
+            // No parent model then set the current version to 0 to allow the first finalisation to be defined using the versionChangeType
+            parentModelVersion = Version.from('0.0.0')
+        }
 
         if (requestedVersionChangeType) {
             // Someone requests a type change
             // Increment the parent version by that amount
             switch (requestedVersionChangeType) {
                 case VersionChangeType.MAJOR:
-                    return Version.nextMajorVersion(baseFolderVersion)
+                    return Version.nextMajorVersion(parentModelVersion)
                     break
                 case VersionChangeType.MINOR:
-                    return Version.nextMinorVersion(baseFolderVersion)
+                    return Version.nextMinorVersion(parentModelVersion)
                     break
                 case VersionChangeType.PATCH:
-                    return Version.nextPatchVersion(baseFolderVersion)
+                    return Version.nextPatchVersion(parentModelVersion)
                     break
             }
         }
         // If no requested version change type then just increment by the next major version
-        Version.nextMajorVersion(baseFolderVersion)
+        Version.nextMajorVersion(parentModelVersion)
     }
 
     @Override
