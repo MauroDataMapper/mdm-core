@@ -189,20 +189,28 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
-        //        if (catalogueItem.modelImports) {
-        //            catalogueItem.modelImports.each {
-        //                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-        //                it.catalogueItemId = catalogueItem.getId()
-        //            }
-        //            ModelImport.saveAll(catalogueItem.modelImports)
-        //        }
+        catalogueItem
+    }
+
+    @Override
+    DataModel checkFacetsAfterImportingCatalogueItem(DataModel catalogueItem) {
+        super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
+        if (catalogueItem.summaryMetadata) {
+            catalogueItem.summaryMetadata.each { sm ->
+                sm.multiFacetAwareItemId = catalogueItem.id
+                sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
+                sm.summaryMetadataReports.each { smr ->
+                    smr.createdBy = catalogueItem.createdBy
+                }
+            }
+        }
         catalogueItem
     }
 
     @Override
     DataModel saveModelWithContent(DataModel dataModel) {
 
-        if (dataModel.dataTypes.any {it.id} || dataModel.dataClasses.any {it.id}) {
+        if (dataModel.dataTypes.any { it.id } || dataModel.dataClasses.any { it.id }) {
             throw new ApiInternalException('DMSXX', 'Cannot use saveWithBatching method to save DataModel',
                                            new IllegalStateException('DataModel has previously saved content'))
         }

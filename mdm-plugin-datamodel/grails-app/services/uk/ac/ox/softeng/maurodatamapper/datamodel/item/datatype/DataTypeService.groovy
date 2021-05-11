@@ -313,11 +313,20 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     @Override
-    DataType checkFacetsAfterImportingCatalogueItem(DataType dataType) {
-        if (dataType.instanceOf(EnumerationType)) {
-            return enumerationTypeService.checkFacetsAfterImportingCatalogueItem(dataType as EnumerationType)
+    DataType checkFacetsAfterImportingCatalogueItem(DataType catalogueItem) {
+        if (catalogueItem.summaryMetadata) {
+            catalogueItem.summaryMetadata.each { sm ->
+                sm.multiFacetAwareItemId = catalogueItem.id
+                sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
+                sm.summaryMetadataReports.each { smr ->
+                    smr.createdBy = catalogueItem.createdBy
+                }
+            }
+        }
+        if (catalogueItem.instanceOf(EnumerationType)) {
+            return enumerationTypeService.checkFacetsAfterImportingCatalogueItem(catalogueItem as EnumerationType)
         } else {
-            return super.checkFacetsAfterImportingCatalogueItem(dataType) as DataType
+            return super.checkFacetsAfterImportingCatalogueItem(catalogueItem) as DataType
         }
     }
 

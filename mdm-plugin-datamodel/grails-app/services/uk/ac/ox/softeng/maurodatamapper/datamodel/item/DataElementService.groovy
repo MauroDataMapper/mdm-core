@@ -150,6 +150,21 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     @Override
+    DataElement checkFacetsAfterImportingCatalogueItem(DataElement catalogueItem) {
+        super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
+        if (catalogueItem.summaryMetadata) {
+            catalogueItem.summaryMetadata.each { sm ->
+                sm.multiFacetAwareItemId = catalogueItem.id
+                sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
+                sm.summaryMetadataReports.each { smr ->
+                    smr.createdBy = catalogueItem.createdBy
+                }
+            }
+        }
+        catalogueItem
+    }
+
+    @Override
     DataElement findByIdJoinClassifiers(UUID id) {
         DataElement.findById(id, [fetch: [classifiers: 'join']])
     }

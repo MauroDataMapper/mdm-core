@@ -216,6 +216,21 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         catalogueItem
     }
 
+    @Override
+    DataClass checkFacetsAfterImportingCatalogueItem(DataClass catalogueItem) {
+        super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
+        if (catalogueItem.summaryMetadata) {
+            catalogueItem.summaryMetadata.each { sm ->
+                sm.multiFacetAwareItemId = catalogueItem.id
+                sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
+                sm.summaryMetadataReports.each { smr ->
+                    smr.createdBy = catalogueItem.createdBy
+                }
+            }
+        }
+        catalogueItem
+    }
+
     boolean isUnusedDataClass(DataClass dataClass) {
         if (dataClass.maxMultiplicity != null) return false
         if (dataClass.minMultiplicity != null) return false
