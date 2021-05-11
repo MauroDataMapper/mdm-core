@@ -122,7 +122,6 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
         ]
     }
 
-
     @Override
     Map getValidUpdateJson() {
         [
@@ -304,11 +303,48 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
   {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
+    "label": "Complex Test Term 101",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
     "label": "CTT00: Complex Test Term 00",
     "hasChildren": true,
     "modelId": "${json-unit.matches:id}"
   }
 ]'''
+    }
+
+    @Transactional
+    void 'T09 : test getting the tree for term with truncated label'() {
+        given:
+        def id = Term.findByCode('Complex Test Term 101').id
+
+        when:
+        GET("terminologies/${complexTerminologyId}/terms/$id", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''{
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "Complex Test Term 101",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+        {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+        }
+    ],
+    "availableActions": ["delete","show","update"],
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "code": "Complex Test Term 101",
+    "definition": "Complex Test Term 101",
+    "description": "Example of truncated term label when code and definition are the same"
+}'''
     }
 
     void 'S01 : Test searching terms'() {

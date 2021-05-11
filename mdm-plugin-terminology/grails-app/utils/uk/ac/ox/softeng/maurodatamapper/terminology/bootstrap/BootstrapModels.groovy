@@ -130,10 +130,15 @@ class BootstrapModels {
                                 description: 'This is a very important description', url: 'https://google.co.uk')
             terminology.addToTerms(top)
             List<Term> terms = [top]
-            (1..100).each {
+            (1..101).each {
                 Term t = new Term(createdBy: DEVELOPMENT, code: "CTT$it", definition: "Complex Test Term $it")
                 terminology.addToTerms(t)
                 terms += t
+            }
+
+            terms[101].tap {
+                code = definition
+                description = 'Example of truncated term label when code and definition are the same'
             }
 
             TermRelationshipType is = new TermRelationshipType(createdBy: DEVELOPMENT, label: 'is-a', displayLabel: 'Is A')
