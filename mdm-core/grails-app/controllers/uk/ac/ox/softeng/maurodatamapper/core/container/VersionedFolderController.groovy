@@ -205,22 +205,17 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
             createNewVersionData.copyPermissions = false
         }
 
-        VersionedFolder copy = getVersionedFolderService().createNewForkModel(createNewVersionData.label,
-                                                                              instance,
-                                                                              currentUser,
-                                                                              createNewVersionData.copyPermissions,
-                                                                              currentUserSecurityPolicyManager) as VersionedFolder
+        VersionedFolder copy = versionedFolderService.createNewForkModel(createNewVersionData.label,
+                                                                         instance,
+                                                                         currentUser,
+                                                                         createNewVersionData.copyPermissions,
+                                                                         currentUserSecurityPolicyManager) as VersionedFolder
 
         if (!validateResource(copy, 'create')) return
 
-        VersionedFolder savedCopy = versionedFolderService.saveFolderWithContent(copy) as VersionedFolder
-        savedCopy.addCreatedEdit(currentUser)
+        saveResource(copy)
 
-        if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, currentUser, savedCopy.label)
-        }
-
-        saveResponse savedCopy
+        saveResponse(copy)
     }
 
     @Override

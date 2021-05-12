@@ -292,6 +292,17 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folder.save()
     }
 
+    VersionedFolder createNewForkModel(String label, VersionedFolder folder, User user, boolean copyPermissions,
+                                       UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        if (!newVersionCreationIsAllowed(folder)) return folder
+
+        VersionedFolder newForkModel = copyModelAsNewForkModel(folder, user, copyPermissions, label,
+                                                               additionalArguments.throwErrors as boolean,
+                                                               userSecurityPolicyManager)
+        setFolderIsNewForkModelOfFolder(newForkModel, folder, user)
+        newForkModel
+    }
+
     VersionedFolder createNewBranchModelVersion(String branchName, VersionedFolder folder, User user, boolean copyPermissions,
                                                 UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(folder)) return folder
@@ -383,6 +394,11 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         copyFolder(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager)
     }
 
+    VersionedFolder copyModelAsNewForkModel(VersionedFolder original, User copier, boolean copyPermissions, String label, boolean throwErrors,
+                                            UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyFolder(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
+    }
+
     VersionedFolder copyFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                                String branchName,
                                boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
@@ -422,9 +438,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             List<Model> copiedModels = originalModels.collect { Model model ->
                 // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation
                 // arises in forking
-                String labelPrefix = folderCopy.label == original.label ? '' : "${folderCopy.label}_"
+                String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
                 service.copyModel(model, folderCopy, copier, copyPermissions,
-                                  "${labelPrefix}${model.label}",
+                                  "${model.label}${labelSuffix}",
                                   copyDocVersion, branchName, throwErrors,
                                   userSecurityPolicyManager)
             }
@@ -478,39 +494,15 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         )
     }
 
-    void setFolderRefinesFolder(VersionedFolder source, VersionedFolder target, User catalogueUser) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
-    }
-
-    VersionedFolder createNewForkModel(String label, VersionedFolder folder, User user, boolean copyPermissions,
-                                       UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
-        if (!newVersionCreationIsAllowed(folder)) return folder
-
-        VersionedFolder newForkModel = copyModelAsNewForkModel(folder, user, copyPermissions, label,
-                                                 additionalArguments.throwErrors as boolean,
-                                                 userSecurityPolicyManager)
-        setFolderIsNewForkModelOfVersionedFolder(newForkModel, folder, user)
-        //TODO delete?
-        if (additionalArguments.copyDataFlows) {
-            throw new ApiNotYetImplementedException('VFSXX', 'VersionedFolder copying of DataFlows')
-            //copyTargetDataFlows(dataModel, newForkModel, user)
-        }
-        newForkModel
-    }
-
-    VersionedFolder copyModelAsNewForkModel(VersionedFolder original, User copier, boolean copyPermissions, String label, boolean throwErrors,
-                              UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyFolder(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
-    }
-
-    void setFolderIsNewForkModelOfVersionedFolder(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
-        //TODO this currently non-functional, needs versionlinks
-        /*
+    void setFolderIsNewForkModelOfFolder(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
         newFolder.addToVersionLinks(
             linkType: VersionLinkType.NEW_FORK_OF,
             createdBy: catalogueUser.emailAddress,
-            targetFolder: oldFolder
+            targetModel: oldFolder
         )
-        */
+    }
+
+    void setFolderRefinesFolder(VersionedFolder source, VersionedFolder target, User catalogueUser) {
+        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
     }
 }

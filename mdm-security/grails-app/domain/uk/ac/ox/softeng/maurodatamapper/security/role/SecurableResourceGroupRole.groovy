@@ -88,6 +88,12 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         setSecurableResource(securableResource, false)
     }
 
+    @Override
+    String toString() {
+        String idStr = ident() ? ident().toString() : '(unsaved)'
+        "${getEditLabel()} : ${idStr}"
+    }
+
     static DetachedCriteria<SecurableResourceGroupRole> by() {
         new DetachedCriteria<SecurableResourceGroupRole>(SecurableResourceGroupRole)
     }
