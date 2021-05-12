@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwa
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
@@ -163,6 +164,32 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         updateResponse(instance)
     }
 
+    @Transactional
+    def newBranchModelVersion(CreateNewVersionData createNewVersionData) {
+
+        createNewVersionData.label = 'newBranchModelVersion'
+
+        if (!createNewVersionData.validate()) {
+            respond createNewVersionData.errors
+            return
+        }
+
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+
+        if (!instance) return notFound(params.versionedFolderId)
+
+        VersionedFolder copy = versionedFolderService.createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
+                                                                                  createNewVersionData.copyPermissions,
+                                                                                  currentUserSecurityPolicyManager)
+
+        if (!validateResource(copy, 'create')) return
+
+        saveResource(copy)
+
+        saveResponse(copy)
+    }
+
+
     @Override
     protected VersionedFolder queryForResource(Serializable id) {
         versionedFolderService.get(id)
@@ -212,7 +239,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
             return versionedFolderService.findAllByParentId(params.versionedFolderId, params)
         }
 
-        versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
+        def r = versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
+        r
     }
 
     @Override
@@ -236,6 +264,5 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
         instance
     }
-
 
 }

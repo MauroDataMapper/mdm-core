@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -54,7 +55,6 @@ import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-
 
 @Slf4j
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
@@ -131,6 +131,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     abstract int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName)
 
     abstract K copyModel(K original,
+                         Folder folderToCopyInto,
                          User copier,
                          boolean copyPermissions,
                          String label,
@@ -234,6 +235,18 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
     }
 
+    K copyModel(K original,
+                User copier,
+                boolean copyPermissions,
+                String label,
+                Version copyDocVersion,
+                String branchName,
+                boolean throwErrors,
+                UserSecurityPolicyManager userSecurityPolicyManager) {
+        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
+        copyModel(original, folder, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
+    }
+
     K createNewDocumentationVersion(K model, User user, boolean copyPermissions,
                                     UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(model)) return model
@@ -275,7 +288,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         // Check if the branch name is already being used
         if (countAllByLabelAndBranchNameAndNotFinalised(model.label, branchName) > 0) {
-            (model as GormValidateable).errors.reject('model.label.branch.name.already.exists',
+            (model as GormValidateable).errors.reject('version.aware.label.branch.name.already.exists',
                                                       ['branchName', getModelClass(), branchName, model.label] as Object[],
                                                       'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
             return model
@@ -305,9 +318,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
                 return newMainBranchModelVersion
             } else {
-                if ((newMainBranchModelVersion as GormValidateable).validate()) saveModelWithContent(newMainBranchModelVersion)
-                else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) DataModel is invalid',
-                                                        (newMainBranchModelVersion as GormValidateable).errors, messageSource)
+                if ((newMainBranchModelVersion as GormValidateable).validate()) {
+                    saveModelWithContent(newMainBranchModelVersion)
+                    if (securityPolicyManagerService) {
+                        userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(newMainBranchModelVersion, user,
+                                                                                                                 newMainBranchModelVersion.label)
+                    }
+                } else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) Model is invalid',
+                                                          (newMainBranchModelVersion as GormValidateable).errors, messageSource)
             }
         }
 
@@ -330,16 +348,16 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     boolean newVersionCreationIsAllowed(K model) {
         if (!model.finalised) {
-            (model as GormValidateable).errors.reject('invalid.model.new.version.not.finalised.message',
-                                                      [model.label, model.id] as Object[],
-                                                      'Model [{0}({1})] cannot have a new version as it is not finalised')
+            (model as GormValidateable).errors.reject('invalid.version.aware.new.version.not.finalised.message',
+                                                      [model.domainType, model.label, model.id] as Object[],
+                                                      '{0} [{1}({2})] cannot have a new version as it is not finalised')
             return false
         }
         K superseding = findModelDocumentationSuperseding(model)
         if (superseding) {
-            (model as GormValidateable).errors.reject('invalid.model.new.version.superseded.message',
-                                                      [model.label, model.id, superseding.label, superseding.id] as Object[],
-                                                      'Model [{0}({1})] cannot have a new version as it has been superseded by [{2}({3})]')
+            (model as GormValidateable).errors.reject('invalid.version.aware.new.version.superseded.message',
+                                                      [model.domainType, model.label, model.id, superseding.label, superseding.id] as Object[],
+                                                      '{0} [{1}({2})] cannot have a new version as it has been superseded by [{3}({4})]')
             return false
         }
 
@@ -353,7 +371,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K findModelDocumentationSuperseding(K model) {
-        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingModelId(getModelClass().simpleName, model.id)
+        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingModelId(model.domainType, model.id)
         if (!link) return null
         link.multiFacetAwareItemId == model.id ? get(link.targetModelId) : get(link.multiFacetAwareItemId)
     }

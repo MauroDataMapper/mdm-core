@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
@@ -74,7 +75,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     @Override
     Map getValidJson() {
         [
-            label: 'Functional Test Folder 3'
+            label: 'Functional Test VersionedFolder 3'
         ]
     }
 
@@ -102,7 +103,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     Map getValidJsonWithOneGroup() {
         UserGroup editorsUserGroup = UserGroup.findByName('editors')
         [
-            label      : 'Functional Test Folder 4',
+            label      : 'Functional Test VersionedFolder 4',
             description: 'Description of Functional Test Folder 4',
             groups     : [
                 [groupId: editorsUserGroup.id, groupRoleId: getEditorGroupRoleId()]
@@ -115,7 +116,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         UserGroup editorsUserGroup = UserGroup.findByName('editors')
         UserGroup readersUserGroup = UserGroup.findByName('readers')
         [
-            label      : 'Functional Test Folder 5',
+            label      : 'Functional Test VersionedFolder 5',
             description: 'Description of Functional Test Folder 5',
             groups     : [
                 [groupId: editorsUserGroup.id, groupRoleId: getEditorGroupRoleId()],
@@ -129,7 +130,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     Map getInvalidJsonWithOneGroup() {
         UserGroup editorsUserGroup = UserGroup.findByName('editors')
         [
-            label      : 'Functional Test Folder 6',
+            label      : 'Functional Test VersionedFolder 6',
             description: 'Description of Functional Test Folder 6',
             groups     : [
                 [groupI: editorsUserGroup.id, groupRoleI: getEditorGroupRoleId()]
@@ -139,12 +140,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     @Override
     Pattern getExpectedCreatedEditRegex() {
-        ~/\[VersionedFolder:Functional Test Folder 3] created/
+        ~/\[VersionedFolder:Functional Test VersionedFolder 3] created/
     }
 
     @Override
     Pattern getExpectedUpdateEditRegex() {
-        ~/\[VersionedFolder:Functional Test Folder 3] changed properties \[description]/
+        ~/\[VersionedFolder:Functional Test VersionedFolder 3] changed properties \[description]/
     }
 
     @Override
@@ -213,8 +214,27 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     @Override
     String getEditorIndexJson() {
         '''{
-  "count": 0,
-  "items": []
+  "count": 2,
+  "items": [
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Functional Test VersionedFolder",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "domainType": "VersionedFolder",
+      "hasChildFolders": false,
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "label": "Functional Test VersionedFolder 2",
+      "lastUpdated": "${json-unit.matches:offsetDateTime}",
+      "domainType": "VersionedFolder",
+      "hasChildFolders": false,
+      "branchName": "main",
+      "documentationVersion": "1.0.0"
+    }
+  ]
 }'''
     }
 
@@ -225,7 +245,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
   "hasChildFolders": false,
   "domainType": "VersionedFolder",
   "id": "${json-unit.matches:id}",
-  "label": "Functional Test Folder 3",
+  "label": "Functional Test VersionedFolder 3",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
@@ -498,21 +518,28 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     void 'F01 : Test finalising Model (as reader)'() {
         given:
         Map data = getValidIdWithContent()
-
-        when: 'logged in as reader'
         loginReader()
+
+        when: 'getting the folder before finalisation'
+        GET(data.id)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'finalised'
         PUT("$data.id/finalise", ["version": "3.9.0"])
 
         then:
         verifyForbidden response
 
         cleanup:
-        cleanupIdWithContent(data)
+        cleanupIds(data.id)
     }
 
-    void 'F02 : finalisation endpoint for Versioned Folder (as editor)'() {
+    void 'F02 : Test finalisation endpoint for Versioned Folder (as editor)'() {
         given:
         Map data = getValidIdWithContent()
+        loginEditor()
 
         when: 'getting the folder before finalisation'
         GET(data.id)
@@ -576,15 +603,15 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().availableActions == getFinalisedEditorAvailableActions() - ResourceActions.EDITOR_VERSIONING_ACTIONS
 
         cleanup:
-        cleanupIdWithContent(data)
+        cleanupIds(data.id)
     }
 
     void 'F03 : Test finalising Model (as editor) with a versionTag'() {
         given:
         Map data = getValidIdWithContent()
-
-        when: 'logged in as editor'
         loginEditor()
+
+        when: 'putting a tag'
         PUT("$data.id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Release'])
 
         then:
@@ -616,21 +643,345 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         responseBody().modelVersionTag == 'Functional Test Release'
 
         cleanup:
-        cleanupIdWithContent(data)
+        cleanupIds(data.id)
+    }
+
+    void 'BMV01 : test creating a new branch model version of a Model<T> (as reader)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when:
+        loginReader()
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        cleanupIds(data.id)
+    }
+
+    void 'BMV02 : test creating a new model version of a Model<T> (no branch name) (as editor)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+        loginEditor()
+
+        when: 'getting the list of versioned folders'
+        GET('?label=3')
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 1
+
+        when: 'creating a new main branch'
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        !responseBody().modelVersion
+
+        when:
+        String branchId = responseBody().id
+        GET("$branchId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == branchId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        when: 'getting the list of versioned folders'
+        GET('?label=3')
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any { it.id == id }
+        responseBody().items.any { it.id == branchId }
+
+        when: 'getting the models inside the finalised folder'
+        GET("folders/$id/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0'
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0'
+        }
+
+        when: 'getting the models inside the new branch folder'
+        GET("folders/$branchId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            !it.modelVersion
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            !it.modelVersion
+        }
+
+        cleanup:
+        cleanupIds(id, branchId)
+    }
+
+    void 'BMV03 : test creating a new branch model version of a Model<T> (as editor)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion'])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'newBranchModelVersion'
+        !responseBody().modelVersion
+
+        when:
+        String branchId = responseBody().id
+        GET("$branchId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_MODEL_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == branchId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        when:
+        GET('?label=3')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 3
+
+        when:
+        log.debug(responseBody().toString())
+        String mainBranchId = responseBody().items.find {
+            it.label == validJson.label &&
+            !(it.id in [branchId, id])
+        }?.id
+
+        then:
+        mainBranchId
+
+        when:
+        GET(mainBranchId)
+
+        then:
+        verifyResponse OK, response
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        !responseBody().modelVersion
+
+        when: 'getting the models inside the finalised folder'
+        GET("folders/$id/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0'
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0'
+        }
+
+        when: 'getting the models inside the main branch folder'
+        GET("folders/$mainBranchId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            !it.modelVersion
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            !it.modelVersion
+        }
+
+        when: 'getting the models inside the new branch folder'
+        GET("folders/$branchId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == 'newBranchModelVersion' &&
+            !it.modelVersion
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == 'newBranchModelVersion' &&
+            !it.modelVersion
+        }
+
+        cleanup:
+        cleanupIds(id, branchId, mainBranchId)
+    }
+
+    void 'BMV04 : test creating a new model version of a Model<T> and finalising (as editor)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+
+        when:
+        String branchId = responseBody().id
+        PUT("$branchId/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyResponse OK, response
+        responseBody().finalised == true
+        responseBody().dateFinalised
+        responseBody().availableActions == getFinalisedEditorAvailableActions().sort()
+        responseBody().modelVersion == '2.0.0'
+
+        when: 'getting the models inside the first finalised folder'
+        GET("folders/$id/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0'
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0'
+        }
+
+        when: 'getting the models inside the second finalised folder'
+        GET("folders/$branchId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '2.0.0'
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '2.0.0'
+        }
+
+        cleanup:
+        cleanupIds(id, branchId)
+    }
+
+    void 'BMV05 : test creating a new branch model version of a Model<T> and trying to finalise (as editor)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().availableActions == getEditorAvailableActions().sort()
+        String mainBranchId = responseBody().id
+
+        when:
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranchModelVersion'])
+
+        then:
+        verifyResponse CREATED, response
+        String branchId = responseBody().id
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '1.0.0'
+        responseBody().branchName == 'newBranchModelVersion'
+        !responseBody().modelVersion
+        responseBody().availableActions == (getEditorAvailableActions() - [ResourceActions.FINALISE_ACTION]).sort()
+
+        when:
+        PUT("$branchId/finalise", [versionChangeType: 'Major'])
+
+        then:
+        verifyForbidden response
+
+        when:
+        GET('?label=3')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 3
+
+        cleanup:
+        cleanupIds(id, branchId, mainBranchId)
     }
 
     List<String> getFinalisedEditorAvailableActions() {
         [
             'show',
-            //            'createNewVersions',
-            //            'newForkModel',
+            'createNewVersions',
+            'newForkModel',
             'comment',
-            //            'newModelVersion',
-            //            'newDocumentationVersion',
-            //            'newBranchModelVersion',
+            'newModelVersion',
+            'newDocumentationVersion',
+            'newBranchModelVersion',
             'softDelete',
             'delete'
         ].sort()
+    }
+
+    Map<String, String> getValidFinalisedIdWithContent() {
+        Map data = getValidIdWithContent()
+        loginEditor()
+        PUT("$data.id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        logout()
+        data
     }
 
     Map<String, String> getValidIdWithContent() {
@@ -648,20 +999,19 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         ], MAP_ARG, true)
         verifyResponse(CREATED, response)
         String dataModel2Id = responseBody().id
-
+        logout()
         [id          : id,
          dataModel1Id: dataModel1Id,
          dataModel2Id: dataModel2Id
         ]
     }
 
-    void cleanupIdWithContent(Map<String, String> data) {
+    void cleanupIds(String... ids) {
         loginEditor()
-        // We use transactions to clear folder which means the DMs don't get deleted so have to do that manually
-        DELETE("dataModels/$data.dataModel1Id?permanent=true", MAP_ARG, true)
-        verifyResponse HttpStatus.NO_CONTENT, response
-        DELETE("dataModels/$data.dataModel2Id?permanent=true", MAP_ARG, true)
-        verifyResponse HttpStatus.NO_CONTENT, response
-        removeValidIdObject(data.id)
+        ids.each { id ->
+            DELETE("$id?permanent=true")
+            verifyResponse HttpStatus.NO_CONTENT, response
+        }
+        cleanUpRoles(ids)
     }
 }

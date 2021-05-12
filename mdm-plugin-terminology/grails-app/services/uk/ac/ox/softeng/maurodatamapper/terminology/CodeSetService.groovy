@@ -202,32 +202,32 @@ class CodeSetService extends ModelService<CodeSet> {
 
         if (!modelMergeObjectDiff.hasDiffs()) return targetModel
 
-        modelMergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
+        modelMergeObjectDiff.getValidDiffs().each { mergeFieldDiff ->
 
             if (mergeFieldDiff.isFieldChange()) {
                 targetModel.setProperty(mergeFieldDiff.fieldName, mergeFieldDiff.value)
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
 
                 if (modelItemService) {
 
                     // Special handling for terms as CodeSets dont own terms
                     if (mergeFieldDiff.fieldName == 'terms') {
                         // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each {mergeItemData ->
+                        mergeFieldDiff.deleted.each { mergeItemData ->
                             Term modelItem = modelItemService.get(mergeItemData.id) as Term
                             targetModel.removeFromTerms(modelItem)
                         }
 
                         // copy additions from source to target object
-                        mergeFieldDiff.created.each {mergeItemData ->
+                        mergeFieldDiff.created.each { mergeItemData ->
                             Term modelItem = modelItemService.get(mergeItemData.id) as Term
                             targetModel.addToTerms(modelItem)
                         }
                         // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
                             Term termToRemove = modelItemService.get(mergeObjectDiffData.leftId) as Term
                             Term termToAdd = modelItemService.get(mergeObjectDiffData.rightId) as Term
                             targetModel.removeFromTerms(termToRemove)
@@ -235,18 +235,18 @@ class CodeSetService extends ModelService<CodeSet> {
                         }
                     } else {
                         // apply deletions of children to target object
-                        mergeFieldDiff.deleted.each {mergeItemData ->
+                        mergeFieldDiff.deleted.each { mergeItemData ->
                             ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
                             modelItemService.delete(modelItem)
                         }
 
                         // copy additions from source to target object
-                        mergeFieldDiff.created.each {mergeItemData ->
+                        mergeFieldDiff.created.each { mergeItemData ->
                             ModelItem modelItem = modelItemService.get(mergeItemData.id) as ModelItem
                             modelItemService.copy(targetModel, modelItem, userSecurityPolicyManager)
                         }
                         // for modifications, recursively call this method
-                        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+                        mergeFieldDiff.modified.each { mergeObjectDiffData ->
                             ModelItem modelItem = modelItemService.get(mergeObjectDiffData.leftId) as ModelItem
                             modelItemService.mergeObjectDiffIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
                         }
@@ -259,13 +259,12 @@ class CodeSetService extends ModelService<CodeSet> {
         targetModel
     }
 
-    CodeSet copyModel(CodeSet original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
-                      boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
+    CodeSet copyModel(CodeSet original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyDocVersion,
+                      String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         CodeSet copy = new CodeSet(author: original.author,
                                    organisation: original.organisation,
                                    finalised: false, deleted: false, documentationVersion: copyDocVersion,
-                                   folder: folder, authority: original.authority, branchName: branchName
+                                   folder: folderToCopyTo, authority: original.authority, branchName: branchName
         )
 
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
@@ -292,7 +291,7 @@ class CodeSetService extends ModelService<CodeSet> {
         copy.trackChanges()
 
         // Copy all the terms
-        original.terms?.each {term ->
+        original.terms?.each { term ->
             copy.addToTerms(term)
         }
 
@@ -333,7 +332,7 @@ class CodeSetService extends ModelService<CodeSet> {
 
     @Override
     List<CodeSet> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        CodeSet.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id)}
+        CodeSet.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(CodeSet, it.id) }
     }
 
     @Override

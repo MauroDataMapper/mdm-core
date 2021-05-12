@@ -30,7 +30,6 @@ import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareCon
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
 import uk.ac.ox.softeng.maurodatamapper.search.PathTokenizerAnalyzer
 import uk.ac.ox.softeng.maurodatamapper.search.bridge.OffsetDateTimeBridge
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -163,22 +162,6 @@ class Folder implements Container {
 
     static Folder getMiscellaneousFolder() {
         findByLabel(MISCELLANEOUS_FOLDER_LABEL)
-    }
-
-    static Folder findOrCreateByLabel(String label, Map creationMap) {
-        Folder folder = findByLabel(label)
-        if (folder) return folder
-
-        creationMap.label = label
-        folder = new Folder(creationMap)
-        folder.save(flush: true, validate: false)
-    }
-
-    static Folder findOrCreateByLabel(String label, User creator, String description,
-                                      Boolean readableByAuthenticated) {
-        findOrCreateByLabel(label, [description            : description,
-                                    createdBy              : creator,
-                                    readableByAuthenticated: readableByAuthenticated])
     }
 
     static List<Folder> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {

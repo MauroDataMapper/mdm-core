@@ -17,11 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
+import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -37,7 +42,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import grails.gorm.DetachedCriteria
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.datastore.gorm.GormValidateable
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -46,17 +54,18 @@ import java.time.ZoneOffset
 @Slf4j
 class VersionedFolderService extends ContainerService<VersionedFolder> implements VersionLinkAwareService<VersionedFolder> {
 
+    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
+
     FolderService folderService
+    EditService editService
+    VersionLinkService versionLinkService
+    MessageSource messageSource
 
     @Autowired(required = false)
     List<ModelService> modelServices
 
-    EditService editService
-
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
-
-    VersionLinkService versionLinkService
 
     @Override
     boolean handles(Class clazz) {
@@ -271,8 +280,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
      * @return
      */
     List<VersionedFolder> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
-        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        ids ? VersionedFolder.findAllByIdInList(ids, pagination) : []
+        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(VersionedFolder)
+        ids ? VersionedFolder.withFilter(VersionedFolder.byIdInList(ids), pagination).list(pagination) : []
     }
 
     void generateDefaultFolderLabel(VersionedFolder folder) {
@@ -281,5 +290,195 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     VersionedFolder save(VersionedFolder folder) {
         folder.save()
+    }
+
+    VersionedFolder createNewBranchModelVersion(String branchName, VersionedFolder folder, User user, boolean copyPermissions,
+                                                UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
+        if (!newVersionCreationIsAllowed(folder)) return folder
+        log.info('Creating a new branch model version of {}', folder.id)
+        // Check if the branch name is already being used
+        if (countAllByLabelAndBranchNameAndNotFinalised(folder.label, branchName) > 0) {
+            (folder as GormValidateable).errors.reject('version.aware.label.branch.name.already.exists',
+                                                       ['branchName', VersionedFolder, branchName, folder.label] as Object[],
+                                                       'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
+            return folder
+        }
+
+        // We know at this point the versioned folder is finalised which means its branch name == main so we need to check no unfinalised main
+        // branch exists
+        boolean draftFolderOnMainBranchForLabel =
+            countAllByLabelAndBranchNameAndNotFinalised(folder.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
+
+        if (!draftFolderOnMainBranchForLabel) {
+            log.info('Creating a new branch model version of {} with name {}', folder.id, VersionAwareConstraints.DEFAULT_BRANCH_NAME)
+            VersionedFolder newMainBranchModelVersion = copyFolderAsNewBranchFolder(
+                folder,
+                user,
+                copyPermissions,
+                folder.label,
+                VersionAwareConstraints.DEFAULT_BRANCH_NAME,
+                additionalArguments.throwErrors as boolean,
+                userSecurityPolicyManager)
+            setFolderIsNewBranchModelVersionOfFolder(newMainBranchModelVersion, folder, user)
+
+            // If the branch name isn't main and the main branch doesnt exist then we need to validate and save it
+            // otherwise return the new folder
+            if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
+                return newMainBranchModelVersion
+            } else {
+                if ((newMainBranchModelVersion as GormValidateable).validate()) {
+                    save(newMainBranchModelVersion, validate: false)
+                    if (securityPolicyManagerService) {
+                        userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(newMainBranchModelVersion, user,
+                                                                                                                 newMainBranchModelVersion.label)
+                    }
+                } else throw new ApiInvalidModelException('VFSXX', 'Copied (newMainBranchModelVersion) Folder is invalid',
+                                                          (newMainBranchModelVersion as GormValidateable).errors, messageSource)
+            }
+        }
+        log.info('Creating a new branch model version of {} with name {}', folder.id, branchName)
+        VersionedFolder newBranchModelVersion = copyFolderAsNewBranchFolder(
+            folder,
+            user,
+            copyPermissions,
+            folder.label,
+            branchName,
+            additionalArguments.throwErrors as boolean,
+            userSecurityPolicyManager)
+
+        setFolderIsNewBranchModelVersionOfFolder(newBranchModelVersion, folder, user)
+
+        newBranchModelVersion
+    }
+
+    boolean newVersionCreationIsAllowed(VersionedFolder folder) {
+        if (!folder.finalised) {
+            (folder as GormValidateable).errors.reject('invalid.version.aware.new.version.not.finalised.message',
+                                                       [folder.domainType, folder.label, folder.id] as Object[],
+                                                       '{0} [{1}({2})] cannot have a new version as it is not finalised')
+            return false
+        }
+        VersionedFolder superseding = findModelDocumentationSuperseding(folder)
+        if (superseding) {
+            (folder as GormValidateable).errors.reject('invalid.version.aware.new.version.superseded.message',
+                                                       [folder.domainType, folder.label, folder.id, superseding.label, superseding.id] as Object[],
+                                                       '{0} [{1}({2})] cannot have a new version as it has been superseded by [{3}({4})]')
+            return false
+        }
+        true
+    }
+
+    VersionedFolder findModelDocumentationSuperseding(VersionedFolder versionedFolder) {
+        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingModelId(versionedFolder.domainType, versionedFolder.id)
+        if (!link) return null
+        link.multiFacetAwareItemId == versionedFolder.id ? get(link.targetModelId) : get(link.multiFacetAwareItemId)
+    }
+
+    int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        VersionedFolder.countByLabelAndBranchNameAndFinalised(label, branchName, false)
+    }
+
+    VersionedFolder copyFolderAsNewBranchFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, String branchName,
+                                                boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyFolder(original, copier, copyPermissions, label, Version.from('1'), branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    VersionedFolder copyFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
+                               String branchName,
+                               boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        log.debug('Copying folder {}', original.id)
+        Folder parentFolder = original.parentFolder ? proxyHandler.unwrapIfProxy(original.parentFolder) as Folder : null
+        VersionedFolder folderCopy = new VersionedFolder(finalised: false, deleted: false,
+                                                         documentationVersion: copyDocVersion,
+                                                         parentFolder: parentFolder,
+                                                         branchName: branchName)
+        folderCopy = copyBasicFolderInformation(original, folderCopy, copier)
+        folderCopy.label = label
+
+        if (copyPermissions) {
+            if (throwErrors) {
+                throw new ApiNotYetImplementedException('VFSXX', 'VersionedFolder permission copying')
+            }
+            log.warn('Permission copying is not yet implemented')
+
+        }
+
+        setFolderRefinesFolder(folderCopy, original, copier)
+
+        log.debug('Validating and saving copy')
+        if (folderCopy.validate()) {
+            save(folderCopy, validate: false)
+            editService.createAndSaveEdit(EditTitle.COPY, folderCopy.id, folderCopy.domainType,
+                                          "VersionedFolder ${original.label} created as a copy of ${original.id}",
+                                          copier
+            )
+        } else throw new ApiInvalidModelException('VFS01', 'Copied VersionedFolder is invalid', folderCopy.errors, messageSource)
+
+        folderCopy.trackChanges()
+
+        log.debug('Copying models from original folder into copied folder')
+        modelServices.each { service ->
+            List<Model> originalModels = service.findAllByContainerId(original.id) as List<Model>
+            List<Model> copiedModels = originalModels.collect { Model model ->
+                // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation
+                // arises in forking
+                String labelPrefix = folderCopy.label == original.label ? '' : "${folderCopy.label}_"
+                service.copyModel(model, folderCopy, copier, copyPermissions,
+                                  "${labelPrefix}${model.label}",
+                                  copyDocVersion, branchName, throwErrors,
+                                  userSecurityPolicyManager)
+            }
+            // We can't save until after all copied as the save clears the sessions
+            copiedModels.each { copy ->
+                log.debug('Validating and saving model copy')
+                service.validate(copy)
+                if (copy.hasErrors()) {
+                    throw new ApiInvalidModelException('VFS02', 'Copied Model is invalid', copy.errors, messageSource)
+                }
+                service.saveModelWithContent(copy)
+            }
+        }
+
+        log.debug('Folder copy complete')
+        folderCopy
+    }
+
+    VersionedFolder copyBasicFolderInformation(VersionedFolder original, VersionedFolder copy, User copier) {
+        copy.createdBy = copier.emailAddress
+        copy.label = original.label
+        copy.description = original.description
+        copy.authority = original.authority
+
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
+            Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
+            rule.ruleRepresentations.each { ruleRepresentation ->
+                copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
+                                                    representation: ruleRepresentation.representation,
+                                                    createdBy: copier.emailAddress)
+            }
+            copy.addToRules(copiedRule)
+        }
+
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
+            copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
+                                    targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
+                                    targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
+                                    unconfirmed: true)
+        }
+
+        copy
+    }
+
+    void setFolderIsNewBranchModelVersionOfFolder(VersionedFolder newVersionedFolder, VersionedFolder oldVersionedFolder, User catalogueUser) {
+        newVersionedFolder.addToVersionLinks(
+            linkType: VersionLinkType.NEW_MODEL_VERSION_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldVersionedFolder
+        )
+    }
+
+    void setFolderRefinesFolder(VersionedFolder source, VersionedFolder target, User catalogueUser) {
+        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
     }
 }

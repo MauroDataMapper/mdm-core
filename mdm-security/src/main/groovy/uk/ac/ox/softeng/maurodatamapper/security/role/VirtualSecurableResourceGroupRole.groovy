@@ -81,7 +81,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
             VersionedFolder versionedFolder = securableResource as VersionedFolder
             asFinalised versionedFolder.finalised
             asFinalisable versionedFolder.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-            asVersionable false
+            asVersionable true
         }
 
         this

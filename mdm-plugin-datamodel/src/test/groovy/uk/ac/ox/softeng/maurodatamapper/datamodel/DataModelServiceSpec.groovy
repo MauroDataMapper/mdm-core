@@ -208,7 +208,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.not.finalised.message' }
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -364,7 +364,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     @PendingFeature(reason = 'DataModel permission copying')
@@ -389,7 +389,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     void 'DMSC06 : test creating a new model version on draft model'() {
@@ -404,7 +404,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.not.finalised.message' }
     }
 
     void 'DMSC07 : test creating a new model version on finalised model'() {
@@ -565,7 +565,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     void 'DMSV01 : test validation on valid model'() {

@@ -27,7 +27,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
@@ -84,22 +83,6 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         byParentFolderId(id).eq('label', label)
     }
 
-    static VersionedFolder findOrCreateByLabel(String label, Map creationMap) {
-        VersionedFolder folder = findByLabel(label)
-        if (folder) return folder
-
-        creationMap.label = label
-        folder = new VersionedFolder(creationMap)
-        folder.save(flush: true, validate: false)
-    }
-
-    static VersionedFolder findOrCreateByLabel(String label, User creator, String description,
-                                               Boolean readableByAuthenticated) {
-        findOrCreateByLabel(label, [description            : description,
-                                    createdBy              : creator,
-                                    readableByAuthenticated: readableByAuthenticated])
-    }
-
     static List<VersionedFolder> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
         VersionedFolder.search().list closure
     }
@@ -152,4 +135,10 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
     static DetachedCriteria<VersionedFolder> byIdInList(Collection<UUID> ids) {
         by().inList('id', ids.toList())
     }
+
+    static DetachedCriteria<VersionedFolder> withFilter(DetachedCriteria<VersionedFolder> criteria, Map filters) {
+        if (filters.label) criteria = criteria.ilike('label', "%${filters.label}%")
+        criteria
+    }
+
 }
