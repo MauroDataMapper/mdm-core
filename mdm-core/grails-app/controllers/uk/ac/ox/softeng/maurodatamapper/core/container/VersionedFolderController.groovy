@@ -184,14 +184,9 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!validateResource(copy, 'create')) return
 
-        VersionedFolder savedCopy = versionedFolderService.saveFolderWithContent(copy)
-        savedCopy.addCreatedEdit(currentUser)
+        saveResource(copy)
 
-        if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, currentUser, savedCopy.label)
-        }
-
-        saveResponse savedCopy
+        saveResponse(copy)
     }
 
 
@@ -244,7 +239,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
             return versionedFolderService.findAllByParentId(params.versionedFolderId, params)
         }
 
-        versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
+        def r = versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
+        r
     }
 
     @Override

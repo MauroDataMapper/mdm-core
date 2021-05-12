@@ -280,8 +280,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
      * @return
      */
     List<VersionedFolder> findAllByUser(UserSecurityPolicyManager userSecurityPolicyManager, Map pagination = [:]) {
-        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        ids ? VersionedFolder.findAllByIdInList(ids, pagination) : []
+        List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(VersionedFolder)
+        ids ? VersionedFolder.withFilter(VersionedFolder.byIdInList(ids), pagination).list(pagination) : []
     }
 
     void generateDefaultFolderLabel(VersionedFolder folder) {
@@ -295,7 +295,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionedFolder createNewBranchModelVersion(String branchName, VersionedFolder folder, User user, boolean copyPermissions,
                                                 UserSecurityPolicyManager userSecurityPolicyManager, Map<String, Object> additionalArguments = [:]) {
         if (!newVersionCreationIsAllowed(folder)) return folder
-
+        log.info('Creating a new branch model version of {}', folder.id)
         // Check if the branch name is already being used
         if (countAllByLabelAndBranchNameAndNotFinalised(folder.label, branchName) > 0) {
             (folder as GormValidateable).errors.reject('version.aware.label.branch.name.already.exists',
@@ -310,6 +310,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             countAllByLabelAndBranchNameAndNotFinalised(folder.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
 
         if (!draftFolderOnMainBranchForLabel) {
+            log.info('Creating a new branch model version of {} with name {}', folder.id, VersionAwareConstraints.DEFAULT_BRANCH_NAME)
             VersionedFolder newMainBranchModelVersion = copyFolderAsNewBranchFolder(
                 folder,
                 user,
@@ -325,12 +326,17 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
                 return newMainBranchModelVersion
             } else {
-                if ((newMainBranchModelVersion as GormValidateable).validate()) save(newMainBranchModelVersion, validate: false)
-                else throw new ApiInvalidModelException('VFSXX', 'Copied (newMainBranchModelVersion) Folder is invalid',
-                                                        (newMainBranchModelVersion as GormValidateable).errors, messageSource)
+                if ((newMainBranchModelVersion as GormValidateable).validate()) {
+                    save(newMainBranchModelVersion, validate: false)
+                    if (securityPolicyManagerService) {
+                        userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(newMainBranchModelVersion, user,
+                                                                                                                 newMainBranchModelVersion.label)
+                    }
+                } else throw new ApiInvalidModelException('VFSXX', 'Copied (newMainBranchModelVersion) Folder is invalid',
+                                                          (newMainBranchModelVersion as GormValidateable).errors, messageSource)
             }
         }
-
+        log.info('Creating a new branch model version of {} with name {}', folder.id, branchName)
         VersionedFolder newBranchModelVersion = copyFolderAsNewBranchFolder(
             folder,
             user,
@@ -380,13 +386,13 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionedFolder copyFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                                String branchName,
                                boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        log.debug('Copying folder')
+        log.debug('Copying folder {}', original.id)
         Folder parentFolder = original.parentFolder ? proxyHandler.unwrapIfProxy(original.parentFolder) as Folder : null
         VersionedFolder folderCopy = new VersionedFolder(finalised: false, deleted: false,
                                                          documentationVersion: copyDocVersion,
                                                          parentFolder: parentFolder,
                                                          branchName: branchName)
-        folderCopy = copyBasicFolderInformation(original, folderCopy, copier, userSecurityPolicyManager)
+        folderCopy = copyBasicFolderInformation(original, folderCopy, copier)
         folderCopy.label = label
 
         if (copyPermissions) {
@@ -413,15 +419,17 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         log.debug('Copying models from original folder into copied folder')
         modelServices.each { service ->
             List<Model> originalModels = service.findAllByContainerId(original.id) as List<Model>
-            originalModels.each { Model model ->
+            List<Model> copiedModels = originalModels.collect { Model model ->
                 // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation
                 // arises in forking
                 String labelPrefix = folderCopy.label == original.label ? '' : "${folderCopy.label}_"
-                Model copy = service.copyModel(model, folderCopy, copier, copyPermissions,
-                                               "${labelPrefix}${model.label}",
-                                               copyDocVersion, branchName, throwErrors,
-                                               userSecurityPolicyManager)
-
+                service.copyModel(model, folderCopy, copier, copyPermissions,
+                                  "${labelPrefix}${model.label}",
+                                  copyDocVersion, branchName, throwErrors,
+                                  userSecurityPolicyManager)
+            }
+            // We can't save until after all copied as the save clears the sessions
+            copiedModels.each { copy ->
                 log.debug('Validating and saving model copy')
                 service.validate(copy)
                 if (copy.hasErrors()) {
@@ -435,8 +443,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folderCopy
     }
 
-    VersionedFolder copyBasicFolderInformation(VersionedFolder original, VersionedFolder copy, User copier,
-                                               UserSecurityPolicyManager userSecurityPolicyManager) {
+    VersionedFolder copyBasicFolderInformation(VersionedFolder original, VersionedFolder copy, User copier) {
         copy.createdBy = copier.emailAddress
         copy.label = original.label
         copy.description = original.description

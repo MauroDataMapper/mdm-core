@@ -56,7 +56,6 @@ import org.springframework.context.MessageSource
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-
 @Slf4j
 abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
 
@@ -319,9 +318,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
                 return newMainBranchModelVersion
             } else {
-                if ((newMainBranchModelVersion as GormValidateable).validate()) saveModelWithContent(newMainBranchModelVersion)
-                else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) Model is invalid',
-                                                        (newMainBranchModelVersion as GormValidateable).errors, messageSource)
+                if ((newMainBranchModelVersion as GormValidateable).validate()) {
+                    saveModelWithContent(newMainBranchModelVersion)
+                    if (securityPolicyManagerService) {
+                        userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(newMainBranchModelVersion, user,
+                                                                                                                 newMainBranchModelVersion.label)
+                    }
+                } else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) Model is invalid',
+                                                          (newMainBranchModelVersion as GormValidateable).errors, messageSource)
             }
         }
 

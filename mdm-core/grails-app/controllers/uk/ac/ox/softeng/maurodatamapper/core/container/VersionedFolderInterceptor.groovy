@@ -17,12 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.core.interceptor.SecurableResourceInterceptor
+import uk.ac.ox.softeng.maurodatamapper.core.interceptor.TieredAccessSecurableResourceInterceptor
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-
-class VersionedFolderInterceptor extends SecurableResourceInterceptor {
+class VersionedFolderInterceptor extends TieredAccessSecurableResourceInterceptor {
 
     @Override
     def <S extends SecurableResource> Class<S> getSecuredClass() {
@@ -41,24 +40,19 @@ class VersionedFolderInterceptor extends SecurableResourceInterceptor {
         params.id ?: params.versionedFolderId ?: params.folderId
     }
 
+    @Override
+    List<String> getReadAccessMethods() {
+        ['search', /*'newForkModel', 'latestModelVersion', 'latestFinalisedModel', 'currentMainBranch', 'availableBranches',
+        'modelVersionTree'*/]
+    }
+
+    @Override
+    List<String> getEditAccessMethods() {
+        ['finalise', /*'newDocumentationVersion',*/ 'newBranchModelVersion']
+    }
+
     boolean before() {
         securableResourceChecks()
-
-        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, id)
-
-        if (actionName == 'search') {
-            return canRead ?: notFound(VersionedFolder, getId())
-        }
-        if (actionName == 'finalise') {
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(VersionedFolder, id, actionName) ?:
-                   forbiddenOrNotFound(canRead, VersionedFolder, id)
-        }
-        //TODO confirm this is all that is necessary here
-        if (actionName == 'newBranchModelVersion') {
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(VersionedFolder, id, actionName) ?:
-                   forbiddenOrNotFound(canRead, VersionedFolder, id)
-        }
-
-        checkActionAuthorisationOnSecuredResource(VersionedFolder, getId(), true)
+        checkTieredAccessActionAuthorisationOnSecuredResource(VersionedFolder, getId(), true)
     }
 }
