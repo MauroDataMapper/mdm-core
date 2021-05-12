@@ -232,22 +232,16 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!instance) return notFound(params.versionedFolderId)
 
-        //TODO is casting actually necessary?
-        VersionedFolder copy = getVersionedFolderService().
-            createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager) as
-            VersionedFolder
+        VersionedFolder copy = versionedFolderService.createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions,
+                                                                                    currentUserSecurityPolicyManager)
 
         if (!validateResource(copy, 'create')) return
 
-        //TODO casting necessary?
-        VersionedFolder savedCopy = versionedFolderService.saveFolderWithContent(copy) as VersionedFolder
-        savedCopy.addCreatedEdit(currentUser)
+        if (!validateResource(copy, 'create')) return
 
-        if (securityPolicyManagerService) {
-            currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(savedCopy, currentUser, savedCopy.label)
-        }
+        saveResource(copy)
 
-        saveResponse savedCopy
+        saveResponse(copy)
     }
 
     @Override
