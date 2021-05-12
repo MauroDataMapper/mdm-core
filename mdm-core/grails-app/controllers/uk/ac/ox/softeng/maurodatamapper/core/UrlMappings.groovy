@@ -91,6 +91,8 @@ class UrlMappings {
                 '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES)
                 '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES)
 
+                put '/finalise'(controller: 'versionedFolder', action: 'finalise')
+
                 put '/readByEveryone'(controller: 'versionedFolder', action: 'readByEveryone')
                 delete '/readByEveryone'(controller: 'versionedFolder', action: 'readByEveryone')
                 put '/readByAuthenticated'(controller: 'versionedFolder', action: 'readByAuthenticated')

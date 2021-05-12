@@ -19,15 +19,21 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
+import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 
+import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 class VersionedFolderController extends EditLoggingController<VersionedFolder> {
@@ -37,6 +43,9 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     AuthorityService authorityService
     VersionedFolderService versionedFolderService
     SearchService mdmCoreSearchService
+
+    @Autowired(required = false)
+    List<ModelService> modelServices
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -122,6 +131,38 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         updateResponse(instance)
     }
 
+    @Transactional
+    def finalise(FinaliseData finaliseData) {
+
+        if (!finaliseData.validate()) {
+            respond finaliseData.errors
+            return
+        }
+
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+
+        if (!instance) return notFound(params.versionedFolderId)
+
+        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
+
+        instance = versionedFolderService.finaliseFolder(instance, currentUser,
+                                                         finaliseData.version,
+                                                         finaliseData.versionChangeType,
+                                                         finaliseData.getVersionTag())
+
+        if (!validateResource(instance, 'update')) return
+
+        if (finaliseData.changeNotice) {
+            instance.addChangeNoticeEdit(currentUser, finaliseData.changeNotice)
+        }
+
+        Set<String> changedProperties = instance.getDirtyPropertyNames()
+
+        updateResource(instance)
+        updateSecurity(instance, changedProperties)
+        updateResponse(instance)
+    }
+
     @Override
     protected VersionedFolder queryForResource(Serializable id) {
         versionedFolderService.get(id)
@@ -181,4 +222,20 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
         versionedFolderService.delete(resource)
     }
+
+    protected VersionedFolder updateSecurity(VersionedFolder instance, Set<String> changedProperties) {
+        modelServices.each { service ->
+            Collection<Model> modelsInFolder = service.findAllByFolderId(instance.id)
+            modelsInFolder.each { model ->
+                if (securityPolicyManagerService) {
+                    currentUserSecurityPolicyManager = securityPolicyManagerService.updateSecurityForSecurableResource(model as SecurableResource,
+                                                                                                                       changedProperties,
+                                                                                                                       currentUser)
+                }
+            }
+        }
+        instance
+    }
+
+
 }

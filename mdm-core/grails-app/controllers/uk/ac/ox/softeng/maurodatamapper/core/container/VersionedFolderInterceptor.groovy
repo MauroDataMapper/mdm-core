@@ -44,9 +44,14 @@ class VersionedFolderInterceptor extends SecurableResourceInterceptor {
     boolean before() {
         securableResourceChecks()
 
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, id)
+
         if (actionName == 'search') {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, getId()) ?:
-                   notFound(VersionedFolder, getId())
+            return canRead ?: notFound(VersionedFolder, getId())
+        }
+        if (actionName == 'finalise') {
+            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(VersionedFolder, id, actionName) ?:
+                   forbiddenOrNotFound(canRead, VersionedFolder, id)
         }
 
         checkActionAuthorisationOnSecuredResource(VersionedFolder, getId(), true)

@@ -18,7 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
+import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 
@@ -27,7 +30,8 @@ import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import spock.lang.PendingFeature
+import org.springframework.beans.factory.annotation.Autowired
+import spock.lang.Ignore
 
 import java.util.regex.Pattern
 
@@ -52,6 +56,10 @@ import static io.micronaut.http.HttpStatus.OK
 @Integration
 @Slf4j
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
+
+
+    @Autowired(required = false)
+    List<ModelService> modelServices
 
     @Transactional
     String getTestFolderId() {
@@ -160,7 +168,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
+        ['show', 'comment', 'editDescription', 'finalise', 'update', 'save', 'softDelete', 'delete'].sort()
     }
 
     @Override
@@ -220,7 +228,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
   "label": "Functional Test Folder 3",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+  "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
   "branchName": "main",
   "documentationVersion": "1.0.0",
   "finalised": false,
@@ -345,7 +353,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -385,7 +393,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -401,7 +409,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 },
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -446,7 +454,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         removeValidIdObject(folderId)
     }
 
-    @PendingFeature
+    @Ignore
     void 'G04 : Test create folder with one user group specified can be accessed through the folders group roles endpoint'() {
         when: 'logged in as reader user'
         loginReader()
@@ -466,7 +474,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -485,5 +493,175 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
         cleanup:
         removeValidIdObject(folderId)
+    }
+
+    void 'F01 : Test finalising Model (as reader)'() {
+        given:
+        Map data = getValidIdWithContent()
+
+        when: 'logged in as reader'
+        loginReader()
+        PUT("$data.id/finalise", ["version": "3.9.0"])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        cleanupIdWithContent(data)
+    }
+
+    void 'F02 : finalisation endpoint for Versioned Folder (as editor)'() {
+        given:
+        Map data = getValidIdWithContent()
+
+        when: 'getting the folder before finalisation'
+        GET(data.id)
+
+        then:
+        response.status == OK
+        responseBody().availableActions == getEditorAvailableActions()
+        !responseBody().finalised
+        responseBody().domainType == 'VersionedFolder'
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'getting the datamodel 1 before finalisation'
+        GET("dataModels/$data.dataModel1Id", MAP_ARG, true)
+
+        then: 'cannot finalise model inside versioned folder'
+        response.status == OK
+        responseBody().availableActions == (getEditorAvailableActions() - ResourceActions.FINALISE_ACTION)
+        !responseBody().finalised
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'getting the datamodel 2 before finalisation'
+        GET("dataModels/$data.dataModel2Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().availableActions == (getEditorAvailableActions() - ResourceActions.FINALISE_ACTION)
+        !responseBody().finalised
+        !responseBody().modelVersion
+        responseBody().branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+        when: 'The folder gets finalised'
+        PUT("$data.id/finalise", [versionChangeType: 'Major'])
+
+        then:
+        response.status == OK
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
+        responseBody().finalised
+        responseBody().domainType == 'VersionedFolder'
+        responseBody().modelVersion == '1.0.0'
+
+        when:
+        GET("dataModels/$data.dataModel1Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().finalised
+        responseBody().domainType == 'DataModel'
+        responseBody().modelVersion == '1.0.0'
+        responseBody().availableActions == getFinalisedEditorAvailableActions() - ResourceActions.EDITOR_VERSIONING_ACTIONS
+
+        when:
+        GET("dataModels/$data.dataModel2Id", MAP_ARG, true)
+
+        then:
+        response.status == OK
+        responseBody().finalised
+        responseBody().domainType == 'DataModel'
+        responseBody().modelVersion == '1.0.0'
+        responseBody().availableActions == getFinalisedEditorAvailableActions() - ResourceActions.EDITOR_VERSIONING_ACTIONS
+
+        cleanup:
+        cleanupIdWithContent(data)
+    }
+
+    void 'F03 : Test finalising Model (as editor) with a versionTag'() {
+        given:
+        Map data = getValidIdWithContent()
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$data.id/finalise", [versionChangeType: 'Major', versionTag: 'Functional Test Release'])
+
+        then:
+        verifyResponse OK, response
+        responseBody().finalised == true
+        responseBody().dateFinalised
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
+        responseBody().modelVersion == '1.0.0'
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        when: 'log out and log back in again in as editor available actions are correct and modelVersionTag is set'
+        logout()
+        loginEditor()
+        GET(data.id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        when: 'log out and log back in again in as admin available actions are correct and modelVersionTag is set'
+        logout()
+        loginAdmin()
+        GET(data.id)
+
+        then:
+        verifyResponse OK, response
+        responseBody().availableActions == getFinalisedEditorAvailableActions()
+        responseBody().modelVersionTag == 'Functional Test Release'
+
+        cleanup:
+        cleanupIdWithContent(data)
+    }
+
+    List<String> getFinalisedEditorAvailableActions() {
+        [
+            'show',
+            //            'createNewVersions',
+            //            'newForkModel',
+            'comment',
+            //            'newModelVersion',
+            //            'newDocumentationVersion',
+            //            'newBranchModelVersion',
+            'softDelete',
+            'delete'
+        ].sort()
+    }
+
+    Map<String, String> getValidIdWithContent() {
+        String id = getValidId()
+        loginEditor()
+
+        POST("folders/$id/dataModels", [
+            label: 'Functional Test DataModel 1'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String dataModel1Id = responseBody().id
+
+        POST("folders/$id/dataModels", [
+            label: 'Functional Test DataModel 2'
+        ], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        String dataModel2Id = responseBody().id
+
+        [id          : id,
+         dataModel1Id: dataModel1Id,
+         dataModel2Id: dataModel2Id
+        ]
+    }
+
+    void cleanupIdWithContent(Map<String, String> data) {
+        loginEditor()
+        // We use transactions to clear folder which means the DMs don't get deleted so have to do that manually
+        DELETE("dataModels/$data.dataModel1Id?permanent=true", MAP_ARG, true)
+        verifyResponse HttpStatus.NO_CONTENT, response
+        DELETE("dataModels/$data.dataModel2Id?permanent=true", MAP_ARG, true)
+        verifyResponse HttpStatus.NO_CONTENT, response
+        removeValidIdObject(data.id)
     }
 }

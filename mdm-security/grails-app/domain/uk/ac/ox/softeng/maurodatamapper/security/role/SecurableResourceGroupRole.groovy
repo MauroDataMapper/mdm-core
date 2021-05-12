@@ -18,14 +18,11 @@
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
 
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 
@@ -34,8 +31,7 @@ class SecurableResourceGroupRole implements EditHistoryAware {
     UUID id
     String securableResourceDomainType
     UUID securableResourceId
-    Boolean finalisedModel
-    Boolean canFinaliseModel
+    SecurableResource securableResource
 
     static belongsTo = [
         groupRole: GroupRole,
@@ -61,9 +57,9 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         userGroup validator: { val, obj ->
             if (val && obj.ident() && obj.isDirty('userGroup')) ['invalid.grouprole.cannot.change.usergroup.message']
         }
-        finalisedModel nullable: true
-        canFinaliseModel nullable: true
     }
+
+    static transients = ['securableResource']
 
     static mapping = {
         groupRole fetch: 'join'
@@ -80,22 +76,16 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         SecurableResourceGroupRole.simpleName
     }
 
-    boolean canFinalise(SecurableResource securableResource) {
-        if (Utils.parentClassIsAssignableFromChild(VersionAware, securableResource.class)) {
-            VersionAware versionAware = securableResource as VersionAware
-            return versionAware.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+    void setSecurableResource(SecurableResource securableResource, boolean justLoad) {
+        this.securableResource = securableResource
+        if (!justLoad) {
+            securableResourceDomainType = securableResource.domainType
+            securableResourceId = securableResource.resourceId
         }
-        false
     }
 
     void setSecurableResource(SecurableResource securableResource) {
-        securableResourceDomainType = securableResource.domainType
-        securableResourceId = securableResource.resourceId
-        if (Utils.parentClassIsAssignableFromChild(VersionAware, securableResource.class)) {
-            VersionAware versionAware = securableResource as VersionAware
-            finalisedModel = versionAware.finalised
-            canFinaliseModel = !versionAware.finalised && versionAware.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-        }
+        setSecurableResource(securableResource, false)
     }
 
     static DetachedCriteria<SecurableResourceGroupRole> by() {

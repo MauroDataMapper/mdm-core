@@ -345,8 +345,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
                                               currentUser,
                                               finaliseData.version,
                                               finaliseData.versionChangeType,
-                                              finaliseData.versionTag,
-                                              finaliseData.supersededBy ?: []) as T
+                                              finaliseData.versionTag) as T
 
         if (!validateResource(instance, 'update')) return
 

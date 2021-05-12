@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -38,48 +37,54 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     private GroupRole appliedGroupRole
     private UserGroup userGroup
     private int order
-    private boolean finalisedModel
-    private boolean finalisableModel
+    private boolean finalised
+    private boolean finalisable
+    // Defines if resource COULD be finalised, other factors may apply
+    private boolean versionable
+    // Defines if resource COULD be versioned, other factors may apply
     private UUID dependsOnDomainIdAccess
 
     VirtualSecurableResourceGroupRole() {
-        finalisedModel = false
-        finalisableModel = false
+        finalised = false
+        finalisable = false
+        versionable = false
     }
 
     VirtualSecurableResourceGroupRole fromSecurableResourceGroupRole(SecurableResourceGroupRole securableResourceGroupRole) {
-        this.forSecurableResource(securableResourceGroupRole.securableResourceDomainType, securableResourceGroupRole.securableResourceId)
-            .asFinalisedModel(securableResourceGroupRole.finalisedModel ?: false)
+        this.forSecurableResource(securableResourceGroupRole.securableResource)
             .definedByGroup(securableResourceGroupRole.userGroup)
             .definedByAccessLevel(securableResourceGroupRole.groupRole)
-            .withModelCanBeFinalised(securableResourceGroupRole.canFinaliseModel ?: false)
-    }
-
-    VirtualSecurableResourceGroupRole forSecurableResource(String domainType, UUID domainId) {
-        this.domainType = domainType
-        this.domainId = domainId
-        if (domainType == VersionedFolder.simpleName) alternateDomainType = Folder.simpleName
-        this
     }
 
     VirtualSecurableResourceGroupRole forSecurableResource(SecurableResource securableResource) {
-        VirtualSecurableResourceGroupRole role = this.forSecurableResource(securableResource.domainType, securableResource.resourceId)
+        this.domainType = securableResource.domainType
+        this.domainId = securableResource.resourceId
+        if (domainType == VersionedFolder.simpleName) alternateDomainType = Folder.simpleName
+
+        if (Utils.parentClassIsAssignableFromChild(Folder, securableResource.class)) {
+            dependsOnDomainIdAccess = (securableResource as Folder).parentFolder?.id
+        } else if (Utils.parentClassIsAssignableFromChild(Classifier, securableResource.class)) {
+            dependsOnDomainIdAccess = (securableResource as Classifier).parentClassifier?.id
+        }
 
         if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            role.dependsOnDomainIdAccess = (securableResource as Model).folder?.id
-        } else if (Utils.parentClassIsAssignableFromChild(Folder, securableResource.class)) {
-            role.dependsOnDomainIdAccess = (securableResource as Folder).parentFolder?.id
-        } else if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            role.dependsOnDomainIdAccess = (securableResource as Classifier).parentClassifier?.id
+            Model model = securableResource as Model
+            dependsOnDomainIdAccess = model.folder?.id
+            asFinalised model.finalised
+            // If the container is versioned then models inside it cannot be finalised
+            asFinalisable model.folder.domainType != VersionedFolder.simpleName &&
+                          model.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+            asVersionable model.folder.domainType != VersionedFolder.simpleName
         }
 
-        if (Utils.parentClassIsAssignableFromChild(VersionAware, securableResource.class)) {
-            VersionAware versionAware = (securableResource as VersionAware)
-            return role
-                .asFinalisedModel(versionAware.finalised)
-                .withModelCanBeFinalised(versionAware.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME)
+        if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResource.class)) {
+            VersionedFolder versionedFolder = securableResource as VersionedFolder
+            asFinalised versionedFolder.finalised
+            asFinalisable versionedFolder.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+            asVersionable false
         }
-        role
+
+        this
     }
 
     VirtualSecurableResourceGroupRole withAccessLevel(GroupRole groupRole) {
@@ -98,17 +103,20 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
         this
     }
 
-    VirtualSecurableResourceGroupRole asFinalisedModel(boolean finalised) {
-        this.finalisedModel = finalised
-        if (finalised) this.finalisableModel = false
+    VirtualSecurableResourceGroupRole asFinalised(boolean finalised) {
+        this.finalised = finalised
         this
     }
 
-    VirtualSecurableResourceGroupRole withModelCanBeFinalised(boolean canFinalise) {
-        this.finalisableModel = this.finalisedModel ? false : canFinalise
+    VirtualSecurableResourceGroupRole asFinalisable(boolean canFinalise) {
+        this.finalisable = canFinalise
         this
     }
 
+    VirtualSecurableResourceGroupRole asVersionable(boolean canVersion) {
+        this.versionable = canVersion
+        this
+    }
 
     @Override
     String toString() {
@@ -177,12 +185,16 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
         userGroup
     }
 
-    boolean isFinalisedModel() {
-        finalisedModel
+    boolean isFinalised() {
+        finalised
     }
 
-    boolean canFinaliseModel() {
-        finalisableModel
+    boolean canFinalise() {
+        !finalised && finalisable
+    }
+
+    boolean canVersion() {
+        finalised && versionable
     }
 
     int getOrder() {

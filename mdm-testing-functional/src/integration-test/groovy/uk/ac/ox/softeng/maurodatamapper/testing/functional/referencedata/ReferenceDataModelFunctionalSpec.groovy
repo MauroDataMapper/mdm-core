@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermissionChangingAndVersioningFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -79,7 +79,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChangingFunctionalSpec {
+class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
     @Shared
     Path resourcesPath
@@ -87,7 +87,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessAndPermissionChang
     @OnceBefore
     void setupResourcesPath() {
         resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'referencedata').toAbsolutePath()
-    }      
+    }
 
     byte[] loadTestFile(String filename) {
         Path testFilePath = resourcesPath.resolve("${filename}").toAbsolutePath()
