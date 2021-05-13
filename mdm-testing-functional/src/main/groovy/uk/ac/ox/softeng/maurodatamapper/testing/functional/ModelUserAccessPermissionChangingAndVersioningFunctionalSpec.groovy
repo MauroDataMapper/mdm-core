@@ -25,8 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.core.type.Argument
-import io.micronaut.http.HttpResponse
+import spock.lang.Unroll
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -983,154 +982,176 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanUpRoles(target, source, id)
     }
 
-    void 'E26a : Test getting versionTreeModel (as editor)'() {
+    Map<String, String> buildModelVersionTree() {
         /*
-        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
-        given:
-        String id = getValidFinalisedId()
+                                                   /- anotherFork
+      v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
+        \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
+         \_ fork                                                         \_ interestingBranch (v5)
+      */
+        // V1
+        String v1 = getValidFinalisedId()
         loginEditor()
-        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
+
+        // Fork and finalise fork
+        PUT("$v1/newForkModel", [label: "Functional Test Fork ${modelType}" as String])
         verifyResponse CREATED, response
-        String forkId = responseBody().id
-        PUT("$id/newBranchModelVersion", [:])
-        verifyResponse CREATED, response
-        String mainBranchId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
-        PUT("$forkId/finalise", [versionChangeType: VersionChangeType.MINOR])
+        String fork = responseBody().id
+        PUT("$fork/finalise", [versionChangeType: VersionChangeType.MINOR])
         verifyResponse OK, response
-        PUT("$forkId/newDocumentationVersion", [:])
+
+        // V2 main branch
+        PUT("$v1/newBranchModelVersion", [:])
         verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
+        String v2 = responseBody().id
 
-        when: 'logged in as editor'
-        HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
+        // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        PUT("$v1/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranch = responseBody().id
 
-        then:
-        verifyResponse OK, localResponse
-        localResponse.body()
-        localResponse.body().size() == 5
+        // Finalise the main branch to v2
+        PUT("$v2/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
 
-        Map sourceMap = localResponse.body().find { it.modelId == id }
-        sourceMap
-        sourceMap == [branchName             : "main",
-                      label                  : "Functional Test ${getModelType()}",
-                      modelId                : id,
-                      newBranchModelVersion  : false,
-                      newDocumentationVersion: false,
-                      newFork                : false,
-                      targets                : [[
-                                                    modelId    : forkId,
-                                                    description: VersionLinkType.NEW_FORK_OF.label
-                                                ],
-                                                [
-                                                    modelId    : mainBranchId,
-                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
-                                                ],
-                                                [
-                                                    modelId    : newBranchId,
-                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
-                                                ]]
+        // V3 main branch
+        PUT("$v2/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v3 = responseBody().id
+
+        // Finalise the main branch to v3
+        PUT("$v3/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+
+        // V4 main branch
+        PUT("$v3/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v4 = responseBody().id
+
+        // testBranch from v3 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        PUT("$v3/newBranchModelVersion", [branchName: 'testBranch'])
+        verifyResponse CREATED, response
+        String testBranch = responseBody().id
+
+        // Finalise main branch to v4
+        PUT("$v4/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+
+        // Fork from v4
+        PUT("$v4/newForkModel", [label: "Functional Test AnotherFork ${modelType}" as String])
+        verifyResponse CREATED, response
+        String anotherFork = responseBody().id
+
+        // V5 and finalise
+        PUT("$v4/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v5 = responseBody().id
+        PUT("$v5/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+
+        // Main branch
+        PUT("$v5/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String main = responseBody().id
+
+        // Another branch
+        PUT("$v5/newBranchModelVersion", [branchName: 'anotherBranch'])
+        verifyResponse CREATED, response
+        String anotherBranch = responseBody().id
+
+        // Interesting branch
+        PUT("$v5/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String interestingBranch = responseBody().id
+
+        logout()
+        [v1       : v1, v2: v2, v3: v3, v4: v4, v5: v5,
+         newBranch: newBranch, testBranch: testBranch, main: main, anotherBranch: anotherBranch, interestingBranch: interestingBranch,
+         fork     : fork, anotherFork: anotherFork
         ]
-
-        Map forkMap = localResponse.body().find { it.modelId == forkId }
-        forkMap
-        forkMap == [branchName             : "main",
-                    label                  : "Functional Test ${getModelType()} v2",
-                    modelId                : forkId,
-                    newBranchModelVersion  : false,
-                    newDocumentationVersion: false,
-                    newFork                : true,
-                    targets                : [[
-                                                  modelId    : latestDraftId,
-                                                  description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
-                                              ]]
-        ]
-
-        Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
-        mainBranchMap
-        mainBranchMap == [branchName             : "main",
-                          label                  : "Functional Test ${getModelType()}",
-                          modelId                : mainBranchId,
-                          newBranchModelVersion  : true,
-                          newDocumentationVersion: false,
-                          newFork                : false,
-                          targets                : []]
-
-        Map newBranchMap = localResponse.body().find { it.modelId == newBranchId }
-        newBranchMap
-        newBranchMap == [branchName             : "newBranch",
-                         label                  : "Functional Test ${getModelType()}",
-                         modelId                : newBranchId,
-                         newBranchModelVersion  : true,
-                         newDocumentationVersion: false,
-                         newFork                : false,
-                         targets                : []]
-
-        Map latestDraftMap = localResponse.body().find { it.modelId == latestDraftId }
-        latestDraftMap
-        latestDraftMap == [branchName             : "main",
-                           label                  : "Functional Test ${getModelType()}" + " v2",
-                           modelId                : latestDraftId,
-                           newBranchModelVersion  : false,
-                           newDocumentationVersion: true,
-                           newFork                : false,
-                           targets                : []]
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(forkId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        removeValidIdObjectUsingTransaction(mainBranchId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(forkId)
-        cleanUpRoles(latestDraftId)
     }
 
-    void 'E26b : Test getting versionTreeModel is same across ancestors (as editor)'() {
-        /*
-        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
-        given:
-        String id = getValidFinalisedId()
-        loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String finalisedId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
-        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
+    void cleanupModelVersionTree(Map<String, String> data) {
+        data.each { k, v ->
+            removeValidIdObjectUsingTransaction(v)
+        }
+        cleanUpRoles(data.values())
+    }
 
-        when: 'logged in as editor'
-        HttpResponse<List<Map>> localResponseOldestAncestor = GET("$id/modelVersionTree", Argument.listOf(Map))
-        HttpResponse<List<Map>> localResponseYoungestAncestor = GET("$latestDraftId/modelVersionTree", Argument.listOf(Map))
+    @Unroll
+    void 'E26a : Test getting versionTreeModel at #tag (as editor)'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+
+        when: 'getting the tree'
+        GET("${data[tag]}/modelVersionTree", STRING_ARG)
 
         then:
-        verifyResponse OK, localResponseOldestAncestor
-        verifyResponse OK, localResponseYoungestAncestor
-
-        localResponseOldestAncestor.body() == localResponseYoungestAncestor.body()
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(getExpectedModelTreeVersionString(data), jsonCapableResponse.body(), false)
 
         cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(finalisedId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(finalisedId)
-        cleanUpRoles(latestDraftId)
+        cleanupModelVersionTree(data)
+
+        // For all versions and branches we should get the same tree, no matter where it was requested
+        where:
+        tag << ['v1', 'v2', 'v3', 'v4', 'v5',
+                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
+    }
+
+    void 'E26b : Test getting versionTreeModel at fork only shows the fork'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.fork}",
+    "label": "Functional Test Fork DataModel",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": []
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.fork}/modelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'E26c : Test getting versionTreeModel at anotherFork only shows the fork'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.anotherFork}",
+    "label": "Functional Test AnotherFork DataModel",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": []
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.anotherFork}/modelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false)
+
+        cleanup:
+        cleanupModelVersionTree(data)
     }
 
     void 'L27 : Test undoing a soft delete (as not logged in)'() {
@@ -1227,5 +1248,205 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         cleanup:
         removeValidIdObject(id)
+    }
+
+    String getExpectedModelTreeVersionString(Map data) {
+        """[
+  {
+    "id": "${data.v1}",
+    "label": "Functional Test DataModel",
+    "branch": null,
+    "modelVersion" : "1.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+     {
+        "id": "${data.fork}",
+        "description": "New Fork Of"
+      },
+      {
+        "id": "${data.newBranch}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.v2}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.fork}",
+    "label": "Functional Test Fork DataModel",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": true,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.newBranch}",
+    "label": "Functional Test DataModel",
+    "branch": "newBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.v2}",
+    "label": "Functional Test DataModel",
+    "branch": null,
+    "modelVersion" : "2.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.v3}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.v3}",
+    "label": "Functional Test DataModel",
+    "branch": null,
+    "modelVersion" : "3.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.v4}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.testBranch}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.testBranch}",
+    "label": "Functional Test DataModel",
+    "branch": "testBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+   "id": "${data.v4}",
+    "label": "Functional Test DataModel",
+    "branch": null,
+    "modelVersion" : "4.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.anotherFork}",
+        "description": "New Fork Of"
+      },
+      {
+        "id": "${data.v5}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.anotherFork}",
+    "label": "Functional Test AnotherFork DataModel",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": true,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.v5}",
+    "label": "Functional Test DataModel",
+    "branch": null,
+    "modelVersion" : "5.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+    {
+        "id": "${data.main}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.anotherBranch}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.interestingBranch}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.main}",
+    "label": "Functional Test DataModel",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+    {
+    "id": "${data.anotherBranch}",
+    "label": "Functional Test DataModel",
+    "branch": "anotherBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.interestingBranch}",
+    "label": "Functional Test DataModel",
+    "branch": "interestingBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  }
+]"""
     }
 }

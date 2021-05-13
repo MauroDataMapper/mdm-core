@@ -317,7 +317,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
 
-        respond modelService.findCurrentMainBranchForModel(source)
+        respond modelService.findCurrentMainBranchByLabel(source.label)
     }
 
     def availableBranches() {
@@ -325,6 +325,13 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!source) return notFound(params[alternateParamsIdKey])
 
         respond modelService.findAllAvailableBranchesByLabel(source.label)
+    }
+
+    def availableModels() {
+        T source = queryForResource(params[alternateParamsIdKey])
+        if (!source) return notFound(params[alternateParamsIdKey])
+
+        respond modelService.findAllAvailableModelsByLabel(source.label)
     }
 
     @Transactional
@@ -648,7 +655,6 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null, currentUserSecurityPolicyManager)
         respond versionTreeModelList
-
     }
 
     @Override

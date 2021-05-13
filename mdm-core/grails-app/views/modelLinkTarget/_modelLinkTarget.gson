@@ -5,6 +5,6 @@ model{
 }
 
 json {
-    modelId modelLinkTarget.modelId
+    id modelLinkTarget.modelId
     description modelLinkTarget.description
 }

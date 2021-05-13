@@ -5,13 +5,13 @@ model {
 }
 
 json {
-    id versionTreeModel.modelId
+    id versionTreeModel.id
     label versionTreeModel.label
     branch versionTreeModel.branchName
+    modelVersion versionTreeModel.modelVersion?.toString()
+    documentationVersion versionTreeModel.documentationVersion?.toString()
     isNewBranchModelVersion versionTreeModel.newBranchModelVersion
     isNewDocumentationVersion versionTreeModel.newDocumentationVersion
     isNewFork versionTreeModel.newFork
-    targets tmpl.'/modelLinkTarget/modelLinkTarget'('modelLinkTarget',  versionTreeModel.targets)
-
-
+    targets tmpl.'/modelLinkTarget/modelLinkTarget'(versionTreeModel.targets)
 }

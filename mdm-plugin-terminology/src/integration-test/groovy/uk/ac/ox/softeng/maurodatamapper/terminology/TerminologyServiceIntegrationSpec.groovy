@@ -295,7 +295,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def currentMainBranch = terminologyService.findCurrentMainBranchForModel(testModel)
+        def currentMainBranch = terminologyService.findCurrentMainBranchByLabel(testModel.label)
 
         then:
         currentMainBranch.id == draftModel.id

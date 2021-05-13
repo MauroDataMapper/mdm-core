@@ -33,7 +33,7 @@ import org.junit.Assert
 import java.util.regex.Pattern
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals
-import static net.javacrumbs.jsonunit.JsonAssert.when
+import static net.javacrumbs.jsonunit.JsonAssert.withMatcher
 
 /**
  * @since 28/11/2017
@@ -46,22 +46,29 @@ trait JsonComparer {
     }
 
     Configuration buildComparisonConfiguration(Option... addtlOptions) {
+
+        Configuration configuration = withMatcher('offsetDateTime', new OffsetDateTimeMatcher())
+            .withMatcher('id', new IdMatcher())
+            .withMatcher('version', new VersionMatcher())
+            .withMatcher('errorMessage', new ErrorMessageMatcher())
+            .withMatcher('fileContents', new FileContentsMatcher())
+
         EnumSet<Option> optionsWith = EnumSet.copyOf(defaultCompareOptions)
         optionsWith.addAll(addtlOptions)
         Option[] options = new Option[optionsWith.size() - 1]
         for (int i = 1; i < optionsWith.size(); i++) {
             options[i - 1] = optionsWith[i]
         }
-        when(optionsWith.first(), options)
-            .withMatcher('offsetDateTime', new OffsetDateTimeMatcher())
-            .withMatcher('id', new IdMatcher())
-            .withMatcher('version', new VersionMatcher())
-            .withMatcher('errorMessage', new ErrorMessageMatcher())
-            .withMatcher('fileContents', new FileContentsMatcher())
+        configuration.when(optionsWith.first(), options)
+        //  configuration
     }
 
     // Wrap the assertion error so we get readable output to log and gradle
     void verifyJson(expected, actual, Option... addtlOptions) {
+        verifyJson(expected, actual, true, addtlOptions)
+    }
+
+    void verifyJson(expected, actual, boolean replaceContentWithMatchersFlag, Option... addtlOptions) {
 
         try {
             assertJsonEquals(expected, actual, buildComparisonConfiguration(addtlOptions))
@@ -75,9 +82,8 @@ trait JsonComparer {
                 toBeCleaned = actual.toString()
             }
 
-            String cleaned = replaceContentWithMatchers(toBeCleaned)
-            String prettyPrinted = prettyPrint(cleaned)
-            body = replaceContentWithMatchers(prettyPrinted)
+            String contentReplaced = replaceContentWithMatchersFlag ? replaceContentWithMatchers(toBeCleaned) : toBeCleaned
+            body = prettyPrint(contentReplaced)
 
             String message = reformatJsonDiffErrorMessage(error.message)
 

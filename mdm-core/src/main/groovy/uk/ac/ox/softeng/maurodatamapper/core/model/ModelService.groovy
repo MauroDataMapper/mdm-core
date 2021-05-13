@@ -391,7 +391,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         //TODO validation on saving merges
         if (!modelMergeObjectDiff.hasDiffs()) return targetModel
         log.debug('Merging {} diffs into model {}', modelMergeObjectDiff.getValidDiffs().size(), targetModel.label)
-        modelMergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
+        modelMergeObjectDiff.getValidDiffs().each { mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -399,7 +399,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
                 if (modelItemService) {
                     modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager)
                 } else {
@@ -410,19 +410,20 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         targetModel
     }
 
-    List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType, UserSecurityPolicyManager userSecurityPolicyManager) {
+    List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType,
+                                                 UserSecurityPolicyManager userSecurityPolicyManager,
+                                                 VersionTreeModel parentVersionTreeModel = null) {
         if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
-        VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType)
+        VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType, parentVersionTreeModel)
         List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
 
         for (link in versionLinks) {
             K linkedModel = get(link.multiFacetAwareItemId)
-            rootVersionTreeModel.addTarget(linkedModel.id, link.linkType)
-            versionTreeModelList.addAll(buildModelVersionTree(linkedModel, link.linkType, userSecurityPolicyManager))
+            versionTreeModelList.addAll(buildModelVersionTree(linkedModel, link.linkType, userSecurityPolicyManager, rootVersionTreeModel))
         }
-        versionTreeModelList
+        versionTreeModelList.sort()
     }
 
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
@@ -445,9 +446,15 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K findOldestAncestor(K model) {
-        VersionLink versionLink = versionLinkService.findBySourceModel(model)
-        if (!versionLink)
+        // Look for model version or doc version only
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+        versionLink = versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+
+        // If no versionlink then we're at the oldest ancestor
+        if (!versionLink) {
             return model
+        }
+        // Check the parent for oldest ancestor
         K parentModel = get(versionLink.targetModelId)
         findOldestAncestor(parentModel)
     }
@@ -470,22 +477,20 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         findCurrentMainBranchByLabel(label) ?: findLatestFinalisedModelByLabel(label)
     }
 
-    /**
-     * Use findCurrentMainBranchByLabel instead
-     * @param model
-     * @return
-     */
-    @Deprecated
-    K findCurrentMainBranchForModel(K model) {
-        findCurrentMainBranchByLabel(model.label)
-    }
-
     K findCurrentMainBranchByLabel(String label) {
         modelClass.byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get() as K
     }
 
     List<K> findAllAvailableBranchesByLabel(String label) {
         modelClass.byLabelAndNotFinalised(label).list() as List<K>
+    }
+
+    List<K> findAllAvailableModelsByLabel(String label) {
+        modelClass.byLabel(label).list().sort { a, b ->
+            int r = a.modelVersion <=> b.modelVersion
+            if (r == 0) r = a.branchName <=> b.branchName
+            r
+        } as List<K>
     }
 
     Version getLatestModelVersionByLabel(String label) {
@@ -612,12 +617,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
             if (countByLabel(model.label)) {
                 List<K> existingModels = findAllByLabel(model.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 model.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
