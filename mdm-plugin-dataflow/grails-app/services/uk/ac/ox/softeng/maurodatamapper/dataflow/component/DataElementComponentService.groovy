@@ -120,8 +120,8 @@ class DataElementComponentService extends ModelItemService<DataElementComponent>
                 .executeUpdate()
 
             log.trace('Removing facets for {} DataElementComponents', dataElementComponentIds.size())
-            deleteAllFacetsByCatalogueItemIds(dataElementComponentIds,
-                                              'delete from dataflow.join_dataelementcomponent_to_facet where dataelementcomponent_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataElementComponentIds,
+                                                'delete from dataflow.join_dataelementcomponent_to_facet where dataelementcomponent_id in :ids')
 
             log.trace('Removing {} DataElementComponents', dataElementComponentIds.size())
             sessionFactory.currentSession

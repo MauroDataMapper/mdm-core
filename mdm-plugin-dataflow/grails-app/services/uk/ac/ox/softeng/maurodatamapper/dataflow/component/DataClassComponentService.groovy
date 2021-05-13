@@ -126,8 +126,8 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
                 .executeUpdate()
 
             log.trace('Removing facets for {} DataClassComponents', dataClassComponentIds.size())
-            deleteAllFacetsByCatalogueItemIds(dataClassComponentIds,
-                                              'delete from dataflow.join_dataclasscomponent_to_facet where dataclasscomponent_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataClassComponentIds,
+                                                'delete from dataflow.join_dataclasscomponent_to_facet where dataclasscomponent_id in :ids')
 
             log.trace('Removing {} DataClassComponents', dataClassComponentIds.size())
             sessionFactory.currentSession
