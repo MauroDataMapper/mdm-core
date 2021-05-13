@@ -26,7 +26,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
@@ -37,17 +36,13 @@ import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 
-import java.nio.charset.StandardCharsets
 import javax.servlet.http.HttpServletRequest
 
 @Transactional
 class ProfileService {
-
-    GrailsApplication grailsApplication
 
     @Autowired
     List<CatalogueItemService> catalogueItemServices
@@ -57,11 +52,9 @@ class ProfileService {
 
     @Autowired(required = false)
     Set<ProfileProviderService> profileProviderServices
-    @Autowired
+
     DataModelService dataModelService
-    @Autowired
     MetadataService metadataService
-    @Autowired
     ProfileSpecificationProfileService profileSpecificationProfileService
 
     Profile createProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem) {
