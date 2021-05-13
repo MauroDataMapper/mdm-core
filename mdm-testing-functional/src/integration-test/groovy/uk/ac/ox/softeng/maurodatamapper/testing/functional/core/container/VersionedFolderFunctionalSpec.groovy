@@ -961,6 +961,132 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id, branchId, mainBranchId)
     }
 
+    void 'FMV01 : test creating a new fork model of a Model<T> (as reader)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+        String forkModelName = 'Functional Test Fork'
+
+        when: 'logged in as reader'
+        loginReader()
+        PUT("$id/newForkModel", [label: forkModelName])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == forkModelName
+
+        when:
+        String forkId = responseBody().id
+        GET("$forkId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
+        responseBody().items.first().sourceModel.id == forkId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        when:
+        GET('?label=fork')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().label == forkModelName
+        responseBody().items.first().id == forkId
+
+        when: 'getting the fork as the creator'
+        GET(forkId)
+
+        then:
+        verifyResponse(OK, response)
+
+        when: 'getting the fork as editor its not found as permissions dont exist'
+        loginEditor()
+        GET(forkId)
+
+        then:
+        verifyNotFound(response, forkId)
+
+        cleanup:
+        loginReader()
+        DELETE("$forkId?permanent=true")
+        verifyResponse HttpStatus.NO_CONTENT, response
+        loginEditor()
+        DELETE("$id?permanent=true")
+        verifyResponse HttpStatus.NO_CONTENT, response
+        cleanUpRoles(forkId, id)
+    }
+
+    void 'FMV02 : test creating a new fork model of a Model<T> (as editor)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+        String forkModelName = 'Functional Test Fork'
+
+        when: 'logged in as writer'
+        loginEditor()
+        PUT("$id/newForkModel", [label: forkModelName])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == forkModelName
+
+        when:
+        String forkId = responseBody().id
+        GET("$forkId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_FORK_OF.label
+        responseBody().items.first().sourceModel.id == forkId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        when: 'getting the models inside the finalised folder'
+        GET("folders/$id/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0'
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0'
+        }
+
+        when: 'getting the models inside the fork folder'
+        GET("folders/$forkId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == "Functional Test DataModel 1 (${forkModelName})" &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            !it.modelVersion
+        }
+        responseBody().items.any {
+            it.label == "Functional Test DataModel 2 (${forkModelName})" &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            !it.modelVersion
+        }
+
+        cleanup:
+        cleanupIds(forkId, id)
+    }
+
     List<String> getFinalisedEditorAvailableActions() {
         [
             'show',

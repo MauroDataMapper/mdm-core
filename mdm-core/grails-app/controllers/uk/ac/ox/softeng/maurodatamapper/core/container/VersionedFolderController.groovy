@@ -189,6 +189,34 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         saveResponse(copy)
     }
 
+    @Transactional
+    def newForkModel(CreateNewVersionData createNewVersionData) {
+
+        if (createNewVersionData.hasErrors()) {
+            respond createNewVersionData.errors
+            return
+        }
+
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+
+        if (!instance) return notFound(params.versionedFolderId)
+
+        if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params.versionedFolderId)) {
+            createNewVersionData.copyPermissions = false
+        }
+
+        VersionedFolder copy = versionedFolderService.createNewForkModel(createNewVersionData.label,
+                                                                         instance,
+                                                                         currentUser,
+                                                                         createNewVersionData.copyPermissions,
+                                                                         currentUserSecurityPolicyManager) as VersionedFolder
+
+        if (!validateResource(copy, 'create')) return
+
+        saveResource(copy)
+
+        saveResponse(copy)
+    }
 
     @Override
     protected VersionedFolder queryForResource(Serializable id) {

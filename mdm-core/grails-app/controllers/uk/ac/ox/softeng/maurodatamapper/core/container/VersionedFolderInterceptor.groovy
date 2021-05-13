@@ -42,7 +42,7 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
 
     @Override
     List<String> getReadAccessMethods() {
-        ['search', /*'newForkModel', 'latestModelVersion', 'latestFinalisedModel', 'currentMainBranch', 'availableBranches',
+        ['search', 'newForkModel', /*'latestModelVersion', 'latestFinalisedModel', 'currentMainBranch', 'availableBranches',
         'modelVersionTree'*/]
     }
 
