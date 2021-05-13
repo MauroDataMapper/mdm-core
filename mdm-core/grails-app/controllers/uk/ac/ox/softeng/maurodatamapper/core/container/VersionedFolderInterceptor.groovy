@@ -48,7 +48,7 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
 
     @Override
     List<String> getEditAccessMethods() {
-        ['finalise', /*'newDocumentationVersion',*/ 'newBranchModelVersion']
+        ['finalise', 'newDocumentationVersion', 'newBranchModelVersion']
     }
 
     boolean before() {

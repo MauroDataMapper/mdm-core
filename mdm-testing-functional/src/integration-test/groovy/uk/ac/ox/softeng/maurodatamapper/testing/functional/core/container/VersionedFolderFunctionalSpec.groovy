@@ -1087,6 +1087,92 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(forkId, id)
     }
 
+    void 'DMV01 : test creating a new documentation version of a Model<T> (as reader)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when:
+        loginReader()
+        PUT("$id/newDocumentationVersion", [:])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        cleanupIds(id)
+    }
+
+    void 'DMV02 : test creating a new documentation version of a Model<T> (as editor)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when: 'logged in as editor'
+        loginEditor()
+        PUT("$id/newDocumentationVersion", [:])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id != id
+        responseBody().label == validJson.label
+        responseBody().documentationVersion == '2.0.0'
+
+        when:
+        String docId = responseBody().id
+        GET("$docId/versionLinks")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 1
+        responseBody().items.first().domainType == 'VersionLink'
+        responseBody().items.first().linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
+        responseBody().items.first().sourceModel.id == docId
+        responseBody().items.first().targetModel.id == id
+        responseBody().items.first().sourceModel.domainType == responseBody().items.first().targetModel.domainType
+
+        when: 'getting the models inside the finalised folder'
+        GET("folders/$id/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0' &&
+            it.documentationVersion == '1.0.0'
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            it.modelVersion == '1.0.0' &&
+            it.documentationVersion == '1.0.0'
+        }
+
+        when: 'getting the models inside the doc folder'
+        GET("folders/$docId/dataModels", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 1' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            !it.modelVersion &&
+            it.documentationVersion == '2.0.0'
+        }
+        responseBody().items.any {
+            it.label == 'Functional Test DataModel 2' &&
+            it.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME &&
+            !it.modelVersion &&
+            it.documentationVersion == '2.0.0'
+        }
+
+        cleanup:
+        cleanupIds(id, docId)
+    }
+
     List<String> getFinalisedEditorAvailableActions() {
         [
             'show',

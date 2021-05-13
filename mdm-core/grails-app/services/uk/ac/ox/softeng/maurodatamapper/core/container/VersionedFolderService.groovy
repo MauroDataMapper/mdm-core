@@ -362,6 +362,23 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         newBranchModelVersion
     }
 
+    VersionedFolder createNewDocumentationVersion(VersionedFolder folder, User user, boolean copyPermissions,
+                                                  UserSecurityPolicyManager userSecurityPolicyManager,
+                                                  Map<String, Object> additionalArguments = [:]) {
+        if (!newVersionCreationIsAllowed(folder)) return folder
+
+        VersionedFolder newDocVersion = copyFolderAsNewDocumentationModel(folder,
+                                                                          user,
+                                                                          copyPermissions,
+                                                                          folder.label,
+                                                                          Version.nextMajorVersion(folder.documentationVersion),
+                                                                          folder.branchName,
+                                                                          additionalArguments.throwErrors as boolean,
+                                                                          userSecurityPolicyManager,)
+        setModelIsNewDocumentationVersionOfModel(newDocVersion, folder, user)
+        newDocVersion
+    }
+
     boolean newVersionCreationIsAllowed(VersionedFolder folder) {
         if (!folder.finalised) {
             (folder as GormValidateable).errors.reject('invalid.version.aware.new.version.not.finalised.message',
@@ -397,6 +414,12 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     VersionedFolder copyModelAsNewForkModel(VersionedFolder original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                                             UserSecurityPolicyManager userSecurityPolicyManager) {
         copyFolder(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    VersionedFolder copyFolderAsNewDocumentationModel(VersionedFolder original, User copier, boolean copyPermissions, String label,
+                                                      Version copyDocVersion, String branchName, boolean throwErrors,
+                                                      UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyFolder(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
     }
 
     VersionedFolder copyFolder(VersionedFolder original, User copier, boolean copyPermissions, String label, Version copyDocVersion,
@@ -497,6 +520,14 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     void setFolderIsNewForkModelOfFolder(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
         newFolder.addToVersionLinks(
             linkType: VersionLinkType.NEW_FORK_OF,
+            createdBy: catalogueUser.emailAddress,
+            targetModel: oldFolder
+        )
+    }
+
+    void setModelIsNewDocumentationVersionOfModel(VersionedFolder newFolder, VersionedFolder oldFolder, User catalogueUser) {
+        newFolder.addToVersionLinks(
+            linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
             createdBy: catalogueUser.emailAddress,
             targetModel: oldFolder
         )

@@ -218,6 +218,32 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         saveResponse(copy)
     }
 
+    @Transactional
+    def newDocumentationVersion(CreateNewVersionData createNewVersionData) {
+
+        createNewVersionData.label = 'newDocumentationVersion'
+
+        if (!createNewVersionData.validate()) {
+            respond createNewVersionData.errors
+            return
+        }
+
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+
+        if (!instance) return notFound(params.versionedFolderId)
+
+        VersionedFolder copy = versionedFolderService.createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions,
+                                                                                    currentUserSecurityPolicyManager)
+
+        if (!validateResource(copy, 'create')) return
+
+        if (!validateResource(copy, 'create')) return
+
+        saveResource(copy)
+
+        saveResponse(copy)
+    }
+
     @Override
     protected VersionedFolder queryForResource(Serializable id) {
         versionedFolderService.get(id)
