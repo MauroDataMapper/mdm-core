@@ -85,7 +85,7 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Multi
 
     @Override
     List<ReferenceFile> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination) {
-        ReferenceFile.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
+        ReferenceFile.withFilter(ReferenceFile.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
     }
 
     @Override

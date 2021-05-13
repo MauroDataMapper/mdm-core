@@ -83,7 +83,7 @@ class ReferenceSummaryMetadataService implements MultiFacetItemAwareService<Refe
 
     @Override
     List<ReferenceSummaryMetadata> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
-        ReferenceSummaryMetadata.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
+        ReferenceSummaryMetadata.withFilter(ReferenceSummaryMetadata.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
     }
 
     @Override
