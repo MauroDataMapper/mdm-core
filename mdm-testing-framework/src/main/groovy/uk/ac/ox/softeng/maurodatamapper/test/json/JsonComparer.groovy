@@ -41,11 +41,7 @@ import static net.javacrumbs.jsonunit.JsonAssert.withMatcher
 @Slf4j
 trait JsonComparer {
 
-    Collection<Option> getDefaultCompareOptions() {
-        [Option.IGNORING_ARRAY_ORDER]
-    }
-
-    Configuration buildComparisonConfiguration(Option... addtlOptions) {
+    Configuration buildComparisonConfiguration(boolean exactOrder, Option... addtlOptions) {
 
         Configuration configuration = withMatcher('offsetDateTime', new OffsetDateTimeMatcher())
             .withMatcher('id', new IdMatcher())
@@ -53,25 +49,29 @@ trait JsonComparer {
             .withMatcher('errorMessage', new ErrorMessageMatcher())
             .withMatcher('fileContents', new FileContentsMatcher())
 
-        EnumSet<Option> optionsWith = EnumSet.copyOf(defaultCompareOptions)
+        Set<Option> optionsWith = new HashSet<>()
+        if (!exactOrder) optionsWith.add(Option.IGNORING_ARRAY_ORDER)
         optionsWith.addAll(addtlOptions)
-        Option[] options = new Option[optionsWith.size() - 1]
-        for (int i = 1; i < optionsWith.size(); i++) {
-            options[i - 1] = optionsWith[i]
+
+        if (optionsWith) {
+            Option[] options = new Option[optionsWith.size() - 1]
+            for (int i = 1; i < optionsWith.size(); i++) {
+                options[i - 1] = optionsWith[i]
+            }
+            return configuration.when(optionsWith.first(), options)
         }
-        configuration.when(optionsWith.first(), options)
-        //  configuration
+        configuration
     }
 
     // Wrap the assertion error so we get readable output to log and gradle
     void verifyJson(expected, actual, Option... addtlOptions) {
-        verifyJson(expected, actual, true, addtlOptions)
+        verifyJson(expected, actual, true, false, addtlOptions)
     }
 
-    void verifyJson(expected, actual, boolean replaceContentWithMatchersFlag, Option... addtlOptions) {
+    void verifyJson(expected, actual, boolean replaceContentWithMatchersFlag, boolean exactOrderMatch, Option... addtlOptions) {
 
         try {
-            assertJsonEquals(expected, actual, buildComparisonConfiguration(addtlOptions))
+            assertJsonEquals(expected, actual, buildComparisonConfiguration(exactOrderMatch, addtlOptions))
         } catch (AssertionError error) {
             String body
             String toBeCleaned

@@ -987,7 +987,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
                                                    /- anotherFork
       v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
         \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
-         \_ fork                                                         \_ interestingBranch (v5)
+         \_ fork ---- main                                               \_ interestingBranch (v5)
       */
         // V1
         String v1 = getValidFinalisedId()
@@ -999,6 +999,11 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         String fork = responseBody().id
         PUT("$fork/finalise", [versionChangeType: VersionChangeType.MINOR])
         verifyResponse OK, response
+
+        // Fork main branch
+        PUT("$fork/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String forkMain = responseBody().id
 
         // V2 main branch
         PUT("$v1/newBranchModelVersion", [:])
@@ -1067,7 +1072,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         logout()
         [v1       : v1, v2: v2, v3: v3, v4: v4, v5: v5,
          newBranch: newBranch, testBranch: testBranch, main: main, anotherBranch: anotherBranch, interestingBranch: interestingBranch,
-         fork     : fork, anotherFork: anotherFork
+         fork     : fork, anotherFork: anotherFork, forkMain: forkMain
         ]
     }
 
@@ -1089,18 +1094,19 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse OK, jsonCapableResponse
-        verifyJson(getExpectedModelTreeVersionString(data), jsonCapableResponse.body(), false)
+        verifyJson(getExpectedModelTreeVersionString(data), jsonCapableResponse.body(), false, true)
 
         cleanup:
         cleanupModelVersionTree(data)
 
         // For all versions and branches we should get the same tree, no matter where it was requested
+        // But it should NOT include the branch of the fork
         where:
-        tag << ['v1', 'v2', 'v3', 'v4', 'v5',
-                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
+        tag << ['v1' /*, 'v2', 'v3', 'v4', 'v5',
+                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch'*/]
     }
 
-    void 'E26b : Test getting versionTreeModel at fork only shows the fork'() {
+    void 'E26b : Test getting versionTreeModel at fork only shows the fork and its branch'() {
         given:
         Map data = buildModelVersionTree()
         loginEditor()
@@ -1113,7 +1119,25 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewBranchModelVersion": false,
     "isNewDocumentationVersion": false,
     "isNewFork": false,
-    "targets": []
+    "targets": [
+     {
+        "id": "${data.forkMain}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.forkMain}",
+    "label": "Functional Test Fork DataModel",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
   }]"""
 
         when: 'getting the tree'
@@ -1121,7 +1145,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse OK, jsonCapableResponse
-        verifyJson(expectedJson, jsonCapableResponse.body(), false)
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
 
         cleanup:
         cleanupModelVersionTree(data)
@@ -1148,7 +1172,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         then:
         verifyResponse OK, jsonCapableResponse
-        verifyJson(expectedJson, jsonCapableResponse.body(), false)
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
 
         cleanup:
         cleanupModelVersionTree(data)
@@ -1267,25 +1291,13 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         "description": "New Fork Of"
       },
       {
-        "id": "${data.newBranch}",
+        "id": "${data.v2}",
         "description": "New Model Version Of"
       },
       {
-        "id": "${data.v2}",
+        "id": "${data.newBranch}",
         "description": "New Model Version Of"
       }
-    ]
-  },
-  {
-    "id": "${data.fork}",
-    "label": "Functional Test Fork DataModel",
-    "branch": null,
-    "modelVersion": "0.1.0",
-    "documentationVersion": "1.0.0",
-    "isNewBranchModelVersion": false,
-    "isNewDocumentationVersion": false,
-    "isNewFork": true,
-    "targets": [
       
     ]
   },
@@ -1298,6 +1310,19 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "isNewBranchModelVersion": true,
     "isNewDocumentationVersion": false,
     "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.fork}",
+    "label": "Functional Test Fork DataModel",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": true,
     "targets": [
       
     ]

@@ -31,6 +31,10 @@ class VersionTreeModel implements Comparable<VersionTreeModel> {
 
     VersionTreeModel(Model model, VersionLinkType versionLinkType, VersionTreeModel parentVersionTreeModel) {
         this.targets = []
+        this.newBranchModelVersion = false
+        this.newDocumentationVersion = false
+        this.newFork = false
+
         this.model = model
         this.parentVersionTreeModel = parentVersionTreeModel
 
