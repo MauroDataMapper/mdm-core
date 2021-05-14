@@ -107,11 +107,15 @@ class VersionTreeModel implements Comparable<VersionTreeModel> {
         this.branchName <=> that.branchName
     }
 
+    String getSimpleDisplayName() {
+        String prefix = modelVersion ? 'V' : newDocumentationVersion ? 'DM V' : newFork ? 'FM ' : ''
+        String version = modelVersion ?: newDocumentationVersion ? documentationVersion : branchName
+        String base = parentVersionTreeModel && !modelVersion ? " (V${parentVersionTreeModel.modelVersion})" : ''
+        "${prefix}${version}$base"
+    }
+
     @Override
     String toString() {
-        String prefix = newBranchModelVersion && modelVersion ? 'V' : newDocumentationVersion ? 'DM V' : newFork ? 'FM ' : ''
-        String version = modelVersion ?: newDocumentationVersion ? documentationVersion : branchName
-        String base = parentVersionTreeModel ? " (${parentVersionTreeModel.modelVersion})" : ''
-        "${prefix}${version}$base"
+        simpleDisplayName
     }
 }

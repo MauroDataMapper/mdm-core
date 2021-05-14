@@ -391,7 +391,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         //TODO validation on saving merges
         if (!modelMergeObjectDiff.hasDiffs()) return targetModel
         log.debug('Merging {} diffs into model {}', modelMergeObjectDiff.getValidDiffs().size(), targetModel.label)
-        modelMergeObjectDiff.getValidDiffs().each { mergeFieldDiff ->
+        modelMergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -399,7 +399,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
                 if (modelItemService) {
                     modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager)
                 } else {
@@ -411,20 +411,22 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType,
-                                                 UserSecurityPolicyManager userSecurityPolicyManager,
-                                                 VersionTreeModel parentVersionTreeModel = null) {
+                                                 VersionTreeModel parentVersionTreeModel,
+                                                 boolean includeForks,
+                                                 UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
 
         VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType, parentVersionTreeModel)
         List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
 
         // If fork then add to the list but dont proceed any further into that tree
-        if (versionLinkType == VersionLinkType.NEW_FORK_OF) return versionTreeModelList
+        if (versionLinkType == VersionLinkType.NEW_FORK_OF) return includeForks ? versionTreeModelList : []
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
-        for (link in versionLinks) {
+        versionLinks.each {link ->
             K linkedModel = get(link.multiFacetAwareItemId)
-            versionTreeModelList.addAll(buildModelVersionTree(linkedModel, link.linkType, userSecurityPolicyManager, rootVersionTreeModel))
+            versionTreeModelList.
+                addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, userSecurityPolicyManager))
         }
         versionTreeModelList.sort()
     }
@@ -486,14 +488,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     List<K> findAllAvailableBranchesByLabel(String label) {
         modelClass.byLabelAndNotFinalised(label).list() as List<K>
-    }
-
-    List<K> findAllAvailableModelsByLabel(String label) {
-        modelClass.byLabel(label).list().sort { a, b ->
-            int r = a.modelVersion <=> b.modelVersion
-            if (r == 0) r = a.branchName <=> b.branchName
-            r
-        } as List<K>
     }
 
     Version getLatestModelVersionByLabel(String label) {
@@ -620,12 +614,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
             if (countByLabel(model.label)) {
                 List<K> existingModels = findAllByLabel(model.label)
-                existingModels.each { existing ->
+                existingModels.each {existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
+                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
                 model.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)

@@ -1102,8 +1102,8 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         // For all versions and branches we should get the same tree, no matter where it was requested
         // But it should NOT include the branch of the fork
         where:
-        tag << ['v1' /*, 'v2', 'v3', 'v4', 'v5',
-                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch'*/]
+        tag << ['v1', 'v2', 'v3', 'v4', 'v5',
+                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
     }
 
     void 'E26b : Test getting versionTreeModel at fork only shows the fork and its branch'() {
@@ -1272,6 +1272,83 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         cleanup:
         removeValidIdObject(id)
+    }
+
+
+    @Unroll
+    void 'E28a : Test getting simple versionTreeModel at #tag (as editor)'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+
+        when: 'getting the tree'
+        GET("${data[tag]}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(getExpectedSimpleModelTreeVersionString(data), jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+
+        // For all versions and branches we should get the same tree, no matter where it was requested
+        // But it should NOT include the branch of the fork
+        where:
+        tag << ['v1', 'v2', 'v3', 'v4', 'v5',
+                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
+    }
+
+    void 'E28b : Test getting simple versionTreeModel at fork only shows the fork and its branch'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.fork}",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V0.1.0"
+  },
+  {
+    "id": "${data.forkMain}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main (V0.1.0)"
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.fork}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'E28c : Test getting simple versionTreeModel at anotherFork only shows the fork'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.anotherFork}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main"
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.anotherFork}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
     }
 
     String getExpectedModelTreeVersionString(Map data) {
@@ -1471,6 +1548,81 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
     "targets": [
       
     ]
+  }
+]"""
+    }
+
+    String getExpectedSimpleModelTreeVersionString(Map data) {
+        """[
+  {
+    "id": "${data.v1}",
+    "branch": null,
+    "modelVersion" : "1.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V1.0.0"
+  },
+  {
+    "id": "${data.newBranch}",
+    "branch": "newBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "newBranch (V1.0.0)"
+  },
+  {
+    "id": "${data.v2}",
+    "branch": null,
+    "modelVersion" : "2.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V2.0.0"
+  },
+  {
+    "id": "${data.v3}",
+    "branch": null,
+    "modelVersion" : "3.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V3.0.0"
+  },
+  {
+    "id": "${data.testBranch}",
+    "branch": "testBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "testBranch (V3.0.0)"
+  },
+  {
+    "id": "${data.v4}",
+    "branch": null,
+    "modelVersion" : "4.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V4.0.0"
+  },
+  {
+    "id": "${data.v5}",
+    "branch": null,
+    "modelVersion" : "5.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V5.0.0"
+  },
+  {
+    "id": "${data.main}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main (V5.0.0)"
+  },
+    {
+    "id": "${data.anotherBranch}",
+    "branch": "anotherBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "anotherBranch (V5.0.0)"
+  },
+  {
+    "id": "${data.interestingBranch}",
+    "branch": "interestingBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+   "displayName": "interestingBranch (V5.0.0)"
   }
 ]"""
     }
