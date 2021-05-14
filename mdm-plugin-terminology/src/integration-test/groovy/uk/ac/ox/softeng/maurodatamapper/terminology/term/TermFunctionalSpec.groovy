@@ -354,7 +354,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
 
         then: 'The response is OK'
         verifyJsonResponse OK, '''{
-  "count": 12,
+  "count": 13,
   "items": [
     {
       "id": "${json-unit.matches:id}",

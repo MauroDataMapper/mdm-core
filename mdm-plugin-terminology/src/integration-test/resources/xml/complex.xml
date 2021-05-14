@@ -808,6 +808,14 @@
                 <mdm:depth>1</mdm:depth>
                 <mdm:lastUpdated>2020-09-18T15:42:29.271Z</mdm:lastUpdated>
             </mdm:term>   
+            <mdm:term>
+                <mdm:id>7587527f-b83b-481e-bbb6-c992991a190c</mdm:id>
+                <mdm:code>Complex Test Term 101</mdm:code>
+                <mdm:definition>Complex Test Term 101</mdm:definition>
+                <mdm:description>Example of truncated term label when code and definition are the same</mdm:description>
+                <mdm:depth>1</mdm:depth>
+                <mdm:lastUpdated>2020-09-18T15:42:29.271Z</mdm:lastUpdated>
+            </mdm:term>
         </mdm:terms>
         <mdm:termRelationships>
             <mdm:termRelationship>
