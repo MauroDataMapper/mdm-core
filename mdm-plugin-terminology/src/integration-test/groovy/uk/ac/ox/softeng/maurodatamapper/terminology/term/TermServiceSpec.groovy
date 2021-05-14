@@ -73,7 +73,6 @@ class TermServiceSpec extends BaseTerminologyIntegrationSpec {
 
         and:
         tm2.code == 'IT02'
-
     }
 
     void "test count"() {
