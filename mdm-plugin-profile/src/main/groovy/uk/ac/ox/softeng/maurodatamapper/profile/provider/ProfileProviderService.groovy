@@ -43,6 +43,7 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
     abstract String getMetadataNamespace()
 
     boolean isJsonProfileService() { return true }
+    boolean disabled = false
 
     @Override
     String getProviderType() {
@@ -118,6 +119,18 @@ abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem
 
     List<MetadataAware> findAllProfiledItems(String domainType = null) {
         metadataService.findAllMultiFacetAwareItemsByNamespace(metadataNamespace, domainType)
+    }
+
+    UUID getDefiningDataModel() {
+        return null
+    }
+
+    String getDefiningDataModelLabel() {
+        return null
+    }
+
+    String getDefiningDataModelDescription() {
+        return null
     }
 
 }

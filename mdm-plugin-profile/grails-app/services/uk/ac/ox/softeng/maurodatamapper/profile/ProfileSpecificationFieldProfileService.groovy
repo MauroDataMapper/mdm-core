@@ -15,15 +15,32 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.profile.domain
+package uk.ac.ox.softeng.maurodatamapper.profile
 
-import grails.rest.Resource
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.JsonProfileProviderService
 
-@Resource(readOnly = false, formats = ['json', 'xml'])
-class ProfileSection implements Cloneable {
+import groovy.util.logging.Slf4j
 
-    String sectionName
-    String sectionDescription
-    List<ProfileField> fields = []
+@Slf4j
+class ProfileSpecificationFieldProfileService extends JsonProfileProviderService {
 
+    @Override
+    String getMetadataNamespace() {
+        getNamespace() + ".dataelement"
+    }
+
+    @Override
+    String getDisplayName() {
+        'Profile Specification Profile (Data Element)'
+    }
+
+    @Override
+    String getJsonResourceFile() {
+        return 'ProfileSpecificationFieldProfile.json'
+    }
+
+    @Override
+    List<String> profileApplicableForDomains() {
+        return ['DataElement']
+    }
 }

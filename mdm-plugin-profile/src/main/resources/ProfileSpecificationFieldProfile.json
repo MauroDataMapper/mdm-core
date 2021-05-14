@@ -1,0 +1,40 @@
+[
+  {
+    "sectionName": "Profile Specification",
+    "sectionDescription": "The details necessary for this Data Element to define a field for a dynamic profile.",
+    "fields": [
+      {
+        "fieldName": "Metadata Property Name",
+        "metadataPropertyName": "metadataPropertyName",
+        "description": "The key under which this property of this profile will be stored",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "String"
+      },
+      {
+        "fieldName": "Default Value",
+        "metadataPropertyName": "defaultValue",
+        "description": "The default value that will be offered for this property",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "String"
+      },
+      {
+        "fieldName": "Regular expression",
+        "metadataPropertyName": "regularExpression",
+        "description": "A regular expression that may be used to validate string fields",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "String"
+      },
+      {
+        "fieldName": "May be edited after finalisation",
+        "metadataPropertyName": "editedAfterFinalisation",
+        "description": "Determines whether this field may be edited after the owning model has been finalised",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "Boolean"
+      }
+    ]
+  }
+]

@@ -24,6 +24,7 @@ class UrlMappings {
 
             group '/profiles', {
                 get '/providers'(controller: 'profile', action: 'profileProviders')
+                get '/providers/dynamic'(controller: 'profile', action: 'dynamicProfileProviders')
 
                 group "/$profileNamespace/$profileName", {
 
@@ -38,7 +39,8 @@ class UrlMappings {
                     // Provide multiple ways to obtain profile of a catalogue item
                     get "/${catalogueItemDomainType}/${catalogueItemId}"(controller: 'profile', action: 'show')
 
-                    post "/${catalogueItemDomainType}/${catalogueItemId}"(controller: 'profile', action: 'save')
+                    post "/$catalogueItemDomainType/$catalogueItemId"(controller: 'profile', action: 'save')
+                    post "/$catalogueItemDomainType/$catalogueItemId/validate"(controller: 'profile', action: 'validate')
                 }
             }
 
