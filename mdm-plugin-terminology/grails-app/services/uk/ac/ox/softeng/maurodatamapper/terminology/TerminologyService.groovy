@@ -159,7 +159,7 @@ class TerminologyService extends ModelService<Terminology> {
         termRelationshipTypeService.deleteAllByModelId(model.id)
 
         log.trace('Removing facets')
-        deleteAllFacetsByCatalogueItemId(model.id, 'delete from terminology.join_terminology_to_facet where terminology_id=:id')
+        deleteAllFacetsByMultiFacetAwareId(model.id, 'delete from terminology.join_terminology_to_facet where terminology_id=:id')
 
         log.trace('Content removed')
         sessionFactory.currentSession
@@ -199,7 +199,7 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    List<UUID> findAllModelIds() {
+    List<UUID> getAllModelIds() {
         Terminology.by().id().list() as List<UUID>
     }
 
@@ -241,13 +241,12 @@ class TerminologyService extends ModelService<Terminology> {
         latest
     }
 
-    Terminology copyModel(Terminology original, User copier, boolean copyPermissions, String label, Version copyVersion, String branchName,
-                          boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
+    Terminology copyModel(Terminology original, Folder folderToCopyTo, User copier, boolean copyPermissions, String label, Version copyVersion,
+                          String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         Terminology copy = new Terminology(author: original.author,
                                            organisation: original.organisation,
                                            finalised: false, deleted: false, documentationVersion: copyVersion,
-                                           folder: folder, authority: original.authority, branchName: branchName
+                                           folder: folderToCopyTo, authority: original.authority, branchName: branchName
         )
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label
@@ -332,12 +331,12 @@ class TerminologyService extends ModelService<Terminology> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(Terminology terminology, boolean fullTreeRender = false, boolean includeImported = false) {
+    boolean hasTreeTypeModelItems(Terminology terminology, boolean fullTreeRender) {
         isTreeStructureCapableTerminology(terminology)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(Terminology terminology, boolean fullTreeRender = false, boolean includeImported = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(Terminology terminology, boolean fullTreeRender) {
         List<Term> terms = termService.findAllByTerminologyIdAndDepth(terminology.id, 1)
         if (terms.size() > 100) {
             log.warn('Too many terms found to provide a stable tree {}', terms.size())
@@ -428,7 +427,7 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology.byDeleted().list(pagination)
     }
 
-    List<Terminology> findAllSupersededModels(List<UUID> ids, Map pagination) {
+    List<Terminology> findAllModelsByIdInList(List<UUID> ids, Map pagination) {
         if (!ids) return []
         Terminology.byIdInList(ids).list(pagination)
     }

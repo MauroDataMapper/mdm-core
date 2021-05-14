@@ -17,9 +17,11 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
+
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
@@ -30,21 +32,21 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class VersionLink implements CatalogueItemAware, CreatorAware {
+class VersionLink implements MultiFacetItemAware, CreatorAware {
 
     UUID id
 
     @BindUsing({obj, source -> VersionLinkType.findFromMap(source)})
     VersionLinkType linkType
-    Model targetModel
+    VersionLinkAware targetModel
     UUID targetModelId
     String targetModelDomainType
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-        catalogueItemId nullable: true, validator: {val, obj ->
-            if (!val && !obj.catalogueItem) return ['default.null.message']
-            if (val == obj.targetModelId && obj.catalogueItemDomainType == obj.targetModelDomainType) {
+        multiFacetAwareItemId nullable: true, validator: {val, obj ->
+            if (!val && !obj.multiFacetAwareItem) return ['default.null.message']
+            if (val == obj.targetModelId && obj.multiFacetAwareItemDomainType == obj.targetModelDomainType) {
                 return ['invalid.same.property.message', 'targetModel']
             }
         }
@@ -52,17 +54,17 @@ class VersionLink implements CatalogueItemAware, CreatorAware {
 
     static mapping = {
         batchSize 20
-        catalogueItemId index: 'version_link_catalogue_item_idx'
+        multiFacetAwareItemId index: 'version_link_catalogue_item_idx'
         targetModelId index: 'version_link_target_model_idx'
     }
 
     // Required to prevent bidirectional mapping to catalogue items
     static mappedBy = [
-        'catalogueItem': 'none',
-        'targetModel'  : 'none'
+        'multiFacetAwareItem': 'none',
+        'targetModel'        : 'none'
     ]
 
-    static transients = ['targetModel', 'model', 'catalogueItem']
+    static transients = ['targetModel', 'model', 'multiFacetAwareItem']
 
     VersionLink() {
     }
@@ -78,23 +80,23 @@ class VersionLink implements CatalogueItemAware, CreatorAware {
         "VersionLink:${linkType}:${targetModelId}"
     }
 
-    void setModel(Model model) {
-        setCatalogueItem(model)
+    void setModel(VersionLinkAware model) {
+        setMultiFacetAwareItem(model as MultiFacetAware)
     }
 
-    Model getModel() {
-        catalogueItem as Model
+    VersionLinkAware getModel() {
+        multiFacetAwareItem as VersionLinkAware
     }
 
     UUID getModelId() {
-        catalogueItemId
+        multiFacetAwareItemId
     }
 
     String getModelDomainType() {
-        catalogueItemDomainType
+        multiFacetAwareItemDomainType
     }
 
-    void setTargetModel(Model targetModel) {
+    void setTargetModel(VersionLinkAware targetModel) {
         this.targetModel = targetModel
         this.targetModelDomainType = targetModel.domainType
         this.targetModelId = targetModel.id
@@ -105,7 +107,7 @@ class VersionLink implements CatalogueItemAware, CreatorAware {
     }
 
     static DetachedCriteria<VersionLink> byModelId(Serializable modelId) {
-        by().eq('catalogueItemId', Utils.toUuid(modelId))
+        by().eq('multiFacetAwareItemId', Utils.toUuid(modelId))
     }
 
     static DetachedCriteria<VersionLink> byModelIdAndLinkType(Serializable modelId, VersionLinkType linkType) {
@@ -124,28 +126,28 @@ class VersionLink implements CatalogueItemAware, CreatorAware {
         byTargetModelId(modelId).idEq(Utils.toUuid(resourceId))
     }
 
-    static DetachedCriteria<VersionLink> byAnyModelId(Serializable catalogueItemId) {
+    static DetachedCriteria<VersionLink> byAnyModelId(Serializable multiFacetAwareItemId) {
         by().or {
-            eq 'catalogueItemId', Utils.toUuid(catalogueItemId)
-            eq 'targetModelId', Utils.toUuid(catalogueItemId)
+            eq 'multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId)
+            eq 'targetModelId', Utils.toUuid(multiFacetAwareItemId)
         }
     }
 
-    static DetachedCriteria<VersionLink> byAnyModelIdInList(List<UUID> catalogueItemIds) {
+    static DetachedCriteria<VersionLink> byAnyModelIdInList(List<UUID> multiFacetAwareItemIds) {
         by().or {
-            inList 'catalogueItemId', catalogueItemIds
-            inList 'targetModelId', catalogueItemIds
+            inList 'multiFacetAwareItemId', multiFacetAwareItemIds
+            inList 'targetModelId', multiFacetAwareItemIds
         }
     }
 
     static DetachedCriteria<VersionLink> bySourceModelAndLinkType(Model source, VersionLinkType linkType) {
-        by().eq('catalogueItemId', source.id)
+        by().eq('multiFacetAwareItemId', source.id)
             .eq('linkType', linkType)
     }
 
     static DetachedCriteria<VersionLink> bySourceModelAndTargetModelAndLinkType(Model source, Model target,
                                                                                 VersionLinkType linkType) {
-        by().eq('catalogueItemId', source.id)
+        by().eq('multiFacetAwareItemId', source.id)
             .eq('targetModelId', target.id)
             .eq('linkType', linkType)
     }

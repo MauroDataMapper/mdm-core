@@ -84,7 +84,7 @@ class Utils {
         }
     }
 
-    static boolean parentClassIsAssignableFromChild(Class parentClass, Class childClass) {
+    static boolean parentClassIsAssignableFromChild(Class<? extends Object> parentClass, Class<? extends Object> childClass) {
         childClass.classLoader.loadClass(parentClass.name).isAssignableFrom(childClass)
     }
 

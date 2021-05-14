@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -37,6 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelIm
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -54,9 +56,8 @@ import org.springframework.context.MessageSource
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-
 @Slf4j
-abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K> {
+abstract class ModelService<K extends Model> extends CatalogueItemService<K> implements SecurableResourceService<K>, VersionLinkAwareService<K> {
 
     protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
@@ -89,6 +90,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         getModelClass()
     }
 
+    Class<K> getVersionLinkAwareClass() {
+        getModelClass()
+    }
+
     abstract Class<K> getModelClass()
 
     abstract String getUrlResourceName()
@@ -109,8 +114,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract List<K> findAllByFolderId(UUID folderId)
 
-    abstract List<K> findAllSupersededModels(List<UUID> ids, Map pagination)
-
     abstract K validate(K model)
 
     abstract K saveModelWithContent(K model)
@@ -125,11 +128,10 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     abstract List<K> findAllByLabel(String label)
 
-    abstract List<UUID> findAllModelIds()
-
     abstract int countAllByLabelAndBranchNameAndNotFinalised(String label, String branchName)
 
     abstract K copyModel(K original,
+                         Folder folderToCopyInto,
                          User copier,
                          boolean copyPermissions,
                          String label,
@@ -174,55 +176,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         findAllByMetadataNamespaceAndKey(dataLoaderProviderService.namespace, dataLoaderProviderService.name, pagination)
     }
 
-    void removeVersionLinkFromModel(UUID modelId, VersionLink versionLink) {
-        removeFacetFromDomain(modelId, versionLink.id, 'versionLinks')
-    }
-
-    List<UUID> findAllSupersededModelIds(List<K> models) {
-        findAllSupersededIds(models.id)
-    }
-
-    List<K> findAllDocumentationSupersededModels(Map pagination) {
-        List<UUID> ids = findAllDocumentSupersededIds(findAllModelIds())
-        findAllSupersededModels(ids, pagination)
-    }
-
-    List<K> findAllModelSupersededModels(Map pagination) {
-        List<UUID> ids = findAllModelSupersededIds(findAllModelIds())
-        findAllSupersededModels(ids, pagination)
-    }
-
-    List<UUID> findAllExcludingDocumentSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllDocumentSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllExcludingModelSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllModelSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllExcludingDocumentAndModelSupersededIds(List<UUID> readableIds) {
-        readableIds - findAllSupersededIds(readableIds)
-    }
-
-    List<UUID> findAllSupersededIds(List<UUID> readableIds) {
-        (findAllDocumentSupersededIds(readableIds) + findAllModelSupersededIds(readableIds)).toSet().toList()
-    }
-
-    List<UUID> findAllDocumentSupersededIds(List<UUID> readableIds) {
-        versionLinkService.filterModelIdsWhereModelIdIsDocumentSuperseded(getModelClass().simpleName, readableIds)
-    }
-
-    List<UUID> findAllModelSupersededIds(List<UUID> readableIds) {
-        // All versionLinks which are targets of model version links
-        List<VersionLink> modelVersionLinks = versionLinkService.findAllByTargetCatalogueItemIdInListAndIsModelSuperseded(readableIds)
-
-        // However they are only superseded if the source of this link is finalised
-        modelVersionLinks.findAll {
-            K sourceModel = get(it.catalogueItemId)
-            sourceModel.finalised
-        }.collect {it.targetModelId}
-    }
-
     List<K> findAllReadableModels(UserSecurityPolicyManager userSecurityPolicyManager, boolean includeDocumentSuperseded,
                                   boolean includeModelSuperseded, boolean includeDeleted) {
         List<UUID> ids = userSecurityPolicyManager.listReadableSecuredResourceIds(getModelClass())
@@ -243,7 +196,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K finaliseModel(K model, User user, Version modelVersion, VersionChangeType versionChangeType,
-                    String versionTag, List<Serializable> supersedeModelIds = []) {
+                    String versionTag) {
         log.debug('Finalising model')
         long start = System.currentTimeMillis()
 
@@ -280,6 +233,18 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     K copyModelAsNewDocumentationModel(K original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
                                        boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
         copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
+    }
+
+    K copyModel(K original,
+                User copier,
+                boolean copyPermissions,
+                String label,
+                Version copyDocVersion,
+                String branchName,
+                boolean throwErrors,
+                UserSecurityPolicyManager userSecurityPolicyManager) {
+        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
+        copyModel(original, folder, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager)
     }
 
     K createNewDocumentationVersion(K model, User user, boolean copyPermissions,
@@ -323,7 +288,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         // Check if the branch name is already being used
         if (countAllByLabelAndBranchNameAndNotFinalised(model.label, branchName) > 0) {
-            (model as GormValidateable).errors.reject('model.label.branch.name.already.exists',
+            (model as GormValidateable).errors.reject('version.aware.label.branch.name.already.exists',
                                                       ['branchName', getModelClass(), branchName, model.label] as Object[],
                                                       'Property [{0}] of class [{1}] with value [{2}] already exists for label [{3}]')
             return model
@@ -353,9 +318,14 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             if (branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME) {
                 return newMainBranchModelVersion
             } else {
-                if ((newMainBranchModelVersion as GormValidateable).validate()) saveModelWithContent(newMainBranchModelVersion)
-                else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) DataModel is invalid',
-                                                        (newMainBranchModelVersion as GormValidateable).errors, messageSource)
+                if ((newMainBranchModelVersion as GormValidateable).validate()) {
+                    saveModelWithContent(newMainBranchModelVersion)
+                    if (securityPolicyManagerService) {
+                        userSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(newMainBranchModelVersion, user,
+                                                                                                                 newMainBranchModelVersion.label)
+                    }
+                } else throw new ApiInvalidModelException('DMSXX', 'Copied (newMainBranchModelVersion) Model is invalid',
+                                                          (newMainBranchModelVersion as GormValidateable).errors, messageSource)
             }
         }
 
@@ -378,16 +348,16 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     boolean newVersionCreationIsAllowed(K model) {
         if (!model.finalised) {
-            (model as GormValidateable).errors.reject('invalid.model.new.version.not.finalised.message',
-                                                      [model.label, model.id] as Object[],
-                                                      'Model [{0}({1})] cannot have a new version as it is not finalised')
+            (model as GormValidateable).errors.reject('invalid.version.aware.new.version.not.finalised.message',
+                                                      [model.domainType, model.label, model.id] as Object[],
+                                                      '{0} [{1}({2})] cannot have a new version as it is not finalised')
             return false
         }
         K superseding = findModelDocumentationSuperseding(model)
         if (superseding) {
-            (model as GormValidateable).errors.reject('invalid.model.new.version.superseded.message',
-                                                      [model.label, model.id, superseding.label, superseding.id] as Object[],
-                                                      'Model [{0}({1})] cannot have a new version as it has been superseded by [{2}({3})]')
+            (model as GormValidateable).errors.reject('invalid.version.aware.new.version.superseded.message',
+                                                      [model.domainType, model.label, model.id, superseding.label, superseding.id] as Object[],
+                                                      '{0} [{1}({2})] cannot have a new version as it has been superseded by [{3}({4})]')
             return false
         }
 
@@ -397,13 +367,13 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     K findModelSuperseding(K model) {
         VersionLink link = versionLinkService.findLatestLinkSupersedingModelId(getModelClass().simpleName, model.id)
         if (!link) return null
-        link.catalogueItemId == model.id ? get(link.targetModelId) : get(link.catalogueItemId)
+        link.multiFacetAwareItemId == model.id ? get(link.targetModelId) : get(link.multiFacetAwareItemId)
     }
 
     K findModelDocumentationSuperseding(K model) {
-        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingModelId(getModelClass().simpleName, model.id)
+        VersionLink link = versionLinkService.findLatestLinkDocumentationSupersedingModelId(model.domainType, model.id)
         if (!link) return null
-        link.catalogueItemId == model.id ? get(link.targetModelId) : get(link.catalogueItemId)
+        link.multiFacetAwareItemId == model.id ? get(link.targetModelId) : get(link.multiFacetAwareItemId)
     }
 
     /**
@@ -448,7 +418,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
 
         for (link in versionLinks) {
-            K linkedModel = get(link.catalogueItemId)
+            K linkedModel = get(link.multiFacetAwareItemId)
             rootVersionTreeModel.addTarget(linkedModel.id, link.linkType)
             versionTreeModelList.addAll(buildModelVersionTree(linkedModel, link.linkType, userSecurityPolicyManager))
         }
@@ -537,7 +507,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.versionLinks) {
             catalogueItem.versionLinks.each {
-                it.catalogueItem = catalogueItem
+                it.multiFacetAwareItem = catalogueItem
                 it.createdBy = it.createdBy ?: catalogueItem.createdBy
             }
         }
@@ -574,8 +544,8 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.versionLinks) {
             catalogueItem.versionLinks.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             VersionLink.saveAll(catalogueItem.versionLinks)
         }
@@ -632,9 +602,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        versionLinkService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        versionLinkService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     void checkDocumentationVersion(K model, boolean importAsNewDocumentationVersion, User catalogueUser) {
@@ -698,6 +668,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     void setModelIsFromModel(K source, K target, User user) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
     }
 }

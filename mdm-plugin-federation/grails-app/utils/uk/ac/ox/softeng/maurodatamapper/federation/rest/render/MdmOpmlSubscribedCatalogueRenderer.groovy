@@ -48,11 +48,6 @@ class MdmOpmlSubscribedCatalogueRenderer<T> extends HalXmlRenderer<T> {
 
     MdmOpmlSubscribedCatalogueRenderer(Class<T> targetType) {
         super(targetType, new MimeType("text/x-opml", "opml"))
-
-        //In AbstractLinkingRenderer we have boolean prettyPrint = Environment.isDevelopmentMode()
-        //But prettyPrint adds whitespace which causes the rendered XML to fail W3C validation. This makes
-        //testing development difficult, so here we turn prettyPrint off.
-        prettyPrint = false
     }
 
     /**

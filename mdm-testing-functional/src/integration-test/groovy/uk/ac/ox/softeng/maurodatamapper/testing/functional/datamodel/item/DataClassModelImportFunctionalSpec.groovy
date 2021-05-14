@@ -25,9 +25,11 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelImportFunctional
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import spock.lang.Ignore
 
 @Integration
 @Slf4j
+@Ignore('No longer relevant')
 class DataClassModelImportFunctionalSpec extends ModelImportFunctionalSpec {
 
     @Override

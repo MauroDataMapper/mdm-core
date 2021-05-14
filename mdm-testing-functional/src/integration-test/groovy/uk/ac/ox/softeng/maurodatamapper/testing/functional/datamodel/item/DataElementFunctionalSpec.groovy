@@ -18,8 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item
 
 
-import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
@@ -291,9 +289,7 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
         assert body.breadcrumbs[1].label == 'simple'
         assert body.breadcrumbs[1].domainType == 'DataClass'
 
-        assert body.availableActions == [
-            'show', 'comment', 'editDescription', 'update', 'save', 'delete'
-        ]
+        assert body.availableActions == getEditorModelItemAvailableActions().sort()
         assert body.lastUpdated
         assert body.maxMultiplicity == 20
         assert body.minMultiplicity == 0

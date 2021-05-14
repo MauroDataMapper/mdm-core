@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 
 import grails.gorm.transactions.Transactional
 
@@ -34,7 +34,7 @@ class SemanticLinkController extends FacetController<SemanticLink> {
     }
 
     @Override
-    CatalogueItemAwareService getFacetService() {
+    MultiFacetItemAwareService getFacetService() {
         semanticLinkService
     }
 
@@ -62,7 +62,7 @@ class SemanticLinkController extends FacetController<SemanticLink> {
     @Override
     protected SemanticLink queryForResource(Serializable id) {
         SemanticLink resource = super.queryForResource(id) as SemanticLink
-        semanticLinkService.loadCatalogueItemsIntoSemanticLink(resource)
+        semanticLinkService.loadMultiFacetAwareItemsIntoSemanticLink(resource)
     }
 
     @Override
@@ -70,26 +70,26 @@ class SemanticLinkController extends FacetController<SemanticLink> {
         List<SemanticLink> semanticLinks
         switch (params.type) {
             case 'source':
-                semanticLinks = semanticLinkService.findAllBySourceCatalogueItemId(params.catalogueItemId, params)
+                semanticLinks = semanticLinkService.findAllBySourceMultiFacetAwareItemId(params.multiFacetAwareItemId, params)
                 break
             case 'target':
-                semanticLinks = semanticLinkService.findAllByTargetCatalogueItemId(params.catalogueItemId, params)
+                semanticLinks = semanticLinkService.findAllByTargetMultiFacetAwareItemId(params.multiFacetAwareItemId, params)
                 break
             default:
-                semanticLinks = semanticLinkService.findAllBySourceOrTargetCatalogueItemId(params.catalogueItemId, params)
+                semanticLinks = semanticLinkService.findAllBySourceOrTargetMultiFacetAwareItemId(params.multiFacetAwareItemId, params)
         }
-        semanticLinkService.loadCatalogueItemsIntoSemanticLinks(semanticLinks)
+        semanticLinkService.loadMultiFacetAwareItemsIntoSemanticLinks(semanticLinks)
     }
 
     @Override
     protected SemanticLink saveResource(SemanticLink resource) {
-        semanticLinkService.loadCatalogueItemsIntoSemanticLink(resource)
+        semanticLinkService.loadMultiFacetAwareItemsIntoSemanticLink(resource)
         super.saveResource(resource)
     }
 
     @Override
     protected SemanticLink updateResource(SemanticLink resource) {
-        semanticLinkService.loadCatalogueItemsIntoSemanticLink(resource)
+        semanticLinkService.loadMultiFacetAwareItemsIntoSemanticLink(resource)
         super.updateResource(resource)
     }
 

@@ -26,4 +26,13 @@ trait DomainService<K> {
     abstract Long count()
 
     abstract void delete(K domain)
+
+    K save(K domain) {
+        // Default behaviours for save in GormEntity
+        save(flush: false, validate: true, domain)
+    }
+
+    K save(Map args, K domain) {
+        domain.save(args)
+    }
 }

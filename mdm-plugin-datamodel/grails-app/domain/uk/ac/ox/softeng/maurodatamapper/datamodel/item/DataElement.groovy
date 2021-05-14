@@ -21,8 +21,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtend
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
@@ -50,6 +48,8 @@ import org.hibernate.search.annotations.FieldBridge
 import org.hibernate.search.annotations.Index
 import org.hibernate.search.bridge.builtin.UUIDBridge
 
+import javax.persistence.criteria.JoinType
+
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Resource(readOnly = false, formats = ['json', 'xml'])
 @Slf4j
@@ -70,13 +70,14 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
     static transients = ['aliases']
 
     static hasMany = [
-        classifiers    : Classifier,
-        metadata       : Metadata,
-        annotations    : Annotation,
-        semanticLinks  : SemanticLink,
-        referenceFiles : ReferenceFile,
-        summaryMetadata: SummaryMetadata,
-        rules          : Rule
+        classifiers         : Classifier,
+        metadata            : Metadata,
+        annotations         : Annotation,
+        semanticLinks       : SemanticLink,
+        referenceFiles      : ReferenceFile,
+        summaryMetadata     : SummaryMetadata,
+        rules               : Rule,
+        importingDataClasses: DataClass,
     ]
 
     static constraints = {
@@ -86,7 +87,11 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         label validator: {val, obj -> new DataElementLabelValidator(obj).isValid(val)}
         dataType validator: {val, obj ->
             if (val && val.model && obj.model) {
-                val.model.id == obj.model.id ?: ['invalid.dataelement.datatype.model']
+                // In the same model is okay
+                if (val.model.id == obj.model.id) return true
+                // Imported into model is okay
+                if (obj.model.importedDataTypes.any {it.id == val.id}) return true
+                ['invalid.dataelement.datatype.model']
             }
         }
     }
@@ -96,10 +101,15 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         dataClass index: 'data_element_data_class_idx', cascade: 'none'
         dataType index: 'data_element_data_type_idx', cascade: 'none', fetch: 'join', cascadeValidate: 'dirty'
         model cascade: 'none'
+        importingDataClasses cascade: 'none', cascadeValidate: 'none', joinTable: [
+            name  : 'join_dataclass_to_imported_data_element',
+            column: 'dataclass_id',
+            key   : 'imported_dataelement_id'
+        ]
     }
 
     static mappedBy = [
-        :
+        importingDataClasses: 'none'
     ]
 
     static search = {
@@ -133,7 +143,7 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         beforeValidateModelItem()
         summaryMetadata?.each {
             if (!it.createdBy) it.createdBy = createdBy
-            it.catalogueItem = this
+            it.multiFacetAwareItem = this
         }
         // If datatype is newly created with dataelement and the datamodel is not new
         // If the DM is new then DT validation will happen at the DM level
@@ -208,33 +218,19 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         byDataTypeId(dataTypeId).idEq(Utils.toUuid(resourceId))
     }
 
-    /**
-     * List DataElements belonging to a DataClass either directly, by import, or by extension
-     *
-     * @param dataModelId The ID of the DataModel we are looking at
-     * @param includeImported Do we want to retrieve DataTypes which have been imported into the DataModel (in 
-     *                        addition to DataTypes directly belonging to the DataModel)?
-     * @param includeExtends  Do we want to retrieve DataElements belonging to classes which are extended?
-     * @return DetachedCriteria<DataElement>    
-     */
-    static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId, boolean includeImported = false, boolean includeExtended = false) {
-        DetachedCriteria criteria = new DetachedCriteria<DataElement>(DataElement)
-        criteria
-        .or {
-            //DataElements belonging directly to dataClassIs
-            eq('dataClass.id', Utils.toUuid(dataClassId)) 
-            if (includeImported) {
-                //DataElements which have been imported into dataClassId
-                inList('id', ModelImport.importedByCatalogueItemId(dataClassId))
+    static DetachedCriteria<DataElement> byDataClassId(Serializable dataClassId) {
+        new DetachedCriteria<DataElement>(DataElement).eq('dataClass.id', Utils.toUuid(dataClassId))
+    }
+
+    static DetachedCriteria<DataElement> byDataClassIdIncludingImported(UUID dataClassId) {
+        new DetachedCriteria<DataElement>(DataElement).or {
+            eq('dataClass.id', dataClassId)
+            importingDataClasses {
+                eq 'id', dataClassId
             }
-            if (includeExtended) {
-                //DataElements belonging to a DataClass which has been extended by dataClassId
-                inList('dataClass.id', ModelExtend.extendedByCatalogueItemId(dataClassId))
-            }
+            join('importingDataClasses', JoinType.LEFT)
         }
-        
-        criteria
-    }    
+    }
 
     static DetachedCriteria<DataElement> byDataClass(DataClass dataClass) {
         new DetachedCriteria<DataElement>(DataElement).eq('dataClass', dataClass)

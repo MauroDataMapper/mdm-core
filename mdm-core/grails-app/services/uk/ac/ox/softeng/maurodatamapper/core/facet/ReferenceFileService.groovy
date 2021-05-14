@@ -17,20 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFileService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.DetachedCriteria
-import org.springframework.beans.factory.annotation.Autowired
 
-class ReferenceFileService implements CatalogueFileService<ReferenceFile>, CatalogueItemAwareService<ReferenceFile> {
-
-    @Autowired(required = false)
-    List<CatalogueItemService> catalogueItemServices
+class ReferenceFileService implements CatalogueFileService<ReferenceFile>, MultiFacetItemAwareService<ReferenceFile> {
 
     ReferenceFile get(Serializable id) {
         ReferenceFile.get(id)
@@ -50,23 +45,23 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Catal
 
     void delete(ReferenceFile file, boolean flush = false) {
         if (!file) return
-        CatalogueItemService service = findCatalogueItemService(file.catalogueItemDomainType)
-        service.removeReferenceFileFromCatalogueItem(file.catalogueItemId, file)
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(file.multiFacetAwareItemDomainType)
+        service.removeReferenceFileFromMultiFacetAware(file.multiFacetAwareItemId, file)
         file.delete(flush: flush)
     }
 
     @Override
-    void saveCatalogueItem(ReferenceFile referenceFile) {
+    void saveMultiFacetAwareItem(ReferenceFile referenceFile) {
         if (!referenceFile) return
-        CatalogueItemService catalogueItemService = findCatalogueItemService(referenceFile.catalogueItemDomainType)
-        catalogueItemService.save(referenceFile.catalogueItem)
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(referenceFile.multiFacetAwareItemDomainType)
+        service.save(referenceFile.multiFacetAwareItem)
     }
 
     @Override
     void addFacetToDomain(ReferenceFile facet, String domainType, UUID domainId) {
         if (!facet) return
-        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
-        facet.catalogueItem = domain
+        MultiFacetAware domain = findMultiFacetAwareItemByDomainTypeAndId(domainType, domainId)
+        facet.multiFacetAwareItem = domain
         domain.addToReferenceFiles(facet)
     }
 
@@ -78,19 +73,19 @@ class ReferenceFileService implements CatalogueFileService<ReferenceFile>, Catal
     @Override
     ReferenceFile resizeImage(ReferenceFile catalogueFile, int size) {
         ReferenceFile referenceFile = resizeImageBase(catalogueFile, size)
-        referenceFile.catalogueItemDomainType = catalogueFile.catalogueItemDomainType
-        referenceFile.catalogueItemId = catalogueFile.catalogueItemId
+        referenceFile.multiFacetAwareItemDomainType = catalogueFile.multiFacetAwareItemDomainType
+        referenceFile.multiFacetAwareItemId = catalogueFile.multiFacetAwareItemId
         referenceFile
     }
 
     @Override
-    ReferenceFile findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
-        ReferenceFile.byCatalogueItemIdAndId(catalogueItemId, id).get()
+    ReferenceFile findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        ReferenceFile.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
 
     @Override
-    List<ReferenceFile> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination) {
-        ReferenceFile.byCatalogueItemId(catalogueItemId).list(pagination)
+    List<ReferenceFile> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination) {
+        ReferenceFile.withFilter(ReferenceFile.byMultiFacetAwareItemId(multiFacetAwareItemId), pagination).list(pagination)
     }
 
     @Override

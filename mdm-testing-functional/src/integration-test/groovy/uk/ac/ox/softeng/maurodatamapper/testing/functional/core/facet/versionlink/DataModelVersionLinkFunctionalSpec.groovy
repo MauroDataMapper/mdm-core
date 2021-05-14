@@ -37,7 +37,6 @@ import groovy.util.logging.Slf4j
  */
 @Integration
 @Slf4j
-////@Category(TroubleTest)
 class DataModelVersionLinkFunctionalSpec extends ModelVersionLinkFunctionalSpec {
 
     @Transactional

@@ -222,7 +222,7 @@ Controller: dataModel
  |   POST   | /api/folders/${folderId}/dataModels                                                                                                                                              | Action: save
  |   PUT    | /api/folders/${folderId}/dataModels/${dataModelId}                                                                                                                               | Action: changeFolder
  |   PUT    | /api/dataModels/${dataModelId}/folder/${folderId}                                                                                                                                | Action: changeFolder
- |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherModelId}                                                                                                                      | Action: suggestLinks
+ |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherDataModelId}                                                                                                                  | Action: suggestLinks
  |   GET    | /api/dataModels/${dataModelId}/diff/${otherModelId}                                                                                                                              | Action: diff
  |   PUT    | /api/dataModels/${dataModelId}/mergeInto/${otherModelId}                                                                                                                         | Action: mergeInto
  |   GET    | /api/dataModels/${dataModelId}/mergeDiff/${otherModelId}                                                                                                                         | Action: mergeDiff

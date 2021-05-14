@@ -18,16 +18,12 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
 import grails.rest.Resource
-import groovy.transform.AutoClone
 
-@AutoClone
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ProfileSection {
+class ProfileSection implements Cloneable {
 
     String sectionName
     String sectionDescription
-    List<ProfileField> fields = [].withLazyDefault {
-        new ProfileField()
-    }
+    List<ProfileField> fields = []
 
 }

@@ -17,11 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
+
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
-import org.grails.datastore.gorm.GormEntity
 
-@SelfType(GormEntity)
+@SelfType([CreatorAware, InformationAware])
 @GrailsCompileStatic
 trait MultiFacetAware implements MetadataAware,
     AnnotationAware,

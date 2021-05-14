@@ -21,13 +21,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.util.test.BasicModel
-import uk.ac.ox.softeng.maurodatamapper.core.util.test.CatalogueItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.core.util.test.MultiFacetItemAwareServiceSpec
 
 import grails.testing.services.ServiceUnitTest
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, VersionLinkService>
+class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink, VersionLinkService>
     implements ServiceUnitTest<VersionLinkService> {
 
     UUID id
@@ -72,7 +72,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
             }
         }
         service.catalogueItemServices = [basicModelService]
-        service.modelServices = [basicModelService]
+        service.versionLinkAwareServices = [basicModelService]
 
     }
 
@@ -262,18 +262,18 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         VersionLink sl = service.get(id)
 
         then:
-        !sl.catalogueItem
+        !sl.multiFacetAwareItem
         !sl.targetModel
 
         when:
         sl = service.loadModelsIntoVersionLink(sl)
 
         then:
-        sl.catalogueItem
+        sl.multiFacetAwareItem
         sl.targetModel
 
         and:
-        sl.catalogueItem.label == 'dm1'
+        sl.multiFacetAwareItem.label == 'dm1'
         sl.targetModel.label == 'dm2'
 
     }
@@ -283,14 +283,14 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         List<VersionLink> sls = service.list()
 
         then:
-        sls.every {!it.catalogueItem}
+        sls.every {!it.multiFacetAwareItem}
         sls.every {!it.targetModel}
 
         when:
         sls = service.loadModelsIntoVersionLinks(sls)
 
         then:
-        sls.every {it.catalogueItem}
+        sls.every {it.multiFacetAwareItem}
         sls.every {it.targetModel}
     }
 
@@ -337,7 +337,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         // bm1 SUPERSEDED_BY_FORK bm2 -- bm1
         // bm1 NEW_MODEL_VERSION_OF bm3 -- bm3 supersed
         when:
-        List<UUID> ids = service.filterModelIdsWhereModelIdIsModelSuperseded('BasicModel', BasicModel.list().id)
+        List<UUID> ids = service.filterModelIdsWhereModelIdIsModelSuperseded(BasicModel.list().id)
 
         then:
         ids.size() == 1
@@ -350,7 +350,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
                                                       targetModel: BasicModel.findByLabel('dm2')))
 
         checkAndSave(basicModel3)
-        ids = service.filterModelIdsWhereModelIdIsModelSuperseded('BasicModel', BasicModel.list().id)
+        ids = service.filterModelIdsWhereModelIdIsModelSuperseded(BasicModel.list().id)
 
         then:
         ids.size() == 2
@@ -368,7 +368,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
                                                       targetModel: BasicModel.findByLabel('dm3')))
         checkAndSave(basicModel3)
         checkAndSave(basicModel4)
-        ids = service.filterModelIdsWhereModelIdIsModelSuperseded('BasicModel', BasicModel.list().id)
+        ids = service.filterModelIdsWhereModelIdIsModelSuperseded(BasicModel.list().id)
 
         then:
         ids.size() == 2
@@ -391,7 +391,7 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         link
         link.linkType == VersionLinkType.NEW_MODEL_VERSION_OF
         link.targetModelId == basicModel3.id
-        link.catalogueItemId == basicModel.id
+        link.multiFacetAwareItemId == basicModel.id
 
         when:
         link = service.findLatestLinkSupersedingModelId('BasicModel', basicModel2.id)
@@ -410,6 +410,6 @@ class VersionLinkServiceSpec extends CatalogueItemAwareServiceSpec<VersionLink, 
         link
         link.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF
         link.targetModelId == basicModel3.id
-        link.catalogueItemId == basicModel4.id
+        link.multiFacetAwareItemId == basicModel4.id
     }
 }

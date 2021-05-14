@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.model.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
@@ -27,9 +28,10 @@ import org.grails.datastore.gorm.GormEntity
 /**
  * @since 30/01/2020
  */
-@SelfType(GormEntity)
+@SelfType([MultiFacetAware, VersionAware, GormEntity])
 @GrailsCompileStatic
 trait VersionLinkAware {
+
     abstract Set<VersionLink> getVersionLinks()
 
     def addToVersionLinks(VersionLink add) {

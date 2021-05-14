@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.FacetController
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 
 class AnnotationController extends FacetController<Annotation> {
 
@@ -31,7 +31,7 @@ class AnnotationController extends FacetController<Annotation> {
     }
 
     @Override
-    CatalogueItemAwareService getFacetService() {
+    MultiFacetItemAwareService getFacetService() {
         annotationService
     }
 
@@ -43,7 +43,7 @@ class AnnotationController extends FacetController<Annotation> {
             return annotationService.findAllByParentAnnotationId(params.annotationId, params)
         }
 
-        return annotationService.findAllWhereRootAnnotationOfCatalogueItemId(params.catalogueItemId, params)
+        return annotationService.findAllWhereRootAnnotationOfMultiFacetAwareItemId(params.multiFacetAwareItemId, params)
     }
 
     @Override

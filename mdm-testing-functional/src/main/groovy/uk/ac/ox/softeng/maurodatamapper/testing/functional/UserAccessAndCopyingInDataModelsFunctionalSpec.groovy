@@ -193,6 +193,10 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         verifyForbidden response
     }
 
+    List<String> getEditorModelItemAvailableActions() {
+        ['show', 'comment', 'editDescription', 'update', 'save', 'delete']
+    }
+
     void 'C01 : test copying (as writer to both DataModels)'() {
         given:
         loginEditor()
@@ -227,9 +231,9 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         response.body().count == 1
         response.body().items.first().domainType == 'SemanticLink'
         response.body().items.first().linkType == 'Refines'
-        response.body().items.first().sourceCatalogueItem.id == id
-        response.body().items.first().targetCatalogueItem.id == getExpectedTargetId()
-        response.body().items.first().sourceCatalogueItem.domainType == response.body().items.first().targetCatalogueItem.domainType
+        response.body().items.first().sourceMultiFacetAwareItem.id == id
+        response.body().items.first().targetMultiFacetAwareItem.id == getExpectedTargetId()
+        response.body().items.first().sourceMultiFacetAwareItem.domainType == response.body().items.first().targetMultiFacetAwareItem.domainType
 
         cleanup:
         cleanupCopiedItem(id)
@@ -264,9 +268,9 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
         response.body().count == 1
         response.body().items.first().domainType == 'SemanticLink'
         response.body().items.first().linkType == 'Refines'
-        response.body().items.first().sourceCatalogueItem.id == id
-        response.body().items.first().targetCatalogueItem.id == getExpectedTargetId()
-        response.body().items.first().sourceCatalogueItem.domainType == response.body().items.first().targetCatalogueItem.domainType
+        response.body().items.first().sourceMultiFacetAwareItem.id == id
+        response.body().items.first().targetMultiFacetAwareItem.id == getExpectedTargetId()
+        response.body().items.first().sourceMultiFacetAwareItem.domainType == response.body().items.first().targetMultiFacetAwareItem.domainType
 
         cleanup:
         removeEditorReaderPermission()

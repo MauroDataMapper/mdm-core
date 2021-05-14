@@ -50,7 +50,7 @@ class ReferenceFileSpec extends CreatorAwareSpec<ReferenceFile> implements Domai
         domain.fileName = 'test'
         domain.fileType = MimeType.XML.toString()
         domain.fileContents = 'some content'.bytes
-        domain.catalogueItem = db
+        domain.multiFacetAwareItem = db
     }
 
     @Override
@@ -59,7 +59,7 @@ class ReferenceFileSpec extends CreatorAwareSpec<ReferenceFile> implements Domai
         domain.fileType == MimeType.XML.toString()
         new String(domain.fileContents) == 'some content'
         domain.fileSize == 12
-        domain.catalogueItemId == db.id
-        domain.catalogueItemDomainType = BasicModel.simpleName
+        domain.multiFacetAwareItemId == db.id
+        domain.multiFacetAwareItemDomainType = BasicModel.simpleName
     }
 }

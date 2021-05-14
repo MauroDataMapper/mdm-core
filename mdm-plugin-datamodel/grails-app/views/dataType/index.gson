@@ -4,9 +4,10 @@ import grails.gorm.PagedResultList
 
 model {
     Iterable<DataType> dataTypeList
+    UUID owningDataModelId
 }
 json {
     count dataTypeList instanceof PagedResultList ? ((PagedResultList) dataTypeList).getTotalCount() : dataTypeList?.size() ?: 0
-    items tmpl.dataType(dataTypeList ?: [])
+    items tmpl.dataType(dataTypeList ?: [], [owningDataModelId: owningDataModelId])
 }
 

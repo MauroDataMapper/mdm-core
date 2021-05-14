@@ -45,19 +45,17 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
     protected RuleRepresentation createResource() {
         //Create the RuleRepresentation
         RuleRepresentation resource = super.createResource() as RuleRepresentation
-
         //Create an association between the Rule and RuleRepresentation
         ruleService.get(params.ruleId)?.addToRuleRepresentations(resource)
-
-        //Record the creation against the CatalogueItem to which the Rule owning the RuleRepresentation belongs
-        ruleService.addCreatedEditToCatalogueItemOfRule(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId)          
-
         resource
     }    
 
     @Override
     protected RuleRepresentation saveResource(RuleRepresentation resource) {
         resource.save flush: true, validate: false
+        //Record the creation against the MultiFacetAwareItem to which the Rule owning the RuleRepresentation belongs
+        ruleService.
+            addCreatedEditToMultiFacetAwareItemOfRule(currentUser, resource, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
         resource
     }     
 
@@ -65,9 +63,10 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
     protected RuleRepresentation updateResource(RuleRepresentation resource) {
         List<String> dirtyPropertyNames = resource.getDirtyPropertyNames()
         resource.save flush: true, validate: false
-
-        //Record the update against the CatalogueItem to which the Rule owning the RuleRepresentation belongs
-        ruleService.addUpdatedEditToCatalogueItemOfRule(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId, dirtyPropertyNames)          
+        //Record the update against the MultiFacetAwareItem to which the Rule owning the RuleRepresentation belongs
+        ruleService.
+            addUpdatedEditToMultiFacetAwareItemOfRule(currentUser, resource, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId,
+                                                      dirtyPropertyNames)
     }        
 
     @Override
@@ -77,9 +76,10 @@ class RuleRepresentationController extends EditLoggingController<RuleRepresentat
 
     @Override
     void serviceDeleteResource(RuleRepresentation resource) {
-        //Record the deletion against the CatalogueItem to which the Rule owning the RuleRepresentation belongs
+        //Record the deletion against the MultiFacetAwareItem to which the Rule owning the RuleRepresentation belongs
         //(do this before deleting the association to rule, because edit logging needs to know the rule)
-        ruleService.addDeletedEditToCatalogueItemOfRule(currentUser, resource, params.catalogueItemDomainType, params.catalogueItemId) 
+        ruleService.
+            addDeletedEditToMultiFacetAwareItemOfRule(currentUser, resource, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
         //Delete the association between the Rule and RuleRepresentation
         ruleService.get(params.ruleId)?.removeFromRuleRepresentations(resource)

@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES
 import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_SAVE
+import static uk.ac.ox.softeng.maurodatamapper.core.web.mapping.UrlMappingActions.DEFAULT_EXCLUDES_AND_NO_UPDATE
 
 class UrlMappings {
 
@@ -46,13 +47,13 @@ class UrlMappings {
                 get '/latestModelVersion'(controller: 'dataModel', action: 'latestModelVersion')
                 get "/mergeDiff/$otherModelId"(controller: 'dataModel', action: 'mergeDiff')
                 put "/mergeInto/$otherModelId"(controller: 'dataModel', action: 'mergeInto')
-                get '/modelVersionTree' (controller: 'dataModel', action: 'modelVersionTree')
+                get '/modelVersionTree'(controller: 'dataModel', action: 'modelVersionTree')
 
                 get '/currentMainBranch'(controller: 'dataModel', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'dataModel', action: 'availableBranches')
 
                 get "/diff/$otherModelId"(controller: 'dataModel', action: 'diff')
-                get "/suggestLinks/$otherModelId"(controller: 'dataModel', action: 'suggestLinks')
+                get "/suggestLinks/$otherDataModelId"(controller: 'dataModel', action: 'suggestLinks')
                 put "/folder/$folderId"(controller: 'dataModel', action: 'changeFolder')
                 get "/export/$exporterNamespace/$exporterName/$exporterVersion"(controller: 'dataModel', action: 'exportModel')
 
@@ -76,7 +77,13 @@ class UrlMappings {
                 '/dataClasses'(resources: 'dataClass', excludes: DEFAULT_EXCLUDES) {
                     '/dataClasses'(resources: 'dataClass', excludes: DEFAULT_EXCLUDES)
                     get '/content'(controller: 'dataClass', action: 'content')
+
                     post "/dataClasses/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'copyDataClass')
+                    put "/dataClasses/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'importDataClass')
+                    delete "/dataClasses/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'importDataClass')
+
+                    put "/extends/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'extendDataClass')
+                    delete "/extends/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'extendDataClass')
 
                     post '/search'(controller: 'dataClass', action: 'search')
                     get '/search'(controller: 'dataClass', action: 'search')
@@ -87,10 +94,17 @@ class UrlMappings {
                     '/dataElements'(resources: 'dataElement', excludes: DEFAULT_EXCLUDES) {
                         get "/suggestLinks/$otherDataModelId"(controller: 'dataElement', action: 'suggestLinks')
                     }
+
                     post "/dataElements/$otherDataModelId/$otherDataClassId/$dataElementId"(controller: 'dataElement', action: 'copyDataElement')
+                    put "/dataElements/$otherDataModelId/$otherDataClassId/$otherDataElementId"(controller: 'dataClass', action: 'importDataElement')
+                    delete "/dataElements/$otherDataModelId/$otherDataClassId/$otherDataElementId"(controller: 'dataClass',
+                                                                                                   action: 'importDataElement')
                 }
 
                 post "/dataClasses/$otherDataModelId/$otherDataClassId"(controller: 'dataClass', action: 'copyDataClass')
+                put "/dataClasses/$otherDataModelId/$otherDataClassId"(controller: 'dataModel', action: 'importDataClass')
+                delete "/dataClasses/$otherDataModelId/$otherDataClassId"(controller: 'dataModel', action: 'importDataClass')
+
                 get '/allDataClasses'(controller: 'dataClass', action: 'all')
 
                 /**
@@ -101,6 +115,9 @@ class UrlMappings {
                     '/enumerationValues'(resources: 'enumerationValue', excludes: DEFAULT_EXCLUDES)
                 }
                 post "/dataTypes/$otherDataModelId/$dataTypeId"(controller: 'dataType', action: 'copyDataType')
+                put "/dataTypes/$otherDataModelId/$otherDataTypeId"(controller: 'dataModel', action: 'importDataType')
+                delete "/dataTypes/$otherDataModelId/$otherDataTypeId"(controller: 'dataModel', action: 'importDataType')
+
                 "/enumerationTypes/${enumerationTypeId}/enumerationValues"(resources: 'enumerationValue', excludes: DEFAULT_EXCLUDES)
             }
 
@@ -130,6 +147,11 @@ class UrlMappings {
                 '/summaryMetadata'(resources: 'summaryMetadata', excludes: DEFAULT_EXCLUDES) {
                     '/summaryMetadataReports'(resources: 'summaryMetadataReport', excludes: DEFAULT_EXCLUDES)
                 }
+
+                /*
+            Model Imports
+             */
+                '/modelImports'(resources: 'modelImport', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
             }
         }
     }

@@ -22,8 +22,7 @@ import grails.rest.render.ContainerRenderer
 
 /**
  * @since 04/01/2021
- * @see https://github.com/grails/grails-core/blob/master/grails-plugin-rest/src/main/groovy/grails/rest/render/atom/AtomCollectionRenderer.groovy
- * for inspiration.
+ * @see grails.rest.render.atom.AtomCollectionRenderer
  */
 class MdmAtomModelCollectionRenderer extends MdmAtomModelRenderer implements ContainerRenderer {
 

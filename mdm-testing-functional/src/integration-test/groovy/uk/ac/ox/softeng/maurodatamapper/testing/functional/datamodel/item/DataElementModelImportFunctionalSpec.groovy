@@ -29,6 +29,7 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
+import spock.lang.Ignore
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.OK
@@ -48,6 +49,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
+@Ignore('No longer relevant')
 class DataElementModelImportFunctionalSpec extends ModelImportFunctionalSpec {
 
     @Override

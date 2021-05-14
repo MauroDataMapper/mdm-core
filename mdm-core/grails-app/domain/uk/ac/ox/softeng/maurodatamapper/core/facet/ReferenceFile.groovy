@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.CatalogueFileConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.model.file.CatalogueFile
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -27,15 +27,15 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class ReferenceFile implements CatalogueFile, CatalogueItemAware {
+class ReferenceFile implements CatalogueFile, MultiFacetItemAware {
 
     UUID id
 
     static constraints = {
         CallableConstraints.call(CatalogueFileConstraints, delegate)
-        catalogueItemId nullable: true, validator: {val, obj ->
+        multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (val) return true
-            if (!val && obj.catalogueItem && !obj.catalogueItem.ident()) return true
+            if (!val && obj.multiFacetAwareItem && !obj.multiFacetAwareItem.ident()) return true
             ['default.null.message']
         }
     }
@@ -43,7 +43,7 @@ class ReferenceFile implements CatalogueFile, CatalogueItemAware {
     static mapping = {
     }
 
-    static transients = ['catalogueItem']
+    static transients = ['multiFacetAwareItem']
 
     ReferenceFile() {
     }
@@ -67,16 +67,16 @@ class ReferenceFile implements CatalogueFile, CatalogueItemAware {
         new DetachedCriteria<ReferenceFile>(ReferenceFile)
     }
 
-    static DetachedCriteria<ReferenceFile> byCatalogueItemId(Serializable catalogueItemId) {
-        new DetachedCriteria<ReferenceFile>(ReferenceFile).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    static DetachedCriteria<ReferenceFile> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
+        new DetachedCriteria<ReferenceFile>(ReferenceFile).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<ReferenceFile> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
-        new DetachedCriteria<ReferenceFile>(ReferenceFile).inList('catalogueItemId', catalogueItemIds)
+    static DetachedCriteria<ReferenceFile> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        new DetachedCriteria<ReferenceFile>(ReferenceFile).inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 
-    static DetachedCriteria<ReferenceFile> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable id) {
-        byCatalogueItemId(catalogueItemId).idEq(Utils.toUuid(id))
+    static DetachedCriteria<ReferenceFile> byMultiFacetAwareItemIdAndId(Serializable multiFacetAwareItemId, Serializable resourceId) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).idEq(Utils.toUuid(resourceId))
     }
 
     static DetachedCriteria<ReferenceFile> withFilter(DetachedCriteria<ReferenceFile> criteria, Map filters) {

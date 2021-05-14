@@ -280,7 +280,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.dataType.label == original.dataType.label
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying DataElement with metadata and classifiers'() {
@@ -319,7 +319,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.classifiers == original.classifiers
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
 
     }
 
@@ -360,7 +360,7 @@ class DataElementServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         copy.dataType.label == original.dataType.label
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test finding all similar DataElements in another model'() {

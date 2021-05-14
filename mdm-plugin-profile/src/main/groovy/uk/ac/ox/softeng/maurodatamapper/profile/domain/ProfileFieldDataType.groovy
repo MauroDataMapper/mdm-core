@@ -17,6 +17,10 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
+import groovy.json.JsonSlurper
+import org.apache.commons.collections.functors.ExceptionPredicate
+import org.apache.commons.lang3.time.DateUtils
+
 enum ProfileFieldDataType {
     BOOLEAN('boolean'),
     STRING('string'),
@@ -24,10 +28,12 @@ enum ProfileFieldDataType {
     INT('int'),
     DECIMAL('decimal'),
     DATE('date'),
-    DATETIME('decimal'),
+    DATETIME('datetime'),
     TIME('time'),
     FOLDER('folder'),
-    MODEL('model')
+    MODEL('model'),
+    ENUMERATION('enumeration'),
+    JSON('json')
 
     String label
 
@@ -55,5 +61,71 @@ enum ProfileFieldDataType {
         map['dataType'] instanceof ProfileFieldDataType ? map['dataType'] as ProfileFieldDataType : findForLabel(map['dataType'] as String)
     }
 
+    String validateString(String input) {
+        if (this.label == "boolean") {
+            if(!input.equalsIgnoreCase("true") && !input.equalsIgnoreCase("false")) {
+                return "Field is not of type 'boolean'"
+            }
+        }
+        if (this.label == "int") {
+            try {
+                Integer.parseInt(input)
+            } catch(Exception ignored) {
+                return "Field is not of type 'int'"
+            }
+        }
+        if (this.label == "decimal") {
+            try {
+                Double.parseDouble(input)
+            } catch(Exception ignored) {
+                return "Field is not of type 'decimal'"
+            }
+        }
+        if (this.label == "date") {
+            try {
+                DateUtils.parseDateStrictly(input, "dd/MM/yyyy", "dd-MM-yyyy", "MM/dd/yyyy", "MM-dd-yyyy", "yyyy/MM/dd")
+            } catch(Exception ignored) {
+                return "Field is not of type 'date'"
+            }
+        }
+        if (this.label == "datetime") {
+            try {
+                DateUtils.parseDateStrictly(input, "dd/MM/yyyy'T'HH:mm:ss","dd-MM-yyyy'T'HH:mm:ss")
+            } catch(Exception ignored) {
+                return "Field is not of type 'datetime'"
+            }
+        }
+        if (this.label == "time") {
+            try {
+                DateUtils.parseDateStrictly(input, "HH:mm:ss","HH:mm")
+            } catch(Exception ignored) {
+                return "Field is not of type 'datetime'"
+            }
+        }
+        if (this.label == "model") {
+            try {
+                UUID.fromString(input)
+            } catch(Exception ignored) {
+                return "Field is not of type 'model'"
+            }
+        }
+        if (this.label == "folder") {
+            try {
+                UUID.fromString(input)
+            } catch(Exception ignored) {
+                return "Field is not of type 'folder'"
+            }
+        }
+        if (this.label == "json") {
+            try {
+                JsonSlurper jsonSlurper = new JsonSlurper()
+                jsonSlurper.parseText(input)
+            } catch(Exception ignored) {
+                return "Field is not valid JSON for type 'json'"
+            }
+        }
+
+        return null
+    }
 
 }

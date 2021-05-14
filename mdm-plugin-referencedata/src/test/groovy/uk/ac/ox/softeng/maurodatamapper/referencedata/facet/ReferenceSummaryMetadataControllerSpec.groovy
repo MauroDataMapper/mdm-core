@@ -56,24 +56,24 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
         domain.createdBy = StandardEmailAddress.UNIT_TEST
         domain.label = 'summary metadata 3'
         domain.summaryMetadataType = ReferenceSummaryMetadataType.STRING
-        domain.catalogueItem = referenceDataModel
+        domain.multiFacetAwareItem = referenceDataModel
         domain.addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST, reportDate: OffsetDateTime.now(), reportValue: 'some value')
         referenceDataModel.addToReferenceSummaryMetadata(domain)
 
         checkAndSave(referenceDataModel)
 
         controller.referenceSummaryMetadataService = Mock(ReferenceSummaryMetadataService) {
-            findAllByCatalogueItemId(referenceDataModel.id, _) >> referenceDataModel.referenceSummaryMetadata.toList()
-            findCatalogueItemByDomainTypeAndId(ReferenceDataModel.simpleName, _) >>
+            findAllByMultiFacetAwareItemId(referenceDataModel.id, _) >> referenceDataModel.referenceSummaryMetadata.toList()
+            findMultiFacetAwareItemByDomainTypeAndId(ReferenceDataModel.simpleName, _) >>
             {String domain, UUID bid -> referenceDataModel.id == bid ? referenceDataModel : null}
-            findByCatalogueItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
+            findByMultiFacetAwareItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
                 if (iid != referenceDataModel.id) return null
                 mid == domain.id ? domain : null
             }
             addFacetToDomain(_, _, _) >> {ReferenceSummaryMetadata md, String domain, UUID bid ->
                 if (referenceDataModel.id == bid) {
                     referenceDataModel.addToReferenceSummaryMetadata(md)
-                    md.catalogueItem = referenceDataModel
+                    md.multiFacetAwareItem = referenceDataModel
                 }
             }
         }
@@ -202,7 +202,7 @@ class ReferenceSummaryMetadataControllerSpec extends ResourceControllerSpec<Refe
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = ReferenceDataModel.simpleName
-        params.catalogueItemId = referenceDataModel.id
+        params.multiFacetAwareItemDomainType = ReferenceDataModel.simpleName
+        params.multiFacetAwareItemId = referenceDataModel.id
     }
 }

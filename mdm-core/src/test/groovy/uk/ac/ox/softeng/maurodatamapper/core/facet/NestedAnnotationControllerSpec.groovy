@@ -84,14 +84,15 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
 
         controller.annotationService = Mock(AnnotationService) {
             get(_) >> {Serializable id -> Annotation.get(id)}
-            findAllByCatalogueItemId(basicModel.id, _) >> basicModel.annotations.toList()
-            findCatalogueItemByDomainTypeAndId(BasicModel.simpleName, _) >> {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
-            findByCatalogueItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
+            findAllByMultiFacetAwareItemId(basicModel.id, _) >> basicModel.annotations.toList()
+            findMultiFacetAwareItemByDomainTypeAndId(BasicModel.simpleName, _) >>
+            {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
+            findByMultiFacetAwareItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
                 if (iid != basicModel.id) return null
                 mid == domain.id ? domain : null
             }
-            findAllWhereRootAnnotationOfCatalogueItemId(_, _) >> {
-                Annotation.whereRootAnnotationOfCatalogueItemId(basicModel.id).list()
+            findAllWhereRootAnnotationOfMultiFacetAwareItemId(_, _) >> {
+                Annotation.whereRootAnnotationOfMultiFacetAwareItemId(basicModel.id).list()
             }
             findAllByParentAnnotationId(_, _) >> {
                 new DetachedCriteria<Annotation>(Annotation).eq('parentAnnotation', Utils.toUuid(parent.id)).list()
@@ -225,8 +226,8 @@ class NestedAnnotationControllerSpec extends ResourceControllerSpec<Annotation> 
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = BasicModel.simpleName
-        params.catalogueItemId = basicModel.id
+        params.multiFacetAwareItemDomainType = BasicModel.simpleName
+        params.multiFacetAwareItemId = basicModel.id
         params.annotationId = parent.id
     }
 }

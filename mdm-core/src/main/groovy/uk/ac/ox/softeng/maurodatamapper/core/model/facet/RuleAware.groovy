@@ -46,7 +46,7 @@ trait RuleAware {
             markDirty('rules', existing)
             this as CatalogueItem
         } else {
-            add.setCatalogueItem(this as CatalogueItem)
+            add.setMultiFacetAwareItem(this as MultiFacetAware)
             addTo('rules', add)
         }
     }

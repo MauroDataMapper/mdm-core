@@ -87,7 +87,7 @@ class VersionLinkControllerSpec extends ResourceControllerSpec<VersionLink> impl
         }
         VersionLinkService versionLinkService = new VersionLinkService()
         versionLinkService.catalogueItemServices = [basicModelService]
-        versionLinkService.modelServices = [basicModelService]
+        versionLinkService.versionLinkAwareServices = [basicModelService]
         controller.versionLinkService = versionLinkService
     }
 

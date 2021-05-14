@@ -18,23 +18,20 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 
 import grails.gorm.DetachedCriteria
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 
 import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
-class SummaryMetadataService implements CatalogueItemAwareService<SummaryMetadata> {
-
-    @Autowired(required = false)
-    List<CatalogueItemService> catalogueItemServices
+class SummaryMetadataService implements MultiFacetItemAwareService<SummaryMetadata> {
 
     SummaryMetadata get(Serializable id) {
         SummaryMetadata.get(id)
@@ -55,8 +52,8 @@ class SummaryMetadataService implements CatalogueItemAwareService<SummaryMetadat
     void delete(SummaryMetadata summaryMetadata, boolean flush = false) {
         if (!summaryMetadata) return
 
-        CatalogueItemService service = findCatalogueItemService(summaryMetadata.catalogueItemDomainType)
-        service.removeSummaryMetadataFromCatalogueItem(summaryMetadata.catalogueItemId, summaryMetadata)
+        SummaryMetadataAwareService service = findCatalogueItemService(summaryMetadata.multiFacetAwareItemDomainType) as SummaryMetadataAwareService
+        service.removeSummaryMetadataFromMultiFacetAware(summaryMetadata.multiFacetAwareItemId, summaryMetadata)
 
         List<SummaryMetadataReport> reports = new ArrayList<>(summaryMetadata.summaryMetadataReports)
         reports.each {
@@ -65,33 +62,32 @@ class SummaryMetadataService implements CatalogueItemAwareService<SummaryMetadat
         summaryMetadata.delete(flush: flush)
     }
 
-    void saveCatalogueItem(SummaryMetadata facet) {
+    void saveMultiFacetAwareItem(SummaryMetadata facet) {
         if (!facet) return
-        CatalogueItemService catalogueItemService = findCatalogueItemService(facet.catalogueItemDomainType)
-        catalogueItemService.save(facet.catalogueItem)
+        MultiFacetAwareService multiFacetAwareItemService = findServiceForMultiFacetAwareDomainType(facet.multiFacetAwareItemDomainType)
+        multiFacetAwareItemService.save(facet.multiFacetAwareItem)
     }
 
     @Override
     void addFacetToDomain(SummaryMetadata facet, String domainType, UUID domainId) {
         if (!facet) return
-        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
-        facet.catalogueItem = domain
+        SummaryMetadataAware domain = findMultiFacetAwareItemByDomainTypeAndId(domainType, domainId) as SummaryMetadataAware
+        facet.multiFacetAwareItem = domain as MultiFacetAware
         domain.addToSummaryMetadata(facet)
     }
 
     @Override
-    SummaryMetadata findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
-        SummaryMetadata.byCatalogueItemIdAndId(catalogueItemId, id).get()
+    SummaryMetadata findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        SummaryMetadata.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
 
     @Override
-    List<SummaryMetadata> findAllByCatalogueItemId(UUID catalogueItemId, Map pagination = [:]) {
-        SummaryMetadata.byCatalogueItemId(catalogueItemId).list(pagination)
+    List<SummaryMetadata> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map pagination = [:]) {
+        SummaryMetadata.byMultiFacetAwareItemId(multiFacetAwareItemId).list(pagination)
     }
 
     @Override
     DetachedCriteria<SummaryMetadata> getBaseDeleteCriteria() {
         SummaryMetadata.by()
     }
-
 }

@@ -78,7 +78,7 @@ class DataModelSummaryMetadataReportFunctionalSpec extends CatalogueItemSummaryM
         dataElement = new DataElement(label: 'Functional Test DataElement', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
                                       dataModel: dataModel, dataClass: dataClass, dataType: dataType).save(flush: true)
         summaryMetadata = new SummaryMetadata(label: 'Functional Test Summary Metadata', createdBy: StandardEmailAddress.FUNCTIONAL_TEST,
-                                              catalogueItem: dataModel, summaryMetadataType: SummaryMetadataType.NUMBER).save(flush: true)
+                                              multiFacetAwareItem: dataModel, summaryMetadataType: SummaryMetadataType.NUMBER).save(flush: true)
         sessionFactory.currentSession.flush()
     }
 

@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -32,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -39,20 +39,17 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.apache.lucene.search.Query
-import org.grails.datastore.mapping.validation.ValidationErrors
 import org.hibernate.search.engine.ProjectionConstants
 import org.hibernate.search.jpa.FullTextEntityManager
 import org.hibernate.search.jpa.FullTextQuery
 import org.hibernate.search.jpa.Search
 import org.hibernate.search.query.dsl.QueryBuilder
-import org.springframework.validation.Errors
-import org.springframework.validation.FieldError
 
 import javax.persistence.EntityManager
 
 @Slf4j
 @Transactional
-class DataElementService extends ModelItemService<DataElement> {
+class DataElementService extends ModelItemService<DataElement> implements SummaryMetadataAwareService {
 
     DataClassService dataClassService
     DataTypeService dataTypeService
@@ -108,8 +105,8 @@ class DataElementService extends ModelItemService<DataElement> {
 
         if (dataElementIds) {
             log.trace('Removing facets for {} DataElements', dataElementIds.size())
-            deleteAllFacetsByCatalogueItemIds(dataElementIds,
-                                              'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataElementIds,
+                                                'delete from datamodel.join_dataelement_to_facet where dataelement_id in :ids')
 
             log.trace('Removing {} DataElements', dataElementIds.size())
             sessionFactory.currentSession
@@ -122,33 +119,13 @@ class DataElementService extends ModelItemService<DataElement> {
 
     DataElement validate(DataElement dataElement) {
         dataElement.validate()
-        if (dataElement.hasErrors()) {
-            FieldError invalidOwnerError = dataElement.errors.getFieldErrors('dataType')?.find {it.code == 'invalid.dataelement.datatype.model'}
-            if (invalidOwnerError) {
-                if (modelImportService.hasCatalogueItemImportedCatalogueItem(dataElement.model, dataElement.dataType)) {
-                    Errors existingErrors = dataElement.errors
-                    Errors cleanedErrors = new ValidationErrors(dataElement)
-
-                    existingErrors.fieldErrors.each {fe ->
-                        if (fe.field != 'dataType' && fe.code != 'invalid.dataelement.datatype.model') {
-                            cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
-                        }
-                    }
-                    dataElement.errors = cleanedErrors
-                }
-            }
-        }
         dataElement
     }
 
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
-    }
-
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
@@ -164,10 +141,25 @@ class DataElementService extends ModelItemService<DataElement> {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
             catalogueItem.summaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
+        }
+        catalogueItem
+    }
+
+    @Override
+    DataElement checkFacetsAfterImportingCatalogueItem(DataElement catalogueItem) {
+        super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
+        if (catalogueItem.summaryMetadata) {
+            catalogueItem.summaryMetadata.each { sm ->
+                sm.multiFacetAwareItemId = catalogueItem.id
+                sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
+                sm.summaryMetadataReports.each { smr ->
+                    smr.createdBy = catalogueItem.createdBy
+                }
+            }
         }
         catalogueItem
     }
@@ -298,14 +290,16 @@ class DataElementService extends ModelItemService<DataElement> {
         DataElement.byDataTypeIdAndId(dataTypeId, id).find()
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:], boolean includeImported = false,
-                                           boolean includeExtends = false) {
-        findAllByDataClassId(dataClassId, pagination, pagination, includeImported, includeExtends)
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map pagination = [:]) {
+        findAllByDataClassId(dataClassId, pagination, pagination)
     }
 
-    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination, boolean includeImported = false,
-                                           boolean includeExtends = false) {
-        DataElement.withFilter(DataElement.byDataClassId(dataClassId, includeImported, includeExtends), filter).list(pagination)
+    List<DataElement> findAllByDataClassId(Serializable dataClassId, Map filter, Map pagination) {
+        DataElement.withFilter(DataElement.byDataClassId(dataClassId), filter).list(pagination)
+    }
+
+    List<DataElement> findAllByDataClassIdIncludingImported(UUID dataClassId, Map filter, Map pagination) {
+        DataElement.withFilter(DataElement.byDataClassIdIncludingImported(dataClassId), filter).list(pagination)
     }
 
     List<DataElement> findAllByDataClassIdJoinDataType(Serializable dataClassId) {
@@ -378,7 +372,7 @@ class DataElementService extends ModelItemService<DataElement> {
     //Put the dataClass lookup in this method for use when merging
     DataElement copy(Model copiedDataModel, DataElement original, UserSecurityPolicyManager userSecurityPolicyManager) {
         DataElement copy = copyDataElement(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
-        DataClass dataClass = copiedDataModel.getDataClasses()?.find { it.label == original.dataClass.label }
+        DataClass dataClass = copiedDataModel.getDataClasses()?.find {it.label == original.dataClass.label}
         if (dataClass) {
             dataClass.addToDataElements(copy)
         }
@@ -407,19 +401,26 @@ class DataElementService extends ModelItemService<DataElement> {
         copy
     }
 
-    @Override
     DataElement copyCatalogueItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
-                                             boolean copySummaryMetadata = false) {
+                                             boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
         copy
+    }
+
+    @Override
+    DataElement copyCatalogueItemInformation(DataElement original,
+                                             DataElement copy,
+                                             User copier,
+                                             UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
     }
 
     DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {
@@ -478,12 +479,13 @@ class DataElementService extends ModelItemService<DataElement> {
 
     void addDataElementsAreFromDataElements(Collection<DataElement> dataElements, Collection<DataElement> fromDataElements, User user) {
         if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to create links')
-        List<SemanticLink> alreadyExistingLinks = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
-            dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
+        List<SemanticLink> alreadyExistingLinks =
+            semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
+                dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
         dataElements.each {de ->
             fromDataElements.each {fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any {it.catalogueItemId == de.id && it.targetCatalogueItemId == fde.id}) {
+                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataElementIsFromDataElement(de, fde, user)
                 }
             }
@@ -500,13 +502,13 @@ class DataElementService extends ModelItemService<DataElement> {
 
     void removeDataElementsAreFromDataElements(Collection<DataElement> dataElements, Collection<DataElement> fromDataElements) {
         if (!dataElements || !fromDataElements) throw new ApiInternalException('DESXX', 'No DataElements or FromDataElements exist to remove links')
-        List<SemanticLink> links = semanticLinkService.findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(
+        List<SemanticLink> links = semanticLinkService.findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
             dataElements*.id, fromDataElements*.id, SemanticLinkType.IS_FROM)
         semanticLinkService.deleteAll(links)
     }
 
     void setDataElementIsFromDataElement(DataElement source, DataElement target, User user) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetCatalogueItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.IS_FROM, createdBy: user.getEmailAddress(), targetMultiFacetAwareItem: target)
     }
 
     /**
@@ -527,41 +529,6 @@ class DataElementService extends ModelItemService<DataElement> {
     @Override
     DataElement findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findDataElement(parentCatalogueItem, label)
-    }
-
-    /**
-     * When a DataElement is imported into a DataClass, we also want to import the DataElement's
-     * DataType into the DataModel to which the importing DataClass belongs.
-     *
-     * @param currentUser The user doing the import
-     * @param imported The resource that was imported
-     *
-     */
-    @Override
-    void additionalModelImports(User currentUser, ModelImport imported) {
-
-        //The DataElement that was imported
-        DataElement dataElement = imported.importedCatalogueItem
-
-        //The DataType of that DataElement
-        DataType dataType = dataElement.dataType
-
-        //The CatalogueItem (which will be a DataClass) into which the DataElement was imported
-        CatalogueItem catalogueItem = imported.catalogueItem
-
-        //The DataModel to which that DataClass belongs
-        DataModel dataModel = catalogueItem.getModel()
-
-        if (!dataModel.findDataTypeByLabelAndType(dataType.label, dataType.domainType)) {
-            //Create a new ModelImport for the DataType into DataModel
-            ModelImport modelImportDataType = new ModelImport(catalogueItem: dataModel,
-                                                              importedCatalogueItem: dataType,
-                                                              createdByUser: currentUser)
-
-            //Save the additional model import, indicating that this is an additional rather than
-            //principal import and so should fail silently if it already exists.
-            modelImportService.saveResource(currentUser, modelImportDataType, true)
-        }
     }
 
     @Override

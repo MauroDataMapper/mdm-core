@@ -71,7 +71,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         service.containerServices = [folderService, classifierService]
     }
 
-    void 'test building container folder only tree'() {
+    void 'C01 : test building container folder only tree'() {
         given:
         UserSecurityPolicyManager testPolicy
         testPolicy = Stub()
@@ -159,7 +159,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !tree[1][2][0].childrenExist
     }
 
-    void 'test building container folder tree with no models existing'() {
+    void 'C02 : test building container folder tree with no models existing'() {
         given:
         UserSecurityPolicyManager testPolicy
         testPolicy = Stub()
@@ -247,7 +247,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !tree[1][2][0].childrenExist
     }
 
-    void 'test building container folder tree with no models existing remove empty folders'() {
+    void 'C03 : test building container folder tree with no models existing remove empty folders'() {
         given:
         UserSecurityPolicyManager testPolicy
         testPolicy = Stub()
@@ -262,7 +262,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
     }
 
-    void 'test building container folder only tree remove empty folders'() {
+    void 'C04 : test building container folder only tree remove empty folders'() {
         given:
         UserSecurityPolicyManager testPolicy
         testPolicy = Stub()
@@ -276,7 +276,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree.isEmpty()
     }
 
-    void 'test building container tree with 1 empty model and empty folders removed'() {
+    void 'C05 : test building container tree with 1 empty model and empty folders removed'() {
         given:
         UserSecurityPolicyManager testPolicy
 
@@ -336,7 +336,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
     }
 
-    void 'test building container tree with 2 empty models at the top level and empty folders removed'() {
+    void 'C06 : test building container tree with 2 empty models at the top level and empty folders removed'() {
         given:
         UserSecurityPolicyManager testPolicy
 
@@ -422,7 +422,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
     }
 
-    void 'test building container tree with 2 empty models with different superseding and deleted variations'() {
+    void 'C07 : test building container tree with 2 empty models with different superseding and deleted variations'() {
         given:
         UserSecurityPolicyManager testPolicy
 
@@ -510,7 +510,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         ((ModelTreeItem) tree[1][0]).documentationVersion == Version.from('2.1.0')
     }
 
-    void 'test building container tree with 1 empty model and 1 non-empty at the top level and empty folders removed'() {
+    void 'C08 : test building container tree with 1 empty model and 1 non-empty at the top level and empty folders removed'() {
         given:
         UserSecurityPolicyManager testPolicy
 
@@ -596,7 +596,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
     }
 
-    void 'test building container tree with 2 empty models at different levels and empty folders removed'() {
+    void 'C09 : test building container tree with 2 empty models at different levels and empty folders removed'() {
         given:
         UserSecurityPolicyManager testPolicy
 
@@ -692,7 +692,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
     }
 
-    void 'test building container tree with 2 empty models at other different levels and empty folders removed'() {
+    void 'C10 : test building container tree with 2 empty models at other different levels and empty folders removed'() {
         given:
         UserSecurityPolicyManager testPolicy
 
@@ -798,7 +798,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
     }
 
-    void 'test findTreeCapableCatalogueItem'() {
+    void 'FCI : test findTreeCapableCatalogueItem'() {
         given:
         UserSecurityPolicyManager testPolicy
         testPolicy = Stub()
@@ -838,7 +838,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         item.id == basicModel.id
     }
 
-    void 'test building catalogue item tree for model with no content'() {
+    void 'CI01 : test building catalogue item tree for model with no content'() {
         // this call should never actually be made but its worth testing
         given:
         UserSecurityPolicyManager testPolicy
@@ -868,7 +868,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree.isEmpty()
     }
 
-    void 'test building catalogue item tree for model single level of content'() {
+    void 'CI02 : test building catalogue item tree for model single level of content'() {
         given:
         UserSecurityPolicyManager testPolicy
 
@@ -893,9 +893,9 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
             findAllReadableModels(_, true, true, true) >> [basicModel]
             getModelClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
-            handles(_) >> { Class clazz -> clazz == BasicModel }
-            hasTreeTypeModelItems(basicModel, false, false) >> true
-            findAllTreeTypeModelItemsIn(basicModel, false, false) >> [item1, item2]
+            handles(_) >> {Class clazz -> clazz == BasicModel}
+            hasTreeTypeModelItems(basicModel, false) >> true
+            findAllTreeTypeModelItemsIn(basicModel, false) >> [item1, item2]
         }
         service.modelServices = [basicModelService]
         service.catalogueItemServices = [basicModelService]
@@ -926,7 +926,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         !tree[1].childrenExist
     }
 
-    void 'test building catalogue item tree for model 2 levels of content'() {
+    void 'CI03 : test building catalogue item tree for model 2 levels of content'() {
         // we should record that there is a child but not get the child in the tree as this requires an additional call
         given:
         UserSecurityPolicyManager testPolicy
@@ -957,9 +957,9 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
             findAllReadableModels(_, true, true, true) >> [basicModel]
             getModelClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> [basicModel]
-            handles(_) >> { Class clazz -> clazz == BasicModel }
-            hasTreeTypeModelItems(basicModel, false, false) >> true
-            findAllTreeTypeModelItemsIn(basicModel, false, false) >> [item1, item2]
+            handles(_) >> {Class clazz -> clazz == BasicModel}
+            hasTreeTypeModelItems(basicModel, false) >> true
+            findAllTreeTypeModelItemsIn(basicModel, false) >> [item1, item2]
         }
         service.modelServices = [basicModelService]
         service.catalogueItemServices = [basicModelService]
@@ -993,7 +993,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree[1].size() == 0
     }
 
-    void 'test building catalogue item tree for model item no content'() {
+    void 'CI04 : test building catalogue item tree for model item no content'() {
         // should not really be called but its worth testing
         given:
         UserSecurityPolicyManager testPolicy
@@ -1054,7 +1054,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         tree.isEmpty()
     }
 
-    void 'test building catalogue item tree for model item with content'() {
+    void 'CI05 : test building catalogue item tree for model item with content'() {
         given:
         UserSecurityPolicyManager testPolicy
 
@@ -1090,13 +1090,13 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         }
         ModelItemService basicModelItemService = Stub() {
             getModelClass() >> BasicModelItem
-            handles(_) >> { Class clazz -> clazz == BasicModelItem }
-            hasTreeTypeModelItems(item1, false, false) >> false
-            hasTreeTypeModelItems(item2, false, false) >> true
-            hasTreeTypeModelItems(item3, false, false) >> false
-            findAllTreeTypeModelItemsIn(item1, false, false) >> []
-            findAllTreeTypeModelItemsIn(item2, false, false) >> [item3]
-            findAllTreeTypeModelItemsIn(item3, false, false) >> []
+            handles(_) >> {Class clazz -> clazz == BasicModelItem}
+            hasTreeTypeModelItems(item1, false) >> false
+            hasTreeTypeModelItems(item2, false) >> true
+            hasTreeTypeModelItems(item3, false) >> false
+            findAllTreeTypeModelItemsIn(item1, false) >> []
+            findAllTreeTypeModelItemsIn(item2, false) >> [item3]
+            findAllTreeTypeModelItemsIn(item3, false) >> []
         }
         service.modelServices = [basicModelService]
         service.catalogueItemServices = [basicModelService, basicModelItemService]
@@ -1121,7 +1121,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         ((ModelItemTreeItem) tree[0]).order == 0
     }
 
-    void 'test building search tree 1 for search term [2]'() {
+    void 'S01 : test building search tree 1 for search term [2]'() {
         given:
         UserSecurityPolicyManager testPolicy = configureSearchData()
 
@@ -1252,7 +1252,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
     }
 
 
-    void 'test building search tree 2 for search term [2] domain type folder'() {
+    void 'S02 : test building search tree 2 for search term [2] domain type folder'() {
         given:
         UserSecurityPolicyManager testPolicy = configureSearchData()
 
@@ -1323,7 +1323,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
 
     }
 
-    void 'test building search tree 3 for search term [2] domain type basic model'() {
+    void 'S03 : test building search tree 3 for search term [2] domain type basic model'() {
         given:
         UserSecurityPolicyManager testPolicy = configureSearchData()
 
@@ -1373,7 +1373,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         ((ModelTreeItem) tree[0][0]).documentationVersion == Version.from('2.1.0')
     }
 
-    void 'test building search tree 4 for search term [2] domain type basic model item'() {
+    void 'S04 : test building search tree 4 for search term [2] domain type basic model item'() {
         given:
         UserSecurityPolicyManager testPolicy = configureSearchData()
 
@@ -1448,7 +1448,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
     BasicModelItem item2
     BasicModelItem item3
 
-    UserSecurityPolicyManager configureSearchData() {
+    private UserSecurityPolicyManager configureSearchData() {
         UserSecurityPolicyManager testPolicy
 
         testPolicy = Stub()

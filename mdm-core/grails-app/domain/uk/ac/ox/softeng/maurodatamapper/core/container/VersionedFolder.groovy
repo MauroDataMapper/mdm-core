@@ -18,21 +18,26 @@
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.validator.VersionedFolderLabelValidator
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.hibernate.VersionUserType
-import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import grails.gorm.DetachedCriteria
 import grails.plugins.hibernate.search.HibernateSearchApi
 
-class VersionedFolder extends Folder implements VersionAware {
+class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
 
     Authority authority
+
+    static hasMany = [
+        versionLinks: VersionLink,
+    ]
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
@@ -78,22 +83,6 @@ class VersionedFolder extends Folder implements VersionAware {
         byParentFolderId(id).eq('label', label)
     }
 
-    static VersionedFolder findOrCreateByLabel(String label, Map creationMap) {
-        VersionedFolder folder = findByLabel(label)
-        if (folder) return folder
-
-        creationMap.label = label
-        folder = new VersionedFolder(creationMap)
-        folder.save(flush: true, validate: false)
-    }
-
-    static VersionedFolder findOrCreateByLabel(String label, User creator, String description,
-                                               Boolean readableByAuthenticated) {
-        findOrCreateByLabel(label, [description            : description,
-                                    createdBy              : creator,
-                                    readableByAuthenticated: readableByAuthenticated])
-    }
-
     static List<VersionedFolder> luceneList(@DelegatesTo(HibernateSearchApi) Closure closure) {
         VersionedFolder.search().list closure
     }
@@ -124,4 +113,32 @@ class VersionedFolder extends Folder implements VersionAware {
             filter name: 'idSecured', params: [allowedIds: allowedIds]
         }
     }
+
+
+    static DetachedCriteria<VersionedFolder> byMetadataNamespaceAndKey(String metadataNamespace, String metadataKey) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+                eq 'key', metadataKey
+            }
+        }
+    }
+
+    static DetachedCriteria<VersionedFolder> byMetadataNamespace(String metadataNamespace) {
+        where {
+            metadata {
+                eq 'namespace', metadataNamespace
+            }
+        }
+    }
+
+    static DetachedCriteria<VersionedFolder> byIdInList(Collection<UUID> ids) {
+        by().inList('id', ids.toList())
+    }
+
+    static DetachedCriteria<VersionedFolder> withFilter(DetachedCriteria<VersionedFolder> criteria, Map filters) {
+        if (filters.label) criteria = criteria.ilike('label', "%${filters.label}%")
+        criteria
+    }
+
 }

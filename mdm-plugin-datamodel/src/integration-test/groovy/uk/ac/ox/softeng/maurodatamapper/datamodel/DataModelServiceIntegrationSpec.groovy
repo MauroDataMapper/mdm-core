@@ -238,7 +238,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.not.finalised.message' }
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -393,7 +393,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     void 'DMSC05 : test creating a new fork version on draft model'() {
@@ -408,7 +408,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         result.errors.allErrors.size() == 1
         result.errors.allErrors.find {
-            it.code == 'invalid.model.new.version.not.finalised.message'
+            it.code == 'invalid.version.aware.new.version.not.finalised.message'
         }
     }
 
@@ -563,7 +563,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     void 'DMSC09 : test creating a new branch model version on draft model'() {
@@ -580,7 +580,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.not.finalised.message' }
     }
 
     void 'DMSC10 : test creating a new branch model version on finalised model'() {
@@ -742,7 +742,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     void 'DMSC13 : test creating a new branch model version using main branch name when it already exists'() {
@@ -768,7 +768,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'model.label.branch.name.already.exists'}
+        result.errors.allErrors.find { it.code == 'version.aware.label.branch.name.already.exists' }
     }
 
     void 'DMSF01 : test finding common ancestor of two datamodels'() {

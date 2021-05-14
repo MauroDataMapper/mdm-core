@@ -21,6 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels as DataFlowBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels as DataModelBootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.referencedata.bootstrap.BootstrapModels as ReferenceDataModelBootstrapModels
@@ -72,6 +73,16 @@ class BootStrap implements SecurityDefinition {
                     folder2 = new Folder(label: 'Functional Test Folder 2', createdBy: userEmailAddresses.functionalTest)
                     checkAndSave(messageSource, folder2)
 
+                    VersionedFolder versionedFolder = new VersionedFolder(label: 'Functional Test VersionedFolder',
+                                                                          authority: authorityService.defaultAuthority,
+                                                                          createdBy: userEmailAddresses.functionalTest)
+                    checkAndSave(messageSource, versionedFolder)
+
+                    VersionedFolder versionedFolder2 = new VersionedFolder(label: 'Functional Test VersionedFolder 2',
+                                                                           authority: authorityService.defaultAuthority,
+                                                                           createdBy: userEmailAddresses.functionalTest)
+                    checkAndSave(messageSource, versionedFolder2)
+
                     // Make editors container admin (existing permissions) of the test folder
                     checkAndSave(messageSource, new SecurableResourceGroupRole(
                         createdBy: userEmailAddresses.functionalTest,
@@ -83,6 +94,36 @@ class BootStrap implements SecurityDefinition {
                     checkAndSave(messageSource, new SecurableResourceGroupRole(
                         createdBy: userEmailAddresses.functionalTest,
                         securableResource: folder,
+                        userGroup: readers,
+                        groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
+                    )
+
+                    // Make editors container admin (existing permissions) of the test versioned folder
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: userEmailAddresses.functionalTest,
+                        securableResource: versionedFolder,
+                        userGroup: editors,
+                        groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+                    )
+                    // Make readers reviewers of the test folder, this will allow "comment" adding testing
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: userEmailAddresses.functionalTest,
+                        securableResource: versionedFolder,
+                        userGroup: readers,
+                        groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
+                    )
+
+                    // Make editors container admin (existing permissions) of the test versioned folder
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: userEmailAddresses.functionalTest,
+                        securableResource: versionedFolder2,
+                        userGroup: editors,
+                        groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+                    )
+                    // Make readers reviewers of the test folder, this will allow "comment" adding testing
+                    checkAndSave(messageSource, new SecurableResourceGroupRole(
+                        createdBy: userEmailAddresses.functionalTest,
+                        securableResource: versionedFolder2,
                         userGroup: readers,
                         groupRole: groupRoleService.getFromCache(GroupRole.REVIEWER_ROLE_NAME).groupRole)
                     )
@@ -112,11 +153,6 @@ class BootStrap implements SecurityDefinition {
                     DataModelBootstrapModels.buildAndSaveComplexDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveSimpleDataModel(messageSource, folder, authority)
                     DataModelBootstrapModels.buildAndSaveFinalisedSimpleDataModel(messageSource, folder, authority)
-                    DataModelBootstrapModels.buildAndSaveFirstImportingDataModel(messageSource, folder, authority)
-                    DataModelBootstrapModels.buildAndSaveSecondImportingDataModel(messageSource, folder, authority)
-                    DataModelBootstrapModels.buildAndSaveThirdImportingDataModel(messageSource, folder, authority)
-                    DataModelBootstrapModels.buildAndSaveFinalisedExtendableDataModel(messageSource, folder, authority)
-                    DataModelBootstrapModels.buildAndSaveFirstExtendingDataModel(messageSource, folder, authority)
                     TerminologyBootstrapModels.buildAndSaveComplexTerminology(messageSource, folder, terminologyService, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleTerminology(messageSource, folder, authority)
                     TerminologyBootstrapModels.buildAndSaveSimpleCodeSet(messageSource, folder, authority)
@@ -125,7 +161,7 @@ class BootStrap implements SecurityDefinition {
                     DataFlowBootstrapModels.buildAndSaveTargetDataModel(messageSource, folder, authority)
                     DataFlowBootstrapModels.buildAndSaveSampleDataFlow(messageSource)
                     ReferenceDataModelBootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, authority)
-                    ReferenceDataModelBootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, authority)                    
+                    ReferenceDataModelBootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, authority)
                 }
             }
             log.debug('Test environment bootstrap complete')

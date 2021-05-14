@@ -67,16 +67,16 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
 
         SemanticLink sl1 = new SemanticLink(createdBy: admin.emailAddress, linkType: REFINES)
         basicModel.addToSemanticLinks(sl1)
-        sl1.setTargetCatalogueItem(basicModel2)
+        sl1.setTargetMultiFacetAwareItem(basicModel2)
         SemanticLink sl2 = new SemanticLink(createdBy: admin.emailAddress, linkType: DOES_NOT_REFINE)
         basicModel.addToSemanticLinks(sl2)
-        sl2.setTargetCatalogueItem(basicModel3)
+        sl2.setTargetMultiFacetAwareItem(basicModel3)
 
         checkAndSave(basicModel)
 
         domain.createdBy = admin.emailAddress
         domain.linkType = ABSTRACTS
-        domain.setTargetCatalogueItem(bmi)
+        domain.setTargetMultiFacetAwareItem(bmi)
         basicModel3.addToSemanticLinks(domain)
         checkAndSave(domain)
 
@@ -85,7 +85,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
             getAll(_) >> {List<UUID> ids -> BasicModel.getAll(ids)}
             getModelClass() >> BasicModel
             handles('BasicModel') >> true
-            removeSemanticLinkFromCatalogueItem(_, _) >> {UUID id, SemanticLink semanticLink ->
+            removeSemanticLinkFromMultiFacetAware(_, _) >> {UUID id, SemanticLink semanticLink ->
                 BasicModel bm = BasicModel.get(id)
                 bm.semanticLinks.remove(semanticLink)
             }
@@ -94,9 +94,9 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
         ModelItemService basicModelItemService = Stub() {
             get(_) >> {UUID id -> BasicModelItem.get(id)}
             getAll(_) >> {List<UUID> ids -> BasicModelItem.getAll(ids)}
-            getCatalogueItemClass() >> BasicModelItem
+            getMultiFacetAwareClass() >> BasicModelItem
             handles('BasicModelItem') >> true
-            removeSemanticLinkFromCatalogueItem(_, _) >> {UUID id, SemanticLink semanticLink ->
+            removeSemanticLinkFromMultiFacetAware(_, _) >> {UUID id, SemanticLink semanticLink ->
                 BasicModelItem bm = BasicModelItem.get(id)
                 bm.semanticLinks.remove(semanticLink)
             }
@@ -113,7 +113,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
   "items": [
     {
       "unconfirmed": false,
-      "targetCatalogueItem": {
+      "targetMultiFacetAwareItem": {
         "domainType": "BasicModelItem",
         "model": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
@@ -128,7 +128,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
         ]
       },
       "domainType": "SemanticLink",
-      "sourceCatalogueItem": {
+      "sourceMultiFacetAwareItem": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
         "label": "dm3"
@@ -138,13 +138,13 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     },
     {
       "unconfirmed": false,
-      "targetCatalogueItem": {
+      "targetMultiFacetAwareItem": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
         "label": "dm3"
       },
       "domainType": "SemanticLink",
-      "sourceCatalogueItem": {
+      "sourceMultiFacetAwareItem": {
         "domainType": "BasicModel",
         "id": "${json-unit.matches:id}",
         "label": "dm1"
@@ -162,10 +162,11 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
   "total": 3,
   "errors": [
     {
-      "message": "Property [targetCatalogueItemId] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot be null"
+      "message": "Property [targetMultiFacetAwareItemId] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot be null"
     },
     {
-      "message": "Property [targetCatalogueItemDomainType] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot be null"
+      "message": "Property [targetMultiFacetAwareItemDomainType] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot''' +
+        ''' be null"
     },
     {
       "message": "Property [linkType] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot be null"
@@ -180,10 +181,11 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
   "total": 2,
   "errors": [
     {
-      "message": "Property [targetCatalogueItemId] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot be null"
+      "message": "Property [targetMultiFacetAwareItemId] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot be null"
     },
     {
-      "message": "Property [targetCatalogueItemDomainType] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot be null"
+      "message": "Property [targetMultiFacetAwareItemDomainType] of class [class uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink] cannot''' +
+        ''' be null"
     }
   ]
 }'''
@@ -193,13 +195,13 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     String getExpectedValidSavedJson() {
         '''{
   "unconfirmed": false,
-  "targetCatalogueItem": {
+  "targetMultiFacetAwareItem": {
     "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
     "label": "dm2"
   },
   "domainType": "SemanticLink",
-  "sourceCatalogueItem": {
+  "sourceMultiFacetAwareItem": {
     "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
     "label": "dm3"
@@ -212,7 +214,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     @Override
     String getExpectedShowJson() {
         '''{
-  "targetCatalogueItem": {
+  "targetMultiFacetAwareItem": {
     "domainType": "BasicModelItem",
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
@@ -228,7 +230,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
   },
   "domainType": "SemanticLink",
   "unconfirmed": false,
-  "sourceCatalogueItem": {
+  "sourceMultiFacetAwareItem": {
     "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
     "label": "dm3"
@@ -247,7 +249,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
     @Override
     String getExpectedValidUpdatedJson() {
         '''{
-  "targetCatalogueItem": {
+  "targetMultiFacetAwareItem": {
     "domainType": "BasicModelItem",
     "model": "${json-unit.matches:id}",
     "id": "${json-unit.matches:id}",
@@ -263,7 +265,7 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
   },
   "domainType": "SemanticLink",
   "unconfirmed": false,
-  "sourceCatalogueItem": {
+  "sourceMultiFacetAwareItem": {
     "domainType": "BasicModel",
     "id": "${json-unit.matches:id}",
     "label": "dm3"
@@ -292,14 +294,14 @@ class SemanticLinkControllerSpec extends ResourceControllerSpec<SemanticLink> im
 
     @Override
     SemanticLink getValidUnsavedInstance() {
-        new SemanticLink(linkType: ABSTRACTS, targetCatalogueItem: basicModel2)
+        new SemanticLink(linkType: ABSTRACTS, targetMultiFacetAwareItem: basicModel2)
     }
 
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = BasicModel.simpleName
-        params.catalogueItemId = basicModel3.id
+        params.multiFacetAwareItemDomainType = BasicModel.simpleName
+        params.multiFacetAwareItemId = basicModel3.id
     }
 
     @Override
@@ -316,8 +318,8 @@ json {
     if(semanticLink.linkType) linkType semanticLink.linkType.label
     domainType semanticLink.domainType
 
-    targetCatalogueItemId semanticLink.targetCatalogueItemId
-    targetCatalogueItemDomainType semanticLink.targetCatalogueItemDomainType
+    targetMultiFacetAwareItemId semanticLink.targetMultiFacetAwareItemId
+    targetMultiFacetAwareItemDomainType semanticLink.targetMultiFacetAwareItemDomainType
 }
     '''
     }

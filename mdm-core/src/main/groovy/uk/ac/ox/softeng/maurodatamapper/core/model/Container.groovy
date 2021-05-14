@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.PathAware
@@ -30,7 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
  *
  * @since 05/11/2019
  */
-trait Container implements PathAware, InformationAware, SecurableResource, EditHistoryAware {
+trait Container implements PathAware, InformationAware, SecurableResource, EditHistoryAware, MultiFacetAware {
 
     abstract boolean hasChildren()
 

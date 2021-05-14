@@ -1,7 +1,0 @@
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
-
-model {
-    ModelImport modelImport
-}
-
-json tmpl.modelImport(modelImport)

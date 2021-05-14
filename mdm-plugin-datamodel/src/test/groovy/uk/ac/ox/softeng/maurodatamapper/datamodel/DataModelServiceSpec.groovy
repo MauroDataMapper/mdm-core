@@ -17,11 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelExtendService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImportService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -56,8 +53,6 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         mockArtefact(DataClassService)
         mockArtefact(DataElementService)
         mockArtefact(DataTypeService)
-        mockArtefact(ModelExtendService)
-        mockArtefact(ModelImportService)
         mockArtefact(SummaryMetadataService)
         mockDomains(DataModel, DataClass, DataType, PrimitiveType,
                     ReferenceType, EnumerationType, EnumerationValue, DataElement)
@@ -96,7 +91,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
         id = dataModel1.id
     }
 
-    DataModel buildSimpleDataModel(Authority authority) {
+    DataModel buildSimpleDataModel() {
         BootstrapModels.buildAndSaveSimpleDataModel(messageSource, testFolder, testAuthority)
     }
 
@@ -213,7 +208,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.not.finalised.message' }
     }
 
     void 'DMSC02 : test creating a new documentation version on finalised model'() {
@@ -369,7 +364,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     @PendingFeature(reason = 'DataModel permission copying')
@@ -394,7 +389,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     void 'DMSC06 : test creating a new model version on draft model'() {
@@ -409,7 +404,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.not.finalised.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.not.finalised.message' }
     }
 
     void 'DMSC07 : test creating a new model version on finalised model'() {
@@ -570,7 +565,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
         then:
         result.errors.allErrors.size() == 1
-        result.errors.allErrors.find {it.code == 'invalid.model.new.version.superseded.message'}
+        result.errors.allErrors.find { it.code == 'invalid.version.aware.new.version.superseded.message' }
     }
 
     void 'DMSV01 : test validation on valid model'() {

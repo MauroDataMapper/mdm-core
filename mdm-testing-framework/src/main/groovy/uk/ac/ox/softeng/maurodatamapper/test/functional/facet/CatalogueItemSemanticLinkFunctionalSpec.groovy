@@ -72,17 +72,17 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends CatalogueItemFace
     @Override
     Map getValidJson() {
         [
-            linkType                     : SemanticLinkType.REFINES.label,
-            targetCatalogueItemId        : getTargetCatalogueItemId(),
-            targetCatalogueItemDomainType: getTargetCatalogueItemDomainType()
+            linkType                           : SemanticLinkType.REFINES.label,
+            targetMultiFacetAwareItemId        : getTargetCatalogueItemId(),
+            targetMultiFacetAwareItemDomainType: getTargetCatalogueItemDomainType()
         ]
     }
 
     @Override
     Map getInvalidJson() {
         [
-            linkType           : SemanticLinkType.REFINES.label,
-            targetCatalogueItem: getCatalogueItemId().toString(),
+            linkType                 : SemanticLinkType.REFINES.label,
+            targetMultiFacetAwareItem: getCatalogueItemId().toString(),
 
         ]
     }
@@ -101,8 +101,8 @@ abstract class CatalogueItemSemanticLinkFunctionalSpec extends CatalogueItemFace
   "linkType": "Refines",
   "unconfirmed":false,
   "domainType": "SemanticLink",
-  "sourceCatalogueItem": ''' + getSourceCatalogueItemJsonString() + ''',
-  "targetCatalogueItem": ''' + getTargetCatalogueItemJsonString() + '''
+  "sourceMultiFacetAwareItem": ''' + getSourceCatalogueItemJsonString() + ''',
+  "targetMultiFacetAwareItem": ''' + getTargetCatalogueItemJsonString() + '''
 }'''
     }
 

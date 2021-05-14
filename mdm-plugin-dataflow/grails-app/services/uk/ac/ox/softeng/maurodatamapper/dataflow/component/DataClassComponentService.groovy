@@ -83,7 +83,7 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
 
         dataClassComponent.sourceDataClasses.each { source ->
             dataClassComponent.sourceDataClasses.each { target ->
-                semanticLinkService.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
+                semanticLinkService.deleteBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
             }
         }
 
@@ -126,8 +126,8 @@ class DataClassComponentService extends ModelItemService<DataClassComponent> {
                 .executeUpdate()
 
             log.trace('Removing facets for {} DataClassComponents', dataClassComponentIds.size())
-            deleteAllFacetsByCatalogueItemIds(dataClassComponentIds,
-                                              'delete from dataflow.join_dataclasscomponent_to_facet where dataclasscomponent_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataClassComponentIds,
+                                                'delete from dataflow.join_dataclasscomponent_to_facet where dataclasscomponent_id in :ids')
 
             log.trace('Removing {} DataClassComponents', dataClassComponentIds.size())
             sessionFactory.currentSession

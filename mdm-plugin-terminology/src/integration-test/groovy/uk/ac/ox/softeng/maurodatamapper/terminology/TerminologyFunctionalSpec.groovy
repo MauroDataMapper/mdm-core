@@ -772,12 +772,12 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
-      "sourceCatalogueItem": {
+      "sourceMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Terminology reader"
       },
-      "targetCatalogueItem": {
+      "targetMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Model"
@@ -830,12 +830,12 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
-      "sourceCatalogueItem": {
+      "sourceMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Terminology reader"
       },
-      "targetCatalogueItem": {
+      "targetMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Model"
@@ -846,12 +846,12 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
-      "sourceCatalogueItem": {
+      "sourceMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Terminology editor"
       },
-      "targetCatalogueItem": {
+      "targetMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Model"
@@ -929,12 +929,12 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
-      "sourceCatalogueItem": {
+      "sourceMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Model"
       },
-      "targetCatalogueItem": {
+      "targetMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Model"
@@ -1005,12 +1005,12 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
       "linkType": "Refines",
       "id": "${json-unit.matches:id}",
       "unconfirmed":false,
-      "sourceCatalogueItem": {
+      "sourceMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Model"
       },
-      "targetCatalogueItem": {
+      "targetMultiFacetAwareItem": {
         "domainType": "Terminology",
         "id": "${json-unit.matches:id}",
         "label": "Functional Test Model"
@@ -1082,14 +1082,14 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         responseBody().count == 2
         responseBody().items.any {
             it.linkType == SemanticLinkType.REFINES.label &&
-            it.targetCatalogueItem.id == id &&
-            it.sourceCatalogueItem.id == secondId
+            it.targetMultiFacetAwareItem.id == id &&
+            it.sourceMultiFacetAwareItem.id == secondId
         }
         // This is unconfirmed as its copied
         responseBody().items.any {
             it.linkType == SemanticLinkType.REFINES.label &&
-            it.targetCatalogueItem.id == id &&
-            it.sourceCatalogueItem.id == thirdId &&
+            it.targetMultiFacetAwareItem.id == id &&
+            it.sourceMultiFacetAwareItem.id == thirdId &&
             it.unconfirmed
         }
 
@@ -1113,13 +1113,13 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         responseBody().count == 2
         responseBody().items.any {
             it.linkType == SemanticLinkType.REFINES.label &&
-            it.targetCatalogueItem.id == id &&
-            it.sourceCatalogueItem.id == secondId
+            it.targetMultiFacetAwareItem.id == id &&
+            it.sourceMultiFacetAwareItem.id == secondId
         }
         responseBody().items.any {
             it.linkType == SemanticLinkType.REFINES.label &&
-            it.targetCatalogueItem.id == secondId &&
-            it.sourceCatalogueItem.id == thirdId
+            it.targetMultiFacetAwareItem.id == secondId &&
+            it.sourceMultiFacetAwareItem.id == thirdId
         }
 
         when: 'getting the second model VLs'

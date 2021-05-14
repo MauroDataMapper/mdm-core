@@ -51,23 +51,23 @@ class ReferenceSummaryMetadataSpec extends CreatorAwareSpec<ReferenceSummaryMeta
         then:
         thrown(InternalSpockError)
         domain.hasErrors()
-        domain.errors.getFieldError('catalogueItemId')
-        domain.errors.getFieldError('catalogueItemDomainType')
+        domain.errors.getFieldError('multiFacetAwareItemId')
+        domain.errors.getFieldError('multiFacetAwareItemDomainType')
     }
 
     @Override
     void setValidDomainOtherValues() {
         domain.summaryMetadataType = ReferenceSummaryMetadataType.NUMBER
         domain.label = 'test'
-        domain.catalogueItem = db
+        domain.multiFacetAwareItem = db
     }
 
     @Override
     void verifyDomainOtherConstraints(ReferenceSummaryMetadata domain) {
         assert domain.summaryMetadataType == ReferenceSummaryMetadataType.NUMBER
-        assert domain.catalogueItem.id
-        assert domain.catalogueItemDomainType == ReferenceDataModel.simpleName
-        assert domain.catalogueItem.id == db.id
+        assert domain.multiFacetAwareItem.id
+        assert domain.multiFacetAwareItemDomainType == ReferenceDataModel.simpleName
+        assert domain.multiFacetAwareItem.id == db.id
         assert domain.createdBy == admin.emailAddress
         assert domain.label == 'test'
     }

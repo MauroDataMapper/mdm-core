@@ -58,7 +58,7 @@ class GroupRoleService {
     }
 
     GroupRole get(Serializable id) {
-        GroupRole.get(id) ?: id instanceof String ? getFromCache(id).groupRole : null
+        GroupRole.get(id) ?: id instanceof String ? getFromCache(id)?.groupRole : null
     }
 
     List<GroupRole> list(Map pagination) {

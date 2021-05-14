@@ -29,6 +29,7 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElementService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.provider.DefaultReferenceDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.referencedata.rest.transport.DefaultReferenceDataType
+import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -39,7 +40,8 @@ import groovy.util.logging.Slf4j
 @SuppressWarnings("ClashingTraitMethods")
 @Slf4j
 @Transactional
-class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> implements DefaultReferenceDataTypeProvider {
+class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> implements DefaultReferenceDataTypeProvider,
+    ReferenceSummaryMetadataAwareService {
 
     ReferenceDataElementService referenceDataElementService
     ReferencePrimitiveTypeService referencePrimitiveTypeService
@@ -85,10 +87,6 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
             case ReferenceDataType.ENUMERATION_DOMAIN_TYPE:
                 referenceEnumerationTypeService.delete(referenceDataType as ReferenceEnumerationType, flush)
         }
-    }
-
-    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
     }
 
     @Override
@@ -224,8 +222,8 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         }
         if (referenceDataType.referenceSummaryMetadata) {
             referenceDataType.referenceSummaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = referenceDataType.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = referenceDataType.getId()
             }
             ReferenceSummaryMetadata.saveAll(referenceDataType.referenceSummaryMetadata)
         }
@@ -304,8 +302,8 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
                                                    boolean copySummaryMetadata = false) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         if (copySummaryMetadata) {
-            referenceSummaryMetadataService.findAllByCatalogueItemId(original.id).each {
-                copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
+            referenceSummaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
+                copy.addToReferenceSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
         copy

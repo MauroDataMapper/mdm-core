@@ -16,4 +16,5 @@ json {
     if (dataClass.minMultiplicity != null) minMultiplicity dataClass.minMultiplicity
 
     if (dataClass.parentDataClass) parentDataClass dataClass.parentDataClassId
+    if (dataClass.extendedDataClasses) extendsDataClasses tmpl.dataClass(dataClass.extendedDataClasses)
 }

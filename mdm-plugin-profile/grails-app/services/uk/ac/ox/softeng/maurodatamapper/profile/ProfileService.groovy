@@ -18,32 +18,31 @@
 package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
+import uk.ac.ox.softeng.maurodatamapper.profile.provider.DynamicJsonProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
-import grails.core.GrailsApplication
-import grails.databinding.DataBindingSource
 import grails.gorm.transactions.Transactional
-import grails.web.databinding.DataBindingUtils
-import groovy.json.JsonSlurper
 import org.springframework.beans.factory.annotation.Autowired
 
 import javax.servlet.http.HttpServletRequest
 
 @Transactional
 class ProfileService {
-
-    GrailsApplication grailsApplication
 
     @Autowired
     List<CatalogueItemService> catalogueItemServices
@@ -54,6 +53,10 @@ class ProfileService {
     @Autowired(required = false)
     Set<ProfileProviderService> profileProviderServices
 
+    DataModelService dataModelService
+    MetadataService metadataService
+    ProfileSpecificationProfileService profileSpecificationProfileService
+
     Profile createProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem) {
         profileProviderService.createProfileFromEntity(catalogueItem)
     }
@@ -61,15 +64,15 @@ class ProfileService {
     ProfileProviderService findProfileProviderService(String profileNamespace, String profileName, String profileVersion = null) {
 
         if (profileVersion) {
-            return profileProviderServices.find {
+            return getAllProfileProviderServices().find {
                 it.namespace == profileNamespace &&
-                it.name == profileName &&
+                it.getName() == profileName &&
                 it.version == profileVersion
             }
         }
-        profileProviderServices.findAll {
+        getAllProfileProviderServices().findAll {
             it.namespace == profileNamespace &&
-            it.name == profileName
+            it.getName() == profileName
         }.max()
     }
 
@@ -105,10 +108,35 @@ class ProfileService {
         profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
     }
 
-    PaginatedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
+    def validateProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem, HttpServletRequest request, User user) {
+        Profile profile = profileProviderService.getNewProfile()
+        List<ProfileSection> profileSections = []
+        request.getJSON().sections.each { it ->
+            ProfileSection profileSection = new ProfileSection(it)
+            profileSection.fields = []
+            it['fields'].each { field ->
+                profileSection.fields.add(new ProfileField(field))
+            }
+            if (profileProviderService.isJsonProfileService()) {
+                ((JsonProfile) profile).sections.add(profileSection)
+
+            } else {
+                profileSections.add(profileSection)
+            }
+        }
+        profile.sections.each {section ->
+            section.fields.each { field ->
+                field.validate()
+            }
+        }
+        profile
+
+    }
+
+
+    List<Model> getAllModelsWithProfile(ProfileProviderService profileProviderService,
                                                       UserSecurityPolicyManager userSecurityPolicyManager,
-                                                      String domainType,
-                                                      Map pagination = [:]) {
+                                                      String domainType) {
 
         List<Model> models = []
         ModelService service = modelServices.find { it.handles(domainType) }
@@ -117,10 +145,20 @@ class ProfileService {
         List<Model> validModels = models.findAll {model ->
             userSecurityPolicyManager.userCanReadSecuredResourceId(model.class, model.id) && !model.deleted
         }
+        return validModels
+    }
+
+    PaginatedResultList<Profile> getModelsWithProfile(ProfileProviderService profileProviderService,
+                                                      UserSecurityPolicyManager userSecurityPolicyManager,
+                                                      String domainType,
+                                                      Map pagination = [:]) {
+
+        List<Model> models = getAllModelsWithProfile(profileProviderService, userSecurityPolicyManager, domainType)
+
         List<Profile> profiles = []
-        validModels.each {model ->
-            profiles.add(profileProviderService.createProfileFromEntity(model))
-        }
+        profiles.addAll(models.collect{ model ->
+            profileProviderService.createProfileFromEntity(model)
+        })
         new PaginatedResultList<>(profiles, pagination)
     }
 
@@ -130,13 +168,73 @@ class ProfileService {
         service.get(catalogueItemId)
     }
 
-    List<String> getUsedNamespaces(CatalogueItem catalogueItem) {
-        catalogueItem.metadata.collect {it.namespace }
+    Set<String> getUsedNamespaces(CatalogueItem catalogueItem) {
+        //MetadataService metadataService = grailsApplication.mainContext.getBean('metadataService')
+        List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemId(catalogueItem.id)
+        metadataList.collect {it.namespace } as Set
     }
 
     Set<ProfileProviderService> getUsedProfileServices(CatalogueItem catalogueItem) {
-        List<String> usedNamespaces = getUsedNamespaces(catalogueItem)
-        profileProviderServices.findAll {usedNamespaces.contains(it.getMetadataNamespace())}
+        Set<String> usedNamespaces = getUsedNamespaces(catalogueItem)
+
+        getAllProfileProviderServices().findAll {
+            (usedNamespaces.contains(it.getMetadataNamespace()) &&
+        it.profileApplicableForDomains().contains(catalogueItem.domainType))}
+    }
+
+    ProfileProviderService createDynamicProfileServiceFromModel(DataModel dataModel) {
+
+        return new DynamicJsonProfileProviderService(metadataService, dataModel)
+
+    }
+
+    Set<ProfileProviderService> getAllProfileProviderServices() {
+        // First we'll get the ones we already know about...
+        // (Except those that we've already disabled)
+        Set<ProfileProviderService> allProfileServices = []
+        allProfileServices.addAll(profileProviderServices.findAll{ !it.disabled})
+
+        // Now we get all the dynamic models
+        List<DataModel> dynamicModels = dataModelService.findAllByMetadataNamespace(
+                profileSpecificationProfileService.metadataNamespace)
+
+        List<UUID> dynamicModelIds = dynamicModels.collect{it.id}
+
+
+        // Now we do a quick check to make sure that none of those are dynamic, and refer to a model that has since been deleted
+        allProfileServices.removeAll{profileProviderService ->
+            if(profileProviderService.getDefiningDataModel() != null &&
+                    !dynamicModelIds.contains(profileProviderService.getDefiningDataModel())) {
+                // Disable it for next time
+                profileProviderService.disabled = true
+                return true
+            }
+            return false
+        }
+
+        Set<UUID> alreadyKnownServiceDataModels = allProfileServices.findAll{
+            it.getDefiningDataModel() != null
+        }.collect{
+            it.getDefiningDataModel()
+        }
+
+        // Now find any new profile models and create a service for them:
+        List<DataModel> newDynamicModels = dynamicModels.findAll{dataModel ->
+            !alreadyKnownServiceDataModels.contains(dataModel.id)
+        }
+
+        allProfileServices.addAll(
+            newDynamicModels.collect {dataModel -> createDynamicProfileServiceFromModel(dataModel) }
+        )
+
+        return allProfileServices
+
+    }
+
+    Set<ProfileProviderService> getAllDynamicProfileProviderServices() {
+        getAllProfileProviderServices().findAll{
+            it.definingDataModel != null
+        }
     }
 
 }

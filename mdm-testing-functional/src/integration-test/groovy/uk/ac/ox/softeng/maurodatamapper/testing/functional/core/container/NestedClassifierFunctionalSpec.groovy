@@ -98,7 +98,7 @@ class NestedClassifierFunctionalSpec extends UserAccessFunctionalSpec {
   "label": "Nested Functional Test Classifier",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["show","update","save","softDelete","delete"]
+  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
 }'''
     }
 }

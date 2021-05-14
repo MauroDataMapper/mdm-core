@@ -91,6 +91,11 @@ class UrlMappings {
                 '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES)
                 '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES)
 
+                put '/finalise'(controller: 'versionedFolder', action: 'finalise')
+                put '/newBranchModelVersion'(controller: 'versionedFolder', action: 'newBranchModelVersion')
+                put '/newDocumentationVersion'(controller: 'versionedFolder', action: 'newDocumentationVersion')
+                put '/newForkModel'(controller: 'versionedFolder', action: 'newForkModel')
+
                 put '/readByEveryone'(controller: 'versionedFolder', action: 'readByEveryone')
                 delete '/readByEveryone'(controller: 'versionedFolder', action: 'readByEveryone')
                 put '/readByAuthenticated'(controller: 'versionedFolder', action: 'readByAuthenticated')
@@ -149,16 +154,6 @@ class UrlMappings {
                 }
 
                 /*
-                Model Imports
-                 */
-                '/modelImports'(resources: 'modelImport', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
-
-                /*
-                Model Extends
-                 */
-                '/modelExtends'(resources: 'modelExtend', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
-
-                /*
                 Reference Files
                  */
                 '/referenceFiles'(resources: 'referenceFile', excludes: DEFAULT_EXCLUDES)
@@ -167,6 +162,44 @@ class UrlMappings {
                 Get Catalogue Item by path where is ID of top Catalogue Item is provided
                  */
                 get "/path/$path"(controller: 'path', action: 'show')
+
+                /*
+                Rules
+                */
+                '/rules'(resources: 'rule', excludes: DEFAULT_EXCLUDES) {
+                    '/representations'(resources: 'ruleRepresentation', excludes: DEFAULT_EXCLUDES)
+                }
+            }
+
+            /*
+         Container accessible resources
+          All new URLs
+           */
+            group "/$containerDomainType/$containerId", {
+
+                /*
+                Metadata
+                */
+                '/metadata'(resources: 'metadata', excludes: DEFAULT_EXCLUDES)
+
+                /*
+                Annotations
+                 */
+                '/annotations'(resources: 'annotation', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE) {
+                    '/annotations'(resources: 'annotation', excludes: DEFAULT_EXCLUDES_AND_NO_UPDATE)
+                }
+
+                /*
+                Semantic Links
+                 */
+                '/semanticLinks'(resources: 'semanticLink', excludes: DEFAULT_EXCLUDES) {
+                    put '/confirm'(controller: 'semanticLink', action: 'confirm')
+                }
+
+                /*
+                Reference Files
+                 */
+                '/referenceFiles'(resources: 'referenceFile', excludes: DEFAULT_EXCLUDES)
 
                 /*
                 Rules

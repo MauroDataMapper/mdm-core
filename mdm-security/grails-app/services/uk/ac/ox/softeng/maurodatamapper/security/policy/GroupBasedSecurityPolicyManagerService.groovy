@@ -21,7 +21,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -46,12 +46,15 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import grails.plugin.cache.GrailsCache
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.grails.plugin.cache.GrailsCacheManager
 import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
 @Slf4j
+@CompileStatic
 class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerService {
 
     public static final String SECURITY_POLICY_MANAGER_CACHE_KEY = 'securityPolicyManagerCache'
@@ -73,6 +76,12 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     CatalogueUserService catalogueUserService
     UserGroupService userGroupService
     FolderService folderService
+
+    GroupBasedSecurityPolicyManagerService() {
+        securableResourceServices = []
+        containerServices = []
+        modelServices = []
+    }
 
     @Override
     UserSecurityPolicyManager addSecurityForSecurableResource(SecurableResource securableResource, User creator, String resourceName) {
@@ -99,27 +108,23 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                                                                     "Control group for ${creator.getEmailAddress()}").save(flush: true)
 
         }
-        securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
+        SecurableResourceGroupRole existing = securableResourceGroupRoleService.findBySecurableResourceAndUserGroup(securableResource.domainType,
+                                                                                                                    securableResource.resourceId,
+                                                                                                                    controlGroup.id)
+        // To ensure only 1 usergroup exists for each role access on a secured service there is now an added constraint on the domain
+        // We should also ensure we dont add more security for an existing group, we should only ever update a group's acces to a resource
+        if (!existing) {
+            securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
+        } else {
+            securableResourceGroupRoleService.updateAndSaveSecurableResourceGroupRole(existing, role)
+        }
 
         /*
         If any groups (UserGroups) have been specified then for each check that both UserGroup and GroupRole can be found from the 
         groupId and groupRoleId provided. If yes then create a SecurableResourceGroupRole
         */
-        if (securableResource.hasProperty('groups') && securableResource.groups && securableResource.groups.size() > 0) {
-            securableResource.groups.each {
-                controlGroup = userGroupService.get(it.groupId)
-
-                //groupRoleService throws a null pointer exception if groupRoleId is not valid
-                try {
-                    role = groupRoleService.get(it.groupRoleId)
-                } catch (ex) {
-                    role = null;
-                }
-
-                if (controlGroup && role) {
-                    securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
-                }
-            }
+        if (securableResource.hasProperty('groups')) {
+            processSecurableResourceWithGroups(securableResource, catalogueUser)
         }
 
         refreshUserSecurityPolicyManager(catalogueUser)
@@ -161,71 +166,12 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             log.info('Updating security for model due to {} changes', changedSecurityProperties)
             refreshAllUserSecurityPolicyManagersByModel(currentUser, securableResource as Model, changedSecurityProperties)
         }
+        if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResource.class)) {
+            log.info('Updating security for VersionedFolder due to {} changes', changedSecurityProperties)
+            refreshAllUserSecurityPolicyManagersByVersionedFolder(currentUser, securableResource as VersionedFolder, changedSecurityProperties)
+        }
 
         getSecurityPolicyManagerCache().get(currentUser.emailAddress, GroupBasedUserSecurityPolicyManager)
-    }
-
-    void updateBuiltInSecurity(SecurableResource securableResource, Set<String> changedSecurityProperties) {
-        GrailsCache cache = getSecurityPolicyManagerCache()
-        Collection<Object> keys = cache.getAllKeys()
-        VirtualGroupRole readerRole = groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME)
-        // Build the readable by everyone virtual roles for the securable resource
-        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
-        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents = [] as HashSet
-        virtualSecurableResourceGroupRoles.add(new VirtualSecurableResourceGroupRole()
-                                                   .forSecurableResource(securableResource)
-                                                   .withAccessLevel(readerRole.groupRole))
-        if (Utils.parentClassIsAssignableFromChild(Container, securableResource.class)) {
-            ContainerService containerService = containerServices.find { it.handles(securableResource.domainType) }
-            // Make sure contents of container are all readable as well
-            virtualSecurableResourceGroupRoles.addAll(
-                buildControlledAccessToContentsOfContainer(securableResource.getResourceId(),
-                                                           containerService,
-                                                           readerRole.allowedRoles,
-                                                           null,
-                                                           readerRole.groupRole
-                )
-            )
-            // Make sure the direct tree of containers are readable as well
-            virtualSecurableResourceGroupRolesForParents.addAll(
-                containerService.findAllWhereDirectParentOfContainer(securableResource as Container)
-                    .collect { container ->
-                        new VirtualSecurableResourceGroupRole()
-                            .forSecurableResource(container as Container)
-                            .withAccessLevel(readerRole.groupRole)
-                    })
-        }
-        if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            // Make sure that the folder tree that contain this model are now readable by everyone so the tree can be built
-            // however the contents of these folder are not to be readable
-            virtualSecurableResourceGroupRolesForParents.addAll(
-                folderService.findAllWhereDirectParentOfModel(securableResource as Model)
-                    .collect { folder ->
-                        new VirtualSecurableResourceGroupRole()
-                            .forSecurableResource(folder)
-                            .withAccessLevel(readerRole.groupRole)
-                    })
-        }
-
-        if (changedSecurityProperties.contains('readableByEveryone')) {
-            log.debug('Changing readable by everyone to {}', securableResource.readableByEveryone)
-            keys.each { key ->
-                GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-                updateAndStoreBuiltInSecurity(userSecurityPolicyManager, securableResource.readableByEveryone,
-                                              virtualSecurableResourceGroupRoles, virtualSecurableResourceGroupRolesForParents)
-            }
-
-        }
-        if (changedSecurityProperties.contains('readableByAuthenticatedUsers')) {
-            log.debug('Changing readable by authenticated users to {}', securableResource.readableByAuthenticatedUsers)
-            keys.each { key ->
-                GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-                if (userSecurityPolicyManager.isAuthenticated()) {
-                    updateAndStoreBuiltInSecurity(userSecurityPolicyManager, securableResource.readableByAuthenticatedUsers,
-                                                  virtualSecurableResourceGroupRoles, virtualSecurableResourceGroupRolesForParents)
-                }
-            }
-        }
     }
 
     @Override
@@ -258,7 +204,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         } else if (Utils.parentClassIsAssignableFromChild(UserGroup, securableResource.class)) {
             refreshAllUserSecurityPolicyManagersByUserGroup(currentUser, securableResource as UserGroup)
         } else if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            refreshAllUserSecurityPolicyManagersByModel(currentUser, securableResource as Model, [])
+            refreshAllUserSecurityPolicyManagersByModel(currentUser, securableResource as Model, [] as Set)
         } else {
             throw new ApiNotYetImplementedException('GBSPMS01', "refreshAllUserSecurityPolicyManagersBySecurableResource ${securableResource.class}")
         }
@@ -273,7 +219,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
     void ensureUserSecurityPolicyManagerHasCatalogueUser(UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!(userSecurityPolicyManager instanceof GroupBasedUserSecurityPolicyManager)) {
-            throw new ApiBadRequestException('USMP03', "Unrecognised class of UserSecurityPoloicyManager [${userSecurityPolicyManager.class}]")
+            throw new ApiBadRequestException('USMP03', "Unrecognised class of UserSecurityPolicyManager [${userSecurityPolicyManager.class}]")
         }
         CatalogueUser user = catalogueUserService.findOrCreateUserFromInterface(userSecurityPolicyManager.getUser())
         (userSecurityPolicyManager as GroupBasedUserSecurityPolicyManager).forUser(user)
@@ -297,7 +243,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     UserSecurityPolicyManager addUserGroupToUserSecurityPolicyManagers(User currentUser, UserGroup userGroup) {
         GrailsCache cache = getSecurityPolicyManagerCache()
         Collection<Object> keys = cache.getAllKeys()
-        Set<String> groupEmailAddresses = userGroup.groupMembers.collect { it.emailAddress }
+        Set<String> groupEmailAddresses = userGroup.groupMembers.collect { it.emailAddress }.toSet()
         keys.each { key ->
             GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
             if (userSecurityPolicyManager.user.emailAddress in groupEmailAddresses) {
@@ -325,99 +271,6 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             }
         }
         cache.get(currentUser.emailAddress, GroupBasedUserSecurityPolicyManager)
-    }
-
-    UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersByUserGroup(User currentUser, UserGroup userGroup) {
-        log.info('Refreshing all USPMs in user group {}', userGroup.name)
-        GrailsCache cache = getSecurityPolicyManagerCache()
-        Collection<Object> keys = cache.getAllKeys()
-
-        keys.each { key ->
-            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-            if (userGroup.id in userSecurityPolicyManager.userGroups*.id) {
-                storeUserSecurityPolicyManager(refreshUserSecurityPolicyManager(userSecurityPolicyManager))
-            }
-        }
-
-        cache.get(currentUser.emailAddress, GroupBasedUserSecurityPolicyManager)
-    }
-
-    void refreshAllUserSecurityPolicyManagersByCatalogueUser(CatalogueUser catalogueUser) {
-        GrailsCache cache = getSecurityPolicyManagerCache()
-        Collection<Object> keys = cache.getAllKeys()
-
-        keys.each { key ->
-            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-            if (userSecurityPolicyManager.applicationPermittedRoles) {
-                GroupRole highestRole = userSecurityPolicyManager.highestApplicationLevelAccess
-                VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(highestRole.name)
-                Set<VirtualSecurableResourceGroupRole> additionalRoles = buildIndividualCatalogueUserVirtualRoles(catalogueUser, virtualGroupRole)
-                storeUserSecurityPolicyManager(userSecurityPolicyManager.includeVirtualRoles(additionalRoles))
-            }
-        }
-    }
-
-    UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersByModel(User currentUser, Model model, Set<String> changedSecurityProperties) {
-        log.info('Refreshing all USPMs with model {}', model.label)
-        GrailsCache cache = getSecurityPolicyManagerCache()
-        Collection<Object> keys = cache.getAllKeys()
-        // Currently only designed to handle finalised changes
-        // Handles a folder change
-        keys.each { key ->
-            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
-
-            if ('finalised' in changedSecurityProperties) {
-                userSecurityPolicyManager.virtualSecurableResourceGroupRoles.each { virtualRole ->
-                    if (virtualRole.domainType == model.domainType && virtualRole.domainId == model.id) {
-                        virtualRole.asFinalisedModel(model.finalised)
-                    }
-                }
-                userSecurityPolicyManager.securableResourceGroupRoles.each { securableRole ->
-                    if (securableRole.securableResourceDomainType == model.domainType && securableRole.securableResourceId == model.id) {
-                        securableRole = securableResourceGroupRoleService.updatedFinalisedState(securableRole, model.finalised)
-                    }
-                }
-
-            }
-
-            if ('folder' in changedSecurityProperties) {
-                // Identify new folder's max security level
-                GroupRole folderMaxPermission = userSecurityPolicyManager.findHighestAccessToSecurableResource(Folder.simpleName, model.folder.id)
-                GroupRole modelMaxAssignedPermission = userSecurityPolicyManager.findHighestAssignedAccessToSecurableResource(model.getDomainType(),
-                                                                                                                              model.getResourceId())
-                GroupRole modelMaxVirtualPermission = userSecurityPolicyManager.findHighestAccessToSecurableResource(model.getDomainType(),
-                                                                                                                     model.getResourceId())
-                // If no folder access and no assigned model permission then revoke all model access
-                if (!folderMaxPermission && !modelMaxAssignedPermission) {
-                    userSecurityPolicyManager.removeVirtualRoleIf { virtualRole ->
-                        virtualRole.domainType == model.domainType && virtualRole.domainId == model.id
-                    }
-                } else {
-                    // The access level is controlled from multiple places and as there could be more than one group providing access so lets just
-                    // rebuild
-                    userSecurityPolicyManager = buildUserSecurityPolicyManager(userSecurityPolicyManager.hasNoAccess())
-                }
-
-            }
-
-
-            cache.put(key, userSecurityPolicyManager)
-        }
-        cache.get(currentUser.emailAddress, GroupBasedUserSecurityPolicyManager)
-    }
-
-    UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersBySecurableResourceGroupRole(
-        SecurableResourceGroupRole securableResourceGroupRole,
-        User currentUser) {
-        refreshAllUserSecurityPolicyManagersByUserGroup(currentUser, securableResourceGroupRole.userGroup)
-    }
-
-    void destroyUserSecurityPolicyManagerCache() {
-        grailsCacheManager.destroyCache(SECURITY_POLICY_MANAGER_CACHE_KEY)
-    }
-
-    GrailsCache getSecurityPolicyManagerCache() {
-        grailsCacheManager.getCache(SECURITY_POLICY_MANAGER_CACHE_KEY) as GrailsCache
     }
 
     GroupBasedUserSecurityPolicyManager buildUserSecurityPolicyManager(CatalogueUser catalogueUser) {
@@ -452,11 +305,121 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                                        userGroups, assignedApplicationGroupRoles, virtualSecurableResourceGroupRoles)
     }
 
-    GroupBasedUserSecurityPolicyManager buildUserSecurityPolicyManager(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager,
-                                                                       Set<UserGroup> userGroups, Set<GroupRole> assignedApplicationGroupRoles,
-                                                                       Set<VirtualSecurableResourceGroupRole>
-                                                                           virtualSecurableResourceGroupRoles) {
+    UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersByUserGroup(User currentUser, UserGroup userGroup) {
+        log.info('Refreshing all USPMs in user group {}', userGroup.name)
+        GrailsCache cache = getSecurityPolicyManagerCache()
+        Collection<Object> keys = cache.getAllKeys()
 
+        keys.each { key ->
+            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
+            if (userGroup.id in userSecurityPolicyManager.userGroups*.id) {
+                storeUserSecurityPolicyManager(refreshUserSecurityPolicyManager(userSecurityPolicyManager))
+            }
+        }
+
+        cache.get(currentUser.emailAddress, GroupBasedUserSecurityPolicyManager)
+    }
+
+    UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersBySecurableResourceGroupRole(
+        SecurableResourceGroupRole securableResourceGroupRole,
+        User currentUser) {
+        refreshAllUserSecurityPolicyManagersByUserGroup(currentUser, securableResourceGroupRole.userGroup)
+    }
+
+    private void refreshAllUserSecurityPolicyManagersByCatalogueUser(CatalogueUser catalogueUser) {
+        GrailsCache cache = getSecurityPolicyManagerCache()
+        Collection<Object> keys = cache.getAllKeys()
+
+        keys.each { key ->
+            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
+            if (userSecurityPolicyManager.applicationPermittedRoles) {
+                GroupRole highestRole = userSecurityPolicyManager.highestApplicationLevelAccess
+                VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(highestRole.name)
+                Set<VirtualSecurableResourceGroupRole> additionalRoles = buildIndividualCatalogueUserVirtualRoles(catalogueUser, virtualGroupRole)
+                storeUserSecurityPolicyManager(userSecurityPolicyManager.includeVirtualRoles(additionalRoles))
+            }
+        }
+    }
+
+    private UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersByModel(User currentUser, Model model,
+                                                                                  Set<String> changedSecurityProperties) {
+        log.info('Refreshing all USPMs with model {}', model.label)
+        GrailsCache cache = getSecurityPolicyManagerCache()
+        Collection<Object> keys = cache.getAllKeys()
+        // Currently only designed to handle finalised changes
+        // Handles a folder change
+        keys.each { key ->
+            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
+
+            if ('finalised' in changedSecurityProperties) {
+                userSecurityPolicyManager.virtualSecurableResourceGroupRoles.each { virtualRole ->
+                    if (virtualRole.domainType == model.domainType && virtualRole.domainId == model.id) {
+                        virtualRole.asFinalised(model.finalised)
+                    }
+                }
+            }
+
+            if ('folder' in changedSecurityProperties) {
+                // Identify new folder's max security level
+                GroupRole folderMaxPermission = userSecurityPolicyManager.findHighestAccessToSecurableResource(Folder.simpleName, model.folder.id)
+                GroupRole modelMaxAssignedPermission = userSecurityPolicyManager.findHighestAssignedAccessToSecurableResource(model.getDomainType(),
+                                                                                                                              model.getResourceId())
+
+                // If no folder access and no assigned model permission then revoke all model access
+                if (!folderMaxPermission && !modelMaxAssignedPermission) {
+                    userSecurityPolicyManager.removeVirtualRoleIf { virtualRole ->
+                        virtualRole.domainType == model.domainType && virtualRole.domainId == model.id
+                    }
+                } else {
+                    // The access level is controlled from multiple places and as there could be more than one group providing access so lets just
+                    // rebuild
+                    userSecurityPolicyManager = buildUserSecurityPolicyManager(userSecurityPolicyManager.hasNoAccess())
+                }
+
+            }
+
+            cache.put(key, userSecurityPolicyManager)
+        }
+        cache.get(currentUser.emailAddress, GroupBasedUserSecurityPolicyManager)
+    }
+
+    private UserSecurityPolicyManager refreshAllUserSecurityPolicyManagersByVersionedFolder(User currentUser, VersionedFolder versionedFolder,
+                                                                                            Set<String> changedSecurityProperties) {
+        log.info('Refreshing all USPMs with versioned folder {}', versionedFolder.label)
+        GrailsCache cache = getSecurityPolicyManagerCache()
+        Collection<Object> keys = cache.getAllKeys()
+        // Currently only designed to handle finalised changes
+        keys.each { key ->
+            GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
+
+            if ('finalised' in changedSecurityProperties) {
+                userSecurityPolicyManager.virtualSecurableResourceGroupRoles.each { virtualRole ->
+                    if (virtualRole.domainType == versionedFolder.domainType && virtualRole.domainId == versionedFolder.id) {
+                        virtualRole.asFinalised(versionedFolder.finalised)
+                    }
+                }
+            }
+
+            cache.put(key, userSecurityPolicyManager)
+        }
+        cache.get(currentUser.emailAddress, GroupBasedUserSecurityPolicyManager)
+    }
+
+
+
+    private void destroyUserSecurityPolicyManagerCache() {
+        grailsCacheManager.destroyCache(SECURITY_POLICY_MANAGER_CACHE_KEY)
+    }
+
+    private GrailsCache getSecurityPolicyManagerCache() {
+        grailsCacheManager.getCache(SECURITY_POLICY_MANAGER_CACHE_KEY) as GrailsCache
+    }
+
+    protected GroupBasedUserSecurityPolicyManager buildUserSecurityPolicyManager(
+        GroupBasedUserSecurityPolicyManager userSecurityPolicyManager,
+        Set<UserGroup> userGroups,
+        Set<GroupRole> assignedApplicationGroupRoles,
+        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles) {
 
         Set<GroupRole> inheritedApplicationGroupRoles = new HashSet<>()
 
@@ -516,10 +479,10 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                 .forSecurableResource(catalogueUser)
                 .definedByAccessLevel(applicationRole.groupRole)
                 .withAccessLevel(iur)
-        }
+        }.toSet()
     }
 
-    Set<VirtualSecurableResourceGroupRole> buildCatalogueUserVirtualRoles(Set<GroupRole> applicationLevelRoles) {
+    private Set<VirtualSecurableResourceGroupRole> buildCatalogueUserVirtualRoles(Set<GroupRole> applicationLevelRoles) {
         if (!applicationLevelRoles) return new HashSet<VirtualSecurableResourceGroupRole>()
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
@@ -527,7 +490,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         GroupRole highestRole = applicationLevelRoles.sort { it.depth }.first()
         VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(highestRole.name)
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
-        List<CatalogueUser> users = catalogueUserService.list()
+        List<CatalogueUser> users = catalogueUserService.list([:])
 
         users.each { user ->
             virtualSecurableResourceGroupRoles.addAll(
@@ -542,7 +505,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         virtualSecurableResourceGroupRoles
     }
 
-    Set<VirtualSecurableResourceGroupRole> buildUserGroupVirtualRoles(Set<GroupRole> applicationLevelRoles) {
+    private Set<VirtualSecurableResourceGroupRole> buildUserGroupVirtualRoles(Set<GroupRole> applicationLevelRoles) {
         if (!applicationLevelRoles) return new HashSet<VirtualSecurableResourceGroupRole>()
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
@@ -550,7 +513,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         GroupRole highestRole = applicationLevelRoles.sort { it.depth }.first()
         VirtualGroupRole virtualGroupRole = groupRoleService.getFromCache(highestRole.name)
         Set<GroupRole> inheritedUserRoles = virtualGroupRole.allowedRoles
-        List<UserGroup> userGroups = userGroupService.list()
+        List<UserGroup> userGroups = userGroupService.list([:])
 
         userGroups.each { user ->
             virtualSecurableResourceGroupRoles.addAll(
@@ -592,6 +555,10 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
         Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as Set
         securableResourceGroupRoles.each { sgr ->
+
+            // Load in the actual securable resource
+            sgr.setSecurableResource(securableResourceGroupRoleService.findSecurableResource(sgr.securableResourceDomainType,
+                                                                                             sgr.securableResourceId), true)
             // Setup all the direct virtual roles
             Set<GroupRole> allowedRoles = groupRoleService.getFromCache(sgr.groupRole.name).allowedRoles
             virtualSecurableResourceGroupRoles.addAll(
@@ -605,7 +572,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             // If we're securing a container then we need to create virtual roles for all its contents
             ContainerService containerService = containerServices.find { it.handles(sgr.securableResourceDomainType) }
             if (containerService) {
-                virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResourceId,
+                virtualSecurableResourceGroupRoles.addAll(buildControlledAccessToContentsOfContainer(sgr.securableResource as Container,
                                                                                                      containerService,
                                                                                                      allowedRoles,
                                                                                                      sgr.userGroup,
@@ -642,7 +609,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                                                            .withAccessLevel(readerRole.groupRole))
                 // Make sure contents of container are all readable as well
                 virtualSecurableResourceGroupRoles.addAll(
-                    buildControlledAccessToContentsOfContainer(container.id,
+                    buildControlledAccessToContentsOfContainer(container,
                                                                service,
                                                                readerRole.allowedRoles,
                                                                null,
@@ -681,7 +648,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                                                            .withAccessLevel(readerRole.groupRole))
                 // Make sure contents of container are all readable as well
                 virtualSecurableResourceGroupRoles.addAll(
-                    buildControlledAccessToContentsOfContainer(container.id,
+                    buildControlledAccessToContentsOfContainer(container,
                                                                service,
                                                                readerRole.allowedRoles,
                                                                null,
@@ -731,21 +698,18 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             containerService.getAll(ids).each { c ->
                 virtualSecurableResourceGroupRoles.addAll(accessRoles.collect { igr ->
                     new VirtualSecurableResourceGroupRole()
-                        .forSecurableResource(c)
+                        .forSecurableResource(c as Container)
                         .withAccessLevel(igr)
                         .definedByGroup(userGroup)
                         .definedByAccessLevel(appliedGroupRole)
                 })
             }
-
-
         }
-
 
         virtualSecurableResourceGroupRoles
     }
 
-    private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToContentsOfContainer(UUID containerId,
+    private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToContentsOfContainer(Container container,
                                                                                               ContainerService containerService,
                                                                                               Set<GroupRole> accessRoles,
                                                                                               UserGroup userGroup,
@@ -754,14 +718,14 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
 
         // Load model access controls for all non-virtual containers
         if (!containerService.isContainerVirtual()) {
-            virtualSecurableResourceGroupRoles = buildControlledAccessToModelsInContainer(containerId,
+            virtualSecurableResourceGroupRoles = buildControlledAccessToModelsInContainer(container,
                                                                                           accessRoles,
                                                                                           userGroup,
                                                                                           appliedGroupRole)
         } else virtualSecurableResourceGroupRoles = [] as HashSet
 
         // Load sub containers
-        List<Container> subContainers = containerService.findAllContainersInside(containerId) as List<Container>
+        List<Container> subContainers = containerService.findAllContainersInside(container.id) as List<Container>
         subContainers.each { sc ->
             virtualSecurableResourceGroupRoles.addAll(
                 accessRoles.collect { igr ->
@@ -776,7 +740,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             if (!containerService.isContainerVirtual()) {
                 // Load models inside container if its non-virtual
                 virtualSecurableResourceGroupRoles.
-                    addAll(buildControlledAccessToModelsInContainer(sc.resourceId, accessRoles, userGroup, appliedGroupRole))
+                    addAll(buildControlledAccessToModelsInContainer(sc, accessRoles, userGroup, appliedGroupRole))
             }
         }
 
@@ -785,7 +749,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
     }
 
 
-    private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToModelsInContainer(UUID containerId,
+    private Set<VirtualSecurableResourceGroupRole> buildControlledAccessToModelsInContainer(Container container,
                                                                                             Set<GroupRole> accessRoles,
                                                                                             UserGroup userGroup,
                                                                                             GroupRole appliedGroupRole) {
@@ -794,7 +758,7 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         // Load models
         modelServices.each { modelService ->
 
-            List<Model> models = modelService.findAllByContainerId(containerId) as List<Model>
+            List<Model> models = modelService.findAllByContainerId(container.id) as List<Model>
             models.each { Model m ->
                 virtualSecurableResourceGroupRoles.addAll(
                     accessRoles.collect { igr ->
@@ -803,8 +767,6 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                             .withAccessLevel(igr)
                             .definedByGroup(userGroup)
                             .definedByAccessLevel(appliedGroupRole)
-                            .asFinalisedModel(m.finalised)
-                            .withModelCanBeFinalised(m.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME)
                     }
                 )
             }
@@ -813,9 +775,72 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         virtualSecurableResourceGroupRoles
     }
 
-    void updateAndStoreBuiltInSecurity(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager, Boolean addAccess,
-                                       Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles,
-                                       Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents) {
+    private void updateBuiltInSecurity(SecurableResource securableResource, Set<String> changedSecurityProperties) {
+        GrailsCache cache = getSecurityPolicyManagerCache()
+        Collection<Object> keys = cache.getAllKeys()
+        VirtualGroupRole readerRole = groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME)
+        // Build the readable by everyone virtual roles for the securable resource
+        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles = [] as HashSet
+        Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents = [] as HashSet
+        virtualSecurableResourceGroupRoles.add(new VirtualSecurableResourceGroupRole()
+                                                   .forSecurableResource(securableResource)
+                                                   .withAccessLevel(readerRole.groupRole))
+        if (Utils.parentClassIsAssignableFromChild(Container, securableResource.class)) {
+            ContainerService containerService = containerServices.find { it.handles(securableResource.domainType) }
+            // Make sure contents of container are all readable as well
+            virtualSecurableResourceGroupRoles.addAll(
+                buildControlledAccessToContentsOfContainer(securableResource as Container,
+                                                           containerService,
+                                                           readerRole.allowedRoles,
+                                                           null,
+                                                           readerRole.groupRole
+                )
+            )
+            // Make sure the direct tree of containers are readable as well
+            virtualSecurableResourceGroupRolesForParents.addAll(
+                containerService.findAllWhereDirectParentOfContainer(securableResource as Container)
+                    .collect { container ->
+                        new VirtualSecurableResourceGroupRole()
+                            .forSecurableResource(container as Container)
+                            .withAccessLevel(readerRole.groupRole)
+                    })
+        }
+        if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
+            // Make sure that the folder tree that contain this model are now readable by everyone so the tree can be built
+            // however the contents of these folder are not to be readable
+            virtualSecurableResourceGroupRolesForParents.addAll(
+                folderService.findAllWhereDirectParentOfModel(securableResource as Model)
+                    .collect { folder ->
+                        new VirtualSecurableResourceGroupRole()
+                            .forSecurableResource(folder)
+                            .withAccessLevel(readerRole.groupRole)
+                    })
+        }
+
+        if (changedSecurityProperties.contains('readableByEveryone')) {
+            log.debug('Changing readable by everyone to {}', securableResource.readableByEveryone)
+            keys.each { key ->
+                GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
+                updateAndStoreBuiltInSecurity(userSecurityPolicyManager, securableResource.readableByEveryone,
+                                              virtualSecurableResourceGroupRoles, virtualSecurableResourceGroupRolesForParents)
+            }
+
+        }
+        if (changedSecurityProperties.contains('readableByAuthenticatedUsers')) {
+            log.debug('Changing readable by authenticated users to {}', securableResource.readableByAuthenticatedUsers)
+            keys.each { key ->
+                GroupBasedUserSecurityPolicyManager userSecurityPolicyManager = cache.get(key, GroupBasedUserSecurityPolicyManager)
+                if (userSecurityPolicyManager.isAuthenticated()) {
+                    updateAndStoreBuiltInSecurity(userSecurityPolicyManager, securableResource.readableByAuthenticatedUsers,
+                                                  virtualSecurableResourceGroupRoles, virtualSecurableResourceGroupRolesForParents)
+                }
+            }
+        }
+    }
+
+    private void updateAndStoreBuiltInSecurity(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager, Boolean addAccess,
+                                               Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles,
+                                               Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRolesForParents) {
         if (addAccess) {
             // If readable then add to all policy managers
             userSecurityPolicyManager.includeVirtualRoles(virtualSecurableResourceGroupRoles)
@@ -834,8 +859,8 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
         storeUserSecurityPolicyManager(userSecurityPolicyManager)
     }
 
-    void removeRolesWithNoRequiredAccess(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager,
-                                         Set<VirtualSecurableResourceGroupRole> allRolesToRemove) {
+    private void removeRolesWithNoRequiredAccess(GroupBasedUserSecurityPolicyManager userSecurityPolicyManager,
+                                                 Set<VirtualSecurableResourceGroupRole> allRolesToRemove) {
         if (!allRolesToRemove) return
 
         List<UUID> requiredAccessIds = userSecurityPolicyManager.virtualSecurableResourceGroupRoles*.getDependsOnDomainIdAccess().findAll()
@@ -846,6 +871,21 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
             userSecurityPolicyManager.removeVirtualRoles(canBeRemoved)
             allRolesToRemove.removeAll(canBeRemoved)
             removeRolesWithNoRequiredAccess(userSecurityPolicyManager, allRolesToRemove)
+        }
+    }
+
+    @CompileDynamic
+    private void processSecurableResourceWithGroups(SecurableResource securableResource, CatalogueUser catalogueUser) {
+        if (securableResource.groups && securableResource.groups.size() > 0) {
+
+            securableResource.groups.each { group ->
+                UserGroup controlGroup = userGroupService.get(group.groupId)
+                GroupRole role = groupRoleService.get(group.groupRoleId)
+
+                if (controlGroup && role) {
+                    securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
+                }
+            }
         }
     }
 }

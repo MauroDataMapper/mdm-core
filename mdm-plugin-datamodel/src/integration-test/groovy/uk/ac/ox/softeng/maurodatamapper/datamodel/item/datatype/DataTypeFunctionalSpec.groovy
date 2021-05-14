@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.test.functional.OrderedResourceFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -30,11 +31,15 @@ import groovy.util.logging.Slf4j
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
+import java.time.OffsetDateTime
+
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.OK
+import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 /**
  * @see DataTypeController* Controller: dataType
@@ -62,6 +67,12 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     @Shared
     UUID dataClassId
 
+    @Shared
+    UUID finalisedDataModelId
+
+    @Shared
+    UUID finalisedDataClassId
+
     @OnceBefore
     @Transactional
     def checkAndSetupData() {
@@ -77,6 +88,15 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
                                          folder: folder, authority: testAuthority).save(flush: true).id
         dataClassId = new DataClass(label: 'Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
                                     dataModel: dataModel).save(flush: true).id
+
+        DataModel finalisedDataModel = new DataModel(label: 'Functional Test DataModel 3', createdBy: FUNCTIONAL_TEST,
+                                                     finalised: true, dateFinalised: OffsetDateTime.now(), modelVersion: Version.from('1'),
+                                                     folder: folder, authority: testAuthority).save(flush: true)
+        finalisedDataModelId = finalisedDataModel.id
+
+        finalisedDataClassId = new DataClass(label: 'Importable Functional Test DataClass', createdBy: FUNCTIONAL_TEST,
+                                             dataModel: finalisedDataModelId).save(flush: true).id
+
         sessionFactory.currentSession.flush()
     }
 
@@ -93,7 +113,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
             sleep(20)
             GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
             def items = responseBody().items
-            items.each { i ->
+            items.each {i ->
                 DELETE("dataModels/$otherDataModelId/dataTypes/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
                 sleep(20)
@@ -118,19 +138,19 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
 
     @Override
     Map getValidLabelJson(String label, int index = -1) {
-      if (index == -1) {
-        [
-            domainType: 'PrimitiveType',
-            label     : label
-        ]
-      } else {
-        [
-            domainType: 'PrimitiveType',
-            label     : label,
-            index     : index
-        ]
-      }
-    }    
+        if (index == -1) {
+            [
+                domainType: 'PrimitiveType',
+                label     : label
+            ]
+        } else {
+            [
+                domainType: 'PrimitiveType',
+                label     : label,
+                index     : index
+            ]
+        }
+    }
 
     @Override
     Map getInvalidJson() {
@@ -414,5 +434,40 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
 
         cleanup:
         cleanUpData(id)
+    }
+
+    void 'IMI01 : test creating reference datatype using imported dataclass'() {
+
+        when: 'creating using DC outside model'
+        POST('', [
+            label         : 'Functional Test DataType',
+            domainType    : 'ReferenceType',
+            referenceClass: finalisedDataClassId
+        ])
+
+        then:
+        verifyResponse UNPROCESSABLE_ENTITY, response
+        responseBody().errors.first().message == 'DataClass assigned to DataType must belong to the same DataModel or be imported'
+
+        when: 'importing dataclass id'
+        PUT("dataModels/$dataModelId/dataClasses/$finalisedDataModelId/$finalisedDataClassId", [:], MAP_ARG, true)
+
+        then:
+        verifyResponse OK, response
+
+        when: 'creating using the imported DT'
+        POST('', [
+            label         : 'Functional Test DataType',
+            domainType    : 'ReferenceType',
+            referenceClass: finalisedDataClassId
+        ])
+
+        then:
+        verifyResponse CREATED, response
+        responseBody().id
+        responseBody().referenceClass.id == finalisedDataClassId.toString()
+
+        cleanup:
+        cleanUpData(responseBody().id)
     }
 }

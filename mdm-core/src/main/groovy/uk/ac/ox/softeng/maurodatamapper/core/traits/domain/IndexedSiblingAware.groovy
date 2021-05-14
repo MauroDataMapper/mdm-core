@@ -87,7 +87,7 @@ trait IndexedSiblingAware {
     void sortAndReorderAllIndexes(ModelItem updated, Collection<ModelItem> siblings) {
         int updatedIndex = updated.idx
         int maxIndex = siblings.size() - 1
-        siblings.sort().eachWithIndex { ModelItem mi, int i ->
+        siblings.sort().eachWithIndex {ModelItem mi, int i ->
             //EV is the updated one, skipping any changes
             if (mi == updated) {
                 // Make sure updated value is not ordered larger than the actual size of the collection
@@ -97,8 +97,9 @@ trait IndexedSiblingAware {
                 return
             }
 
-            // Make sure all values have trackChanges turned on
-            if (!mi.isDirty()) mi.trackChanges()
+            // Make sure all values have trackChanges turned on if theres no id
+            // If id doesnt exist then it will be dirty
+            if (mi.id && !mi.isDirty()) mi.trackChanges()
 
             log.trace('Before >> MI {} has idx {} sorted to {}', mi.label, mi.idx, i)
             // Reorder the index which matches the one we just added

@@ -30,18 +30,18 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
-import uk.ac.ox.softeng.maurodatamapper.test.unit.core.CatalogueItemAwareServiceSpec
+import uk.ac.ox.softeng.maurodatamapper.test.unit.core.MultiFacetItemAwareServiceSpec
 
 import grails.testing.services.ServiceUnitTest
 
 import java.time.OffsetDateTime
 
-class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMetadata, SummaryMetadataService>
+class SummaryMetadataServiceSpec extends MultiFacetItemAwareServiceSpec<SummaryMetadata, SummaryMetadataService>
     implements ServiceUnitTest<SummaryMetadataService> {
 
     UUID id
@@ -76,7 +76,7 @@ class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMe
             get(_) >> dataModel
             getModelClass() >> dataModel
             handles('DataModel') >> true
-            removeSummaryMetadataFromCatalogueItem(dataModel.id, _) >> {UUID bmid, SummaryMetadata sm ->
+            removeSummaryMetadataFromMultiFacetAware(dataModel.id, _) >> {UUID bmid, SummaryMetadata sm ->
                 dataModel.summaryMetadata.remove(sm)
             }
         }
@@ -100,13 +100,13 @@ class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMe
         summaryMetadata[0].label == 'summary metadata 2'
         summaryMetadata[0].description == 'a description'
         !summaryMetadata[0].summaryMetadataReports
-        summaryMetadata[0].catalogueItemId == dataModel.id
+        summaryMetadata[0].multiFacetAwareItemId == dataModel.id
 
         and:
         summaryMetadata[1].label == 'summary metadata 3'
         !summaryMetadata[1].description
         summaryMetadata[1].summaryMetadataReports.size() == 1
-        summaryMetadata[1].catalogueItemId == dataModel.id
+        summaryMetadata[1].multiFacetAwareItemId == dataModel.id
 
     }
 
@@ -127,12 +127,12 @@ class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMe
     }
 
     @Override
-    CatalogueItem getCatalogueItem() {
+    MultiFacetAware getMultiFacetAwareItem() {
         dataModel
     }
 
     @Override
-    CatalogueItem getCatalogueItemFromStorage() {
+    MultiFacetAware getMultiFacetAwareItemFromStorage() {
         DataModel.get(dataModel.id)
     }
 
@@ -149,7 +149,7 @@ class SummaryMetadataServiceSpec extends CatalogueItemAwareServiceSpec<SummaryMe
     }
 
     @Override
-    int getExpectedCountOfAwareItemsInCatalogueItem() {
+    int getExpectedCountOfAwareItemsInMultiFacetAwareItem() {
         3
     }
 

@@ -114,8 +114,8 @@ class TermService extends ModelItemService<Term> {
                 .executeUpdate()
 
             log.trace('Removing facets for {} Terms', termIds.size())
-            deleteAllFacetsByCatalogueItemIds(termIds,
-                                              'delete from terminology.join_term_to_facet where term_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(termIds,
+                                                'delete from terminology.join_term_to_facet where term_id in :ids')
 
             log.trace('Removing {} Terms', termIds.size())
             sessionFactory.currentSession
@@ -223,7 +223,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(Term term, boolean fullTreeRender, boolean includeImported) {
+    boolean hasTreeTypeModelItems(Term term, boolean fullTreeRender) {
         termRelationshipService.countByTermIdIsParent(term.id)
     }
 
@@ -336,7 +336,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(Term term, boolean fullTreeRender = false, boolean includeImported = false) {
+    List<ModelItem> findAllTreeTypeModelItemsIn(Term term, boolean fullTreeRender = false) {
         log.debug('Building source as parent relationships')
         Set<Term> sourceAsParentTerms = TermRelationship.bySourceTermIdAndParental(term.id)
             .join('targetTerm')

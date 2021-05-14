@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -30,13 +31,10 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.validation.ValidationErrors
-import org.springframework.validation.Errors
-import org.springframework.validation.FieldError
 
 @Slf4j
 @Transactional
-class ReferenceTypeService extends ModelItemService<ReferenceType> {
+class ReferenceTypeService extends ModelItemService<ReferenceType> implements SummaryMetadataAwareService {
 
     SummaryMetadataService summaryMetadataService
 
@@ -84,8 +82,8 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
 
         if (referenceTypeIds) {
             log.trace('Removing facets for {} ReferenceTypes', referenceTypeIds.size())
-            deleteAllFacetsByCatalogueItemIds(referenceTypeIds,
-                                              'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(referenceTypeIds,
+                                                'delete from datamodel.join_datatype_to_facet where datatype_id in :ids')
 
             log.trace('Removing {} ReferenceTypes', referenceTypeIds.size())
             sessionFactory.currentSession
@@ -98,9 +96,9 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     }
 
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
@@ -192,26 +190,5 @@ class ReferenceTypeService extends ModelItemService<ReferenceType> {
     @Override
     List<ReferenceType> findAllByMetadataNamespace(String namespace, Map pagination) {
         ReferenceType.byMetadataNamespace(namespace).list(pagination)
-    }
-
-    ReferenceType validate(ReferenceType referenceType) {
-        referenceType.validate()
-        if (referenceType.hasErrors()) {
-            FieldError invalidOwnerError = referenceType.errors.getFieldErrors('referenceClass')?.find {it.code == 'invalid.datatype.dataclass.model'}
-            if (invalidOwnerError) {
-                if (modelImportService.hasCatalogueItemImportedCatalogueItem(referenceType.model, referenceType.referenceClass)) {
-                    Errors existingErrors = referenceType.errors
-                    Errors cleanedErrors = new ValidationErrors(referenceType)
-
-                    existingErrors.fieldErrors.each {fe ->
-                        if (fe.field != 'referenceClass' && fe.code != 'invalid.datatype.dataclass.model') {
-                            cleanedErrors.rejectValue(fe.field, fe.code, fe.arguments, fe.defaultMessage)
-                        }
-                    }
-                    referenceType.errors = cleanedErrors
-                }
-            }
-        }
-        referenceType
     }
 }

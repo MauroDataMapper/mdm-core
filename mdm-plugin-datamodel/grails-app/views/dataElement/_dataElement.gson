@@ -3,6 +3,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 inherits template: '/catalogueItem/catalogueItem', model: [catalogueItem: dataElement]
 model {
     DataElement dataElement
+    UUID owningDataModelId
+    UUID owningDataClassId
 }
 
 json {
@@ -10,4 +12,10 @@ json {
     dataType tmpl.'/dataType/dataType'(dataElement.dataType)
     if (dataElement.maxMultiplicity != null) maxMultiplicity dataElement.maxMultiplicity
     if (dataElement.minMultiplicity != null) minMultiplicity dataElement.minMultiplicity
+
+    if ((owningDataModelId &&
+         dataElement.model.id != owningDataModelId) ||
+        (owningDataClassId &&
+         dataElement.dataClass.id != owningDataClassId)
+    ) imported true
 }

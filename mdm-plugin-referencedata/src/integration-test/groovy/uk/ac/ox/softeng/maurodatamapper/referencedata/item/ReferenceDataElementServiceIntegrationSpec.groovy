@@ -209,7 +209,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         copy.referenceDataType.label == original.referenceDataType.label
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
     }
 
     void 'test copying DataElement with metadata and classifiers'() {
@@ -246,7 +246,7 @@ class ReferenceDataElementServiceIntegrationSpec extends BaseReferenceDataModelI
         copy.classifiers == original.classifiers
 
         and:
-        copy.semanticLinks.any { it.targetCatalogueItemId == original.id && it.linkType == SemanticLinkType.REFINES }
+        copy.semanticLinks.any {it.targetMultiFacetAwareItemId == original.id && it.linkType == SemanticLinkType.REFINES}
 
     }
 

@@ -1,10 +1,13 @@
-import grails.gorm.PagedResultList
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+
+import grails.gorm.PagedResultList
 
 model {
     Iterable<DataClass> dataClassList
+    UUID owningDataModelId
+    UUID owningDataClassId
 }
 json {
     count dataClassList instanceof PagedResultList ? ((PagedResultList) dataClassList).getTotalCount() : dataClassList?.size() ?: 0
-    items tmpl.dataClass(dataClassList ?: [])
+    items tmpl.dataClass(dataClassList ?: [], [owningDataModelId: owningDataModelId, owningDataClassId: owningDataClassId])
 }

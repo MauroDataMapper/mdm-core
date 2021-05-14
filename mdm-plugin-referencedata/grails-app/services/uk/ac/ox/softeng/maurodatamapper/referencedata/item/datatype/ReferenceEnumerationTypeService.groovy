@@ -21,7 +21,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadata
+import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMetadataService
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.enumeration.ReferenceEnumerationValueService
+import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -32,9 +34,10 @@ import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
-class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerationType> {
+class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerationType> implements ReferenceSummaryMetadataAwareService {
 
     ReferenceEnumerationValueService referenceEnumerationValueService
+    ReferenceSummaryMetadataService referenceSummaryMetadataService
 
     @Override
     ReferenceEnumerationType get(Serializable id) {
@@ -69,10 +72,6 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
         enumerationType.delete(flush: flush)
     }
 
-    void removeReferenceSummaryMetadataFromCatalogueItem(UUID catalogueItemId, ReferenceSummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'referenceSummaryMetadata')
-    }
-
     @Override
     ReferenceEnumerationType findByIdJoinClassifiers(UUID id) {
         ReferenceEnumerationType.findById(id, [fetch: [classifiers: 'join']])
@@ -88,7 +87,7 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     @Override
     List<ReferenceEnumerationType> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
         ReferenceEnumerationType.byClassifierId(ReferenceEnumerationType, classifier.id).list().findAll {
-            userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)
+            userSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it.model.id)
         }
     }
 
@@ -105,7 +104,7 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
     @Override
     List<ReferenceEnumerationType> findAllReadableTreeTypeCatalogueItemsBySearchTermAndDomain(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                                               String searchTerm, String domainType) {
-        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(DataModel)
+        List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(ReferenceDataModel)
         if (!readableIds) return []
 
         List<ReferenceEnumerationType> results = []
@@ -163,7 +162,8 @@ class ReferenceEnumerationTypeService extends ModelItemService<ReferenceEnumerat
 
     private ReferenceEnumerationType findOrCreateDataTypeForDataModel(ReferenceDataModel referenceDataModel, String label, String description, User createdBy) {
         String cleanLabel = label.trim()
-        ReferenceEnumerationType enumerationType = referenceDataModel.findDataTypeByLabelAndType(cleanLabel, ReferenceDataType.ENUMERATION_DOMAIN_TYPE) as ReferenceEnumerationType
+        ReferenceEnumerationType enumerationType = referenceDataModel.findReferenceDataTypeByLabelAndType(cleanLabel, ReferenceDataType
+            .ENUMERATION_DOMAIN_TYPE) as ReferenceEnumerationType
         if (!enumerationType) {
             enumerationType = createDataType(cleanLabel, description, createdBy)
             referenceDataModel.addToReferenceDataTypes(enumerationType)

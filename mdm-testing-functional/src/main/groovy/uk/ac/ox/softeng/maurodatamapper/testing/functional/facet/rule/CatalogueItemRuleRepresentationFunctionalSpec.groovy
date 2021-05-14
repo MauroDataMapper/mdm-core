@@ -65,7 +65,7 @@ abstract class CatalogueItemRuleRepresentationFunctionalSpec extends UserAccessF
 
     @Transactional
     String getRuleId() {
-        Rule.findByCatalogueItemIdAndName(getCatalogueItemId(), "Bootstrapped Functional Test Rule").id.toString()
+        Rule.findByMultiFacetAwareItemIdAndName(getCatalogueItemId(), "Bootstrapped Functional Test Rule").id.toString()
     }      
 
     @Override

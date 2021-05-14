@@ -17,29 +17,23 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
-import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.service.CatalogueItemAwareService
+
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
 import grails.util.Pair
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 
 import java.util.function.BiFunction
 import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
-class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
-
-    @Autowired(required = false)
-    List<CatalogueItemService> catalogueItemServices
+class SemanticLinkService implements MultiFacetItemAwareService<SemanticLink> {
 
     SemanticLink get(Serializable id) {
         SemanticLink.get(id)
@@ -63,8 +57,8 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
 
     void delete(SemanticLink semanticLink, boolean flush = false) {
         if (!semanticLink) return
-        CatalogueItemService service = findCatalogueItemService(semanticLink.catalogueItemDomainType)
-        service.removeSemanticLinkFromCatalogueItem(semanticLink.catalogueItemId, semanticLink)
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(semanticLink.multiFacetAwareItemDomainType)
+        service.removeSemanticLinkFromMultiFacetAware(semanticLink.multiFacetAwareItemId, semanticLink)
         semanticLink.delete(flush: flush)
     }
 
@@ -77,96 +71,98 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
     }
 
     @Override
-    void saveCatalogueItem(SemanticLink facet) {
+    void saveMultiFacetAwareItem(SemanticLink facet) {
         if (!facet) return
-        CatalogueItemService catalogueItemService = findCatalogueItemService(facet.catalogueItemDomainType)
-        catalogueItemService.save(facet.catalogueItem)
+        MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(facet.multiFacetAwareItemDomainType)
+        service.save(facet.multiFacetAwareItem)
     }
 
     @Override
     void addFacetToDomain(SemanticLink facet, String domainType, UUID domainId) {
         if (!facet) return
-        CatalogueItem domain = findCatalogueItemByDomainTypeAndId(domainType, domainId)
-        facet.catalogueItem = domain
+        MultiFacetAware domain = findMultiFacetAwareItemByDomainTypeAndId(domainType, domainId)
+        facet.multiFacetAwareItem = domain
         domain.addToSemanticLinks(facet)
     }
 
-    SemanticLink loadCatalogueItemsIntoSemanticLink(SemanticLink semanticLink) {
+    SemanticLink loadMultiFacetAwareItemsIntoSemanticLink(SemanticLink semanticLink) {
         if (!semanticLink) return null
-        if (!semanticLink.catalogueItem) {
-            semanticLink.catalogueItem = findCatalogueItemByDomainTypeAndId(semanticLink.catalogueItemDomainType, semanticLink.catalogueItemId)
+        if (!semanticLink.multiFacetAwareItem) {
+            semanticLink.multiFacetAwareItem =
+                findMultiFacetAwareItemByDomainTypeAndId(semanticLink.multiFacetAwareItemDomainType, semanticLink.multiFacetAwareItemId)
         }
-        if (!semanticLink.targetCatalogueItem) {
-            semanticLink.targetCatalogueItem = findCatalogueItemByDomainTypeAndId(semanticLink.targetCatalogueItemDomainType,
-                                                                                  semanticLink.targetCatalogueItemId)
+        if (!semanticLink.targetMultiFacetAwareItem) {
+            semanticLink.targetMultiFacetAwareItem = findMultiFacetAwareItemByDomainTypeAndId(semanticLink.targetMultiFacetAwareItemDomainType,
+                                                                                              semanticLink.targetMultiFacetAwareItemId)
         }
         semanticLink
     }
 
-    List<SemanticLink> loadCatalogueItemsIntoSemanticLinks(List<SemanticLink> semanticLinks) {
+    List<SemanticLink> loadMultiFacetAwareItemsIntoSemanticLinks(List<SemanticLink> semanticLinks) {
         if (!semanticLinks) return []
         Map<String, Set<UUID>> itemIdsMap = [:]
 
         log.debug('Collecting all catalogue items for {} semantic links', semanticLinks.size())
         semanticLinks.each {sl ->
 
-            itemIdsMap.compute(sl.catalogueItemDomainType, [
+            itemIdsMap.compute(sl.multiFacetAwareItemDomainType, [
                 apply: {String s, Set<UUID> uuids ->
-                    uuids = uuids ?: new HashSet<>()
-                    uuids.add(sl.catalogueItemId)
+                    uuids = uuids ?: new HashSet<>() as Set<UUID>
+                    uuids.add(sl.multiFacetAwareItemId)
                     uuids
                 }
             ] as BiFunction)
 
-            itemIdsMap.compute(sl.targetCatalogueItemDomainType, [
+            itemIdsMap.compute(sl.targetMultiFacetAwareItemDomainType, [
                 apply: {String s, Set<UUID> uuids ->
-                    uuids = uuids ?: new HashSet<>()
-                    uuids.add(sl.targetCatalogueItemId)
+                    uuids = uuids ?: new HashSet<>() as Set<UUID>
+                    uuids.add(sl.targetMultiFacetAwareItemId)
                     uuids
                 }
             ] as BiFunction)
         }
 
         log.debug('Loading required catalogue items from database')
-        Map<Pair<String, UUID>, CatalogueItem> itemMap = [:]
+        Map<Pair<String, UUID>, MultiFacetAware> itemMap = [:]
         itemIdsMap.each {domain, ids ->
-            CatalogueItemService service = catalogueItemServices.find {it.handles(domain)}
-            if (!service) throw new ApiBadRequestException('SLS02', 'Semantic link loading for catalogue item with no supporting service')
-            List<CatalogueItem> items = service.getAll(ids)
+            MultiFacetAwareService service = findServiceForMultiFacetAwareDomainType(domain)
+            List<MultiFacetAware> items = service.getAll(ids)
             itemMap.putAll(items.collectEntries {i -> [new Pair<String, UUID>(domain, i.id), i]})
         }
 
         log.debug('Loading {} retrieved catalogue items into semantic links', itemMap.size())
         semanticLinks.each {sl ->
-            sl.catalogueItem = itemMap.get(new Pair(sl.catalogueItemDomainType, sl.catalogueItemId))
-            sl.targetCatalogueItem = itemMap.get(new Pair(sl.targetCatalogueItemDomainType, sl.targetCatalogueItemId))
+            sl.multiFacetAwareItem = itemMap[new Pair(sl.multiFacetAwareItemDomainType, sl.multiFacetAwareItemId)]
+            sl.targetMultiFacetAwareItem = itemMap[new Pair(sl.targetMultiFacetAwareItemDomainType, sl.targetMultiFacetAwareItemId)]
         }
 
         semanticLinks
     }
 
-    void deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(CatalogueItem sourceCatalogueItem, CatalogueItem targetCatalogueItem,
-                                                                      SemanticLinkType linkType) {
-        SemanticLink sl = findBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(sourceCatalogueItem, targetCatalogueItem, linkType)
+    void deleteBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(MultiFacetAware sourceMultiFacetAwareItem,
+                                                                                  MultiFacetAware targetMultiFacetAwareItem,
+                                                                                  SemanticLinkType linkType) {
+        SemanticLink sl =
+            findBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(sourceMultiFacetAwareItem, targetMultiFacetAwareItem, linkType)
         if (sl) delete(sl)
     }
 
-    SemanticLink createSemanticLink(User createdBy, CatalogueItem source, CatalogueItem target, SemanticLinkType linkType) {
+    SemanticLink createSemanticLink(User createdBy, MultiFacetAware source, MultiFacetAware target, SemanticLinkType linkType) {
         new SemanticLink(createdBy: createdBy.emailAddress, linkType: linkType).with {
-            setCatalogueItem(source)
-            setTargetCatalogueItem(target)
+            setMultiFacetAwareItem(source)
+            setTargetMultiFacetAwareItem(target)
             it
         }
     }
 
     @Override
-    SemanticLink findByCatalogueItemIdAndId(UUID catalogueItemId, Serializable id) {
-        SemanticLink.byCatalogueItemIdAndId(catalogueItemId, id).get()
+    SemanticLink findByMultiFacetAwareItemIdAndId(UUID multiFacetAwareItemId, Serializable id) {
+        SemanticLink.byMultiFacetAwareItemIdAndId(multiFacetAwareItemId, id).get()
     }
 
     @Override
-    List<SemanticLink> findAllByCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
-        findAllBySourceOrTargetCatalogueItemId(catalogueItemId, paginate)
+    List<SemanticLink> findAllByMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map paginate = [:]) {
+        findAllBySourceOrTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
     }
 
     @Override
@@ -177,44 +173,47 @@ class SemanticLinkService implements CatalogueItemAwareService<SemanticLink> {
     @Override
     void performDeletion(List<UUID> batch) {
         long start = System.currentTimeMillis()
-        SemanticLink.byAnyCatalogueItemIdInList(batch).deleteAll()
+        SemanticLink.byAnyMultiFacetAwareItemIdInList(batch).deleteAll()
         log.trace('{} removed took {}', SemanticLink.simpleName, Utils.timeTaken(start))
     }
 
-    SemanticLink findBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(CatalogueItem sourceCatalogueItem, CatalogueItem targetCatalogueItem,
-                                                                            SemanticLinkType linkType) {
-        SemanticLink.bySourceCatalogueItemAndTargetCatalogueItemAndLinkType(sourceCatalogueItem, targetCatalogueItem, linkType).get()
+    SemanticLink findBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(MultiFacetAware sourceMultiFacetAwareItem,
+                                                                                        MultiFacetAware targetMultiFacetAwareItem,
+                                                                                        SemanticLinkType linkType) {
+        SemanticLink.
+            bySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(sourceMultiFacetAwareItem, targetMultiFacetAwareItem, linkType).get()
     }
 
-    List<SemanticLink> findAllBySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(List<UUID> sourceCatalogueItemIds,
-                                                                                                     List<UUID> targetCatalogueItemIds,
-                                                                                                     SemanticLinkType linkType) {
-        SemanticLink.bySourceCatalogueItemIdInListAndTargetCatalogueItemIdInListAndLinkType(sourceCatalogueItemIds,
-                                                                                            targetCatalogueItemIds, linkType).list()
+    List<SemanticLink> findAllBySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(
+        List<UUID> sourceMultiFacetAwareItemIds,
+        List<UUID> targetMultiFacetAwareItemIds,
+        SemanticLinkType linkType) {
+        SemanticLink.bySourceMultiFacetAwareItemIdInListAndTargetMultiFacetAwareItemIdInListAndLinkType(sourceMultiFacetAwareItemIds,
+                                                                                                        targetMultiFacetAwareItemIds, linkType).list()
     }
 
-    List<SemanticLink> findAllBySourceCatalogueItemId(UUID catalogueItemId, Map paginate = [:]) {
-        SemanticLink.withFilter(SemanticLink.byCatalogueItemId(catalogueItemId), paginate).list(paginate)
+    List<SemanticLink> findAllBySourceMultiFacetAwareItemId(UUID multiFacetAwareItemId, Map paginate = [:]) {
+        SemanticLink.withFilter(SemanticLink.byMultiFacetAwareItemId(multiFacetAwareItemId), paginate).list(paginate)
     }
 
-    List<SemanticLink> findAllByTargetCatalogueItemId(Serializable catalogueItemId, Map paginate = [:]) {
-        SemanticLink.withFilter(SemanticLink.byTargetCatalogueItemId(catalogueItemId), paginate).list(paginate)
+    List<SemanticLink> findAllByTargetMultiFacetAwareItemId(Serializable multiFacetAwareItemId, Map paginate = [:]) {
+        SemanticLink.withFilter(SemanticLink.byTargetMultiFacetAwareItemId(multiFacetAwareItemId), paginate).list(paginate)
     }
 
-    List<SemanticLink> findAllBySourceOrTargetCatalogueItemId(Serializable catalogueItemId, Map paginate = [:]) {
-        SemanticLink.withFilter(SemanticLink.byAnyCatalogueItemId(catalogueItemId), paginate).list(paginate)
+    List<SemanticLink> findAllBySourceOrTargetMultiFacetAwareItemId(Serializable multiFacetAwareItemId, Map paginate = [:]) {
+        SemanticLink.withFilter(SemanticLink.byAnyMultiFacetAwareItemId(multiFacetAwareItemId), paginate).list(paginate)
     }
 
     @Deprecated(forRemoval = true)
-    List<SemanticLink> findAllByCatalogueItemIdAndType(UUID catalogueItemId, String type, Map paginate = [:]) {
+    List<SemanticLink> findAllByMultiFacetAwareItemIdAndType(UUID multiFacetAwareItemId, String type, Map paginate = [:]) {
         switch (type) {
             case 'source':
-                return findAllBySourceCatalogueItemId(catalogueItemId, paginate)
+                return findAllBySourceMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
                 break
             case 'target':
-                return findAllByTargetCatalogueItemId(catalogueItemId, paginate)
+                return findAllByTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
         }
-        findAllBySourceOrTargetCatalogueItemId(catalogueItemId, paginate)
+        findAllBySourceOrTargetMultiFacetAwareItemId(multiFacetAwareItemId, paginate)
     }
 
 }

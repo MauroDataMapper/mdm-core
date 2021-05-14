@@ -57,7 +57,7 @@ Controller: dataModel
  |   POST   | /api/folders/${folderId}/dataModels                                                                                                  | Action: save
  |   PUT    | /api/folders/${folderId}/dataModels/${dataModelId}                                                                                   | Action: changeFolder
  |   PUT    | /api/dataModels/${dataModelId}/folder/${folderId}                                                                                    | Action: changeFolder
- |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherModelId}                                                                          | Action: suggestLinks
+ |   GET    | /api/dataModels/${dataModelId}/suggestLinks/${otherDataModelId}                                                                      | Action: suggestLinks
  |   GET    | /api/dataModels/${dataModelId}/diff/${otherModelId}                                                                                  | Action: diff
  |   GET    | /api/dataModels/${dataModelId}/export/${exporterNamespace}/${exporterName}/${exporterVersion}                                        | Action: exportModel
  |   GET    | /api/dataModels                                                                                                                      | Action: index

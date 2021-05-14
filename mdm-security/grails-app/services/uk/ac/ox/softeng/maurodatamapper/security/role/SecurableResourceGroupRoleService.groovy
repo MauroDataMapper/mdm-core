@@ -18,8 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
@@ -70,6 +68,12 @@ class SecurableResourceGroupRoleService {
             createdBy: createdBy.emailAddress
         )
         userGroup.addToSecurableResourceGroupRoles(securableResourceGroupRole)
+        updateAndSaveSecurableResourceGroupRole(securableResourceGroupRole, groupRole)
+    }
+
+    SecurableResourceGroupRole updateAndSaveSecurableResourceGroupRole(SecurableResourceGroupRole securableResourceGroupRole,
+                                                                       GroupRole groupRole) {
+
         groupRole.addToSecuredResourceGroupRoles(securableResourceGroupRole)
 
         if (!securableResourceGroupRole.validate()) {
@@ -78,17 +82,16 @@ class SecurableResourceGroupRoleService {
         securableResourceGroupRole.save(flush: true, validate: false)
     }
 
-    SecurableResourceGroupRole updatedFinalisedState(SecurableResourceGroupRole securableResourceGroupRole, Boolean finalised) {
-        securableResourceGroupRole.finalisedModel = finalised
-        securableResourceGroupRole.save(flush: true)
-    }
-
     SecurableResourceGroupRole findBySecurableResourceAndId(String securableResourceDomainType, UUID securableResourceId, UUID id) {
         SecurableResourceGroupRole.bySecurableResourceAndId(securableResourceDomainType, securableResourceId, id).get()
     }
 
     SecurableResourceGroupRole findByUserGroupIdAndId(UUID userGroupId, UUID id) {
         SecurableResourceGroupRole.byUserGroupIdAndId(userGroupId, id).get()
+    }
+
+    SecurableResourceGroupRole findBySecurableResourceAndUserGroup(String securableResourceDomainType, UUID securableResourceId, UUID userGroupId) {
+        SecurableResourceGroupRole.bySecurableResourceAndUserGroupId(securableResourceDomainType, securableResourceId, userGroupId).get()
     }
 
     SecurableResourceGroupRole findBySecurableResourceAndGroupRoleIdAndUserGroupId(String securableResourceDomainType, UUID securableResourceId,
@@ -128,18 +131,11 @@ class SecurableResourceGroupRoleService {
         service.get(id)
     }
 
-    void updateModelFinalisationCapabilities() {
-        modelServices.each { service ->
-            List<SecurableResourceGroupRole> modelRoles = findAllBySecurableResourceDomainType(service.getModelClass().simpleName)
-            if (modelRoles) {
-
-                // SQL migration has taken care of finalised models, we need to take care of branches
-                modelRoles.each { role ->
-                    Model model = service.get(role.securableResourceId) as Model
-                    role.canFinaliseModel = model.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-                    role.save(validate: false)
-                }
-            }
-        }
+    def <R extends SecurableResource> R findSecurableResource(String domainType, UUID id) {
+        SecurableResourceService service = securableResourceServices.find { it.handles(domainType) }
+        if (!service) throw new ApiBadRequestException('SRGRS01',
+                                                       "SecurableResourceGroupRole retrieval for securable resource [${domainType}] with no " +
+                                                       "supporting service")
+        service.get(id)
     }
 }

@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.terminology.CodeSet
 import uk.ac.ox.softeng.maurodatamapper.terminology.bootstrap.BootstrapModels
-import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.testing.functional.ModelUserAccessPermissionChangingAndVersioningFunctionalSpec
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -67,7 +67,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
-class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunctionalSpec {
+class CodeSetFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
     @Transactional
     String getTestFolderId() {
@@ -171,15 +171,6 @@ class CodeSetFunctionalSpec extends ModelUserAccessAndPermissionChangingFunction
     @Override
     void verifyN03ValidContentResponse(HttpResponse<Map> response) {
         verifyNotFound response, getTestFolderId()
-    }
-
-    @Override
-    List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
-    }
-
-    List<String> getReaderAvailableActions() {
-        ['show', 'comment']
     }
 
     @Override

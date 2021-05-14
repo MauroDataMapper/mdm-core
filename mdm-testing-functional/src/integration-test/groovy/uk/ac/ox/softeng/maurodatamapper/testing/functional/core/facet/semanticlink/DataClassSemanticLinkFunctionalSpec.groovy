@@ -87,7 +87,7 @@ class DataClassSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
       "linkType": "Does Not Refine",
       "domainType": "SemanticLink",
       "unconfirmed": false,
-      "sourceCatalogueItem": {
+      "sourceMultiFacetAwareItem": {
         "id": "${json-unit.matches:id}",
         "domainType": "DataClass",
         "label": "content",
@@ -101,7 +101,7 @@ class DataClassSemanticLinkFunctionalSpec extends CatalogueItemSemanticLinkFunct
           }
         ]
       },
-      "targetCatalogueItem": {
+      "targetMultiFacetAwareItem": {
         "id": "${json-unit.matches:id}",
         "domainType": "DataClass",
         "label": "parent",

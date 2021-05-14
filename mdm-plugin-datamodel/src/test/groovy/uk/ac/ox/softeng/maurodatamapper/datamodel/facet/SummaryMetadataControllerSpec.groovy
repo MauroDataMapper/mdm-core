@@ -56,23 +56,23 @@ class SummaryMetadataControllerSpec extends ResourceControllerSpec<SummaryMetada
         domain.createdBy = StandardEmailAddress.UNIT_TEST
         domain.label = 'summary metadata 3'
         domain.summaryMetadataType = SummaryMetadataType.STRING
-        domain.catalogueItem = dataModel
+        domain.multiFacetAwareItem = dataModel
         domain.addToSummaryMetadataReports(createdBy: StandardEmailAddress.UNIT_TEST, reportDate: OffsetDateTime.now(), reportValue: 'some value')
         dataModel.addToSummaryMetadata(domain)
 
         checkAndSave(dataModel)
 
         controller.summaryMetadataService = Mock(SummaryMetadataService) {
-            findAllByCatalogueItemId(dataModel.id, _) >> dataModel.summaryMetadata.toList()
-            findCatalogueItemByDomainTypeAndId(DataModel.simpleName, _) >> {String domain, UUID bid -> dataModel.id == bid ? dataModel : null}
-            findByCatalogueItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
+            findAllByMultiFacetAwareItemId(dataModel.id, _) >> dataModel.summaryMetadata.toList()
+            findMultiFacetAwareItemByDomainTypeAndId(DataModel.simpleName, _) >> {String domain, UUID bid -> dataModel.id == bid ? dataModel : null}
+            findByMultiFacetAwareItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
                 if (iid != dataModel.id) return null
                 mid == domain.id ? domain : null
             }
             addFacetToDomain(_, _, _) >> {SummaryMetadata md, String domain, UUID bid ->
                 if (dataModel.id == bid) {
                     dataModel.addToSummaryMetadata(md)
-                    md.catalogueItem = dataModel
+                    md.multiFacetAwareItem = dataModel
                 }
             }
         }
@@ -201,7 +201,7 @@ class SummaryMetadataControllerSpec extends ResourceControllerSpec<SummaryMetada
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = DataModel.simpleName
-        params.catalogueItemId = dataModel.id
+        params.multiFacetAwareItemDomainType = DataModel.simpleName
+        params.multiFacetAwareItemId = dataModel.id
     }
 }

@@ -44,7 +44,8 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
     @Override
     List<String> getReadAccessMethods() {
-        ['exportModel', 'newForkModel', 'latestModelVersion', 'latestFinalisedModel', 'currentMainBranch', 'availableBranches']
+        ['exportModel', 'newForkModel', 'latestModelVersion', 'latestFinalisedModel', 'currentMainBranch', 'availableBranches',
+         'modelVersionTree']
     }
 
     @Override
@@ -111,18 +112,6 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
 
         if (actionName == 'exportModels') {
             return checkExportModelAction()
-        }
-
-        if (actionName == 'finalise') {
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId())) {
-                return notFound(getSecuredClass(), getId())
-            }
-            return currentUserSecurityPolicyManager.userCanWriteSecuredResourceId(getSecuredClass(), getId(), actionName) ?:
-                   forbiddenDueToPermissions(currentUserSecurityPolicyManager.userAvailableActions(getSecuredClass(), getId()))
-        }
-
-        if (actionName == 'modelVersionTree') {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), getId()) ?: notFound(getSecuredClass(), getId())
         }
 
         checkTieredAccessActionAuthorisationOnSecuredResource(getSecuredClass(), getId(), true)

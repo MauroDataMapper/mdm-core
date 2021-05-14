@@ -122,6 +122,8 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
             return
         }
 
+        if (!validateResourceDeletion(instance, 'delete')) return
+
         deleteResource instance
 
         deleteResponse instance
@@ -218,6 +220,11 @@ abstract class EditLoggingController<T> extends RestfulController<T> implements 
             respond instance.errors, view: view // STATUS CODE 422
             return false
         }
+        true
+    }
+
+    @Transactional
+    protected boolean validateResourceDeletion(T instance, String view) {
         true
     }
 

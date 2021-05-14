@@ -79,7 +79,7 @@ class DataFlowService extends ModelItemService<DataFlow> {
         dataClassComponentService.deleteAll(dataClassComponents)
         dataFlow.dataClassComponents = []
 
-        semanticLinkService.deleteBySourceCatalogueItemAndTargetCatalogueItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
+        semanticLinkService.deleteBySourceMultiFacetAwareItemAndTargetMultiFacetAwareItemAndLinkType(source, target, SemanticLinkType.IS_FROM)
         dataFlow.breadcrumbTree.removeFromParent()
         dataFlow.target = null
         dataFlow.source = null
@@ -103,8 +103,8 @@ class DataFlowService extends ModelItemService<DataFlow> {
             dataClassComponentService.deleteAllByModelId(modelId)
 
             log.trace('Removing facets for {} DataFlows', dataFlowIds.size())
-            deleteAllFacetsByCatalogueItemIds(dataFlowIds,
-                                              'delete from dataflow.join_dataflow_to_facet where dataflow_id in :ids')
+            deleteAllFacetsByMultiFacetAwareIds(dataFlowIds,
+                                                'delete from dataflow.join_dataflow_to_facet where dataflow_id in :ids')
 
             log.trace('Removing {} DataFlows', dataFlowIds.size())
             sessionFactory.currentSession

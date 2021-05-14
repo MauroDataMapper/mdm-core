@@ -72,7 +72,7 @@ class DataTypeValueConverter implements ValueConverter {
                         dataType = new ModelDataType()
                         break
                     default:
-                        String defaultMessage = 'Cannot bind DataType with unknown domainType [{}]'
+                        String defaultMessage = 'Cannot bind DataType with unknown domainType [{0}]'
                         Object[] arguments = [domainType]
                         String[] codes = getMessageCodes('unknownDomainType', DataType)
                         bindingResult.addError(new ObjectError(bindingResult.getObjectName(), codes, arguments, defaultMessage))

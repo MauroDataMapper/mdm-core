@@ -20,6 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -31,7 +33,9 @@ import org.grails.datastore.mapping.model.PersistentEntity
 
 @Slf4j
 @Transactional
-class ModelDataTypeService extends ModelItemService<ModelDataType> {
+class ModelDataTypeService extends ModelItemService<ModelDataType> implements SummaryMetadataAwareService {
+
+    SummaryMetadataService summaryMetadataService
 
     @Override
     ModelDataType get(Serializable id) {
@@ -93,10 +97,6 @@ class ModelDataTypeService extends ModelItemService<ModelDataType> {
     @Override
     Boolean shouldPerformSearchForTreeTypeCatalogueItems(String domainType) {
         domainType == ModelDataType.simpleName
-    }
-
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
     }
 
     @Override

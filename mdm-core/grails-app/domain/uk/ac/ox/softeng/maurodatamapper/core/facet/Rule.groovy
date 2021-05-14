@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
-import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.CatalogueItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
@@ -30,7 +30,7 @@ import grails.gorm.DetachedCriteria
 import grails.rest.Resource
 
 @Resource(readOnly = false, formats = ['json', 'xml'])
-class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
+class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
 
     UUID id
 
@@ -39,13 +39,13 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
 
     static hasMany = [
         ruleRepresentations: RuleRepresentation
-    ]    
+    ]
 
     static constraints = {
         CallableConstraints.call(CreatorAwareConstraints, delegate)
-        catalogueItemId nullable: true, validator: {val, obj ->
+        multiFacetAwareItemId nullable: true, validator: {val, obj ->
             if (val) return true
-            if (!val && obj.catalogueItem && !obj.catalogueItem.ident()) return true
+            if (!val && obj.multiFacetAwareItem && !obj.multiFacetAwareItem.ident()) return true
             ['default.null.message']
         }
         name blank: false, nullable: false
@@ -55,7 +55,7 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
     static mapping = {
         name type: 'text'
         description type: 'text'
-        catalogueItemId index: 'rule_catalogue_item_idx'
+        multiFacetAwareItemId index: 'rule_catalogue_item_idx'
         ruleRepresentations cascade: 'all-delete-orphan'
     }
 
@@ -64,7 +64,7 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
         description index: 'yes'
     }
 
-    static transients = ['catalogueItem']
+    static transients = ['multiFacetAwareItem']
 
     Rule() {
     }
@@ -103,16 +103,16 @@ class Rule implements CatalogueItemAware, CreatorAware, Diffable<Rule> {
         new DetachedCriteria<Rule>(Rule)
     }
 
-    static DetachedCriteria<Rule> byCatalogueItemId(Serializable catalogueItemId) {
-        new DetachedCriteria<Rule>(Rule).eq('catalogueItemId', Utils.toUuid(catalogueItemId))
+    static DetachedCriteria<Rule> byMultiFacetAwareItemId(Serializable multiFacetAwareItemId) {
+        new DetachedCriteria<Rule>(Rule).eq('multiFacetAwareItemId', Utils.toUuid(multiFacetAwareItemId))
     }
 
-    static DetachedCriteria<Rule> byCatalogueItemIdInList(List<UUID> catalogueItemIds) {
-        new DetachedCriteria<Rule>(Rule).inList('catalogueItemId', catalogueItemIds)
+    static DetachedCriteria<Rule> byMultiFacetAwareItemIdInList(List<UUID> multiFacetAwareItemIds) {
+        new DetachedCriteria<Rule>(Rule).inList('multiFacetAwareItemId', multiFacetAwareItemIds)
     }
 
-    static DetachedCriteria<Rule> byCatalogueItemIdAndId(Serializable catalogueItemId, Serializable resourceId) {
-        byCatalogueItemId(catalogueItemId).idEq(Utils.toUuid(resourceId))
+    static DetachedCriteria<Rule> byMultiFacetAwareItemIdAndId(Serializable multiFacetAwareItemId, Serializable resourceId) {
+        byMultiFacetAwareItemId(multiFacetAwareItemId).idEq(Utils.toUuid(resourceId))
     }
 
     static DetachedCriteria<Rule> withFilter(DetachedCriteria<Rule> criteria, Map filters) {

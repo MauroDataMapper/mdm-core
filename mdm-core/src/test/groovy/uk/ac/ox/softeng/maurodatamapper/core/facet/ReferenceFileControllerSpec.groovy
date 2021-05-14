@@ -65,9 +65,10 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
         checkAndSave(basicModel)
 
         controller.referenceFileService = Stub(ReferenceFileService) {
-            findAllByCatalogueItemId(basicModel.id, _) >> basicModel.referenceFiles.toList()
-            findCatalogueItemByDomainTypeAndId(BasicModel.simpleName, _) >> {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
-            findByCatalogueItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
+            findAllByMultiFacetAwareItemId(basicModel.id, _) >> basicModel.referenceFiles.toList()
+            findMultiFacetAwareItemByDomainTypeAndId(BasicModel.simpleName, _) >>
+            {String domain, UUID bid -> basicModel.id == bid ? basicModel : null}
+            findByMultiFacetAwareItemIdAndId(_, _) >> {UUID iid, Serializable mid ->
                 if (iid != basicModel.id) return null
                 mid == domain.id ? domain : null
             }
@@ -215,8 +216,8 @@ class ReferenceFileControllerSpec extends ResourceControllerSpec<ReferenceFile> 
     @Override
     void givenParameters() {
         super.givenParameters()
-        params.catalogueItemDomainType = BasicModel.simpleName
-        params.catalogueItemId = basicModel.id
+        params.multiFacetAwareItemDomainType = BasicModel.simpleName
+        params.multiFacetAwareItemId = basicModel.id
     }
 
     @Override

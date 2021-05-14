@@ -24,8 +24,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
-import uk.ac.ox.softeng.maurodatamapper.core.facet.ModelImport
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -48,6 +46,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.Enum
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.DefaultDataTypeProvider
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelJsonImporterService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.similarity.DataElementSimilarityResult
+import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -65,7 +64,7 @@ import org.springframework.validation.Errors
 @Slf4j
 @Transactional
 @SuppressWarnings('unused')
-class DataModelService extends ModelService<DataModel> {
+class DataModelService extends ModelService<DataModel> implements SummaryMetadataAwareService {
 
     DataTypeService dataTypeService
     DataClassService dataClassService
@@ -103,30 +102,10 @@ class DataModelService extends ModelService<DataModel> {
 
     /**
      * DataModel allows the import of DataType and DataClass
-     */
-    @Override
-    List<Class> importsDomains() {
-        [DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]
-    }
-
-    /**
-     * Does the importedModelItem belong to a DataModel which is finalised, or does it belong to the same
-     * collection as the importing DataModel?
      *
-     * @param importingDataModel The DataModel which is importing the importedModelItem
-     * @param importedModelItem The ModelItem which is being imported into importingDataModel
-     *
-     * @return boolean Is this import allowed by domain specific rules?
+     @Override
+      List<Class>   domainImportableModelItemClasses() {[DataType, DataClass, PrimitiveType, EnumerationType, ReferenceType]}
      */
-    @Override
-    boolean isImportableByCatalogueItem(CatalogueItem importingDataModel, CatalogueItem importedModelItem) {
-        DataModel importedFromDataModel = importedModelItem.getModel()
-
-        importedFromDataModel.finalised
-
-        //TODO add OR importedFromModel is in the same collection as importingDataModel
-    }
-
     Long count() {
         DataModel.count()
     }
@@ -203,17 +182,25 @@ class DataModelService extends ModelService<DataModel> {
         super.updateFacetsAfterInsertingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
             catalogueItem.summaryMetadata.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+                if (!it.isDirty('multiFacetAwareItemId')) it.trackChanges()
+                it.multiFacetAwareItemId = catalogueItem.getId()
             }
             SummaryMetadata.saveAll(catalogueItem.summaryMetadata)
         }
-        if (catalogueItem.modelImports) {
-            catalogueItem.modelImports.each {
-                if (!it.isDirty('catalogueItemId')) it.trackChanges()
-                it.catalogueItemId = catalogueItem.getId()
+        catalogueItem
+    }
+
+    @Override
+    DataModel checkFacetsAfterImportingCatalogueItem(DataModel catalogueItem) {
+        super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
+        if (catalogueItem.summaryMetadata) {
+            catalogueItem.summaryMetadata.each { sm ->
+                sm.multiFacetAwareItemId = catalogueItem.id
+                sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
+                sm.summaryMetadataReports.each { smr ->
+                    smr.createdBy = catalogueItem.createdBy
+                }
             }
-            ModelImport.saveAll(catalogueItem.modelImports)
         }
         catalogueItem
     }
@@ -372,11 +359,11 @@ class DataModelService extends ModelService<DataModel> {
         dataTypeService.deleteAllByModelId(dataModel.id)
 
         log.trace('Removing facets')
-        deleteAllFacetsByCatalogueItemId(dataModel.id, 'delete from datamodel.join_datamodel_to_facet where datamodel_id=:id')
+        deleteAllFacetsByMultiFacetAwareId(dataModel.id, 'delete from datamodel.join_datamodel_to_facet where datamodel_id=:id')
 
         log.trace('Content removed')
         sessionFactory.currentSession
-            .createSQLQuery('delete from datamodel.data_model where id = :id')
+            .createSQLQuery('DELETE FROM datamodel.data_model WHERE id = :id')
             .setParameter('id', dataModel.id)
             .executeUpdate()
 
@@ -392,19 +379,15 @@ class DataModelService extends ModelService<DataModel> {
         GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
     }
 
-    void removeSummaryMetadataFromCatalogueItem(UUID catalogueItemId, SummaryMetadata summaryMetadata) {
-        removeFacetFromDomain(catalogueItemId, summaryMetadata.id, 'summaryMetadata')
-    }
-
     @Override
     List<DataModel> findAllReadableModels(List<UUID> constrainedIds, boolean includeDeleted) {
         DataModel.withReadable(DataModel.by(), constrainedIds, includeDeleted).list()
     }
 
     @Override
-    void deleteAllFacetDataByCatalogueItemIds(List<UUID> catalogueItemIds) {
-        super.deleteAllFacetDataByCatalogueItemIds(catalogueItemIds)
-        summaryMetadataService.deleteAllByCatalogueItemIds(catalogueItemIds)
+    void deleteAllFacetDataByMultiFacetAwareIds(List<UUID> catalogueItemIds) {
+        super.deleteAllFacetDataByMultiFacetAwareIds(catalogueItemIds)
+        summaryMetadataService.deleteAllByMultiFacetAwareItemIds(catalogueItemIds)
     }
 
     @Override
@@ -439,7 +422,7 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    List<UUID> findAllModelIds() {
+    List<UUID> getAllModelIds() {
         DataModel.by().id().list() as List<UUID>
     }
 
@@ -514,7 +497,7 @@ class DataModelService extends ModelService<DataModel> {
         if (dataModel.dataClasses) {
             dataModel.fullSortOfChildren(dataModel.childDataClasses)
             Collection<DataClass> dataClasses = dataModel.childDataClasses
-            dataClasses.each {dc ->
+            dataClasses.each { dc ->
                 dataClassService.checkImportedDataClassAssociations(importingUser, dataModel, dc, !bindingMap.isEmpty())
             }
         }
@@ -573,22 +556,22 @@ class DataModelService extends ModelService<DataModel> {
     @Override
     DataModel copyModelAsNewForkModel(DataModel original, User copier, boolean copyPermissions, String label, boolean throwErrors,
                                       UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyModel(original, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors, userSecurityPolicyManager,
-                  false)
+        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
+        copyModel(original, folder, copier, copyPermissions, label, Version.from('1'), original.branchName, throwErrors,
+                  userSecurityPolicyManager, false)
     }
 
     @Override
-    DataModel copyModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
-                        boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyModel(original, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors, userSecurityPolicyManager, true)
+    DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
+                        String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager) {
+        copyModel(original, folderToCopyInto, copier, copyPermissions, label, copyDocVersion, branchName, throwErrors,
+                  userSecurityPolicyManager, true)
     }
 
-    DataModel copyModel(DataModel original, User copier, boolean copyPermissions, String label, Version copyDocVersion, String branchName,
-                        boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
-
-        Folder folder = proxyHandler.unwrapIfProxy(original.folder) as Folder
+    DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
+                        String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
-                                       deleted: false, documentationVersion: copyDocVersion, folder: folder, authority: original.authority,
+                                       deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto, authority: original.authority,
                                        branchName: branchName
         )
 
@@ -597,7 +580,7 @@ class DataModelService extends ModelService<DataModel> {
 
         if (copyPermissions) {
             if (throwErrors) {
-                throw new ApiNotYetImplementedException('DMSXX', 'DataModel permission copying')
+                throw new ApiNotYetImplementedException('MSXX', 'Model permission copying')
             }
             log.warn('Permission copying is not yet implemented')
 
@@ -647,16 +630,16 @@ class DataModelService extends ModelService<DataModel> {
                                            boolean copySummaryMetadata) {
         copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager) as DataModel
         if (copySummaryMetadata) {
-            summaryMetadataService.findAllByCatalogueItemId(original.id).each {
+            summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
             }
         }
 
-        modelImportService.findAllByCatalogueItemId(original.id).each {
-            copy.addToModelImports(it.importedCatalogueItemDomainType,
-                                   it.importedCatalogueItemId,
-                                   copier)
-        }
+        //        modelImportService.findAllByCatalogueItemId(original.id).each {
+        //            copy.addToModelImports(it.importedCatalogueItemDomainType,
+        //                                   it.importedCatalogueItemId,
+        //                                   copier)
+        //        }
         copy
     }
 
@@ -680,13 +663,13 @@ class DataModelService extends ModelService<DataModel> {
     }
 
     @Override
-    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender, boolean includeImported = false) {
-        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && fullTreeRender) || (dataModel.modelImports && includeImported)
+    boolean hasTreeTypeModelItems(DataModel dataModel, boolean fullTreeRender) {
+        dataClassService.countByDataModelId(dataModel.id) || (dataModel.dataTypes && fullTreeRender)
     }
 
     @Override
-    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender = false, boolean includeImported = false) {
-        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id, [:], includeImported) +
+    List<ModelItem> findAllTreeTypeModelItemsIn(DataModel catalogueItem, boolean fullTreeRender = false) {
+        (dataClassService.findAllWhereRootDataClassOfDataModelId(catalogueItem.id) +
          (fullTreeRender ? DataType.byDataModelId(catalogueItem.id).list() : []) as List<ModelItem>)
     }
 
@@ -774,7 +757,7 @@ class DataModelService extends ModelService<DataModel> {
         DataModel.byDeleted().list(pagination) as List<DataModel>
     }
 
-    List<DataModel> findAllSupersededModels(List<UUID> ids, Map pagination) {
+    List<DataModel> findAllModelsByIdInList(List<UUID> ids, Map pagination) {
         if (!ids) return []
         DataModel.byIdInList(ids).list(pagination) as List<DataModel>
     }
