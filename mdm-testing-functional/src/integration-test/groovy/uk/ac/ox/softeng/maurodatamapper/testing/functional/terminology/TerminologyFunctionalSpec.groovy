@@ -68,7 +68,6 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
-
     @Transactional
     String getTestFolderId() {
         Folder.findByLabel('Functional Test Folder').id.toString()
@@ -344,7 +343,6 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 "canImportMultipleDomains": false
             }
         ]'''
-
     }
 
     void 'L30 : test changing folder from Terminology context (as not logged in)'() {
@@ -514,7 +512,6 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         cleanup:
         removeValidIdObject(id)
     }
-
 
     void 'L32 : test diffing 2 Terminologys (as not logged in)'() {
 
@@ -910,7 +907,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
   "label": "Complex Test Terminology",
-  "count": 110,
+  "count": 111,
   "diffs": [
     {
       "label": {
@@ -2343,6 +2340,20 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
             "value": {
               "id": "${json-unit.matches:id}",
               "label": "CTT70: Complex Test Term 70",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Complex Test Terminology",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            }
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "Complex Test Term 101",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",
