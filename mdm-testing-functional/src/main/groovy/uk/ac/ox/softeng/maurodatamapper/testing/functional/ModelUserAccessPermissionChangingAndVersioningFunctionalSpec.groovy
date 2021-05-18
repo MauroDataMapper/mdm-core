@@ -267,7 +267,6 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         verifyResponse NO_CONTENT, response
     }
 
-
     void 'L17 : test creating a new fork model of a Model<T> (as not logged in)'() {
         given:
         String id = getValidFinalisedId()
@@ -530,6 +529,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
+        responseBody().availableActions == getEditorAvailableActions().sort() - 'finalise'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
 
@@ -1014,7 +1014,6 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         localResponse.body()
         localResponse.body().size() == 5
 
-
         Map sourceMap = localResponse.body().find { it.modelId == id }
         sourceMap
         sourceMap == [branchName             : "main",
@@ -1229,5 +1228,4 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanup:
         removeValidIdObject(id)
     }
-
 }
