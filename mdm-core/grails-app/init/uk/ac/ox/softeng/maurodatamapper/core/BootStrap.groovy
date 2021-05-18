@@ -101,17 +101,6 @@ class BootStrap {
                 }
                 log.debug('Development environment bootstrap complete')
             }
-            production {
-                Folder.withNewTransaction {
-                    if (Folder.countByLabel('Example Folder') == 0) {
-                        checkAndSave(messageSource, new Folder(
-                            label: 'Example Folder',
-                            createdBy: StandardEmailAddress.ADMIN,
-                            description: 'Default basic folder. Future suggestion: rename this to be more descriptive.'))
-                    }
-                }
-                log.debug('Production environment bootstrap complete')
-            }
         }
     }
     def destroy = {
