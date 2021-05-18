@@ -162,6 +162,7 @@ class BootStrap implements SecurityDefinition {
                             groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole))
                     }
                 }
+                log.debug('Production environment bootstrap complete')
             }
         }
     }
