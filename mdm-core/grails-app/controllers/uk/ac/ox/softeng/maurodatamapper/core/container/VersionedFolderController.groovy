@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
@@ -317,6 +318,68 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
             }
         }
         instance
+    }
+
+    def latestFinalisedModel() {
+        VersionedFolder source = queryForResource(params.versionedFolderId)
+        if (!source) return notFound(params.versionedFolderId)
+
+        respond versionedFolderService.findLatestFinalisedModelByLabel(source.label)
+    }
+
+    def latestModelVersion() {
+        VersionedFolder source = queryForResource(params.versionedFolderId)
+        if (!source) return notFound(params.versionedFolderId)
+
+        respond versionedFolderService.getLatestModelVersionByLabel(source.label)
+    }
+
+    def currentMainBranch() {
+        VersionedFolder source = queryForResource(params.versionedFolderId)
+        if (!source) return notFound(params.versionedFolderId)
+
+        respond versionedFolderService.findCurrentMainBranchForModel(source)
+    }
+
+    def availableBranches() {
+        VersionedFolder source = queryForResource(params.versionedFolderId)
+        if (!source) return notFound(params.versionedFolderId)
+
+        respond versionedFolderService.findAllAvailableBranchesByLabel(source.label)
+    }
+
+    def modelVersionTree() {
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+        if (!instance) return notFound(params.versionedFolderId)
+
+        VersionedFolder oldestAncestor = versionedFolderService.findOldestAncestor(instance)
+
+        List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null,
+                                                                                                   null, true,
+                                                                                                   currentUserSecurityPolicyManager)
+        respond versionTreeModelList
+    }
+
+    def commonAncestor() {
+        VersionedFolder left = queryForResource(params.versionedFolderId)
+        if (!left) return notFound(params.versionedFolderId)
+
+        VersionedFolder right = queryForResource(params.otherModelId)
+        if (!right) return notFound(params.otherModelId)
+
+        respond versionedFolderService.findCommonAncestorBetweenModels(left, right)
+    }
+
+    def simpleModelVersionTree() {
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+        if (!instance) return notFound(params.versionedFolderId)
+
+        VersionedFolder oldestAncestor = versionedFolderService.findOldestAncestor(instance) as VersionedFolder
+
+        List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null, null, false,
+                                                                                                   currentUserSecurityPolicyManager)
+
+        respond versionTreeModelList.findAll {!it.newFork}
     }
 
 }

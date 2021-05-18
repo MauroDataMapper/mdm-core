@@ -31,6 +31,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -535,5 +536,69 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     void setFolderRefinesFolder(VersionedFolder source, VersionedFolder target, User catalogueUser) {
         source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
+    }
+
+    VersionedFolder findLatestFinalisedModelByLabel(String label) {
+        VersionedFolder.byLabelAndBranchNameAndFinalisedAndLatestModelVersion(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
+    }
+
+    Version getLatestModelVersionByLabel(String label) {
+        findLatestFinalisedModelByLabel(label)?.modelVersion ?: Version.from('0.0.0')
+    }
+
+    List<VersionedFolder> findAllAvailableBranchesByLabel(String label) {
+        VersionedFolder.byLabelAndNotFinalised(label).list() as List<VersionedFolder>
+    }
+
+    VersionedFolder findOldestAncestor(VersionedFolder versionedFolder) {
+        VersionLink versionLink = versionLinkService.findBySourceModel(versionedFolder)
+        if (!versionLink)
+            return versionedFolder
+        VersionedFolder parentVersionedFolder = get(versionLink.targetModelId)
+        findOldestAncestor(parentVersionedFolder)
+    }
+
+    List<VersionTreeModel> buildModelVersionTree(VersionedFolder instance, VersionLinkType versionLinkType,
+                                                 VersionTreeModel parentVersionTreeModel, boolean includeForks,
+                                                 UserSecurityPolicyManager userSecurityPolicyManager) {
+        if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
+
+        //TODO this line currently non-functional, once merged with 9480 should work
+        VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType, parentVersionTreeModel)
+        List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
+
+        if (versionLinkType == VersionLinkType.NEW_FORK_OF) return includeForks ? versionTreeModelList : []
+
+        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
+
+        versionLinks.each {link ->
+            VersionedFolder linkedModel = get(link.multiFacetAwareItemId)
+            versionTreeModelList.
+                addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, userSecurityPolicyManager))
+        }
+        versionTreeModelList.sort()
+    }
+
+    VersionedFolder findCommonAncestorBetweenModels(VersionedFolder leftModel, VersionedFolder rightModel) {
+        // If left isnt finalised then get it's finalised parent
+        if (!leftModel.finalised) {
+            leftModel = get(VersionLinkService.findBySourceModelAndLinkType(leftModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
+        }
+
+        // If right isnt finalised then get it's finalised parent
+        if (!rightModel.finalised) {
+            rightModel = get(VersionLinkService.findBySourceModelAndLinkType(rightModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
+        }
+
+        // Choose the finalised parent with the lowest model version
+        leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
+    }
+
+    VersionedFolder findCurrentMainBranchForModel(VersionedFolder versionedFolder) {
+        findCurrentMainBranchByLabel(versionedFolder.label)
+    }
+
+    VersionedFolder findCurrentMainBranchByLabel(String label) {
+        VersionedFolder.byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
     }
 }

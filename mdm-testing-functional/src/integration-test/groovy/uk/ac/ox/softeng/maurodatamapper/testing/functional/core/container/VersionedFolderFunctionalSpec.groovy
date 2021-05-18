@@ -25,10 +25,12 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
+import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,6 +39,8 @@ import spock.lang.Ignore
 import java.util.regex.Pattern
 
 import static io.micronaut.http.HttpStatus.CREATED
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -203,12 +207,12 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         assert response.body().readableByAuthenticatedUsers == false
     }
 
-    @Transactional
     @Override
     void removeValidIdObjectUsingTransaction(String id) {
-        log.info('Removing valid id {} using transaction', id)
-        Folder folder = Folder.get(id)
-        folder.delete(flush: true)
+        log.info('Removing valid id {} using permanent API call', id)
+        loginAdmin()
+        DELETE("${id}?permanent=true")
+        response.status() in [NO_CONTENT, NOT_FOUND]
     }
 
     @Override
@@ -1173,6 +1177,449 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id, docId)
     }
 
+    void 'LM01 : test finding latest version of a Model<T> (as editor)'() {
+        //TODO currently fails, should work once 9480 merged in (relies on VersionAware.groovy)
+        /*
+        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+
+        when:
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        then:
+        verifyResponse CREATED, response
+        String expectedId = responseBody().id
+
+        when:
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        then:
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+
+        when:
+        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
+        then:
+        verifyResponse OK, response
+
+        when:
+        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        then:
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        GET("$newBranchId/latestFinalisedModel")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == expectedId
+        responseBody().label == validJson.label
+        responseBody().modelVersion == '2.0.0'
+
+        when:
+        GET("$latestDraftId/latestFinalisedModel")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == expectedId
+        responseBody().label == validJson.label
+        responseBody().modelVersion == '2.0.0'
+
+        when: 'logged in as editor'
+        GET("$newBranchId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '2.0.0'
+
+        when:
+        GET("$latestDraftId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '2.0.0'
+
+        when:
+        GET('')
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 4
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(expectedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id, newBranchId, expectedId, latestDraftId)
+    }
+
+    void 'CMB01 : test getting current draft model on main branch from side branch (as editor)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        GET("$newBranchId/currentMainBranch")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == latestDraftId
+        responseBody().label == validJson.label
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanupIds(id, newBranchId, finalisedId, latestDraftId)
+    }
+
+    void 'AB01 : test getting all draft models (as editor)'() {
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        GET("$id/availableBranches")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 2
+        responseBody().items.each { it.id in [newBranchId, latestDraftId] }
+        responseBody().items.each { it.label == validJson.label }
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id, newBranchId, finalisedId, latestDraftId)
+    }
+
+    void 'MVT01 : Test getting versionTreeModel (as editor)'() {
+        //TODO this test fails for now, should work once merged with 9480
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+        loginEditor()
+        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
+        verifyResponse CREATED, response
+        String forkId = responseBody().id
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainBranchId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$forkId/finalise", [versionChangeType: VersionChangeType.MINOR])
+        verifyResponse OK, response
+        PUT("$forkId/newDocumentationVersion", [:])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body()
+        localResponse.body().size() == 5
+
+
+        Map sourceMap = localResponse.body().find { it.modelId == id }
+        sourceMap
+        sourceMap == [branchName             : "main",
+                      label                  : "Functional Test ${getModelType()}",
+                      modelId                : id,
+                      newBranchModelVersion  : false,
+                      newDocumentationVersion: false,
+                      newFork                : false,
+                      targets                : [[
+                                                    modelId    : forkId,
+                                                    description: VersionLinkType.NEW_FORK_OF.label
+                                                ],
+                                                [
+                                                    modelId    : mainBranchId,
+                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
+                                                ],
+                                                [
+                                                    modelId    : newBranchId,
+                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
+                                                ]]
+        ]
+
+        Map forkMap = localResponse.body().find { it.modelId == forkId }
+        forkMap
+        forkMap == [branchName             : "main",
+                    label                  : "Functional Test ${getModelType()} v2",
+                    modelId                : forkId,
+                    newBranchModelVersion  : false,
+                    newDocumentationVersion: false,
+                    newFork                : true,
+                    targets                : [[
+                                                  modelId    : latestDraftId,
+                                                  description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
+                                              ]]
+        ]
+
+        Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
+        mainBranchMap
+        mainBranchMap == [branchName             : "main",
+                          label                  : "Functional Test ${getModelType()}",
+                          modelId                : mainBranchId,
+                          newBranchModelVersion  : true,
+                          newDocumentationVersion: false,
+                          newFork                : false,
+                          targets                : []]
+
+        Map newBranchMap = localResponse.body().find { it.modelId == newBranchId }
+        newBranchMap
+        newBranchMap == [branchName             : "newBranch",
+                         label                  : "Functional Test ${getModelType()}",
+                         modelId                : newBranchId,
+                         newBranchModelVersion  : true,
+                         newDocumentationVersion: false,
+                         newFork                : false,
+                         targets                : []]
+
+        Map latestDraftMap = localResponse.body().find { it.modelId == latestDraftId }
+        latestDraftMap
+        latestDraftMap == [branchName             : "main",
+                           label                  : "Functional Test ${getModelType()}" + " v2",
+                           modelId                : latestDraftId,
+                           newBranchModelVersion  : false,
+                           newDocumentationVersion: true,
+                           newFork                : false,
+                           targets                : []]
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(forkId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(forkId)
+        cleanUpRoles(latestDraftId)
+    }
+
+    void 'MVT02 : Test getting versionTreeModel is same across ancestors (as editor)'() {
+        //TODO this test fails for now, should work once merged with 9480
+        /*
+        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
+          \_ newBranchId (draft)
+        */
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String finalisedId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranchId = responseBody().id
+        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        verifyResponse CREATED, response
+        String latestDraftId = responseBody().id
+
+        when: 'logged in as editor'
+        HttpResponse<List<Map>> localResponseOldestAncestor = GET("$id/modelVersionTree", Argument.listOf(Map))
+        HttpResponse<List<Map>> localResponseYoungestAncestor = GET("$latestDraftId/modelVersionTree", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponseOldestAncestor
+        verifyResponse OK, localResponseYoungestAncestor
+
+        localResponseOldestAncestor.body() == localResponseYoungestAncestor.body()
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(newBranchId)
+        removeValidIdObjectUsingTransaction(finalisedId)
+        removeValidIdObjectUsingTransaction(latestDraftId)
+        cleanUpRoles(id)
+        cleanUpRoles(newBranchId)
+        cleanUpRoles(finalisedId)
+        cleanUpRoles(latestDraftId)
+    }
+
+    void 'CA01 : test finding common ancestor of two Model<T> (as editor)'() {
+        given:
+        Map data = getValidFinalisedIdWithContent()
+        String id = data.id
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when: 'logged in as editor'
+        GET("$leftId/commonAncestor/$rightId")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == id
+        responseBody().label == validJson.label
+
+        when:
+        //get all so that if there are more than 10 items, we can be sure of finding the correct one in the when block below
+        GET("?all=true")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count >= 3
+
+        when:
+        log.debug(responseBody().toString())
+        String mainBranchId = responseBody().items.find {
+            it.label == validJson.label &&
+            !(it.id in [leftId, rightId, id])
+        }?.id
+
+        then:
+        mainBranchId
+
+        cleanup:
+        removeValidIdObjectUsingTransaction(id)
+        removeValidIdObjectUsingTransaction(leftId)
+        removeValidIdObjectUsingTransaction(rightId)
+        removeValidIdObjectUsingTransaction(mainBranchId)
+        cleanUpRoles(id, leftId, rightId, mainBranchId)
+    }
+
+    Map<String, String> buildModelVersionTree() {
+        /*
+                                                   /- anotherFork
+      v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
+        \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
+         \_ fork ---- main                                               \_ interestingBranch (v5)
+      */
+        // V1
+        Map data = getValidFinalisedIdWithContent()
+        String v1 = data.id
+        loginEditor()
+        // Fork and finalise fork
+        PUT("$v1/newForkModel", [label: "Functional Test Fork ${modelType}" as String])
+        verifyResponse CREATED, response
+        String fork = responseBody().id
+        PUT("$fork/finalise", [versionChangeType: VersionChangeType.MINOR])
+        verifyResponse OK, response
+        // Fork main branch
+        PUT("$fork/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String forkMain = responseBody().id
+        // V2 main branch
+        PUT("$v1/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v2 = responseBody().id
+        // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        PUT("$v1/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranch = responseBody().id
+        // Finalise the main branch to v2
+        PUT("$v2/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+        // V3 main branch
+        PUT("$v2/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v3 = responseBody().id
+        // Finalise the main branch to v3
+        PUT("$v3/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+        // V4 main branch
+        PUT("$v3/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v4 = responseBody().id
+        // testBranch from v3 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        PUT("$v3/newBranchModelVersion", [branchName: 'testBranch'])
+        verifyResponse CREATED, response
+        String testBranch = responseBody().id
+        // Finalise main branch to v4
+        PUT("$v4/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+        // Fork from v4
+        PUT("$v4/newForkModel", [label: "Functional Test AnotherFork ${modelType}" as String])
+        verifyResponse CREATED, response
+        String anotherFork = responseBody().id
+        // V5 and finalise
+        PUT("$v4/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v5 = responseBody().id
+        PUT("$v5/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+        // Main branch
+        PUT("$v5/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String main = responseBody().id
+        // Another branch
+        PUT("$v5/newBranchModelVersion", [branchName: 'anotherBranch'])
+        verifyResponse CREATED, response
+        String anotherBranch = responseBody().id
+        // Interesting branch
+        PUT("$v5/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String interestingBranch = responseBody().id
+        logout()
+        [v1       : v1, v2: v2, v3: v3, v4: v4, v5: v5,
+         newBranch: newBranch, testBranch: testBranch, main: main, anotherBranch: anotherBranch, interestingBranch: interestingBranch,
+         fork     : fork, anotherFork: anotherFork, forkMain: forkMain
+        ]
+    }
+
+    void cleanupModelVersionTree(Map<String, String> data) {
+        data.each { k, v ->
+            removeValidIdObjectUsingTransaction(v)
+        }
+        cleanUpRoles(data.values())
+    }
+
     List<String> getFinalisedEditorAvailableActions() {
         [
             'show',
@@ -1218,11 +1665,15 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         ]
     }
 
+    String getModelType() {
+        'VersionedFolder'
+    }
+
     void cleanupIds(String... ids) {
         loginEditor()
         ids.each { id ->
             DELETE("$id?permanent=true")
-            verifyResponse HttpStatus.NO_CONTENT, response
+            response.status() in [NO_CONTENT, NOT_FOUND]
         }
         cleanUpRoles(ids)
     }

@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
+
+model {
+    VersionedFolder versionedFolder
+}
+
+json tmpl.versionedFolder(versionedFolder: versionedFolder)
