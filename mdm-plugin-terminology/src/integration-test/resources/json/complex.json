@@ -909,10 +909,10 @@
       },
       {
         "id": "${json-unit.matches:id}",
-        "label": "Complex Test Term 101",
+        "label": "CTT101",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
-        "code": "Complex Test Term 101",
-        "definition": "Complex Test Term 101",
+        "code": "CTT101",
+        "definition": "CTT101",
         "description": "Example of truncated term label when code and definition are the same",
         "depth": 1
       }

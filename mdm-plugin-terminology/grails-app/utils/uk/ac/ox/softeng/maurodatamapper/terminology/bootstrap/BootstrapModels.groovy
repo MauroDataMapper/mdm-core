@@ -137,7 +137,7 @@ class BootstrapModels {
         }
 
         terms[101].tap {
-            code = definition
+            definition = code
             description = 'Example of truncated term label when code and definition are the same'
         }
 

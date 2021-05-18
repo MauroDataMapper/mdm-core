@@ -2353,7 +2353,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
           {
             "value": {
               "id": "${json-unit.matches:id}",
-              "label": "Complex Test Term 101",
+              "label": "CTT101",
               "breadcrumbs": [
                 {
                   "id": "${json-unit.matches:id}",

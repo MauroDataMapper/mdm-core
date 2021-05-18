@@ -964,7 +964,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
   {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
-    "label": "Complex Test Term 101",
+    "label": "CTT101",
     "hasChildren": false,
     "modelId": "${json-unit.matches:id}"
   },
