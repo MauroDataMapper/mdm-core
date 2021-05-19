@@ -98,7 +98,8 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     void verifyDefaultCreationResponse(HttpResponse<Map> response, int count) {
         assert response.body().label == count ? "New Folder (${count})".toString() : 'New Folder'
-        assert response.body().availableActions == ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete'].sort()
+        assert response.body().availableActions ==
+               ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete', 'canAddRule'].sort()
         assert response.body().readableByEveryone == false
         assert response.body().readableByAuthenticatedUsers == false
     }
@@ -131,7 +132,7 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
   "label": "Nested Functional Test Folder",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
+  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update","canAddRule"]
   }'''
     }
 

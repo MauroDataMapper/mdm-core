@@ -171,7 +171,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete', 'canAddRule']
     }
 
     @Override
@@ -263,7 +263,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
   "label": "Functional Test Folder 3",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
+  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update","canAddRule"]
 }'''
     }
 
@@ -656,7 +656,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update","canAddRule"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "Folder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -696,7 +696,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update","canAddRule"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "Folder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -712,7 +712,7 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
                 },
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","save","show","softDelete","update","canAddRule"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "Folder",
                     "securableResourceId": "${json-unit.matches:id}",

@@ -169,7 +169,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'finalise', 'update', 'save', 'softDelete', 'delete'].sort()
+        ['show', 'comment', 'editDescription', 'finalise', 'update', 'save', 'softDelete', 'delete', 'canAddRule'].sort()
     }
 
     @Override
@@ -248,7 +248,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
   "label": "Functional Test VersionedFolder 3",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+  "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update","canAddRule"],
   "branchName": "main",
   "documentationVersion": "1.0.0",
   "finalised": false,
@@ -373,7 +373,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update","canAddRule"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -413,7 +413,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update","canAddRule"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -429,7 +429,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
                 },
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update","canAddRule"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -494,7 +494,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             "items": [
                 {
                     "id": "${json-unit.matches:id}",
-                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update"],
+                    "availableActions": ["comment","delete","editDescription","finalise","save","show","softDelete","update","canAddRule"],
                     "createdBy": "reader@test.com",
                     "securableResourceDomainType": "VersionedFolder",
                     "securableResourceId": "${json-unit.matches:id}",
@@ -1183,7 +1183,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
             'newDocumentationVersion',
             'newBranchModelVersion',
             'softDelete',
-            'delete'
+            'delete',
+            'canAddRule'
         ].sort()
     }
 

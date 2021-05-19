@@ -96,7 +96,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'delete', 'canAddRule']
     }
 
     @Override
@@ -174,7 +174,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   "label": "Functional Test Classifier 2",
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
-  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update"]
+  "availableActions": ["comment","delete","editDescription","save","show","softDelete","update","canAddRule"]
 }'''
     }
     
