@@ -256,7 +256,7 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
   "readableByEveryone": false,
   "readableByAuthenticatedUsers": false,
   "availableActions": [
-    "show","comment","editDescription","update","save","softDelete","finalise","delete"
+    "show","comment","editDescription","update","save","softDelete","finalise","delete","canAddRule"
   ],
   "branchName": "main",
   "authority": {

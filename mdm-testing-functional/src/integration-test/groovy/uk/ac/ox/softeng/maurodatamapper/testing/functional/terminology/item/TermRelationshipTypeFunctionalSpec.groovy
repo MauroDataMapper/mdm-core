@@ -160,7 +160,8 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
     "save",
     "show",
     "comment",
-    "editDescription"
+    "editDescription",
+    "canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "displayLabel": "Is Part Of"
