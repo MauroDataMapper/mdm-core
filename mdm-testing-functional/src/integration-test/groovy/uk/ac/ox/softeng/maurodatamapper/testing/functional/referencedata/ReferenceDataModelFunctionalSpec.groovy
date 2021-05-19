@@ -282,7 +282,8 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "save",
     "softDelete",
     "finalise",
-    "delete"
+    "delete",
+    "canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "type": "ReferenceDataModel",
