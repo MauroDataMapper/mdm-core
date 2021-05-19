@@ -27,6 +27,8 @@ import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
 import groovy.util.logging.Slf4j
+import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
@@ -194,5 +196,31 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         verifyResponse HttpStatus.NOT_FOUND, response
         responseBody().resource == 'ProfileProviderService'
         responseBody().id == getProfileId()
+    }
+
+    void 'test getting unused profiles'() {
+        given:
+        String id = getComplexDataModelId()
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("dataModels/${id}/profiles/unused", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size() == 1
+        localResponse.body().first().name == 'ProfileSpecificationProfileService'
+        localResponse.body().first().displayName == 'Profile Specification Profile (Data Model)'
+    }
+
+    void 'test getting used profiles'() {
+        given:
+        String id = getComplexDataModelId()
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("dataModels/${id}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size() == 0
     }
 }

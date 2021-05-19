@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
@@ -52,11 +52,11 @@ class ProfileController implements ResourcelessMdmController {
 
 
     def profileProviders() {
-        respond providers: profileService.getAllProfileProviderServices()
+        respond profileProviderServices: profileService.getAllProfileProviderServices()
     }
 
     def dynamicProfileProviders() {
-        respond providers: profileService.getAllDynamicProfileProviderServices()
+        respond profileProviderServices: profileService.getAllDynamicProfileProviderServices()
     }
 
     def profiles() {
@@ -64,8 +64,7 @@ class ProfileController implements ResourcelessMdmController {
         if (!catalogueItem) {
             return notFound(params.catalogueItemClass, params.catalogueItemId)
         }
-        def usedProfiles = profileService.getUsedProfileServices(catalogueItem)
-        render(view: "/profile/profileProviders", model: [providers: usedProfiles])
+        respond profileProviderServices: profileService.getUsedProfileServices(catalogueItem)
     }
 
     def unusedProfiles() {
@@ -73,15 +72,7 @@ class ProfileController implements ResourcelessMdmController {
         if (!catalogueItem) {
             return notFound(params.catalogueItemClass, params.catalogueItemId)
         }
-        Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
-        Set<ProfileProviderService> allProfiles = profileService.getAllProfileProviderServices().findAll{
-            it.profileApplicableForDomains().size() == 0 ||
-                it.profileApplicableForDomains().contains(params.catalogueItemDomainType)
-        }
-        Set<ProfileProviderService> unusedProfiles = new HashSet<ProfileProviderService>(allProfiles)
-        unusedProfiles.removeAll(usedProfiles)
-
-        render(view: "/profile/profileProviders", model: [providers: unusedProfiles])
+        respond profileProviderServices: profileService.getUnusedProfileServices(catalogueItem)
     }
 
     def otherMetadata() {
@@ -91,9 +82,9 @@ class ProfileController implements ResourcelessMdmController {
         }
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
         Set<String> profileNamespaces = usedProfiles.collect{it.metadataNamespace}
-        render(view: "/metadata/index",
-               model: [metadataList: metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(catalogueItem.id, profileNamespaces.asList(),
-                                                                                                params)])
+        respond(view: "/metadata/index",
+                model: [metadataList: metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(catalogueItem.id, profileNamespaces.asList(),
+                                                                                                     params)])
     }
 
     @Transactional

@@ -1,8 +1,8 @@
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 
 model {
-    Iterable<Object> providers
+    Iterable<ProfileProviderService> profileProviderServices
 }
 
-json tmpl.profileProviderService(providers ?: [])
+json tmpl.'/profileProviderService/profileProviderService'(profileProviderServices ?: [])
 

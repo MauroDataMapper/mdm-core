@@ -5,4 +5,3 @@ model {
 }
 
 json tmpl.'/profileProviderService/profileProviderService'(profileProviderServices ?: [])
-
