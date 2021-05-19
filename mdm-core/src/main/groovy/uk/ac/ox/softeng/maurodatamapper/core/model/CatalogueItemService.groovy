@@ -20,16 +20,13 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.facet.AnnotationService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFileService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
@@ -43,13 +40,16 @@ import grails.core.GrailsClass
 import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.hibernate.SessionFactory
+import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 abstract class CatalogueItemService<K extends CatalogueItem> implements DomainService<K>, MultiFacetAwareService<K> {
 
+    @Autowired
+    GrailsApplication grailsApplication
+
     SessionFactory sessionFactory
     ClassifierService classifierService
-    GrailsApplication grailsApplication
     MetadataService metadataService
     RuleService ruleService
     SemanticLinkService semanticLinkService
