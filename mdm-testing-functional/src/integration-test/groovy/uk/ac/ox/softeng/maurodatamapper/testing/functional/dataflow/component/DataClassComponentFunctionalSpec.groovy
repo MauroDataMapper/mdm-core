@@ -331,7 +331,8 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
     "editDescription",
     "update",
     "save",
-    "delete"
+    "delete",
+    "canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "definition": null,

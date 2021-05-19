@@ -209,7 +209,8 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
     "editDescription",
     "update",
     "save",
-    "delete"
+    "delete",
+    "canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "definition": null,
