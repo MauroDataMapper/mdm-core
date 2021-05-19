@@ -80,30 +80,30 @@ class ProfileService {
 
         Profile profile = profileProviderService.getNewProfile()
         List<ProfileSection> profileSections = []
-        request.getJSON().sections.each { it ->
+        request.getJSON().sections.each {it ->
             ProfileSection profileSection = new ProfileSection(it)
             profileSection.fields = []
-            it['fields'].each { field ->
+            it['fields'].each {field ->
                 profileSection.fields.add(new ProfileField(field))
             }
-            if(profileProviderService.isJsonProfileService()) {
-                ((JsonProfile)profile).sections.add(profileSection)
+            if (profileProviderService.isJsonProfileService()) {
+                ((JsonProfile) profile).sections.add(profileSection)
 
             } else {
                 profileSections.add(profileSection)
             }
         }
 
-        if(!profileProviderService.isJsonProfileService()) {
+        if (!profileProviderService.isJsonProfileService()) {
             profile.fromSections(profileSections)
         }
 
-            /*final DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, profile.getClass(), request)
-             bindingSource.propertyNames.each { propertyName ->
-                 profile.setField(propertyName, bindingSource[propertyName])
-             }
+        /*final DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, profile.getClass(), request)
+         bindingSource.propertyNames.each { propertyName ->
+             profile.setField(propertyName, bindingSource[propertyName])
+         }
 
-              */
+          */
 
         profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
     }
@@ -111,10 +111,10 @@ class ProfileService {
     def validateProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem, HttpServletRequest request, User user) {
         Profile profile = profileProviderService.getNewProfile()
         List<ProfileSection> profileSections = []
-        request.getJSON().sections.each { it ->
+        request.getJSON().sections.each {it ->
             ProfileSection profileSection = new ProfileSection(it)
             profileSection.fields = []
-            it['fields'].each { field ->
+            it['fields'].each {field ->
                 profileSection.fields.add(new ProfileField(field))
             }
             if (profileProviderService.isJsonProfileService()) {
@@ -125,7 +125,7 @@ class ProfileService {
             }
         }
         profile.sections.each {section ->
-            section.fields.each { field ->
+            section.fields.each {field ->
                 field.validate()
             }
         }
@@ -135,11 +135,11 @@ class ProfileService {
 
 
     List<Model> getAllModelsWithProfile(ProfileProviderService profileProviderService,
-                                                      UserSecurityPolicyManager userSecurityPolicyManager,
-                                                      String domainType) {
+                                        UserSecurityPolicyManager userSecurityPolicyManager,
+                                        String domainType) {
 
         List<Model> models = []
-        ModelService service = modelServices.find { it.handles(domainType) }
+        ModelService service = modelServices.find {it.handles(domainType)}
         models.addAll(service.findAllByMetadataNamespace(profileProviderService.metadataNamespace))
 
         List<Model> validModels = models.findAll {model ->
@@ -156,14 +156,14 @@ class ProfileService {
         List<Model> models = getAllModelsWithProfile(profileProviderService, userSecurityPolicyManager, domainType)
 
         List<Profile> profiles = []
-        profiles.addAll(models.collect{ model ->
+        profiles.addAll(models.collect {model ->
             profileProviderService.createProfileFromEntity(model)
         })
         new PaginatedResultList<>(profiles, pagination)
     }
 
     CatalogueItem findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
-        CatalogueItemService service = catalogueItemServices.find { it.handles(domainType) }
+        CatalogueItemService service = catalogueItemServices.find {it.handles(domainType)}
         if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${domainType}] with no supporting service")
         service.get(catalogueItemId)
     }
@@ -171,7 +171,7 @@ class ProfileService {
     Set<String> getUsedNamespaces(CatalogueItem catalogueItem) {
         //MetadataService metadataService = grailsApplication.mainContext.getBean('metadataService')
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemId(catalogueItem.id)
-        metadataList.collect {it.namespace } as Set
+        metadataList.collect {it.namespace} as Set
     }
 
     Set<ProfileProviderService> getUsedProfileServices(CatalogueItem catalogueItem) {
@@ -179,7 +179,19 @@ class ProfileService {
 
         getAllProfileProviderServices().findAll {
             (usedNamespaces.contains(it.getMetadataNamespace()) &&
-        it.profileApplicableForDomains().contains(catalogueItem.domainType))}
+             it.profileApplicableForDomains().contains(catalogueItem.domainType))
+        }
+    }
+
+    Set<ProfileProviderService> getUnusedProfileServices(CatalogueItem catalogueItem) {
+        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(catalogueItem)
+        Set<ProfileProviderService> allProfiles = getAllProfileProviderServices().findAll {
+            it.profileApplicableForDomains().size() == 0 ||
+            it.profileApplicableForDomains().contains(catalogueItem.domainType)
+        }
+        Set<ProfileProviderService> unusedProfiles = new HashSet<ProfileProviderService>(allProfiles)
+        unusedProfiles.removeAll(usedProfiles)
+        unusedProfiles
     }
 
     ProfileProviderService createDynamicProfileServiceFromModel(DataModel dataModel) {
@@ -192,19 +204,19 @@ class ProfileService {
         // First we'll get the ones we already know about...
         // (Except those that we've already disabled)
         Set<ProfileProviderService> allProfileServices = []
-        allProfileServices.addAll(profileProviderServices.findAll{ !it.disabled})
+        allProfileServices.addAll(profileProviderServices.findAll {!it.disabled})
 
         // Now we get all the dynamic models
         List<DataModel> dynamicModels = dataModelService.findAllByMetadataNamespace(
-                profileSpecificationProfileService.metadataNamespace)
+            profileSpecificationProfileService.metadataNamespace)
 
-        List<UUID> dynamicModelIds = dynamicModels.collect{it.id}
+        List<UUID> dynamicModelIds = dynamicModels.collect {it.id}
 
 
         // Now we do a quick check to make sure that none of those are dynamic, and refer to a model that has since been deleted
-        allProfileServices.removeAll{profileProviderService ->
-            if(profileProviderService.getDefiningDataModel() != null &&
-                    !dynamicModelIds.contains(profileProviderService.getDefiningDataModel())) {
+        allProfileServices.removeAll {profileProviderService ->
+            if (profileProviderService.getDefiningDataModel() != null &&
+                !dynamicModelIds.contains(profileProviderService.getDefiningDataModel())) {
                 // Disable it for next time
                 profileProviderService.disabled = true
                 return true
@@ -212,19 +224,19 @@ class ProfileService {
             return false
         }
 
-        Set<UUID> alreadyKnownServiceDataModels = allProfileServices.findAll{
+        Set<UUID> alreadyKnownServiceDataModels = allProfileServices.findAll {
             it.getDefiningDataModel() != null
-        }.collect{
+        }.collect {
             it.getDefiningDataModel()
         }
 
         // Now find any new profile models and create a service for them:
-        List<DataModel> newDynamicModels = dynamicModels.findAll{dataModel ->
+        List<DataModel> newDynamicModels = dynamicModels.findAll {dataModel ->
             !alreadyKnownServiceDataModels.contains(dataModel.id)
         }
 
         allProfileServices.addAll(
-            newDynamicModels.collect {dataModel -> createDynamicProfileServiceFromModel(dataModel) }
+            newDynamicModels.collect {dataModel -> createDynamicProfileServiceFromModel(dataModel)}
         )
 
         return allProfileServices
@@ -232,7 +244,7 @@ class ProfileService {
     }
 
     Set<ProfileProviderService> getAllDynamicProfileProviderServices() {
-        getAllProfileProviderServices().findAll{
+        getAllProfileProviderServices().findAll {
             it.definingDataModel != null
         }
     }
