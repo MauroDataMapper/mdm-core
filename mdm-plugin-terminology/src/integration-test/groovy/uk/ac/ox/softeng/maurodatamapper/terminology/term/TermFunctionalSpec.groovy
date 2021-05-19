@@ -407,6 +407,23 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     {
       "id": "${json-unit.matches:id}",
       "domainType": "Term",
+      "label": "CTT101",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ],
+      "code": "CTT101",
+      "definition": "CTT101",
+      "description": "Example of truncated term label when code and definition are the same"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
       "label": "CTT11: Complex Test Term 11",
       "model": "${json-unit.matches:id}",
       "breadcrumbs": [
