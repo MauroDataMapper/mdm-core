@@ -39,6 +39,7 @@ class ResourceActions {
     public static final String MERGE_INTO_ACTION = 'mergeInto'
     public static final String READ_BY_EVERYONE_ACTION = 'readByEveryone'
     public static final String READ_BY_AUTHENTICATED_ACTION = 'readByAuthenticated'
+    public static final String CAN_ADD_RULE_ACTION = 'canAddRule'
 
     public static final List<String> READER_VERSIONING_ACTIONS = [CREATE_NEW_VERSIONS_ACTION,
                                                                   NEW_FORK_MODEL_ACTION]
@@ -73,11 +74,11 @@ class ResourceActions {
                                                       [EDIT_DESCRIPTION_ACTION]
 
     public static final List<String> EDITOR_ACTIONS = AUTHOR_ACTIONS +
-                                                      SOFT_CREATE_AND_EDIT_ACTIONS
+                                                      SOFT_CREATE_AND_EDIT_ACTIONS +
+                                                      [CAN_ADD_RULE_ACTION]
 
     public static final List<String> CONTAINER_ADMIN_ACTIONS = EDITOR_ACTIONS +
                                                                [DELETE_ACTION]
-
 
     public static final List<String> DISALLOWED_ONCE_FINALISED_ACTIONS = [UPDATE_ACTION,
                                                                           SAVE_ACTION,
