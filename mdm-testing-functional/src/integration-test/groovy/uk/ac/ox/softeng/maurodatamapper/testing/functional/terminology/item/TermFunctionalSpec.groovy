@@ -84,7 +84,6 @@ class TermFunctionalSpec extends UserAccessFunctionalSpec {
         ]
     }
 
-
     Boolean readerPermissionIsInherited() {
         true
     }

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
 

@@ -93,7 +93,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         Path testFilePath = resourcesPath.resolve("${filename}").toAbsolutePath()
         assert Files.exists(testFilePath)
         Files.readAllBytes(testFilePath)
-    }    
+    }
 
     @Transactional
     String getTestFolderId() {
@@ -300,7 +300,6 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
 }'''
     }
 
-
     void 'Test getting available ReferenceDataModel exporters'() {
 
         when: 'not logged in then accessible'
@@ -396,9 +395,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
     "canImportMultipleDomains": false
   }
 ]'''
-
     }
-
 
     void 'L34 : test export a single Reference Data Model (as not logged in)'() {
         given:
@@ -677,7 +674,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         removeValidIdObject(id, NOT_FOUND)
     }
 
-   void 'E36B : test import basic Reference Data Model as new documentation version (as editor)'() {
+    void 'E36B : test import basic Reference Data Model as new documentation version (as editor)'() {
         given:
         String id = getValidId()
         loginReader()
@@ -728,7 +725,6 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         removeValidIdObject(id, NOT_FOUND)
     }
 
-
     void 'E37: test importing simple test Reference Data Model from CSV as editor and then searching the loaded values'() {
         given:
         loginEditor()
@@ -770,7 +766,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesMax.json'))
 
         when:
-        GET("${id}/referenceDataValues?asRows=true", STRING_ARG)        
+        GET("${id}/referenceDataValues?asRows=true", STRING_ARG)
 
         then:
         verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRows.json'))
@@ -779,7 +775,7 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         GET("${id}/referenceDataValues?asRows=true&max=2", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax.json'))     
+        verifyJsonResponse OK, new String(loadTestFile('expectedGetValuesAsRowsMax.json'))
 
         when:
         GET("${id}/referenceDataValues/search?search=Row6Value2", STRING_ARG)
@@ -791,10 +787,10 @@ class ReferenceDataModelFunctionalSpec extends ModelUserAccessPermissionChanging
         GET("${id}/referenceDataValues/search?search=Row6Value2&asRows=true", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows.json'))            
+        verifyJsonResponse OK, new String(loadTestFile('expectedSearchValuesRow6AsRows.json'))
 
         cleanup:
         logout()
         removeValidIdObjectUsingTransaction(id)
-    }    
+    }
 }

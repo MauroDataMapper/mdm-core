@@ -68,20 +68,20 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
 
     Map getValidJson() {
         [
-                label: 'Functional Test Classifier 2',
+            label: 'Functional Test Classifier 2',
         ]
     }
 
     Map getInvalidJson() {
         [
-                label: 'Functional Test Classifier'
+            label: 'Functional Test Classifier'
         ]
     }
 
     @Override
     Map getValidUpdateJson() {
         [
-                description: 'Just something for testing'
+            description: 'Just something for testing'
         ]
     }
 
@@ -177,7 +177,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
   "availableActions": ["comment","delete","editDescription","save","show","softDelete","update","canAddRule"]
 }'''
     }
-    
+
     void "Test the catalogueItems action for classifier"() {
         when: "The catalogueItems action on a known classifier ID is requested unlogged in"
         GET("${getTestClassifierId()}/catalogueItems")
@@ -208,7 +208,7 @@ class ClassifierFunctionalSpec extends UserAccessAndPermissionChangingFunctional
         when: "A classifier is added to a terminology"
         loginAdmin()
         POST("terminologies/${getSimpleTerminologyId()}/classifiers", [
-                label: 'A test classifier for a terminology'
+            label: 'A test classifier for a terminology'
         ], MAP_ARG, true)
 
         then: "Resource is created"

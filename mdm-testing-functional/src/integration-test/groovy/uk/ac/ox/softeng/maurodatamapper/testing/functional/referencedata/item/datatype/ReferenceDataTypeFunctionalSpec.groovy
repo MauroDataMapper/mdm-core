@@ -29,7 +29,6 @@ import io.micronaut.http.HttpResponse
 
 /**
  * <pre>
- 
  * Controller: referenceDataType
  *  |   POST   | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes  | Action: save
  *  |   GET    | /api/referenceDataModels/${referenceDataModelId}/referenceDataTypes  | Action: index
@@ -86,7 +85,6 @@ class ReferenceDataTypeFunctionalSpec extends UserAccessFunctionalSpec {
         ]
     }
 
-
     Boolean readerPermissionIsInherited() {
         true
     }
@@ -129,7 +127,7 @@ class ReferenceDataTypeFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     void verifyE03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
-    }    
+    }
 
     @Override
     String getShowJson() {

@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.dataflow.component
 
-
 import uk.ac.ox.softeng.maurodatamapper.dataflow.DataFlow
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataClassComponent
@@ -814,5 +813,4 @@ class DataElementComponentFunctionalSpec extends UserAccessFunctionalSpec {
   ]
 }'''
     }
-
 }

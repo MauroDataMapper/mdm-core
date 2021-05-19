@@ -65,20 +65,20 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     Map getValidJson() {
         [
-            label          : 'Functional Test DataElement',
-            maxMultiplicity: 2,
-            minMultiplicity: 0,
-            referenceDataType       : referenceDataTypeId
+            label            : 'Functional Test DataElement',
+            maxMultiplicity  : 2,
+            minMultiplicity  : 0,
+            referenceDataType: referenceDataTypeId
         ]
     }
 
     @Override
     Map getInvalidJson() {
         [
-            label          : UUID.randomUUID().toString(),
-            maxMultiplicity: 2,
-            minMultiplicity: 0,
-            referenceDataType       : null
+            label            : UUID.randomUUID().toString(),
+            maxMultiplicity  : 2,
+            minMultiplicity  : 0,
+            referenceDataType: null
         ]
     }
 
@@ -88,7 +88,6 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
             description: 'adding a description'
         ]
     }
-
 
     Boolean readerPermissionIsInherited() {
         true
@@ -132,7 +131,7 @@ class ReferenceDataElementFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     void verifyE03ValidResponseBody(HttpResponse<Map> response) {
         assert response.body().id
-    }    
+    }
 
     @Override
     String getShowJson() {

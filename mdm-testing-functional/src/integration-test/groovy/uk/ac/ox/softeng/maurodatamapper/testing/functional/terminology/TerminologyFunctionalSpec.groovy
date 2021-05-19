@@ -68,7 +68,6 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVersioningFunctionalSpec {
 
-
     @Transactional
     String getTestFolderId() {
         Folder.findByLabel('Functional Test Folder').id.toString()
@@ -344,7 +343,6 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
                 "canImportMultipleDomains": false
             }
         ]'''
-
     }
 
     void 'L30 : test changing folder from Terminology context (as not logged in)'() {
@@ -514,7 +512,6 @@ class TerminologyFunctionalSpec extends ModelUserAccessPermissionChangingAndVers
         cleanup:
         removeValidIdObject(id)
     }
-
 
     void 'L32 : test diffing 2 Terminologys (as not logged in)'() {
 

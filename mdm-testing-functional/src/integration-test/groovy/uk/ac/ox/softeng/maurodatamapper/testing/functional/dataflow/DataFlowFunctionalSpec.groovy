@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.dataflow
 
-
 import uk.ac.ox.softeng.maurodatamapper.dataflow.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
@@ -310,7 +309,6 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         removeValidIdObject(id)
     }
 
-
     void 'L34 : test export a single DataFlow (as not logged in)'() {
         given:
         String id = getValidId()
@@ -379,7 +377,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-    }    
+    }
 
     void 'L35 : test export multiple Flows (json only exports first id) (as not logged in)'() {
         given:
@@ -401,7 +399,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         cleanup:
         removeValidIdObject(id)
         removeValidIdObject(id2)
-    }   
+    }
 
     void 'N35 : test export multiple Flows (json only exports first id) (as authenticated/no access)'() {
         given:
@@ -472,8 +470,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         cleanup:
         removeValidIdObject(id)
         removeValidIdObject(id2)
-    }       
-
+    }
 
     void 'L36 : test import basic DataFlow (as not logged in)'() {
         given:
@@ -489,8 +486,8 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         when:
         POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
-            modelName                      : 'Functional Test Import',
-            importFile                     : [
+            modelName : 'Functional Test Import',
+            importFile: [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: exportedJsonString.bytes.toList()
@@ -519,8 +516,8 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         when:
         loginAuthenticated()
         POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
-            modelName                      : 'Functional Test Import',
-            importFile                     : [
+            modelName : 'Functional Test Import',
+            importFile: [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: exportedJsonString.bytes.toList()
@@ -532,7 +529,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-    }    
+    }
 
     void 'R36 : test import basic DataFlow (as reader)'() {
         given:
@@ -549,8 +546,8 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         when:
         loginReader()
         POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
-            modelName                      : 'Functional Test Import',
-            importFile                     : [
+            modelName : 'Functional Test Import',
+            importFile: [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: exportedJsonString.bytes.toList()
@@ -563,8 +560,7 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
 
         cleanup:
         removeValidIdObject(id)
-    }     
-
+    }
 
     void 'E36A : test import basic DataFlow (as editor)'() {
         given:
@@ -581,14 +577,13 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         when:
         loginEditor()
         POST('import/uk.ac.ox.softeng.maurodatamapper.dataflow.provider.importer/DataFlowJsonImporterService/3.0', [
-            modelName                      : 'Functional Test Import',
-            importFile                     : [
+            modelName : 'Functional Test Import',
+            importFile: [
                 fileName    : 'FT Import',
                 fileType    : MimeType.JSON_API.name,
                 fileContents: exportedJsonString.bytes.toList()
             ]
         ])
-
 
         then:
         verifyResponse HttpStatus.CREATED, response
@@ -602,6 +597,5 @@ class DataFlowFunctionalSpec extends UserAccessFunctionalSpec {
         removeValidIdObjectUsingTransaction(id)
         removeValidIdObject(id2, HttpStatus.NOT_FOUND)
         removeValidIdObject(id, HttpStatus.NOT_FOUND)
-    }    
-
+    }
 }

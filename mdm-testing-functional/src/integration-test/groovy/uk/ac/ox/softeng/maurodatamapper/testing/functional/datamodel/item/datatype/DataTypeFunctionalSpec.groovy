@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.datamodel.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndCopyingInDataModelsFunctionalSpec
@@ -49,7 +48,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     @Override
     String getResourcePath() {
         "dataModels/${getComplexDataModelId()}/dataTypes"
-    }  
+    }
 
     @Override
     String getEditsPath() {
@@ -75,7 +74,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     Map getValidJson() {
         [
             domainType: 'PrimitiveType',
-            label: 'Functional Data Type'
+            label     : 'Functional Data Type'
         ]
     }
 
@@ -325,14 +324,12 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         given:
         loginEditor()
 
-
         when: "The save action is executed with valid data"
         POST('', [
             domainType    : 'ReferenceType',
             label         : 'Functional Reference Type',
             referenceClass: getReferenceDataClassId()
         ])
-
 
         then: "The response is correct"
         verifyResponse HttpStatus.CREATED, response
@@ -435,5 +432,4 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
         cleanup:
         removeValidIdObject(id)
     }
-
 }

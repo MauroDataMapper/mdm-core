@@ -565,7 +565,6 @@ class FolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec
 }'''
     }
 
-
     void 'Test the permanent delete action correctly deletes an instance with folder inside'() {
         when: 'Creating a top folder'
         String id = getValidId()

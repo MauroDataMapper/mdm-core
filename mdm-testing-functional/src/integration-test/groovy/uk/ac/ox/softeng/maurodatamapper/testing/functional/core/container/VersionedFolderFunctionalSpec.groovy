@@ -58,7 +58,6 @@ import static io.micronaut.http.HttpStatus.OK
 @Slf4j
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
-
     @Autowired(required = false)
     List<ModelService> modelServices
 

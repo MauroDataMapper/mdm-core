@@ -429,9 +429,9 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.OK, response
         responseBody().sourceDataClasses.size() == 2
         responseBody().targetDataClasses.size() == 1
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId.toString()}
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId2.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId.toString()}
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId.toString() }
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId2.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -449,9 +449,9 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.OK, response
         responseBody().sourceDataClasses.size() == 2
         responseBody().targetDataClasses.size() == 1
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId.toString()}
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId2.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId.toString()}
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId.toString() }
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId2.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -514,9 +514,9 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.OK, response
         responseBody().sourceDataClasses.size() == 1
         responseBody().targetDataClasses.size() == 2
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId2.toString()}
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId2.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -534,9 +534,9 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.OK, response
         responseBody().sourceDataClasses.size() == 1
         responseBody().targetDataClasses.size() == 2
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId2.toString()}
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId2.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -611,9 +611,9 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.OK, response
         responseBody().sourceDataClasses.size() == 1
         responseBody().targetDataClasses.size() == 1
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId.toString()}
-        !responseBody().sourceDataClasses.any {it.id == sourceDataClassId2.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId.toString()}
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId.toString() }
+        !responseBody().sourceDataClasses.any { it.id == sourceDataClassId2.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -634,9 +634,9 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.OK, response
         responseBody().sourceDataClasses.size() == 1
         responseBody().targetDataClasses.size() == 1
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId.toString()}
-        !responseBody().sourceDataClasses.any {it.id == sourceDataClassId2.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId.toString()}
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId.toString() }
+        !responseBody().sourceDataClasses.any { it.id == sourceDataClassId2.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -711,9 +711,9 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.OK, response
         responseBody().sourceDataClasses.size() == 1
         responseBody().targetDataClasses.size() == 1
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId.toString()}
-        !responseBody().targetDataClasses.any {it.id == targetDataClassId2.toString()}
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId.toString() }
+        !responseBody().targetDataClasses.any { it.id == targetDataClassId2.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -734,9 +734,9 @@ class DataClassComponentFunctionalSpec extends UserAccessFunctionalSpec {
         verifyResponse HttpStatus.OK, response
         responseBody().sourceDataClasses.size() == 1
         responseBody().targetDataClasses.size() == 1
-        responseBody().sourceDataClasses.any {it.id == sourceDataClassId.toString()}
-        responseBody().targetDataClasses.any {it.id == targetDataClassId.toString()}
-        !responseBody().targetDataClasses.any {it.id == targetDataClassId2.toString()}
+        responseBody().sourceDataClasses.any { it.id == sourceDataClassId.toString() }
+        responseBody().targetDataClasses.any { it.id == targetDataClassId.toString() }
+        !responseBody().targetDataClasses.any { it.id == targetDataClassId2.toString() }
 
         cleanup:
         removeValidIdObject(id)

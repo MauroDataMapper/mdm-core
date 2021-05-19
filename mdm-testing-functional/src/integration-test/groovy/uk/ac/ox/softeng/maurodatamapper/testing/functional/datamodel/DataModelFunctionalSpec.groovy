@@ -325,9 +325,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         response.getBody(String).get() == '["Data Asset","Data Standard"]'
-
     }
-
 
     void 'Test getting available DataModel default datatype providers'() {
         when: 'not logged in'
@@ -530,7 +528,6 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
     "canImportMultipleDomains": true
   }
 ]'''
-
     }
 
     void 'L30 : test getting DataModel hierarchy (as not logged in)'() {
@@ -1350,7 +1347,6 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         removeValidIdObject(id)
     }
 
-
     void 'L33 : test diffing 2 DataModels (as not logged in)'() {
 
         when: 'not logged in'
@@ -1994,7 +1990,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -2046,8 +2042,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == data.internalId && !it.imported}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -2160,7 +2156,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId}
+        responseBody().items.any { it.id == data.internalId }
 
         cleanup:
         cleanupImportData(data)
@@ -2255,7 +2251,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -2307,8 +2303,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == data.internalId && !it.imported}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -2387,8 +2383,8 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == data.internalId}
-        responseBody().items.any {it.id == data.importableId}
+        responseBody().items.any { it.id == data.internalId }
+        responseBody().items.any { it.id == data.importableId }
 
         cleanup:
         cleanupImportData(data)
@@ -2429,7 +2425,7 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId}
+        responseBody().items.any { it.id == data.internalId }
 
         cleanup:
         cleanupImportData(data)
@@ -2534,7 +2530,6 @@ class DataModelFunctionalSpec extends ModelUserAccessPermissionChangingAndVersio
         addReaderShare(data.finalisedId)
         data
     }
-
 
     /*
             void 'test deleting multiple models'() {

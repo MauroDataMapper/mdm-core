@@ -453,8 +453,8 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         response.status() == OK
         responseBody().extendsDataClasses.size() == 2
-        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString()}
-        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == complexDataModelId.toString()}
+        responseBody().extendsDataClasses.any { it.id == externalExtendableId && it.model == finalisedDataModelId.toString() }
+        responseBody().extendsDataClasses.any { it.id == internalExtendableId && it.model == complexDataModelId.toString() }
 
         cleanup:
         removeValidIdObject(id)
@@ -558,7 +558,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -616,9 +616,9 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 3
-        responseBody().items.any {it.id == data.internalId && !it.imported}
-        responseBody().items.any {it.id == data.sameModelImportableId && it.imported}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
+        responseBody().items.any { it.id == data.sameModelImportableId && it.imported }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -699,12 +699,11 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == data.internalId}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
-
     }
 
     @Unroll
@@ -743,7 +742,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId}
+        responseBody().items.any { it.id == data.internalId }
 
         cleanup:
         cleanupImportData(data)
@@ -850,7 +849,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId && !it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -908,9 +907,9 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 3
-        responseBody().items.any {it.id == data.internalId && !it.imported}
-        responseBody().items.any {it.id == data.sameModelImportableId && it.imported}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId && !it.imported }
+        responseBody().items.any { it.id == data.sameModelImportableId && it.imported }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -991,8 +990,8 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 2
-        responseBody().items.any {it.id == data.internalId}
-        responseBody().items.any {it.id == data.importableId && it.imported}
+        responseBody().items.any { it.id == data.internalId }
+        responseBody().items.any { it.id == data.importableId && it.imported }
 
         cleanup:
         cleanupImportData(data)
@@ -1038,8 +1037,7 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == data.internalId}
-
+        responseBody().items.any { it.id == data.internalId }
 
         cleanup:
         cleanupImportData(data)
@@ -1138,7 +1136,6 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
             removeValidIdObject(data.sameModelImportableId)
         }
     }
-
 
     /*
     void 'Test getting all DataClasses of a DataModel'() {

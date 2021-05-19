@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.container
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessFunctionalSpec
 
@@ -84,7 +83,6 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
         ~/\[Folder:Nested Functional Test Folder] added as child of \[Folder:Functional Test Folder]/
     }
 
-
     @Override
     Boolean isDisabledNotDeleted() {
         true
@@ -136,7 +134,6 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
   }'''
     }
 
-
     /**
      * Whilst this is actually tested in the user access tests we ignore the labels being created
      * we need to make sure that folders and subsequent folders are named correctly
@@ -183,5 +180,4 @@ class NestedFolderFunctionalSpec extends UserAccessFunctionalSpec {
 
      then:
      verifyResponse CREATED, response, defaultCreationJson.replaceFirst(/"label": "\$\{json-unit\.ignore}",/, '"label": "New Folder (3)",')}*/
-
 }
