@@ -104,7 +104,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete', 'canAddRule']
     }
 
     List<String> getReaderAvailableActions() {
@@ -121,7 +121,8 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
             'newDocumentationVersion',
             'newBranchModelVersion',
             'softDelete',
-            'delete'
+            'delete',
+            'canAddRule'
         ]
     }
 

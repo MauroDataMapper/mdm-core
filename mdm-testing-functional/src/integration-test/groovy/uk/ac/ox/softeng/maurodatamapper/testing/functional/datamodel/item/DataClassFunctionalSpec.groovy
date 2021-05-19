@@ -162,7 +162,8 @@ class DataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctional
     "save",
     "show",
     "comment",
-    "editDescription"
+    "editDescription",
+    "canAddRule"
   ]
 }'''
     }

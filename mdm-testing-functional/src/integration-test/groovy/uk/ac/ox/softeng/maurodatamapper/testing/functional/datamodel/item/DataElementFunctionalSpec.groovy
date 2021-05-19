@@ -265,7 +265,8 @@ class DataElementFunctionalSpec extends UserAccessAndCopyingInDataModelsFunction
     "save",
     "show",
     "comment",
-    "editDescription"
+    "editDescription",
+    "canAddRule"
   ]
 }'''
     }

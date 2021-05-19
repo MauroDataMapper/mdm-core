@@ -229,7 +229,8 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     "save",
     "show",
     "comment",
-    "editDescription"
+    "editDescription",
+    "canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}"
 }'''
@@ -294,7 +295,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-    "show","comment","editDescription","update","save","delete"
+    "show","comment","editDescription","update","save","delete","canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "enumerationValues": [
@@ -358,7 +359,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-   "show","comment","editDescription","update","save","delete"
+   "show","comment","editDescription","update","save","delete","canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "referenceClass": {
@@ -423,7 +424,7 @@ class DataTypeFunctionalSpec extends UserAccessAndCopyingInDataModelsFunctionalS
     }
   ],
   "availableActions": [
-    "show","comment","editDescription","update","save","delete"
+    "show","comment","editDescription","update","save","delete","canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "modelResourceId": "${json-unit.matches:id}",

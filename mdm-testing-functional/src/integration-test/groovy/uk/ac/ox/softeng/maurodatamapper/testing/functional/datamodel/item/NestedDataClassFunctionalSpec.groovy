@@ -160,7 +160,8 @@ class NestedDataClassFunctionalSpec extends UserAccessAndCopyingInDataModelsFunc
     "save",
     "show",
     "comment",
-    "editDescription"
+    "editDescription",
+    "canAddRule"
   ],
   "lastUpdated": "${json-unit.matches:offsetDateTime}",
   "parentDataClass": "${json-unit.matches:id}"

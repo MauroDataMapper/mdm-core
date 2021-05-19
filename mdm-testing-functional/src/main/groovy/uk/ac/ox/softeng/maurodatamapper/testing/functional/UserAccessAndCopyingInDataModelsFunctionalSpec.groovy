@@ -194,7 +194,7 @@ abstract class UserAccessAndCopyingInDataModelsFunctionalSpec extends UserAccess
     }
 
     List<String> getEditorModelItemAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'delete']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'delete', 'canAddRule']
     }
 
     void 'C01 : test copying (as writer to both DataModels)'() {
