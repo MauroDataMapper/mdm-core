@@ -70,7 +70,7 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
         log.debug('Binding map to new Terminology instance')
         DataBindingUtils.bindObjectToInstance(terminology, terminologyMap, null, getImportBlacklistedProperties(), null)
 
-        bindTermRelationships(terminology, terminologyMap.termRelationships)
+        bindTermRelationships(terminology, terminologyMap.termRelationships as List<Map<String, String>>)
 
         terminologyService.checkImportedTerminologyAssociations(currentUser, terminology)
 
@@ -78,12 +78,15 @@ abstract class DataBindTerminologyImporterProviderService<T extends TerminologyF
         terminology
     }
 
-    void bindTermRelationships(Terminology terminology, List<Map> termRelationships) {
+    void bindTermRelationships(Terminology terminology, List<Map<String, String>> termRelationships) {
         termRelationships.each {tr ->
-            Term sourceTerm = terminology.findTermByCode(tr.sourceTerm)
+            String sourceCode = tr.sourceTerm?.trim()
+            String targetCode = tr.targetTerm?.trim()
+            String relationshipType = tr.relationshipType?.trim()
+            Term sourceTerm = terminology.findTermByCode(sourceCode)
             sourceTerm.addToSourceTermRelationships(new TermRelationship(
-                relationshipType: terminology.findRelationshipTypeByLabel(tr.relationshipType),
-                targetTerm: terminology.findTermByCode(tr.targetTerm)
+                relationshipType: terminology.findRelationshipTypeByLabel(relationshipType),
+                targetTerm: terminology.findTermByCode(targetCode)
             ))
         }
     }
