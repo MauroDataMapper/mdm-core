@@ -162,56 +162,6 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         if (dataType) delete(dataType)
     }
 
-    def saveAll(Collection<ReferenceDataType> dataTypes) {
-        List<Classifier> classifiers = dataTypes.collectMany { it.classifiers ?: [] } as List<Classifier>
-        if (classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
-        }
-
-        Collection<ReferenceDataType> alreadySaved = dataTypes.findAll { it.ident() && it.isDirty() }
-        Collection<ReferenceDataType> notSaved = dataTypes.findAll { !it.ident() }
-
-        if (alreadySaved) {
-            log.trace('Straight saving {} already saved DataTypes ', alreadySaved.size())
-            ReferenceDataType.saveAll(alreadySaved)
-        }
-
-        if (notSaved) {
-            log.trace('Batch saving {} new DataTypes in batches of {}', notSaved.size(), ReferenceDataType.BATCH_SIZE)
-            List batch = []
-            int count = 0
-
-            notSaved.each { dt ->
-                dt.referenceDataElements?.clear()
-                batch += dt
-                count++
-                if (count % ReferenceDataType.BATCH_SIZE == 0) {
-                    batchSave(batch)
-                    batch.clear()
-                }
-
-            }
-            batchSave(batch)
-            batch.clear()
-        }
-    }
-
-    void batchSave(List<ReferenceDataType> dataTypes) {
-        long start = System.currentTimeMillis()
-        log.trace('Performing batch save of {} DataTypes', dataTypes.size())
-
-        ReferenceDataType.saveAll(dataTypes)
-        dataTypes.each { dt ->
-            updateFacetsAfterInsertingCatalogueItem(dt)
-        }
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
     @Override
     ReferenceDataType updateFacetsAfterInsertingCatalogueItem(ReferenceDataType referenceDataType) {
         if (referenceDataType.instanceOf(ReferenceEnumerationType)) {

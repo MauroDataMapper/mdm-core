@@ -209,54 +209,6 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
         results
     }
 
-    def saveAll(Collection<DataElement> dataElements) {
-
-        List<Classifier> classifiers = dataElements.collectMany {it.classifiers ?: []} as List<Classifier>
-        if (classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
-        }
-
-        Collection<DataElement> alreadySaved = dataElements.findAll {it.ident() && it.isDirty()}
-        Collection<DataElement> notSaved = dataElements.findAll {!it.ident()}
-
-        if (alreadySaved) {
-            log.trace('Straight saving {} already saved DataElements', alreadySaved.size())
-            DataElement.saveAll(alreadySaved)
-        }
-
-        if (notSaved) {
-            log.trace('Batch saving {} new DataElements in batches of {}', notSaved.size(), DataElement.BATCH_SIZE)
-            List batch = []
-            int count = 0
-
-            notSaved.each {de ->
-
-                batch += de
-                count++
-                if (count % DataElement.BATCH_SIZE == 0) {
-                    batchSave(batch)
-                    batch.clear()
-                }
-            }
-            batchSave(batch)
-            batch.clear()
-        }
-    }
-
-    void batchSave(List<DataElement> dataElements) {
-        long start = System.currentTimeMillis()
-        log.trace('Performing batch save of {} DataElements', dataElements.size())
-
-        DataElement.saveAll(dataElements)
-        dataElements.each {updateFacetsAfterInsertingCatalogueItem(it)}
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
     void matchUpDataTypes(DataModel dataModel, Collection<DataElement> dataElements) {
         if (dataElements) {
             log.debug("Matching up {} DataElements to a possible {} DataTypes", dataElements.size(), dataModel.dataTypes.size())

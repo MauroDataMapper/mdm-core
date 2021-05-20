@@ -291,19 +291,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataElements
     }
 
-    void batchSave(List<DataClass> dataClasses) {
-        long start = System.currentTimeMillis()
-        log.trace('Performing batch save of {} DataClasses', dataClasses.size())
-
-        DataClass.saveAll(dataClasses)
-        dataClasses.each {updateFacetsAfterInsertingCatalogueItem(it)}
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
     private void removeAssociations(DataClass dataClass) {
         removeSemanticLinks(dataClass)
         removeReferenceTypes(dataClass)

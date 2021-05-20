@@ -17,17 +17,20 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.model
 
-
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 abstract class ModelItemService<K extends ModelItem> extends CatalogueItemService<K> {
+
+    public final static Integer BATCH_SIZE = 1000
 
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
@@ -116,5 +119,63 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
 
     boolean isModelItemInSameModelOrInFinalisedModel(K modelItem, K otherModelItem) {
         otherModelItem.model.id == modelItem.model.id || modelItem.model.finalised
+    }
+
+    def saveAll(Collection<K> modelItems, boolean batching = true) {
+
+        List<Classifier> classifiers = modelItems.collectMany {it.classifiers ?: []} as List<Classifier>
+        if (classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
+        }
+
+        Collection<K> alreadySaved = modelItems.findAll {it.ident() && it.isDirty()}
+        Collection<K> notSaved = modelItems.findAll {!it.ident()}
+
+        if (alreadySaved) {
+            log.debug('Straight saving {} already saved {}', alreadySaved.size(), getModelItemClass().simpleName)
+            getModelItemClass().saveAll(alreadySaved)
+        }
+
+        if (notSaved) {
+            if (batching) {
+                log.debug('Batch saving {} new {} in batches of {}', notSaved.size(), getModelItemClass().simpleName, BATCH_SIZE)
+                List batch = []
+                int count = 0
+
+                notSaved.each {mi ->
+
+                    batch << mi
+                    count++
+                    if (count % BATCH_SIZE == 0) {
+                        batchSave(batch)
+                        batch.clear()
+                    }
+                }
+                batchSave(batch)
+                batch.clear()
+            } else {
+                log.debug('Straight saving {} new {}', notSaved.size(), getModelItemClass().simpleName)
+                notSaved.each {dt ->
+                    save(flush: false, validate: false, dt)
+                    updateFacetsAfterInsertingCatalogueItem(dt)
+                }
+            }
+        }
+    }
+
+    void batchSave(List<K> modelItems) {
+        long start = System.currentTimeMillis()
+        log.debug('Performing batch save of {} {}', modelItems.size(), getModelItemClass().simpleName)
+
+        getModelItemClass().saveAll(modelItems)
+        modelItems.each {dt ->
+            updateFacetsAfterInsertingCatalogueItem(dt)
+        }
+
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        log.debug('Batch save took {}', Utils.timeTaken(start))
     }
 }

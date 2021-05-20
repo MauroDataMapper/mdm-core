@@ -128,26 +128,48 @@ class TermService extends ModelItemService<Term> {
         }
     }
 
-    void batchSave(Collection<Term> terms) {
-        log.trace('Batch saving terms')
-        long start = System.currentTimeMillis()
-        List batch = []
-        int count = 0
-        terms.each {term ->
-            term.sourceTermRelationships?.clear()
-            term.targetTermRelationships?.clear()
-            batch += term
-            count++
-            if (count % Term.BATCH_SIZE == 0) {
-                singleBatchSave(batch)
-                batch.clear()
-            }
+    Collection<TermRelationship> saveAllAndGetTermRelationships(Collection<Term> terms) {
 
+        List<Classifier> classifiers = terms.collectMany {it.classifiers ?: []} as List<Classifier>
+        if (classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
         }
-        // Save final batch of terms
-        singleBatchSave(batch)
-        batch.clear()
-        log.debug('{} terms batch saved, took {}', terms.size(), Utils.timeTaken(start))
+
+        Collection<Term> alreadySaved = terms.findAll {it.ident() && it.isDirty()}
+        Collection<Term> notSaved = terms.findAll {!it.ident()}
+
+        Collection<TermRelationship> termRelationships = []
+
+        if (alreadySaved) {
+            log.trace('Straight saving {} already saved Terms', alreadySaved.size())
+            Term.saveAll(alreadySaved)
+        }
+
+        if (notSaved) {
+            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getModelItemClass().simpleName, BATCH_SIZE)
+            List batch = []
+            int count = 0
+
+            notSaved.each {t ->
+
+                termRelationships.addAll(t.sourceTermRelationships ?: [])
+                termRelationships.addAll(t.targetTermRelationships ?: [])
+
+                t.sourceTermRelationships?.clear()
+                t.targetTermRelationships?.clear()
+
+                batch << t
+                count++
+                if (count % BATCH_SIZE == 0) {
+                    batchSave(batch)
+                    batch.clear()
+                }
+            }
+            batchSave(batch)
+            batch.clear()
+        }
+        termRelationships
     }
 
     Long countByTerminologyId(UUID terminologyId) {

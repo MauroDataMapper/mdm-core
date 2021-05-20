@@ -94,25 +94,6 @@ class TermRelationshipService extends ModelItemService<TermRelationship> {
         }
     }
 
-    void batchSave(Collection<TermRelationship> relationships) {
-        log.trace('Batch saving relationships')
-        long start = System.currentTimeMillis()
-        List batch = []
-        int count = 0
-        relationships.each { relationship ->
-            batch += relationship
-            count++
-            if (count % TermRelationship.BATCH_SIZE == 0) {
-                singleBatchSave(batch)
-                batch.clear()
-            }
-        }
-        // Save final batch of terms
-        singleBatchSave(batch)
-        batch.clear()
-        log.debug('{} relationships batch saved, took {}', relationships.size(), Utils.timeTaken(start))
-    }
-
     List<TermRelationship> findAllByTermId(UUID termId, Map paginate = [:]) {
         TermRelationship.withFilter(TermRelationship.byTermId(termId), paginate).list(paginate)
     }
