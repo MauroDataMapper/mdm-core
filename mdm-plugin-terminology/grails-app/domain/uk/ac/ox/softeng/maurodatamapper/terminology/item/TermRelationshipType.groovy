@@ -41,6 +41,8 @@ import org.hibernate.search.bridge.builtin.UUIDBridge
 
 class TermRelationshipType implements ModelItem<TermRelationshipType, Terminology> {
 
+    public final static Integer BATCH_SIZE = 1000
+
     UUID id
     Terminology terminology
 
@@ -67,7 +69,7 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
     }
 
     static mapping = {
-        terminology index: 'term_relationship_type_terminology_idx', cascade: 'all-delete-orphan'
+        terminology index: 'term_relationship_type_terminology_idx', cascade: 'none'
     }
 
     static mappedBy = [
