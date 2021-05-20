@@ -2,7 +2,7 @@
 <exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.1' xmlns:mdm='http://maurodatamapper.com/terminology/3.1'>
     <mdm:terminology>
         <mdm:id>7ed8f681-6295-4a84-b9ab-27caa23ceef9</mdm:id>
-        <mdm:label>Complex Test Terminology</mdm:label>
+        <mdm:label>Imported Test Terminology</mdm:label>
         <mdm:lastUpdated>2020-08-20T15:37:20.989Z</mdm:lastUpdated>
         <mdm:classifiers>
             <mdm:classifier>
@@ -54,8 +54,8 @@
                 <mdm:description>with description</mdm:description>
             </mdm:annotation>
         </mdm:annotations>
-        <mdm:author>Test Bootstrap</mdm:author>
-        <mdm:organisation>Oxford BRC</mdm:organisation>
+        <mdm:author>Test Author</mdm:author>
+        <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
         <mdm:finalised>false</mdm:finalised>
         <mdm:authority>

@@ -1,7 +1,7 @@
 {
   "terminology": {
     "id": "${json-unit.matches:id}",
-    "label": "Complex Test Terminology",
+    "label": "Imported Test Terminology",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "classifiers": [
       {
@@ -53,8 +53,8 @@
         "description": "with description"
       }
     ],
-    "author": "Test Bootstrap",
-    "organisation": "Oxford BRC",
+    "author": "Test Author",
+    "organisation": "Test Organisation",
     "documentationVersion": "1.0.0",
     "finalised": false,
     "authority": {

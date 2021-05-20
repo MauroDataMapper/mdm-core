@@ -2,40 +2,10 @@
 <exp:exportModel xmlns:exp='http://maurodatamapper.com/export/3.1' xmlns:mdm='http://maurodatamapper.com/terminology/3.1'>
     <mdm:terminology>
         <mdm:id>9bde38fe-d4b6-4dbd-a5b9-061b606a7e23</mdm:id>
-        <mdm:label>Simple Test Terminology</mdm:label>
+        <mdm:label>Imported Test Terminology</mdm:label>
         <mdm:lastUpdated>2020-08-20T15:37:21.8Z</mdm:lastUpdated>
-        <mdm:classifiers>
-            <mdm:classifier>
-                <mdm:id>1bddaa14-731f-4021-8c44-7b3de8215e32</mdm:id>
-                <mdm:label>test classifier simple</mdm:label>
-                <mdm:lastUpdated>2020-08-20T15:37:21.68Z</mdm:lastUpdated>
-            </mdm:classifier>
-        </mdm:classifiers>
-        <mdm:metadata>
-            <mdm:metadata>
-                <mdm:id>24f588cc-a324-4338-8241-e94585d07bbf</mdm:id>
-                <mdm:namespace>terminology.test.com/simple</mdm:namespace>
-                <mdm:key>mdk1</mdm:key>
-                <mdm:value>mdv1</mdm:value>
-                <mdm:lastUpdated>2020-08-20T15:37:21.797Z</mdm:lastUpdated>
-            </mdm:metadata>
-            <mdm:metadata>
-                <mdm:id>1968cf01-396f-4ebf-be91-f858e37ce186</mdm:id>
-                <mdm:namespace>terminology.test.com</mdm:namespace>
-                <mdm:key>mdk2</mdm:key>
-                <mdm:value>mdv2</mdm:value>
-                <mdm:lastUpdated>2020-08-20T15:37:21.797Z</mdm:lastUpdated>
-            </mdm:metadata>
-            <mdm:metadata>
-                <mdm:id>b9695ba7-34d8-4f30-b848-193e2fff3fb9</mdm:id>
-                <mdm:namespace>terminology.test.com/simple</mdm:namespace>
-                <mdm:key>mdk2</mdm:key>
-                <mdm:value>mdv2</mdm:value>
-                <mdm:lastUpdated>2020-08-20T15:37:21.798Z</mdm:lastUpdated>
-            </mdm:metadata>
-        </mdm:metadata>
-        <mdm:author>Test Bootstrap</mdm:author>
-        <mdm:organisation>Oxford BRC</mdm:organisation>
+        <mdm:author>Test Author</mdm:author>
+        <mdm:organisation>Test Organisation</mdm:organisation>
         <mdm:documentationVersion>1.0.0</mdm:documentationVersion>
         <mdm:finalised>false</mdm:finalised>
         <mdm:authority>
