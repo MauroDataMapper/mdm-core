@@ -516,22 +516,6 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
       ],
       "code": "CTT16",
       "definition": "Complex Test Term 16"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "Term",
-      "label": "CTT17: Complex Test Term 17",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test Terminology",
-          "domainType": "Terminology",
-          "finalised": false
-        }
-      ],
-      "code": "CTT17",
-      "definition": "Complex Test Term 17"
     }
   ]
 }'''
