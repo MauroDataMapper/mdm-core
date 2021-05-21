@@ -22,6 +22,10 @@ abstract class Diff<T> extends Mergeable {
     T left
     T right
 
+    String getDiffType() {
+        getClass().simpleName
+    }
+
     @Override
     boolean equals(o) {
         if (this.is(o)) return true

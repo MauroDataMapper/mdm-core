@@ -54,12 +54,12 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
     String toString() {
         int numberOfDiffs = getNumberOfDiffs()
         if (!numberOfDiffs) return "${leftIdentifier} == ${rightIdentifier}"
-        "${leftIdentifier} <> ${rightIdentifier} :: ${numberOfDiffs} differences\n  ${diffs.collect { it.toString() }.join('\n  ')}"
+        "${leftIdentifier} <> ${rightIdentifier} :: ${numberOfDiffs} differences\n  ${diffs.collect {it.toString()}.join('\n  ')}"
     }
 
     @Override
     Integer getNumberOfDiffs() {
-        diffs?.sum { it.getNumberOfDiffs() } as Integer ?: 0
+        diffs?.sum {it.getNumberOfDiffs()} as Integer ?: 0
     }
 
     ObjectDiff<T> leftHandSide(String leftId, T lhs) {
@@ -121,11 +121,11 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
         // Assume all rhs have been created new
         List<K> created = new ArrayList<>(rhs)
 
-        Map<String, K> lhsMap = lhs.collectEntries { [it.getDiffIdentifier(), it] }
-        Map<String, K> rhsMap = rhs.collectEntries { [it.getDiffIdentifier(), it] }
+        Map<String, K> lhsMap = lhs.collectEntries {[it.getDiffIdentifier(), it]}
+        Map<String, K> rhsMap = rhs.collectEntries {[it.getDiffIdentifier(), it]}
 
         // Work through each lhs object and compare to rhs object
-        lhsMap.each { di, lObj ->
+        lhsMap.each {di, lObj ->
             K rObj = rhsMap[di]
             if (rObj) {
                 // If robj then it exists and has not been created
@@ -168,117 +168,162 @@ class ObjectDiff<T extends Diffable> extends Diff<T> {
     /**
      * Filters an ObjectDiff of two {@code Diffable}s based on the differences of each of the Diffables to their common ancestor. See MC-9228
      * for details on filtering criteria.
-     * @param left ObjectDiff between left Diffable and commonAncestor Diffable
-     * @param right ObjectDiff between right Diffable and commonAncestor Diffable
+     * @param leftMergeDiff ObjectDiff between left Diffable and commonAncestor Diffable
+     * @param rightMergeDiff ObjectDiff between right Diffable and commonAncestor Diffable
      * @return this ObjectDiff with f
      */
-    ObjectDiff<T> mergeDiff(ObjectDiff<T> left, ObjectDiff<T> right) {
-        List<FieldDiff> diffs = []
-        def existingDiffs = this.diffs
+    @SuppressWarnings('GroovyVariableNotAssigned')
+    ObjectDiff<T> mergeDiff(ObjectDiff<T> leftMergeDiff, ObjectDiff<T> rightMergeDiff) {
+        List<FieldDiff> existingDiffs = new ArrayList<>(this.diffs)
 
-        for (int i = 0; i < existingDiffs.size; i++) {
-            def diff = existingDiffs[i]
-            // Diffable type, i.e. description, dataClass, metadata
-            String fieldName = diff.fieldName
+        List<String> leftMergeDiffFieldNames = leftMergeDiff.diffs.fieldName
+        List<String> rightMergeDiffFieldNames = rightMergeDiff.diffs.fieldName
 
-            if (fieldName in left.diffs.fieldName) {
-                if (fieldName in right.diffs.fieldName) {
-                    if (diff.class == FieldDiff) {
-                        diff.isMergeConflict = true
-                        diff.commonAncestorValue = right.diffs.find { it.fieldName == fieldName }.left
-                        diffs.add(diff)
-                    } else if (diff.class == ArrayDiff) {
-                        def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
-                        def rightArrayDiff = right.diffs.find { it.fieldName == fieldName }
-                        diff.created = diff.created.findAll { MergeWrapper wrapper ->
-                            def diffIdentifier = wrapper.value.diffIdentifier
-                            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
-                                // top created, left created
-                                wrapper.isMergeConflict = false
-                                true
-                            } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
-                                // top created, left modified
-                                wrapper.isMergeConflict = true
-                                wrapper.commonAncestorValue = leftArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                        diff.deleted = diff.deleted.findAll { MergeWrapper wrapper ->
-                            def diffIdentifier = wrapper.value.diffIdentifier
-                            if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
-                                // top deleted, right modified
-                                wrapper.isMergeConflict = true
-                                wrapper.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
-                                true
-                            } else if (diffIdentifier in leftArrayDiff.deleted.value.diffIdentifier) {
-                                // top deleted, right not modified, left deleted
-                                wrapper.isMergeConflict = false
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                        diff.modified = diff.modified.findAll { ObjectDiff objDiff ->
-                            def diffIdentifier = objDiff.right.diffIdentifier
-                            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
-                                // top modified, right created, (left also created)
-                                objDiff.diffs.each {
-                                    it.isMergeConflict = true
-                                    it.commonAncestorValue = null
-                                }
-                                objDiff.isMergeConflict = true
-                                objDiff.commonAncestorValue = null
-                                true
-                            } else if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
-                                if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
-                                    // top modified, left modified, right modified
-                                    def leftObjDiff = leftArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier } as ObjectDiff
-                                    def rightObjDiff = rightArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier } as ObjectDiff
-                                    // call recursively
-                                    objDiff = objDiff.mergeDiff(leftObjDiff, rightObjDiff)
-                                    objDiff.isMergeConflict = true
-                                    objDiff.commonAncestorValue = rightArrayDiff.left.find { it.diffIdentifier == diffIdentifier }
-                                    true
-                                } else {
-                                    // top modified, left modified, right not modified
-                                    objDiff.diffs.each { it.isMergeConflict = false }
-                                    objDiff.isMergeConflict = false
-                                    true
-                                }
-                            } else {
-                                false
-                            }
-                        }
-                        diffs.add(diff)
-                    }
-                } else {
-                    // An entire Diffable type may not be present on the right, so there will be no merge conflicts
-                    if (diff.class == FieldDiff) { diff.isMergeConflict = false } else if (diff.class == ArrayDiff) {
-                        diff.deleted.each { it.isMergeConflict = false }
-                        diff.created.each { it.isMergeConflict = false }
+        this.diffs = existingDiffs.collect {diff ->
 
-                        // Can only get left, as this type is not present on the right
-                        def leftArrayDiff = left.diffs.find { it.fieldName == fieldName }
-
-                        diff.modified.each { objDiff ->
-                            def diffIdentifier = objDiff.right.diffIdentifier
-                            def leftObjDiff = leftArrayDiff.modified.find { it.left.diffIdentifier == diffIdentifier } as ObjectDiff
-                            // call recursively
-                            objDiff = objDiff.mergeDiff(leftObjDiff, new ObjectDiff<>())
-                            objDiff.isMergeConflict = false
-                        }
-                    }
-                    diffs.add(diff)
+            if (diff.fieldName in leftMergeDiffFieldNames && diff.fieldName in rightMergeDiffFieldNames) {
+                if (ArrayDiff.isArrayDiff(diff)) {
+                    return updateArrayMergeDiffPresentOnBothSides(diff as ArrayDiff,
+                                                                  leftMergeDiff.diffs.find {it.fieldName == diff.fieldName} as ArrayDiff,
+                                                                  rightMergeDiff.diffs.find {it.fieldName == diff.fieldName} as ArrayDiff)
+                }
+                if (FieldDiff.isFieldDiff(diff)) {
+                    return updateFieldMergeDiffPresentOnBothSides(diff,
+                                                                  rightMergeDiff.diffs.find {it.fieldName == diff.fieldName})
                 }
             }
-        }
 
-        this.diffs = diffs
+            // An entire Diffable type can not be present on the right, so there will be no merge conflicts
+            if (diff.fieldName in leftMergeDiffFieldNames) {
+                if (ArrayDiff.isArrayDiff(diff)) {
+                    return updateArrayMergeDiffPresentOnOneSide(diff as ArrayDiff,
+                                                                leftMergeDiff.diffs.find {it.fieldName == diff.fieldName} as ArrayDiff)
+                }
+                if (FieldDiff.isFieldDiff(diff)) {
+                    return updateFieldMergeDiffPresentOnOneSide(diff as FieldDiff)
+                }
+            }
+            // If not in LHS then dont add
+            null
+        }.findAll() // Strip null values
         this
     }
 
+    ArrayDiff updateArrayMergeDiffPresentOnOneSide(ArrayDiff arrayDiff, ArrayDiff leftArrayDiff) {
+        arrayDiff.deleted.each {it.isMergeConflict = false}
+        arrayDiff.created.each {it.isMergeConflict = false}
+
+        arrayDiff.modified.each {objDiff ->
+            def diffIdentifier = objDiff.right.diffIdentifier
+            def leftObjDiff = leftArrayDiff.modified.find {it.left.diffIdentifier == diffIdentifier} as ObjectDiff
+            // call recursively
+            objDiff = objDiff.mergeDiff(leftObjDiff, new ObjectDiff<>())
+            objDiff.isMergeConflict = false
+        }
+        arrayDiff
+    }
+
+    FieldDiff updateFieldMergeDiffPresentOnOneSide(FieldDiff fieldDiff) {
+        fieldDiff.isMergeConflict = false
+        fieldDiff
+    }
+
+    FieldDiff updateFieldMergeDiffPresentOnBothSides(FieldDiff diff, FieldDiff rightFieldDiff) {
+        diff.isMergeConflict = true
+        diff.commonAncestorValue = rightFieldDiff.left
+        diff
+    }
+
+    ArrayDiff updateArrayMergeDiffPresentOnBothSides(ArrayDiff arrayDiff, ArrayDiff leftArrayDiff, ArrayDiff rightArrayDiff) {
+
+        arrayDiff.created = findAllCreatedMergeDiffs(arrayDiff.created, leftArrayDiff)
+        arrayDiff.deleted = findAllDeletedMergeDiffs(arrayDiff.deleted, leftArrayDiff, rightArrayDiff)
+        arrayDiff.modified = findAllModifiedMergeDiffs(arrayDiff.modified, leftArrayDiff, rightArrayDiff)
+        arrayDiff
+    }
+
+    Collection<MergeWrapper> findAllCreatedMergeDiffs(Collection<MergeWrapper> created, ArrayDiff leftArrayDiff) {
+        created.collect {MergeWrapper wrapper ->
+            def diffIdentifier = wrapper.value.diffIdentifier
+            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
+                // top created, left created
+                wrapper.isMergeConflict = false
+                return wrapper
+            }
+            if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
+                // top created, left modified
+                wrapper.isMergeConflict = true
+                wrapper.commonAncestorValue = leftArrayDiff.left.find {it.diffIdentifier == diffIdentifier}
+                return wrapper
+            }
+            null
+        }.findAll()
+    }
+
+    Collection<MergeWrapper> findAllDeletedMergeDiffs(Collection<MergeWrapper> deleted, ArrayDiff leftArrayDiff, ArrayDiff rightArrayDiff) {
+        deleted.collect {MergeWrapper wrapper ->
+            def diffIdentifier = wrapper.value.diffIdentifier
+            if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
+                // top deleted, right modified
+                wrapper.isMergeConflict = true
+                wrapper.commonAncestorValue = rightArrayDiff.left.find {it.diffIdentifier == diffIdentifier}
+                return wrapper
+            } else if (diffIdentifier in leftArrayDiff.deleted.value.diffIdentifier) {
+                // top deleted, right not modified, left deleted
+                wrapper.isMergeConflict = false
+                return wrapper
+            }
+            null
+        }.findAll()
+    }
+
+    Collection<ObjectDiff> findAllModifiedMergeDiffs(Collection<ObjectDiff> modified, ArrayDiff leftArrayDiff, ArrayDiff rightArrayDiff) {
+        modified.collect {ObjectDiff objDiff ->
+            def diffIdentifier = objDiff.right.diffIdentifier
+            if (diffIdentifier in leftArrayDiff.created.value.diffIdentifier) {
+                return updateModifiedObjectMergeDiffCreatedOnOneSide(objDiff)
+            }
+
+            if (diffIdentifier in leftArrayDiff.modified.left.diffIdentifier) {
+                if (diffIdentifier in rightArrayDiff.modified.left.diffIdentifier) {
+                    // top modified, left modified, right modified
+                    return createModifiedObjectMergeDiffModifiedOnBothSides(objDiff,
+                                                                            leftArrayDiff.modified.find {it.left.diffIdentifier == diffIdentifier} as ObjectDiff,
+                                                                            rightArrayDiff.modified.find {it.left.diffIdentifier == diffIdentifier} as ObjectDiff,
+                                                                            rightArrayDiff.left.find {it.diffIdentifier == diffIdentifier}
+                    )
+                }
+                // top modified, left modified, right not modified
+                return updateModifiedObjectMergeDiffPresentOnOneSide(objDiff)
+            }
+            null
+        }.findAll()
+    }
+
+    ObjectDiff updateModifiedObjectMergeDiffCreatedOnOneSide(ObjectDiff objectDiff) {
+        // top modified, right created, (left also created)
+        objectDiff.diffs.each {
+            it.isMergeConflict = true
+            it.commonAncestorValue = null
+        }
+        objectDiff.isMergeConflict = true
+        objectDiff.commonAncestorValue = null
+        return objectDiff
+    }
+
+    ObjectDiff createModifiedObjectMergeDiffModifiedOnBothSides(ObjectDiff objectDiff, ObjectDiff leftObjDiff, ObjectDiff rightObjDiff, Object commonAncestorValue) {
+        // call recursively
+        ObjectDiff mergeDiff = objectDiff.mergeDiff(leftObjDiff, rightObjDiff)
+        mergeDiff.isMergeConflict = true
+        mergeDiff.commonAncestorValue = commonAncestorValue
+        return mergeDiff
+    }
+
+    ObjectDiff updateModifiedObjectMergeDiffPresentOnOneSide(ObjectDiff objectDiff) {
+        objectDiff.diffs.each {it.isMergeConflict = false}
+        objectDiff.isMergeConflict = false
+        objectDiff
+    }
 
     FieldDiff find(@DelegatesTo(List) @ClosureParams(value = SimpleType,
         options = 'uk.ac.ox.softeng.maurodatamapper.core.diff.FieldDiff') Closure closure) {

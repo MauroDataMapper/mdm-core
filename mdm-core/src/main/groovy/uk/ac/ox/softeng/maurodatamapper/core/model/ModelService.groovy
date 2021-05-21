@@ -493,11 +493,11 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     ObjectDiff<K> getMergeDiffForModels(K leftModel, K rightModel) {
-        def commonAncestor = findCommonAncestorBetweenModels(leftModel, rightModel)
+        K commonAncestor = findCommonAncestorBetweenModels(leftModel, rightModel)
 
-        def left = commonAncestor.diff(leftModel)
-        def right = commonAncestor.diff(rightModel)
-        def top = rightModel.diff(leftModel)
+        ObjectDiff<K> left = commonAncestor.diff(leftModel)
+        ObjectDiff<K> right = commonAncestor.diff(rightModel)
+        ObjectDiff<K> top = rightModel.diff(leftModel)
 
         top.mergeDiff(left, right)
     }
