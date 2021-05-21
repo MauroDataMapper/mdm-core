@@ -1112,7 +1112,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         loginEditor()
         String expectedJson = """[{
     "id": "${data.fork}",
-    "label": "Functional Test Fork DataModel",
+    "label": "Functional Test Fork ${modelType}",
     "branch": null,
     "modelVersion": "0.1.0",
     "documentationVersion": "1.0.0",
@@ -1128,7 +1128,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.forkMain}",
-    "label": "Functional Test Fork DataModel",
+    "label": "Functional Test Fork ${modelType}",
     "branch": "main",
     "modelVersion": null,
     "documentationVersion": "1.0.0",
@@ -1157,7 +1157,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         loginEditor()
         String expectedJson = """[{
     "id": "${data.anotherFork}",
-    "label": "Functional Test AnotherFork DataModel",
+    "label": "Functional Test AnotherFork ${modelType}",
     "branch": "main",
     "modelVersion": null,
     "documentationVersion": "1.0.0",
@@ -1355,7 +1355,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         """[
   {
     "id": "${data.v1}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": null,
     "modelVersion" : "1.0.0",
     "documentationVersion": "1.0.0",
@@ -1380,7 +1380,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.newBranch}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": "newBranch",
     "modelVersion": null,
     "documentationVersion": "1.0.0",
@@ -1393,7 +1393,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.fork}",
-    "label": "Functional Test Fork DataModel",
+    "label": "Functional Test Fork ${modelType}",
     "branch": null,
     "modelVersion": "0.1.0",
     "documentationVersion": "1.0.0",
@@ -1406,7 +1406,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.v2}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": null,
     "modelVersion" : "2.0.0",
     "documentationVersion": "1.0.0",
@@ -1422,7 +1422,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.v3}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": null,
     "modelVersion" : "3.0.0",
     "documentationVersion": "1.0.0",
@@ -1442,7 +1442,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.testBranch}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": "testBranch",
     "modelVersion": null,
     "documentationVersion": "1.0.0",
@@ -1455,7 +1455,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
    "id": "${data.v4}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": null,
     "modelVersion" : "4.0.0",
     "documentationVersion": "1.0.0",
@@ -1475,7 +1475,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.anotherFork}",
-    "label": "Functional Test AnotherFork DataModel",
+    "label": "Functional Test AnotherFork ${modelType}",
     "branch": "main",
     "modelVersion": null,
     "documentationVersion": "1.0.0",
@@ -1488,7 +1488,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.v5}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": null,
     "modelVersion" : "5.0.0",
     "documentationVersion": "1.0.0",
@@ -1512,7 +1512,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.main}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": "main",
     "modelVersion": null,
     "documentationVersion": "1.0.0",
@@ -1525,7 +1525,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
     {
     "id": "${data.anotherBranch}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": "anotherBranch",
     "modelVersion": null,
     "documentationVersion": "1.0.0",
@@ -1538,7 +1538,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
   },
   {
     "id": "${data.interestingBranch}",
-    "label": "Functional Test DataModel",
+    "label": "Functional Test ${modelType}",
     "branch": "interestingBranch",
     "modelVersion": null,
     "documentationVersion": "1.0.0",
