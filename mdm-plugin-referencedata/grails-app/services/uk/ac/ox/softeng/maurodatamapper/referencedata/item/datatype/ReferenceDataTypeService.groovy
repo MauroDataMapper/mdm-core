@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -247,27 +246,24 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         referenceDataModel.addToReferenceDataTypes(referenceDataType)
         referenceDataType.createdBy = importingUser.emailAddress
         if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
-            (referenceDataType as ReferenceEnumerationType).referenceEnumerationValues.each { ev ->
+            (referenceDataType as ReferenceEnumerationType).referenceEnumerationValues.each {ev ->
                 ev.createdBy = importingUser.emailAddress
             }
         }
         checkFacetsAfterImportingCatalogueItem(referenceDataType)
     }
 
-    private void setCreatedBy(User creator, ReferenceDataType dataType) {
-        throw new ApiNotYetImplementedException('DTSXX', 'DataType setting created by')
-    }
-
-    private def findAllByReferenceDataModelId(Serializable referenceDataModel, Map paginate = [:]) {
+    def findAllByReferenceDataModelId(Serializable referenceDataModel, Map paginate = [:]) {
         ReferenceDataType.withFilter(ReferenceDataType.byReferenceDataModelId(referenceDataModel), paginate).list(paginate)
     }
 
-    private def findAllByReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable referenceDataModelId, String searchTerm, Map paginate = [:]) {
+    def findAllByReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable referenceDataModelId, String searchTerm, Map paginate = [:]) {
         ReferenceDataType.byReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(referenceDataModelId, searchTerm).list(paginate)
     }
 
-    ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                                   boolean copySummaryMetadata = false) {
+    ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,
+                                            UserSecurityPolicyManager userSecurityPolicyManager,
+                                            boolean copySummaryMetadata = false) {
 
         ReferenceDataType copy
 

@@ -74,7 +74,7 @@ class ReferenceDataModelInterceptor extends ModelInterceptor {
         if (!params.referenceDataModelIds) throw new ApiBadRequestException('DMIXX', 'ReferenceDataModelIds must be supplied in the request body')
 
         UUID id = params.referenceDataModelIds.find {!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(ReferenceDataModel, it as UUID)}
-        return !id ?: notFound(ReferenceDataModel, id)
+        id ? notFound(ReferenceDataModel, id) : true
     }
 
     boolean before() {

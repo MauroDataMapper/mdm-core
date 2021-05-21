@@ -359,14 +359,15 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             Map<String, List<ReferenceType>> dmGrouped = labelReferenceTypes.groupBy {it.dataModel ? 'dataModel' : 'noDataModel'}
 
             // There will be only 1 datamodel owned type as we've already merged datamodel owned datatypes
-            // If no datamodel owned, then we merge no datamodel and assign
-            if (!dmGrouped.dataModel) {
+            if (dmGrouped.dataModel) {
+                // Merge all unowned reference types into the owned one
+                dataTypeService.mergeDataTypes(dmGrouped.dataModel.first(), dmGrouped.noDataModel)
+            } else {
+                // If no datamodel owned, then we merge no datamodel and assign
                 log.warn('No ReferenceType with label {} is owned by DataModel, merging existing and assigning to DataModel', label)
                 ReferenceType keep = dataTypeService.mergeDataTypes(dmGrouped.dataModel)
                 dataModel.addToDataTypes(keep)
-            } else {
-                // Merge all unowned reference types into the owned one
-                dataTypeService.mergeDataTypes(dmGrouped.dataModel.first(), dmGrouped.noDataModel)
+
             }
         }
     }

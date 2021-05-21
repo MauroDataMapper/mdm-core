@@ -31,19 +31,19 @@ import java.nio.charset.StandardCharsets
 /**
  * @since 28/04/2021
  */
-class DynamicJsonProfileProviderService extends JsonProfileProviderService{
+class DynamicJsonProfileProviderService extends JsonProfileProviderService {
 
     UUID dataModelId
     String dataModelLabel
     String dataModelDescription
     String dataModelVersion
 
-    DynamicJsonProfileProviderService(MetadataService metadataService, DataModel dataModel){
+    DynamicJsonProfileProviderService(MetadataService metadataService, DataModel dataModel) {
         this.metadataService = metadataService
-        this. dataModelId = dataModel.id
-        this. dataModelLabel = dataModel.label
-        this. dataModelDescription = dataModel.description
-        this. dataModelVersion = dataModel.version
+        this.dataModelId = dataModel.id
+        this.dataModelLabel = dataModel.label
+        this.dataModelDescription = dataModel.description
+        this.dataModelVersion = dataModel.version
     }
 
     @Override
@@ -55,11 +55,11 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService{
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
         jsonProfile.sections.each {section ->
-            section.fields.each { field ->
+            section.fields.each {field ->
                 Metadata matchingField = metadataList.find {
                     it.key == field.metadataPropertyName || it.key == "${section.sectionName}/${field.fieldName}"
                 }
-                if(matchingField) {
+                if (matchingField) {
                     field.currentValue = matchingField.value
                 } else {
                     field.currentValue = ""
@@ -75,7 +75,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService{
         Set<String> knownProperties = []
         getSections().each {section ->
             section.fields.each {field ->
-                if(field.metadataPropertyName) {
+                if (field.metadataPropertyName) {
                     knownProperties.add(field.metadataPropertyName)
 
                 } else {
@@ -86,40 +86,30 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService{
         return knownProperties
     }
 
+    JsonProfile createNewEmptyJsonProfile() {
+        new JsonProfile(getSections())
+    }
 
     @Override
-    void storeProfileInEntity(CatalogueItem entity, JsonProfile profile, String userEmailAddress) {
-        JsonProfile emptyJsonProfile = new JsonProfile(getSections())
+    void storeFieldInEntity(ProfileField field, CatalogueItem entity, ProfileSection submittedSection, String sectionName, String userEmailAddress) {
+        ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+        if (!submittedField) return
 
-        emptyJsonProfile.sections.each {section ->
-            ProfileSection submittedSection = profile.sections.find{it.sectionName == section.sectionName }
-            if(submittedSection) {
-                section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName }
-                    if(submittedField) {
-                        if(submittedField.currentValue  && submittedField.metadataPropertyName) {
-                            entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue,
-                                                 userEmailAddress)
-                        } else if(!field.metadataPropertyName) {
-                            log.info("No metadataPropertyName set for field: " + field.fieldName)
-                            String metadataPropertyName = "${section.sectionName}/${submittedField.fieldName}"
-                            entity.addToMetadata(metadataNamespace, metadataPropertyName, submittedField.currentValue,
-                                                 userEmailAddress)
-                        } else if(!submittedField.currentValue) {
-                            Metadata md = entity.metadata.find{
-                                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
-                            }
-                            if(md) {
-                                entity.metadata.remove(md)
-                                metadataService.delete(md)
-                            }
-                        }
-                    }
-                }
+        if (submittedField.currentValue && submittedField.metadataPropertyName) {
+            entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
+        } else if (!field.metadataPropertyName) {
+            log.debug("No metadataPropertyName set for field: " + field.fieldName)
+            String metadataPropertyName = "${sectionName}/${submittedField.fieldName}"
+            entity.addToMetadata(metadataNamespace, metadataPropertyName, submittedField.currentValue, userEmailAddress)
+        } else if (!submittedField.currentValue) {
+            Metadata md = entity.metadata.find {
+                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
+            }
+            if (md) {
+                entity.metadata.remove(md)
+                metadataService.delete(md)
             }
         }
-        //entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
-        Metadata.saveAll(entity.metadata)
     }
 
     @Override
@@ -129,13 +119,14 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService{
 
     @Override
     String getMetadataNamespace() {
-        if(!getProfileDataModel()) {
+        if (!getProfileDataModel()) {
             return null
         }
         Metadata md = getProfileDataModel().metadata.find {md ->
             md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-            md.key == "metadataNamespace"}
-        if(md) {
+            md.key == "metadataNamespace"
+        }
+        if (md) {
             return md.value
         } else {
             log.error("Invalid namespace!!")
@@ -162,8 +153,9 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService{
     List<String> profileApplicableForDomains() {
         Metadata md = getProfileDataModel().metadata.find {md ->
             md.namespace == "uk.ac.ox.softeng.maurodatamapper.profile" &&
-            md.key == "domainsApplicable"}
-        if(md) {
+            md.key == "domainsApplicable"
+        }
+        if (md) {
             return md.value.tokenize(";")
         } else {
             return []
@@ -192,11 +184,11 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService{
 
     List<ProfileSection> getSections() {
         DataModel dm = getProfileDataModel()
-        dm.dataClasses.sort { it.order }.collect() { dataClass ->
+        dm.dataClasses.sort {it.order}.collect() {dataClass ->
             new ProfileSection(
                 sectionName: dataClass.label,
                 sectionDescription: dataClass.description,
-                fields: dataClass.dataElements.sort { it.order }.collect { dataElement ->
+                fields: dataClass.dataElements.sort {it.order}.collect {dataElement ->
                     new ProfileField(
                         fieldName: dataElement.label,
                         description: dataElement.description,
@@ -212,7 +204,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService{
                             it.key == "regularExpression"
                         }?.value,
                         allowedValues: (dataElement.dataType instanceof EnumerationType) ?
-                                       ((EnumerationType) dataElement.dataType).enumerationValues.collect { it.key } : [],
+                                       ((EnumerationType) dataElement.dataType).enumerationValues.collect {it.key} : [],
                         currentValue: ""
                     )
                 }

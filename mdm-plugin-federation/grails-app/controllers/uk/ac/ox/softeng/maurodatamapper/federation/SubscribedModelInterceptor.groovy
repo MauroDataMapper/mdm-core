@@ -43,10 +43,11 @@ class SubscribedModelInterceptor extends SecurableResourceInterceptor {
 
     boolean before() {
         securableResourceChecks()
-        if (!currentUserSecurityPolicyManager.isAuthenticated()) {
-            notFound(SubscribedModel, getId())
-        } else {
-            actionName == 'index' || actionName == 'show' || currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
+        if (currentUserSecurityPolicyManager.isAuthenticated()) {
+            return actionName == 'index' ||
+                   actionName == 'show' ||
+                   currentUserSecurityPolicyManager.isApplicationAdministrator() ?: forbiddenDueToNotApplicationAdministrator()
         }
+        notFound(SubscribedModel, getId())
     }
 }

@@ -17,8 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.authority
 
-import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
-
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 

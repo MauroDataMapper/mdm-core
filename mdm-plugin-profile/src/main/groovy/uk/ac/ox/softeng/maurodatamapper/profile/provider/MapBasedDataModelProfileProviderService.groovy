@@ -94,6 +94,5 @@ abstract class MapBasedDataModelProfileProviderService<P extends MapBasedProfile
         entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
 
         dataModelService.save(entity)
-        DataModel dm = dataModelService.get(entity.id)
     }
 }

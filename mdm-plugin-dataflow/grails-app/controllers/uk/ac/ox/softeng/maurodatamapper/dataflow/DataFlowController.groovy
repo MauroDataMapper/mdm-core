@@ -136,8 +136,8 @@ class DataFlowController extends EditLoggingController<DataFlow> {
         render(file: outputStream.toByteArray(), fileName: "DataFlows.${exporter.fileExtension}", contentType: exporter.fileType)
     }
 
-    private findImporter() {
-        DataFlowImporterProviderService importer = mauroDataMapperServiceProviderService.findImporterProvider(
+    private DataFlowImporterProviderService findImporter() {
+        mauroDataMapperServiceProviderService.findImporterProvider(
             params.importerNamespace, params.importerName, params.importerVersion
         ) as DataFlowImporterProviderService
     }

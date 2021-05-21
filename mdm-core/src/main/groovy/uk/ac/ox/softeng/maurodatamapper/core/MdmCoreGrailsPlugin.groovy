@@ -201,15 +201,6 @@ This is basically the backend API.
         if (config.env == 'live') outputRuntimeArgs()
     }
 
-    void onChange(Map<String, Object> event) {
-    }
-
-    void onConfigChange(Map<String, Object> event) {
-    }
-
-    void onShutdown(Map<String, Object> event) {
-    }
-
     void outputRuntimeArgs() {
         RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean()
         List<String> arguments = runtimeMxBean.getInputArguments()

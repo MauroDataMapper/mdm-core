@@ -113,10 +113,10 @@ class GroupBasedSecurityPolicyManagerService implements SecurityPolicyManagerSer
                                                                                                                     controlGroup.id)
         // To ensure only 1 usergroup exists for each role access on a secured service there is now an added constraint on the domain
         // We should also ensure we dont add more security for an existing group, we should only ever update a group's acces to a resource
-        if (!existing) {
-            securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
-        } else {
+        if (existing) {
             securableResourceGroupRoleService.updateAndSaveSecurableResourceGroupRole(existing, role)
+        } else {
+            securableResourceGroupRoleService.createAndSaveSecurableResourceGroupRole(securableResource, role, controlGroup, catalogueUser)
         }
 
         /*

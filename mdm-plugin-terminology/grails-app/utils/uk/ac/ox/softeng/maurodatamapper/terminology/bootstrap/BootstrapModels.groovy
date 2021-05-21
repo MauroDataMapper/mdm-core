@@ -155,7 +155,7 @@ class BootstrapModels {
 
         (1..99).each {
             Term source = terms[it]
-            Term target = it % 10 != 0 ? terms[((it / 10) as Integer) * 10] : top
+            Term target = it % 10 == 0 ? top : terms[((it / 10) as Integer) * 10]
             TermRelationship relationship = new TermRelationship(createdBy: DEVELOPMENT, sourceTerm: source, targetTerm: target,
                                                                  relationshipType: isPartOf)
             source.addToSourceTermRelationships(relationship)

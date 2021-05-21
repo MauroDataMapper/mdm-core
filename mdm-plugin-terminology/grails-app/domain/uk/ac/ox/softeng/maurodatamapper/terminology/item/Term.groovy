@@ -188,12 +188,13 @@ class Term implements ModelItem<Term, Terminology> {
         } else {
             path = ''
         }
-        if (!breadcrumbTree) {
-            breadcrumbTree = new BreadcrumbTree(this)
-        } else {
+        if (breadcrumbTree) {
             if (!breadcrumbTree.matchesPath(path)) {
                 breadcrumbTree.update(this)
             }
+
+        } else {
+            breadcrumbTree = new BreadcrumbTree(this)
         }
         path
     }

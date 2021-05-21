@@ -257,7 +257,7 @@ class TreeItemService {
 
     private <K extends Container> List<ModelTreeItem> getModelTreeItemsForModels(Class<K> containerClass, List<Model> models,
                                                                                  List<UUID> modelIdsWithChildren,
-                                                                                 List<UUID> supersededIds = []) {
+                                                                                 List<UUID> supersededIds) {
         ContainerService service = containerServices.find {it.handles(containerClass)}
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         models.collect {new ModelTreeItem(it, service.containerPropertyNameInModel, it.id in modelIdsWithChildren, supersededIds.contains(it.id))}

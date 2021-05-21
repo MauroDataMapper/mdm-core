@@ -37,9 +37,9 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
         jsonProfile.sections.each {section ->
-            section.fields.each { field ->
-                Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName }
-                if(matchingField) {
+            section.fields.each {field ->
+                Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName}
+                if (matchingField) {
                     field.currentValue = matchingField.value
                 } else {
                     field.currentValue = ""
@@ -50,38 +50,43 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile
     }
 
+    JsonProfile createNewEmptyJsonProfile() {
+        EmptyJsonProfileFactory.instance.getEmptyProfile(this)
+    }
+
     @Override
-    void storeProfileInEntity(CatalogueItem catalogueItem, JsonProfile jsonProfile, String userEmailAddress) {
-        JsonProfile emptyJsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
+    void storeProfileInEntity(CatalogueItem entity, JsonProfile jsonProfile, String userEmailAddress) {
+        JsonProfile emptyJsonProfile = createNewEmptyJsonProfile()
 
         emptyJsonProfile.sections.each {section ->
-            ProfileSection submittedSection = jsonProfile.sections.find{it.sectionName == section.sectionName }
-            if(submittedSection) {
+            ProfileSection submittedSection = jsonProfile.sections.find {it.sectionName == section.sectionName}
+            if (submittedSection) {
                 section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName }
-                    if(submittedField) {
-                        System.err.println(field.fieldName + " : " + submittedField.currentValue)
-                        if(submittedField.currentValue && submittedField.metadataPropertyName) {
-                            catalogueItem.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
-                        } else if(!field.metadataPropertyName) {
-                            log.error("No metadataPropertyName set for field: " + field.fieldName)
-                        } else if(!submittedField.currentValue) {
-                            Metadata md = catalogueItem.metadata.find{
-                                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
-                            }
-                            if(md) {
-                                catalogueItem.metadata.remove(md)
-                                metadataService.delete(md)
-                            }
-                        }
-                    }
+                    storeFieldInEntity(field, entity, submittedSection, section.sectionName, userEmailAddress)
                 }
             }
         }
-        catalogueItem.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
+        entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
+        Metadata.saveAll(entity.metadata)
+    }
 
-        Metadata.saveAll(catalogueItem.metadata)
+    void storeFieldInEntity(ProfileField field, CatalogueItem entity, ProfileSection submittedSection, String sectionName, String userEmailAddress) {
+        ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+        if (!submittedField) return
 
+        if (submittedField.currentValue && submittedField.metadataPropertyName) {
+            entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
+        } else if (!field.metadataPropertyName) {
+            log.debug("No metadataPropertyName set for field: " + field.fieldName)
+        } else if (!submittedField.currentValue) {
+            Metadata md = entity.metadata.find {
+                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
+            }
+            if (md) {
+                entity.metadata.remove(md)
+                metadataService.delete(md)
+            }
+        }
     }
 
     @Override
@@ -93,7 +98,6 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     String getVersion() {
         getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
     }
-
 
 
 }
