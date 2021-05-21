@@ -59,7 +59,7 @@ class TermServiceSpec extends BaseTerminologyIntegrationSpec {
         setupData()
 
         when:
-        List<Term> termList = termService.list(max: 3, offset: 101, sort: 'code')
+        List<Term> termList = termService.list(max: 3, offset: 102, sort: 'code')
 
         then:
         termList.size() == 3
@@ -73,28 +73,27 @@ class TermServiceSpec extends BaseTerminologyIntegrationSpec {
 
         and:
         tm2.code == 'IT02'
-
     }
 
     void "test count"() {
         setupData()
 
         expect:
-        termService.count() == 106
+        termService.count() == 107
     }
 
     void "test delete"() {
         setupData()
 
         expect:
-        termService.count() == 106
+        termService.count() == 107
 
         when:
         termService.delete(id)
         sessionFactory.currentSession.flush()
 
         then:
-        Term.count() == 105
+        Term.count() == 106
     }
 
     void 'test findAllByTerminologyId'() {

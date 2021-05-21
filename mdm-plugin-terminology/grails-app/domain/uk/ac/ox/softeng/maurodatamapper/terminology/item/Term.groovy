@@ -125,7 +125,9 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     def beforeValidate() {
-        label = code && definition ? "${code}: ${definition}".toString() : null
+        label = code && definition && code == definition ? "${code}".toString() :
+                code && definition ? "${code}: ${definition}".toString() :
+                null
         buildTermPath()
         beforeValidateModelItem()
     }
@@ -171,12 +173,12 @@ class Term implements ModelItem<Term, Terminology> {
 
     void setCode(String code) {
         this.code = code
-        this.label = "${this.code}: ${this.definition}"
+        this.label = this.code == this.definition ? "${this.code}" : "${this.code}: ${this.definition}"
     }
 
     void setDefinition(String definition) {
         this.definition = definition
-        this.label = "${this.code}: ${this.definition}"
+        this.label = this.code == this.definition ? "${this.code}" : "${this.code}: ${this.definition}"
     }
 
     String buildTermPath() {
@@ -301,10 +303,9 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     /**
-    * A path used when exporting as part of a CodeSet
-    */
-    String termPath()
-    {
+     * A path used when exporting as part of a CodeSet
+     */
+    String termPath() {
         "te:${terminology.label}|tm:${label}"
     }
 

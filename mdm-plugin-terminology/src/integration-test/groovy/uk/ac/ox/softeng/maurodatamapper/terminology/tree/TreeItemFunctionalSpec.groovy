@@ -94,7 +94,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         checkAndSave(folder)
 
         Terminology terminology = new Terminology(label: 'Functional Test Terminology', createdBy: FUNCTIONAL_TEST,
-                                            folder: folder, authority: testAuthority).save(flush: true)
+                                                  folder: folder, authority: testAuthority).save(flush: true)
         terminologyId = terminology.id
         otherTerminologyId = new Terminology(label: 'Functional Test Terminology 2', createdBy: FUNCTIONAL_TEST,
                                              folder: folder, authority: testAuthority).save(flush: true).id
@@ -276,7 +276,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         given:
         String termId = getTermIdByCode(complexTerminologyId, 'CTT00')
 
-
         when:
         GET("folders/terms/${termId}", STRING_ARG)
 
@@ -287,7 +286,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     void 'T05b : test term tree endpoint for term CTT00'() {
         given:
         String termId = getTermIdByCode(complexTerminologyId, 'CTT00')
-
 
         when:
         GET("terminologies/${complexTerminologyId}/terms/tree/${termId}", STRING_ARG, true)
@@ -300,7 +298,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         given:
         String termId = getTermIdByCode(complexTerminologyId, 'CTT20')
 
-
         when:
         GET("folders/terms/${termId}", STRING_ARG)
 
@@ -311,7 +308,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     void 'T06b : test term tree endpoint for term CTT20'() {
         given:
         String termId = getTermIdByCode(complexTerminologyId, 'CTT20')
-
 
         when:
         GET("terminologies/${complexTerminologyId}/terms/tree/${termId}", STRING_ARG, true)
@@ -651,7 +647,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanUpData(firstId, 'terminologies')
     }
 
-
     void 'TA02 : test getting terminology superseded documentation when there are none'() {
         when: 'finalised terminology has not yet been created'
         GET('admin/tree/folders/terminologies/documentationSuperseded', STRING_ARG, true)
@@ -828,7 +823,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanUpData(firstId, 'codeSets')
     }
 
-
     void 'TA07 : test getting codeSets superseded documentation when there are none'() {
         when: 'finalised terminology has not yet been created'
         GET('admin/tree/folders/codeSets/documentationSuperseded', STRING_ARG, true)
@@ -964,6 +958,13 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "id": "${json-unit.matches:id}",
     "domainType": "Term",
     "label": "CTT100: Complex Test Term 100",
+    "hasChildren": false,
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT101",
     "hasChildren": false,
     "modelId": "${json-unit.matches:id}"
   },

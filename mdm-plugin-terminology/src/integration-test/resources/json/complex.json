@@ -906,6 +906,15 @@
         "code": "CTT100",
         "definition": "Complex Test Term 100",
         "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT101",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT101",
+        "definition": "CTT101",
+        "description": "Example of truncated term label when code and definition are the same",
+        "depth": 1
       }
     ],
     "termRelationships": [
