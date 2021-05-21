@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.UserProfilePictu
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
 import com.opencsv.CSVWriter
+import com.sun.jna.StringArray
 import grails.gorm.transactions.Transactional
 
 import java.nio.file.Path
@@ -229,8 +230,12 @@ class CatalogueUserService implements UserService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
         OutputStreamWriter streamWriter = new OutputStreamWriter(outputStream)
         CSVWriter writer = new CSVWriter(streamWriter)
+        String[] headerUsers = ['Email Address', 'First Name', 'Last Name', 'Last Login', 'Organisation', 'Job Title', 'Disabled', 'Pending']
+        writer.writeNext(headerUsers)
         allUsers.each { user ->
-            writer.writeNext(user as String)
+            String[] userDetails = [user.emailAddress, user.firstName, user.lastName, user.lastLogin, user.organisation, user.jobTitle,
+                                       user.disabled, user.pending]
+            writer.writeNext(userDetails)
         }
         writer.close()
         return outputStream

@@ -1247,4 +1247,22 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
         cleanup:
         cleanupFunctionalSpecUser()
     }
+
+    void 'Test exporting all Users to csv file (as admin)'() {
+        given:
+        loginAdmin()
+        when:
+        GET("$adminEndpoint/exportUsers")
+        then:
+        verifyResponse OK, response
+    }
+
+    void 'Test exporting all Users to csv file (as editor)'() {
+        given:
+        loginEditor()
+        when:
+        GET("$adminEndpoint/exportUsers")
+        then:
+        verifyForbidden response
+    }
 }
