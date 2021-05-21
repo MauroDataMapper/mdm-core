@@ -119,11 +119,11 @@ class Terminology implements Model<Terminology> {
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
-        terms?.each { it.beforeValidate() }
+        terms?.each {it.beforeValidate()}
     }
 
     int countTermsByCode(String code) {
-        terms.count { it.code == code }
+        terms.count {it.code == code}
     }
 
     int countTermRelationshipTypesByLabel(String label) {
