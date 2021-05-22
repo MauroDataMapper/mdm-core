@@ -19,7 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 
 import groovy.transform.CompileStatic
 import groovy.transform.SelfType

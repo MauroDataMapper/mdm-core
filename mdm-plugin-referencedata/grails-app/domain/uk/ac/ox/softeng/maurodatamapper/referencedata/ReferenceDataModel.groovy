@@ -40,17 +40,11 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.ReferenceSummaryMeta
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataElement
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.ReferenceDataValue
 import uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype.ReferenceDataType
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource
-import grails.validation.ValidationErrors
 import groovy.util.logging.Slf4j
-import org.grails.datastore.gorm.GormEnhancer
-import org.grails.datastore.gorm.GormValidationApi
-import org.springframework.validation.Errors
-import org.springframework.validation.FieldError
 
 //@SuppressFBWarnings('HE_INHERITS_EQUALS_USE_HASHCODE')
 @Slf4j

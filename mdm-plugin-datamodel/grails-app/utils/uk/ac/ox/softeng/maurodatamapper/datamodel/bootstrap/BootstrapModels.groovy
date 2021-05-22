@@ -80,8 +80,6 @@ class BootstrapModels {
             dataClass.addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
 
             checkAndSave(messageSource, simpleDataModel)
-        } else {
-            log.debug("simple datamodel already exists")
         }
 
         log.debug("Simple Test DataModel id = {}", simpleDataModel.id.toString())

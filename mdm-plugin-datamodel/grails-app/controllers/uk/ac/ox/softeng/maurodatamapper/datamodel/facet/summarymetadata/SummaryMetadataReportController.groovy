@@ -19,8 +19,6 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata
 
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReport
-import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryMetadataReportService
 
 class SummaryMetadataReportController extends EditLoggingController<SummaryMetadataReport> {
 

@@ -73,8 +73,7 @@ class MauroDataMapperProviderService {
         (otherModules + allGrailsPluginModules + javaModules).sort() as List<MauroDataMapperPlugin>
     }
 
-    private static <T extends MauroDataMapperProvider, P extends T> Set<T> getServices(Class<P> providerType,
-                                                                                       Set<T> beans = [] as HashSet) {
+    static <T extends MauroDataMapperProvider, P extends T> Set<T> getServices(Class<P> providerType, Set<T> beans = []) {
         beans ? beans + ServiceLoader.load(providerType).collect {it} as HashSet : ServiceLoader.load(providerType).collect {it} as HashSet
 
     }

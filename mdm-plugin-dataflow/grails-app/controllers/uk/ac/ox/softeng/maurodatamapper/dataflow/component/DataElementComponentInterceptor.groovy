@@ -17,8 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.dataflow.component
 
-
-import uk.ac.ox.softeng.maurodatamapper.dataflow.component.DataElementComponent
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.controller.DataModelSecuredInterceptor
 import uk.ac.ox.softeng.maurodatamapper.util.Utils

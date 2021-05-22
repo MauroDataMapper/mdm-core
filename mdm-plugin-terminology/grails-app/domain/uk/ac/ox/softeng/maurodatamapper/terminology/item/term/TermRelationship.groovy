@@ -58,7 +58,7 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
-        sourceTerm validator: {val, obj -> val != obj.targetTerm ?: ['invalid.same.property.message', 'targetTerm']}
+        sourceTerm validator: {val, obj -> val == obj.targetTerm ? ['invalid.same.property.message', 'targetTerm'] : true}
     }
 
     static mapping = {

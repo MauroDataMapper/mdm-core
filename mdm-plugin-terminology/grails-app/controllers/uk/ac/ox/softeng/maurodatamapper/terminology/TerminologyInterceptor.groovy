@@ -59,7 +59,7 @@ class TerminologyInterceptor extends ModelInterceptor {
         if (!params.terminologyIds) throw new ApiBadRequestException('TIXX', 'TerminologyIds must be supplied in the request body')
 
         UUID id = params.terminologyIds.find {!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), it as UUID)}
-        !id ?: notFound(getSecuredClass(), id)
+        id ? notFound(getSecuredClass(), id) : true
     }
 
 

@@ -17,9 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.validator.UniqueValuesValidator
@@ -55,7 +53,7 @@ class ReferenceEnumerationType extends ReferenceDataType<ReferenceEnumerationTyp
 
     @Override
     void updateChildIndexes(ModelItem updated, Integer oldIndex) {
-        updateSiblingIndexes(updated, referenceEnumerationValues, oldIndex)
+        updateSiblingIndexes(updated, referenceEnumerationValues)
     }
 
     @Override

@@ -17,8 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping
 
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.mapping.PluginSchemaHibernateMappingContext
-
 import groovy.util.logging.Slf4j
 import io.micronaut.core.order.Ordered
 

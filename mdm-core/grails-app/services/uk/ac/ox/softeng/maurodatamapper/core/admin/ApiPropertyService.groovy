@@ -17,8 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.admin
 
-import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
-import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
 import asset.pipeline.grails.AssetResourceLocator

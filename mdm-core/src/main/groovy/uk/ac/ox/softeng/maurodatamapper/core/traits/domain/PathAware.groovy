@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
@@ -27,6 +28,7 @@ import org.grails.datastore.gorm.GormEntity
  * typed to the actual class rather than PathAware
  * @since 18/09/2017
  */
+@SuppressFBWarnings('BC_IMPOSSIBLE_INSTANCEOF')
 @SelfType(GormEntity)
 @GrailsCompileStatic
 trait PathAware {

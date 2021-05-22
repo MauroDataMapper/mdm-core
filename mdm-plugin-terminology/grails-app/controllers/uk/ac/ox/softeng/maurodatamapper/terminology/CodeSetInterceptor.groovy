@@ -59,7 +59,7 @@ class CodeSetInterceptor extends ModelInterceptor {
         if (!params.codeSetIds) throw new ApiBadRequestException('TIXX', 'CodeSetIds must be supplied in the request body')
 
         UUID id = params.codeSetIds.find {!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(getSecuredClass(), it as UUID)}
-        !id ?: notFound(getSecuredClass(), id)
+        id ? notFound(getSecuredClass(), id) : true
     }
 
 

@@ -134,7 +134,7 @@ ruleset {
     NoJavaUtilDate
     NoTabCharacter
     ParameterReassignment
-    PublicMethodsBeforeNonPublicMethods
+//    PublicMethodsBeforeNonPublicMethods
     // Don't require static fields above instance fields for Grails domain classes.
     StaticFieldsBeforeInstanceFields {
         doNotApplyToFilesMatching = '.+/grails\\-app/domain/.+'

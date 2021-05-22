@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 
 import grails.gorm.DetachedCriteria
 import grails.rest.Resource

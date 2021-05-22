@@ -77,7 +77,7 @@ class DataModelInterceptor extends ModelInterceptor {
         if (!params.dataModelIds) throw new ApiBadRequestException('DMIXX', 'DataModelIds must be supplied in the request body')
 
         UUID id = params.dataModelIds.find {!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it as UUID)}
-        return !id ?: notFound(DataModel, id)
+        id ? notFound(DataModel, id) : true
     }
 
     boolean before() {

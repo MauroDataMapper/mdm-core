@@ -33,14 +33,14 @@ class SecurableResourceGroupRoleInterceptor extends SecurableResourceInterceptor
 
         // Enforce contained inside securableResource if no userGroup provided
 
-        if (!params.containsKey('userGroupId')) {
+        if (params.containsKey('userGroupId')) {
+            mapDomainTypeToClass('securableResource')
+        } else {
             mapDomainTypeToClass('securableResource', true)
 
             if (!Utils.parentClassIsAssignableFromChild(SecurableResource, params.securableResourceClass)) {
                 throw new ApiBadRequestException('SRGRI01', "${params.securableResourceClass?.simpleName} is not a securable resource")
             }
-        } else {
-            mapDomainTypeToClass('securableResource')
         }
     }
 
