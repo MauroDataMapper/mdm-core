@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 @Slf4j
 abstract class ModelItemService<K extends ModelItem> extends CatalogueItemService<K> {
 
-    public final static Integer BATCH_SIZE = 1000
+    public final static Integer BATCH_SIZE = 5000
 
     @Autowired(required = false)
     List<ModelItemService> modelItemServices
