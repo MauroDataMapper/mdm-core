@@ -432,11 +432,10 @@ class ReferenceDataModelService extends ModelService<ReferenceDataModel> impleme
                                  Version copyDocVersion, String branchName,
                                  boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
 
-        Authority authority = proxyHandler.unwrapIfProxy(original.authority) as Authority
         ReferenceDataModel copy = new ReferenceDataModel(author: original.author, organisation: original.organisation, modelType: original.modelType,
                                                          finalised: false,
                                                          deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto,
-                                                         authority: authority,
+                                                         authority: authorityService.defaultAuthority,
                                                          branchName: branchName
         )
 

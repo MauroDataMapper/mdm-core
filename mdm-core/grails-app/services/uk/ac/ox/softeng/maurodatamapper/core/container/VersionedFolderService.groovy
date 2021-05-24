@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.container
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -62,6 +63,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     EditService editService
     VersionLinkService versionLinkService
     MessageSource messageSource
+    AuthorityService authorityService
 
     @Autowired(required = false)
     List<ModelService> modelServices
@@ -488,7 +490,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         copy.createdBy = copier.emailAddress
         copy.label = original.label
         copy.description = original.description
-        copy.authority = original.authority
+        copy.authority = authorityService.defaultAuthority
 
         metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
         ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->

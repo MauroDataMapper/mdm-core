@@ -246,7 +246,7 @@ class TerminologyService extends ModelService<Terminology> {
         Terminology copy = new Terminology(author: original.author,
                                            organisation: original.organisation,
                                            finalised: false, deleted: false, documentationVersion: copyVersion,
-                                           folder: folderToCopyTo, authority: original.authority, branchName: branchName
+                                           folder: folderToCopyTo, authority: authorityService.defaultAuthority, branchName: branchName
         )
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         copy.label = label
