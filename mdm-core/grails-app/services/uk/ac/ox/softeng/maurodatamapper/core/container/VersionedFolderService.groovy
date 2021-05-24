@@ -627,11 +627,22 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     boolean hasVersionedFolderParent(Folder folder) {
         if (!folder.parentFolder) return false
         if (folder.parentFolder.instanceOf(VersionedFolder)) return true
-        hasVersionedFolderParent(folder)
+        hasVersionedFolderParent(folder.parentFolder)
     }
 
     boolean doesMovePlaceVersionedFolderInsideVersionedFolder(Folder folderBeingMoved, Folder folderToMoveTo) {
-        isVersionedFolderFamily(folderBeingMoved) && isVersionedFolderFamily(folderToMoveTo)
+        // Check up the tree
+        if (isVersionedFolderFamily(folderBeingMoved) && isVersionedFolderFamily(folderToMoveTo)) return true
+        if (isVersionedFolderFamily(folderToMoveTo)) {
+            // If not up the tree then slower check going down the tree of the folder being moved to ensure it doesnt contain a VF
+            // Only need to do this if the folder being moved into has a VF tree
+            return doesDepthTreeContainVersionedFolder(folderBeingMoved)
+        }
+        false
+    }
+
+    boolean doesDepthTreeContainVersionedFolder(Folder folder) {
+        folder.instanceOf(VersionedFolder) || folderService.findAllByParentId(folder.id).any {doesDepthTreeContainVersionedFolder(it)}
     }
 
     boolean isVersionedFolderFamily(Folder folder) {

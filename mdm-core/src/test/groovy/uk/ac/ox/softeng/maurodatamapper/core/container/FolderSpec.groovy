@@ -17,12 +17,16 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 
 import grails.testing.gorm.DomainUnitTest
 import org.spockframework.util.InternalSpockError
 
-class FolderSpec extends ContainerSpec<Folder> implements DomainUnitTest<Folder> {
+class FolderSpec extends FolderContainerSpec<Folder> implements DomainUnitTest<Folder> {
+
+    @Override
+    Folder newChildContainerClass(Map<String, Object> args) {
+        new Folder(args)
+    }
 
     @Override
     Folder newContainerClass(Map<String, Object> args) {

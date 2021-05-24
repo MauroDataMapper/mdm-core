@@ -44,8 +44,14 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         CallableConstraints.call(InformationAwareConstraints, delegate)
         CallableConstraints.call(VersionAwareConstraints, delegate)
 
-        label validator: { val, obj -> new VersionedFolderLabelValidator(obj).isValid(val) }
+        label validator: {val, obj -> new VersionedFolderLabelValidator(obj).isValid(val)}
         parentFolder nullable: true
+        childFolders validator: {val, obj ->
+            if (obj.ident()) {
+                return VersionedFolder.countByParentFolder(obj) ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
+            }
+            val.any {it.domainType == VersionedFolder.simpleName} ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
+        }
     }
 
     static mapping = {
@@ -112,7 +118,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         by()
             .isNotNull('path')
             .ne('path', '')
-            .findAll { f ->
+            .findAll {f ->
                 ids.any {
                     it in f.path.split('/')
                 }
@@ -161,7 +167,4 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         if (filters.label) criteria = criteria.ilike('label', "%${filters.label}%")
         criteria
     }
-
-
-
 }

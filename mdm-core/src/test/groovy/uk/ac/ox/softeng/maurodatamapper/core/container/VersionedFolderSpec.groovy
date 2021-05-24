@@ -28,7 +28,12 @@ import java.time.OffsetDateTime
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getUNIT_TEST
 
-class VersionedFolderSpec extends ContainerSpec<VersionedFolder> implements DomainUnitTest<VersionedFolder> {
+class VersionedFolderSpec extends FolderContainerSpec<VersionedFolder> implements DomainUnitTest<VersionedFolder> {
+
+    @Override
+    Folder newChildContainerClass(Map<String, Object> args) {
+        new Folder(args)
+    }
 
     @Override
     VersionedFolder newContainerClass(Map<String, Object> args) {
