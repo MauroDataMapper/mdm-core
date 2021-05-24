@@ -408,16 +408,26 @@ class CatalogueUserServiceSpec extends BaseUnitSpec implements ServiceUnitTest<C
                 emailAddress: 'newtester1@email.com', firstName: 'wibble1', lastName: 'scruff1', lastLogin: null, password: 'wobble',
                 organisation: 'organisation', jobTitle: 'chef', disabled: false, pending: false)
         CatalogueUser catalogueUser2 = service.createNewUser(
-                emailAddress: 'newtester2@email.com', firstName: 'wibble2', lastName: 'scruff2', lastLogin: null,  password: 'wobble',
-                organisation: 'organisation', jobTitle: 'chef but good', disabled: true, pending: false)
+            emailAddress: 'newtester2@email.com', firstName: 'wibble2', lastName: 'scruff2', lastLogin: null, password: 'wobble',
+            organisation: 'organisation', jobTitle: 'chef but good', disabled: true, pending: false)
 
         List<CatalogueUser> group = [catalogueUser1, catalogueUser2] as List<CatalogueUser>
 
         when:
         ByteArrayOutputStream outputStream = service.convertToCsv(group)
+        String output = new String(outputStream.toByteArray())
 
         then:
-        outputStream.size() == 274
+        output
+
+        when:
+        List<String> lines = output.readLines()
+
+        then:
+        lines.size() == 3
+        lines[0] == 'Email Address,First Name,Last Name,Last Login,Organisation,Job Title,Disabled,Pending'
+        lines.any {it == 'newtester1@email.com,wibble1,scruff1,,organisation,chef,false,false'}
+        lines.any {it == 'newtester2@email.com,wibble2,scruff2,,organisation,chef but good,true,false'}
     }
 
     private CatalogueUser basicAuthentication(String emailAddress, String password) {

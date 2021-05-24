@@ -24,6 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.FunctionalSpec
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpResponse
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
@@ -1251,10 +1253,28 @@ class CatalogueUserFunctionalSpec extends FunctionalSpec {
     void 'Test exporting all Users to csv file (as admin)'() {
         given:
         loginAdmin()
+
         when:
-        GET("$adminEndpoint/exportUsers")
+        HttpResponse localResponse = GET("$adminEndpoint/exportUsers", Argument.of(byte[]))
+
         then:
-        verifyResponse OK, response
+        verifyResponse OK, localResponse
+
+        when:
+        String csvBody = new String(localResponse.body())
+        List<String> lines = csvBody.readLines()
+
+        then:
+        lines[0] == 'Email Address,First Name,Last Name,Last Login,Organisation,Job Title,Disabled,Pending'
+        lines.any {it ==~ /container_admin@test.com,containerAdmin,User,,,,false,false/}
+        lines.any {it ==~ /authenticated@test.com,authenticated,User,(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}(Z|\+01:00))?,,,false,false/}
+        lines.any {it ==~ /reader@test.com,reader,User,(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}(Z|\+01:00))?,,,false,false/}
+        lines.any {it ==~ /pending@test.com,pending,User,,Oxford,tester,false,true/}
+        lines.any {it ==~ /admin@maurodatamapper.com,Admin,User,(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}(Z|\+01:00))?,Oxford BRC Informatics,God,false,false/}
+        lines.any {it ==~ /editor@test.com,editor,User,(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}(Z|\+01:00))?,,,false,false/}
+        lines.any {it ==~ /reviewer@test.com,reviewer,User,,,,false,false/}
+        lines.any {it ==~ /unlogged_user@mdm-core.com,Unlogged,User,,,,false,false/}
+        lines.any {it ==~ /author@test.com,author,User,,,,false,false/}
     }
 
     void 'Test exporting all Users to csv file (as editor)'() {
