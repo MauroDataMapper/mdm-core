@@ -199,8 +199,10 @@ class TerminologyService extends ModelService<Terminology> {
             t.targetTermRelationships.each {tr -> tr.skipValidation(true)}
         }
 
+        log.debug('Disabling database constraints')
+        GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+
         long subStart = System.currentTimeMillis()
-        sessionFactory.currentSession.clear()
         termRelationshipTypeService.saveAll(termRelationshipTypes)
         log.debug('Saved {} termRelationshipTypes in {}', termRelationshipTypes.size(), Utils.timeTaken(subStart))
 
@@ -211,6 +213,9 @@ class TerminologyService extends ModelService<Terminology> {
         subStart = System.currentTimeMillis()
         termRelationshipService.saveAll(termRelationships)
         log.debug('Saved {} termRelationships in {}', termRelationships.size(), Utils.timeTaken(subStart))
+
+        log.debug('Enabling database constraints')
+        GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
 
         log.debug('Content save of Terminology complete in {}', Utils.timeTaken(start))
     }
