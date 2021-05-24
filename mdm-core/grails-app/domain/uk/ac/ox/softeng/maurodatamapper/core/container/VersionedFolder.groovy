@@ -71,6 +71,27 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         by().eq('label', label)
     }
 
+    static DetachedCriteria<VersionedFolder> byLabelAndFinalisedAndLatestModelVersion(String label) {
+        byLabel(label)
+            .eq('finalised', true)
+            .order('modelVersion', 'desc')
+    }
+
+    static DetachedCriteria<VersionedFolder> byLabelAndBranchNameAndFinalisedAndLatestModelVersion(String label, String branchName) {
+        byLabelAndFinalisedAndLatestModelVersion(label)
+            .eq('branchName', branchName)
+    }
+
+    static DetachedCriteria<VersionedFolder> byLabelAndNotFinalised(String label) {
+        byLabel(label)
+            .eq('finalised', false)
+    }
+
+    static DetachedCriteria<VersionedFolder> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        byLabelAndNotFinalised(label)
+            .eq('branchName', branchName)
+    }
+
     static DetachedCriteria<VersionedFolder> byNoParentFolder() {
         by().isNull('parentFolder')
     }
@@ -140,5 +161,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         if (filters.label) criteria = criteria.ilike('label', "%${filters.label}%")
         criteria
     }
+
+
 
 }

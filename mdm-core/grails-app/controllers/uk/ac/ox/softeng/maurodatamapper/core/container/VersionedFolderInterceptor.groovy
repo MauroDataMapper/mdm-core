@@ -33,6 +33,7 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
         Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'folderId')
         Utils.toUuid(params, 'versionedFolderId')
+        Utils.toUuid(params, 'otherVersionedFolderId')
     }
 
     @Override
@@ -42,8 +43,8 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
 
     @Override
     List<String> getReadAccessMethods() {
-        ['search', 'newForkModel', /*'latestModelVersion', 'latestFinalisedModel', 'currentMainBranch', 'availableBranches',
-        'modelVersionTree'*/]
+        ['search', 'newForkModel', 'latestModelVersion', 'latestFinalisedModel', 'currentMainBranch', 'availableBranches',
+        'modelVersionTree', 'simpleModelVersionTree']
     }
 
     @Override
@@ -53,6 +54,17 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
 
     boolean before() {
         securableResourceChecks()
+
+        if (actionName == 'commonAncestor') {
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, getId())) {
+                return notFound(VersionedFolder, getId())
+            }
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, params.otherVersionedFolderId)) {
+                return notFound(VersionedFolder, params.otherVersionedFolderId)
+            }
+            return true
+        }
+
         checkTieredAccessActionAuthorisationOnSecuredResource(VersionedFolder, getId(), true)
     }
 }

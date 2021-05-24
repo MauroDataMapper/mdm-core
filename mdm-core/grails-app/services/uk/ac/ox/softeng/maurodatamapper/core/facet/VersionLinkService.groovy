@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -177,7 +178,7 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     }
 
 
-    VersionLink findBySourceModelAndTargetModelAndLinkType(Model sourceModel, Model targetModel,
+    VersionLink findBySourceModelAndTargetModelAndLinkType(VersionAware sourceModel, VersionAware targetModel,
                                                            VersionLinkType linkType) {
         VersionLink.bySourceModelAndTargetModelAndLinkType(sourceModel, targetModel, linkType).get()
     }
@@ -260,7 +261,7 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         model
     }
 
-    static VersionLink findBySourceModelAndLinkType(Model sourceModel, VersionLinkType linkType) {
+    static VersionLink findBySourceModelAndLinkType(VersionAware sourceModel, VersionLinkType linkType) {
         VersionLink.bySourceModelAndLinkType(sourceModel, linkType).get()
     }
 
@@ -296,7 +297,7 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
             .inList('targetModelId', modelIds).list()
     }
 
-    VersionLink findBySourceModel(Model source) {
+    VersionLink findBySourceModel(VersionAware source) {
         VersionLink.byModelId(source.id).get()
     }
 

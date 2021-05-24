@@ -18,28 +18,28 @@
 package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 
 class VersionTreeModel implements Comparable<VersionTreeModel> {
 
-    Model model
+    VersionAware versionAware
     Boolean newDocumentationVersion
     Boolean newBranchModelVersion
     Boolean newFork
     VersionTreeModel parentVersionTreeModel
     List<ModelLinkTarget> targets
 
-    VersionTreeModel(Model model, VersionLinkType versionLinkType, VersionTreeModel parentVersionTreeModel) {
+    VersionTreeModel(VersionAware versionAware, VersionLinkType versionLinkType, VersionTreeModel parentVersionTreeModel) {
         this.targets = []
         this.newBranchModelVersion = false
         this.newDocumentationVersion = false
         this.newFork = false
 
-        this.model = model
+        this.versionAware = versionAware
         this.parentVersionTreeModel = parentVersionTreeModel
 
         if (this.parentVersionTreeModel) {
-            this.parentVersionTreeModel.addTarget(this.model, versionLinkType)
+            this.parentVersionTreeModel.addTarget(this.versionAware, versionLinkType)
             newDocumentationVersion = versionLinkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF
             newBranchModelVersion = versionLinkType == VersionLinkType.NEW_MODEL_VERSION_OF
             newFork = versionLinkType == VersionLinkType.NEW_FORK_OF
@@ -50,28 +50,28 @@ class VersionTreeModel implements Comparable<VersionTreeModel> {
         targets.add(new ModelLinkTarget(targetId, linkType))
     }
 
-    void addTarget(Model target, VersionLinkType linkType) {
+    void addTarget(VersionAware target, VersionLinkType linkType) {
         addTarget(target.id, linkType)
     }
 
     String getLabel() {
-        model.label
+        versionAware.label
     }
 
     String getId() {
-        model.id.toString()
+        versionAware.id.toString()
     }
 
     String getBranchName() {
-        model.modelVersion ? null : model.branchName
+        versionAware.modelVersion ? null : versionAware.branchName
     }
 
     String getModelVersion() {
-        model.modelVersion
+        versionAware.modelVersion
     }
 
     String getDocumentationVersion() {
-        model.documentationVersion
+        versionAware.documentationVersion
     }
 
     @Override

@@ -18,10 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.VersionLinkAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.VersionAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CreatorAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
@@ -140,12 +140,12 @@ class VersionLink implements MultiFacetItemAware, CreatorAware {
         }
     }
 
-    static DetachedCriteria<VersionLink> bySourceModelAndLinkType(Model source, VersionLinkType linkType) {
+    static DetachedCriteria<VersionLink> bySourceModelAndLinkType(VersionAware source, VersionLinkType linkType) {
         by().eq('multiFacetAwareItemId', source.id)
             .eq('linkType', linkType)
     }
 
-    static DetachedCriteria<VersionLink> bySourceModelAndTargetModelAndLinkType(Model source, Model target,
+    static DetachedCriteria<VersionLink> bySourceModelAndTargetModelAndLinkType(VersionAware source, VersionAware target,
                                                                                 VersionLinkType linkType) {
         by().eq('multiFacetAwareItemId', source.id)
             .eq('targetModelId', target.id)

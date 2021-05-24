@@ -436,18 +436,32 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
-        // If left isnt finalised then get it's finalised parent
-        if (!leftModel.finalised) {
-            leftModel = get(VersionLinkService.findBySourceModelAndLinkType(leftModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
+
+        if (leftModel.label != rightModel.label) {
+            throw new ApiBadRequestException('MS03', "Model [${leftModel.id}] does not share its label with [${leftModel.id}] therefore they cannot have a " +
+                                                     "common ancestor")
         }
 
-        // If right isnt finalised then get it's finalised parent
-        if (!rightModel.finalised) {
-            rightModel = get(VersionLinkService.findBySourceModelAndLinkType(rightModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
+        K finalisedLeftParent = getFinalisedParent(leftModel)
+        K finalisedRightParent = getFinalisedParent(rightModel)
+
+        if (!finalisedLeftParent) {
+            throw new ApiBadRequestException('MS01', "Model [${leftModel.id}] has no finalised parent therefore cannot have a " +
+                                                     "common ancestor with Model [${rightModel.id}]")
+        }
+
+        if (!finalisedRightParent) {
+            throw new ApiBadRequestException('MS02', "Model [${rightModel.id}] has no finalised parent therefore cannot have a " +
+                                                     "common ancestor with Model [${leftModel.id}]")
         }
 
         // Choose the finalised parent with the lowest model version
-        leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
+        finalisedLeftParent.modelVersion < finalisedRightParent.modelVersion ? finalisedLeftParent : finalisedRightParent
+    }
+
+    K getFinalisedParent(K model) {
+        if (model.finalised) return model
+        get(VersionLinkService.findBySourceModelAndLinkType(model, VersionLinkType.NEW_MODEL_VERSION_OF)?.targetModelId)
     }
 
     K findOldestAncestor(K model) {
