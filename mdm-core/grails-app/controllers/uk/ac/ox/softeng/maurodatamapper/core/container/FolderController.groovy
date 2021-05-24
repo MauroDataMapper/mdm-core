@@ -34,6 +34,7 @@ class FolderController extends EditLoggingController<Folder> {
 
     FolderService folderService
     SearchService mdmCoreSearchService
+    VersionedFolderService versionedFolderService
 
     @Autowired(required = false)
     SecurityPolicyManagerService securityPolicyManagerService
@@ -146,6 +147,10 @@ class FolderController extends EditLoggingController<Folder> {
 
         Folder folder = folderService.get(params.destinationFolderId)
         if (!folder) return notFound(Folder, params.destinationFolderId)
+
+        if (versionedFolderService.doesMovePlaceVersionedFolderInsideVersionedFolder(instance, folder)) {
+            return forbidden('Cannot put a VersionedFolder inside a VersionedFolder')
+        }
 
         instance.parentFolder = folder
 

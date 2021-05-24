@@ -107,7 +107,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     List<VersionedFolder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        VersionedFolder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        VersionedFolder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
     }
 
     @Override
@@ -158,9 +158,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
         folder.modelVersionTag = versionTag
 
-        modelServices.each { service ->
+        modelServices.each {service ->
             Collection<Model> modelsInFolder = service.findAllByFolderId(folder.id)
-            modelsInFolder.each { model ->
+            modelsInFolder.each {model ->
                 service.finaliseModel(model as Model, user, folder.modelVersion, null, folder.modelVersionTag)
             }
         }
@@ -458,9 +458,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         folderCopy.trackChanges()
 
         log.debug('Copying models from original folder into copied folder')
-        modelServices.each { service ->
+        modelServices.each {service ->
             List<Model> originalModels = service.findAllByContainerId(original.id) as List<Model>
-            List<Model> copiedModels = originalModels.collect { Model model ->
+            List<Model> copiedModels = originalModels.collect {Model model ->
                 // If changing label then we need to prefix all the new models so the names dont introduce label conflicts as this situation
                 // arises in forking
                 String labelSuffix = folderCopy.label == original.label ? '' : " (${folderCopy.label})"
@@ -470,7 +470,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                   userSecurityPolicyManager)
             }
             // We can't save until after all copied as the save clears the sessions
-            copiedModels.each { copy ->
+            copiedModels.each {copy ->
                 log.debug('Validating and saving model copy')
                 service.validate(copy)
                 if (copy.hasErrors()) {
@@ -490,10 +490,10 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
         copy.description = original.description
         copy.authority = original.authority
 
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -501,7 +501,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -620,5 +620,19 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
 
     VersionedFolder findCurrentMainBranchByLabel(String label) {
         VersionedFolder.byLabelAndBranchNameAndNotFinalised(label, VersionAwareConstraints.DEFAULT_BRANCH_NAME).get()
+    }
+
+    boolean hasVersionedFolderParent(Folder folder) {
+        if (!folder.parentFolder) return false
+        if (folder.parentFolder.instanceOf(VersionedFolder)) return true
+        hasVersionedFolderParent(folder)
+    }
+
+    boolean doesMovePlaceVersionedFolderInsideVersionedFolder(Folder folderBeingMoved, Folder folderToMoveTo) {
+        isVersionedFolderFamily(folderBeingMoved) && isVersionedFolderFamily(folderToMoveTo)
+    }
+
+    boolean isVersionedFolderFamily(Folder folder) {
+        folder.instanceOf(VersionedFolder) || hasVersionedFolderParent(folder)
     }
 }

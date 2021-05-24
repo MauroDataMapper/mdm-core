@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
@@ -64,6 +65,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     ExporterService exporterService
     ImporterService importerService
+    VersionedFolderService versionedFolderService
 
     final String alternateParamsIdKey
 
@@ -216,6 +218,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         Folder folder = folderService.get(params.folderId)
         if (!folder) return notFound(Folder, params.folderId)
+
+        if (versionedFolderService.isVersionedFolderFamily(folder) && instance.finalised) return forbidden('Cannot move a finalised model into a VersionedFolder')
 
         instance.folder = folder
 
@@ -540,6 +544,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
+        if (versionedFolderService.isVersionedFolderFamily(folder) && model.finalised) {
+            transactionStatus.setRollbackOnly()
+            return forbidden('Cannot import a finalised model into a VersionedFolder')
+        }
+
         model.folder = folder
 
         getModelService().validate(model)
@@ -611,6 +620,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         if (!result) {
             transactionStatus.setRollbackOnly()
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
+        }
+
+        if (versionedFolderService.isVersionedFolderFamily(folder) && result.any {it.finalised}) {
+            transactionStatus.setRollbackOnly()
+            return forbidden('Cannot import finalised models into a VersionedFolder')
         }
 
         result.each {m ->
