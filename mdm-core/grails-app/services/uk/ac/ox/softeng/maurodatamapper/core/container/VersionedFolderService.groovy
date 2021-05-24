@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
@@ -551,11 +552,17 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     VersionedFolder findOldestAncestor(VersionedFolder versionedFolder) {
-        VersionLink versionLink = versionLinkService.findBySourceModel(versionedFolder)
-        if (!versionLink)
+        // Look for model version or doc version only
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+        versionLink = versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(versionedFolder.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+
+        // If no versionlink then we're at the oldest ancestor
+        if (!versionLink) {
             return versionedFolder
-        VersionedFolder parentVersionedFolder = get(versionLink.targetModelId)
-        findOldestAncestor(parentVersionedFolder)
+        }
+        // Check the parent for oldest ancestor
+        VersionedFolder parentModel = get(versionLink.targetModelId)
+        findOldestAncestor(parentModel)
     }
 
     List<VersionTreeModel> buildModelVersionTree(VersionedFolder instance, VersionLinkType versionLinkType,
@@ -563,7 +570,6 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
 
-        //TODO this line currently non-functional, once merged with 9480 should work
         VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType, parentVersionTreeModel)
         List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
 
@@ -580,18 +586,32 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     VersionedFolder findCommonAncestorBetweenModels(VersionedFolder leftModel, VersionedFolder rightModel) {
-        // If left isnt finalised then get it's finalised parent
-        if (!leftModel.finalised) {
-            leftModel = get(VersionLinkService.findBySourceModelAndLinkType(leftModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
+
+        if (leftModel.label != rightModel.label) {
+            throw new ApiBadRequestException('VFS03', "VersionedFolder [${leftModel.id}] does not share its label with [${rightModel.id}] therefore they cannot have a " +
+                                                      "common ancestor")
         }
 
-        // If right isnt finalised then get it's finalised parent
-        if (!rightModel.finalised) {
-            rightModel = get(VersionLinkService.findBySourceModelAndLinkType(rightModel, VersionLinkType.NEW_MODEL_VERSION_OF).targetModelId)
+        VersionedFolder finalisedLeftParent = getFinalisedParent(leftModel)
+        VersionedFolder finalisedRightParent = getFinalisedParent(rightModel)
+
+        if (!finalisedLeftParent) {
+            throw new ApiBadRequestException('VFS01', "VersionedFolder [${leftModel.id}] has no finalised parent therefore cannot have a " +
+                                                      "common ancestor with VersionedFolder [${rightModel.id}]")
+        }
+
+        if (!finalisedRightParent) {
+            throw new ApiBadRequestException('VFS02', "VersionedFolder [${rightModel.id}] has no finalised parent therefore cannot have a " +
+                                                      "common ancestor with VersionedFolder [${leftModel.id}]")
         }
 
         // Choose the finalised parent with the lowest model version
-        leftModel.modelVersion < rightModel.modelVersion ? leftModel : rightModel
+        finalisedLeftParent.modelVersion < finalisedRightParent.modelVersion ? finalisedLeftParent : finalisedRightParent
+    }
+
+    VersionedFolder getFinalisedParent(VersionedFolder versionedFolder) {
+        if (versionedFolder.finalised) return versionedFolder
+        get(VersionLinkService.findBySourceModelAndLinkType(versionedFolder, VersionLinkType.NEW_MODEL_VERSION_OF)?.targetModelId)
     }
 
     VersionedFolder findCurrentMainBranchForModel(VersionedFolder versionedFolder) {

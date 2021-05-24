@@ -30,14 +30,15 @@ import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Ignore
+import spock.lang.Unroll
 
 import java.util.regex.Pattern
 
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -709,8 +710,8 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         then:
         verifyResponse(OK, response)
         responseBody().count == 2
-        responseBody().items.any { it.id == id }
-        responseBody().items.any { it.id == branchId }
+        responseBody().items.any {it.id == id}
+        responseBody().items.any {it.id == branchId}
 
         when: 'getting the models inside the finalised folder'
         GET("folders/$id/dataModels", MAP_ARG, true)
@@ -1177,48 +1178,97 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id, docId)
     }
 
-    void 'LM01 : test finding latest version of a Model<T> (as editor)'() {
-        //TODO currently fails, should work once 9480 merged in (relies on VersionAware.groovy)
-        /*
-        id (finalised) -- expectedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
+    void 'CA01 : test finding common ancestor (as editor)'() {
         given:
-        Map data = getValidFinalisedIdWithContent()
-        String id = data.id
-
-        when:
+        Map data = buildModelVersionTree()
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        then:
-        verifyResponse CREATED, response
-        String expectedId = responseBody().id
 
         when:
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        then:
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
+        GET("$data.anotherBranch/commonAncestor/$data.interestingBranch")
 
-        when:
-        PUT("$expectedId/finalise", [versionChangeType: 'Major'])
         then:
         verifyResponse OK, response
+        responseBody().id == data.v5
+        responseBody().label == validJson.label
 
         when:
-        PUT("$expectedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
+        GET("$data.anotherBranch/commonAncestor/$data.testBranch")
+
         then:
-        verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
+        verifyResponse OK, response
+        responseBody().id == data.v3
+        responseBody().label == validJson.label
+
+        when:
+        GET("$data.newBranch/commonAncestor/$data.testBranch")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == data.v1
+        responseBody().label == validJson.label
+
+        when:
+        GET("$data.newBranch/commonAncestor/$data.anotherBranch")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == data.v1
+        responseBody().label == validJson.label
+
+
+        when:
+        GET("$data.anotherFork/commonAncestor/$data.anotherBranch")
+
+        then:
+        verifyResponse BAD_REQUEST, response
+        responseBody().message == "VersionedFolder [${data.anotherFork}] does not share its label with [${data.anotherBranch}] therefore they cannot have a common ancestor"
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'LMV01 : test finding latest model version (as editor)'() {
+        given:
+        Map data = buildModelVersionTree()
+        String expectedId = data.v5
+        String newBranchId = data.testBranch
+        String latestDraftId = data.main
 
         when: 'logged in as editor'
+        loginEditor()
+        GET("$newBranchId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '5.0.0'
+
+        when:
+        GET("$latestDraftId/latestModelVersion")
+
+        then:
+        verifyResponse OK, response
+        responseBody().modelVersion == '5.0.0'
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'LFM01 : test finding latest finalised model (as editor)'() {
+        given:
+        Map data = buildModelVersionTree()
+        String expectedId = data.v5
+        String newBranchId = data.testBranch
+        String latestDraftId = data.main
+
+        when: 'logged in as editor'
+        loginEditor()
         GET("$newBranchId/latestFinalisedModel")
 
         then:
         verifyResponse OK, response
         responseBody().id == expectedId
         responseBody().label == validJson.label
-        responseBody().modelVersion == '2.0.0'
+        responseBody().modelVersion == '5.0.0'
 
         when:
         GET("$latestDraftId/latestFinalisedModel")
@@ -1227,311 +1277,268 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         verifyResponse OK, response
         responseBody().id == expectedId
         responseBody().label == validJson.label
-        responseBody().modelVersion == '2.0.0'
-
-        when: 'logged in as editor'
-        GET("$newBranchId/latestModelVersion")
-
-        then:
-        verifyResponse OK, response
-        responseBody().modelVersion == '2.0.0'
-
-        when:
-        GET("$latestDraftId/latestModelVersion")
-
-        then:
-        verifyResponse OK, response
-        responseBody().modelVersion == '2.0.0'
-
-        when:
-        GET('')
-
-        then:
-        verifyResponse OK, response
-        responseBody().count >= 4
+        responseBody().modelVersion == '5.0.0'
 
         cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(expectedId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanUpRoles(id, newBranchId, expectedId, latestDraftId)
+        cleanupModelVersionTree(data)
     }
 
     void 'CMB01 : test getting current draft model on main branch from side branch (as editor)'() {
-        /*
-        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
         given:
-        Map data = getValidFinalisedIdWithContent()
-        String id = data.id
+        Map data = buildModelVersionTree()
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String finalisedId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
-        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
 
         when: 'logged in as editor'
-        GET("$newBranchId/currentMainBranch")
+        GET("$data.v1/currentMainBranch")
 
         then:
         verifyResponse OK, response
-        responseBody().id == latestDraftId
+        responseBody().id == data.main
+        responseBody().label == validJson.label
+
+        when:
+        GET("$data.v5/currentMainBranch")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == data.main
+        responseBody().label == validJson.label
+
+        when:
+        GET("$data.testBranch/currentMainBranch")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == data.main
+        responseBody().label == validJson.label
+
+        when:
+        GET("$data.anotherBranch/currentMainBranch")
+
+        then:
+        verifyResponse OK, response
+        responseBody().id == data.main
         responseBody().label == validJson.label
 
         cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(finalisedId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanupIds(id, newBranchId, finalisedId, latestDraftId)
+        cleanupModelVersionTree(data)
     }
 
     void 'AB01 : test getting all draft models (as editor)'() {
-        /*
-        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
         given:
-        Map data = getValidFinalisedIdWithContent()
-        String id = data.id
+        Map data = buildModelVersionTree()
+        List expectedBrancheIds = [data.main, data.anotherBranch, data.interestingBranch, data.testBranch, data.newBranch]
         loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String finalisedId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
-        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
-
-        when: 'logged in as editor'
-        GET("$id/availableBranches")
-
-        then:
-        verifyResponse OK, response
-        responseBody().count == 2
-        responseBody().items.each { it.id in [newBranchId, latestDraftId] }
-        responseBody().items.each { it.label == validJson.label }
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(finalisedId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanUpRoles(id, newBranchId, finalisedId, latestDraftId)
-    }
-
-    void 'MVT01 : Test getting versionTreeModel (as editor)'() {
-        //TODO this test fails for now, should work once merged with 9480
-        /*
-        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
-        given:
-        Map data = getValidFinalisedIdWithContent()
-        String id = data.id
-        loginEditor()
-        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
-        verifyResponse CREATED, response
-        String forkId = responseBody().id
-        PUT("$id/newBranchModelVersion", [:])
-        verifyResponse CREATED, response
-        String mainBranchId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
-        PUT("$forkId/finalise", [versionChangeType: VersionChangeType.MINOR])
-        verifyResponse OK, response
-        PUT("$forkId/newDocumentationVersion", [:])
-        verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
-
-        when: 'logged in as editor'
-        HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
-
-        then:
-        verifyResponse OK, localResponse
-        localResponse.body()
-        localResponse.body().size() == 5
-
-
-        Map sourceMap = localResponse.body().find { it.modelId == id }
-        sourceMap
-        sourceMap == [branchName             : "main",
-                      label                  : "Functional Test ${getModelType()}",
-                      modelId                : id,
-                      newBranchModelVersion  : false,
-                      newDocumentationVersion: false,
-                      newFork                : false,
-                      targets                : [[
-                                                    modelId    : forkId,
-                                                    description: VersionLinkType.NEW_FORK_OF.label
-                                                ],
-                                                [
-                                                    modelId    : mainBranchId,
-                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
-                                                ],
-                                                [
-                                                    modelId    : newBranchId,
-                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
-                                                ]]
-        ]
-
-        Map forkMap = localResponse.body().find { it.modelId == forkId }
-        forkMap
-        forkMap == [branchName             : "main",
-                    label                  : "Functional Test ${getModelType()} v2",
-                    modelId                : forkId,
-                    newBranchModelVersion  : false,
-                    newDocumentationVersion: false,
-                    newFork                : true,
-                    targets                : [[
-                                                  modelId    : latestDraftId,
-                                                  description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
-                                              ]]
-        ]
-
-        Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
-        mainBranchMap
-        mainBranchMap == [branchName             : "main",
-                          label                  : "Functional Test ${getModelType()}",
-                          modelId                : mainBranchId,
-                          newBranchModelVersion  : true,
-                          newDocumentationVersion: false,
-                          newFork                : false,
-                          targets                : []]
-
-        Map newBranchMap = localResponse.body().find { it.modelId == newBranchId }
-        newBranchMap
-        newBranchMap == [branchName             : "newBranch",
-                         label                  : "Functional Test ${getModelType()}",
-                         modelId                : newBranchId,
-                         newBranchModelVersion  : true,
-                         newDocumentationVersion: false,
-                         newFork                : false,
-                         targets                : []]
-
-        Map latestDraftMap = localResponse.body().find { it.modelId == latestDraftId }
-        latestDraftMap
-        latestDraftMap == [branchName             : "main",
-                           label                  : "Functional Test ${getModelType()}" + " v2",
-                           modelId                : latestDraftId,
-                           newBranchModelVersion  : false,
-                           newDocumentationVersion: true,
-                           newFork                : false,
-                           targets                : []]
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(forkId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        removeValidIdObjectUsingTransaction(mainBranchId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(forkId)
-        cleanUpRoles(latestDraftId)
-    }
-
-    void 'MVT02 : Test getting versionTreeModel is same across ancestors (as editor)'() {
-        //TODO this test fails for now, should work once merged with 9480
-        /*
-        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
-        given:
-        Map data = getValidFinalisedIdWithContent()
-        String id = data.id
-        loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String finalisedId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
-        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
-
-        when: 'logged in as editor'
-        HttpResponse<List<Map>> localResponseOldestAncestor = GET("$id/modelVersionTree", Argument.listOf(Map))
-        HttpResponse<List<Map>> localResponseYoungestAncestor = GET("$latestDraftId/modelVersionTree", Argument.listOf(Map))
-
-        then:
-        verifyResponse OK, localResponseOldestAncestor
-        verifyResponse OK, localResponseYoungestAncestor
-
-        localResponseOldestAncestor.body() == localResponseYoungestAncestor.body()
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(finalisedId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(finalisedId)
-        cleanUpRoles(latestDraftId)
-    }
-
-    void 'CA01 : test finding common ancestor of two Model<T> (as editor)'() {
-        given:
-        Map data = getValidFinalisedIdWithContent()
-        String id = data.id
-        loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: 'left'])
-        verifyResponse CREATED, response
-        String leftId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'right'])
-        verifyResponse CREATED, response
-        String rightId = responseBody().id
-
-        when: 'logged in as editor'
-        GET("$leftId/commonAncestor/$rightId")
-
-        then:
-        verifyResponse OK, response
-        responseBody().id == id
-        responseBody().label == validJson.label
 
         when:
-        //get all so that if there are more than 10 items, we can be sure of finding the correct one in the when block below
-        GET("?all=true")
+        GET("$data.v5/availableBranches")
 
         then:
         verifyResponse OK, response
-        responseBody().count >= 3
+        responseBody().count == 5
+        responseBody().items.each {it.id in expectedBrancheIds}
+        responseBody().items.each {it.label == validJson.label}
 
         when:
-        log.debug(responseBody().toString())
-        String mainBranchId = responseBody().items.find {
-            it.label == validJson.label &&
-            !(it.id in [leftId, rightId, id])
-        }?.id
+        GET("$data.v2/availableBranches")
 
         then:
-        mainBranchId
+        verifyResponse OK, response
+        responseBody().count == 5
+        responseBody().items.each {it.id in expectedBrancheIds}
+        responseBody().items.each {it.label == validJson.label}
+
+        when:
+        GET("$data.v1/availableBranches")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 5
+        responseBody().items.each {it.id in expectedBrancheIds}
+        responseBody().items.each {it.label == validJson.label}
+
+        when:
+        GET("$data.main/availableBranches")
+
+        then:
+        verifyResponse OK, response
+        responseBody().count == 5
+        responseBody().items.each {it.id in expectedBrancheIds}
+        responseBody().items.each {it.label == validJson.label}
 
         cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(leftId)
-        removeValidIdObjectUsingTransaction(rightId)
-        removeValidIdObjectUsingTransaction(mainBranchId)
-        cleanUpRoles(id, leftId, rightId, mainBranchId)
+        cleanupModelVersionTree(data)
+    }
+
+    @Unroll
+    void 'MVT01 : Test getting versionTreeModel at #tag (as editor)'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+
+        when: 'getting the tree'
+        GET("${data[tag]}/modelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(getExpectedModelTreeVersionString(data), jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+
+        // For all versions and branches we should get the same tree, no matter where it was requested
+        // But it should NOT include the branch of the fork
+        where:
+        tag << ['v1', 'v2', 'v3', 'v4', 'v5',
+                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
+    }
+
+    void 'MVT02 : Test getting versionTreeModel at fork only shows the fork and its branch'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.fork}",
+    "label": "Functional Test Fork ${modelType}",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+     {
+        "id": "${data.forkMain}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.forkMain}",
+    "label": "Functional Test Fork ${modelType}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.fork}/modelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'MVT03 : Test getting versionTreeModel at anotherFork only shows the fork'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.anotherFork}",
+    "label": "Functional Test AnotherFork ${modelType}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": []
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.anotherFork}/modelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    @Unroll
+    void 'SMVT01 : Test getting simple versionTreeModel at #tag (as editor)'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+
+        when: 'getting the tree'
+        GET("${data[tag]}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(getExpectedSimpleModelTreeVersionString(data), jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+
+        // For all versions and branches we should get the same tree, no matter where it was requested
+        // But it should NOT include the branch of the fork
+        where:
+        tag << ['v1', 'v2', 'v3', 'v4', 'v5',
+                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
+    }
+
+    void 'SMVT02 : Test getting simple versionTreeModel at fork only shows the fork and its branch'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.fork}",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V0.1.0"
+  },
+  {
+    "id": "${data.forkMain}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main (V0.1.0)"
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.fork}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'SMVT03 : Test getting simple versionTreeModel at anotherFork only shows the fork'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.anotherFork}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main"
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.anotherFork}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
     }
 
     Map<String, String> buildModelVersionTree() {
@@ -1614,7 +1621,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     void cleanupModelVersionTree(Map<String, String> data) {
-        data.each { k, v ->
+        data.each {k, v ->
             removeValidIdObjectUsingTransaction(v)
         }
         cleanUpRoles(data.values())
@@ -1671,10 +1678,286 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
 
     void cleanupIds(String... ids) {
         loginEditor()
-        ids.each { id ->
+        ids.each {id ->
             DELETE("$id?permanent=true")
             response.status() in [NO_CONTENT, NOT_FOUND]
         }
         cleanUpRoles(ids)
+    }
+
+    String getExpectedModelTreeVersionString(Map data) {
+        """[
+  {
+    "id": "${data.v1}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": null,
+    "modelVersion" : "1.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+     {
+        "id": "${data.fork}",
+        "description": "New Fork Of"
+      },
+      {
+        "id": "${data.v2}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.newBranch}",
+        "description": "New Model Version Of"
+      }
+      
+    ]
+  },
+  {
+    "id": "${data.newBranch}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": "newBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.fork}",
+    "label": "Functional Test Fork ${modelType}",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": true,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.v2}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": null,
+    "modelVersion" : "2.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.v3}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.v3}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": null,
+    "modelVersion" : "3.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.v4}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.testBranch}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.testBranch}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": "testBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+   "id": "${data.v4}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": null,
+    "modelVersion" : "4.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.anotherFork}",
+        "description": "New Fork Of"
+      },
+      {
+        "id": "${data.v5}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.anotherFork}",
+    "label": "Functional Test AnotherFork ${modelType}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": true,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.v5}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": null,
+    "modelVersion" : "5.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+    {
+        "id": "${data.main}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.anotherBranch}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.interestingBranch}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.main}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+    {
+    "id": "${data.anotherBranch}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": "anotherBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.interestingBranch}",
+    "label": "Functional Test ${modelType} 3",
+    "branch": "interestingBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  }
+]"""
+    }
+
+    String getExpectedSimpleModelTreeVersionString(Map data) {
+        """[
+  {
+    "id": "${data.v1}",
+    "branch": null,
+    "modelVersion" : "1.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V1.0.0"
+  },
+  {
+    "id": "${data.newBranch}",
+    "branch": "newBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "newBranch (V1.0.0)"
+  },
+  {
+    "id": "${data.v2}",
+    "branch": null,
+    "modelVersion" : "2.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V2.0.0"
+  },
+  {
+    "id": "${data.v3}",
+    "branch": null,
+    "modelVersion" : "3.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V3.0.0"
+  },
+  {
+    "id": "${data.testBranch}",
+    "branch": "testBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "testBranch (V3.0.0)"
+  },
+  {
+    "id": "${data.v4}",
+    "branch": null,
+    "modelVersion" : "4.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V4.0.0"
+  },
+  {
+    "id": "${data.v5}",
+    "branch": null,
+    "modelVersion" : "5.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V5.0.0"
+  },
+  {
+    "id": "${data.main}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main (V5.0.0)"
+  },
+    {
+    "id": "${data.anotherBranch}",
+    "branch": "anotherBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "anotherBranch (V5.0.0)"
+  },
+  {
+    "id": "${data.interestingBranch}",
+    "branch": "interestingBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+   "displayName": "interestingBranch (V5.0.0)"
+  }
+]"""
     }
 }

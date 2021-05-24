@@ -19,12 +19,17 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.databinding.BindUsing
+import groovy.transform.CompileStatic
+import groovy.transform.SelfType
 
 import java.time.OffsetDateTime
 
+@CompileStatic
+@SelfType([InformationAware, CreatorAware])
 trait VersionAware {
 
     String branchName

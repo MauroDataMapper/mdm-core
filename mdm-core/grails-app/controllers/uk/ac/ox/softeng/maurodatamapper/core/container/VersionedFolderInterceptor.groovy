@@ -33,6 +33,7 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
         Utils.toUuid(params, 'id')
         Utils.toUuid(params, 'folderId')
         Utils.toUuid(params, 'versionedFolderId')
+        Utils.toUuid(params, 'otherVersionedFolderId')
     }
 
     @Override
@@ -58,8 +59,8 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
             if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, getId())) {
                 return notFound(VersionedFolder, getId())
             }
-            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, params.otherModelId)) {
-                return notFound(VersionedFolder, params.otherModelId)
+            if (!currentUserSecurityPolicyManager.userCanReadSecuredResourceId(VersionedFolder, params.otherVersionedFolderId)) {
+                return notFound(VersionedFolder, params.otherVersionedFolderId)
             }
             return true
         }

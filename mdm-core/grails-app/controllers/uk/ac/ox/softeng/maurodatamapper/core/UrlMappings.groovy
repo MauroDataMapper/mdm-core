@@ -104,13 +104,13 @@ class UrlMappings {
                 post '/search'(controller: 'versionedFolder', action: 'search')
                 get '/search'(controller: 'versionedFolder', action: 'search')
                 
-                get "/commonAncestor/$otherModelId"(controller: 'VersionedFolder', action: 'commonAncestor')
+                get "/commonAncestor/$otherVersionedFolderId"(controller: 'VersionedFolder', action: 'commonAncestor')
                 get '/latestFinalisedModel'(controller: 'VersionedFolder', action: 'latestFinalisedModel')
                 get '/latestModelVersion'(controller: 'VersionedFolder', action: 'latestModelVersion')
                 get '/modelVersionTree'(controller: 'VersionedFolder', action: 'modelVersionTree')
                 get '/currentMainBranch'(controller: 'VersionedFolder', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'VersionedFolder', action: 'availableBranches')
-                get '/simpleModelVersionTree'(controller: 'VersionedFolder', action: 'simpleModelVersionTree') //(not in develop yet)
+                get '/simpleModelVersionTree'(controller: 'VersionedFolder', action: 'simpleModelVersionTree')
             }
 
             '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES) {
