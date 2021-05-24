@@ -318,9 +318,6 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     protected VersionedFolder createResource() {
         //Explicitly set the exclude map to empty so that the transient property VersionedFolder.userGroups is bound (if present) from the request
         VersionedFolder resource = super.createResource([exclude: []]) as VersionedFolder
-        if (params.versionedFolderId) {
-            resource.parentFolder = versionedFolderService.get(params.versionedFolderId)
-        }
         if (params.folderId) {
             resource.parentFolder = folderService.get(params.folderId)
         }
@@ -354,10 +351,6 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
     @Override
     protected List<VersionedFolder> listAllReadableResources(Map params) {
-        if (params.versionedFolderId) {
-            return versionedFolderService.findAllByParentId(params.versionedFolderId, params)
-        }
-
         def r = versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
         r
     }

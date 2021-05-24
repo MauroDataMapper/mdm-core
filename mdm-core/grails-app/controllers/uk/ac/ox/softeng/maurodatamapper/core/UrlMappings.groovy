@@ -89,7 +89,6 @@ class UrlMappings {
 
             '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES) {
                 '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES)
-                '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES)
 
                 put '/finalise'(controller: 'versionedFolder', action: 'finalise')
                 put '/newBranchModelVersion'(controller: 'versionedFolder', action: 'newBranchModelVersion')
