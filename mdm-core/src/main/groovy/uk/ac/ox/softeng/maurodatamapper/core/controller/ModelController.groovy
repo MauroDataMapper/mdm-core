@@ -317,7 +317,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
 
-        respond modelService.findCurrentMainBranchForModel(source)
+        respond modelService.findCurrentMainBranchByLabel(source.label)
     }
 
     def availableBranches() {
@@ -644,11 +644,25 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        T oldestAncestor = modelService.findOldestAncestor(instance)
+        T oldestAncestor = modelService.findOldestAncestor(instance) as T
 
-        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null, currentUserSecurityPolicyManager)
+        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null,
+                                                                                         null, true,
+                                                                                         currentUserSecurityPolicyManager)
         respond versionTreeModelList
+    }
 
+    def simpleModelVersionTree() {
+        T instance = queryForResource params[alternateParamsIdKey]
+
+        if (!instance) return notFound(params[alternateParamsIdKey])
+
+        T oldestAncestor = modelService.findOldestAncestor(instance) as T
+
+        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null,
+                                                                                         null, false,
+                                                                                         currentUserSecurityPolicyManager)
+        respond versionTreeModelList.findAll {!it.newFork}
     }
 
     @Override

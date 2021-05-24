@@ -48,6 +48,7 @@ class UrlMappings {
                 get "/mergeDiff/$otherModelId"(controller: 'dataModel', action: 'mergeDiff')
                 put "/mergeInto/$otherModelId"(controller: 'dataModel', action: 'mergeInto')
                 get '/modelVersionTree'(controller: 'dataModel', action: 'modelVersionTree')
+                get '/simpleModelVersionTree'(controller: 'dataModel', action: 'simpleModelVersionTree')
 
                 get '/currentMainBranch'(controller: 'dataModel', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'dataModel', action: 'availableBranches')

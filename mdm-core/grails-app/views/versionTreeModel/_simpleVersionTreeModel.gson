@@ -6,12 +6,8 @@ model {
 
 json {
     id versionTreeModel.id
-    label versionTreeModel.label
     branch versionTreeModel.branchName
     modelVersion versionTreeModel.modelVersion?.toString()
     documentationVersion versionTreeModel.documentationVersion?.toString()
-    isNewBranchModelVersion versionTreeModel.newBranchModelVersion
-    isNewDocumentationVersion versionTreeModel.newDocumentationVersion
-    isNewFork versionTreeModel.newFork
-    targets tmpl.'/modelLinkTarget/modelLinkTarget'(versionTreeModel.targets)
+    displayName versionTreeModel.simpleDisplayName
 }

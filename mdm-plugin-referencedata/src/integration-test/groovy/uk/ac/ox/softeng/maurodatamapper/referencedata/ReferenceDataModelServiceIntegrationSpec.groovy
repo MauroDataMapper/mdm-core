@@ -772,7 +772,7 @@ class ReferenceDataModelServiceIntegrationSpec extends BaseReferenceDataModelInt
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def currentMainBranch = referenceDataModelService.findCurrentMainBranchForModel(testModel)
+        def currentMainBranch = referenceDataModelService.findCurrentMainBranchByLabel(testModel.label)
 
         then:
         currentMainBranch.id == draftModel.id

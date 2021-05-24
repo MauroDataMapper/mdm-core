@@ -1,0 +1,7 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+
+model {
+    List<VersionTreeModel> versionTreeModelList
+}
+
+json tmpl.'/versionTreeModel/simpleVersionTreeModel'(versionTreeModelList ?: [])

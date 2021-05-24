@@ -61,6 +61,7 @@ class UrlMappings {
                 get "/mergeDiff/$otherModelId"(controller: 'terminology', action: 'mergeDiff')
                 put "/mergeInto/$otherModelId"(controller: 'terminology', action: 'mergeInto')
                 get '/modelVersionTree' (controller: 'terminology', action: 'modelVersionTree')
+                get '/simpleModelVersionTree'(controller: 'terminology', action: 'simpleModelVersionTree')
 
                 get '/currentMainBranch'(controller: 'terminology', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'terminology', action: 'availableBranches')
@@ -121,6 +122,7 @@ class UrlMappings {
                 get "/mergeDiff/$otherModelId"(controller: 'codeSet', action: 'mergeDiff')
                 put "/mergeInto/$otherModelId"(controller: 'codeSet', action: 'mergeInto')
                 get '/modelVersionTree' (controller: 'codeSet', action: 'modelVersionTree')
+                get '/simpleModelVersionTree'(controller: 'codeSet', action: 'simpleModelVersionTree')
 
                 get '/currentMainBranch'(controller: 'codeSet', action: 'currentMainBranch')
                 get '/availableBranches'(controller: 'codeSet', action: 'availableBranches')

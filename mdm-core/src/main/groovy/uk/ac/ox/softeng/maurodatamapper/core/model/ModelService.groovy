@@ -410,19 +410,25 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         targetModel
     }
 
-    List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType, UserSecurityPolicyManager userSecurityPolicyManager) {
+    List<VersionTreeModel> buildModelVersionTree(K instance, VersionLinkType versionLinkType,
+                                                 VersionTreeModel parentVersionTreeModel,
+                                                 boolean includeForks,
+                                                 UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!userSecurityPolicyManager.userCanReadSecuredResourceId(instance.class, instance.id)) return []
 
-        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
-        VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType)
+        VersionTreeModel rootVersionTreeModel = new VersionTreeModel(instance, versionLinkType, parentVersionTreeModel)
         List<VersionTreeModel> versionTreeModelList = [rootVersionTreeModel]
 
-        for (link in versionLinks) {
+        // If fork then add to the list but dont proceed any further into that tree
+        if (versionLinkType == VersionLinkType.NEW_FORK_OF) return includeForks ? versionTreeModelList : []
+
+        List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
+        versionLinks.each {link ->
             K linkedModel = get(link.multiFacetAwareItemId)
-            rootVersionTreeModel.addTarget(linkedModel.id, link.linkType)
-            versionTreeModelList.addAll(buildModelVersionTree(linkedModel, link.linkType, userSecurityPolicyManager))
+            versionTreeModelList.
+                addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, userSecurityPolicyManager))
         }
-        versionTreeModelList
+        versionTreeModelList.sort()
     }
 
     ObjectDiff<K> getDiffForModels(K thisModel, K otherModel) {
@@ -445,9 +451,15 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     }
 
     K findOldestAncestor(K model) {
-        VersionLink versionLink = versionLinkService.findBySourceModel(model)
-        if (!versionLink)
+        // Look for model version or doc version only
+        VersionLink versionLink = versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_MODEL_VERSION_OF)
+        versionLink = versionLink ?: versionLinkService.findBySourceModelIdAndLinkType(model.id, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+
+        // If no versionlink then we're at the oldest ancestor
+        if (!versionLink) {
             return model
+        }
+        // Check the parent for oldest ancestor
         K parentModel = get(versionLink.targetModelId)
         findOldestAncestor(parentModel)
     }
@@ -468,16 +480,6 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
     K findLatestModelByLabel(String label) {
         findCurrentMainBranchByLabel(label) ?: findLatestFinalisedModelByLabel(label)
-    }
-
-    /**
-     * Use findCurrentMainBranchByLabel instead
-     * @param model
-     * @return
-     */
-    @Deprecated
-    K findCurrentMainBranchForModel(K model) {
-        findCurrentMainBranchByLabel(model.label)
     }
 
     K findCurrentMainBranchByLabel(String label) {
