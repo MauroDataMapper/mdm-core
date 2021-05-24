@@ -49,7 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 
 import static org.springframework.http.HttpStatus.CREATED
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
@@ -343,7 +342,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
+        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return forbidden('Cannot finalise a non-main branch')
+
+        if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot finalise a model inside a VersionedFolder')
 
         instance = modelService.finaliseModel(instance,
                                               currentUser,
@@ -376,6 +377,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
+        if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new branch model version of a model inside a VersionedFolder')
+
         T copy = getModelService().
             createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser, createNewVersionData.copyPermissions,
                                         currentUserSecurityPolicyManager) as T
@@ -405,6 +408,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T instance = queryForResource params[alternateParamsIdKey]
 
         if (!instance) return notFound(params[alternateParamsIdKey])
+
+        if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new documentation version of a model inside a VersionedFolder')
 
         T copy = getModelService().
             createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager) as T
