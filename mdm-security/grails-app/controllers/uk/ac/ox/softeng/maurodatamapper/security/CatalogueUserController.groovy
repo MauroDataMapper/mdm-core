@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiProperty
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.controller.EditLoggingController
 import uk.ac.ox.softeng.maurodatamapper.core.email.EmailService
+import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.ChangePassword
@@ -29,6 +30,9 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import org.springframework.http.HttpStatus
+
+import java.nio.file.Path
+import java.nio.file.Paths
 
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_ADMIN_CONFIRM_REGISTRATION_BODY
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_ADMIN_CONFIRM_REGISTRATION_SUBJECT
@@ -41,6 +45,8 @@ import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_SELF_REGISTER_BODY
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.EMAIL_SELF_REGISTER_SUBJECT
 import static uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyEnum.SITE_URL
+
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
 class CatalogueUserController extends EditLoggingController<CatalogueUser> /* implements RestResponder */ {
     static responseFormats = ['json', 'xml']
@@ -71,6 +77,7 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
     ApiPropertyService apiPropertyService
 
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
+    MauroDataMapperServiceProviderService mauroDataMapperServiceProviderService
 
     CatalogueUserController() {
         super(CatalogueUser)
@@ -305,6 +312,20 @@ class CatalogueUserController extends EditLoggingController<CatalogueUser> /* im
         updateResource instance
 
         updateResponse instance
+    }
+
+    def exportUsers(Integer max) {
+        params.max = Math.min(max ?: 10, 100)
+        List<CatalogueUser> users = listAllResources(params)
+
+        //log.info("Exporting all Users using ${exporter.displayName}")
+        ByteArrayOutputStream outputStream = catalogueUserService.convertToCsv(users)
+        //log.info('Export complete')
+        if (!outputStream) {
+            return errorResponse(UNPROCESSABLE_ENTITY, 'Users could not be exported')
+        }
+
+        render(file: outputStream.toByteArray(), fileName: "mauroDataMapperUsers.csv", contentType: 'text/csv')
     }
 
     /**
