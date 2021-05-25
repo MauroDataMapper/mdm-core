@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -65,6 +66,7 @@ class DataModelServiceSpec extends CatalogueItemServiceSpec implements ServiceUn
 
             }
         }
+
 
         complexDataModel = buildComplexDataModel()
         simpleDataModel = buildSimpleDataModel()
