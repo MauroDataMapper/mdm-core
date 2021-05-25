@@ -98,13 +98,16 @@ class FolderController extends EditLoggingController<Folder> {
             }
 
             request.withFormat {
-                '*' { render status: NO_CONTENT } // NO CONTENT STATUS CODE
+                '*' {render status: NO_CONTENT} // NO CONTENT STATUS CODE
             }
             return
         }
 
         // Otherwise perform "soft delete"
         folderService.delete(instance)
+
+        if (!validateResource(instance, 'update')) return
+
         updateResource(instance)
         updateResponse(instance)
     }
@@ -214,5 +217,18 @@ class FolderController extends EditLoggingController<Folder> {
             currentUserSecurityPolicyManager = securityPolicyManagerService.addSecurityForSecurableResource(resource, currentUser)
         }
         folderService.delete(resource)
+    }
+
+    @Transactional
+    protected boolean validateResource(Folder instance, String view) {
+        if (instance.parentFolder) {
+            instance.parentFolder = proxyHandler.unwrapIfProxy(instance.parentFolder) as Folder
+        }
+        if (instance.hasErrors() || !instance.validate()) {
+            transactionStatus.setRollbackOnly()
+            respond instance.errors, view: view // STATUS CODE 422
+            return false
+        }
+        true
     }
 }

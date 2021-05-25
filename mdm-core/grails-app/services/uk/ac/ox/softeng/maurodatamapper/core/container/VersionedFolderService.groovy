@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
+import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
@@ -112,8 +113,8 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     @Override
-    List<VersionedFolder> findAllContainersInside(UUID containerId) {
-        VersionedFolder.findAllContainedInFolderId(containerId)
+    List<Container> findAllContainersInside(UUID containerId) {
+        folderService.findAllContainersInside(containerId)
     }
 
     @Override

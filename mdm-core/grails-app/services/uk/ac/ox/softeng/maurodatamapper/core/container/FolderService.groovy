@@ -135,7 +135,6 @@ class FolderService extends ContainerService<Folder> {
 
     void delete(Folder folder) {
         folder?.deleted = true
-        folder.save()
     }
 
     void delete(Folder folder, boolean permanent, boolean flush = true) {
