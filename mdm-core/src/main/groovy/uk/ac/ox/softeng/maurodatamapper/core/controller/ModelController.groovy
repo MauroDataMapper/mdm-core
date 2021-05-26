@@ -377,6 +377,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
         if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new branch model version of a model inside a VersionedFolder')
 
         T copy = getModelService().
@@ -409,6 +410,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
         if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new documentation version of a model inside a VersionedFolder')
 
         T copy = getModelService().
@@ -437,6 +439,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T instance = queryForResource params[alternateParamsIdKey]
 
         if (!instance) return notFound(params[alternateParamsIdKey])
+
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
 
         if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params[alternateParamsIdKey])) {
             createNewVersionData.copyPermissions = false

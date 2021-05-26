@@ -651,7 +651,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(data.id)
     }
 
-    void 'BMV01 : test creating a new branch model version of a Model<T> (as reader)'() {
+    void 'BMV01 : test creating a new branch model version of a VersionedFolder (as reader)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id
@@ -667,7 +667,23 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(data.id)
     }
 
-    void 'BMV02 : test creating a new model version of a Model<T> (no branch name) (as editor)'() {
+    void 'BMV02 : test creating a new branch model version of an unfinalised VersionedFolder (as editor)'() {
+        given:
+        Map data = getValidIdWithContent()
+        String id = data.id
+
+        when:
+        loginEditor()
+        PUT("$id/newBranchModelVersion", [:])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        cleanupIds(data.id)
+    }
+
+    void 'BMV03 : test creating a new model version of a VersionedFolder (no branch name) (as editor)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id
@@ -751,7 +767,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id, branchId)
     }
 
-    void 'BMV03 : test creating a new branch model version of a Model<T> (as editor)'() {
+    void 'BMV04 : test creating a new branch model version of a VersionedFolder (as editor)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id
@@ -861,7 +877,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id, branchId, mainBranchId)
     }
 
-    void 'BMV04 : test creating a new model version of a Model<T> and finalising (as editor)'() {
+    void 'BMV05 : test creating a new model version of a VersionedFolder and finalising (as editor)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id
@@ -922,7 +938,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id, branchId)
     }
 
-    void 'BMV05 : test creating a new branch model version of a Model<T> and trying to finalise (as editor)'() {
+    void 'BMV06 : test creating a new branch model version of a VersionedFolder and trying to finalise (as editor)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id
@@ -966,7 +982,24 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id, branchId, mainBranchId)
     }
 
-    void 'FMV01 : test creating a new fork model of a Model<T> (as reader)'() {
+    void 'FMV01 : test creating a new fork model of an unfinalised VersionedFolder (as reader)'() {
+        given:
+        Map data = getValidIdWithContent()
+        String id = data.id
+        String forkModelName = 'Functional Test Fork'
+
+        when: 'logged in as reader'
+        loginReader()
+        PUT("$id/newForkModel", [label: forkModelName])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        cleanupIds(id)
+    }
+
+    void 'FMV02 : test creating a new fork model of a VersionedFolder (as reader)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id
@@ -1026,7 +1059,24 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanUpRoles(forkId, id)
     }
 
-    void 'FMV02 : test creating a new fork model of a Model<T> (as editor)'() {
+    void 'FMV03 : test creating a new fork model of an unfinalised VersionedFolder (as editor)'() {
+        given:
+        Map data = getValidIdWithContent()
+        String id = data.id
+        String forkModelName = 'Functional Test Fork'
+
+        when: 'logged in as reader'
+        loginEditor()
+        PUT("$id/newForkModel", [label: forkModelName])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        cleanupIds(id)
+    }
+
+    void 'FMV04 : test creating a new fork model of a VersionedFolder (as editor)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id
@@ -1092,7 +1142,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(forkId, id)
     }
 
-    void 'DMV01 : test creating a new documentation version of a Model<T> (as reader)'() {
+    void 'DMV01 : test creating a new documentation version of a VersionedFolder (as reader)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id
@@ -1108,7 +1158,23 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
         cleanupIds(id)
     }
 
-    void 'DMV02 : test creating a new documentation version of a Model<T> (as editor)'() {
+    void 'DMV02 : test creating a new documentation version of an unfinalised VersionedFolder (as editor)'() {
+        given:
+        Map data = getValidIdWithContent()
+        String id = data.id
+
+        when:
+        loginEditor()
+        PUT("$id/newDocumentationVersion", [:])
+
+        then:
+        verifyForbidden response
+
+        cleanup:
+        cleanupIds(id)
+    }
+
+    void 'DMV03 : test creating a new documentation version of a VersionedFolder (as editor)'() {
         given:
         Map data = getValidFinalisedIdWithContent()
         String id = data.id

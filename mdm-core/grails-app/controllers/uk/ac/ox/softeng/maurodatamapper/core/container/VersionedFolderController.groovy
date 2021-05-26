@@ -35,7 +35,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 class VersionedFolderController extends EditLoggingController<VersionedFolder> {
@@ -145,7 +144,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!instance) return notFound(params.versionedFolderId)
 
-        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
+        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return forbidden('Cannot finalise a non-main branch')
 
         instance = versionedFolderService.finaliseFolder(instance, currentUser,
                                                          finaliseData.version,
@@ -179,6 +178,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!instance) return notFound(params.versionedFolderId)
 
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
+
         VersionedFolder copy = versionedFolderService.createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
                                                                                   createNewVersionData.copyPermissions,
                                                                                   currentUserSecurityPolicyManager)
@@ -201,6 +202,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         VersionedFolder instance = queryForResource(params.versionedFolderId)
 
         if (!instance) return notFound(params.versionedFolderId)
+
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
 
         if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params.versionedFolderId)) {
             createNewVersionData.copyPermissions = false
@@ -232,6 +235,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         VersionedFolder instance = queryForResource(params.versionedFolderId)
 
         if (!instance) return notFound(params.versionedFolderId)
+
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
 
         VersionedFolder copy = versionedFolderService.createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions,
                                                                                     currentUserSecurityPolicyManager)
