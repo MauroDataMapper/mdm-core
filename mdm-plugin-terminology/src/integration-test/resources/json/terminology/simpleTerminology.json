@@ -1,36 +1,36 @@
 {
   "terminology": {
-    "id": "d4ffa977-b9fd-4044-ace4-1b872bab077e",
+    "id": "${json-unit.matches:id}",
     "label": "Simple Test Terminology",
-    "lastUpdated": "2021-05-21T08:22:36.294Z",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
     "classifiers": [
       {
-        "id": "109e35a6-5255-4a15-9ecd-38fef0ab0263",
+        "id": "${json-unit.matches:id}",
         "label": "test classifier simple",
-        "lastUpdated": "2021-05-21T08:22:36.28Z"
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
       }
     ],
     "metadata": [
       {
-        "id": "4fe9bbea-adaf-4c45-87bb-7ef3f10b3858",
+        "id": "${json-unit.matches:id}",
         "namespace": "terminology.test.com/simple",
         "key": "mdk1",
         "value": "mdv1",
-        "lastUpdated": "2021-05-21T08:22:36.292Z"
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
       },
       {
-        "id": "8ef63492-cb40-4cff-b30e-792ce13a6d36",
+        "id": "${json-unit.matches:id}",
         "namespace": "terminology.test.com",
         "key": "mdk2",
         "value": "mdv2",
-        "lastUpdated": "2021-05-21T08:22:36.292Z"
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
       },
       {
-        "id": "8444c76b-a91f-4ffa-9020-9c02cc309faf",
+        "id": "${json-unit.matches:id}",
         "namespace": "terminology.test.com/simple",
         "key": "mdk2",
         "value": "mdv2",
-        "lastUpdated": "2021-05-21T08:22:36.293Z"
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
       }
     ],
     "author": "Test Bootstrap",
@@ -38,23 +38,23 @@
     "documentationVersion": "1.0.0",
     "finalised": false,
     "authority": {
-      "id": "c2631760-8f79-48ba-9a4a-c2633452c489",
+      "id": "${json-unit.matches:id}",
       "url": "http://localhost",
       "label": "Test Authority"
     },
     "terms": [
       {
-        "id": "fdc7da3b-10fe-40f6-81f9-4c7959e8a0b4",
+        "id": "${json-unit.matches:id}",
         "label": "STT01: Simple Test Term 01",
-        "lastUpdated": "2021-05-21T08:22:36.291Z",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "STT01",
         "definition": "Simple Test Term 01",
         "depth": 1
       },
       {
-        "id": "a4196504-0eac-46e6-a2f4-7fe899b22ccb",
+        "id": "${json-unit.matches:id}",
         "label": "STT02: Simple Test Term 02",
-        "lastUpdated": "2021-05-21T08:22:36.292Z",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "STT02",
         "definition": "Simple Test Term 02",
         "depth": 1
@@ -63,7 +63,7 @@
   },
   "exportMetadata": {
     "exportedBy": "Admin User",
-    "exportedOn": "2021-05-21T08:22:36.92Z",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
     "exporter": {
       "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
       "name": "TerminologyJsonExporterService",

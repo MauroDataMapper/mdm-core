@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.test
 
-import uk.ac.ox.softeng.maurodatamapper.core.admin.AdminService
+
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -35,9 +35,6 @@ import groovy.util.logging.Slf4j
 abstract class BaseTerminologyIntegrationSpec extends BaseIntegrationSpec {
 
     TerminologyService terminologyService
-    AdminService adminService
-
-    Terminology terminology
     Terminology simpleTerminology
     Terminology complexTerminology
     Authority testAuthority

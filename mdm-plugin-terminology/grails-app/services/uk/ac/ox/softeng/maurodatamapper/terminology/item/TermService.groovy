@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -212,30 +211,29 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
     }
 
-    Term copy(Model copiedTerminology, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    Term copy(Model copiedModel, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        Term copy = copyTerm(original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+        if (copiedModel.instanceOf(Terminology)) {
+            (copiedModel as Terminology).addToTerms(copy)
+        } else if (copiedModel.instanceOf(CodeSet)) {
+            (copiedModel as CodeSet).addToTerms(copy)
+        } else {
+            throw new ApiInternalException('TS01', "Cannot add a Term to a model type [${copiedModel.domainType}]")
+        }
+        copy
     }
 
     Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, copier, userSecurityPolicyManager)
+        Term copy = copyTerm(original, copier, userSecurityPolicyManager)
+        copiedTerminology.addToTerms(copy)
+        copy
     }
 
-    private Term copyTermIntoTerminologyOrCodeSet(Model copiedTerminologyOrCodeSet, Term original, User copier,
-                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-
+    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
-
         Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition)
-
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
-
-        copiedTerminologyOrCodeSet.addToTerms(copy)
-
-        if (copy.validate()) save(copy, validate: false)
-        else throw new ApiInvalidModelException('DC01', 'Copied Term is invalid', copy.errors, messageSource)
-
-        copy.trackChanges()
         copy
     }
 

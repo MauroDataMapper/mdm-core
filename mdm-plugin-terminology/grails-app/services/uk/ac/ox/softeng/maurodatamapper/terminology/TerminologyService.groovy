@@ -43,6 +43,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import grails.gorm.transactions.Transactional
+import grails.util.Environment
 import groovy.util.logging.Slf4j
 import org.hibernate.engine.spi.SessionFactoryImplementor
 
@@ -199,8 +200,12 @@ class TerminologyService extends ModelService<Terminology> {
             t.targetTermRelationships.each {tr -> tr.skipValidation(true)}
         }
 
-        log.debug('Disabling database constraints')
-        GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        // During testing its very important that we dont disable constraints otherwise we may miss an invalid model,
+        // The disabling is done to provide a speed up during saving which is not necessary during test
+        if (Environment.current != Environment.TEST) {
+            log.debug('Disabling database constraints')
+            GormUtils.disableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
 
         long subStart = System.currentTimeMillis()
         termRelationshipTypeService.saveAll(termRelationshipTypes)
@@ -214,8 +219,10 @@ class TerminologyService extends ModelService<Terminology> {
         termRelationshipService.saveAll(termRelationships)
         log.debug('Saved {} termRelationships in {}', termRelationships.size(), Utils.timeTaken(subStart))
 
-        log.debug('Enabling database constraints')
-        GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        if (Environment.current != Environment.TEST) {
+            log.debug('Enabling database constraints')
+            GormUtils.enableDatabaseConstraints(sessionFactory as SessionFactoryImplementor)
+        }
 
         log.debug('Content save of Terminology complete in {}', Utils.timeTaken(start))
     }

@@ -52,7 +52,7 @@ abstract class BaseImportExportTerminologySpec extends BaseTerminologyIntegratio
 
     @OnceBefore
     void setupResourcesPath() {
-        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', 'terminology', importType)
+        resourcesPath = Paths.get(BuildSettings.BASE_DIR.absolutePath, 'src', 'integration-test', 'resources', importType, 'terminology')
         assert getImporterService()
     }
 
