@@ -17,12 +17,15 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
+import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import spock.lang.Unroll
@@ -103,11 +106,19 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete'].sort()
     }
 
     List<String> getReaderAvailableActions() {
-        ['show', 'comment']
+        ['show', 'comment'].sort()
+    }
+
+    List<String> getFinalisedReaderAvailableActions() {
+        [
+            'show',
+            'createNewVersions',
+            'newForkModel',
+        ].sort()
     }
 
     List<String> getFinalisedEditorAvailableActions() {
@@ -121,7 +132,12 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
             'newBranchModelVersion',
             'softDelete',
             'delete'
-        ]
+        ].sort()
+    }
+
+    @Transactional
+    String getTestVersionedFolderId() {
+        Folder.findByLabel('Functional Test VersionedFolder').id.toString()
     }
 
     void 'L16 : Test finalising Model (as not logged in)'() {
@@ -1349,6 +1365,293 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
         cleanup:
         cleanupModelVersionTree(data)
+    }
+
+    void 'R29a : Test available actions inside a VersionedFolder (as reader)'() {
+        given:
+        loginEditor()
+        POST("folders/${testVersionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+
+        when:
+        loginReader()
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().availableActions == getReaderAvailableActions()
+
+        cleanup:
+        loginEditor()
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(id)
+    }
+
+    void 'R29b : Test available actions inside a Folder inside a VersionedFolder (as reader)'() {
+        given:
+        loginEditor()
+        POST("folders/${testVersionedFolderId}/folders/", [label: 'folder in versionedfolder'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String folderId = response.body().id
+        POST("folders/${folderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+
+        when:
+        loginReader()
+        GET("folders/${testVersionedFolderId}", MAP_ARG, true)
+        verifyResponse(OK, response)
+        GET("folders/${folderId}", MAP_ARG, true)
+        verifyResponse(OK, response)
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().availableActions == getReaderAvailableActions()
+
+        cleanup:
+        loginEditor()
+        DELETE("folders/${folderId}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+        cleanUpRoles(id)
+    }
+
+    void 'E29a : Test available actions inside a VersionedFolder (as editor)'() {
+        given:
+        loginEditor()
+        POST("folders/${testVersionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+
+        when:
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().availableActions == getEditorAvailableActions() - 'finalise'
+
+        cleanup:
+        loginEditor()
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(id)
+    }
+
+    void 'E29b : Test available actions inside a Folder inside a VersionedFolder (as editor)'() {
+        given:
+        loginEditor()
+        POST("folders/${testVersionedFolderId}/folders/", [label: 'folder in versionedfolder'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String folderId = response.body().id
+        POST("folders/${folderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+
+        when:
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().availableActions == getEditorAvailableActions() - 'finalise'
+
+        cleanup:
+        loginEditor()
+        DELETE("folders/${folderId}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+        cleanUpRoles(id)
+    }
+
+    void 'L08b : test accessing finalised when readable by everyone (not logged in)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/readByEveryone", [:])
+        verifyResponse OK, response
+        logout()
+
+        when: 'not logged in'
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        response.body().readableByEveryone == true
+        response.body().availableActions == ['show']
+
+        when: 'removing readable by everyone'
+        loginEditor()
+        DELETE("$id/readByEveryone", [:])
+        verifyResponse OK, response
+        logout()
+
+        and:
+        GET(id)
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E09b : test adding readable by authenticated once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        def endpoint = "$id/readByAuthenticated"
+
+        when: 'logged in as user with write access'
+        loginEditor()
+        PUT(endpoint, [:])
+
+        then:
+        verifyResponse(OK, response)
+        response.body().readableByAuthenticatedUsers == true
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E10b : test removing readable by authenticated once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        def endpoint = "$id/readByAuthenticated"
+        loginEditor()
+        PUT(endpoint, [:])
+        verifyResponse OK, response
+        response.body().readableByAuthenticatedUsers == true
+        logout()
+
+        when: 'logged in as user with write access'
+        loginEditor()
+        DELETE(endpoint)
+
+        then:
+        verifyResponse(OK, response)
+        response.body().readableByAuthenticatedUsers == false
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E12b : test adding reader share once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+
+        when: 'logged in as writer'
+        loginEditor()
+        POST(endpoint, [:])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().securableResourceId == id
+        response.body().userGroup.id == readerGroupId
+        response.body().groupRole.id == groupRoleId
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        response.body().availableActions == getFinalisedReaderAvailableActions()
+        response.body().id == id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E13b : test removing reader share once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+        loginEditor()
+        POST(endpoint, [:])
+        logout()
+
+        when: 'logged in as writer'
+        loginEditor()
+        DELETE(endpoint, [:])
+
+        then:
+        verifyResponse NO_CONTENT, response
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E14b : test adding "editor" share once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+
+        when: 'logged in as writer'
+        loginEditor()
+        POST(endpoint, [:])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().securableResourceId == id
+        response.body().userGroup.id == readerGroupId
+        response.body().groupRole.id == groupRoleId
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        response.body().availableActions == getFinalisedEditorAvailableActions()
+        response.body().id == id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E15b : test removing "editor" share once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+        loginEditor()
+        POST(endpoint, [:])
+        logout()
+
+        when: 'logged in as writer'
+        loginEditor()
+        DELETE(endpoint, [:])
+
+        then:
+        verifyResponse NO_CONTENT, response
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
     }
 
     String getExpectedModelTreeVersionString(Map data) {
