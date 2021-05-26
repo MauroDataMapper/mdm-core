@@ -351,8 +351,10 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
     @Override
     protected List<VersionedFolder> listAllReadableResources(Map params) {
-        def r = versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
-        r
+        if (params.folderId) {
+            return versionedFolderService.findAllByParentId(params.folderId, params)
+        }
+        versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
     }
 
     @Override
