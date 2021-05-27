@@ -193,7 +193,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
         virtualSecurableResourceGroupRoles
-            .findAll {it.domainType == securableResourceClass.simpleName}
+            .findAll {it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName}
             .collect {it.domainId}
             .toSet()
             .toList()

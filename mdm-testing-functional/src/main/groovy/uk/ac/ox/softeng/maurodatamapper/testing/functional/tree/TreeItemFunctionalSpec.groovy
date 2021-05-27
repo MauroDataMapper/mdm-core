@@ -825,6 +825,26 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "Functional Test Folder",
     "hasChildren": false,
     "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
   }
 ]'''
     }
@@ -842,6 +862,26 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "Functional Test Folder",
     "hasChildren": false,
     "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
   }
 ]'''
     }
@@ -866,43 +906,27 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "label": "Functional Test Folder 2",
     "hasChildren": false,
     "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
   }
 ]'''
     }
-
-
-    /*
-                void 'test call to tree using Terminology id'() {
-                    given:
-                    def id = complexTestTerminology.id
-
-                    when: 'not logged in'
-                    RestResponse response = restGet("$id")
-
-                    then:
-                    verifyResponse NOT_FOUND, response
-
-                    when: 'logged in as reader 3 user'
-                    loginUser(reader3)
-                    response = restGet("$id")
-
-                    then:
-                    verifyResponse NOT_FOUND, response
-
-                    when: 'logged in as normal user'
-                    loginEditor()
-                    response = restGet("$id")
-
-                    then:
-                    verifyResponse NOT_FOUND, response
-
-                    when: 'logged in as admin user'
-                    loginAdmin()
-                    response = restGet("$id")
-
-                    then:
-                    verifyResponse NOT_FOUND, response
-                }
-
-             */
 }
