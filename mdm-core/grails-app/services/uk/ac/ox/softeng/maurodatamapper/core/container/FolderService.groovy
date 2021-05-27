@@ -17,10 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.container
 
+
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
+import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -132,7 +135,6 @@ class FolderService extends ContainerService<Folder> {
 
     void delete(Folder folder) {
         folder?.deleted = true
-        folder.save()
     }
 
     void delete(Folder folder, boolean permanent, boolean flush = true) {
@@ -149,9 +151,14 @@ class FolderService extends ContainerService<Folder> {
             folder.trackChanges()
             folder.delete(flush: flush)
         } else {
-            folder.childFolders.each { delete(it) }
+            folder.childFolders.each {delete(it)}
             delete(folder)
         }
+    }
+
+    Folder validate(Folder folder) {
+        folder.validate()
+        folder
     }
 
     /**
@@ -234,7 +241,30 @@ class FolderService extends ContainerService<Folder> {
         getFullPathDomains(folder)
     }
 
-    Folder save(Folder folder) {
-        folder.save()
+    Folder copyBasicFolderInformation(Folder original, Folder copy, User copier) {
+        copy.createdBy = copier.emailAddress
+        copy.label = original.label
+        copy.description = original.description
+
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
+            Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
+            rule.ruleRepresentations.each {ruleRepresentation ->
+                copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
+                                                    representation: ruleRepresentation.representation,
+                                                    createdBy: copier.emailAddress)
+            }
+            copy.addToRules(copiedRule)
+        }
+
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
+            copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
+                                    targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
+                                    targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
+                                    unconfirmed: true)
+        }
+
+        copy
     }
+
 }

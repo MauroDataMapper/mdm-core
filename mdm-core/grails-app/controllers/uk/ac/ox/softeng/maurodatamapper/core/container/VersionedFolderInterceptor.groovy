@@ -65,6 +65,9 @@ class VersionedFolderInterceptor extends TieredAccessSecurableResourceIntercepto
             return true
         }
 
-        checkTieredAccessActionAuthorisationOnSecuredResource(VersionedFolder, getId(), true)
+        if (params.id || params.versionedFolderId) {
+            return checkTieredAccessActionAuthorisationOnSecuredResource(VersionedFolder, getId(), true)
+        }
+        return checkActionAuthorisationOnSecuredResource(Folder, params.folderId, true)
     }
 }

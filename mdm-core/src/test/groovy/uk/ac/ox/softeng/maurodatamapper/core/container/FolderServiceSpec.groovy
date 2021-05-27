@@ -71,9 +71,11 @@ class FolderServiceSpec extends BaseUnitSpec implements ServiceUnitTest<FolderSe
     void "test delete"() {
         expect:
         service.count() == 6
+        Folder folder = service.get(id)
 
         when:
-        service.delete(id)
+        service.delete(folder)
+        service.save(folder)
 
         then:
         Folder.countByDeleted(false) == 5

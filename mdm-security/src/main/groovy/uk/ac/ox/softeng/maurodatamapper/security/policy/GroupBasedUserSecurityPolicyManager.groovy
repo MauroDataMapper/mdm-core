@@ -221,10 +221,15 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
         // Allow reviewers to create annotations on a model if they have reviewer status
         if (Utils.parentClassIsAssignableFromChild(Annotation, resourceClass) &&
-                (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
-            Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass)))
-                        {
+            (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
+             Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass))) {
             return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, REVIEWER_ROLE_NAME)
+        }
+        // Allow editors to edit/create permissions on models and containers no matter what state the secured resource is in
+        if (Utils.parentClassIsAssignableFromChild(SecurableResourceGroupRole, resourceClass) &&
+            (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
+             Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass))) {
+            return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
         }
         // Allow users to create their own user image file
         if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
@@ -347,13 +352,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     // Can the model be finalised
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? role.canFinalise() : false
-                    //                case NEW_MODEL_VERSION_ACTION:
-                    //                case NEW_BRANCH_MODEL_VERSION_ACTION:
-                    //                case NEW_DOCUMENTATION_ACTION:
-                    //                    // If model is finalised then these actions are allowed
-                    //                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass,
-                    //                    id, EDITOR_ROLE_NAME)
-                    //                    return role ? role.isFinalised() : false
+                case NEW_MODEL_VERSION_ACTION:
+                case NEW_BRANCH_MODEL_VERSION_ACTION:
+                case NEW_DOCUMENTATION_ACTION:
+                    // If model is finalised then these actions are allowed
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? role.canVersion() : false
                     //                case MERGE_INTO_ACTION:
                     //                    // If the model is finalised then these actions are NOT allowed
                     //                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass,
@@ -562,7 +566,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
         }
-        if (role.canVersion()) {
+        if (role.canVersion() && isAuthenticated()) {
             updatedActions.addAll(READER_VERSIONING_ACTIONS)
         }
         updatedActions

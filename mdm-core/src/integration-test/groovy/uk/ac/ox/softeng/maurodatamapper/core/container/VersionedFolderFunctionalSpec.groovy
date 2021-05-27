@@ -130,31 +130,6 @@ class VersionedFolderFunctionalSpec extends ResourceFunctionalSpec<VersionedFold
     }
 
     @Rollback
-    void 'Test saving a versioned folder into a versioned folder works'() {
-        when: 'The save action is executed with valid data'
-        POST('', validJson)
-
-        then: 'The response is correct'
-        response.status == HttpStatus.CREATED
-        response.body().id
-        VersionedFolder.count() == 1
-
-        when: 'The save action is executed with the same valid data'
-        String id = responseBody().id
-        POST("${id}/versionedFolders", validJson)
-
-        then: 'The response is correct as cannot have 2 folders with the same name'
-        response.status == HttpStatus.CREATED
-        response.body().id
-        VersionedFolder.count() == 2
-        Folder.count() == 2
-
-        cleanup:
-        DELETE(getDeleteEndpoint(id))
-        assert response.status() == HttpStatus.NO_CONTENT
-    }
-
-    @Rollback
     void 'Test the save action fails when using the same label persists an instance'() {
         given:
         List<String> createdIds = []

@@ -571,7 +571,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                         String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
-                                       deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto, authority: original.authority,
+                                       deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto, authority: authorityService.defaultAuthority,
                                        branchName: branchName
         )
 

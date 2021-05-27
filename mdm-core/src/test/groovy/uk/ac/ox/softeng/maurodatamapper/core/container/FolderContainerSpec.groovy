@@ -24,7 +24,9 @@ import uk.ac.ox.softeng.maurodatamapper.test.unit.CreatorAwareSpec
 
 import org.spockframework.util.InternalSpockError
 
-abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
+abstract class FolderContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
+
+    abstract Container newChildContainerClass(Map<String, Object> args)
 
     abstract K newContainerClass(Map<String, Object> args)
 
@@ -57,7 +59,7 @@ abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
     void 'C02 : test parent child folders'() {
         given:
         setValidDomainValues()
-        K child = newContainerClass(label: 'child', createdBy: admin.emailAddress)
+        K child = newChildContainerClass(label: 'child', createdBy: admin.emailAddress)
 
         when:
         domain.addToChildFolders(child)
@@ -67,7 +69,7 @@ abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
 
         when:
         item = findById()
-        def item2 = containerClass.findByLabel('child')
+        def item2 = Folder.findByLabel('child')
 
         then:
         item
@@ -82,7 +84,7 @@ abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
         item2.path == "/${item.id}"
 
         when:
-        K child2 = newContainerClass(label: 'child2', createdBy: admin.emailAddress)
+        K child2 = newChildContainerClass(label: 'child2', createdBy: admin.emailAddress)
         item2.addToChildFolders(child2)
 
         then:
@@ -160,7 +162,7 @@ abstract class ContainerSpec<K extends Container> extends CreatorAwareSpec<K> {
         given:
         setValidDomainValues()
         domain.addToChildFolders(childFolderArgs)
-        K other = newContainerClass(otherFolderArgs)
+        K other = newChildContainerClass(otherFolderArgs)
 
         expect: 'domain is currently valid'
         checkAndSave(domain)
