@@ -436,7 +436,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         BasicModel basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
                                                 documentationVersion: Version.from('2.1.0'),
                                                 authority: testAuthority)
-        basicModel2.addToVersionLinks(new VersionLink(linkType: VersionLinkType.SUPERSEDED_BY_FORK, targetModel: basicModel))
+        basicModel.addToVersionLinks(new VersionLink(linkType: VersionLinkType.NEW_FORK_OF, targetModel: basicModel2))
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
         ModelService basicModelService = Stub() {
@@ -1460,7 +1460,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         basicModel2 = new BasicModel(label: 'dm2', createdBy: admin.emailAddress, folder: Folder.findByLabel('parent'),
                                      documentationVersion: Version.from('2.1.0'),
                                      authority: testAuthority)
-        basicModel2.addToVersionLinks(new VersionLink(linkType: VersionLinkType.SUPERSEDED_BY_FORK, targetModel: basicModel))
+        basicModel.addToVersionLinks(new VersionLink(linkType: VersionLinkType.NEW_FORK_OF, targetModel: basicModel2))
         checkAndSave(basicModel)
         checkAndSave(basicModel2)
 

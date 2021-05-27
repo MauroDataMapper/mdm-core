@@ -107,7 +107,7 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
         Map<String, Set<UUID>> itemIdsMap = [:]
 
         log.debug('Collecting all items for {} version links', versionLinks.size())
-        versionLinks.each { sl ->
+        versionLinks.each {sl ->
 
             itemIdsMap.compute(sl.modelDomainType, [
                 apply: {String s, Set<UUID> uuids ->
@@ -118,7 +118,7 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
             ] as BiFunction)
 
             itemIdsMap.compute(sl.targetModelDomainType, [
-                apply: { String s, Set<UUID> uuids ->
+                apply: {String s, Set<UUID> uuids ->
                     uuids = uuids ?: new HashSet<>() as Set<UUID>
                     uuids.add(sl.targetModelId)
                     uuids
@@ -128,14 +128,14 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
 
         log.debug('Loading required items from database')
         Map<Pair<String, UUID>, Model> itemMap = [:]
-        itemIdsMap.each { domain, ids ->
+        itemIdsMap.each {domain, ids ->
             VersionLinkAwareService service = findServiceForVersionLinkAwareDomainType(domain)
             List<VersionLinkAware> items = service.getAll(ids)
-            itemMap.putAll(items.collectEntries { i -> [new Pair<String, UUID>(domain, i.id), i] })
+            itemMap.putAll(items.collectEntries {i -> [new Pair<String, UUID>(domain, i.id), i]})
         }
 
         log.debug('Loading {} retrieved catalogue items into semantic links', itemMap.size())
-        versionLinks.each { sl ->
+        versionLinks.each {sl ->
             sl.model = itemMap.get(new Pair(sl.multiFacetAwareItemDomainType, sl.multiFacetAwareItemId))
             sl.targetModel = itemMap.get(new Pair(sl.targetModelDomainType, sl.targetModelId))
         }
@@ -200,18 +200,10 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     }
 
     VersionLink findLatestLinkSupersedingModelId(String modelType, UUID modelId) {
-        VersionLink.by().or {
-            and {
-                inList('linkType', VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
-                    .eq('multiFacetAwareItemDomainType', modelType)
-                    .eq('multiFacetAwareItemId', modelId)
-            }
-            and {
-                inList('linkType', VersionLinkType.NEW_MODEL_VERSION_OF, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
-                    .eq('targetModelDomainType', modelType)
-                    .eq('targetModelId', modelId)
-            }
-        }
+        VersionLink.by()
+            .inList('linkType', VersionLinkType.NEW_MODEL_VERSION_OF, VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+            .eq('targetModelDomainType', modelType)
+            .eq('targetModelId', modelId)
             .sort('lastUpdated', 'desc')
             .get()
     }
@@ -226,18 +218,10 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
     }
 
     VersionLink findLatestLinkDocumentationSupersedingModelId(String modelType, UUID modelId) {
-        VersionLink.by().or {
-            and {
-                eq('linkType', VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
-                    .eq('multiFacetAwareItemDomainType', modelType)
-                    .eq('multiFacetAwareItemId', modelId)
-            }
-            and {
-                eq('linkType', VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
-                    .eq('targetModelDomainType', modelType)
-                    .eq('targetModelId', modelId)
-            }
-        }
+        VersionLink.by().
+            eq('linkType', VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
+            .eq('targetModelDomainType', modelType)
+            .eq('targetModelId', modelId)
             .sort('lastUpdated', 'desc')
             .get()
     }
@@ -267,26 +251,17 @@ class VersionLinkService implements MultiFacetItemAwareService<VersionLink> {
 
     List<UUID> filterModelIdsWhereModelIdIsDocumentSuperseded(String modelType, List<UUID> modelIds) {
         if (!modelIds) return []
-        List<UUID> sourceForSupersededByIds = VersionLink.by()
-            .eq('linkType', VersionLinkType.SUPERSEDED_BY_DOCUMENTATION)
-            .eq('multiFacetAwareItemDomainType', modelType)
-            .inList('multiFacetAwareItemId', modelIds)
-            .property('multiFacetAwareItemId').list() as List<UUID>
-
-        List<UUID> targetOfNewVersionOf = VersionLink.by()
+        VersionLink.by()
             .eq('linkType', VersionLinkType.NEW_DOCUMENTATION_VERSION_OF)
             .eq('targetModelDomainType', modelType)
             .inList('targetModelId', modelIds)
             .property('targetModelId').list() as List<UUID>
-
-
-        Utils.mergeLists(sourceForSupersededByIds, targetOfNewVersionOf)
     }
 
 
     List<UUID> filterModelIdsWhereModelIdIsModelSuperseded(List<UUID> modelIds) {
         if (!modelIds) return []
-        findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(modelIds).collect { it.targetModelId }
+        findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(modelIds).collect {it.targetModelId}
     }
 
     List<VersionLink> findAllByTargetMultiFacetAwareItemIdInListAndIsModelSuperseded(List<UUID> modelIds) {
