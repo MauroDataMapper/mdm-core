@@ -68,6 +68,16 @@ class TreeItemService {
         service.get(catalogueItemId)
     }
 
+    Container findTreeCapableContainer(Class containerClass, UUID containerId) {
+        if (!containerId) return null
+
+        ContainerService service = containerServices.find {it.handles(containerClass)}
+        if (!service) throw new ApiBadRequestException('TIS01',
+                                                       "Container retrieval for container [${containerClass.simpleName}] with no " +
+                                                       "supporting service")
+        service.get(containerId)
+    }
+
     /**
      * Obtain a complete tree containing all the containers the user is allowed to read
      *
@@ -80,6 +90,35 @@ class TreeItemService {
                                                                     boolean removeEmptyContainers) {
         log.info('Creating container only tree')
         buildContainerTreeFromContainerTreeItems(getAllReadableContainerTreeItems(containerClass, userSecurityPolicyManager), removeEmptyContainers)
+    }
+
+    def <K extends Container> List<TreeItem> buildFocusContainerTree(Class<K> containerClass, K container, UserSecurityPolicyManager userSecurityPolicyManager,
+                                                                     boolean includeDocumentSuperseded, boolean includeModelSuperseded,
+                                                                     boolean includeDeleted, boolean removeEmptyContainers) {
+        log.info('Creating container drill tree')
+        long start = System.currentTimeMillis()
+
+
+        List<ContainerTreeItem> fullTree = buildContainerTree(containerClass, userSecurityPolicyManager, includeDocumentSuperseded, includeModelSuperseded,
+                                                              includeDeleted, removeEmptyContainers)
+        ContainerTreeItem treeItem = drillDownIntoTree(fullTree, container.id)
+        log.debug('Container drill tree build took: {}', Utils.timeTaken(start))
+        treeItem.children
+    }
+
+    ContainerTreeItem drillDownIntoTree(List<ContainerTreeItem> containerTreeItems, UUID containerId) {
+        if (!containerTreeItems) return null
+        for (ContainerTreeItem child : containerTreeItems) {
+            ContainerTreeItem found = drillDownIntoTree(child, containerId)
+            if (found) return found
+        }
+        null
+    }
+
+    ContainerTreeItem drillDownIntoTree(ContainerTreeItem treeItem, UUID containerId) {
+        if (treeItem.id == containerId) return treeItem
+        List<ContainerTreeItem> containerTreeItems = treeItem.children.findAll {it instanceof ContainerTreeItem} as List<ContainerTreeItem>
+        drillDownIntoTree(containerTreeItems, containerId)
     }
 
     /**

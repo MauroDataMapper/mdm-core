@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmController
@@ -52,14 +53,27 @@ class TreeItemController extends RestfulController<TreeItem> implements MdmContr
     }
 
     def show() {
-        log.debug('Call to tree for catalogue item')
-        params.imported = params.boolean('imported', true)
+        log.debug('Call to tree for drill down into container or catalogue item')
+
+        if (params.containsKey('containerId')) {
+            // Drill down into a container and provide the tree from that perspective only
+            Container container = treeItemService.findTreeCapableContainer(params.containerClass, params.containerId)
+            if (!container) return notFound(Container, params.containerId)
+            respond treeItemList: treeItemService.buildFocusContainerTree(params.containerClass,
+                                                                          container,
+                                                                          currentUserSecurityPolicyManager,
+                                                                          shouldIncludeDocumentSupersededItems(),
+                                                                          shouldIncludeModelSupersededItems(),
+                                                                          shouldIncludeDeletedItems(),
+                                                                          false)
+            return
+        }
         // If id provided then build the tree for that item, as we build the containers on the default we will assume this a catalogue item
         // Interceptor will have confirmed allowance to read
         CatalogueItem catalogueItem = treeItemService.findTreeCapableCatalogueItem(params.catalogueItemClass, params.catalogueItemId)
         if (!catalogueItem) return notFound(CatalogueItem, params.catalogueItemId)
 
-        respond(treeItemService.buildCatalogueItemTree(catalogueItem, false))
+        respond treeItemList: treeItemService.buildCatalogueItemTree(catalogueItem, false)
     }
 
     def index() {

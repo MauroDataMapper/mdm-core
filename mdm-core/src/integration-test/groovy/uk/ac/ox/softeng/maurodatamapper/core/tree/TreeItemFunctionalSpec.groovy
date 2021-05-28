@@ -303,4 +303,154 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
+    void '10 :  test drilling down into a folder'() {
+        given:
+        String exp = '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "deleted": false,
+    "children": [
+        {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder Child",
+        "hasChildren": false,
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+        }
+    ]
+  }
+]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'getting folder tree'
+        def childId = response.body().id
+        GET(newTreeResourcePath, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, exp
+
+        when: 'getting drill down'
+        GET("$newTreeResourcePath/focus/$parentId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, '''[{
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder Child",
+        "hasChildren": false,
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+        }]'''
+
+        cleanup:
+        DELETE("folders/$parentId/folders/$childId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
+
+    void '11 : test drilling down for a versioned folder'() {
+        given:
+        String exp = '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder Child",
+        "hasChildren": false,
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "VersionedFolder",
+        "label": "Functional Test Versioned Folder Child",
+        "hasChildren": false,
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}",
+        "finalised": false,
+        "documentationVersion": "1.0.0",
+        "branchName": "main"
+      }
+    ]
+  }
+]'''
+
+        when: 'creating new folder'
+        POST('folders', [label: 'Functional Test Folder'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new folder'
+        def parentId = response.body().id
+        POST("folders/$parentId/folders", [label: 'Functional Test Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'creating new versioned folder'
+        POST("folders/$parentId/versionedFolders", [label: 'Functional Test Versioned Folder Child'])
+
+        then:
+        verifyResponse HttpStatus.CREATED, response
+
+        when: 'getting folder tree'
+        GET(newTreeResourcePath, STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, exp
+
+        when: 'getting drill down'
+        GET("$newTreeResourcePath/focus/$parentId", STRING_ARG)
+
+        then:
+        verifyJsonResponse HttpStatus.OK, '''[
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Folder",
+        "label": "Functional Test Folder Child",
+        "hasChildren": false,
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "VersionedFolder",
+        "label": "Functional Test Versioned Folder Child",
+        "hasChildren": false,
+        "deleted": false,
+        "parentFolder": "${json-unit.matches:id}",
+        "finalised": false,
+        "documentationVersion": "1.0.0",
+        "branchName": "main"
+      }
+    ]'''
+
+        cleanup:
+        DELETE("folders/$parentId?permanent=true")
+        assert response.status() == HttpStatus.NO_CONTENT
+    }
 }

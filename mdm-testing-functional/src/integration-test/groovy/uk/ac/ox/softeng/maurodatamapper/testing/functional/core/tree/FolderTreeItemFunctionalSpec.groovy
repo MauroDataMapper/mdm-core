@@ -17,10 +17,14 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional.core.tree
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.tree.TreeItemFunctionalSpec
 
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+
+import static io.micronaut.http.HttpStatus.OK
 
 /**
  * <pre>
@@ -38,6 +42,157 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     @Override
     String getContainerDomainType() {
         'folders'
+    }
+
+
+    @Transactional
+    String getFolderId() {
+        Folder.findByLabel('Functional Test Folder').id.toString()
+    }
+
+
+    void 'E07 : test focus on folder'() {
+        when: 'logged in as normal user'
+        loginEditor()
+        GET(folderId, STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''[
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Complex Test DataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Complex Test Terminology",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Finalised Example Test DataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard",
+        "modelVersion": "1.0.0"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Simple Test CodeSet",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet",
+        "modelVersion": "1.0.0"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Simple Test DataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Simple Test Terminology",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "SourceFlowDataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "TargetFlowDataModel",
+        "hasChildren": true,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Unfinalised Simple Test CodeSet",
+        "hasChildren": false,
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet"
+      }
+    ]'''
     }
 
     String getReaderTree() {
