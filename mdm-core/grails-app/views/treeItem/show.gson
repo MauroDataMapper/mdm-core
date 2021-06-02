@@ -3,6 +3,5 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree.TreeItem
 model {
     Iterable<TreeItem> treeItemList
 }
-log.warn("${binding.variables}")
 json tmpl.treeItem(treeItemList ?: [])
 

@@ -19,6 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.tree
 
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 
+import org.grails.datastore.gorm.GormEntity
+
 /**
  * @since 07/01/2020
  */
@@ -26,8 +28,8 @@ class ModelItemTreeItem extends TreeItem {
 
     int order
 
-    ModelItemTreeItem(ModelItem modelItem, Boolean childrenExist) {
-        super(modelItem, modelItem.id, modelItem.label, modelItem.domainType, childrenExist)
+    ModelItemTreeItem(ModelItem modelItem, Boolean childrenExist, List<String> availableTreeActions) {
+        super(modelItem as GormEntity, modelItem.id, modelItem.label, modelItem.domainType, childrenExist, availableTreeActions)
         order = modelItem.getOrder()
     }
 

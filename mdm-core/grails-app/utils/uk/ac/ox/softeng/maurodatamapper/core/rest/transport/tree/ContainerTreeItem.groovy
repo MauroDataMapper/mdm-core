@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Container
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
+import org.grails.datastore.gorm.GormEntity
+
 /**
  * @since 07/01/2020
  */
@@ -37,8 +39,8 @@ class ContainerTreeItem extends TreeItem {
     String branchName
     boolean versionAware
 
-    ContainerTreeItem(Container container) {
-        super(container, container.id, container.label, container.domainType, null)
+    ContainerTreeItem(Container container, List<String> availableTreeActions) {
+        super(container as GormEntity, container.id, container.label, container.domainType, null, availableTreeActions)
         containerId = container.parentId
         deleted = container.deleted
         containerType = container.domainType

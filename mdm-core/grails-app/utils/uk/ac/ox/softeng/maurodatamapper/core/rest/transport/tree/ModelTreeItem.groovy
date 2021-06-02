@@ -37,12 +37,12 @@ class ModelTreeItem extends TreeItem {
     String modelVersionTag
     String branchName
 
-    ModelTreeItem(Model model, String containerPropertyName, Boolean childrenExist, Boolean isSuperseded) {
-        this(model, model."$containerPropertyName".id as UUID, childrenExist, isSuperseded)
+    ModelTreeItem(Model model, String containerPropertyName, Boolean childrenExist, Boolean isSuperseded, List<String> availableTreeActions) {
+        this(model, model."$containerPropertyName".id as UUID, childrenExist, isSuperseded, availableTreeActions)
     }
 
-    ModelTreeItem(Model model, UUID containerId, Boolean childrenExist, Boolean isSuperseded) {
-        super(model as GormEntity, model.id, model.label, model.domainType, childrenExist)
+    ModelTreeItem(Model model, UUID containerId, Boolean childrenExist, Boolean isSuperseded, List<String> availableTreeActions) {
+        super(model as GormEntity, model.id, model.label, model.domainType, childrenExist, availableTreeActions)
         this.containerId = containerId
         deleted = model.deleted
         finalised = model.finalised

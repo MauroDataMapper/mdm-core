@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.security.role
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
@@ -29,6 +30,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Utils
 class VirtualSecurableResourceGroupRoleService {
 
     VersionedFolderService versionedFolderService
+    FolderService folderService
 
     VirtualSecurableResourceGroupRole buildFromSecurableResourceGroupRole(SecurableResourceGroupRole securableResourceGroupRole) {
         this.buildForSecurableResource(securableResourceGroupRole.securableResource)
@@ -45,7 +47,11 @@ class VirtualSecurableResourceGroupRoleService {
         }
 
         if (Utils.parentClassIsAssignableFromChild(Folder, securableResource.class)) {
-            virtualRole.withDependencyOnAccessToDomainId((securableResource as Folder).parentFolder?.id)
+            boolean folderContainsVersionedFolder = versionedFolderService.doesDepthTreeContainVersionedFolder(securableResource as Folder)
+            boolean folderContainsFinalisedModel = folderService.doesDepthTreeContainFinalisedModel(securableResource as Folder)
+            virtualRole
+                .withDependencyOnAccessToDomainId((securableResource as Folder).parentFolder?.id)
+                .asVersionControlled(folderContainsVersionedFolder || folderContainsFinalisedModel)
         } else if (Utils.parentClassIsAssignableFromChild(Classifier, securableResource.class)) {
             virtualRole.withDependencyOnAccessToDomainId((securableResource as Classifier).parentClassifier?.id)
         }
@@ -59,6 +65,7 @@ class VirtualSecurableResourceGroupRoleService {
                 .asFinalisable(!modelIsInsideVersionedFolder &&
                                model.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME)
                 .asVersionable(!modelIsInsideVersionedFolder)
+                .asVersionControlled(modelIsInsideVersionedFolder)
         }
 
         if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResource.class)) {
@@ -66,6 +73,7 @@ class VirtualSecurableResourceGroupRoleService {
             virtualRole.asFinalised(versionedFolder.finalised)
                 .asFinalisable(versionedFolder.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME)
                 .asVersionable(true)
+                .asVersionControlled(false)
         }
         virtualRole
     }

@@ -342,11 +342,11 @@ class TermService extends ModelItemService<Term> {
             int depth = term.depth
             log.debug('Term provided, building tree at depth {}', depth)
             List<Term> terms = findAllTreeTypeModelItemsIn(term) as List<Term>
-            tree = terms.collect {t -> new ModelItemTreeItem(t, t.hasChildren())}.toSet()
+            tree = terms.collect {t -> new ModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         } else {
             log.debug('No term provided so providing top level tree')
             List<Term> terms = terminologyService.findAllTreeTypeModelItemsIn(terminology) as List<Term>
-            tree = terms.collect {t -> new ModelItemTreeItem(t, t.hasChildren())}.toSet()
+            tree = terms.collect {t -> new ModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         }
 
         List<ModelItemTreeItem> sortedTree = tree.sort()

@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security.policy
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
@@ -71,6 +71,18 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.S
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.USER_ADMIN_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_CONTAINER_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_FOLDER_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_MODEL_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CREATE_FOLDER
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CREATE_MODEL
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CREATE_MODEL_ITEM
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CREATE_VERSIONED_FOLDER
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.DISALLOWED_MODELITEM_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.EDITOR_CONTAINER_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.EDITOR_FOLDER_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.EDITOR_MODEL_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.MOVE_TO_VERSIONED_FOLDER
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.APPLICATION_ADMIN_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.AUTHOR_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.CONTAINER_ADMIN_ROLE_NAME
@@ -398,11 +410,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     @Override
-    List<String> userAvailableActions(Class resourceClass, UUID id) {
-        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return securedResourceUserAvailableActions(resourceClass, id).toSet().sort()
-        }
-        throw new ApiNotYetImplementedException('USPM01', 'Obtain user actions for non-secured resource')
+    List<String> userAvailableActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        return securedResourceUserAvailableActions(securableResourceClass, id).toSet().sort()
     }
 
     @Override
@@ -434,12 +443,30 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                                       UUID owningSecureResourceId) {
 
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userAvailableActions(resourceClass, id)
+            return userAvailableActions(resourceClass as Class<? extends SecurableResource>, id)
         }
 
         List<String> owningResourceActions = userAvailableActions(owningSecureResourceClass, owningSecureResourceId)
         if (Utils.parentClassIsAssignableFromChild(ModelItem, resourceClass)) {
             return owningResourceActions - DISALLOWED_MODELITEM_ACTIONS
+        }
+        return owningResourceActions
+    }
+
+    @Override
+    List<String> userAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        return securedResourceUserAvailableTreeActions(securableResourceClass, id).toSet().sort()
+    }
+
+    @Override
+    List<String> userAvailableTreeActions(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
+            return userAvailableTreeActions(resourceClass as Class<? extends SecurableResource>, id)
+        }
+
+        List<String> owningResourceActions = userAvailableTreeActions(owningSecureResourceClass, owningSecureResourceId)
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, resourceClass)) {
+            return owningResourceActions - DISALLOWED_MODELITEM_TREE_ACTIONS
         }
         return owningResourceActions
     }
@@ -549,6 +576,50 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         []
     }
 
+    private List<String> securedResourceUserAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+
+        VirtualSecurableResourceGroupRole role
+
+        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
+            // The below should get editor level versioning and finalisation rights
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+            if (role) {
+                return updateBaseTreeActions(CONTAINER_ADMIN_MODEL_TREE_ACTIONS, role)
+            }
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+            if (role) {
+                return updateBaseTreeActions(EDITOR_MODEL_TREE_ACTIONS, role)
+            }
+            return []
+        }
+
+        if (Utils.parentClassIsAssignableFromChild(Folder, securableResourceClass)) {
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+            if (role) {
+                return updateBaseTreeActions(CONTAINER_ADMIN_FOLDER_TREE_ACTIONS, role)
+            }
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+            if (role) {
+                return updateBaseTreeActions(EDITOR_FOLDER_TREE_ACTIONS, role)
+            }
+            return []
+        }
+
+        // Allow for non-folder containers
+        if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)) {
+                return CONTAINER_ADMIN_CONTAINER_TREE_ACTIONS
+            }
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)) {
+                return EDITOR_CONTAINER_TREE_ACTIONS
+            }
+            return []
+        }
+
+        log.warn('Attempt to gain available tree actions for unhandled secured class {} id {}', securableResourceClass.simpleName, id)
+        []
+    }
+
     private List<String> updateBaseModelActionsForEditor(List<String> baseActions, VirtualSecurableResourceGroupRole role) {
         List<String> updatedActions = new ArrayList<>(baseActions)
         if (role.canFinalise()) updatedActions << FINALISE_ACTION
@@ -568,6 +639,22 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
         if (role.canVersion() && isAuthenticated()) {
             updatedActions.addAll(READER_VERSIONING_ACTIONS)
+        }
+        updatedActions
+    }
+
+    private List<String> updateBaseTreeActions(List<String> baseActions, VirtualSecurableResourceGroupRole role) {
+        List<String> updatedActions = new ArrayList<>(baseActions)
+        if (role.isFinalised()) {
+            updatedActions.removeAll([MOVE_TO_VERSIONED_FOLDER, CREATE_FOLDER, CREATE_MODEL, CREATE_MODEL_ITEM, CREATE_VERSIONED_FOLDER])
+        }
+        if (role.isVersionControlled() || role.domainType == VersionedFolder.simpleName) {
+            // Cannot move anything versioned controlled into a VF, this includes a folder which contains VFs
+            updatedActions.removeAll([MOVE_TO_VERSIONED_FOLDER])
+            // Folders can have VFs but VFs cant
+            if (VersionedFolder.simpleName == role.domainType) {
+                updatedActions.removeAll([CREATE_VERSIONED_FOLDER])
+            }
         }
         updatedActions
     }

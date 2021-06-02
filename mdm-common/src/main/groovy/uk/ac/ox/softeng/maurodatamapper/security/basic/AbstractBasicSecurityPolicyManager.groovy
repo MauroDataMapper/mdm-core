@@ -91,6 +91,16 @@ abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyM
     }
 
     @Override
+    List<String> userAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        []
+    }
+
+    @Override
+    List<String> userAvailableTreeActions(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
+        []
+    }
+
+    @Override
     boolean isPending() {
         user.emailAddress == 'pending@test.com'
     }

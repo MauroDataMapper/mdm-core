@@ -58,141 +58,225 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
 
         then:
         verifyJsonResponse OK, '''[
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Complex Test DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Terminology",
-        "label": "Complex Test Terminology",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Finalised Example Test DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard",
-        "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Second Simple Reference Data Model",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "ReferenceDataModel",
-        "label": "Simple Reference Data Model",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "ReferenceDataModel"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "CodeSet",
-        "label": "Simple Test CodeSet",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": true,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "CodeSet",
-        "modelVersion": "1.0.0"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "Simple Test DataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Standard"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "Terminology",
-        "label": "Simple Test Terminology",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Terminology"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "SourceFlowDataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "DataModel",
-        "label": "TargetFlowDataModel",
-        "hasChildren": true,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "Data Asset"
-      },
-      {
-        "id": "${json-unit.matches:id}",
-        "domainType": "CodeSet",
-        "label": "Unfinalised Simple Test CodeSet",
-        "hasChildren": false,
-        "deleted": false,
-        "finalised": false,
-        "superseded": false,
-        "documentationVersion": "1.0.0",
-        "folder": "${json-unit.matches:id}",
-        "type": "CodeSet"
-      }
-    ]'''
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataModel",
+    "label": "Complex Test DataModel",
+    "hasChildren": true,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "Data Standard"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Terminology",
+    "label": "Complex Test Terminology",
+    "hasChildren": true,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "Terminology"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataModel",
+    "label": "Finalised Example Test DataModel",
+    "hasChildren": true,
+    "availableActions": [
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": true,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "Data Standard",
+    "modelVersion": "1.0.0"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "ReferenceDataModel",
+    "label": "Second Simple Reference Data Model",
+    "hasChildren": false,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "ReferenceDataModel"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "ReferenceDataModel",
+    "label": "Simple Reference Data Model",
+    "hasChildren": false,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "ReferenceDataModel"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "CodeSet",
+    "label": "Simple Test CodeSet",
+    "hasChildren": false,
+    "availableActions": [
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": true,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "CodeSet",
+    "modelVersion": "1.0.0"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataModel",
+    "label": "Simple Test DataModel",
+    "hasChildren": true,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "Data Standard"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Terminology",
+    "label": "Simple Test Terminology",
+    "hasChildren": false,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "Terminology"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataModel",
+    "label": "SourceFlowDataModel",
+    "hasChildren": true,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "Data Asset"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataModel",
+    "label": "TargetFlowDataModel",
+    "hasChildren": true,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "Data Asset"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "CodeSet",
+    "label": "Unfinalised Simple Test CodeSet",
+    "hasChildren": false,
+    "availableActions": [
+      "createModelItem",
+      "delete",
+      "moveToContainer",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "superseded": false,
+    "documentationVersion": "1.0.0",
+    "folder": "${json-unit.matches:id}",
+    "type": "CodeSet"
+  }
+]'''
     }
 
     String getReaderTree() {
@@ -202,6 +286,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -209,6 +294,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -221,6 +307,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "Terminology",
         "label": "Complex Test Terminology",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -233,6 +320,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "Finalised Example Test DataModel",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "finalised": true,
         "superseded": false,
@@ -246,6 +334,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Second Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -258,6 +347,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -270,6 +360,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "CodeSet",
         "label": "Simple Test CodeSet",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": true,
         "superseded": false,
@@ -283,6 +374,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "Simple Test DataModel",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -295,6 +387,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "Terminology",
         "label": "Simple Test Terminology",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -307,6 +400,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "SourceFlowDataModel",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -319,6 +413,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "TargetFlowDataModel",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -331,6 +426,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "CodeSet",
         "label": "Unfinalised Simple Test CodeSet",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -345,6 +441,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "domainType": "VersionedFolder",
     "label": "Functional Test VersionedFolder",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false,
     "finalised": false,
     "documentationVersion": "1.0.0",
@@ -355,6 +452,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "domainType": "VersionedFolder",
     "label": "Functional Test VersionedFolder 2",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false,
     "finalised": false,
     "documentationVersion": "1.0.0",
@@ -365,17 +463,20 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
 
     @Override
     String getEditorTree() {
-        getReaderTree()
-    }
-
-    @Override
-    String getAdminTree() {
         '''[
   {
     "id": "${json-unit.matches:id}",
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false,
     "children": [
       {
@@ -383,6 +484,14 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
         "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -395,6 +504,14 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "Terminology",
         "label": "Complex Test Terminology",
         "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -407,6 +524,12 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "Finalised Example Test DataModel",
         "hasChildren": true,
+        "availableActions": [
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": true,
         "superseded": false,
@@ -420,6 +543,14 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Second Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -432,6 +563,14 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -444,6 +583,12 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "CodeSet",
         "label": "Simple Test CodeSet",
         "hasChildren": false,
+        "availableActions": [
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": true,
         "superseded": false,
@@ -457,6 +602,14 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "Simple Test DataModel",
         "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -469,6 +622,14 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "Terminology",
         "label": "Simple Test Terminology",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -481,6 +642,14 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "SourceFlowDataModel",
         "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -493,6 +662,14 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "DataModel",
         "label": "TargetFlowDataModel",
         "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -505,6 +682,289 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
         "domainType": "CodeSet",
         "label": "Unfinalised Simple Test CodeSet",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet"
+      }
+    ]
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  }
+]'''
+    }
+
+    @Override
+    String getAdminTree() {
+        '''[
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Folder",
+    "label": "Functional Test Folder",
+    "hasChildren": true,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "children": [
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Complex Test DataModel",
+        "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Complex Test Terminology",
+        "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Finalised Example Test DataModel",
+        "hasChildren": true,
+        "availableActions": [
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard",
+        "modelVersion": "1.0.0"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Second Simple Reference Data Model",
+        "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "ReferenceDataModel",
+        "label": "Simple Reference Data Model",
+        "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "ReferenceDataModel"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Simple Test CodeSet",
+        "hasChildren": false,
+        "availableActions": [
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": true,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "CodeSet",
+        "modelVersion": "1.0.0"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "Simple Test DataModel",
+        "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Standard"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "Terminology",
+        "label": "Simple Test Terminology",
+        "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Terminology"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "SourceFlowDataModel",
+        "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "DataModel",
+        "label": "TargetFlowDataModel",
+        "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
+        "deleted": false,
+        "finalised": false,
+        "superseded": false,
+        "documentationVersion": "1.0.0",
+        "folder": "${json-unit.matches:id}",
+        "type": "Data Asset"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "domainType": "CodeSet",
+        "label": "Unfinalised Simple Test CodeSet",
+        "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -519,6 +979,15 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder 2",
     "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
     "deleted": false
   },
   {
@@ -526,6 +995,13 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "domainType": "VersionedFolder",
     "label": "Functional Test VersionedFolder",
     "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false,
     "finalised": false,
     "documentationVersion": "1.0.0",
@@ -536,6 +1012,13 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "domainType": "VersionedFolder",
     "label": "Functional Test VersionedFolder 2",
     "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false,
     "finalised": false,
     "documentationVersion": "1.0.0",
