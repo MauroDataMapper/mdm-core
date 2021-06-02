@@ -235,7 +235,7 @@ abstract class DataBindTerminologyImporterProviderServiceSpec<K extends DataBind
         terminology.metadata.size() == 3
         terminology.classifiers.size() == 2
         terminology.termRelationshipTypes.size() == 4
-        terminology.terms.size() == 101
+        terminology.terms.size() == 102
 
         and:
         for (int i = 0; i <= 100; i++) {
