@@ -28,8 +28,6 @@ import io.micronaut.http.HttpResponse
 
 import java.util.regex.Pattern
 
-import static io.micronaut.http.HttpStatus.UNPROCESSABLE_ENTITY
-
 /**
  * <pre>
  * Controller: termRelationshipType
@@ -130,13 +128,6 @@ class TermRelationshipTypeFunctionalSpec extends UserAccessFunctionalSpec {
     @Override
     Pattern getExpectedUpdateEditRegex() {
         ~/\[\w+:.+?] changed properties \[displayLabel]/
-    }
-
-    @Override
-    void verifySameValidDataCreationResponse() {
-        verifyResponse UNPROCESSABLE_ENTITY, response
-        assert response.body().total == 2
-        assert response.body().errors.first().message
     }
 
     @Override

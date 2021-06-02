@@ -113,7 +113,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT1",
         "definition": "Complex Test Term 1",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -121,7 +121,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT2",
         "definition": "Complex Test Term 2",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -129,7 +129,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT3",
         "definition": "Complex Test Term 3",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -137,7 +137,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT4",
         "definition": "Complex Test Term 4",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -145,7 +145,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT5",
         "definition": "Complex Test Term 5",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -153,7 +153,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT6",
         "definition": "Complex Test Term 6",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -161,7 +161,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT7",
         "definition": "Complex Test Term 7",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -169,7 +169,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT8",
         "definition": "Complex Test Term 8",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -177,7 +177,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT9",
         "definition": "Complex Test Term 9",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -185,7 +185,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT10",
         "definition": "Complex Test Term 10",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -193,7 +193,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT11",
         "definition": "Complex Test Term 11",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -201,7 +201,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT12",
         "definition": "Complex Test Term 12",
-        "depth": 4
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -209,7 +209,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT13",
         "definition": "Complex Test Term 13",
-        "depth": 5
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -217,7 +217,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT14",
         "definition": "Complex Test Term 14",
-        "depth": 6
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -225,7 +225,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT15",
         "definition": "Complex Test Term 15",
-        "depth": 7
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -233,7 +233,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT16",
         "definition": "Complex Test Term 16",
-        "depth": 8
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -241,7 +241,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT17",
         "definition": "Complex Test Term 17",
-        "depth": 9
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -249,7 +249,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT18",
         "definition": "Complex Test Term 18",
-        "depth": 10
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -257,7 +257,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT19",
         "definition": "Complex Test Term 19",
-        "depth": 11
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -265,7 +265,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT20",
         "definition": "Complex Test Term 20",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -273,7 +273,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT21",
         "definition": "Complex Test Term 21",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -281,7 +281,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT22",
         "definition": "Complex Test Term 22",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -289,7 +289,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT23",
         "definition": "Complex Test Term 23",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -297,7 +297,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT24",
         "definition": "Complex Test Term 24",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -305,7 +305,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT25",
         "definition": "Complex Test Term 25",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -313,7 +313,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT26",
         "definition": "Complex Test Term 26",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -321,7 +321,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT27",
         "definition": "Complex Test Term 27",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -329,7 +329,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT28",
         "definition": "Complex Test Term 28",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -337,7 +337,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT29",
         "definition": "Complex Test Term 29",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -345,7 +345,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT30",
         "definition": "Complex Test Term 30",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -353,7 +353,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT31",
         "definition": "Complex Test Term 31",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -361,7 +361,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT32",
         "definition": "Complex Test Term 32",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -369,7 +369,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT33",
         "definition": "Complex Test Term 33",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -377,7 +377,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT34",
         "definition": "Complex Test Term 34",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -385,7 +385,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT35",
         "definition": "Complex Test Term 35",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -393,7 +393,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT36",
         "definition": "Complex Test Term 36",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -401,7 +401,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT37",
         "definition": "Complex Test Term 37",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -409,7 +409,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT38",
         "definition": "Complex Test Term 38",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -417,7 +417,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT39",
         "definition": "Complex Test Term 39",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -425,7 +425,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT40",
         "definition": "Complex Test Term 40",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -433,7 +433,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT41",
         "definition": "Complex Test Term 41",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -441,7 +441,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT42",
         "definition": "Complex Test Term 42",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -449,7 +449,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT43",
         "definition": "Complex Test Term 43",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -457,7 +457,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT44",
         "definition": "Complex Test Term 44",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -465,7 +465,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT45",
         "definition": "Complex Test Term 45",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -473,7 +473,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT46",
         "definition": "Complex Test Term 46",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -481,7 +481,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT47",
         "definition": "Complex Test Term 47",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -489,7 +489,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT48",
         "definition": "Complex Test Term 48",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -497,7 +497,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT49",
         "definition": "Complex Test Term 49",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -505,7 +505,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT50",
         "definition": "Complex Test Term 50",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -513,7 +513,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT51",
         "definition": "Complex Test Term 51",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -521,7 +521,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT52",
         "definition": "Complex Test Term 52",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -529,7 +529,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT53",
         "definition": "Complex Test Term 53",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -537,7 +537,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT54",
         "definition": "Complex Test Term 54",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -545,7 +545,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT55",
         "definition": "Complex Test Term 55",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -553,7 +553,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT56",
         "definition": "Complex Test Term 56",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -561,7 +561,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT57",
         "definition": "Complex Test Term 57",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -569,7 +569,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT58",
         "definition": "Complex Test Term 58",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -577,7 +577,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT59",
         "definition": "Complex Test Term 59",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -585,7 +585,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT60",
         "definition": "Complex Test Term 60",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -593,7 +593,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT61",
         "definition": "Complex Test Term 61",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -601,7 +601,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT62",
         "definition": "Complex Test Term 62",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -609,7 +609,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT63",
         "definition": "Complex Test Term 63",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -617,7 +617,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT64",
         "definition": "Complex Test Term 64",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -625,7 +625,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT65",
         "definition": "Complex Test Term 65",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -633,7 +633,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT66",
         "definition": "Complex Test Term 66",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -641,7 +641,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT67",
         "definition": "Complex Test Term 67",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -649,7 +649,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT68",
         "definition": "Complex Test Term 68",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -657,7 +657,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT69",
         "definition": "Complex Test Term 69",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -665,7 +665,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT70",
         "definition": "Complex Test Term 70",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -673,7 +673,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT71",
         "definition": "Complex Test Term 71",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -681,7 +681,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT72",
         "definition": "Complex Test Term 72",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -689,7 +689,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT73",
         "definition": "Complex Test Term 73",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -697,7 +697,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT74",
         "definition": "Complex Test Term 74",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -705,7 +705,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT75",
         "definition": "Complex Test Term 75",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -713,7 +713,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT76",
         "definition": "Complex Test Term 76",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -721,7 +721,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT77",
         "definition": "Complex Test Term 77",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -729,7 +729,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT78",
         "definition": "Complex Test Term 78",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -737,7 +737,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT79",
         "definition": "Complex Test Term 79",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -745,7 +745,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT80",
         "definition": "Complex Test Term 80",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -753,7 +753,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT81",
         "definition": "Complex Test Term 81",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -761,7 +761,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT82",
         "definition": "Complex Test Term 82",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -769,7 +769,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT83",
         "definition": "Complex Test Term 83",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -777,7 +777,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT84",
         "definition": "Complex Test Term 84",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -785,7 +785,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT85",
         "definition": "Complex Test Term 85",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -793,7 +793,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT86",
         "definition": "Complex Test Term 86",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -801,7 +801,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT87",
         "definition": "Complex Test Term 87",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -809,7 +809,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT88",
         "definition": "Complex Test Term 88",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -817,7 +817,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT89",
         "definition": "Complex Test Term 89",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -825,7 +825,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT90",
         "definition": "Complex Test Term 90",
-        "depth": 2
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -833,7 +833,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT91",
         "definition": "Complex Test Term 91",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -841,7 +841,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT92",
         "definition": "Complex Test Term 92",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -849,7 +849,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT93",
         "definition": "Complex Test Term 93",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -857,7 +857,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT94",
         "definition": "Complex Test Term 94",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -865,7 +865,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT95",
         "definition": "Complex Test Term 95",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -873,7 +873,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT96",
         "definition": "Complex Test Term 96",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -881,7 +881,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT97",
         "definition": "Complex Test Term 97",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -889,7 +889,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT98",
         "definition": "Complex Test Term 98",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -897,7 +897,7 @@
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT99",
         "definition": "Complex Test Term 99",
-        "depth": 3
+        "depth": 1
       },
       {
         "id": "${json-unit.matches:id}",
@@ -910,10 +910,10 @@
       {
         "id": "${json-unit.matches:id}",
         "label": "CTT101",
+        "description": "Example of truncated term label when code and definition are the same",
         "lastUpdated": "${json-unit.matches:offsetDateTime}",
         "code": "CTT101",
         "definition": "CTT101",
-        "description": "Example of truncated term label when code and definition are the same",
         "depth": 1
       }
     ],

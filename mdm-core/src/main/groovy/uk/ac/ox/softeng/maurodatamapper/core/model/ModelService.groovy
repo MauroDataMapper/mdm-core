@@ -295,8 +295,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         }
 
         // We know at this point the datamodel is finalised which means its branch name == main so we need to check no unfinalised main branch exists
-        boolean draftModelOnMainBranchForLabel =
-            countAllByLabelAndBranchNameAndNotFinalised(model.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
+        boolean draftModelOnMainBranchForLabel = countAllByLabelAndBranchNameAndNotFinalised(model.label, VersionAwareConstraints.DEFAULT_BRANCH_NAME) > 0
 
         if (!draftModelOnMainBranchForLabel) {
             K newMainBranchModelVersion = copyModelAsNewBranchModel(model,

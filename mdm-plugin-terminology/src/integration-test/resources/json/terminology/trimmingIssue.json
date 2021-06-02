@@ -1,0 +1,36 @@
+{
+  "terminology": {
+    "label": "Test Terminology (Trimming)",
+    "author": "James Welch",
+    "organisation": "Oxford BRC ",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "termRelationshipTypes": [
+      {
+        "label": "narrowerThan",
+        "displayLabel": "Narrower Than",
+        "parentalRelationship": false,
+        "childRelationship": true
+      }
+    ],
+    "terms": [
+      {
+        "code": "A ",
+        "definition": "Alpha",
+        "depth": 1
+      },
+      {
+        "code": "B",
+        "definition": "Beta",
+        "depth": 2
+      }
+    ],
+    "termRelationships": [
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "B",
+        "targetTerm": "A "
+      }
+    ]
+  }
+}

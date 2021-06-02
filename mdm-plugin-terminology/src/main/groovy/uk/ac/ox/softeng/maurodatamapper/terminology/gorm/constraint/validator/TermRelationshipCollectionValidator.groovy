@@ -31,6 +31,6 @@ class TermRelationshipCollectionValidator extends UniqueValuesValidator {
 
     @Override
     Map<String, List> groupCollection(Collection value) {
-        (value as Collection<TermRelationship>).groupBy {"${it.sourceTerm.code}:${it.targetTerm.code}:${it.relationshipType.label}"}
+        (value as Collection<TermRelationship>).groupBy {"${it.sourceTerm?.code}:${it.targetTerm?.code}:${it.relationshipType.label}"}
     }
 }

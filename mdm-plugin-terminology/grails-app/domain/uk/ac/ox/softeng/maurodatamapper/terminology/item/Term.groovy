@@ -92,7 +92,9 @@ class Term implements ModelItem<Term, Terminology> {
             key   : 'term_id',
             column: 'codeSet_id'
         ]
-        terminology index: 'term_terminology_idx', cascade: 'all-delete-orphan'
+        terminology index: 'term_terminology_idx'
+        sourceTermRelationships cascade: 'all-delete-orphan'
+        targetTermRelationships cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [
@@ -213,12 +215,12 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     Term addToSourceTermRelationships(TermRelationship termRelationship) {
-        termRelationship.targetTerm.addTo('targetTermRelationships', termRelationship)
+        termRelationship.targetTerm?.addTo('targetTermRelationships', termRelationship)
         addTo('sourceTermRelationships', termRelationship)
     }
 
     Term addToTargetTermRelationships(TermRelationship termRelationship) {
-        termRelationship.sourceTerm.addTo('sourceTermRelationships', termRelationship)
+        termRelationship.sourceTerm?.addTo('sourceTermRelationships', termRelationship)
         addTo('targetTermRelationships', termRelationship)
     }
 

@@ -1,17 +1,12 @@
 {
   "terminology": {
     "id": "${json-unit.matches:id}",
-    "label": "Simple Test Terminology Import",
+    "label": "Imported Test Terminology",
     "lastUpdated": "${json-unit.matches:offsetDateTime}",
-    "annotations": [
-      {
-          "id": "${json-unit.matches:id}",
-          "createdBy": "development@test.com",
-          "lastUpdated": "${json-unit.matches:offsetDateTime}",
-          "label": "test annotation 1 label",
-          "description": "test annotation 1 description"
-      }
-    ],    
+    "aliases": [
+      "Alias 1",
+      "Alias 2"
+    ],
     "author": "Test Author",
     "organisation": "Test Organisation",
     "documentationVersion": "1.0.0",
@@ -20,7 +15,17 @@
       "id": "${json-unit.matches:id}",
       "label": "Test Authority",
       "url": "http://localhost"
-    }
+    },
+    "terms": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "STT01: Simple Test Term 01",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "STT01",
+        "definition": "Simple Test Term 01",
+        "depth": 1
+      }
+    ]
   },
   "exportMetadata": {
     "exportedBy": "Admin User",

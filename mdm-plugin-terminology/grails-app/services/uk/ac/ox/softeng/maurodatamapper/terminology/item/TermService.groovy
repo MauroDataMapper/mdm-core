@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -128,26 +127,48 @@ class TermService extends ModelItemService<Term> {
         }
     }
 
-    void batchSave(Collection<Term> terms) {
-        log.trace('Batch saving terms')
-        long start = System.currentTimeMillis()
-        List batch = []
-        int count = 0
-        terms.each {term ->
-            term.sourceTermRelationships?.clear()
-            term.targetTermRelationships?.clear()
-            batch += term
-            count++
-            if (count % Term.BATCH_SIZE == 0) {
-                singleBatchSave(batch)
-                batch.clear()
-            }
+    Collection<TermRelationship> saveAllAndGetTermRelationships(Collection<Term> terms) {
 
+        List<Classifier> classifiers = terms.collectMany {it.classifiers ?: []} as List<Classifier>
+        if (classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
         }
-        // Save final batch of terms
-        singleBatchSave(batch)
-        batch.clear()
-        log.debug('{} terms batch saved, took {}', terms.size(), Utils.timeTaken(start))
+
+        Collection<Term> alreadySaved = terms.findAll {it.ident() && it.isDirty()}
+        Collection<Term> notSaved = terms.findAll {!it.ident()}
+
+        Collection<TermRelationship> termRelationships = []
+
+        if (alreadySaved) {
+            log.trace('Straight saving {} already saved Terms', alreadySaved.size())
+            Term.saveAll(alreadySaved)
+        }
+
+        if (notSaved) {
+            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getModelItemClass().simpleName, BATCH_SIZE)
+            List batch = []
+            int count = 0
+
+            notSaved.each {t ->
+
+                termRelationships.addAll(t.sourceTermRelationships ?: [])
+                termRelationships.addAll(t.targetTermRelationships ?: [])
+
+                t.sourceTermRelationships?.clear()
+                t.targetTermRelationships?.clear()
+
+                batch << t
+                count++
+                if (count % BATCH_SIZE == 0) {
+                    batchSave(batch)
+                    batch.clear()
+                }
+            }
+            batchSave(batch)
+            batch.clear()
+        }
+        termRelationships
     }
 
     Long countByTerminologyId(UUID terminologyId) {
@@ -190,30 +211,29 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
     }
 
-    Term copy(Model copiedTerminology, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    Term copy(Model copiedModel, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        Term copy = copyTerm(original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+        if (copiedModel.instanceOf(Terminology)) {
+            (copiedModel as Terminology).addToTerms(copy)
+        } else if (copiedModel.instanceOf(CodeSet)) {
+            (copiedModel as CodeSet).addToTerms(copy)
+        } else {
+            throw new ApiInternalException('TS01', "Cannot add a Term to a model type [${copiedModel.domainType}]")
+        }
+        copy
     }
 
     Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, copier, userSecurityPolicyManager)
+        Term copy = copyTerm(original, copier, userSecurityPolicyManager)
+        copiedTerminology.addToTerms(copy)
+        copy
     }
 
-    private Term copyTermIntoTerminologyOrCodeSet(Model copiedTerminologyOrCodeSet, Term original, User copier,
-                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-
+    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
-
         Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition)
-
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
-
-        copiedTerminologyOrCodeSet.addToTerms(copy)
-
-        if (copy.validate()) save(copy, validate: false)
-        else throw new ApiInvalidModelException('DC01', 'Copied Term is invalid', copy.errors, messageSource)
-
-        copy.trackChanges()
         copy
     }
 
