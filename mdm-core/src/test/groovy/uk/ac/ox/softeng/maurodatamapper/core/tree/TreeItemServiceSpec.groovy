@@ -69,6 +69,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         folderService = Spy(FolderService)
         classifierService = Spy(ClassifierService)
         service.containerServices = [folderService, classifierService]
+        service.modelItemServices = []
+        service.modelServices = []
     }
 
     void 'C01 : test building container folder only tree'() {
@@ -165,6 +167,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(_) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         when:
         List<ContainerTreeItem> tree = service.buildContainerTree(Folder, testPolicy, true, true, true, false)
@@ -253,6 +257,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(_) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         when:
         List<ContainerTreeItem> tree = service.buildContainerTree(Folder, testPolicy, true, true, true, true)
@@ -268,6 +274,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(_) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         when:
         List<ContainerTreeItem> tree = service.buildContainerOnlyTree(Folder, testPolicy, true)
@@ -283,6 +291,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -343,6 +353,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -429,6 +441,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'), deleted: true,
                                                finalised: true, modelVersion: Version.from('1.0.0'),
@@ -517,6 +531,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -603,6 +619,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -699,6 +717,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -804,6 +824,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(_) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
         checkAndSave(basicModel)
@@ -846,6 +868,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -854,7 +878,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
             findAllReadableModels(_, true, true, true) >> [basicModel]
             getModelClass() >> BasicModel
             findAllModelIdsWithTreeChildren(_) >> []
-            handles(_) >> { Class clazz -> clazz == BasicModel }
+            handles(_) >> {Class clazz -> clazz == BasicModel}
             hasTreeTypeModelItems(basicModel, false) >> false
             findAllTreeTypeModelItemsIn(basicModel, false) >> []
         }
@@ -862,7 +886,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         service.catalogueItemServices = [basicModelService]
 
         when:
-        List<TreeItem> tree = service.buildCatalogueItemTree(basicModel)
+        List<TreeItem> tree = service.buildCatalogueItemTree(basicModel, testPolicy)
 
         then:
         tree.isEmpty()
@@ -875,6 +899,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -901,7 +927,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         service.catalogueItemServices = [basicModelService]
 
         when:
-        List<ModelItemTreeItem> tree = service.buildCatalogueItemTree(basicModel)
+        List<ModelItemTreeItem> tree = service.buildCatalogueItemTree(basicModel, testPolicy)
 
         then:
         tree.size() == 2
@@ -934,6 +960,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -965,7 +993,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         service.catalogueItemServices = [basicModelService]
 
         when:
-        List<ModelItemTreeItem> tree = service.buildCatalogueItemTree(basicModel)
+        List<ModelItemTreeItem> tree = service.buildCatalogueItemTree(basicModel, testPolicy)
 
         then:
         tree.size() == 2
@@ -1001,6 +1029,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -1042,13 +1072,13 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         service.catalogueItemServices = [basicModelService, basicModelItemService]
 
         when:
-        List<ModelItemTreeItem> tree = service.buildCatalogueItemTree(item1)
+        List<ModelItemTreeItem> tree = service.buildCatalogueItemTree(item1, testPolicy)
 
         then:
         tree.isEmpty()
 
         when:
-        tree = service.buildCatalogueItemTree(item3)
+        tree = service.buildCatalogueItemTree(item3, testPolicy)
 
         then:
         tree.isEmpty()
@@ -1061,6 +1091,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         BasicModel basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                                authority: testAuthority)
@@ -1102,7 +1134,7 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         service.catalogueItemServices = [basicModelService, basicModelItemService]
 
         when:
-        List<ModelItemTreeItem> tree = service.buildCatalogueItemTree(item2)
+        List<ModelItemTreeItem> tree = service.buildCatalogueItemTree(item2, testPolicy)
 
         then:
         tree.size() == 1
@@ -1454,6 +1486,8 @@ class TreeItemServiceSpec extends BaseUnitSpec implements ServiceUnitTest<TreeIt
         testPolicy = Stub()
         testPolicy.getUser() >> admin
         testPolicy.listReadableSecuredResourceIds(Folder) >> Folder.list().collect {it.id}
+        testPolicy.userAvailableTreeActions(_, _) >> []
+        testPolicy.userAvailableTreeActions(_, _, _, _) >> []
 
         basicModel = new BasicModel(label: 'dm1', createdBy: admin.emailAddress, folder: Folder.findByLabel('catalogue'),
                                     authority: testAuthority)

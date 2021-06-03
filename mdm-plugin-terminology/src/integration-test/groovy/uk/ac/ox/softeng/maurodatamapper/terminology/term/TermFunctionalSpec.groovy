@@ -203,6 +203,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT21: Complex Test Term 21"
   },
@@ -210,6 +211,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT22: Complex Test Term 22"
   },
@@ -217,6 +219,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT23: Complex Test Term 23"
   },
@@ -224,6 +227,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT24: Complex Test Term 24"
   },
@@ -231,6 +235,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT25: Complex Test Term 25"
   },
@@ -238,6 +243,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT26: Complex Test Term 26"
   },
@@ -245,6 +251,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT27: Complex Test Term 27"
   },
@@ -252,6 +259,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT28: Complex Test Term 28"
   },
@@ -259,6 +267,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT29: Complex Test Term 29"
   }
@@ -298,6 +307,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "label": "CTT100: Complex Test Term 100",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -305,6 +315,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "label": "CTT101",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -312,6 +323,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "label": "CTT00: Complex Test Term 00",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   }
 ]'''

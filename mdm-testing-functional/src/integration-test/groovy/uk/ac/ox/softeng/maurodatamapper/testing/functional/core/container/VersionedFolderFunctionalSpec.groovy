@@ -34,6 +34,7 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Ignore
+import spock.lang.Stepwise
 import spock.lang.Unroll
 
 import java.util.regex.Pattern
@@ -61,6 +62,7 @@ import static io.micronaut.http.HttpStatus.OK
  */
 @Integration
 @Slf4j
+@Stepwise
 class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunctionalSpec {
 
 
@@ -1687,6 +1689,7 @@ class VersionedFolderFunctionalSpec extends UserAccessAndPermissionChangingFunct
     }
 
     void cleanupModelVersionTree(Map<String, String> data) {
+        if (!data) return
         data.each {k, v ->
             removeValidIdObjectUsingTransaction(v)
         }

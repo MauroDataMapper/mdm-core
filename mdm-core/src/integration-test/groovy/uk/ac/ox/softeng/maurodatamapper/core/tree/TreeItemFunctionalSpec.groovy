@@ -22,9 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
 import io.micronaut.core.type.Argument
-import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.exceptions.HttpClientResponseException
 
 /**
  * @see uk.ac.ox.softeng.maurodatamapper.core.tree.TreeItemController* Controller: treeItem
@@ -60,36 +58,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         [:]
     }
 
-    void '1 : Test the save action correctly persists an instance'() {
-        when: 'The save action is executed with valid data'
-        client.toBlocking().exchange(HttpRequest.POST(newTreeResourcePath, validJson), Map)
-
-        then: 'The response is correct'
-        def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.NOT_FOUND
-    }
-
-    void '2 : Test the update action correctly updates an instance'() {
-        when: 'The update action is executed with valid data'
-        String path = "$newTreeResourcePath/1"
-        client.toBlocking().exchange(HttpRequest.PUT(path, validJson), Map)
-
-        then: 'The response is correct'
-        def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.BAD_REQUEST
-    }
-
-    void '3 : Test the delete action correctly deletes an instance'() {
-        when: 'When the delete action is executed on an unknown instance'
-        def path = "$newTreeResourcePath/99999"
-        client.toBlocking().exchange(HttpRequest.DELETE(path))
-
-        then: 'The response is correct'
-        def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.BAD_REQUEST
-    }
-
-    void '4 : test call to full tree no containers'() {
+    void '1 : test call to full tree no containers'() {
 
         when: 'no containers new url'
         def response = GET(newTreeResourcePath, Argument.of(List))
@@ -99,7 +68,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         response.body() == []
     }
 
-    void '5 : test single folder in existence'() {
+    void '2 : test single folder in existence'() {
         given:
         String exp = '''[
   {
@@ -107,6 +76,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false
   }
 ]'''
@@ -129,7 +99,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void '6 : test nested folders'() {
+    void '3 : test nested folders'() {
         given:
         String exp = '''[
   {
@@ -137,6 +107,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
         {
@@ -144,6 +115,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Folder",
         "label": "Functional Test Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
         }
@@ -178,36 +150,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void '7 : Test the show action for a folder id returns bad request'() {
-        when: 'When the show action is called to retrieve a resource which doesnt exist'
-        def id = '1'
-        String path = "$newTreeResourcePath/${id}"
-        client.toBlocking().exchange(HttpRequest.GET(path), Map)
-
-        then: 'The response is correct'
-        def e = thrown(HttpClientResponseException)
-        e.response.status == HttpStatus.BAD_REQUEST
-
-        when: 'creating new folder'
-        POST('folders', [label: 'Functional Test Folder'])
-
-        then:
-        verifyResponse HttpStatus.CREATED, response
-
-        when: 'When the show action is called to retrieve a folder'
-        def folderId = response.body().id
-        id = folderId
-        GET("$newTreeResourcePath/${id}")
-
-        then: 'The response is correct'
-        verifyResponse(HttpStatus.BAD_REQUEST, response)
-
-        cleanup:
-        DELETE("folders/$folderId?permanent=true")
-        assert response.status() == HttpStatus.NO_CONTENT
-    }
-
-    void '8 : test single versioned folder in existence'() {
+    void '4 : test single versioned folder in existence'() {
         given:
         String exp = '''[
   {
@@ -215,6 +158,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "VersionedFolder",
     "label": "Functional Test Folder",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false,
     "finalised": false,
     "documentationVersion": "1.0.0",
@@ -240,7 +184,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void '9 : test nested folders with a versioned folder'() {
+    void '5 : test nested folders with a versioned folder'() {
         given:
         String exp = '''[
   {
@@ -248,6 +192,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -255,6 +200,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Folder",
         "label": "Functional Test Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
       },
@@ -263,6 +209,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "VersionedFolder",
         "label": "Functional Test Versioned Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}",
         "finalised": false,
@@ -303,7 +250,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void '10 :  test drilling down into a folder'() {
+    void '6 :  test drilling down into a folder'() {
         given:
         String exp = '''[
   {
@@ -311,6 +258,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
         {
@@ -318,6 +266,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Folder",
         "label": "Functional Test Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
         }
@@ -346,7 +295,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyJsonResponse HttpStatus.OK, exp
 
         when: 'getting drill down'
-        GET("$newTreeResourcePath/focus/$parentId", STRING_ARG)
+        GET("$newTreeResourcePath/$parentId", STRING_ARG)
 
         then:
         verifyJsonResponse HttpStatus.OK, '''[{
@@ -354,6 +303,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Folder",
         "label": "Functional Test Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
         }]'''
@@ -365,7 +315,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         assert response.status() == HttpStatus.NO_CONTENT
     }
 
-    void '11 : test drilling down for a versioned folder'() {
+    void '7 : test drilling down for a versioned folder'() {
         given:
         String exp = '''[
   {
@@ -373,6 +323,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -380,6 +331,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Folder",
         "label": "Functional Test Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
       },
@@ -388,6 +340,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "VersionedFolder",
         "label": "Functional Test Versioned Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}",
         "finalised": false,
@@ -424,7 +377,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         verifyJsonResponse HttpStatus.OK, exp
 
         when: 'getting drill down'
-        GET("$newTreeResourcePath/focus/$parentId", STRING_ARG)
+        GET("$newTreeResourcePath/$parentId", STRING_ARG)
 
         then:
         verifyJsonResponse HttpStatus.OK, '''[
@@ -433,6 +386,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Folder",
         "label": "Functional Test Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}"
       },
@@ -441,6 +395,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "VersionedFolder",
         "label": "Functional Test Versioned Folder Child",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "parentFolder": "${json-unit.matches:id}",
         "finalised": false,
