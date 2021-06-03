@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.test.functional.BaseFunctionalSpec
@@ -32,6 +33,8 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import spock.lang.Shared
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.FUNCTIONAL_TEST
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getDEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.getFUNCTIONAL_TEST
 
 import static io.micronaut.http.HttpStatus.OK
@@ -54,6 +57,8 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
     def checkAndSetupData() {
         log.debug('Check and setup test data')
         folder = new Folder(label: 'Functional Test Folder', createdBy: FUNCTIONAL_TEST)
+        checkAndSave(folder)
+        folder.addToMetadata(new Metadata(namespace: "test.namespace", key: "propertyKey", value: "propertyValue", createdBy: FUNCTIONAL_TEST))
         checkAndSave(folder)
         Authority testAuthority = new Authority(label: 'Test Authority', url: "https://localhost", createdBy: FUNCTIONAL_TEST)
         checkAndSave(testAuthority)
@@ -170,6 +175,19 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
+    void 'test get profile for folder when profile doesnt exist'() {
+        given:
+        String id = folder.id.toString()
+
+        when:
+        GET("folders/${id}/profile/${getProfilePath()}")
+
+        then:
+        verifyResponse HttpStatus.NOT_FOUND, response
+        responseBody().resource == 'ProfileProviderService'
+        responseBody().id == getProfileId()
+    }
+
     void 'test save profile for model which doesnt exist'() {
         given:
         String id = UUID.randomUUID().toString()
@@ -181,6 +199,20 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyResponse HttpStatus.NOT_FOUND, response
         responseBody().resource == 'DataModel'
+        responseBody().id == id
+    }
+
+    void 'test save profile for folder which doesnt exist'() {
+        given:
+        String id = UUID.randomUUID().toString()
+
+        when:
+        POST("folders/${id}/profile/${getProfilePath()}",
+             [description: 'test desc', publisher: 'FT'])
+
+        then:
+        verifyResponse HttpStatus.NOT_FOUND, response
+        responseBody().resource == 'Folder'
         responseBody().id == id
     }
 
@@ -198,7 +230,7 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         responseBody().id == getProfileId()
     }
 
-    void 'test getting unused profiles'() {
+    void 'test getting unused profiles on datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -212,7 +244,19 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         localResponse.body().first().displayName == 'Profile Specification Profile (Data Model)'
     }
 
-    void 'test getting used profiles'() {
+    void 'test getting unused profiles on folder'() {
+        given:
+        String id = folder.id.toString()
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("folders/${id}/profiles/unused", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size() == 0
+    }
+
+    void 'test getting used profiles on datamodel'() {
         given:
         String id = getComplexDataModelId()
 
@@ -222,5 +266,73 @@ class ProfileFunctionalSpec extends BaseFunctionalSpec {
         then:
         verifyResponse OK, localResponse
         localResponse.body().size() == 0
+    }
+
+    void 'test getting used profiles on folder'() {
+        given:
+        String id = folder.id.toString()
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET("folders/${id}/profiles/used", Argument.listOf(Map))
+
+        then:
+        verifyResponse OK, localResponse
+        localResponse.body().size() == 0
+    }
+
+    void 'test getting other properties on a datamodel'() {
+        given:
+            String id = getComplexDataModelId()
+
+        when:
+        GET("dataModels/${id}/profiles/otherMetadata", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''
+{
+    "count": 3,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com",
+        "key":"mdk1",
+        "value":"mdv1",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    },{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com",
+        "key":"mdk2",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    },{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.com/test",
+        "key":"mdk1",
+        "value":"mdv2",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
+    }
+
+    void 'test getting other properties on a folder'() {
+        given:
+        String id = folder.id.toString()
+
+        when:
+        GET("folders/${id}/profiles/otherMetadata", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, '''
+{
+    "count": 1,
+    "items": [{
+        "id":"${json-unit.matches:id}",
+        "namespace":"test.namespace",
+        "key":"propertyKey",
+        "value":"propertyValue",
+        "lastUpdated":"${json-unit.matches:offsetDateTime}"
+    }
+]}
+'''
     }
 }

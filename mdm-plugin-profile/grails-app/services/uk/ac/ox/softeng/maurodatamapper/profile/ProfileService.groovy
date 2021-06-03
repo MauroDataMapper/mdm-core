@@ -20,10 +20,10 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
+import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
@@ -45,7 +45,7 @@ import javax.servlet.http.HttpServletRequest
 class ProfileService {
 
     @Autowired
-    List<CatalogueItemService> catalogueItemServices
+    List<MultiFacetAwareService> multiFacetAwareServices
 
     @Autowired
     List<ModelService> modelServices
@@ -57,8 +57,8 @@ class ProfileService {
     MetadataService metadataService
     ProfileSpecificationProfileService profileSpecificationProfileService
 
-    Profile createProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem) {
-        profileProviderService.createProfileFromEntity(catalogueItem)
+    Profile createProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem) {
+        profileProviderService.createProfileFromEntity(multiFacetAwareItem)
     }
 
     ProfileProviderService findProfileProviderService(String profileNamespace, String profileName, String profileVersion = null) {
@@ -76,7 +76,7 @@ class ProfileService {
         }.max()
     }
 
-    void storeProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem, HttpServletRequest request, User user) {
+    void storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, HttpServletRequest request, User user) {
 
         Profile profile = profileProviderService.getNewProfile()
         List<ProfileSection> profileSections = []
@@ -105,10 +105,10 @@ class ProfileService {
 
           */
 
-        profileProviderService.storeProfileInEntity(catalogueItem, profile, user)
+        profileProviderService.storeProfileInEntity(multiFacetAwareItem, profile, user)
     }
 
-    def validateProfile(ProfileProviderService profileProviderService, CatalogueItem catalogueItem, HttpServletRequest request, User user) {
+    def validateProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, HttpServletRequest request, User user) {
         Profile profile = profileProviderService.getNewProfile()
         List<ProfileSection> profileSections = []
         request.getJSON().sections.each {it ->
@@ -162,32 +162,36 @@ class ProfileService {
         new PaginatedResultList<>(profiles, pagination)
     }
 
-    CatalogueItem findCatalogueItemByDomainTypeAndId(String domainType, UUID catalogueItemId) {
-        CatalogueItemService service = catalogueItemServices.find {it.handles(domainType)}
-        if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${domainType}] with no supporting service")
-        service.get(catalogueItemId)
+    MultiFacetAware findMultiFacetAwareByDomainTypeAndId(String domainType, String multiFacetAwareItemIdString) {
+        findMultiFacetAwareItemByDomainTypeAndId(domainType, UUID.fromString(multiFacetAwareItemIdString))
     }
 
-    Set<String> getUsedNamespaces(CatalogueItem catalogueItem) {
+    MultiFacetAware findMultiFacetAwareItemByDomainTypeAndId(String domainType, UUID multiFacetAwareItemId) {
+        MultiFacetAwareService service = multiFacetAwareServices.find {it.handles(domainType)}
+        if (!service) throw new ApiBadRequestException('CIAS02', "Facet retrieval for catalogue item [${domainType}] with no supporting service")
+        service.get(multiFacetAwareItemId)
+    }
+
+    Set<String> getUsedNamespaces(MultiFacetAware multiFacetAwareItem) {
         //MetadataService metadataService = grailsApplication.mainContext.getBean('metadataService')
-        List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemId(catalogueItem.id)
+        List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemId(multiFacetAwareItem.id)
         metadataList.collect {it.namespace} as Set
     }
 
-    Set<ProfileProviderService> getUsedProfileServices(CatalogueItem catalogueItem) {
-        Set<String> usedNamespaces = getUsedNamespaces(catalogueItem)
+    Set<ProfileProviderService> getUsedProfileServices(MultiFacetAware multiFacetAwareItem) {
+        Set<String> usedNamespaces = getUsedNamespaces(multiFacetAwareItem)
 
         getAllProfileProviderServices().findAll {
             (usedNamespaces.contains(it.getMetadataNamespace()) &&
-             it.profileApplicableForDomains().contains(catalogueItem.domainType))
+             it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType))
         }
     }
 
-    Set<ProfileProviderService> getUnusedProfileServices(CatalogueItem catalogueItem) {
-        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(catalogueItem)
+    Set<ProfileProviderService> getUnusedProfileServices(MultiFacetAware multiFacetAwareItem) {
+        Set<ProfileProviderService> usedProfiles = getUsedProfileServices(multiFacetAwareItem)
         Set<ProfileProviderService> allProfiles = getAllProfileProviderServices().findAll {
             it.profileApplicableForDomains().size() == 0 ||
-            it.profileApplicableForDomains().contains(catalogueItem.domainType)
+            it.profileApplicableForDomains().contains(multiFacetAwareItem.domainType)
         }
         Set<ProfileProviderService> unusedProfiles = new HashSet<ProfileProviderService>(allProfiles)
         unusedProfiles.removeAll(usedProfiles)

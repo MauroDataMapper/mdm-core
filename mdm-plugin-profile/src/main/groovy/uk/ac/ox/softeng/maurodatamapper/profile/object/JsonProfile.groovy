@@ -25,9 +25,9 @@ import groovy.util.logging.Slf4j
 class JsonProfile extends MapBasedProfile {
 
     List<ProfileSection> sections = []
-    UUID catalogueItemId
-    String catalogueItemDomainType
-    String catalogueItemLabel
+    UUID profiledItemId
+    String profiledItemDomainType
+    String profiledItemLabel
 
     // Empty constructor used for deserialization from Json
     JsonProfile() { }
@@ -36,11 +36,11 @@ class JsonProfile extends MapBasedProfile {
         this.sections = sections
     }
 
-    JsonProfile(List<ProfileSection> sections, UUID catalogueItemId, String catalogueItemDomainType, String catalogueItemLabel) {
+    JsonProfile(List<ProfileSection> sections, UUID profiledItemId, String profiledItemDomainType, String profiledItemLabel) {
         this(sections)
-        this.catalogueItemId = catalogueItemId
-        this.catalogueItemDomainType = catalogueItemDomainType
-        this.catalogueItemLabel = catalogueItemLabel
+        this.profiledItemId = profiledItemId
+        this.profiledItemDomainType = profiledItemDomainType
+        this.profiledItemLabel = profiledItemLabel
     }
 
 

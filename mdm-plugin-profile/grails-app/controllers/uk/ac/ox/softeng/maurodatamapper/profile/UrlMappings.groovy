@@ -31,21 +31,21 @@ class UrlMappings {
                     // New URL replaces /api/profiles/namespace/name/customSearch
                     post '/search'(controller: 'profile', action: 'search')
                     // New URL replaces /api/dataModels/profile/namespace/name/version
-                    get "/$catalogueItemDomainType"(controller: 'profile', action: 'listModelsInProfile')
+                    get "/$multiFacetAware"(controller: 'profile', action: 'listModelsInProfile')
 
                     // New URL replaces /api/dataModels/profile/values/namespace/name/version
-                    get "/${catalogueItemDomainType}/values"(controller: 'profile', action: 'listValuesInProfile')
+                    get "/${multiFacetAwareDomainType}/values"(controller: 'profile', action: 'listValuesInProfile')
 
-                    // Provide multiple ways to obtain profile of a catalogue item
-                    get "/${catalogueItemDomainType}/${catalogueItemId}"(controller: 'profile', action: 'show')
+                    // Provide multiple ways to obtain profile of a multiFacetAware
+                    get "/${multiFacetAwareDomainType}/${multiFacetAwareId}"(controller: 'profile', action: 'show')
 
-                    post "/$catalogueItemDomainType/$catalogueItemId"(controller: 'profile', action: 'save')
-                    post "/$catalogueItemDomainType/$catalogueItemId/validate"(controller: 'profile', action: 'validate')
+                    post "/$multiFacetAwareDomainType/$multiFacetAwareId"(controller: 'profile', action: 'save')
+                    post "/$multiFacetAwareDomainType/$multiFacetAwareId/validate"(controller: 'profile', action: 'validate')
                 }
             }
 
-            // Provide multiple ways to obtain profile of a catalogue item
-            group "/${catalogueItemDomainType}/${catalogueItemId}", {
+            // Provide multiple ways to obtain profile of a multiFacetAware
+            group "/${multiFacetAwareDomainType}/${multiFacetAwareId}", {
                 get '/profiles/used'(controller: 'profile', action: 'profiles')
                 get '/profiles/unused'(controller: 'profile', action: 'unusedProfiles')
                 get '/profiles/otherMetadata'(controller: 'profile', action: 'otherMetadata')

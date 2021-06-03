@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
@@ -47,11 +47,11 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     }
 
     @Override
-    JsonProfile createProfileFromEntity(CatalogueItem entity) {
+    JsonProfile createProfileFromEntity(MultiFacetAware entity) {
         JsonProfile jsonProfile = new JsonProfile(getSections())
-        jsonProfile.catalogueItemId = entity.id
-        jsonProfile.catalogueItemDomainType = entity.domainType
-        jsonProfile.catalogueItemLabel = entity.label
+        jsonProfile.profiledItemId = entity.id
+        jsonProfile.profiledItemDomainType = entity.domainType
+        jsonProfile.profiledItemLabel = entity.label
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
         jsonProfile.sections.each {section ->
@@ -91,7 +91,7 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
     }
 
     @Override
-    void storeFieldInEntity(ProfileField field, CatalogueItem entity, ProfileSection submittedSection, String sectionName, String userEmailAddress) {
+    void storeFieldInEntity(ProfileField field, MultiFacetAware entity, ProfileSection submittedSection, String sectionName, String userEmailAddress) {
         ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
         if (!submittedField) return
 

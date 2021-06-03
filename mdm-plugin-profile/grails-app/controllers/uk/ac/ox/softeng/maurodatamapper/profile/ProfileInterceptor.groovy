@@ -37,7 +37,7 @@ class ProfileInterceptor implements MdmInterceptor {
 
     void resourceChecks() {
         Utils.toUuid(params, 'id')
-        mapDomainTypeToClass('catalogueItem')
+        mapDomainTypeToClass('multiFacetAware')
     }
 
     boolean before() {
@@ -49,24 +49,24 @@ class ProfileInterceptor implements MdmInterceptor {
     }
 
     boolean checkActionAllowedOnCatalogueItem() {
-        if (Utils.parentClassIsAssignableFromChild(SecurableResource, params.catalogueItemClass)) {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(params.catalogueItemClass, params.catalogueItemId) ?:
-                   notFound(params.catalogueItemClass, params.catalogueItemId)
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, params.multiFacetAwareClass)) {
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(params.multiFacetAwareClass, params.multiFacetAwareId) ?:
+                   notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
         }
 
         Model model = proxyHandler.unwrapIfProxy(getOwningModel()) as Model
-        currentUserSecurityPolicyManager.userCanReadResourceId(params.catalogueItemClass, params.id, model.getClass(), model.getId()) ?:
-        notFound(params.catalogueItemClass, params.catalogueItemId)
+        currentUserSecurityPolicyManager.userCanReadResourceId(params.multiFacetAwareClass, params.id, model.getClass(), model.getId()) ?:
+        notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
     }
 
     Model getOwningModel() {
-        ModelItem modelItem = findModelItemByDomainTypeAndId(params.catalogueItemClass, params.catalogueItemId)
+        ModelItem modelItem = findModelItemByDomainTypeAndId(params.multiFacetAwareClass, params.multiFacetAwareId)
         modelItem.getModel()
     }
 
-    ModelItem findModelItemByDomainTypeAndId(Class domainType, UUID catalogueItemId) {
+    ModelItem findModelItemByDomainTypeAndId(Class domainType, UUID multiFacetAwareId) {
         ModelItemService service = modelItemServices.find { it.handles(domainType) }
         if (!service) throw new ApiBadRequestException('FI01', "Facet retrieval for model item [${domainType}] with no supporting service")
-        service.get(catalogueItemId)
+        service.get(multiFacetAwareId)
     }
 }
