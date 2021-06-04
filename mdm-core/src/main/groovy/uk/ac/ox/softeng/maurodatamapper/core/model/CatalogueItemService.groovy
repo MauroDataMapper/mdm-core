@@ -167,7 +167,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
     }
 
     K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {

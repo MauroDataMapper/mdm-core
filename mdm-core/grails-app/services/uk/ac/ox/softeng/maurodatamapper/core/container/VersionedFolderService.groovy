@@ -555,7 +555,7 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     }
 
     void setFolderRefinesFolder(VersionedFolder source, VersionedFolder target, User catalogueUser) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
     }
 
     VersionedFolder findLatestFinalisedModelByLabel(String label) {

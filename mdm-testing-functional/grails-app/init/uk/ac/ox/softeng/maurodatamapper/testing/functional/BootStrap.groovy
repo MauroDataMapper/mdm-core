@@ -164,8 +164,9 @@ class BootStrap implements SecurityDefinition {
                     ReferenceDataModelBootstrapModels.buildAndSaveExampleReferenceDataModel(messageSource, folder, authority)
                     ReferenceDataModelBootstrapModels.buildAndSaveSecondExampleReferenceDataModel(messageSource, folder, authority)
                 }
+                log.debug('Test environment bootstrap complete')
             }
-            log.debug('Test environment bootstrap complete')
+
         }
     }
 
