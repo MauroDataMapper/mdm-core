@@ -138,6 +138,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": true,
+        "availableActions": [],
         "modelId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
         "label": "parent"
@@ -145,6 +146,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": false,
+        "availableActions": [],
         "modelId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
         "label": "content"
@@ -152,6 +154,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": false,
+        "availableActions": [],
         "modelId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
         "label": "emptyclass"
@@ -166,28 +169,40 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyJsonResponse OK, '''[
-      {
-        "domainType": "DataClass",
-        "hasChildren": true,
-        "modelId": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "parent"
-      },
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "modelId": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "content"
-      },
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "modelId": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "emptyclass"
-      }
-    ]'''
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "emptyclass",
+    "hasChildren": false,
+    "availableActions": [
+      "createModelItem",
+      "delete"
+    ],
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "content",
+    "hasChildren": false,
+    "availableActions": [
+      "createModelItem",
+      "delete"
+    ],
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "parent",
+    "hasChildren": true,
+    "availableActions": [
+      "createModelItem",
+      "delete"
+    ],
+    "modelId": "${json-unit.matches:id}"
+  }
+]'''
     }
 
     void 'A02 : test call to tree using DataModel id (as admin)'() {
@@ -197,28 +212,40 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
 
         then:
         verifyJsonResponse OK, '''[
-      {
-        "domainType": "DataClass",
-        "hasChildren": true,
-        "modelId": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "parent"
-      },
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "modelId": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "content"
-      },
-      {
-        "domainType": "DataClass",
-        "hasChildren": false,
-        "modelId": "${json-unit.matches:id}",
-        "id": "${json-unit.matches:id}",
-        "label": "emptyclass"
-      }
-    ]'''
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "emptyclass",
+    "hasChildren": false,
+    "availableActions": [
+      "createModelItem",
+      "delete"
+    ],
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "content",
+    "hasChildren": false,
+    "availableActions": [
+      "createModelItem",
+      "delete"
+    ],
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "DataClass",
+    "label": "parent",
+    "hasChildren": true,
+    "availableActions": [
+      "createModelItem",
+      "delete"
+    ],
+    "modelId": "${json-unit.matches:id}"
+  }
+]'''
     }
 
     void 'L03 : test call to tree using DataClass id (as not logged in)'() {
@@ -249,6 +276,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": false,
+        "availableActions": [],
         "modelId": "${json-unit.matches:id}",
         "parentId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
@@ -267,6 +295,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": false,
+        "availableActions": [],
         "modelId": "${json-unit.matches:id}",
         "parentId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
@@ -285,6 +314,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": false,
+        "availableActions": [],
         "modelId": "${json-unit.matches:id}",
         "parentId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
@@ -326,6 +356,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -333,6 +364,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -346,6 +378,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Finalised Example Test DataModel",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": true,
         "superseded": false,
@@ -359,6 +392,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Second Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -372,6 +406,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -385,6 +420,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Simple Test DataModel",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -398,6 +434,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "SourceFlowDataModel",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -411,6 +448,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "TargetFlowDataModel",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -437,6 +475,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false,
     "children": [
       {
@@ -444,6 +490,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -457,6 +511,12 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Finalised Example Test DataModel",
         "hasChildren": false,
+        "availableActions": [
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": true,
         "superseded": false,
@@ -470,6 +530,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Second Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -483,6 +551,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -496,6 +572,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Simple Test DataModel",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -509,6 +593,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "SourceFlowDataModel",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -522,6 +614,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "TargetFlowDataModel",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -532,8 +632,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       }
     ]
   }
-]
-'''
+]'''
     }
 
     void 'A04 : test searching for "model" (as admin)'() {
@@ -548,6 +647,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false,
     "children": [
       {
@@ -555,6 +662,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -568,6 +683,12 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Finalised Example Test DataModel",
         "hasChildren": false,
+        "availableActions": [
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": true,
         "superseded": false,
@@ -581,6 +702,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Second Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -594,6 +723,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Simple Reference Data Model",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -607,6 +744,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Simple Test DataModel",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -620,6 +765,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "SourceFlowDataModel",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -633,6 +786,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "TargetFlowDataModel",
         "hasChildren": false,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -643,8 +804,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       }
     ]
   }
-]
-'''
+]'''
     }
 
     void 'L05 : test searching for "emptyclass" (as not logged in)'() {
@@ -680,6 +840,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -687,6 +848,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -700,6 +862,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "domainType": "DataClass",
             "label": "emptyclass",
             "hasChildren": false,
+            "availableActions": [],
             "modelId": "${json-unit.matches:id}"
           }
         ]
@@ -721,6 +884,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false,
     "children": [
       {
@@ -728,6 +899,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
         "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -741,6 +920,10 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "domainType": "DataClass",
             "label": "emptyclass",
             "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete"
+            ],
             "modelId": "${json-unit.matches:id}"
           }
         ]
@@ -762,6 +945,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false,
     "children": [
       {
@@ -769,6 +960,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
         "domainType": "DataModel",
         "label": "Complex Test DataModel",
         "hasChildren": true,
+        "availableActions": [
+          "createModelItem",
+          "delete",
+          "moveToContainer",
+          "moveToFolder",
+          "moveToVersionedFolder",
+          "softDelete"
+        ],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -782,6 +981,10 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
             "domainType": "DataClass",
             "label": "emptyclass",
             "hasChildren": false,
+            "availableActions": [
+              "createModelItem",
+              "delete"
+            ],
             "modelId": "${json-unit.matches:id}"
           }
         ]
@@ -824,7 +1027,30 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "availableActions": [],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "availableActions": [],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
   }
 ]'''
     }
@@ -841,7 +1067,49 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
   }
 ]'''
     }
@@ -858,6 +1126,14 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
     "deleted": false
   },
   {
@@ -865,44 +1141,51 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder 2",
     "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "createVersionedFolder",
+      "delete",
+      "moveToFolder",
+      "moveToVersionedFolder",
+      "softDelete"
+    ],
     "deleted": false
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "VersionedFolder",
+    "label": "Functional Test VersionedFolder 2",
+    "hasChildren": false,
+    "availableActions": [
+      "createFolder",
+      "createModel",
+      "delete",
+      "moveToFolder",
+      "softDelete"
+    ],
+    "deleted": false,
+    "finalised": false,
+    "documentationVersion": "1.0.0",
+    "branchName": "main"
   }
 ]'''
     }
-
-
-    /*
-                void 'test call to tree using Terminology id'() {
-                    given:
-                    def id = complexTestTerminology.id
-
-                    when: 'not logged in'
-                    RestResponse response = restGet("$id")
-
-                    then:
-                    verifyResponse NOT_FOUND, response
-
-                    when: 'logged in as reader 3 user'
-                    loginUser(reader3)
-                    response = restGet("$id")
-
-                    then:
-                    verifyResponse NOT_FOUND, response
-
-                    when: 'logged in as normal user'
-                    loginEditor()
-                    response = restGet("$id")
-
-                    then:
-                    verifyResponse NOT_FOUND, response
-
-                    when: 'logged in as admin user'
-                    loginAdmin()
-                    response = restGet("$id")
-
-                    then:
-                    verifyResponse NOT_FOUND, response
-                }
-
-             */
 }

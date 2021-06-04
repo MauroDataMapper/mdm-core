@@ -267,4 +267,16 @@ class FolderService extends ContainerService<Folder> {
         copy
     }
 
+    List<Model> findAllModelsInFolder(Folder folder) {
+        if (!modelServices) return []
+        modelServices.collectMany {service ->
+            service.findAllByFolderId(folder.id)
+        } as List<Model>
+    }
+
+    boolean doesDepthTreeContainFinalisedModel(Folder folder) {
+        List<Model> models = findAllModelsInFolder(folder)
+        models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
+    }
+
 }

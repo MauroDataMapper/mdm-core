@@ -34,7 +34,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
 
     @Override
     String getResourcePath() {
-        'tree/dataModels'
+        'tree/full/dataModels'
     }
 
     @Transactional
@@ -109,6 +109,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
   "domainType": "DataModel",
   "label": "Complex Test DataModel",
   "hasChildren": true,
+  "availableActions": [],
   "deleted": false,
   "finalised": false,
   "superseded": false,
@@ -122,6 +123,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
       "domainType": "DataClass",
       "label": "emptyclass",
       "hasChildren": false,
+      "availableActions": [],
       "modelId": "${json-unit.matches:id}"
     },
     {
@@ -129,6 +131,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
       "domainType": "PrimitiveType",
       "label": "integer",
       "hasChildren": false,
+      "availableActions": [],
       "modelId": "${json-unit.matches:id}"
     },
     {
@@ -136,6 +139,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
       "domainType": "PrimitiveType",
       "label": "string",
       "hasChildren": false,
+      "availableActions": [],
       "modelId": "${json-unit.matches:id}"
     },
     {
@@ -143,6 +147,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
       "domainType": "ReferenceType",
       "label": "child",
       "hasChildren": false,
+      "availableActions": [],
       "modelId": "${json-unit.matches:id}"
     },
     {
@@ -150,6 +155,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
       "domainType": "EnumerationType",
       "label": "yesnounknown",
       "hasChildren": true,
+      "availableActions": [],
       "modelId": "${json-unit.matches:id}",
       "children": [
         {
@@ -157,6 +163,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
           "domainType": "EnumerationValue",
           "label": "Y",
           "hasChildren": false,
+          "availableActions": [],
           "modelId": "${json-unit.matches:id}",
           "parentId": "${json-unit.matches:id}"
         },
@@ -165,6 +172,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
           "domainType": "EnumerationValue",
           "label": "N",
           "hasChildren": false,
+          "availableActions": [],
           "modelId": "${json-unit.matches:id}",
           "parentId": "${json-unit.matches:id}"
         },
@@ -173,6 +181,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
           "domainType": "EnumerationValue",
           "label": "U",
           "hasChildren": false,
+          "availableActions": [],
           "modelId": "${json-unit.matches:id}",
           "parentId": "${json-unit.matches:id}"
         }
@@ -183,6 +192,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
       "domainType": "DataClass",
       "label": "parent",
       "hasChildren": true,
+      "availableActions": [],
       "modelId": "${json-unit.matches:id}",
       "children": [
         {
@@ -190,6 +200,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
           "domainType": "DataElement",
           "label": "child",
           "hasChildren": false,
+          "availableActions": [],
           "modelId": "${json-unit.matches:id}",
           "parentId": "${json-unit.matches:id}"
         },
@@ -198,6 +209,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
           "domainType": "DataClass",
           "label": "child",
           "hasChildren": false,
+          "availableActions": [],
           "modelId": "${json-unit.matches:id}",
           "parentId": "${json-unit.matches:id}"
         }
@@ -208,6 +220,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
       "domainType": "DataClass",
       "label": "content",
       "hasChildren": true,
+      "availableActions": [],
       "modelId": "${json-unit.matches:id}",
       "children": [
         {
@@ -215,6 +228,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
           "domainType": "DataElement",
           "label": "ele1",
           "hasChildren": false,
+          "availableActions": [],
           "modelId": "${json-unit.matches:id}",
           "parentId": "${json-unit.matches:id}"
         },
@@ -223,6 +237,7 @@ class DataModelTreeItemFunctionalSpec extends FunctionalSpec{
           "domainType": "DataElement",
           "label": "element2",
           "hasChildren": false,
+          "availableActions": [],
           "modelId": "${json-unit.matches:id}",
           "parentId": "${json-unit.matches:id}"
         }

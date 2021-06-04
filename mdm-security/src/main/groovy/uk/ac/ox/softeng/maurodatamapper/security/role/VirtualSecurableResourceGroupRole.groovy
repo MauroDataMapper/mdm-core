@@ -37,6 +37,8 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     private boolean finalisable
     // Defines if resource COULD be versioned, other factors may apply
     private boolean versionable
+    // Has the resource had a version set outside of its control, i.e. by the parent
+    private boolean versionControlled
 
     private UUID dependsOnDomainIdAccess
 
@@ -45,6 +47,7 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
         finalised = false
         finalisable = false
         versionable = false
+        versionControlled = false
     }
 
     protected VirtualSecurableResourceGroupRole forSecurableResource(SecurableResource securableResource) {
@@ -91,6 +94,11 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     VirtualSecurableResourceGroupRole asVersionable(boolean canVersion) {
         this.versionable = canVersion
+        this
+    }
+
+    VirtualSecurableResourceGroupRole asVersionControlled(boolean versionControlled) {
+        this.versionControlled = versionControlled
         this
     }
 
@@ -170,7 +178,11 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     }
 
     boolean canVersion() {
-        finalised && versionable
+        !versionControlled && finalised && versionable
+    }
+
+    boolean isVersionControlled() {
+        versionControlled
     }
 
     int getOrder() {
