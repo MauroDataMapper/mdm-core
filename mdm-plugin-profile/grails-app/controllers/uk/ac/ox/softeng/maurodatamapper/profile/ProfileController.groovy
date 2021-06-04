@@ -92,7 +92,7 @@ class ProfileController implements ResourcelessMdmController {
     }
 
     @Transactional
-    def deleteProfile() {
+    def delete() {
         MultiFacetAware multiFacetAware =
             profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareDomainType, params.multiFacetAwareId)
         if (!multiFacetAware) {

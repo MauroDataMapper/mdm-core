@@ -31,7 +31,7 @@ class UrlMappings {
                     // New URL replaces /api/profiles/namespace/name/customSearch
                     post '/search'(controller: 'profile', action: 'search')
                     // New URL replaces /api/dataModels/profile/namespace/name/version
-                    get "/$multiFacetAware"(controller: 'profile', action: 'listModelsInProfile')
+                    get "/$multiFacetAwareDomainType"(controller: 'profile', action: 'listModelsInProfile')
 
                     // New URL replaces /api/dataModels/profile/values/namespace/name/version
                     get "/${multiFacetAwareDomainType}/values"(controller: 'profile', action: 'listValuesInProfile')
@@ -50,7 +50,7 @@ class UrlMappings {
                 get '/profiles/unused'(controller: 'profile', action: 'unusedProfiles')
                 get '/profiles/otherMetadata'(controller: 'profile', action: 'otherMetadata')
                 get "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'show')
-                delete "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'deleteProfile')
+                delete "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'delete')
                 post "/profile/$profileNamespace/$profileName/$profileVersion?"(controller: 'profile', action: 'save')
             }
         }

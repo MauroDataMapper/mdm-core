@@ -17,56 +17,38 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.profile
 
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
-import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
-import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
+import uk.ac.ox.softeng.maurodatamapper.core.interceptor.FacetInterceptor
+import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
-import org.springframework.beans.factory.annotation.Autowired
+class ProfileInterceptor extends FacetInterceptor {
 
-class ProfileInterceptor implements MdmInterceptor {
-
-    @Autowired(required = false)
-    List<ModelItemService> modelItemServices
-
-    protected static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
-
-    void resourceChecks() {
-        Utils.toUuid(params, 'id')
-        mapDomainTypeToClass('multiFacetAware')
+    @Override
+    Class getFacetClass() {
+        Profile
     }
 
     boolean before() {
-        resourceChecks()
-        if (actionName in ['getProfile', 'setProfile']) {
-            return checkActionAllowedOnCatalogueItem()
+        facetResourceChecks()
+        checkActionAllowedOnFacet()
+    }
+
+
+    boolean checkActionAuthorisationOnUnsecuredResource(Class resourceClass, UUID id,
+                                                        Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
+
+        // Public or secured at controller as using listAll
+        if (actionName in ['profileProviders', 'dynamicProfileProviders', 'search', 'listModelsInProfile', 'listValuesInProfile']) return true
+
+
+        boolean canRead = currentUserSecurityPolicyManager.userCanReadResourceId(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
+
+        // Read only actions
+        if (actionName in ['validate', 'profiles', 'unusedProfiles', 'otherMetadata']) {
+            return canRead ?: notFound(id ? resourceClass : owningSecureResourceClass, (id ?: owningSecureResourceId).toString())
         }
-        true
-    }
 
-    boolean checkActionAllowedOnCatalogueItem() {
-        if (Utils.parentClassIsAssignableFromChild(SecurableResource, params.multiFacetAwareClass)) {
-            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(params.multiFacetAwareClass, params.multiFacetAwareId) ?:
-                   notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
-        }
-
-        Model model = proxyHandler.unwrapIfProxy(getOwningModel()) as Model
-        currentUserSecurityPolicyManager.userCanReadResourceId(params.multiFacetAwareClass, params.id, model.getClass(), model.getId()) ?:
-        notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
-    }
-
-    Model getOwningModel() {
-        ModelItem modelItem = findModelItemByDomainTypeAndId(params.multiFacetAwareClass, params.multiFacetAwareId)
-        modelItem.getModel()
-    }
-
-    ModelItem findModelItemByDomainTypeAndId(Class domainType, UUID multiFacetAwareId) {
-        ModelItemService service = modelItemServices.find { it.handles(domainType) }
-        if (!service) throw new ApiBadRequestException('FI01', "Facet retrieval for model item [${domainType}] with no supporting service")
-        service.get(multiFacetAwareId)
+        // Standard actions - save, update, show, delete
+        super.checkActionAuthorisationOnUnsecuredResource(resourceClass, id, owningSecureResourceClass, owningSecureResourceId)
     }
 }
