@@ -31,21 +31,21 @@ class UrlMappings {
                     // New URL replaces /api/profiles/namespace/name/customSearch
                     post '/search'(controller: 'profile', action: 'search')
                     // New URL replaces /api/dataModels/profile/namespace/name/version
-                    get "/$multiFacetAwareDomainType"(controller: 'profile', action: 'listModelsInProfile')
+                    get "/$multiFacetAwareItemDomainType"(controller: 'profile', action: 'listModelsInProfile')
 
                     // New URL replaces /api/dataModels/profile/values/namespace/name/version
-                    get "/${multiFacetAwareDomainType}/values"(controller: 'profile', action: 'listValuesInProfile')
+                    get "/${multiFacetAwareItemDomainType}/values"(controller: 'profile', action: 'listValuesInProfile')
 
                     // Provide multiple ways to obtain profile of a multiFacetAware
-                    get "/${multiFacetAwareDomainType}/${multiFacetAwareId}"(controller: 'profile', action: 'show')
+                    get "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}"(controller: 'profile', action: 'show')
 
-                    post "/$multiFacetAwareDomainType/$multiFacetAwareId"(controller: 'profile', action: 'save')
-                    post "/$multiFacetAwareDomainType/$multiFacetAwareId/validate"(controller: 'profile', action: 'validate')
+                    post "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId"(controller: 'profile', action: 'save')
+                    post "/$multiFacetAwareItemDomainType/$multiFacetAwareItemId/validate"(controller: 'profile', action: 'validate')
                 }
             }
 
             // Provide multiple ways to obtain profile of a multiFacetAware
-            group "/${multiFacetAwareDomainType}/${multiFacetAwareId}", {
+            group "/${multiFacetAwareItemDomainType}/${multiFacetAwareItemId}", {
                 get '/profiles/used'(controller: 'profile', action: 'profiles')
                 get '/profiles/unused'(controller: 'profile', action: 'unusedProfiles')
                 get '/profiles/otherMetadata'(controller: 'profile', action: 'otherMetadata')

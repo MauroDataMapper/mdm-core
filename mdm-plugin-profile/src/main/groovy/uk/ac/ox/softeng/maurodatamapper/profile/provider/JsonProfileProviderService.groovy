@@ -57,12 +57,15 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     @Override
     void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress) {
         JsonProfile emptyJsonProfile = createNewEmptyJsonProfile()
-
         emptyJsonProfile.sections.each {section ->
             ProfileSection submittedSection = jsonProfile.sections.find {it.sectionName == section.sectionName}
             if (submittedSection) {
                 section.fields.each {field ->
-                    storeFieldInEntity(field, entity, submittedSection, section.sectionName, userEmailAddress)
+                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+
+                    String newValue = submittedField.currentValue ?: ""
+                    String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
+                    storeFieldInEntity(entity, newValue, key, userEmailAddress)
                 }
             }
         }
@@ -70,24 +73,20 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         Metadata.saveAll(entity.metadata)
     }
 
-    void storeFieldInEntity(ProfileField field, MultiFacetAware entity, ProfileSection submittedSection, String sectionName, String userEmailAddress) {
-        ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-        if (!submittedField) return
+    void storeFieldInEntity(MultiFacetAware entity, String value, String key, String userEmailAddress) {
 
-        if (submittedField.currentValue && submittedField.metadataPropertyName) {
-            entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
-        } else if (!field.metadataPropertyName) {
-            log.debug("No metadataPropertyName set for field: " + field.fieldName)
-        } else if (!submittedField.currentValue) {
+        if (value && value != "" && key ) {
+            entity.addToMetadata(metadataNamespace, key, value, userEmailAddress)
+        } else {
             Metadata md = entity.metadata.find {
-                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
+                it.namespace == metadataNamespace && it.key == key
             }
             if (md) {
-                entity.metadata.remove(md)
                 metadataService.delete(md)
             }
         }
     }
+
 
     @Override
     Set<String> getKnownMetadataKeys() {

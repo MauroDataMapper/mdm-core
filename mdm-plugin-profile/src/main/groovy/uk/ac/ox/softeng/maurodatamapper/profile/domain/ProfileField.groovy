@@ -34,7 +34,7 @@ class ProfileField {
 
     ProfileFieldDataType dataType
 
-    String currentValue
+    String currentValue = ""
 
     void setDataType(ProfileFieldDataType type) {
         dataType = type
@@ -65,6 +65,13 @@ class ProfileField {
         }
 
         validationErrors = errors
+    }
+
+    String getMetadataKeyForSaving(String sectionName) {
+        if(metadataPropertyName && metadataPropertyName != "") {
+            return metadataPropertyName
+        }
+        return "${sectionName}/${fieldName}"
     }
 
 }

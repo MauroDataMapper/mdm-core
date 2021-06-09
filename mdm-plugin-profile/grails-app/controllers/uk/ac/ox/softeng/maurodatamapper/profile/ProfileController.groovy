@@ -58,28 +58,28 @@ class ProfileController implements ResourcelessMdmController {
     }
 
     def profiles() {
-        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareDomainType, params
-            .multiFacetAwareId)
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
+            .multiFacetAwareItemId)
         if (!multiFacetAware) {
-            return notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
         respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware)
     }
 
     def unusedProfiles() {
-        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareDomainType, params
-            .multiFacetAwareId)
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
+            .multiFacetAwareItemId)
         if (!multiFacetAware) {
-            return notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
         respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware)
     }
 
     def otherMetadata() {
         MultiFacetAware multiFacetAware =
-            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareDomainType, params.multiFacetAwareId)
+            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
         if (!multiFacetAware) {
-            return notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
         Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(multiFacetAware)
         Set<String> profileNamespaces = usedProfiles.collect{it.metadataNamespace}
@@ -94,9 +94,9 @@ class ProfileController implements ResourcelessMdmController {
     @Transactional
     def delete() {
         MultiFacetAware multiFacetAware =
-            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareDomainType, params.multiFacetAwareId)
+            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
         if (!multiFacetAware) {
-            return notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -112,15 +112,15 @@ class ProfileController implements ResourcelessMdmController {
         mds.each {md ->
                 //multiFacetAware.metadata.remove(md)
                 metadataService.delete(md, true)
-                metadataService.addDeletedEditToMultiFacetAwareItem(currentUser, md, params.multiFacetAwareDomainType, params.multiFacetAwareId)}
+                metadataService.addDeletedEditToMultiFacetAwareItem(currentUser, md, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)}
     }
 
     def show() {
 
-        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareDomainType, params
-            .multiFacetAwareId)
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
+            .multiFacetAwareItemId)
         if (!multiFacetAware) {
-            return notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -137,10 +137,10 @@ class ProfileController implements ResourcelessMdmController {
     def save() {
 
         MultiFacetAware multiFacetAware =
-            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareDomainType, params.multiFacetAwareId)
+            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
         if (!multiFacetAware) {
-            return notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -161,10 +161,10 @@ class ProfileController implements ResourcelessMdmController {
     def validate() {
         log.debug("validating profile...")
         MultiFacetAware multiFacetAware =
-            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareDomainType, params.multiFacetAwareId)
+            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
         if (!multiFacetAware) {
-            return notFound(params.multiFacetAwareClass, params.multiFacetAwareId)
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -184,7 +184,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
         PaginatedResultList<Profile> profiles =
-                profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params.multiFacetAwareDomainType, params)
+                profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params.multiFacetAwareItemDomainType, params)
         respond profileList: profiles
     }
 
@@ -195,7 +195,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        List<MetadataAware> profiledItems = profileProviderService.findAllProfiledItems(params.multiFacetAwareDomainType)
+        List<MetadataAware> profiledItems = profileProviderService.findAllProfiledItems(params.multiFacetAwareItemDomainType)
         List<MetadataAware> filteredProfiledItems = []
         profiledItems.each {profiledItem ->
             if(profiledItem instanceof Model

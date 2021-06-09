@@ -29,6 +29,10 @@ class ProfileInterceptor extends FacetInterceptor {
     }
 
     boolean before() {
+
+        // Public or secured at controller as using listAll
+        if (actionName in ['profileProviders', 'dynamicProfileProviders', 'search', 'listModelsInProfile', 'listValuesInProfile']) return true
+
         facetResourceChecks()
         checkActionAllowedOnFacet()
     }

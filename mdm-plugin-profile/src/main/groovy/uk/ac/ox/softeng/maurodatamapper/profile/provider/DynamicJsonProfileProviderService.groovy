@@ -90,27 +90,6 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         new JsonProfile(getSections())
     }
 
-    @Override
-    void storeFieldInEntity(ProfileField field, MultiFacetAware entity, ProfileSection submittedSection, String sectionName, String userEmailAddress) {
-        ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-        if (!submittedField) return
-
-        if (submittedField.currentValue && submittedField.metadataPropertyName) {
-            entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
-        } else if (!field.metadataPropertyName) {
-            log.debug("No metadataPropertyName set for field: " + field.fieldName)
-            String metadataPropertyName = "${sectionName}/${submittedField.fieldName}"
-            entity.addToMetadata(metadataNamespace, metadataPropertyName, submittedField.currentValue, userEmailAddress)
-        } else if (!submittedField.currentValue) {
-            Metadata md = entity.metadata.find {
-                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
-            }
-            if (md) {
-                entity.metadata.remove(md)
-                metadataService.delete(md)
-            }
-        }
-    }
 
     @Override
     String getJsonResourceFile() {
