@@ -47,11 +47,11 @@ class VirtualSecurableResourceGroupRoleService {
         }
 
         if (Utils.parentClassIsAssignableFromChild(Folder, securableResource.class)) {
-            boolean folderContainsVersionedFolder = versionedFolderService.doesDepthTreeContainVersionedFolder(securableResource as Folder)
-            boolean folderContainsFinalisedModel = folderService.doesDepthTreeContainFinalisedModel(securableResource as Folder)
             virtualRole
                 .withDependencyOnAccessToDomainId((securableResource as Folder).parentFolder?.id)
-                .asVersionControlled(folderContainsVersionedFolder || folderContainsFinalisedModel)
+                .asVersionControlled(versionedFolderService.doesDepthTreeContainVersionedFolder(securableResource as Folder) ||
+                                     versionedFolderService.hasVersionedFolderParent(securableResource as Folder) ||
+                                     versionedFolderService.doesDepthTreeContainFinalisedModel(securableResource as Folder))
         } else if (Utils.parentClassIsAssignableFromChild(Classifier, securableResource.class)) {
             virtualRole.withDependencyOnAccessToDomainId((securableResource as Classifier).parentClassifier?.id)
         }

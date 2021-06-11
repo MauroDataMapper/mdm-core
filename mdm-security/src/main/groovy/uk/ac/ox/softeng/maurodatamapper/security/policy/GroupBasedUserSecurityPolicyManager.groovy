@@ -41,6 +41,7 @@ import grails.core.GrailsClass
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 import java.util.function.Predicate
 
@@ -111,6 +112,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     List<SecurableResourceGroupRole> securableResourceGroupRoles
     Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles
     Set<GroupRole> applicationPermittedRoles
+    HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
 
     GrailsApplication grailsApplication
 
@@ -656,11 +658,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
         if (role.isVersionControlled() || role.domainType == VersionedFolder.simpleName) {
             // Cannot move anything versioned controlled into a VF, this includes a folder which contains VFs
-            updatedActions.removeAll([MOVE_TO_VERSIONED_FOLDER])
-            // Folders can have VFs but VFs cant
-            if (VersionedFolder.simpleName == role.domainType) {
-                updatedActions.removeAll([CREATE_VERSIONED_FOLDER])
-            }
+            // Cannot create a VF inside a version controlled object
+            updatedActions.removeAll([MOVE_TO_VERSIONED_FOLDER, CREATE_VERSIONED_FOLDER])
         }
         updatedActions
     }

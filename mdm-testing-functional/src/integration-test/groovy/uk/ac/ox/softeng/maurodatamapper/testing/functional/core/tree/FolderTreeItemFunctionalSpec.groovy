@@ -23,7 +23,10 @@ import uk.ac.ox.softeng.maurodatamapper.testing.functional.tree.TreeItemFunction
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
+import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpResponse
 
+import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.OK
 
 /**
@@ -277,6 +280,44 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
     "type": "CodeSet"
   }
 ]'''
+    }
+
+    void 'AA : test available actions for folder inside versioned folder'() {
+
+        given: 'create VF with F inside it'
+        loginEditor()
+        POST('versionedFolders', [label: 'Tree Testing Versioned Folder'], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+        def vfId = responseBody().id
+        POST("versionedFolders/$vfId/folders", [label: 'Tree Testing Folder'], MAP_ARG, true)
+        verifyResponse(CREATED, response)
+
+        when:
+        HttpResponse<List<Map>> localResponse = GET('', Argument.listOf(Map))
+
+        then:
+        verifyResponse(OK, localResponse)
+
+        when:
+        Map vfTree = localResponse.body().find {it.id == vfId}
+
+        then: 'Both items have no option to create a VF'
+        vfTree
+        vfTree.availableActions == [
+            'createFolder',
+            'createModel',
+            'delete',
+            'moveToFolder',
+            'softDelete'
+        ]
+        vfTree.children.size() == 1
+        vfTree.children.first().availableActions == [
+            'createFolder',
+            'createModel',
+            'delete',
+            'moveToFolder',
+            'softDelete'
+        ]
     }
 
     String getReaderTree() {
