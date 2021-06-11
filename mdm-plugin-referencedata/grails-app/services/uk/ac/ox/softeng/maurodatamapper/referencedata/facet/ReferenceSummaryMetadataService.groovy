@@ -24,9 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.referencedata.facet.summarymetadata.Refe
 import uk.ac.ox.softeng.maurodatamapper.referencedata.traits.service.ReferenceSummaryMetadataAwareService
 
 import grails.gorm.DetachedCriteria
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-
-import javax.transaction.Transactional
 
 @Slf4j
 @Transactional

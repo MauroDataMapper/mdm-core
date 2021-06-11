@@ -19,9 +19,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-
-import javax.transaction.Transactional
 
 @Slf4j
 @Transactional

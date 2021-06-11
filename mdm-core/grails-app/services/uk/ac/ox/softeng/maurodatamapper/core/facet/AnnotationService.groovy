@@ -23,10 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareS
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.dao.InvalidDataAccessResourceUsageException
-
-import javax.transaction.Transactional
 
 @Slf4j
 @Transactional

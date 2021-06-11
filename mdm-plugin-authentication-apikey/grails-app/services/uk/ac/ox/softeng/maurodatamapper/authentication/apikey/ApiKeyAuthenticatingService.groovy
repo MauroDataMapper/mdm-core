@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.authentication.apikey
 
-
 import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKey
@@ -25,10 +24,10 @@ import uk.ac.ox.softeng.maurodatamapper.security.authentication.ApiKeyService
 import uk.ac.ox.softeng.maurodatamapper.security.authentication.AuthenticatingService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
 import javax.servlet.http.HttpSession
-import javax.transaction.Transactional
 
 @Slf4j
 class ApiKeyAuthenticatingService extends AuthenticatingService {

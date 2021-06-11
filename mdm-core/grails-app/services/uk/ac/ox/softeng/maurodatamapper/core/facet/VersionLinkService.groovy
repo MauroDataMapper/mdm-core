@@ -27,12 +27,12 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
+import grails.gorm.transactions.Transactional
 import grails.util.Pair
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.util.function.BiFunction
-import javax.transaction.Transactional
 
 @Slf4j
 @Transactional
