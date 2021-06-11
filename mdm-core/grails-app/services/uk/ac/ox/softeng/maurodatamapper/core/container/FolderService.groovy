@@ -76,7 +76,7 @@ class FolderService extends ContainerService<Folder> {
     List<Folder> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable folders for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Folder)
-        Folder.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        Folder.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
     }
 
     @Override
@@ -143,8 +143,8 @@ class FolderService extends ContainerService<Folder> {
             return
         }
         if (permanent) {
-            folder.childFolders.each { delete(it, permanent, false) }
-            modelServices.each { it.deleteAllInContainer(folder) }
+            folder.childFolders.each {delete(it, permanent, false)}
+            modelServices.each {it.deleteAllInContainer(folder)}
             if (securityPolicyManagerService) {
                 securityPolicyManagerService.removeSecurityForSecurableResource(folder, null)
             }
@@ -273,10 +273,4 @@ class FolderService extends ContainerService<Folder> {
             service.findAllByFolderId(folder.id)
         } as List<Model>
     }
-
-    boolean doesDepthTreeContainFinalisedModel(Folder folder) {
-        List<Model> models = findAllModelsInFolder(folder)
-        models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
-    }
-
 }

@@ -665,4 +665,9 @@ class VersionedFolderService extends ContainerService<VersionedFolder> implement
     boolean isVersionedFolderFamily(Folder folder) {
         folder.instanceOf(VersionedFolder) || hasVersionedFolderParent(folder)
     }
+
+    boolean doesDepthTreeContainFinalisedModel(Folder folder) {
+        List<Model> models = folderService.findAllModelsInFolder(folder)
+        models.any {it.finalised} || findAllByParentId(folder.id).any {doesDepthTreeContainFinalisedModel(it)}
+    }
 }
