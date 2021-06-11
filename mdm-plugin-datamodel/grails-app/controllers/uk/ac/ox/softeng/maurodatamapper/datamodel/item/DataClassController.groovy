@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.SearchService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
 
 import grails.gorm.transactions.Transactional
@@ -104,7 +105,8 @@ class DataClassController extends CatalogueItemController<DataClass> {
     }
 
     @Transactional
-    def copyDataClass() {
+    def copyDataClass(CopyInformation copyInformation) {
+
         if (handleReadOnly()) {
             return
         }
@@ -117,7 +119,7 @@ class DataClassController extends CatalogueItemController<DataClass> {
         DataClass copy
         try {
             copy = dataClassService.copyDataClassMatchingAllReferenceTypes(dataModel, original, currentUser, currentUserSecurityPolicyManager,
-                                                                           params.dataClassId)
+                                                                           params.dataClassId, copyInformation)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422

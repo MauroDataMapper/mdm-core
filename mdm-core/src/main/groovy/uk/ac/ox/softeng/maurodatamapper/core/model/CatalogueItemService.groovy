@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
@@ -139,10 +140,14 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         removeFacetFromDomain(catalogueItemId, classifier.id, 'classifiers')
     }
 
-    K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
+    K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+                                   CopyInformation copyInformation = null) {
         copy.createdBy = copier.emailAddress
-        copy.label = original.label
         copy.description = original.description
+        // might relabel all elements in a DataClass, May need to specify by Id
+        if (!copyInformation.label.equals(original.label)){
+            copy.label = original.label
+        }
 
         classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
         metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}

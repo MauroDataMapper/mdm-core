@@ -154,6 +154,12 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         ]
     }
 
+    Map getCopyLabel() {
+        [
+            copyLabel: 'Renamed Copy Label'
+        ]
+    }
+
     @Override
     Map getInvalidJson() {
         [
@@ -402,6 +408,32 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().count == 2
         responseBody().items.any {it.label == 'wibble'}
         responseBody().items.any {it.label == 'string'}
+    }
+
+    @Rollback
+    void 'CC04 : Test copying a dataClass with a user assigned label, aka: a save as function' () {
+
+        //copyLable is json object that has new parameter
+        //trigger copy
+        //add copy label as additional object
+        //verify result against copy with label changed
+        given:
+        POST('', validJson)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement',
+            copyLabel : 'Renamed label',
+            dataType: dataTypeId
+        ])
+
+        print 'response bd'
+        print responseBody()
+
+        verifyResponse CREATED, response
+
+
     }
 
     @Rollback
