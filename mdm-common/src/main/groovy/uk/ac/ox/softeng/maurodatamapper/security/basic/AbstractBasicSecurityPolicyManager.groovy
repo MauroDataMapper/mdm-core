@@ -91,12 +91,12 @@ abstract class AbstractBasicSecurityPolicyManager implements UserSecurityPolicyM
     }
 
     @Override
-    List<String> userAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+    List<String> userAvailableTreeActions(String securableResourceClass, UUID id) {
         []
     }
 
     @Override
-    List<String> userAvailableTreeActions(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
+    List<String> userAvailableTreeActions(String resourceClass, UUID id, String owningSecureResourceClass, UUID owningSecureResourceId) {
         []
     }
 

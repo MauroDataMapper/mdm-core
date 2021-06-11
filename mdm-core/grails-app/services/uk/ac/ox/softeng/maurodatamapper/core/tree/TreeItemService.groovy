@@ -34,12 +34,13 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.compiler.GrailsCompileStatic
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 
 @Slf4j
 @GrailsCompileStatic
+@Transactional
 class TreeItemService {
 
     @Autowired(required = false)
@@ -53,8 +54,6 @@ class TreeItemService {
 
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
-
-    HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
 
     /**
      * Convenience method for obtaining the catalogue item from it's ID.
@@ -236,7 +235,7 @@ class TreeItemService {
         log.debug('Catalogue item has {} model items', content.size())
         List<ModelItemTreeItem> tree = content.collect {mi ->
             List<String> actions = userSecurityPolicyManager ?
-                                   userSecurityPolicyManager.userAvailableTreeActions(mi.class, mi.id, mi.model.class, mi.model.id) :
+                                   userSecurityPolicyManager.userAvailableTreeActions(mi.domainType, mi.id, mi.model.domainType, mi.model.id) :
                                    []
             if (fullTreeRender) {
                 Collection<ModelItemTreeItem> children = buildCatalogueItemTree(mi, true, userSecurityPolicyManager)
@@ -314,7 +313,7 @@ class TreeItemService {
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         models.collect {model ->
             new ModelTreeItem(model, service.containerPropertyNameInModel, model.id in modelIdsWithChildren, supersededIds.contains(model.id),
-                              userSecurityPolicyManager.userAvailableTreeActions(model.class, model.id))
+                              userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id))
         }
     }
 
@@ -326,7 +325,7 @@ class TreeItemService {
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         models.collect {model ->
             new ModelTreeItem(model, service.containerPropertyNameInModel, model.id in modelIdsWithChildren, true,
-                              userSecurityPolicyManager.userAvailableTreeActions(model.class, model.id))
+                              userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id))
         }
     }
 
@@ -338,9 +337,8 @@ class TreeItemService {
         if (!service) throw new ApiBadRequestException('TIS02', 'Tree requested for containers with no supporting service')
         List<K> readableContainers = service.getAll(readableContainerIds).findAll()
         readableContainers.collect {container ->
-            K unwrapped = hibernateProxyHandler.unwrapIfProxy(container) as K
-            new ContainerTreeItem(unwrapped,
-                                  userSecurityPolicyManager.userAvailableTreeActions(unwrapped.class, unwrapped.id))
+            new ContainerTreeItem(container,
+                                  userSecurityPolicyManager.userAvailableTreeActions(container.domainType, container.id))
         }
     }
 
@@ -369,7 +367,7 @@ class TreeItemService {
             long start4 = System.currentTimeMillis()
             List<ModelTreeItem> treeItems = readableModels.collect {model ->
                 new ModelTreeItem(model, containerPropertyName, modelsWithChildren.contains(model.ident()), supersededModels.contains(model.ident()),
-                                  userSecurityPolicyManager.userAvailableTreeActions(model.class, model.id))
+                                  userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id))
             }
             log.trace('Listing tree items took: {}', Utils.timeTaken(start4))
 
@@ -409,7 +407,7 @@ class TreeItemService {
         log.debug('Found {} containers, took: {}', containers.size(), Utils.timeTaken(start1))
 
         List<ContainerTreeItem> foundContainerTreeItems = containers.collect {container ->
-            new ContainerTreeItem(container, userSecurityPolicyManager.userAvailableTreeActions(container.class, container.id))
+            new ContainerTreeItem(container, userSecurityPolicyManager.userAvailableTreeActions(container.domainType, container.id))
         }
 
         log.debug('Retrieving containers needed to wrap found containers')
@@ -418,7 +416,7 @@ class TreeItemService {
         if (containerIdsNeeded) {
             List<K> extraContainers = service.getAll(containerIdsNeeded) as List<K>
             foundContainerTreeItems.addAll(extraContainers.collect {container ->
-                new ContainerTreeItem(container, userSecurityPolicyManager.userAvailableTreeActions(container.class, container.id))
+                new ContainerTreeItem(container, userSecurityPolicyManager.userAvailableTreeActions(container.domainType, container.id))
             })
         }
         // Don't build a tree here as we need to add to an existing tree
@@ -482,9 +480,8 @@ class TreeItemService {
             log.debug('Compiling model tree items for found items')
             foundModelTreeItems.addAll(
                 models.collect {model ->
-                    Model unwrapped = hibernateProxyHandler.unwrapIfProxy(model) as Model
-                    new ModelTreeItem(unwrapped, containerPropertyName, null, supersededModels.contains(unwrapped.ident()),
-                                      userSecurityPolicyManager.userAvailableTreeActions(unwrapped.class, unwrapped.id))
+                    new ModelTreeItem(model, containerPropertyName, null, supersededModels.contains(model.ident()),
+                                      userSecurityPolicyManager.userAvailableTreeActions(model.domainType, model.id))
                         .withRenderChildren() as ModelTreeItem
                 }
             )
@@ -492,9 +489,8 @@ class TreeItemService {
 
         log.debug('Compiling model item tree items for found items')
         List<ModelItemTreeItem> foundModelItemTreeItems = allModelItems.collect {modelItem ->
-            Model model = hibernateProxyHandler.unwrapIfProxy(modelItem.model) as Model
             new ModelItemTreeItem(modelItem, null,
-                                  userSecurityPolicyManager.userAvailableTreeActions(modelItem.class, modelItem.id, model.class, model.id)
+                                  userSecurityPolicyManager.userAvailableTreeActions(modelItem.domainType, modelItem.id, modelItem.model.domainType, modelItem.model.id)
             ).withRenderChildren() as ModelItemTreeItem
         }
 
@@ -533,7 +529,8 @@ class TreeItemService {
                 modelItemTreeItems.addAll(
                     modelItems.collect {modelItem ->
                         new ModelItemTreeItem(modelItem, null,
-                                              userSecurityPolicyManager.userAvailableTreeActions(modelItem.class, modelItem.id, modelItem.model.class, modelItem.model.id))
+                                              userSecurityPolicyManager.
+                                                  userAvailableTreeActions(modelItem.domainType, modelItem.id, modelItem.model.domainType, modelItem.model.id))
                             .withRenderChildren() as ModelItemTreeItem
                     }
                 )

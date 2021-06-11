@@ -454,18 +454,24 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     @Override
+    List<String> userAvailableTreeActions(String securableResourceDomainType, UUID id) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, securableResourceDomainType)
+        userAvailableTreeActions(grailsClass.getClazz(), id)
+    }
+
     List<String> userAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
-        return securedResourceUserAvailableTreeActions(securableResourceClass, id).toSet().sort()
+        securedResourceUserAvailableTreeActions(hibernateProxyHandler.unwrapIfProxy(securableResourceClass) as Class<? extends SecurableResource>, id).toSet().sort()
     }
 
     @Override
-    List<String> userAvailableTreeActions(Class resourceClass, UUID id, Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId) {
-        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userAvailableTreeActions(resourceClass as Class<? extends SecurableResource>, id)
+    List<String> userAvailableTreeActions(String resourceDomainType, UUID id, String owningSecureResourceDomainType, UUID owningSecureResourceId) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, resourceDomainType)
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, grailsClass.getClazz())) {
+            return userAvailableTreeActions(grailsClass.getClazz() as Class<? extends SecurableResource>, id)
         }
 
-        List<String> owningResourceActions = userAvailableTreeActions(owningSecureResourceClass, owningSecureResourceId)
-        if (Utils.parentClassIsAssignableFromChild(ModelItem, resourceClass)) {
+        List<String> owningResourceActions = userAvailableTreeActions(owningSecureResourceDomainType, owningSecureResourceId)
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, grailsClass.getClazz())) {
             return owningResourceActions - DISALLOWED_MODELITEM_TREE_ACTIONS
         }
         return owningResourceActions
