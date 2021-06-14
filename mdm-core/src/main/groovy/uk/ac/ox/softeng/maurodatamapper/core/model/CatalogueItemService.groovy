@@ -141,12 +141,12 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                                   CopyInformation copyInformation = null) {
+                                   CopyInformation copyInformation = new CopyInformation()) {
         copy.createdBy = copier.emailAddress
         copy.description = original.description
         // might relabel all elements in a DataClass, May need to specify by Id
-        if (!copyInformation.label.equals(original.label)){
-            copy.label = original.label
+        if (!copyInformation.copyLabel.blank){
+            copy.label = copyInformation.copyLabel
         }
 
         classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}

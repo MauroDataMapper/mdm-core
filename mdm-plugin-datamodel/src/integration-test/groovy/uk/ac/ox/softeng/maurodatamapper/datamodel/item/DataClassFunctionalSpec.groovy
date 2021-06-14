@@ -399,7 +399,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items.any {it.label == 'Functional Test DataElement'}
         responseBody().items.any {it.label == 'Functional Test DataElement 2'}
 
-
         when:
         GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
 
@@ -411,30 +410,24 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     }
 
     @Rollback
-    void 'CC04 : Test copying a dataClass with a user assigned label, aka: a save as function' () {
+    void 'CC04 : Test copying a dataClass with a user assigned label, aka: a save as function'() {
 
-        //copyLable is json object that has new parameter
-        //trigger copy
-        //add copy label as additional object
-        //verify result against copy with label changed
         given:
         POST('', validJson)
         verifyResponse CREATED, response
         String id = responseBody().id
-
-        POST("$id/dataElements", [
-            label   : 'Functional Test DataElement',
-            copyLabel : 'Renamed label',
-            dataType: dataTypeId
-        ])
-
-        print 'response bd'
-        print responseBody()
-
         verifyResponse CREATED, response
 
+        when: 'trying to copy and rename valid'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", getCopyLabel(), MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        responseBody().id != id
+        responseBody().label == 'Renamed Copy Label'
 
     }
+
 
     @Rollback
     void 'test searching for metadata "mdk1" in content dataclass'() {
@@ -1003,4 +996,5 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         DELETE("dataModels/$finalisedDataModelId/dataClasses/$importableId", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
     }
+
 }

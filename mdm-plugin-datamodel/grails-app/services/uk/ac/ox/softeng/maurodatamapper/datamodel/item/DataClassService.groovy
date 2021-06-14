@@ -582,8 +582,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     DataClass copyDataClassMatchingAllReferenceTypes(DataModel copiedDataModel, DataClass original, User copier,
                                                      UserSecurityPolicyManager userSecurityPolicyManager, Serializable parentDataClassId,
-                                                     CopyInformation copyInformation = null) {
-        DataClass copiedDataClass = copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager, parentDataClassId, false,
+                                                     CopyInformation copyInformation = new CopyInformation()) {
+        DataClass copiedDataClass = copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager, parentDataClassId,
                                                   copyInformation)
         log.debug('Copied required DataClass, now checking for reference classes which haven\'t been matched or added')
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, original.dataModel, copier, userSecurityPolicyManager)
@@ -594,13 +594,14 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     @Override
     DataClass copy(Model copiedDataModel, DataClass original, UserSecurityPolicyManager userSecurityPolicyManager,
-                   UUID parentDataClassId = null) {
-        copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager, parentDataClassId)
+                   UUID parentDataClassId = null, CopyInformation copyInformation = null) {
+        copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager,
+                      parentDataClassId, copyInformation)
     }
 
     DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier,
                             UserSecurityPolicyManager userSecurityPolicyManager,
-                            Serializable parentDataClassId = null, boolean copySummaryMetadata = false, CopyInformation copyInformation = null) {
+                            Serializable parentDataClassId = null, boolean copySummaryMetadata = false, CopyInformation copyInformation) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 
         DataClass copy = new DataClass(
