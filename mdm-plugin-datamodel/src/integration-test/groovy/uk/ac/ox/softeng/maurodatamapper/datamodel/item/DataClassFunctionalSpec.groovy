@@ -129,7 +129,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
             sleep(20)
             GET(getResourcePath(otherDataModelId), MAP_ARG, true)
             def items = responseBody().items
-            items.each { i ->
+            items.each {i ->
                 DELETE("${getResourcePath(otherDataModelId)}/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
                 sleep(20)
@@ -364,6 +364,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().breadcrumbs[1].id == otherId
     }
 
+    @Rollback
     void 'CC03 : test copying to a datamodel with a data element and datatype'() {
         // There is an error around hibernate search in this scenario
         // The metadata and classifiers of the datatype arent initialised and cause a "could not initialize proxy - no Session" exception
@@ -458,13 +459,13 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         String id = responseBody().id
         //create element
         POST("$id/dataElements", [
-            label   : 'Functional Test DataElement',
+            label   : 'Functional Test DataElement 3',
             dataType: dataTypeId
         ])
         verifyResponse CREATED, response
         //create element 2
         POST("$id/dataElements", [
-            label   : 'Functional Test DataElement 2',
+            label   : 'Functional Test DataElement 4',
             dataType: [label: 'wobble', domainType: 'PrimitiveType']
         ])
         verifyResponse CREATED, response
@@ -487,18 +488,16 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 2
-        responseBody().items.any { it.label == 'Functional Test DataElement' }
-        responseBody().items.any { it.label == 'Functional Test DataElement 2' }
+        responseBody().items.any {it.label == 'Functional Test DataElement 3' }
+        responseBody().items.any {it.label == 'Functional Test DataElement 4' }
 
         when:
         GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
 
         then:
         verifyResponse(OK, response)
-        responseBody().count == 2
-        responseBody().items.any { it.label == 'wobble' }
-        responseBody().items.any { it.label == 'string' }
+        responseBody().items.any {it.label == 'wobble' }
+        responseBody().items.any {it.label == 'string' }
     }
 
     @Rollback
@@ -735,8 +734,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().extendsDataClasses.size() == 2
-        responseBody().extendsDataClasses.any { it.id == externalExtendableId && it.model == finalisedDataModelId.toString() }
-        responseBody().extendsDataClasses.any { it.id == internalExtendableId && it.model == dataModelId.toString() }
+        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString() }
+        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == dataModelId.toString() }
 
         cleanup:
         cleanUpData(id)
@@ -910,7 +909,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any { it.id == internalId }
+        responseBody().items.any {it.id == internalId }
 
         cleanup:
         cleanUpData(id)

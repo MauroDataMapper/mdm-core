@@ -151,11 +151,11 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.label = original.label
             log.debug('Creating Copy with original label as provided label is empty or Invalid')
         }
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it) }
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier) }
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each { ruleRepresentation ->
+            rule.ruleRepresentations.each {ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -163,7 +163,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -204,18 +204,18 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                                         UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Merging Metadata into Catalogue Item')
         // call metadataService version of below
-        mergeFieldDiff.deleted.each { mergeItemData ->
+        mergeFieldDiff.deleted.each {mergeItemData ->
             Metadata metadata = metadataService.get(mergeItemData.id)
             metadataService.delete(metadata)
         }
 
         // copy additions from source to target object
-        mergeFieldDiff.created.each { mergeItemData ->
+        mergeFieldDiff.created.each {mergeItemData ->
             Metadata metadata = metadataService.get(mergeItemData.id)
             metadataService.copy(targetCatalogueItem, metadata, userSecurityPolicyManager)
         }
         // for modifications, recursively call this method
-        mergeFieldDiff.modified.each { mergeObjectDiffData ->
+        mergeFieldDiff.modified.each {mergeObjectDiffData ->
             metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, mergeObjectDiffData)
         }
     }
