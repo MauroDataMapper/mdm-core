@@ -129,7 +129,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
             sleep(20)
             GET(getResourcePath(otherDataModelId), MAP_ARG, true)
             def items = responseBody().items
-            items.each {i ->
+            items.each { i ->
                 DELETE("${getResourcePath(otherDataModelId)}/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
                 sleep(20)
@@ -154,9 +154,15 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         ]
     }
 
-    Map getCopyLabel() {
+    Map getValidCopyLabel() {
         [
             copyLabel: 'Renamed Copy Label'
+        ]
+    }
+
+    Map getInvalidCopyLabel() {
+        [
+            copyLabel: null
         ]
     }
 
@@ -419,15 +425,81 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         verifyResponse CREATED, response
 
         when: 'trying to copy and rename valid'
-        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", getCopyLabel(), MAP_ARG, true)
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", getValidCopyLabel(), MAP_ARG, true)
 
         then:
         response.status() == CREATED
         responseBody().id != id
         responseBody().label == 'Renamed Copy Label'
 
+        when: 'trying to copy and rename with null label'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", getInvalidCopyLabel(), MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        responseBody().id != id
+        responseBody().label == validJson.label
+
+
+        when: 'trying to copy and rename non-existent object'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/${UUID.randomUUID()}", getValidCopyLabel(), MAP_ARG, true)
+
+        then:
+        response.status() == NOT_FOUND
+
     }
 
+    @Rollback
+    void 'CC05 : Test copying a datamodel with a data element and datatype renaming the dataClass'() {
+
+        given:
+        POST('', validJson)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+        //create element
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement',
+            dataType: dataTypeId
+        ])
+        verifyResponse CREATED, response
+        //create element 2
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement 2',
+            dataType: [label: 'wobble', domainType: 'PrimitiveType']
+        ])
+        verifyResponse CREATED, response
+
+        when: 'trying to copy valid'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", getValidCopyLabel(), MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        responseBody().id != id
+        responseBody().label == 'Renamed Copy Label'
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
+        String copyId = responseBody().id
+
+        when:
+        GET("${getResourcePath(otherDataModelId)}/$copyId/dataElements", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any { it.label == 'Functional Test DataElement' }
+        responseBody().items.any { it.label == 'Functional Test DataElement 2' }
+
+        when:
+        GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().count == 2
+        responseBody().items.any { it.label == 'wobble' }
+        responseBody().items.any { it.label == 'string' }
+    }
 
     @Rollback
     void 'test searching for metadata "mdk1" in content dataclass'() {
@@ -663,8 +735,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().extendsDataClasses.size() == 2
-        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString()}
-        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == dataModelId.toString()}
+        responseBody().extendsDataClasses.any { it.id == externalExtendableId && it.model == finalisedDataModelId.toString() }
+        responseBody().extendsDataClasses.any { it.id == internalExtendableId && it.model == dataModelId.toString() }
 
         cleanup:
         cleanUpData(id)
@@ -838,7 +910,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == internalId}
+        responseBody().items.any { it.id == internalId }
 
         cleanup:
         cleanUpData(id)
