@@ -108,20 +108,15 @@ class ProfileService {
         profileProviderService.storeProfileInEntity(multiFacetAwareItem, profile, user)
     }
 
-    def validateProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, HttpServletRequest request, User user) {
+    def validateProfile(ProfileProviderService profileProviderService, HttpServletRequest request) {
         Profile profile = profileProviderService.getNewProfile()
-        List<ProfileSection> profileSections = []
-        request.getJSON().sections.each {it ->
-            ProfileSection profileSection = new ProfileSection(it)
-            profileSection.fields = []
-            it['fields'].each {field ->
-                profileSection.fields.add(new ProfileField(field))
-            }
-            if (profileProviderService.isJsonProfileService()) {
-                ((JsonProfile) profile).sections.add(profileSection)
-
-            } else {
-                profileSections.add(profileSection)
+        profile.sections.each {section ->
+            ProfileSection submittedSection = request.getJSON().sections.find {it.sectionName == section.sectionName}
+            if (submittedSection) {
+                section.fields.each {field ->
+                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+                    field.currentValue = submittedField.currentValue ?: ""
+                }
             }
         }
         profile.sections.each {section ->
@@ -130,7 +125,6 @@ class ProfileService {
             }
         }
         profile
-
     }
 
 

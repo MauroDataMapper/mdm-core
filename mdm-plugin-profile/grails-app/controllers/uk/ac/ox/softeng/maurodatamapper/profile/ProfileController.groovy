@@ -173,7 +173,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.validateProfile(profileProviderService, multiFacetAware, request, currentUser)
+        respond profileService.validateProfile(profileProviderService, request)
     }
 
 

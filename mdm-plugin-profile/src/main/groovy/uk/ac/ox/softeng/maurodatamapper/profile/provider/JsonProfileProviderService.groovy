@@ -98,5 +98,11 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
     }
 
+    @Override
+    JsonProfile getNewProfile() {
+        createNewEmptyJsonProfile()
+    }
+
+
 
 }
