@@ -19,6 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
@@ -55,7 +56,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
     }
 
     @Transactional
-    def copyDataElement() {
+    def copyDataElement(CopyInformation copyInformation) {
         if (handleReadOnly()) {
             return
         }
@@ -68,7 +69,7 @@ class DataElementController extends CatalogueItemController<DataElement> {
         if (!originalDataElement) return notFound(params.dataElementId)
         DataElement copy
         try {
-            copy = dataElementService.copyDataElement(destinationDataModel, originalDataElement, currentUser, currentUserSecurityPolicyManager)
+            copy = dataElementService.copyDataElement(destinationDataModel, originalDataElement, currentUser, currentUserSecurityPolicyManager, copyInformation)
             destinationDataClass.addToDataElements(copy)
             dataClassService.matchUpAndAddMissingReferenceTypeClasses(destinationDataModel, sourceDataModel, currentUser,
                                                                       currentUserSecurityPolicyManager)
