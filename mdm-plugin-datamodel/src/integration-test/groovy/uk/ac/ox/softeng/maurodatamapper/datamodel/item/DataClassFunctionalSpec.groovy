@@ -451,7 +451,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
     }
 
     @Rollback
-    void 'CC05 : Test copying a datamodel with a data element and datatype renaming the dataClass'() {
+    void 'CC05 : Test copying a dataModel with a data element and datatype renaming the dataClass'() {
 
         given:
         POST('', validJson)
