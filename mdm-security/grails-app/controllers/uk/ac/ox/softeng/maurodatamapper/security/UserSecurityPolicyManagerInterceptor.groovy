@@ -22,7 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.interceptor.SecurityPolicyManag
 import uk.ac.ox.softeng.maurodatamapper.security.policy.GroupBasedSecurityPolicyManagerService
 
 import groovy.util.logging.Slf4j
-import org.springframework.core.Ordered
 
 /**
  * This should intercept to load the user's security policy manager into the parameters object to allow downstream interceptors and controllers
@@ -31,7 +30,7 @@ import org.springframework.core.Ordered
 @Slf4j
 class UserSecurityPolicyManagerInterceptor implements SecurityPolicyManagerInterceptor {
 
-    public static final Integer ORDER = Ordered.HIGHEST_PRECEDENCE + 1000
+    public static final Integer ORDER = -100000
 
     GroupBasedSecurityPolicyManagerService groupBasedSecurityPolicyManagerService
 
