@@ -734,8 +734,8 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().extendsDataClasses.size() == 2
-        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString() }
-        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == dataModelId.toString() }
+        responseBody().extendsDataClasses.any {it.id == externalExtendableId && it.model == finalisedDataModelId.toString()}
+        responseBody().extendsDataClasses.any {it.id == internalExtendableId && it.model == dataModelId.toString()}
 
         cleanup:
         cleanUpData(id)
@@ -909,7 +909,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         then:
         verifyResponse OK, response
         responseBody().items.size() == 1
-        responseBody().items.any {it.id == internalId }
+        responseBody().items.any {it.id == internalId}
 
         cleanup:
         cleanUpData(id)
@@ -1067,5 +1067,4 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         DELETE("dataModels/$finalisedDataModelId/dataClasses/$importableId", MAP_ARG, true)
         assert response.status() == HttpStatus.NO_CONTENT
     }
-
 }
