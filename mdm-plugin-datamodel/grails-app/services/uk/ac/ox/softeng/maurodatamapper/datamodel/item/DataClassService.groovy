@@ -102,13 +102,13 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         Set<DataType> dataTypes = extractAllUsedNewOrDirtyDataTypes(dataClass)
         log.debug('{} new or dirty used datatypes inside dataclass', dataTypes.size())
         // Validation should have already been done
-        dataTypes.each {it.skipValidation(true) }
+        dataTypes.each {it.skipValidation(true)}
         dataTypeService.saveAll(dataTypes, false)
     }
 
     Set<DataType> extractAllUsedNewOrDirtyDataTypes(DataClass dataClass) {
-        Set<DataType> dataTypes = dataClass.dataElements.collect {it.dataType }.findAll {it.isDirty() || !it.ident() }.toSet()
-        dataTypes.addAll(dataClass.dataClasses.collect {extractAllUsedNewOrDirtyDataTypes(it) }.flatten().toSet() as Collection<DataType>)
+        Set<DataType> dataTypes = dataClass.dataElements.collect {it.dataType}.findAll {it.isDirty() || !it.ident()}.toSet()
+        dataTypes.addAll(dataClass.dataClasses.collect {extractAllUsedNewOrDirtyDataTypes(it)}.flatten().toSet() as Collection<DataType>)
         dataTypes
     }
 
@@ -221,10 +221,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     DataClass checkFacetsAfterImportingCatalogueItem(DataClass catalogueItem) {
         super.checkFacetsAfterImportingCatalogueItem(catalogueItem)
         if (catalogueItem.summaryMetadata) {
-            catalogueItem.summaryMetadata.each {sm ->
+            catalogueItem.summaryMetadata.each { sm ->
                 sm.multiFacetAwareItemId = catalogueItem.id
                 sm.createdBy = sm.createdBy ?: catalogueItem.createdBy
-                sm.summaryMetadataReports.each {smr ->
+                sm.summaryMetadataReports.each { smr ->
                     smr.createdBy = catalogueItem.createdBy
                 }
             }
@@ -242,14 +242,14 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     Collection<DataElement> saveAllAndGetDataElements(Collection<DataClass> dataClasses) {
 
-        List<Classifier> classifiers = dataClasses.collectMany {it.classifiers ?: [] } as List<Classifier>
+        List<Classifier> classifiers = dataClasses.collectMany {it.classifiers ?: []} as List<Classifier>
         if (classifiers) {
             log.trace('Saving {} classifiers')
             classifierService.saveAll(classifiers)
         }
 
-        Collection<DataClass> alreadySaved = dataClasses.findAll {it.ident() && it.isDirty() }
-        Collection<DataClass> notSaved = dataClasses.findAll {!it.ident() }
+        Collection<DataClass> alreadySaved = dataClasses.findAll {it.ident() && it.isDirty()}
+        Collection<DataClass> notSaved = dataClasses.findAll {!it.ident()}
 
         Collection<DataElement> dataElements = []
 
@@ -264,7 +264,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             int count = 0
 
             // Find all DCs which are either top level or have their parent DC already saved
-            Collection<DataClass> parentIsSaved = notSaved.findAll {!it.parentDataClass || it.parentDataClass.id }
+            Collection<DataClass> parentIsSaved = notSaved.findAll {!it.parentDataClass || it.parentDataClass.id}
             log.trace('Ready to save on first run {}', parentIsSaved.size())
             while (parentIsSaved) {
                 parentIsSaved.each {dc ->
@@ -285,7 +285,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                 batch.clear()
                 // Find all DCs which have a saved parent DC
                 notSaved.removeAll(parentIsSaved)
-                parentIsSaved = notSaved.findAll {it.parentDataClass && it.parentDataClass.id }
+                parentIsSaved = notSaved.findAll {it.parentDataClass && it.parentDataClass.id}
                 log.trace('Ready to save on subsequent run {}', parentIsSaved.size())
             }
         }
@@ -298,28 +298,28 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataClass.breadcrumbTree.removeFromParent()
         dataClass.dataModel.removeFromDataClasses(dataClass)
         dataClass.extendedDataClasses
-        dataClass.dataClasses?.each {removeAssociations(it) }
+        dataClass.dataClasses?.each {removeAssociations(it)}
     }
 
     private void removeSemanticLinks(DataClass dataClass) {
         List<SemanticLink> semanticLinks = semanticLinkService.findAllByMultiFacetAwareItemId(dataClass.id)
-        semanticLinks.each {semanticLinkService.delete(it) }
+        semanticLinks.each {semanticLinkService.delete(it)}
     }
 
     private void removeReferenceTypes(DataClass dataClass) {
         List<ReferenceType> referenceTypes = new ArrayList<>(dataClass.referenceTypes.findAll())
-        referenceTypes.each {dataTypeService.delete(it) }
+        referenceTypes.each {dataTypeService.delete(it)}
     }
 
     private void removeAllDataElementsWithNoLabel(DataClass dataClass) {
-        List<DataElement> dataElements = new ArrayList<>(dataClass.dataElements.findAll {!it.label })
-        dataElements.each {dataElementService.delete(it) }
+        List<DataElement> dataElements = new ArrayList<>(dataClass.dataElements.findAll {!it.label})
+        dataElements.each {dataElementService.delete(it)}
     }
 
     private void removeAllDataElementsWithSameLabel(DataClass dataClass) {
 
         if (dataClass.dataElements) {
-            Map<String, List<DataElement>> identicalDataElements = dataClass.dataElements.groupBy {it.label }.findAll {it.value.size() > 1 }
+            Map<String, List<DataElement>> identicalDataElements = dataClass.dataElements.groupBy {it.label}.findAll {it.value.size() > 1}
             identicalDataElements.each {label, dataElements ->
                 for (int i = 1; i < dataElements.size(); i++) {
                     dataElementService.delete(dataElements[i])
@@ -330,7 +330,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     private void ensureChildDataClassesHaveUniqueNames(DataClass dataClass) {
         if (dataClass.dataClasses) {
-            dataClass.dataClasses.groupBy {it.label }.findAll {it.value.size() > 1 }.each {label, dataClasses ->
+            dataClass.dataClasses.groupBy {it.label}.findAll {it.value.size() > 1}.each {label, dataClasses ->
                 dataClasses.eachWithIndex {DataClass child, int i ->
                     child.label = "${child.label}-$i"
                 }
@@ -341,10 +341,10 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     private void collapseReferenceTypes(DataClass dataClass) {
         if (!dataClass.referenceTypes || dataClass.referenceTypes.size() == 1) return
         DataModel dataModel = dataClass.dataModel
-        Map<String, List<ReferenceType>> labelGroupedReferenceTypes = dataClass.referenceTypes.groupBy {it.label }
+        Map<String, List<ReferenceType>> labelGroupedReferenceTypes = dataClass.referenceTypes.groupBy {it.label}
 
-        labelGroupedReferenceTypes.findAll {it.value.size() > 1 }.each {label, labelReferenceTypes ->
-            Map<String, List<ReferenceType>> dmGrouped = labelReferenceTypes.groupBy {it.dataModel ? 'dataModel' : 'noDataModel' }
+        labelGroupedReferenceTypes.findAll {it.value.size() > 1}.each {label, labelReferenceTypes ->
+            Map<String, List<ReferenceType>> dmGrouped = labelReferenceTypes.groupBy {it.dataModel ? 'dataModel' : 'noDataModel'}
 
             // There will be only 1 datamodel owned type as we've already merged datamodel owned datatypes
             if (dmGrouped.dataModel) {
@@ -394,7 +394,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     DataClass findSameLabelTree(DataModel dataModel, DataClass searchFor) {
-        dataModel.dataClasses.find {hasSameLabelTree(it, searchFor) }
+        dataModel.dataClasses.find {hasSameLabelTree(it, searchFor)}
     }
 
     private boolean hasSameLabelTree(DataClass left, DataClass right) {
@@ -548,11 +548,11 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     DataClass findDataClass(DataModel dataModel, String label) {
-        dataModel.dataClasses.find {!it.parentDataClass && it.label == label.trim() }
+        dataModel.dataClasses.find {!it.parentDataClass && it.label == label.trim()}
     }
 
     DataClass findDataClass(DataClass parentDataClass, String label) {
-        parentDataClass.dataClasses.find {it.label == label.trim() }
+        parentDataClass.dataClasses.find {it.label == label.trim()}
     }
 
     DataClass findDataClassByPath(DataModel dataModel, List<String> pathLabels) {
@@ -692,7 +692,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     private Set<ReferenceType> getAllNestedReferenceTypes(DataClass dataClass) {
         Set<ReferenceType> referenceTypes = []
         referenceTypes.addAll(dataClass.referenceTypes ?: [])
-        referenceTypes.addAll(dataClass.dataElements.dataType.findAll {it.instanceOf(ReferenceType) })
+        referenceTypes.addAll(dataClass.dataElements.dataType.findAll {it.instanceOf(ReferenceType)})
         dataClass.dataClasses.each {
             referenceTypes.addAll(getAllNestedReferenceTypes(it))
         }
@@ -701,7 +701,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
 
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {
-        dataModel.referenceTypes.findAll {!(it as ReferenceType).referenceClass } as Set<ReferenceType>
+        dataModel.referenceTypes.findAll {!(it as ReferenceType).referenceClass} as Set<ReferenceType>
     }
 
 
@@ -740,7 +740,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     @Override
     List<DataClass> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataClass.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
+        DataClass.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
     }
 
     @Override
@@ -781,7 +781,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataClasses.each {de ->
             fromDataClasses.each {fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id }) {
+                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
                     setDataClassIsFromDataClass(de, fde, user)
                 }
             }
