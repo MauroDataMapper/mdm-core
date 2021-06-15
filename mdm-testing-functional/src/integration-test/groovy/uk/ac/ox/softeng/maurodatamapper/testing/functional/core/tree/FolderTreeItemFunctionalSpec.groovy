@@ -316,6 +316,7 @@ class FolderTreeItemFunctionalSpec extends TreeItemFunctionalSpec {
             'createModel',
             'delete',
             'moveToFolder',
+            'moveToVersionedFolder',
             'softDelete'
         ]
     }

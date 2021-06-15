@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
-
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 
@@ -39,6 +39,8 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     private boolean versionable
     // Has the resource had a version set outside of its control, i.e. by the parent
     private boolean versionControlled
+    // Does the resource contain versioned contents
+    private boolean versionedContents
 
     private UUID dependsOnDomainIdAccess
 
@@ -99,6 +101,11 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     VirtualSecurableResourceGroupRole asVersionControlled(boolean versionControlled) {
         this.versionControlled = versionControlled
+        this
+    }
+
+    VirtualSecurableResourceGroupRole withVersionedContents(boolean versionedContents) {
+        this.versionedContents = versionedContents
         this
     }
 
@@ -182,7 +189,11 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     }
 
     boolean isVersionControlled() {
-        versionControlled
+        domainType == VersionedFolder.simpleName || versionControlled
+    }
+
+    boolean hasVersionedContents() {
+        versionedContents
     }
 
     int getOrder() {

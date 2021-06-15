@@ -656,10 +656,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (role.isFinalised()) {
             updatedActions.removeAll([MOVE_TO_VERSIONED_FOLDER, CREATE_FOLDER, CREATE_MODEL, CREATE_MODEL_ITEM, CREATE_VERSIONED_FOLDER])
         }
-        if (role.isVersionControlled() || role.domainType == VersionedFolder.simpleName) {
+        if (role.hasVersionedContents()) {
             // Cannot move anything versioned controlled into a VF, this includes a folder which contains VFs
-            // Cannot create a VF inside a version controlled object
-            updatedActions.removeAll([MOVE_TO_VERSIONED_FOLDER, CREATE_VERSIONED_FOLDER])
+            updatedActions.remove(MOVE_TO_VERSIONED_FOLDER)
+        }
+        if (role.isVersionControlled()) {
+            updatedActions.remove(CREATE_VERSIONED_FOLDER)
         }
         updatedActions
     }

@@ -295,7 +295,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": false,
-        "availableActions": [],
+        "availableActions": ["createModelItem","delete"],
         "modelId": "${json-unit.matches:id}",
         "parentId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
@@ -314,7 +314,7 @@ abstract class TreeItemFunctionalSpec extends FunctionalSpec {
       {
         "domainType": "DataClass",
         "hasChildren": false,
-        "availableActions": [],
+        "availableActions": ["createModelItem","delete"],
         "modelId": "${json-unit.matches:id}",
         "parentId": "${json-unit.matches:id}",
         "id": "${json-unit.matches:id}",
