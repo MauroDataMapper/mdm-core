@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.IndexedSiblingAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.enumeration.EnumerationValue

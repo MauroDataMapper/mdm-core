@@ -15,13 +15,31 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.diff
+package uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional
 
-import grails.compiler.GrailsCompileStatic
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 
-@GrailsCompileStatic
-abstract class Mergeable<T> {
+import groovy.transform.CompileStatic
 
-    Boolean isMergeConflict
-    T commonAncestorValue
+@CompileStatic
+abstract class UniDirectionalDiff<U extends Diffable> extends Diff<U> {
+
+    protected UniDirectionalDiff(Class<U> targetClass) {
+        super(targetClass)
+    }
+
+    String getValueIdentifier() {
+        value.diffIdentifier
+    }
+
+    @Override
+    String toString() {
+        value.toString()
+    }
+
+    @Override
+    Integer getNumberOfDiffs() {
+        1
+    }
 }

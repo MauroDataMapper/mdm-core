@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.referencedata
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
@@ -144,7 +144,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
 
     int countReferenceDataElementsByLabel(String label) {
         this.referenceDataElements?.count { it.label == label } ?: 0
-    }    
+    }
 
     @Override
     String getEditLabel() {

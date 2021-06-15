@@ -20,8 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.test.unit.core
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ArrayDiff
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Edit
@@ -566,12 +566,12 @@ abstract class CatalogueItemSpec<K extends CatalogueItem> extends CreatorAwareSp
         given:
         setValidDomainValues()
         domain.label = 'new\nlabel'
-        
+
 
         when:
         checkAndSave(domain)
 
         then:
-        domain.label == getExpectedNewlineLabel()       
-    }    
+        domain.label == getExpectedNewlineLabel()
+    }
 }

@@ -17,6 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+
 import grails.compiler.GrailsCompileStatic
 
 @GrailsCompileStatic

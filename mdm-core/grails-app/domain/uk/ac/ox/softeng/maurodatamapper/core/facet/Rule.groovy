@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
@@ -130,5 +130,5 @@ class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
 
     static DetachedCriteria<Rule> byName(String name) {
         new DetachedCriteria<Rule>(Rule).eq('name', name)
-    }    
+    }
 }

@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.ReferenceFile

@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
 import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Utils

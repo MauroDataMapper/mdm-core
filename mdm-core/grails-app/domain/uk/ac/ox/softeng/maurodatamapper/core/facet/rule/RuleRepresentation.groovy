@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.EditHistoryAware
 import uk.ac.ox.softeng.maurodatamapper.gorm.constraint.callable.CallableConstraints
@@ -60,7 +60,7 @@ class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAwa
     }
 
     /**
-     * Force language to be trimmed and lower case so that e.g. 'SQL' and ' sql' are treated as the same. 
+     * Force language to be trimmed and lower case so that e.g. 'SQL' and ' sql' are treated as the same.
      */
     void setLanguage(String language) {
         this.language = language?.trim()?.toLowerCase()

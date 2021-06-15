@@ -15,17 +15,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.diff
+package uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional
 
-class FieldDiff<T> extends Diff<T> {
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
+
+class FieldDiff<F> extends BiDirectionalDiff<F> {
 
     String fieldName
 
-    FieldDiff() {
+    FieldDiff(Class<F> targetClass) {
+        super(targetClass)
     }
 
-
-    FieldDiff<T> fieldName(String fieldName) {
+    FieldDiff<F> fieldName(String fieldName) {
         this.fieldName = fieldName
         this
     }
@@ -36,7 +38,7 @@ class FieldDiff<T> extends Diff<T> {
         if (getClass() != o.class) return false
         if (!super.equals(o)) return false
 
-        FieldDiff<T> fieldDiff = (FieldDiff<T>) o
+        FieldDiff<F> fieldDiff = (FieldDiff<F>) o
 
         if (fieldName != fieldDiff.fieldName) return false
 
@@ -49,22 +51,29 @@ class FieldDiff<T> extends Diff<T> {
     }
 
     @Override
-    FieldDiff<T> leftHandSide(T lhs) {
-        super.leftHandSide(lhs) as FieldDiff<T>
+    FieldDiff<F> leftHandSide(F lhs) {
+        super.leftHandSide(lhs) as FieldDiff<F>
     }
 
     @Override
-    FieldDiff<T> rightHandSide(T rhs) {
-        super.rightHandSide(rhs) as FieldDiff<T>
+    FieldDiff<F> rightHandSide(F rhs) {
+        super.rightHandSide(rhs) as FieldDiff<F>
+    }
+
+    @Override
+    FieldDiff<F> commonAncestor(F ca) {
+        super.commonAncestor(ca) as FieldDiff<F>
+    }
+
+    @Override
+    FieldDiff<F> asMergeConflict() {
+        this.mergeConflict = true
+        this
     }
 
     @Override
     String toString() {
         "${fieldName} :: ${left?.toString()} <> ${right?.toString()}"
-    }
-
-    static <K> FieldDiff<K> builder(Class<K> fieldClass) {
-        new FieldDiff<K>()
     }
 
     static boolean isFieldDiff(Diff diff) {

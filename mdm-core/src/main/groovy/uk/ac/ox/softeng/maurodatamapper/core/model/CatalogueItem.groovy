@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTree
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata

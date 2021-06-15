@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.test.provider
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
 import uk.ac.ox.softeng.maurodatamapper.terminology.TerminologyService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.TerminologyExporterProviderService

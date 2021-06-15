@@ -18,8 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.test.unit.core
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.FieldDiff
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 

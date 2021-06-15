@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.InformationAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware

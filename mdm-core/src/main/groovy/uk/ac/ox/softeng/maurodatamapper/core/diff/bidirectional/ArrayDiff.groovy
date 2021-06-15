@@ -15,48 +15,64 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.diff
+package uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional
 
-class ArrayDiff<T extends Diffable> extends FieldDiff<Collection<T>> {
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.CreationDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
 
-    Collection<MergeWrapper<T>> created
-    Collection<MergeWrapper<T>> deleted
-    Collection<ObjectDiff<T>> modified
+class ArrayDiff<C extends Diffable> extends FieldDiff<Collection<C>> {
 
-    private ArrayDiff() {
+    Collection<CreationDiff<C>> created
+    Collection<DeletionDiff<C>> deleted
+    Collection<ObjectDiff<C>> modified
+
+    ArrayDiff(Class<Collection<C>> targetClass) {
+        super(targetClass)
         created = []
         deleted = []
         modified = []
     }
 
-    ArrayDiff<T> created(Collection<T> created) {
-        this.created = created.collect { new MergeWrapper(it) }
+    ArrayDiff<C> created(Collection<C> created) {
+        this.created = created.collect { new CreationDiff(it) }
         this
     }
 
-    ArrayDiff<T> deleted(Collection<T> deleted) {
-        this.deleted = deleted.collect { new MergeWrapper(it) }
+    ArrayDiff<C> deleted(Collection<C> deleted) {
+        this.deleted = deleted.collect { new DeletionDiff(it) }
         this
     }
 
-    ArrayDiff<T> modified(Collection<ObjectDiff<T>> modified) {
+    ArrayDiff<C> modified(Collection<ObjectDiff<C>> modified) {
         this.modified = modified
         this
     }
 
-    @Override
-    ArrayDiff<T> fieldName(String fieldName) {
-        super.fieldName(fieldName) as ArrayDiff<T>
+    ArrayDiff<C> withCreatedDiffs(Collection<CreationDiff<C>> created) {
+        this.created = created
+        this
+    }
+
+    ArrayDiff<C> withDeletedDiffs(Collection<DeletionDiff<C>> deleted) {
+        this.deleted = deleted
+        this
     }
 
     @Override
-    ArrayDiff<T> leftHandSide(Collection<T> lhs) {
-        super.leftHandSide(lhs) as ArrayDiff<T>
+    ArrayDiff<C> fieldName(String fieldName) {
+        super.fieldName(fieldName) as ArrayDiff<C>
     }
 
     @Override
-    ArrayDiff<T> rightHandSide(Collection<T> rhs) {
-        super.rightHandSide(rhs) as ArrayDiff<T>
+    ArrayDiff<C> leftHandSide(Collection<C> lhs) {
+        super.leftHandSide(lhs) as ArrayDiff<C>
+    }
+
+    @Override
+    ArrayDiff<C> rightHandSide(Collection<C> rhs) {
+        super.rightHandSide(rhs) as ArrayDiff<C>
     }
 
     @Override
@@ -78,10 +94,6 @@ class ArrayDiff<T extends Diffable> extends FieldDiff<Collection<T>> {
             stringBuilder.append('\n  Modified ::\n').append(modified)
         }
         stringBuilder.toString()
-    }
-
-    static <K extends Diffable> ArrayDiff<K> builder(Class<K> arrayClass) {
-        new ArrayDiff<K>()
     }
 
     static boolean isArrayDiff(Diff diff) {

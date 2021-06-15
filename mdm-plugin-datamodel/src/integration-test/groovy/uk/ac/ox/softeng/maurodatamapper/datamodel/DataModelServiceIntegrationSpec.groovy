@@ -17,7 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData

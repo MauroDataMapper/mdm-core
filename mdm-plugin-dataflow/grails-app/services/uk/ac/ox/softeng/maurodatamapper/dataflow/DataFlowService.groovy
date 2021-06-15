@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.dataflow
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
 import uk.ac.ox.softeng.maurodatamapper.core.path.PathService
