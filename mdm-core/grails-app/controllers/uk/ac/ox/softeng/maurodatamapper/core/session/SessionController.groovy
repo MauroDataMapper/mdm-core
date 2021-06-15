@@ -28,12 +28,12 @@ class SessionController implements ResourcelessMdmController {
     static responseFormats = ['json', 'xml']
 
     def activeSessions() {
-        HashMap activeSessions = sessionService.getActiveSessionMap(servletContext)
+        HashMap activeSessions = sessionService.getActiveSessionMap()
         respond view: '/session/activeSessions', [httpSessionCollection: activeSessions.values()]
     }
 
     def isAuthenticatedSession() {
-        respond authenticatedSession: sessionService.isAuthenticatedSession(session, params.sessionId ?: session.id)
+        respond authenticatedSession: sessionService.isAuthenticatedSession(params.sessionId ?: session.id)
     }
 
     def isApplicationAdministrationSession() {

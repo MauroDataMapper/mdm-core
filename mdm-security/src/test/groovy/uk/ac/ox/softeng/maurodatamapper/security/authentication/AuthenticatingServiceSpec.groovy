@@ -44,7 +44,8 @@ class AuthenticatingServiceSpec extends BaseUnitSpec implements ServiceUnitTest<
         mockArtefact(TestAuthenticationSchemeService)
 
         SessionService sessionService = applicationContext.getBean(SessionService)
-        sessionService.initialiseToContext(session.servletContext)
+        sessionService.servletContext = servletContext
+        sessionService.initialiseToContext()
         sessionService.storeSession(session)
 
         service.groupBasedSecurityPolicyManagerService = Stub(GroupBasedSecurityPolicyManagerService) {

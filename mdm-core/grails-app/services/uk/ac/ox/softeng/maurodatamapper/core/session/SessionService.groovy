@@ -31,6 +31,8 @@ import javax.servlet.http.HttpSessionListener
 class SessionService implements HttpSessionListener {
     public static final String CONTEXT_PROPERTY_NAME = 'activeSessionMap'
 
+    ServletContext servletContext
+
     HttpSession setUserEmailAddress(HttpSession session, String emailAddress) {
         if (isInvalidatedSession(session)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
         session.setAttribute('emailAddress', emailAddress)
@@ -55,21 +57,17 @@ class SessionService implements HttpSessionListener {
         storeSession(session)
     }
 
-    boolean isAuthenticatedSession(HttpSession session, String sessionId) {
-        if (isInvalidatedSession(session.servletContext, sessionId)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
-        retrieveSession(session.servletContext, sessionId).getAttribute('emailAddress')
+    boolean isAuthenticatedSession(String sessionId) {
+        if (isInvalidatedSession(sessionId)) throw new ApiUnauthorizedException('SSXX', 'Session has been invalidated')
+        retrieveSession(sessionId).getAttribute('emailAddress')
     }
 
     boolean isInvalidatedSession(HttpSession session) {
-        isInvalidatedSession(session.servletContext, session.id)
+        isInvalidatedSession(session.id)
     }
 
-    boolean isInvalidatedSession(ServletContext servletContext, HttpSession session) {
-        isInvalidatedSession(servletContext, session.id)
-    }
-
-    boolean isInvalidatedSession(ServletContext servletContext, String sessionId) {
-        !isSessionStored(servletContext, sessionId)
+    boolean isInvalidatedSession(String sessionId) {
+        !isSessionStored(sessionId)
     }
 
     String getSessionEmailAddress(HttpSession session) {
@@ -78,7 +76,7 @@ class SessionService implements HttpSessionListener {
 
     void destroySession(HttpSession session) {
         session.invalidate()
-        removeSession(session.servletContext, session.id)
+        removeSession(session.id)
     }
 
     /**
@@ -87,11 +85,7 @@ class SessionService implements HttpSessionListener {
      * @param session
      */
     HttpSession storeSession(HttpSession session) {
-        storeSession(session.servletContext, session)
-    }
-
-    HttpSession storeSession(ServletContext servletContext, HttpSession session) {
-        getActiveSessionMap(servletContext).put(session.id, session)
+        getActiveSessionMap()[session.id] = session
     }
 
     /**
@@ -101,19 +95,19 @@ class SessionService implements HttpSessionListener {
      * @return
      */
     HttpSession retrieveSession(HttpSession session) {
-        retrieveSession(session.servletContext, session.id)
+        retrieveSession(session.id)
     }
 
-    HttpSession retrieveSession(ServletContext servletContext, String id) {
-        getActiveSessionMap(servletContext).get(id)
+    HttpSession retrieveSession(String id) {
+        getActiveSessionMap()[id]
     }
 
-    void removeSession(ServletContext servletContext, String id) {
-        getActiveSessionMap(servletContext).remove(id)
+    void removeSession(String id) {
+        getActiveSessionMap().remove(id)
     }
 
-    boolean isSessionStored(ServletContext servletContext, String id) {
-        getActiveSessionMap(servletContext).containsKey(id)
+    boolean isSessionStored(String id) {
+        getActiveSessionMap().containsKey(id)
     }
 
     /**
@@ -121,11 +115,11 @@ class SessionService implements HttpSessionListener {
      * Should be called in bootstrap
      * @param servletContext
      */
-    void initialiseToContext(ServletContext servletContext) {
+    void initialiseToContext() {
         servletContext.setAttribute(CONTEXT_PROPERTY_NAME, new HashMap<String, HttpSession>())
     }
 
-    private static HashMap<String, HttpSession> getActiveSessionMap(ServletContext servletContext) {
+    HashMap<String, HttpSession> getActiveSessionMap() {
         servletContext.getAttribute(CONTEXT_PROPERTY_NAME) as HashMap<String, HttpSession>
     }
 
@@ -138,6 +132,6 @@ class SessionService implements HttpSessionListener {
     @Override
     void sessionDestroyed(HttpSessionEvent event) {
         // This will be called by either our destroySession or by the servlet context auto destroying a session
-        removeSession(event.session.servletContext, event.session.id)
+        removeSession(event.session.id)
     }
 }

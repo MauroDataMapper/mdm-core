@@ -185,7 +185,7 @@ This is basically the backend API.
                 }
             }
 
-            httpSessionServletListener(ServletListenerRegistrationBean) {
+            sessionServiceHttpSessionListener(ServletListenerRegistrationBean) {
                 listener = ref('sessionService')
             }
 

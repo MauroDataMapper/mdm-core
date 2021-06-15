@@ -45,7 +45,7 @@ class UserSecurityPolicyManagerInterceptor implements SecurityPolicyManagerInter
         checkSessionIsValid()
 
         if (!securityPolicyManagerIsSet()) {
-            if (sessionService.isAuthenticatedSession(session, session.id)) {
+            if (sessionService.isAuthenticatedSession(session.id)) {
                 UserSecurityPolicyManager userSecurityPolicyManager =
                     groupBasedSecurityPolicyManagerService.retrieveUserSecurityPolicyManager(sessionService.getSessionEmailAddress(session))
 

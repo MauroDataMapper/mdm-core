@@ -77,7 +77,7 @@ class BootStrap {
 
         log.info('Deployment tmp dir: {}', tmpDir)
 
-        sessionService.initialiseToContext(servletContext)
+        sessionService.initialiseToContext()
         loadApiProperties(tmpDir)
         configureEmailers(grailsApplication.config)
         loadDefaultAuthority()

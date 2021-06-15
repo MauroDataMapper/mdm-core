@@ -86,6 +86,6 @@ class AuthenticatingService {
     }
 
     boolean isAuthenticatedSession(HttpSession httpSession) {
-        sessionService.isAuthenticatedSession(httpSession, httpSession.id)
+        sessionService.isAuthenticatedSession(httpSession.id)
     }
 }
