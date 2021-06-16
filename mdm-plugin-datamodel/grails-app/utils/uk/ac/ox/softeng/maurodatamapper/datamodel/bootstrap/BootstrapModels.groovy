@@ -49,6 +49,7 @@ class BootstrapModels {
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
+    public static final String MODEL_VERSION_TREE_DATAMODEL_V1 = 'Finalised Example Test DataModel - Version 1'
     public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Model Version Tree DataModel'
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
@@ -247,129 +248,78 @@ class BootstrapModels {
       \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
        \_ fork ---- main                                               \_ interestingBranch (v5)
     */
-        log.debug("Creating model version tree")
-        User dev = [emailAddress: DEVELOPMENT] as User
-        UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
-
-        // V1
-        DataModel v1 = new DataModel(createdBy: DEVELOPMENT,
-                                     label: MODEL_VERSION_TREE_DATAMODEL_NAME,
-                                     folder: folder,
-                                     authority: authority)
-        checkAndSave(messageSource, v1)
-        v1 = dataModelService.finaliseModel(v1, dev, Version.from('1'), null, null)
-        checkAndSave(messageSource, v1)
-
-        // Fork and finalise fork
-        DataModel fork = dataModelService.createNewForkModel("$MODEL_VERSION_TREE_DATAMODEL_NAME fork", v1, dev, false, policyManager)
-        checkAndSave(messageSource, fork)
-        fork = dataModelService.finaliseModel(fork, dev, Version.from('1'), null, null)
-        checkAndSave(messageSource, fork)
-
-        // Fork main branch
-        DataModel forkMain = dataModelService.createNewBranchModelVersion('main', fork, dev, false, policyManager)
-        checkAndSave(messageSource, forkMain)
-
-        // V2 main branch
-        DataModel v2 = dataModelService.createNewBranchModelVersion('main', v1, dev, false, policyManager)
-        checkAndSave(messageSource, v2)
-
-        // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
-        DataModel newBranch = dataModelService.createNewBranchModelVersion('newBranch', v1, dev, false, policyManager)
-        checkAndSave(messageSource, newBranch)
-
-        // Finalise the main branch to v2
-        v2 = dataModelService.finaliseModel(v2, dev, Version.from('2'), null, null)
-        checkAndSave(messageSource, v2)
-
-        // V3 main branch
-        DataModel v3 = dataModelService.createNewBranchModelVersion('main', v2, dev, false, policyManager)
-        checkAndSave(messageSource, v3)
-        // Finalise the main branch to v3
-        v3 = dataModelService.finaliseModel(v3, dev, Version.from('3'), null, null)
-        checkAndSave(messageSource, v3)
-
-        // V4 main branch
-        DataModel v4 = dataModelService.createNewBranchModelVersion('main', v3, dev, false, policyManager)
-        checkAndSave(messageSource, v4)
-
-        // testBranch from v3 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
-        DataModel testBranch = dataModelService.createNewBranchModelVersion('testBranch', v3, dev, false, policyManager)
-        checkAndSave(messageSource, testBranch)
-
-        // Finalise main branch to v4
-        v4 = dataModelService.finaliseModel(v4, dev, Version.from('4'), null, null)
-        checkAndSave(messageSource, v4)
-
-        // Fork from v4
-        DataModel anotherFork = dataModelService.createNewForkModel("$MODEL_VERSION_TREE_DATAMODEL_NAME another fork", v4, dev, false, policyManager)
-        checkAndSave(messageSource, anotherFork)
-
-        // V5 and finalise
-        DataModel v5 = dataModelService.createNewBranchModelVersion('main', v4, dev, false, policyManager)
-        checkAndSave(messageSource, v5)
-        v5 = dataModelService.finaliseModel(v5, dev, Version.from('5'), null, null)
-        checkAndSave(messageSource, v5)
-
-        // Main branch
-        DataModel main = dataModelService.createNewBranchModelVersion('main', v5, dev, false, policyManager)
-        checkAndSave(messageSource, main)
-
-        // Another branch
-        DataModel anotherBranch = dataModelService.createNewBranchModelVersion('anotherBranch', v5, dev, false, policyManager)
-        checkAndSave(messageSource, anotherBranch)
-
-        // Interesting branch
-        DataModel interestingBranch = dataModelService.createNewBranchModelVersion('interestingBranch', v5, dev, false, policyManager)
-        checkAndSave(messageSource, interestingBranch)
 
 
-//
-//        /*
-//        Development (finalised) v1
-//        DataModel (finalised)
-//        Stuff above (finalised)
-//
-//        Development (Main) v2
-//        DataModel (draft)
-//        Stuff above (draft)
-//
-//        Development (branch)
-//        Stuff above (draft)
-//        Some new stuff (draft)
-//        Some wip changes?
-//
-//                 DEV (finalised)
-//                     |
-//                     |
-//                 Dev (main)
-//                     |       \
-//            |        \
-//            |         Dev (branch)
-//
-//                     */
-//
-//
-//        log.debug("Creating model version tree")
-//        User dev = [emailAddress: DEVELOPMENT] as User
-//        UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
-//
-//        // V1
-//            DataModel finalisedDevV1 = new DataModel(createdBy: DEVELOPMENT,
-//                                                     label: MODEL_VERSION_TREE_DATAMODEL_NAME,
-//                                                     folder: folder,
-//                                                     authority: authority)
-//        checkAndSave(messageSource, finalisedDevV1)
-//        finalisedDevV1 = dataModelService.finaliseModel(finalisedDevV1, dev, Version.from('1'), null, null)
-//        checkAndSave(messageSource, finalisedDevV1)
-//
-//        // V2 main branch
-//        DataModel v2 = dataModelService.createNewBranchModelVersion('main', finalisedDevV1, dev, false, policyManager)
-//        checkAndSave(messageSource, v2)
-//
-//        // Main branch
-//        DataModel main = dataModelService.createNewBranchModelVersion('inProgressBranch', v2, dev, false, policyManager)
-//        checkAndSave(messageSource, main)
+
+
+        /*
+
+        -Development Folder
+          -Example model v1 (finalised)
+              +Stuff
+          +Example model v2 (draft)
+          +Example model v2 Branch (draft)
+
+                 DEV (finalised)
+                     |
+                     |
+                 Dev (main)
+                     |       \
+            |        \
+            |         Dev (branch)
+
+                     */
+        buildVersionTreeV1Model(messageSource, folder, authority, dataModelService)
+
+    }
+
+
+    static void buildVersionTreeV1Model(MessageSource messageSource, Folder folder, Authority authority, DataModelService) {
+
+        DataModel v1DataModel = DataModel.findByLabel(MODEL_VERSION_TREE_DATAMODEL_V1)
+
+        if (!v1DataModel) {
+            v1DataModel = new DataModel(createdBy: DEVELOPMENT,
+                                        label: MODEL_VERSION_TREE_DATAMODEL_V1,
+                                        folder: folder,
+                                        authority: authority)
+
+
+            checkAndSave(messageSource, v1DataModel)
+
+            PrimitiveType V1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
+                                                               label: 'v1 Finalised Data Type')
+            DataElement V1DataElement1 = new DataElement(createdBy: DEVELOPMENT,
+                                                         label: 'v1 Finalised Data Element',
+                                                         minMultiplicity: 1,
+                                                         maxMultiplicity: 1,
+                                                         dataType: V1PrimitiveType1)
+            DataElement V1DataElement2 = new DataElement(createdBy: DEVELOPMENT,
+                                                         label: 'v1 Another DataElement',
+                                                         minMultiplicity: 1,
+                                                         maxMultiplicity: 1,
+                                                         dataType: V1PrimitiveType1)
+            DataClass V1DataClass = new DataClass(createdBy: DEVELOPMENT,
+                                                  label: 'v1 Finalised Data Class')
+
+            V1DataClass.addToDataElements(V1DataElement1).addToDataElements(V1DataElement2)
+
+            v1DataModel
+                .addToDataClasses(V1DataClass)
+                .addToDataClasses(createdBy: DEVELOPMENT, label: 'V1 Another Data Class')
+                .addToDataTypes(V1PrimitiveType1)
+
+            checkAndSave(messageSource, v1DataModel)
+
+            v1DataModel.finalised = true
+            v1DataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+            v1DataModel.breadcrumbTree.finalised = true
+            v1DataModel.breadcrumbTree.updateTree()
+            v1DataModel.modelVersion = Version.from('1.0.0')
+
+            checkAndSave(messageSource, v1DataModel)
+        }
+
 
     }
 }
