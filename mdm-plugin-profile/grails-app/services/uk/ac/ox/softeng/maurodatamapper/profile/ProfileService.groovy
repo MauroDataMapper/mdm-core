@@ -79,32 +79,26 @@ class ProfileService {
     void storeProfile(ProfileProviderService profileProviderService, MultiFacetAware multiFacetAwareItem, HttpServletRequest request, User user) {
 
         Profile profile = profileProviderService.getNewProfile()
-        List<ProfileSection> profileSections = []
-        request.getJSON().sections.each {it ->
-            ProfileSection profileSection = new ProfileSection(it)
-            profileSection.fields = []
-            it['fields'].each {field ->
-                profileSection.fields.add(new ProfileField(field))
-            }
-            if (profileProviderService.isJsonProfileService()) {
-                ((JsonProfile) profile).sections.add(profileSection)
-
-            } else {
-                profileSections.add(profileSection)
+        if (profileProviderService.isJsonProfileService()) {
+            profile.sections.each {section ->
+                ProfileSection submittedSection = request.getJSON().sections.find {it.sectionName == section.sectionName}
+                if (submittedSection) {
+                    section.fields.each {field ->
+                        ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+                        field.currentValue = submittedField.currentValue ?: ""
+                    }
+                }
             }
         }
-
-        if (!profileProviderService.isJsonProfileService()) {
-            profile.fromSections(profileSections)
+        else if (!profileProviderService.isJsonProfileService()) {
+            profile.fromSections(request.getJSON().sections)
         }
 
         /*final DataBindingSource bindingSource = DataBindingUtils.createDataBindingSource(grailsApplication, profile.getClass(), request)
          bindingSource.propertyNames.each { propertyName ->
              profile.setField(propertyName, bindingSource[propertyName])
          }
-
-          */
-
+      */
         profileProviderService.storeProfileInEntity(multiFacetAwareItem, profile, user)
     }
 
