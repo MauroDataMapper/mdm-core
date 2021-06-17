@@ -22,6 +22,13 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.CreationDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
 
+import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.creationDiff
+import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.deletionDiff
+
+/**
+ * Note the same object cannot exist in more than one of created, deleted, modified.
+ * These collections are mutually exclusive
+ */
 class ArrayDiff<C extends Diffable> extends FieldDiff<Collection<C>> {
 
     Collection<CreationDiff<C>> created
@@ -36,12 +43,12 @@ class ArrayDiff<C extends Diffable> extends FieldDiff<Collection<C>> {
     }
 
     ArrayDiff<C> created(Collection<C> created) {
-        this.created = created.collect { new CreationDiff(it) }
+        this.created = created.collect { creationDiff(it.class as Class<C>).created(it) }
         this
     }
 
     ArrayDiff<C> deleted(Collection<C> deleted) {
-        this.deleted = deleted.collect { new DeletionDiff(it) }
+        this.deleted = deleted.collect { deletionDiff(it.class as Class<C>).deleted(it) }
         this
     }
 
@@ -73,6 +80,11 @@ class ArrayDiff<C extends Diffable> extends FieldDiff<Collection<C>> {
     @Override
     ArrayDiff<C> rightHandSide(Collection<C> rhs) {
         super.rightHandSide(rhs) as ArrayDiff<C>
+    }
+
+    @Override
+    ArrayDiff<C> commonAncestor(Collection<C> ca) {
+        super.commonAncestor(ca) as ArrayDiff<C>
     }
 
     @Override

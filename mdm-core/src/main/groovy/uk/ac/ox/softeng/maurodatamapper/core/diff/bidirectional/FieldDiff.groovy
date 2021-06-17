@@ -67,8 +67,7 @@ class FieldDiff<F> extends BiDirectionalDiff<F> {
 
     @Override
     FieldDiff<F> asMergeConflict() {
-        this.mergeConflict = true
-        this
+       super.asMergeConflict() as FieldDiff<F>
     }
 
     @Override

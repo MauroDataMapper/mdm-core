@@ -72,23 +72,25 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         diffs?.sum { it.getNumberOfDiffs() } as Integer ?: 0
     }
 
-    O getRight() {
-        right
-    }
-
-    O getLeft() {
-        right
-    }
-
+    @Deprecated
     ObjectDiff<O> leftHandSide(String leftId, O lhs) {
         leftHandSide(lhs)
-        this.leftIdentifier = leftId
+    }
+
+    @Deprecated
+    ObjectDiff<O> rightHandSide(String rightId, O rhs) {
+        rightHandSide(rhs)
+    }
+
+    ObjectDiff<O> leftHandSide(O lhs) {
+        super.leftHandSide(lhs)
+        this.leftIdentifier = lhs.diffIdentifier
         this
     }
 
-    ObjectDiff<O> rightHandSide(String rightId, O rhs) {
-        rightHandSide(rhs)
-        this.rightIdentifier = rightId
+    ObjectDiff<O> rightHandSide(O rhs) {
+        super.rightHandSide(rhs)
+        this.rightIdentifier = rhs.diffIdentifier
         this
     }
 
@@ -186,7 +188,6 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         options = 'uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff') Closure closure) {
         diffs.find closure
     }
-
 
     private static void validateFieldNameNotNull(final String fieldName) throws ApiDiffException {
         if (!fieldName) {

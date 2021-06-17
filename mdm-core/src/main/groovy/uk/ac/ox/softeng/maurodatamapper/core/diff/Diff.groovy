@@ -54,6 +54,10 @@ abstract class Diff<T> {
         !getNumberOfDiffs()
     }
 
+    Boolean isMergeConflict() {
+        mergeConflict
+    }
+
     Diff<T> commonAncestor(T ca) {
         this.commonAncestorValue = ca
         this
