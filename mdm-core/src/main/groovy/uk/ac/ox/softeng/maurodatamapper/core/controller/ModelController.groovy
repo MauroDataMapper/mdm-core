@@ -23,7 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.importer.ImporterService
@@ -264,11 +264,13 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     def mergeDiff() {
 
-        T left = queryForResource params[alternateParamsIdKey]
-        if (!left) return notFound(params[alternateParamsIdKey])
+        // Test branch
+        T left = queryForResource params.otherModelId
+        if (!left) return notFound(params.otherModelId)
 
-        T right = queryForResource params.otherModelId
-        if (!right) return notFound(params.otherModelId)
+        // Main branch
+        T right = queryForResource params[alternateParamsIdKey]
+        if (!right) return notFound(params[alternateParamsIdKey])
 
         respond modelService.getMergeDiffForModels(left, right)
     }

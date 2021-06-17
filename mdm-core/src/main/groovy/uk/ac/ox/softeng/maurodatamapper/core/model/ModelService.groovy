@@ -23,7 +23,9 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.MergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -511,14 +513,16 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         findLatestFinalisedModelByLabel(label)?.modelVersion ?: Version.from('0.0.0')
     }
 
-    ObjectDiff<K> getMergeDiffForModels(K leftModel, K rightModel) {
-        K commonAncestor = findCommonAncestorBetweenModels(leftModel, rightModel)
+    MergeDiff<K> getMergeDiffForModels(K sourceModel, K targetModel) {
+        K commonAncestor = findCommonAncestorBetweenModels(sourceModel, targetModel)
 
-        ObjectDiff<K> left = commonAncestor.diff(leftModel)
-        ObjectDiff<K> right = commonAncestor.diff(rightModel)
-        ObjectDiff<K> top = rightModel.diff(leftModel)
+        ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel)
+        ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel)
+        ObjectDiff<K> sourceDiffTarget = sourceModel.diff(targetModel)
 
-        top.mergeDiff(left, right)
+        DiffBuilder
+            .mergeDiff(sourceDiffTarget, commonAncestor)
+            .diff(sourceDiffTarget, caDiffTarget, caDiffSource) as MergeDiff<K>
     }
 
     @Override
