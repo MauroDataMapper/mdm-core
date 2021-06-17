@@ -154,6 +154,18 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         ]
     }
 
+    Map getValidCopyLabel() {
+        [
+            copyLabel: 'Renamed Copy Label'
+        ]
+    }
+
+    Map getInvalidCopyLabel() {
+        [
+            copyLabel: null
+        ]
+    }
+
     @Override
     Map getInvalidJson() {
         [
@@ -352,6 +364,7 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().breadcrumbs[1].id == otherId
     }
 
+    @Rollback
     void 'CC03 : test copying to a datamodel with a data element and datatype'() {
         // There is an error around hibernate search in this scenario
         // The metadata and classifiers of the datatype arent initialised and cause a "could not initialize proxy - no Session" exception
@@ -393,7 +406,6 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().items.any {it.label == 'Functional Test DataElement'}
         responseBody().items.any {it.label == 'Functional Test DataElement 2'}
 
-
         when:
         GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
 
@@ -402,6 +414,90 @@ class DataClassFunctionalSpec extends OrderedResourceFunctionalSpec<DataClass> {
         responseBody().count == 2
         responseBody().items.any {it.label == 'wibble'}
         responseBody().items.any {it.label == 'string'}
+    }
+
+    @Rollback
+    void 'CC04 : Test copying a dataClass with a user assigned label, aka: a save as function'() {
+
+        given:
+        POST('', validJson)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+        verifyResponse CREATED, response
+
+        when: 'trying to copy and rename valid'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", getValidCopyLabel(), MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        responseBody().id != id
+        responseBody().label == 'Renamed Copy Label'
+
+        when: 'trying to copy and rename with null label'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", getInvalidCopyLabel(), MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        responseBody().id != id
+        responseBody().label == validJson.label
+
+
+        when: 'trying to copy and rename non-existent object'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/${UUID.randomUUID()}", getValidCopyLabel(), MAP_ARG, true)
+
+        then:
+        response.status() == NOT_FOUND
+
+    }
+
+    @Rollback
+    void 'CC05 : Test copying a dataModel with a data element and datatype renaming the dataClass'() {
+
+        given:
+        POST('', validJson)
+        verifyResponse CREATED, response
+        String id = responseBody().id
+        //create element
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement 3',
+            dataType: dataTypeId
+        ])
+        verifyResponse CREATED, response
+        //create element 2
+        POST("$id/dataElements", [
+            label   : 'Functional Test DataElement 4',
+            dataType: [label: 'wobble', domainType: 'PrimitiveType']
+        ])
+        verifyResponse CREATED, response
+
+        when: 'trying to copy valid'
+        POST("${getResourcePath(otherDataModelId)}/$dataModelId/$id", getValidCopyLabel(), MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        responseBody().id != id
+        responseBody().label == 'Renamed Copy Label'
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
+        String copyId = responseBody().id
+
+        when:
+        GET("${getResourcePath(otherDataModelId)}/$copyId/dataElements", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().items.any {it.label == 'Functional Test DataElement 3' }
+        responseBody().items.any {it.label == 'Functional Test DataElement 4' }
+
+        when:
+        GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().items.any {it.label == 'wobble' }
+        responseBody().items.any {it.label == 'string' }
     }
 
     @Rollback

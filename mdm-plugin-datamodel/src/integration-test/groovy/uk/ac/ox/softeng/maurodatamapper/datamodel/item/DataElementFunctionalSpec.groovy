@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.test.functional.OrderedResourceFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
+import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.testing.spock.OnceBefore
@@ -163,7 +164,7 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
             sleep(20)
             GET(getResourcePath(otherDataModelId, otherDataClassId), MAP_ARG, true)
             def items = response.body().items
-            items.each {i ->
+            items.each { i ->
                 DELETE("${getResourcePath(otherDataModelId, otherDataClassId)}/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
                 sleep(20)
@@ -194,22 +195,22 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
     @Override
     Map getValidLabelJson(String label, int index = -1) {
         if (index == -1) {
-        [
-            label          : label,
-            maxMultiplicity: 2,
-            minMultiplicity: 0,
-            dataType       : dataTypeId.toString()
-        ]
+            [
+                label          : label,
+                maxMultiplicity: 2,
+                minMultiplicity: 0,
+                dataType       : dataTypeId.toString()
+            ]
         } else {
-        [
-            label          : label,
-            maxMultiplicity: 2,
-            minMultiplicity: 0,
-            dataType       : dataTypeId.toString(),
-            index: index
-        ]
+            [
+                label          : label,
+                maxMultiplicity: 2,
+                minMultiplicity: 0,
+                dataType       : dataTypeId.toString(),
+                index          : index
+            ]
         }
-    }    
+    }
 
     @Override
     Map getInvalidJson() {
@@ -590,6 +591,94 @@ class DataElementFunctionalSpec extends OrderedResourceFunctionalSpec<DataElemen
         response.body().dataType.id != differentDataTypeId.toString()
         response.body().dataType.id != dtId
         response.body().dataType.label == 'Reference Test DataType To Copy'
+    }
+
+    @Rollback
+    void 'CC04 Test Copy data element, relabeling new element'() {
+        given:
+        POST('', validJson)
+        String id = response.body().id
+
+        expect:
+        response.status() == CREATED
+        id
+
+        when: 'trying to copy non-existent'
+        POST("${getResourcePath(otherDataModelId, otherDataClassId)}/$dataModelId/$dataClassId/${UUID.randomUUID()}",
+             [copyLabel: 'newCopyLabel'], MAP_ARG, true)
+
+        then:
+        response.status() == NOT_FOUND
+
+        when: 'trying to copy valid'
+        POST("${getResourcePath(otherDataModelId, otherDataClassId)}/$dataModelId/$dataClassId/$id",
+             [copyLabel: 'newCopyLabel'], MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        response.body().id != id
+        response.body().label == 'newCopyLabel'
+    }
+
+    @Rollback
+    void 'CC05 Testing copying DataClass to unknown datatype, relabeling in the process'() {
+        given:
+        POST('', [
+            label          : 'Functional Test DataElement for relabeling',
+            maxMultiplicity: 1,
+            minMultiplicity: 1,
+            dataType       : differentDataTypeId.toString()
+        ])
+        String id = response.body().id
+
+        expect:
+        response.status() == CREATED
+        id
+
+        when: 'trying to copy valid'
+        POST("${getResourcePath(otherDataModelId, otherDataClassId)}/$dataModelId/$dataClassId/$id",
+             [copyLabel: 'newCopyLabel'], MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        response.body().id != id
+        response.body().label == 'newCopyLabel'
+
+    }
+
+    @Rollback
+    void 'CC06 test copying reference type DataElement, relabeling the copy'() {
+        given:
+        POST('',
+             [
+                 label          : 'Functional Test Reference Type DataElement To Copy',
+                 maxMultiplicity: 2,
+                 minMultiplicity: 1,
+                 dataType       : [
+                     label         : 'Copy DataType',
+                     domainType    : DataType.REFERENCE_DOMAIN_TYPE,
+                     referenceClass: secondDataClassId.toString()
+                 ]
+             ])
+        verifyResponse CREATED, response
+        String id = response.body().id
+        String dtId = response.body().dataType.id
+
+        expect:
+        response.status() == CREATED
+        id
+        dtId
+
+        when: 'trying to copy valid'
+        POST("${getResourcePath(otherDataModelId, otherDataClassId)}/$dataModelId/$dataClassId/$id",
+             [copyLabel: 'newCopyLabel'], MAP_ARG, true)
+
+        then:
+        response.status() == CREATED
+        response.body().id != id
+        response.body().label == 'newCopyLabel'
+        response.body().dataType.label == 'Copy DataType'
+
     }
 
     void 'IMI01 : test creating using imported datatype'() {

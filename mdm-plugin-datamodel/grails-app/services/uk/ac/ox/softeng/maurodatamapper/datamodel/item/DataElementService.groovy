@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.similarity.SimilarityResult
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
@@ -333,11 +334,11 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     }
 
     DataElement copyDataElement(DataModel copiedDataModel, DataElement original, User copier,
-                                UserSecurityPolicyManager userSecurityPolicyManager) {
+                                UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = new CopyInformation()) {
         DataElement copy = new DataElement(minMultiplicity: original.minMultiplicity,
                                            maxMultiplicity: original.maxMultiplicity)
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         DataType dataType = copiedDataModel.findDataTypeByLabel(original.dataType.label)
@@ -357,8 +358,8 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
                                              DataElement copy,
                                              User copier,
                                              UserSecurityPolicyManager userSecurityPolicyManager,
-                                             boolean copySummaryMetadata) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+                                             boolean copySummaryMetadata,CopyInformation copyInformation) {
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
@@ -371,8 +372,8 @@ class DataElementService extends ModelItemService<DataElement> implements Summar
     DataElement copyCatalogueItemInformation(DataElement original,
                                              DataElement copy,
                                              User copier,
-                                             UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
+                                             UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     DataElementSimilarityResult findAllSimilarDataElementsInDataModel(DataModel dataModelToSearch, DataElement dataElementToCompare, maxResults = 5) {

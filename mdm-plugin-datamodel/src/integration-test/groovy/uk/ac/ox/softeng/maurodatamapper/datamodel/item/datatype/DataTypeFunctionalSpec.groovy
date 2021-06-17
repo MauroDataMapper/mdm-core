@@ -113,7 +113,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
             sleep(20)
             GET("dataModels/$otherDataModelId/dataTypes", MAP_ARG, true)
             def items = responseBody().items
-            items.each {i ->
+            items.each { i ->
                 DELETE("dataModels/$otherDataModelId/dataTypes/$i.id", MAP_ARG, true)
                 assert response.status() == HttpStatus.NO_CONTENT
                 sleep(20)
@@ -135,6 +135,13 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         ]
     }
 
+
+    Map getValidCopyEditJson() {
+        [
+            domainType: 'PrimitiveType',
+            label     : 'CopyData'
+        ]
+    }
 
     @Override
     Map getValidLabelJson(String label, int index = -1) {
@@ -311,7 +318,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
     }'''
     }
 
-    void 'test copying primitive type from datamodel to other datamodel'() {
+    void 'CC01 : test copying primitive type from datamodel to other datamodel'() {
         given:
         POST('', validJson)
         verifyResponse CREATED, response
@@ -342,7 +349,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         cleanUpData(id)
     }
 
-    void 'test copying enumeration type from datamodel to other datamodel'() {
+    void 'CC02 : test copying enumeration type from datamodel to other datamodel'() {
         given:
         POST('', [
             domainType       : 'EnumerationType',
@@ -374,7 +381,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         cleanUpData(id)
     }
 
-    void 'test copying reference type from datamodel to other datamodel'() {
+    void 'CC03 : test copying reference type from datamodel to other datamodel'() {
         given:
         POST('', [
             domainType    : 'ReferenceType',
@@ -397,7 +404,7 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         cleanUpData(id)
     }
 
-    void 'test copying modeldata type from datamodel to other datamodel'() {
+    void 'CC04 : test copying modeldata type from datamodel to other datamodel'() {
         given:
         String modelId = UUID.randomUUID().toString()
         POST('', [
@@ -425,6 +432,145 @@ class DataTypeFunctionalSpec extends OrderedResourceFunctionalSpec<DataType> {
         verifyResponse(CREATED, response)
         responseBody().id != id
         responseBody().label == 'functional modeldata'
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
+        responseBody().modelResourceId == modelId
+        responseBody().modelResourceDomainType == 'Terminology'
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'CC05 : test copying modeldata type from datamodel to other datamodel, altering the label property'() {
+        given:
+        POST('', getValidCopyEditJson())
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        expect:
+        id
+
+        when: 'trying to copy non-existent'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/${UUID.randomUUID()}",
+             [copyLabel: 'DataType Label to change to'], MAP_ARG, true)
+
+        then:
+        response.status == NOT_FOUND
+
+        when: 'trying to copy invalid'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/${UUID.randomUUID()}",
+             [copyLabel: null], MAP_ARG, true)
+
+        then:
+        response.status == NOT_FOUND
+
+        when: 'trying to copy valid, changing label'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/$id",
+             [copyLabel: 'DataType Label to change to'], MAP_ARG, true)
+
+        then:
+        verifyResponse(CREATED, response)
+        responseBody().id != id
+        responseBody().label == 'DataType Label to change to'
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'CC06 : test copying enumeration type from datamodel to other datamodel, changing the label in the copy'() {
+        given:
+        POST('', [
+            domainType       : 'EnumerationType',
+            label            : 'Copy Test Enumeration',
+            enumerationValues: [
+                [key: 'a', value: 'Cat'],
+                [key: 'b', value: 'Dog']
+            ]
+        ])
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        expect:
+        id
+
+        when: 'trying to copy valid, changing label'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/$id",
+             [copyLabel: 'DataType Label to change to'], MAP_ARG, true)
+
+        then:
+        verifyResponse(CREATED, response)
+        responseBody().id != id
+        responseBody().label == 'DataType Label to change to'
+        responseBody().availableActions == ['delete', 'show', 'update']
+        responseBody().model == otherDataModelId.toString()
+        responseBody().breadcrumbs.size() == 1
+        responseBody().breadcrumbs[0].id == otherDataModelId.toString()
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+    void 'CC07 : test copying reference type from datamodel to other datamodel, changing the label property'() {
+        given:
+        POST('', [
+            domainType    : 'ReferenceType',
+            label         : 'functional dataclass reference base label',
+            referenceClass: dataClassId
+        ])
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        expect:
+        id
+
+        when: 'trying to copy valid, changing label'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/$id",
+             [copyLabel: 'test changing label'], MAP_ARG, true)
+
+        then:
+        verifyResponse(BAD_REQUEST, response)
+
+        cleanup:
+        cleanUpData(id)
+    }
+
+
+    void 'CC08 : test copying modeldata type from datamodel to other datamodel, editing the label property'() {
+        given:
+        String modelId = UUID.randomUUID().toString()
+        POST('', [
+            domainType             : 'ModelDataType',
+            label                  : 'functional modeldata pre change',
+            modelResourceId        : modelId,
+            modelResourceDomainType: 'Terminology'
+        ])
+        verifyResponse CREATED, response
+        String id = responseBody().id
+
+        expect:
+        id
+
+        when: 'trying to copy non-existent'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/${UUID.randomUUID()}",
+             [copyLabel: 'post copy label'], MAP_ARG, true)
+
+        then:
+        response.status == NOT_FOUND
+
+        when: 'trying to copy valid'
+        POST("dataModels/$otherDataModelId/dataTypes/$dataModelId/$id",
+             [copyLabel: 'post copy label'], MAP_ARG, true)
+
+        then:
+        verifyResponse(CREATED, response)
+        responseBody().id != id
+        responseBody().label == 'post copy label'
         responseBody().availableActions == ['delete', 'show', 'update']
         responseBody().model == otherDataModelId.toString()
         responseBody().breadcrumbs.size() == 1

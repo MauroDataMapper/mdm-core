@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -352,7 +353,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                          boolean copySummaryMetadata = false) {
+                          boolean copySummaryMetadata = false, CopyInformation copyInformation = new CopyInformation()) {
 
         DataType copy
 
@@ -378,7 +379,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
         }
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataTypes(copy)
@@ -390,8 +391,9 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                                           DataType copy,
                                           User copier,
                                           UserSecurityPolicyManager userSecurityPolicyManager,
-                                          boolean copySummaryMetadata) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+                                          boolean copySummaryMetadata,
+                                         copyInformation = new CopyInformation()) {
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
