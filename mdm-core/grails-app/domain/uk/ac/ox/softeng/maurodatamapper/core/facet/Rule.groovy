@@ -36,6 +36,7 @@ class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
 
     String name
     String description
+    Set ruleRepresentations
 
     static hasMany = [
         ruleRepresentations: RuleRepresentation
@@ -92,11 +93,12 @@ class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
             .rightHandSide(obj.id.toString(), obj)
             .appendString('name', this.name, obj.name)
             .appendString('description', this.description, obj.description)
+            .appendList(RuleRepresentation, 'ruleRepresentations', this.ruleRepresentations, obj.ruleRepresentations)
     }
 
     @Override
     String getDiffIdentifier() {
-        "${this.name}.${this.description}"
+        "${this.name}"
     }
 
     static DetachedCriteria<Rule> by() {

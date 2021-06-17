@@ -87,12 +87,11 @@ class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAwa
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)
             .appendString('language', this.language, obj.language)
-            .appendString('representation', this.representation, obj.representation)
     }
 
     @Override
     String getDiffIdentifier() {
-        "${this.language}.${this.representation}"
+        "${this.language}"
     }
 
     static DetachedCriteria<RuleRepresentation> by() {
