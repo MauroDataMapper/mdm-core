@@ -17,7 +17,13 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
@@ -51,6 +57,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
     DataModel simpleDataModel
     DataModelService dataModelService
     DataClassService dataClassService
+    MetadataService metadataService
 
     @Override
     void setupDomainData() {
@@ -284,17 +291,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
+        newDocVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -351,17 +358,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newDocVersion.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newDocVersion.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF}
+        newDocVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_DOCUMENTATION_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newDocVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newDocVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -459,14 +466,14 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -522,17 +529,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
 
         and: 'link between old and new version'
-        newVersion.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF}
+        newVersion.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_FORK_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newVersion.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newVersion.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -629,17 +636,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newBranch.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newBranch.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+        newBranch.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newBranch.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        def missing = dataModel.dataClasses.findAll {odc ->
+        def missing = dataModel.dataClasses.findAll { odc ->
             !newBranch.dataClasses.find {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -700,17 +707,17 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         newBranch.edits.size() == 1
 
         and: 'new version of link between old and new version'
-        newBranch.versionLinks.any {it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF}
+        newBranch.versionLinks.any { it.targetModelId == dataModel.id && it.linkType == VersionLinkType.NEW_MODEL_VERSION_OF }
 
         and:
-        dataModel.dataTypes.every {odt ->
+        dataModel.dataTypes.every { odt ->
             newBranch.dataTypes.any {
                 it.label == odt.label &&
                 it.id != odt.id &&
                 it.domainType == odt.domainType
             }
         }
-        dataModel.dataClasses.every {odc ->
+        dataModel.dataClasses.every { odc ->
             newBranch.dataClasses.any {
                 int idcs = it.dataClasses?.size() ?: 0
                 int odcs = odc.dataClasses?.size() ?: 0
@@ -929,8 +936,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         then:
         availableBranches.size() == 2
-        availableBranches.each {it.id in [draftModel.id, testModel.id]}
-        availableBranches.each {it.label == dataModel.label}
+        availableBranches.each { it.id in [draftModel.id, testModel.id] }
+        availableBranches.each { it.label == dataModel.label }
     }
 
 
@@ -940,20 +947,22 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         when:
         DataModel dataModel = dataModelService.get(id)
-        dataModel.addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteLeftOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteRightOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyLeftOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyRightOnly'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteAndDelete'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteAndModify'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndDelete'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndModifyReturningNoDifference'))
-            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyAndModifyReturningDifference'))
+        dataModel.author = 'john'
+        dataModel.addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteSourceOnly'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteTargetOnly'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifySourceOnly'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyTargetOnly'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteBoth'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteSourceAndModifyTarget'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifySourceAndDeleteTarget'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyBothReturningNoDifference'))
+            .addToDataClasses(new DataClass(createdByUser: admin, label: 'modifyBothReturningDifference'))
         dataModel.addToDataClasses(
             new DataClass(createdByUser: admin, label: 'existingClass')
-                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteLeftOnlyFromExistingClass'))
-                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteRightOnlyFromExistingClass'))
-        )
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteSourceOnlyFromExistingClass'))
+                .addToDataClasses(new DataClass(createdByUser: admin, label: 'deleteTargetOnlyFromExistingClass'))
+        ).addToMetadata(namespace: 'test', key: 'deleteSourceOnly', value: 'deleteSourceOnly')
+            .addToMetadata(namespace: 'test', key: 'modifySourceOnly', value: 'modifySourceOnly')
         dataModelService.finaliseModel(dataModel, admin, null, null, null)
         checkAndSave(dataModel)
 
@@ -961,130 +970,194 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        UUID draftId = createAndSaveNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
+        UUID rightMainId = createAndSaveNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, dataModel)
 
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'deleteRightOnlyFromExistingClass'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'deleteRightOnly'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'deleteAndDelete'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(draftId, 'modifyAndDelete'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteTargetOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteTargetOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteBoth'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifySourceAndDeleteTarget'))
 
-        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'modifyRightOnly').tap {
+        checkAndSave dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyTargetOnly').tap {
             description = 'Description'
         }
-        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'deleteAndModify').tap {
+        checkAndSave dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteSourceAndModifyTarget').tap {
             description = 'Description'
         }
-        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'modifyAndModifyReturningNoDifference').tap {
+        checkAndSave dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyBothReturningNoDifference').tap {
             description = 'Description'
         }
-        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'modifyAndModifyReturningDifference').tap {
-            description = 'DescriptionRight'
+        checkAndSave dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyBothReturningDifference').tap {
+            description = 'DescriptionTarget'
         }
 
-        checkAndSave dataClassService.findByDataModelIdAndLabel(draftId, 'existingClass')
-                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'addRightToExistingClass'))
+        checkAndSave dataClassService.findByDataModelIdAndLabel(rightMainId, 'existingClass')
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'addTargetToExistingClass'))
 
-        DataModel draftModel = dataModelService.get(draftId)
+        DataModel draftModel = dataModelService.get(rightMainId)
+        draftModel.author = 'dick'
+        checkAndSave new DataClass(createdByUser: admin, label: 'targetParentDataClass', dataModel: draftModel)
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'targetChildDataClass', dataModel: draftModel))
+        checkAndSave new DataClass(createdByUser: admin, label: 'addTargetOnly', dataModel: draftModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addBothReturningNoDifference', dataModel: draftModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addBothReturningDifference', description: 'target', dataModel: draftModel)
 
-        checkAndSave new DataClass(createdByUser: admin, label: 'rightParentDataClass', dataModel: draftModel)
-                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'rightChildDataClass', dataModel: draftModel))
-        checkAndSave new DataClass(createdByUser: admin, label: 'addRightOnly', dataModel: draftModel)
-        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference', dataModel: draftModel)
-        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'right', dataModel: draftModel)
-
-        checkAndSave dataModelService.get(draftId).tap {
-            description = 'DescriptionRight'
+        checkAndSave dataModelService.get(rightMainId).tap {
+            description = 'DescriptionTarget'
         }
 
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
 
-        UUID testId = createAndSaveNewBranchModel('test', dataModel)
+        UUID leftTestId = createAndSaveNewBranchModel('test', dataModel)
 
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteLeftOnlyFromExistingClass'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteLeftOnly'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteAndDelete'))
-        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(testId, 'deleteAndModify'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteBoth'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceAndModifyTarget'))
+        metadataService.delete(metadataService.findAllByMultiFacetAwareItemId(leftTestId).find { it.key == 'deleteSourceOnly' })
 
-        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyLeftOnly').tap {
+        checkAndSave dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifySourceOnly').tap {
             description = 'Description'
         }
-        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyAndDelete').tap {
+        checkAndSave dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifySourceAndDeleteTarget').tap {
             description = 'Description'
         }
-        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyAndModifyReturningNoDifference').tap {
+        checkAndSave dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifyBothReturningNoDifference').tap {
             description = 'Description'
         }
-        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'modifyAndModifyReturningDifference').tap {
-            description = 'DescriptionLeft'
+        checkAndSave dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifyBothReturningDifference').tap {
+            description = 'DescriptionSource'
         }
 
-        checkAndSave dataClassService.findByDataModelIdAndLabel(testId, 'existingClass')
-                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'addLeftToExistingClass'))
+        checkAndSave dataClassService.findByDataModelIdAndLabel(leftTestId, 'existingClass')
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'addSourceToExistingClass'))
 
-        DataModel testModel = dataModelService.get(testId)
+        DataModel testModel = dataModelService.get(leftTestId)
+        testModel.organisation = 'under test'
+        testModel.author = 'harry'
+        checkAndSave new DataClass(createdByUser: admin, label: 'targetParentDataClass', dataModel: testModel)
+                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'targetChildDataClass', dataModel: testModel))
 
-        checkAndSave new DataClass(createdByUser: admin, label: 'leftParentDataClass', dataModel: testModel)
-                         .addToDataClasses(new DataClass(createdByUser: admin, label: 'leftChildDataClass', dataModel: testModel))
+        checkAndSave new DataClass(createdByUser: admin, label: 'addSourceOnly', dataModel: testModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addBothReturningNoDifference', dataModel: testModel)
+        checkAndSave new DataClass(createdByUser: admin, label: 'addBothReturningDifference', description: 'source', dataModel: testModel)
+        checkAndSave new PrimitiveType(createdBy: StandardEmailAddress.ADMIN, label: 'addSourceOnlyOnlyChangeInArray', dataModel: testModel)
 
-        checkAndSave new DataClass(createdByUser: admin, label: 'addLeftOnly', dataModel: testModel)
-        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningNoDifference', dataModel: testModel)
-        checkAndSave new DataClass(createdByUser: admin, label: 'addAndAddReturningDifference', description: 'left', dataModel: testModel)
+
+        checkAndSave metadataService.findAllByMultiFacetAwareItemId(leftTestId).find { it.key == 'modifySourceOnly' }.tap {
+            value = 'altered'
+        }
+
 
         sessionFactory.currentSession.flush()
         sessionFactory.currentSession.clear()
 
-        DataModel draft = dataModelService.get(draftId)
-        DataModel test = dataModelService.get(testId)
+        DataModel rightMain = dataModelService.get(rightMainId)
+        DataModel leftTest = dataModelService.get(leftTestId)
 
-        def mergeDiff = dataModelService.getMergeDiffForModels(test, draft)
+        MergeDiff mergeDiff = dataModelService.getMergeDiffForModels(leftTest, rightMain)
 
         then:
-        mergeDiff.class == ObjectDiff
         mergeDiff.diffs
-        mergeDiff.numberOfDiffs == 11
-        mergeDiff.diffs.fieldName as Set == ['branchName', 'dataClasses'] as Set
-        def branchNameDiff = mergeDiff.diffs.find {it.fieldName == 'branchName'}
-        branchNameDiff.left == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-        branchNameDiff.right == 'test'
-        !branchNameDiff.isMergeConflict
-        def dataClassesDiff = mergeDiff.diffs.find {it.fieldName == 'dataClasses'}
-        dataClassesDiff.created.size == 3
-        dataClassesDiff.deleted.size == 2
-        dataClassesDiff.modified.size == 4
-        dataClassesDiff.created.value.label as Set == ['addLeftOnly', 'leftParentDataClass', 'modifyAndDelete'] as Set
-        !dataClassesDiff.created.find {it.value.label == 'addLeftOnly'}.isMergeConflict
-        !dataClassesDiff.created.find {it.value.label == 'addLeftOnly'}.commonAncestorValue
-        !dataClassesDiff.created.find {it.value.label == 'leftParentDataClass'}.isMergeConflict
-        !dataClassesDiff.created.find {it.value.label == 'leftParentDataClass'}.commonAncestorValue
-        dataClassesDiff.created.find {it.value.label == 'modifyAndDelete'}.isMergeConflict
-        dataClassesDiff.created.find {it.value.label == 'modifyAndDelete'}.commonAncestorValue
-        dataClassesDiff.deleted.value.label as Set == ['deleteAndModify', 'deleteLeftOnly'] as Set
-        dataClassesDiff.deleted.find {it.value.label == 'deleteAndModify'}.isMergeConflict
-        dataClassesDiff.deleted.find {it.value.label == 'deleteAndModify'}.commonAncestorValue
-        !dataClassesDiff.deleted.find {it.value.label == 'deleteLeftOnly'}.isMergeConflict
-        !dataClassesDiff.deleted.find {it.value.label == 'deleteLeftOnly'}.commonAncestorValue
-        dataClassesDiff.modified.left.diffIdentifier as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
+        //        mergeDiff.numberOfDiffs == 11
+
+        when: 'branch name is a non-conflicting diff'
+        FieldDiff<String> stringFieldDiff = mergeDiff.find { it.fieldName == 'branchName' }
+
+        then:
+        stringFieldDiff.left == 'test'
+        stringFieldDiff.right == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        stringFieldDiff.commonAncestorValue == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        !stringFieldDiff.isMergeConflict()
+
+        when: 'organisation is a non-conflicting change'
+        stringFieldDiff = mergeDiff.find { it.fieldName == 'organisation' }
+
+        then:
+        stringFieldDiff.left == 'under test'
+        stringFieldDiff.right == null
+        stringFieldDiff.commonAncestorValue == null
+        !stringFieldDiff.isMergeConflict()
+
+        when: 'author is a conflicting change'
+        stringFieldDiff = mergeDiff.find { it.fieldName == 'author' }
+
+        then:
+        stringFieldDiff.left == 'harry'
+        stringFieldDiff.right == 'dick'
+        stringFieldDiff.commonAncestorValue == 'john'
+        stringFieldDiff.isMergeConflict()
+
+        when: 'single array change in datatypes'
+        ArrayDiff<DataType> dataTypeDiff = mergeDiff.find { it.fieldName == 'dataTypes' } as ArrayDiff<DataType>
+
+        then:
+        dataTypeDiff.deleted.isEmpty()
+        dataTypeDiff.modified.isEmpty()
+        dataTypeDiff.created.size() == 1
+        dataTypeDiff.created.first().valueIdentifier == 'addSourceOnlyOnlyChangeInArray'
+        !dataTypeDiff.created.first().isMergeConflict()
+        !dataTypeDiff.created.first().commonAncestorValue
+
+        when: 'metadata has array diffs'
+        ArrayDiff<Metadata> metadataDiff = mergeDiff.find { it.fieldName == 'metadata' } as ArrayDiff<Metadata>
+
+        then:
+        metadataDiff.left.size() == 1
+        metadataDiff.right.size() == 2
+        metadataDiff.commonAncestorValue.size() == 2
+        metadataDiff.created.isEmpty()
+        metadataDiff.deleted.size() == 1
+        metadataDiff.deleted.first().valueIdentifier == 'test.deleteSourceOnly'
+        metadataDiff.modified.size() == 1
+        metadataDiff.modified.first().leftIdentifier == 'test.modifySourceOnly'
+        metadataDiff.modified.first().diffs.size() == 1
+        metadataDiff.modified.first().diffs.first().fieldName == 'value'
+        metadataDiff.modified.first().diffs.first().left == 'altered'
+        metadataDiff.modified.first().diffs.first().right == 'modifySourceOnly'
+        metadataDiff.modified.first().diffs.first().commonAncestorValue == 'modifySourceOnly'
+        !metadataDiff.modified.first().diffs.first().isMergeConflict()
+
+
+        and: 'array diffs on the dataclass list'
+        ArrayDiff<DataClass> dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' } as ArrayDiff<DataClass>
+        dataClassesDiff.created.size() == 3
+        dataClassesDiff.deleted.size() == 2
+        //        dataClassesDiff.modified.size() == 4
+
+        dataClassesDiff.created.value.label as Set == ['addSourceOnly', 'leftParentDataClass', 'modifyAndDelete'] as Set
+        !dataClassesDiff.created.find { it.value.label == 'addSourceOnly' }.isMergeConflict()
+        !dataClassesDiff.created.find { it.value.label == 'addSourceOnly' }.commonAncestorValue
+        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.isMergeConflict()
+        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.commonAncestorValue
+        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.isMergeConflict()
+        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestorValue
+        dataClassesDiff.deleted.value.label as Set == ['deleteAndModify', 'deleteSourceOnly'] as Set
+        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.isMergeConflict()
+        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.commonAncestorValue
+        !dataClassesDiff.deleted.find { it.value.label == 'deleteSourceOnly' }.isMergeConflict()
+        !dataClassesDiff.deleted.find { it.value.label == 'deleteSourceOnly' }.commonAncestorValue
+        dataClassesDiff.modified.left.diffIdentifier as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifySourceOnly',
                                                                 'addAndAddReturningDifference'] as Set
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.diffs[0].fieldName == 'description'
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.isMergeConflict
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.commonAncestorValue
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].fieldName == 'dataClasses'
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.isMergeConflict
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.commonAncestorValue
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].value.label == 'addLeftToExistingClass'
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].value.label ==
-        'deleteLeftOnlyFromExistingClass'
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].isMergeConflict
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].commonAncestorValue
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].isMergeConflict
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].commonAncestorValue
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].fieldName == 'description'
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].isMergeConflict
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].commonAncestorValue
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].fieldName == 'description'
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].isMergeConflict
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.isMergeConflict()
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].fieldName == 'dataClasses'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.isMergeConflict()
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].value.label == 'addSourceToExistingClass'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].value.label ==
+        'deleteSourceOnlyFromExistingClass'
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].isMergeConflict()
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].commonAncestorValue
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].isMergeConflict()
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].isMergeConflict()
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifySourceOnly' }.diffs[0].fieldName == 'description'
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifySourceOnly' }.diffs[0].isMergeConflict()
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifySourceOnly' }.diffs[0].commonAncestorValue
     }
 
     void 'DMSM02 : test merging diff into draft model'() {
@@ -1181,47 +1254,47 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergeDiff.diffs
         mergeDiff.numberOfDiffs == 12
         mergeDiff.diffs.fieldName as Set == ['branchName', 'dataClasses', 'description'] as Set
-        def branchNameDiff = mergeDiff.diffs.find {it.fieldName == 'branchName'}
+        def branchNameDiff = mergeDiff.diffs.find { it.fieldName == 'branchName' }
         branchNameDiff.left == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         branchNameDiff.right == 'test'
         !branchNameDiff.isMergeConflict
-        def dataClassesDiff = mergeDiff.diffs.find {it.fieldName == 'dataClasses'}
+        def dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' }
         dataClassesDiff.created.size == 3
         dataClassesDiff.deleted.size == 2
         dataClassesDiff.modified.size == 4
         dataClassesDiff.created.value.label as Set == ['addLeftOnly', 'leftParentDataClass', 'modifyAndDelete'] as Set
-        !dataClassesDiff.created.find {it.value.label == 'addLeftOnly'}.isMergeConflict
-        !dataClassesDiff.created.find {it.value.label == 'addLeftOnly'}.commonAncestorValue
-        !dataClassesDiff.created.find {it.value.label == 'leftParentDataClass'}.isMergeConflict
-        !dataClassesDiff.created.find {it.value.label == 'leftParentDataClass'}.commonAncestorValue
-        dataClassesDiff.created.find {it.value.label == 'modifyAndDelete'}.isMergeConflict
-        dataClassesDiff.created.find {it.value.label == 'modifyAndDelete'}.commonAncestorValue
+        !dataClassesDiff.created.find { it.value.label == 'addLeftOnly' }.isMergeConflict
+        !dataClassesDiff.created.find { it.value.label == 'addLeftOnly' }.commonAncestorValue
+        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.isMergeConflict
+        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.commonAncestorValue
+        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.isMergeConflict
+        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestorValue
         dataClassesDiff.deleted.value.label as Set == ['deleteAndModify', 'deleteLeftOnly'] as Set
-        dataClassesDiff.deleted.find {it.value.label == 'deleteAndModify'}.isMergeConflict
-        dataClassesDiff.deleted.find {it.value.label == 'deleteAndModify'}.commonAncestorValue
-        !dataClassesDiff.deleted.find {it.value.label == 'deleteLeftOnly'}.isMergeConflict
-        !dataClassesDiff.deleted.find {it.value.label == 'deleteLeftOnly'}.commonAncestorValue
+        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.isMergeConflict
+        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.commonAncestorValue
+        !dataClassesDiff.deleted.find { it.value.label == 'deleteLeftOnly' }.isMergeConflict
+        !dataClassesDiff.deleted.find { it.value.label == 'deleteLeftOnly' }.commonAncestorValue
         dataClassesDiff.modified.left.diffIdentifier as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly',
                                                                 'addAndAddReturningDifference'] as Set
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.diffs[0].fieldName == 'description'
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.isMergeConflict
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyAndModifyReturningDifference'}.commonAncestorValue
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].fieldName == 'dataClasses'
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.isMergeConflict
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.commonAncestorValue
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].value.label == 'addLeftToExistingClass'
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].value.label ==
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.isMergeConflict
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].fieldName == 'dataClasses'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.isMergeConflict
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].value.label == 'addLeftToExistingClass'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].value.label ==
         'deleteLeftOnlyFromExistingClass'
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].isMergeConflict
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].created[0].commonAncestorValue
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].isMergeConflict
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'existingClass'}.diffs[0].deleted[0].commonAncestorValue
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].fieldName == 'description'
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].isMergeConflict
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'addAndAddReturningDifference'}.diffs[0].commonAncestorValue
-        dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].fieldName == 'description'
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].isMergeConflict
-        !dataClassesDiff.modified.find {it.left.diffIdentifier == 'modifyLeftOnly'}.diffs[0].commonAncestorValue
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].isMergeConflict
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].commonAncestorValue
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].isMergeConflict
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].fieldName == 'description'
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].isMergeConflict
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].fieldName == 'description'
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].isMergeConflict
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyLeftOnly' }.diffs[0].commonAncestorValue
 
         when:
         DataClass addLeftOnly = dataClassService.findByDataModelIdAndLabel(testId, 'addLeftOnly')
@@ -1327,10 +1400,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergedModel.dataClasses.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly', 'sdmclass',
                                                  'addAndAddReturningDifference', 'addLeftOnly', 'modifyAndDelete', 'addLeftToExistingClass',
                                                  'addRightToExistingClass'] as Set
-        mergedModel.dataClasses.find {it.label == 'existingClass'}.dataClasses.label as Set == ['addRightToExistingClass',
-                                                                                                'addLeftToExistingClass'] as Set
-        mergedModel.dataClasses.find {it.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
-        mergedModel.dataClasses.find {it.label == 'modifyLeftOnly'}.description == 'Description'
+        mergedModel.dataClasses.find { it.label == 'existingClass' }.dataClasses.label as Set == ['addRightToExistingClass',
+                                                                                                  'addLeftToExistingClass'] as Set
+        mergedModel.dataClasses.find { it.label == 'modifyAndModifyReturningDifference' }.description == 'DescriptionLeft'
+        mergedModel.dataClasses.find { it.label == 'modifyLeftOnly' }.description == 'Description'
     }
 
 
@@ -1467,7 +1540,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         invalid.errors.errorCount == 1
         invalid.errors.globalErrorCount == 0
         invalid.errors.fieldErrorCount == 1
-        invalid.errors.fieldErrors.any {it.field == 'dataClasses[0].label'}
+        invalid.errors.fieldErrors.any { it.field == 'dataClasses[0].label' }
 
         cleanup:
         GormUtils.outputDomainErrors(messageSource, invalid)
@@ -1589,9 +1662,9 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         results.size() == 3
 
         when:
-        DataElementSimilarityResult childRes = results.find {it.source.label == 'child'}
-        DataElementSimilarityResult ele1Res = results.find {it.source.label == 'ele1'}
-        DataElementSimilarityResult ele2Res = results.find {it.source.label == 'element2'}
+        DataElementSimilarityResult childRes = results.find { it.source.label == 'child' }
+        DataElementSimilarityResult ele1Res = results.find { it.source.label == 'ele1' }
+        DataElementSimilarityResult ele2Res = results.find { it.source.label == 'element2' }
 
         then:
         ele1Res
