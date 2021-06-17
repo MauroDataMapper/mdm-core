@@ -1067,7 +1067,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         stringFieldDiff.left == 'test'
         stringFieldDiff.right == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-        stringFieldDiff.commonAncestorValue == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        stringFieldDiff.commonAncestor == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         !stringFieldDiff.isMergeConflict()
 
         when: 'organisation is a non-conflicting change'
@@ -1076,7 +1076,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         stringFieldDiff.left == 'under test'
         stringFieldDiff.right == null
-        stringFieldDiff.commonAncestorValue == null
+        stringFieldDiff.commonAncestor == null
         !stringFieldDiff.isMergeConflict()
 
         when: 'author is a conflicting change'
@@ -1085,7 +1085,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         stringFieldDiff.left == 'harry'
         stringFieldDiff.right == 'dick'
-        stringFieldDiff.commonAncestorValue == 'john'
+        stringFieldDiff.commonAncestor == 'john'
         stringFieldDiff.isMergeConflict()
 
         when: 'single array change in datatypes'
@@ -1097,7 +1097,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         dataTypeDiff.created.size() == 1
         dataTypeDiff.created.first().valueIdentifier == 'addSourceOnlyOnlyChangeInArray'
         !dataTypeDiff.created.first().isMergeConflict()
-        !dataTypeDiff.created.first().commonAncestorValue
+        !dataTypeDiff.created.first().commonAncestor
 
         when: 'metadata has array diffs'
         ArrayDiff<Metadata> metadataDiff = mergeDiff.find { it.fieldName == 'metadata' } as ArrayDiff<Metadata>
@@ -1105,7 +1105,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         then:
         metadataDiff.left.size() == 1
         metadataDiff.right.size() == 2
-        metadataDiff.commonAncestorValue.size() == 2
+        metadataDiff.commonAncestor.size() == 2
         metadataDiff.created.isEmpty()
         metadataDiff.deleted.size() == 1
         metadataDiff.deleted.first().valueIdentifier == 'test.deleteSourceOnly'
@@ -1115,7 +1115,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         metadataDiff.modified.first().diffs.first().fieldName == 'value'
         metadataDiff.modified.first().diffs.first().left == 'altered'
         metadataDiff.modified.first().diffs.first().right == 'modifySourceOnly'
-        metadataDiff.modified.first().diffs.first().commonAncestorValue == 'modifySourceOnly'
+        metadataDiff.modified.first().diffs.first().commonAncestor == 'modifySourceOnly'
         !metadataDiff.modified.first().diffs.first().isMergeConflict()
 
 
@@ -1127,24 +1127,24 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
 
         dataClassesDiff.created.value.label as Set == ['addSourceOnly', 'leftParentDataClass', 'modifyAndDelete'] as Set
         !dataClassesDiff.created.find { it.value.label == 'addSourceOnly' }.isMergeConflict()
-        !dataClassesDiff.created.find { it.value.label == 'addSourceOnly' }.commonAncestorValue
+        !dataClassesDiff.created.find { it.value.label == 'addSourceOnly' }.commonAncestor
         !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.isMergeConflict()
-        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.commonAncestorValue
+        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.commonAncestor
         dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.isMergeConflict()
-        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestorValue
+        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestor
         dataClassesDiff.deleted.value.label as Set == ['deleteAndModify', 'deleteSourceOnly'] as Set
         dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.isMergeConflict()
-        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.commonAncestorValue
+        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.commonAncestor
         !dataClassesDiff.deleted.find { it.value.label == 'deleteSourceOnly' }.isMergeConflict()
-        !dataClassesDiff.deleted.find { it.value.label == 'deleteSourceOnly' }.commonAncestorValue
+        !dataClassesDiff.deleted.find { it.value.label == 'deleteSourceOnly' }.commonAncestor
         dataClassesDiff.modified.left.diffIdentifier as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifySourceOnly',
                                                                 'addAndAddReturningDifference'] as Set
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.diffs[0].fieldName == 'description'
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.isMergeConflict()
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.commonAncestor
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].fieldName == 'dataClasses'
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.isMergeConflict()
-        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.commonAncestorValue
+        dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.commonAncestor
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].created[0].value.label == 'addSourceToExistingClass'
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].value.label ==
         'deleteSourceOnlyFromExistingClass'
@@ -1154,10 +1154,10 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         !dataClassesDiff.modified.find { it.left.diffIdentifier == 'existingClass' }.diffs[0].deleted[0].commonAncestorValue
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].fieldName == 'description'
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].isMergeConflict()
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].commonAncestorValue
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'addAndAddReturningDifference' }.diffs[0].commonAncestor
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifySourceOnly' }.diffs[0].fieldName == 'description'
         !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifySourceOnly' }.diffs[0].isMergeConflict()
-        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifySourceOnly' }.diffs[0].commonAncestorValue
+        !dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifySourceOnly' }.diffs[0].commonAncestor
     }
 
     void 'DMSM02 : test merging diff into draft model'() {

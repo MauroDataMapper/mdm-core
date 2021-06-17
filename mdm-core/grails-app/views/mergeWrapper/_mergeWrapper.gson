@@ -9,6 +9,6 @@ json {
     value tmpl.'/diffable/diffable'(mergeWrapper.value)
     if (mergeWrapper.mergeConflict != null) {
         isMergeConflict mergeWrapper.mergeConflict
-        if (mergeWrapper.mergeConflict) commonAncestorValue tmpl.'/diffable/diffable'(mergeWrapper.commonAncestorValue)
+        if (mergeWrapper.mergeConflict) commonAncestorValue tmpl.'/diffable/diffable'(mergeWrapper.commonAncestor)
     }
 }

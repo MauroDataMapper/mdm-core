@@ -10,7 +10,7 @@ json("${fieldDiff.fieldName}") {
 
     if (fieldDiff.mergeConflict != null) {
         isMergeConflict fieldDiff.mergeConflict
-        if (fieldDiff.mergeConflict) commonAncestorValue fieldDiff.commonAncestorValue
+        if (fieldDiff.mergeConflict) commonAncestorValue fieldDiff.commonAncestor
     }
 
 }

@@ -365,7 +365,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         mergeDiff.diffs[0].left == 'right'
         mergeDiff.diffs[0].right == 'left'
         mergeDiff.diffs[0].isMergeConflict
-        mergeDiff.diffs[0].commonAncestorValue == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        mergeDiff.diffs[0].commonAncestor == VersionAwareConstraints.DEFAULT_BRANCH_NAME
     }
 }
 

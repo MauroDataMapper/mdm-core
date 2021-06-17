@@ -24,7 +24,7 @@ abstract class Diff<T> {
 
     T value
     Boolean mergeConflict
-    T commonAncestorValue
+    T commonAncestor
     Class<T> targetClass
 
     protected Diff(Class<T> targetClass) {
@@ -59,7 +59,7 @@ abstract class Diff<T> {
     }
 
     Diff<T> commonAncestor(T ca) {
-        this.commonAncestorValue = ca
+        this.commonAncestor = ca
         this
     }
 
