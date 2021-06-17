@@ -60,8 +60,8 @@ abstract class FacetInterceptor implements MdmInterceptor {
 
     void facetResourceChecks() {
         Utils.toUuid(params, 'id')
-        params.multiFacetAwareItemDomainType = params.catalogueItemDomainType ?: params.containerDomainType
-        params.multiFacetAwareItemId = params.catalogueItemId ?: params.containerId
+        params.multiFacetAwareItemDomainType = params.multiFacetAwareItemDomainType?: params.catalogueItemDomainType ?: params.containerDomainType
+        params.multiFacetAwareItemId = params.multiFacetAwareItemId ?: params.catalogueItemId ?: params.containerId
         checkAdditionalIds()
         mapDomainTypeToClass(getOwningType(), true)
     }

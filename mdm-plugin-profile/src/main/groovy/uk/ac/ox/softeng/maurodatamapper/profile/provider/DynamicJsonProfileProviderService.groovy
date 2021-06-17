@@ -19,7 +19,7 @@ package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
@@ -43,15 +43,15 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         this.dataModelId = dataModel.id
         this.dataModelLabel = dataModel.label
         this.dataModelDescription = dataModel.description
-        this.dataModelVersion = dataModel.version
+        this.dataModelVersion = dataModel.modelVersionTag?:dataModel.modelVersion?:dataModel.branchName
     }
 
     @Override
-    JsonProfile createProfileFromEntity(CatalogueItem entity) {
+    JsonProfile createProfileFromEntity(MultiFacetAware entity) {
         JsonProfile jsonProfile = new JsonProfile(getSections())
-        jsonProfile.catalogueItemId = entity.id
-        jsonProfile.catalogueItemDomainType = entity.domainType
-        jsonProfile.catalogueItemLabel = entity.label
+        jsonProfile.profiledItemId = entity.id
+        jsonProfile.profiledItemDomainType = entity.domainType
+        jsonProfile.profiledItemLabel = entity.label
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
         jsonProfile.sections.each {section ->
@@ -90,27 +90,6 @@ class DynamicJsonProfileProviderService extends JsonProfileProviderService {
         new JsonProfile(getSections())
     }
 
-    @Override
-    void storeFieldInEntity(ProfileField field, CatalogueItem entity, ProfileSection submittedSection, String sectionName, String userEmailAddress) {
-        ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-        if (!submittedField) return
-
-        if (submittedField.currentValue && submittedField.metadataPropertyName) {
-            entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
-        } else if (!field.metadataPropertyName) {
-            log.debug("No metadataPropertyName set for field: " + field.fieldName)
-            String metadataPropertyName = "${sectionName}/${submittedField.fieldName}"
-            entity.addToMetadata(metadataNamespace, metadataPropertyName, submittedField.currentValue, userEmailAddress)
-        } else if (!submittedField.currentValue) {
-            Metadata md = entity.metadata.find {
-                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
-            }
-            if (md) {
-                entity.metadata.remove(md)
-                metadataService.delete(md)
-            }
-        }
-    }
 
     @Override
     String getJsonResourceFile() {

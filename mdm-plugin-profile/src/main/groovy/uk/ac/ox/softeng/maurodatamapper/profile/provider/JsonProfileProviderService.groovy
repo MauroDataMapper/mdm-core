@@ -18,21 +18,21 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
-abstract class JsonProfileProviderService extends ProfileProviderService<JsonProfile, CatalogueItem> {
+abstract class JsonProfileProviderService extends ProfileProviderService<JsonProfile, MultiFacetAware> {
 
     abstract String getJsonResourceFile()
 
     @Override
-    JsonProfile createProfileFromEntity(CatalogueItem entity) {
+    JsonProfile createProfileFromEntity(MultiFacetAware entity) {
         JsonProfile jsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
-        jsonProfile.catalogueItemId = entity.id
-        jsonProfile.catalogueItemDomainType = entity.domainType
-        jsonProfile.catalogueItemLabel = entity.label
+        jsonProfile.profiledItemId = entity.id
+        jsonProfile.profiledItemDomainType = entity.domainType
+        jsonProfile.profiledItemLabel = entity.label
 
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
@@ -55,14 +55,17 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     }
 
     @Override
-    void storeProfileInEntity(CatalogueItem entity, JsonProfile jsonProfile, String userEmailAddress) {
+    void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress) {
         JsonProfile emptyJsonProfile = createNewEmptyJsonProfile()
-
         emptyJsonProfile.sections.each {section ->
             ProfileSection submittedSection = jsonProfile.sections.find {it.sectionName == section.sectionName}
             if (submittedSection) {
                 section.fields.each {field ->
-                    storeFieldInEntity(field, entity, submittedSection, section.sectionName, userEmailAddress)
+                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+
+                    String newValue = submittedField.currentValue ?: ""
+                    String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
+                    storeFieldInEntity(entity, newValue, key, userEmailAddress)
                 }
             }
         }
@@ -70,24 +73,20 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         Metadata.saveAll(entity.metadata)
     }
 
-    void storeFieldInEntity(ProfileField field, CatalogueItem entity, ProfileSection submittedSection, String sectionName, String userEmailAddress) {
-        ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
-        if (!submittedField) return
+    void storeFieldInEntity(MultiFacetAware entity, String value, String key, String userEmailAddress) {
 
-        if (submittedField.currentValue && submittedField.metadataPropertyName) {
-            entity.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
-        } else if (!field.metadataPropertyName) {
-            log.debug("No metadataPropertyName set for field: " + field.fieldName)
-        } else if (!submittedField.currentValue) {
+        if (value && value != "" && key ) {
+            entity.addToMetadata(metadataNamespace, key, value, userEmailAddress)
+        } else {
             Metadata md = entity.metadata.find {
-                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
+                it.namespace == metadataNamespace && it.key == key
             }
             if (md) {
-                entity.metadata.remove(md)
                 metadataService.delete(md)
             }
         }
     }
+
 
     @Override
     Set<String> getKnownMetadataKeys() {
@@ -98,6 +97,12 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     String getVersion() {
         getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
     }
+
+    @Override
+    JsonProfile getNewProfile() {
+        createNewEmptyJsonProfile()
+    }
+
 
 
 }
