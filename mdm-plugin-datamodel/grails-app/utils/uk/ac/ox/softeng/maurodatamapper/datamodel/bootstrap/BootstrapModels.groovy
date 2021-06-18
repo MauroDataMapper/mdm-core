@@ -49,8 +49,9 @@ class BootstrapModels {
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
-    public static final String MODEL_VERSION_TREE_DATAMODEL_V1 = 'Finalised Example Test DataModel - Version 1'
-    public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Model Version Tree DataModel'
+    public static final String MODEL_VERSION_TREE_DATAMODEL_V1 = 'Versioning Tree Example DataModel - Version 1'
+    public static final String MODEL_VERSION_TREE_DATAMODEL_V2 = 'Versioning Tree Example DataModel - Version 2'
+    public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Versioning Tree Branch'
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel simpleDataModel = DataModel.findByLabel(SIMPLE_DATAMODEL_NAME)
@@ -240,41 +241,38 @@ class BootstrapModels {
         simpleDataModel
     }
 
-
     static void buildAndSaveModelVersionTree(MessageSource messageSource, Folder folder, Authority authority, DataModelService dataModelService) {
         /*
                                                  /- anotherFork
     v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
       \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
        \_ fork ---- main                                               \_ interestingBranch (v5)
-    */
 
+                -Development Folder
+                 -Example model v1 (finalised)
+                     +Stuff
+                 +Example model v2 (draft)
+                 +Example model v2 Branch (draft)
 
+                        DEV (finalised)
+                            |
+                            |
+                        Dev (main)
+                                  \
+                                    \
+                                     Dev (branch)
 
+        */
+        User dev = [emailAddress: DEVELOPMENT] as User
+        UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
 
-        /*
-
-        -Development Folder
-          -Example model v1 (finalised)
-              +Stuff
-          +Example model v2 (draft)
-          +Example model v2 Branch (draft)
-
-                 DEV (finalised)
-                     |
-                     |
-                 Dev (main)
-                     |       \
-            |        \
-            |         Dev (branch)
-
-                     */
-        buildVersionTreeV1Model(messageSource, folder, authority, dataModelService)
-
+        buildVersionTreeV1Model(messageSource, folder, authority)
+        DataModel v2DataModel = buildVersionTreeV2Model(messageSource, folder, authority, dataModelService)
+        buildVersionTreeV2Branches(messageSource, dataModelService, v2DataModel, dev, policyManager)
     }
 
 
-    static void buildVersionTreeV1Model(MessageSource messageSource, Folder folder, Authority authority, DataModelService) {
+    static void buildVersionTreeV1Model(MessageSource messageSource, Folder folder, Authority authority) {
 
         DataModel v1DataModel = DataModel.findByLabel(MODEL_VERSION_TREE_DATAMODEL_V1)
 
@@ -283,8 +281,6 @@ class BootstrapModels {
                                         label: MODEL_VERSION_TREE_DATAMODEL_V1,
                                         folder: folder,
                                         authority: authority)
-
-
             checkAndSave(messageSource, v1DataModel)
 
             PrimitiveType V1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
@@ -319,7 +315,66 @@ class BootstrapModels {
 
             checkAndSave(messageSource, v1DataModel)
         }
+    }
+
+    static DataModel buildVersionTreeV2Model(MessageSource messageSource, Folder folder, Authority authority, DataModelService dataModelService) {
+        DataModel v2DataModel = DataModel.findByLabel(MODEL_VERSION_TREE_DATAMODEL_V2)
+
+        if (!v2DataModel) {
+            v2DataModel = new DataModel(createdBy: DEVELOPMENT,
+                                        label: MODEL_VERSION_TREE_DATAMODEL_V2,
+                                        folder: folder,
+                                        authority: authority)
 
 
+            checkAndSave(messageSource, v2DataModel)
+
+            PrimitiveType V2PrimitiveType = new PrimitiveType(createdBy: DEVELOPMENT,
+                                                              label: 'V2 Draft Data Type')
+            DataElement V2DataElement1 = new DataElement(createdBy: DEVELOPMENT,
+                                                         label: 'V2 Draft Data Element',
+                                                         minMultiplicity: 1,
+                                                         maxMultiplicity: 1,
+                                                         dataType: V2PrimitiveType)
+            DataElement V2DataElement2 = new DataElement(createdBy: DEVELOPMENT,
+                                                         label: 'V2 Another Draft DataElement',
+                                                         minMultiplicity: 1,
+                                                         maxMultiplicity: 1,
+                                                         dataType: V2PrimitiveType)
+            DataClass V2DataClass = new DataClass(createdBy: DEVELOPMENT,
+                                                  label: 'V2 Draft Data Class')
+
+            V2DataClass.addToDataElements(V2DataElement1).addToDataElements(V2DataElement2)
+
+            v2DataModel
+                .addToDataClasses(V2DataClass)
+                .addToDataClasses(createdBy: DEVELOPMENT, label: 'V2 Another Data Class')
+                .addToDataTypes(V2PrimitiveType)
+
+            checkAndSave(messageSource, v2DataModel)
+
+            v2DataModel.finalised = true
+            v2DataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
+            v2DataModel.breadcrumbTree.finalised = true
+            v2DataModel.breadcrumbTree.updateTree()
+            v2DataModel.modelVersion = Version.from('2.0.0')
+
+            checkAndSave(messageSource, v2DataModel)
+
+            return v2DataModel
+        }
+    }
+
+    static void buildVersionTreeV2Branches(MessageSource messageSource, DataModelService dataModelService,
+                                           DataModel v2DataModel, User dev, UserSecurityPolicyManager policyManager) {
+
+        DataModel v2MainBranch = dataModelService.createNewBranchModelVersion('main', v2DataModel, dev, false, policyManager)
+        checkAndSave(messageSource, v2MainBranch)
+
+        DataModel anotherFork = dataModelService.createNewForkModel("V2 Main Fork", v2MainBranch, dev, false, policyManager)
+        checkAndSave(messageSource, anotherFork)
+
+        DataModel v2WorkingBranch = dataModelService.createNewBranchModelVersion('V2 Working Branch', v2DataModel, dev, false, policyManager)
+        checkAndSave(messageSource, v2WorkingBranch)
     }
 }
