@@ -185,7 +185,7 @@ This is basically the backend API.
                 }
             }
 
-            httpSessionServletListener(ServletListenerRegistrationBean) {
+            sessionServiceHttpSessionListener(ServletListenerRegistrationBean) {
                 listener = ref('sessionService')
             }
 
@@ -199,15 +199,6 @@ This is basically the backend API.
 
     void doWithApplicationContext() {
         if (config.env == 'live') outputRuntimeArgs()
-    }
-
-    void onChange(Map<String, Object> event) {
-    }
-
-    void onConfigChange(Map<String, Object> event) {
-    }
-
-    void onShutdown(Map<String, Object> event) {
     }
 
     void outputRuntimeArgs() {

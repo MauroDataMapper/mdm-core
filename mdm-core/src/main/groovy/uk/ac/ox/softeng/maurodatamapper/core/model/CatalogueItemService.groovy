@@ -28,6 +28,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
@@ -139,16 +140,14 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         removeFacetFromDomain(catalogueItemId, classifier.id, 'classifiers')
     }
 
-    K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copy.createdBy = copier.emailAddress
-        copy.label = original.label
-        copy.description = original.description
-
-        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each {copy.addToClassifiers(it)}
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier)}
-        ruleService.findAllByMultiFacetAwareItemId(original.id).each {rule ->
+    K copyCatalogueItemInformation(K original, K copy, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
+                                   CopyInformation copyInformation = new CopyInformation()) {
+        copy = populateCopyData(original, copy, copier, copyInformation)
+        classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
+        ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
-            rule.ruleRepresentations.each {ruleRepresentation ->
+            rule.ruleRepresentations.each { ruleRepresentation ->
                 copiedRule.addToRuleRepresentations(language: ruleRepresentation.language,
                                                     representation: ruleRepresentation.representation,
                                                     createdBy: copier.emailAddress)
@@ -156,7 +155,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
             copy.addToRules(copiedRule)
         }
 
-        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each {link ->
+        semanticLinkService.findAllBySourceMultiFacetAwareItemId(original.id).each { link ->
             copy.addToSemanticLinks(createdBy: copier.emailAddress, linkType: link.linkType,
                                     targetMultiFacetAwareItemId: link.targetMultiFacetAwareItemId,
                                     targetMultiFacetAwareItemDomainType: link.targetMultiFacetAwareItemDomainType,
@@ -167,7 +166,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
     }
 
     void setCatalogueItemRefinesCatalogueItem(CatalogueItem source, CatalogueItem target, User catalogueUser) {
-        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdByUser: catalogueUser, targetMultiFacetAwareItem: target)
+        source.addToSemanticLinks(linkType: SemanticLinkType.REFINES, createdBy: catalogueUser.emailAddress, targetMultiFacetAwareItem: target)
     }
 
     K updateFacetsAfterInsertingCatalogueItem(K catalogueItem) {
@@ -197,19 +196,31 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                                         UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Merging Metadata into Catalogue Item')
         // call metadataService version of below
-        mergeFieldDiff.deleted.each {mergeItemData ->
+        mergeFieldDiff.deleted.each { mergeItemData ->
             Metadata metadata = metadataService.get(mergeItemData.id)
             metadataService.delete(metadata)
         }
 
         // copy additions from source to target object
-        mergeFieldDiff.created.each {mergeItemData ->
+        mergeFieldDiff.created.each { mergeItemData ->
             Metadata metadata = metadataService.get(mergeItemData.id)
             metadataService.copy(targetCatalogueItem, metadata, userSecurityPolicyManager)
         }
         // for modifications, recursively call this method
-        mergeFieldDiff.modified.each {mergeObjectDiffData ->
+        mergeFieldDiff.modified.each { mergeObjectDiffData ->
             metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, mergeObjectDiffData)
         }
+    }
+
+    K populateCopyData(K original, K copy, User copier, CopyInformation copyInformation) {
+        copy.createdBy = copier.emailAddress
+        copy.description = original.description
+        if (copyInformation.validate()) {
+            copy.label = copyInformation.copyLabel
+        } else {
+            copy.label = original.label
+            log.debug('Creating Copy with original label as provided label is empty or Invalid')
+        }
+        return copy
     }
 }

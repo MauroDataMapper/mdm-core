@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
@@ -109,7 +108,7 @@ class TermService extends ModelItemService<Term> {
 
             log.trace('Removing CodeSet references for {} Terms', termIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from terminology.join_codeset_to_term where term_id in :ids')
+                .createSQLQuery('DELETE FROM terminology.join_codeset_to_term WHERE term_id IN :ids')
                 .setParameter('ids', termIds)
                 .executeUpdate()
 
@@ -119,7 +118,7 @@ class TermService extends ModelItemService<Term> {
 
             log.trace('Removing {} Terms', termIds.size())
             sessionFactory.currentSession
-                .createSQLQuery('delete from terminology.term where terminology_id = :id')
+                .createSQLQuery('DELETE FROM terminology.term WHERE terminology_id = :id')
                 .setParameter('id', modelId)
                 .executeUpdate()
 
@@ -128,26 +127,48 @@ class TermService extends ModelItemService<Term> {
         }
     }
 
-    void batchSave(Collection<Term> terms) {
-        log.trace('Batch saving terms')
-        long start = System.currentTimeMillis()
-        List batch = []
-        int count = 0
-        terms.each { term ->
-            term.sourceTermRelationships?.clear()
-            term.targetTermRelationships?.clear()
-            batch += term
-            count++
-            if (count % Term.BATCH_SIZE == 0) {
-                singleBatchSave(batch)
-                batch.clear()
-            }
+    Collection<TermRelationship> saveAllAndGetTermRelationships(Collection<Term> terms) {
 
+        List<Classifier> classifiers = terms.collectMany {it.classifiers ?: []} as List<Classifier>
+        if (classifiers) {
+            log.trace('Saving {} classifiers')
+            classifierService.saveAll(classifiers)
         }
-        // Save final batch of terms
-        singleBatchSave(batch)
-        batch.clear()
-        log.debug('{} terms batch saved, took {}', terms.size(), Utils.timeTaken(start))
+
+        Collection<Term> alreadySaved = terms.findAll {it.ident() && it.isDirty()}
+        Collection<Term> notSaved = terms.findAll {!it.ident()}
+
+        Collection<TermRelationship> termRelationships = []
+
+        if (alreadySaved) {
+            log.trace('Straight saving {} already saved Terms', alreadySaved.size())
+            Term.saveAll(alreadySaved)
+        }
+
+        if (notSaved) {
+            log.trace('Batch saving {} new {} in batches of {}', notSaved.size(), getModelItemClass().simpleName, BATCH_SIZE)
+            List batch = []
+            int count = 0
+
+            notSaved.each {t ->
+
+                termRelationships.addAll(t.sourceTermRelationships ?: [])
+                termRelationships.addAll(t.targetTermRelationships ?: [])
+
+                t.sourceTermRelationships?.clear()
+                t.targetTermRelationships?.clear()
+
+                batch << t
+                count++
+                if (count % BATCH_SIZE == 0) {
+                    batchSave(batch)
+                    batch.clear()
+                }
+            }
+            batchSave(batch)
+            batch.clear()
+        }
+        termRelationships
     }
 
     Long countByTerminologyId(UUID terminologyId) {
@@ -190,30 +211,29 @@ class TermService extends ModelItemService<Term> {
         Term.byTerminologyIdAndNotChild(terminologyId).list(pagination)
     }
 
-    Term copy(Model copiedTerminology, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+    Term copy(Model copiedModel, Term original, UserSecurityPolicyManager userSecurityPolicyManager) {
+        Term copy = copyTerm(original, userSecurityPolicyManager.user, userSecurityPolicyManager)
+        if (copiedModel.instanceOf(Terminology)) {
+            (copiedModel as Terminology).addToTerms(copy)
+        } else if (copiedModel.instanceOf(CodeSet)) {
+            (copiedModel as CodeSet).addToTerms(copy)
+        } else {
+            throw new ApiInternalException('TS01', "Cannot add a Term to a model type [${copiedModel.domainType}]")
+        }
+        copy
     }
 
     Term copyTerm(Terminology copiedTerminology, Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyTermIntoTerminologyOrCodeSet(copiedTerminology, original, copier, userSecurityPolicyManager)
+        Term copy = copyTerm(original, copier, userSecurityPolicyManager)
+        copiedTerminology.addToTerms(copy)
+        copy
     }
 
-    private Term copyTermIntoTerminologyOrCodeSet(Model copiedTerminologyOrCodeSet, Term original, User copier,
-                                                  UserSecurityPolicyManager userSecurityPolicyManager) {
-
+    Term copyTerm(Term original, User copier, UserSecurityPolicyManager userSecurityPolicyManager) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent Term')
-
         Term copy = new Term(createdBy: copier.emailAddress, code: original.code, definition: original.definition)
-
         copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
-
-        copiedTerminologyOrCodeSet.addToTerms(copy)
-
-        if (copy.validate()) save(copy, validate: false)
-        else throw new ApiInvalidModelException('DC01', 'Copied Term is invalid', copy.errors, messageSource)
-
-        copy.trackChanges()
         copy
     }
 
@@ -241,7 +261,7 @@ class TermService extends ModelItemService<Term> {
 
     @Override
     List<Term> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        Term.byClassifierId(classifier.id).list().findAll { userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id) }
+        Term.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(Terminology, it.model.id)}
     }
 
     @Override
@@ -278,10 +298,10 @@ class TermService extends ModelItemService<Term> {
         if (term.isDirty('depth')) return term.depth
         if (isRootTerm(term, inMemory)) return 1
 
-        TermRelationship relationship = term.targetTermRelationships.find { it.sourceIsParentToTarget() }
+        TermRelationship relationship = term.targetTermRelationships.find {it.sourceIsParentToTarget()}
         if (relationship) return 1 + calculateTermDepth(relationship.sourceTerm, inMemory)
 
-        relationship = term.sourceTermRelationships.find { it.sourceIsChildOfTarget() }
+        relationship = term.sourceTermRelationships.find {it.sourceIsChildOfTarget()}
         if (relationship) return 1 + calculateTermDepth(relationship.targetTerm, inMemory)
 
         Integer.MAX_VALUE
@@ -293,22 +313,22 @@ class TermService extends ModelItemService<Term> {
 
     Boolean isParentTerm(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.any { it.relationshipType.childRelationship } ||
-        term.sourceTermRelationships.any { it.relationshipType.parentalRelationship } :
+        term.targetTermRelationships.any {it.relationshipType.childRelationship} ||
+        term.sourceTermRelationships.any {it.relationshipType.parentalRelationship} :
         termRelationshipService.countByTermIdIsParent(term.id)
     }
 
     Boolean isChildTerm(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.any { it.relationshipType.parentalRelationship } ||
-        term.sourceTermRelationships.any { it.relationshipType.childRelationship } :
+        term.targetTermRelationships.any {it.relationshipType.parentalRelationship} ||
+        term.sourceTermRelationships.any {it.relationshipType.childRelationship} :
         termRelationshipService.countByTermIdIsChild(term.id)
     }
 
     Boolean hasNoHierarchy(Term term, boolean inMemory) {
         inMemory ?
-        term.targetTermRelationships.every { !it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship } &&
-        term.sourceTermRelationships.every { !it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship } :
+        term.targetTermRelationships.every {!it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship} &&
+        term.sourceTermRelationships.every {!it.relationshipType.childRelationship && !it.relationshipType.parentalRelationship} :
         termRelationshipService.countByTermIdHasHierarchy(term.id) == 0
     }
 
@@ -318,16 +338,15 @@ class TermService extends ModelItemService<Term> {
 
         long start = System.currentTimeMillis()
 
-        if (!term) {
-            log.debug('No term provided so providing top level tree')
-
-            List<Term> terms = terminologyService.findAllTreeTypeModelItemsIn(terminology) as List<Term>
-            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren()) }.toSet()
-        } else {
+        if (term) {
             int depth = term.depth
             log.debug('Term provided, building tree at depth {}', depth)
             List<Term> terms = findAllTreeTypeModelItemsIn(term) as List<Term>
-            tree = terms.collect { t -> new ModelItemTreeItem(t, t.hasChildren()) }.toSet()
+            tree = terms.collect {t -> new ModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
+        } else {
+            log.debug('No term provided so providing top level tree')
+            List<Term> terms = terminologyService.findAllTreeTypeModelItemsIn(terminology) as List<Term>
+            tree = terms.collect {t -> new ModelItemTreeItem(t, t.hasChildren(), [])}.toSet()
         }
 
         List<ModelItemTreeItem> sortedTree = tree.sort()
@@ -372,7 +391,7 @@ class TermService extends ModelItemService<Term> {
 
     Collection<Term> updateChildKnowledge(Collection<Term> terms) {
         List<TermRelationship> childKnowledge = obtainChildKnowledge(terms)
-        terms.each { it.isParent = hasChild(it, childKnowledge) }
+        terms.each {it.isParent = hasChild(it, childKnowledge)}
         terms
     }
 
@@ -381,7 +400,7 @@ class TermService extends ModelItemService<Term> {
     }
 
     private Boolean hasParentToRelationship(Term parent, Term child) {
-        parent.sourceTermRelationships.any { it.sourceIsParentToTarget() && it.targetTerm == child }
+        parent.sourceTermRelationships.any {it.sourceIsParentToTarget() && it.targetTerm == child}
     }
 
     private boolean hasChild(Term parent, List<TermRelationship> knowledge) {
@@ -411,8 +430,9 @@ class TermService extends ModelItemService<Term> {
      * @param terminology The Terminology to which the sought Term belongs
      * @param label The label of the sought Term
      */
+
     private Term findTerm(Terminology terminology, String label) {
-        terminology.terms.find { it.label == label.trim() }
+        terminology.terms.find {it.label == label.trim()}
     }
 
     /*
@@ -420,8 +440,9 @@ class TermService extends ModelItemService<Term> {
      * @param codeSet The CodeSet to which the sought Term belongs
      * @param label The label of the sought Term
      */
+
     private Term findTerm(CodeSet codeSet, String label) {
-        codeSet.terms.find { it.label == label.trim() }
+        codeSet.terms.find {it.label == label.trim()}
     }
 
     /*
@@ -430,6 +451,7 @@ class TermService extends ModelItemService<Term> {
      * @param parentCatalogueItem The Terminology or CodeSet which is the parent of the Term being sought
      * @param label The label of the Term being sought
      */
+
     @Override
     Term findByParentAndLabel(CatalogueItem parentCatalogueItem, String label) {
         findTerm(parentCatalogueItem, label)

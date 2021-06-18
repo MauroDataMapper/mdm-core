@@ -19,29 +19,18 @@ package uk.ac.ox.softeng.maurodatamapper.security.interceptor
 
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 
-import javax.servlet.http.HttpSession
-
 /**
  * @since 13/01/2021
  */
 trait SecurityPolicyManagerInterceptor extends MdmInterceptor {
 
+    /**
+     * No longer needed as this is only an issue under test/development
+     * In the real world when a session is destroyed the next request causes grails to autocreate a new session
+     * which calls the createSession hook inside our SessionService which results in a new session being properly stored.
+     */
+    @Deprecated
     void checkSessionIsValid() {
-        // Get the session without using the grails wrapper
-        // If we use 'session' it sets the session variable and we cannot change it
-        HttpSession localSession = getRequest().getSession()
-        // Check if its invalid (this is only likely to happen when running in dev mode and we shut down the backend and then
-        // make another request on startup with the old session in the request
-        // Can be tested easily enough with postman)
-        // Validity is tested by existence in the known session id map, which is updated whenever tomcat creates a new session
-        boolean invalid = sessionService.isInvalidatedSession(localSession)
-
-        // If invalid then invalidate the local session and force the request to create a new one
-        // Upon creation of new session the session will be added to the map and all subsequent checks will come back as a valid but new session
-        if (invalid) {
-            localSession.invalidate()
-            getRequest().getSession(true)
-        }
     }
 
     boolean securityPolicyManagerIsSet() {

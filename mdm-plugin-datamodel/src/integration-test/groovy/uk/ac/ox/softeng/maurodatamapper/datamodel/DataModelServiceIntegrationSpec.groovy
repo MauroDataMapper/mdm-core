@@ -887,7 +887,7 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def currentMainBranch = dataModelService.findCurrentMainBranchForModel(testModel)
+        def currentMainBranch = dataModelService.findCurrentMainBranchByLabel(testModel.label)
 
         then:
         currentMainBranch.id == draftModel.id

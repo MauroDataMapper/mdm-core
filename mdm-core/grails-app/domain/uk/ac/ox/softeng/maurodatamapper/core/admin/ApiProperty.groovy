@@ -37,7 +37,7 @@ class ApiProperty implements CreatorAware {
         lastUpdatedBy email: true
         publiclyVisible nullable: false
         key blank: false, unique: true, validator: {val ->
-            !val.matches(/[a-z._]+/) ? ['invalid.api.property.format'] : true
+            val.matches(/[a-z._]+/) ?: ['invalid.api.property.format']
         }
         value blank: false, validator: {val, obj ->
             if (obj.key == ApiPropertyEnum.SITE_URL.key) {

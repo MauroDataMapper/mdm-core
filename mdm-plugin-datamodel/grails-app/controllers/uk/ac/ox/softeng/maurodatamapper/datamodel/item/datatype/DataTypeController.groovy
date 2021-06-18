@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.controller.CatalogueItemController
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.databinding.converters.DataTypeValueConverter
@@ -57,7 +58,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
     }
 
     @Transactional
-    def copyDataType() {
+    def copyDataType(CopyInformation copyInformation) {
         if (handleReadOnly()) {
             return
         }
@@ -68,7 +69,7 @@ class DataTypeController extends CatalogueItemController<DataType> {
         if (!original) return notFound(params.dataTypeId)
         DataType copy
         try {
-            copy = dataTypeService.copyDataType(dataModel, original, currentUser, currentUserSecurityPolicyManager)
+            copy = dataTypeService.copyDataType(dataModel, original, currentUser, currentUserSecurityPolicyManager, false, copyInformation)
         } catch (ApiInvalidModelException ex) {
             transactionStatus.setRollbackOnly()
             respond ex.errors, view: 'create' // STATUS CODE 422

@@ -17,9 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.compiler.GrailsCompileStatic
 import groovy.transform.SelfType
 import org.grails.datastore.gorm.GormEntity
+import org.grails.datastore.mapping.proxy.EntityProxy
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 /**
  * Technically this need to be typed, to prevent grails from messing up mapping on getPathParent,
@@ -27,6 +30,7 @@ import org.grails.datastore.gorm.GormEntity
  * typed to the actual class rather than PathAware
  * @since 18/09/2017
  */
+@SuppressFBWarnings('BC_IMPOSSIBLE_INSTANCEOF')
 @SelfType(GormEntity)
 @GrailsCompileStatic
 trait PathAware {
@@ -38,6 +42,7 @@ trait PathAware {
 
     private UUID rootId
     private UUID parentId
+    private HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
 
     abstract UUID getId()
 
@@ -47,7 +52,8 @@ trait PathAware {
         GormEntity ge = getPathParent()
         if (ge) {
             if (ge.instanceOf(PathAware)) {
-                PathAware parent = ge as PathAware
+                // Ensure proxies are unwrapped
+                PathAware parent = (ge instanceof EntityProxy ? ((EntityProxy) ge).getTarget() : ge) as PathAware
                 depth = parent.depth + 1
                 path = "${parent.getPath()}/${parent.getId() ?: UNSET}"
             } else {

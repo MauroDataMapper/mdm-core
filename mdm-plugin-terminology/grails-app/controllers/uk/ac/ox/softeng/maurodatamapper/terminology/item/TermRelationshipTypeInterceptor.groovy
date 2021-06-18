@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology.item
 
-import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermRelationshipType
 import uk.ac.ox.softeng.maurodatamapper.terminology.traits.controller.TerminologySecuredInterceptor
 
 class TermRelationshipTypeInterceptor extends TerminologySecuredInterceptor {

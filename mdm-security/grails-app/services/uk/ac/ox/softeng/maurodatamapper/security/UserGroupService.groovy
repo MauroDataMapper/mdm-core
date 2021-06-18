@@ -20,9 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.security
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRoleService
 
+import grails.gorm.transactions.Transactional
 import grails.validation.ValidationException
-
-import javax.transaction.Transactional
 
 @Transactional
 class UserGroupService {

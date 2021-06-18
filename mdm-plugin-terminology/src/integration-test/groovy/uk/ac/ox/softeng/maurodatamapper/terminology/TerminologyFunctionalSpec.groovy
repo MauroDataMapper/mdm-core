@@ -34,6 +34,9 @@ import groovy.util.logging.Slf4j
 import spock.lang.PendingFeature
 import spock.lang.Shared
 
+import java.nio.file.Files
+import java.nio.file.Path
+
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -2282,6 +2285,12 @@ class TerminologyFunctionalSpec extends ResourceFunctionalSpec<Terminology> {
         cleanUpData(id)
     }
 
+    byte[] loadTestFile(String filename, String fileType = 'json') {
+        Path testFilePath = fileType == 'json' ? resourcesPath.resolve('terminology').resolve("${filename}.json") :
+                            xmlResourcesPath.resolve('terminology').resolve("${filename}.xml")
+        assert Files.exists(testFilePath)
+        Files.readAllBytes(testFilePath)
+    }
 
     void 'EX04: test export simple Terminology'() {
         given:

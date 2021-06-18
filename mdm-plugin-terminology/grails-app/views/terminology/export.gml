@@ -1,5 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
 import java.time.OffsetDateTime
 
@@ -33,9 +34,14 @@ Terminology export = terminology as Terminology
                 layout '/term/export.gml', term: t
             }
         }
-        if (export.getAllTermRelationships()) {
+        List<TermRelationship> relationships = export.getAllTermRelationships().sort {a, b ->
+            int r = a.sourceTerm.code <=> b.sourceTerm.code
+            if (r == 0) r = a.targetTerm.code <=> b.targetTerm.code
+            r
+        }
+        if (relationships) {
             'mdm:termRelationships' {
-                export.getAllTermRelationships().each {tr ->
+                relationships.each {tr ->
                     layout '/termRelationship/export.gml', termRelationship: tr
                 }
             }

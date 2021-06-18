@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item.datatype
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
@@ -163,56 +162,6 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         if (dataType) delete(dataType)
     }
 
-    def saveAll(Collection<ReferenceDataType> dataTypes) {
-        List<Classifier> classifiers = dataTypes.collectMany { it.classifiers ?: [] } as List<Classifier>
-        if (classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
-        }
-
-        Collection<ReferenceDataType> alreadySaved = dataTypes.findAll { it.ident() && it.isDirty() }
-        Collection<ReferenceDataType> notSaved = dataTypes.findAll { !it.ident() }
-
-        if (alreadySaved) {
-            log.trace('Straight saving {} already saved DataTypes ', alreadySaved.size())
-            ReferenceDataType.saveAll(alreadySaved)
-        }
-
-        if (notSaved) {
-            log.trace('Batch saving {} new DataTypes in batches of {}', notSaved.size(), ReferenceDataType.BATCH_SIZE)
-            List batch = []
-            int count = 0
-
-            notSaved.each { dt ->
-                dt.referenceDataElements?.clear()
-                batch += dt
-                count++
-                if (count % ReferenceDataType.BATCH_SIZE == 0) {
-                    batchSave(batch)
-                    batch.clear()
-                }
-
-            }
-            batchSave(batch)
-            batch.clear()
-        }
-    }
-
-    void batchSave(List<ReferenceDataType> dataTypes) {
-        long start = System.currentTimeMillis()
-        log.trace('Performing batch save of {} DataTypes', dataTypes.size())
-
-        ReferenceDataType.saveAll(dataTypes)
-        dataTypes.each { dt ->
-            updateFacetsAfterInsertingCatalogueItem(dt)
-        }
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
     @Override
     ReferenceDataType updateFacetsAfterInsertingCatalogueItem(ReferenceDataType referenceDataType) {
         if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
@@ -247,27 +196,24 @@ class ReferenceDataTypeService extends ModelItemService<ReferenceDataType> imple
         referenceDataModel.addToReferenceDataTypes(referenceDataType)
         referenceDataType.createdBy = importingUser.emailAddress
         if (referenceDataType.instanceOf(ReferenceEnumerationType)) {
-            (referenceDataType as ReferenceEnumerationType).referenceEnumerationValues.each { ev ->
+            (referenceDataType as ReferenceEnumerationType).referenceEnumerationValues.each {ev ->
                 ev.createdBy = importingUser.emailAddress
             }
         }
         checkFacetsAfterImportingCatalogueItem(referenceDataType)
     }
 
-    private void setCreatedBy(User creator, ReferenceDataType dataType) {
-        throw new ApiNotYetImplementedException('DTSXX', 'DataType setting created by')
-    }
-
-    private def findAllByReferenceDataModelId(Serializable referenceDataModel, Map paginate = [:]) {
+    def findAllByReferenceDataModelId(Serializable referenceDataModel, Map paginate = [:]) {
         ReferenceDataType.withFilter(ReferenceDataType.byReferenceDataModelId(referenceDataModel), paginate).list(paginate)
     }
 
-    private def findAllByReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable referenceDataModelId, String searchTerm, Map paginate = [:]) {
+    def findAllByReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(Serializable referenceDataModelId, String searchTerm, Map paginate = [:]) {
         ReferenceDataType.byReferenceDataModelIdAndLabelIlikeOrDescriptionIlike(referenceDataModelId, searchTerm).list(paginate)
     }
 
-    ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                                   boolean copySummaryMetadata = false) {
+    ReferenceDataType copyReferenceDataType(ReferenceDataModel copiedReferenceDataModel, ReferenceDataType original, User copier,
+                                            UserSecurityPolicyManager userSecurityPolicyManager,
+                                            boolean copySummaryMetadata = false) {
 
         ReferenceDataType copy
 

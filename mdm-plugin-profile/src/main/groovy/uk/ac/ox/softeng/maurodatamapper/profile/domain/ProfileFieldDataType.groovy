@@ -18,7 +18,6 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.domain
 
 import groovy.json.JsonSlurper
-import org.apache.commons.collections.functors.ExceptionPredicate
 import org.apache.commons.lang3.time.DateUtils
 
 enum ProfileFieldDataType {

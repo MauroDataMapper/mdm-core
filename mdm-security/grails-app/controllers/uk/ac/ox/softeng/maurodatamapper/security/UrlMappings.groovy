@@ -62,6 +62,7 @@ class UrlMappings {
                     get '/pendingCount'(controller: 'catalogueUser', action: 'pendingCount') // New URL
                     get "/userExists/$emailAddress"(controller: 'catalogueUser', action: 'userExists') // New URL, new JSON
                     post '/adminRegister'(controller: 'catalogueUser', action: 'adminRegister') // New URL
+                    get '/exportUsers'(controller: 'catalogueUser', action: 'exportUsers') //New URL
 
                     group "/$catalogueUserId", {
                         put '/adminPasswordReset'(controller: 'catalogueUser', action: 'adminPasswordReset') // New URL

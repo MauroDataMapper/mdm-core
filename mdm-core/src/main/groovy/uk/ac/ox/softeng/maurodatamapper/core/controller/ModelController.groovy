@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedExcept
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.FolderService
+import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolderService
 import uk.ac.ox.softeng.maurodatamapper.core.diff.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.exporter.ExporterService
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
@@ -48,7 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.multipart.support.AbstractMultipartHttpServletRequest
 
 import static org.springframework.http.HttpStatus.CREATED
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 
@@ -64,6 +64,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     ExporterService exporterService
     ImporterService importerService
+    VersionedFolderService versionedFolderService
 
     final String alternateParamsIdKey
 
@@ -217,6 +218,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         Folder folder = folderService.get(params.folderId)
         if (!folder) return notFound(Folder, params.folderId)
 
+        if (versionedFolderService.isVersionedFolderFamily(folder) && instance.finalised) return forbidden('Cannot move a finalised model into a VersionedFolder')
+
         instance.folder = folder
 
         updateResource(instance)
@@ -317,7 +320,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T source = queryForResource(params[alternateParamsIdKey])
         if (!source) return notFound(params[alternateParamsIdKey])
 
-        respond modelService.findCurrentMainBranchForModel(source)
+        respond modelService.findCurrentMainBranchByLabel(source.label)
     }
 
     def availableBranches() {
@@ -339,7 +342,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
+        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return forbidden('Cannot finalise a non-main branch')
+
+        if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot finalise a model inside a VersionedFolder')
 
         instance = modelService.finaliseModel(instance,
                                               currentUser,
@@ -372,6 +377,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
+        if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new branch model version of a model inside a VersionedFolder')
+
         T copy = getModelService().
             createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser, createNewVersionData.copyPermissions,
                                         currentUserSecurityPolicyManager) as T
@@ -402,6 +410,9 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
+        if (versionedFolderService.isVersionedFolderFamily(instance.folder)) return forbidden('Cannot create a new documentation version of a model inside a VersionedFolder')
+
         T copy = getModelService().
             createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions, currentUserSecurityPolicyManager) as T
 
@@ -428,6 +439,8 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T instance = queryForResource params[alternateParamsIdKey]
 
         if (!instance) return notFound(params[alternateParamsIdKey])
+
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
 
         if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params[alternateParamsIdKey])) {
             createNewVersionData.copyPermissions = false
@@ -540,6 +553,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
+        if (versionedFolderService.isVersionedFolderFamily(folder) && model.finalised) {
+            transactionStatus.setRollbackOnly()
+            return forbidden('Cannot import a finalised model into a VersionedFolder')
+        }
+
         model.folder = folder
 
         getModelService().validate(model)
@@ -613,6 +631,11 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return errorResponse(UNPROCESSABLE_ENTITY, 'No model imported')
         }
 
+        if (versionedFolderService.isVersionedFolderFamily(folder) && result.any {it.finalised}) {
+            transactionStatus.setRollbackOnly()
+            return forbidden('Cannot import finalised models into a VersionedFolder')
+        }
+
         result.each {m ->
             m.folder = folder
             getModelService().validate(m)
@@ -644,11 +667,25 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
         if (!instance) return notFound(params[alternateParamsIdKey])
 
-        T oldestAncestor = modelService.findOldestAncestor(instance)
+        T oldestAncestor = modelService.findOldestAncestor(instance) as T
 
-        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null, currentUserSecurityPolicyManager)
+        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null,
+                                                                                         null, true,
+                                                                                         currentUserSecurityPolicyManager)
         respond versionTreeModelList
+    }
 
+    def simpleModelVersionTree() {
+        T instance = queryForResource params[alternateParamsIdKey]
+
+        if (!instance) return notFound(params[alternateParamsIdKey])
+
+        T oldestAncestor = modelService.findOldestAncestor(instance) as T
+
+        List<VersionTreeModel> versionTreeModelList = modelService.buildModelVersionTree(oldestAncestor, null,
+                                                                                         null, false,
+                                                                                         currentUserSecurityPolicyManager)
+        respond versionTreeModelList.findAll {!it.newFork}
     }
 
     @Override

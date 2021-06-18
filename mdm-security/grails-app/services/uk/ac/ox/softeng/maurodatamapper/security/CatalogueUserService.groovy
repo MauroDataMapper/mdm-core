@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.security.rest.transport.UserProfilePicture
 import uk.ac.ox.softeng.maurodatamapper.security.utils.SecurityUtils
 
+import com.opencsv.CSVWriter
 import grails.gorm.transactions.Transactional
 
 import java.security.NoSuchAlgorithmException
@@ -221,6 +222,21 @@ class CatalogueUserService implements UserService {
 
     List<CatalogueUser> findAllPendingUsers(Map pagination = [:]) {
         CatalogueUser.withFilter(pagination, CatalogueUser.byPending()).list(pagination)
+    }
+
+    ByteArrayOutputStream convertToCsv(List<CatalogueUser> allUsers) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+        OutputStreamWriter streamWriter = new OutputStreamWriter(outputStream)
+        CSVWriter writer = new CSVWriter(streamWriter)
+        String[] headerUsers = ['Email Address', 'First Name', 'Last Name', 'Last Login', 'Organisation', 'Job Title', 'Disabled', 'Pending']
+        writer.writeNext(headerUsers, false)
+        allUsers.each { user ->
+            String[] userDetails = [user.emailAddress, user.firstName, user.lastName, user.lastLogin, user.organisation, user.jobTitle,
+                                       user.disabled, user.pending]
+            writer.writeNext(userDetails, false)
+        }
+        writer.close()
+        return outputStream
     }
 
     Long countPendingUsers(Map pagination = [:]) {

@@ -79,12 +79,12 @@ trait ModelItem<D extends Diffable, T extends Model> extends CatalogueItem<D> im
     @Override
     String buildPath() {
         String path = super.buildPath()
-        if (!breadcrumbTree) {
-            breadcrumbTree = new BreadcrumbTree(this)
-        } else {
+        if (breadcrumbTree) {
             if (!breadcrumbTree.matchesPath(path)) {
                 breadcrumbTree.update(this)
             }
+        } else {
+            breadcrumbTree = new BreadcrumbTree(this)
         }
         path
     }

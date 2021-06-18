@@ -44,8 +44,14 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         CallableConstraints.call(InformationAwareConstraints, delegate)
         CallableConstraints.call(VersionAwareConstraints, delegate)
 
-        label validator: { val, obj -> new VersionedFolderLabelValidator(obj).isValid(val) }
+        label validator: {val, obj -> new VersionedFolderLabelValidator(obj).isValid(val)}
         parentFolder nullable: true
+        childFolders validator: {val, obj ->
+            if (obj.ident()) {
+                return VersionedFolder.countByParentFolder(obj) ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
+            }
+            val.any {it.domainType == VersionedFolder.simpleName} ? ['Cannot have any VersionedFolders inside a VersionedFolder'] : true
+        }
     }
 
     static mapping = {
@@ -71,6 +77,27 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         by().eq('label', label)
     }
 
+    static DetachedCriteria<VersionedFolder> byLabelAndFinalisedAndLatestModelVersion(String label) {
+        byLabel(label)
+            .eq('finalised', true)
+            .order('modelVersion', 'desc')
+    }
+
+    static DetachedCriteria<VersionedFolder> byLabelAndBranchNameAndFinalisedAndLatestModelVersion(String label, String branchName) {
+        byLabelAndFinalisedAndLatestModelVersion(label)
+            .eq('branchName', branchName)
+    }
+
+    static DetachedCriteria<VersionedFolder> byLabelAndNotFinalised(String label) {
+        byLabel(label)
+            .eq('finalised', false)
+    }
+
+    static DetachedCriteria<VersionedFolder> byLabelAndBranchNameAndNotFinalised(String label, String branchName) {
+        byLabelAndNotFinalised(label)
+            .eq('branchName', branchName)
+    }
+
     static DetachedCriteria<VersionedFolder> byNoParentFolder() {
         by().isNull('parentFolder')
     }
@@ -91,7 +118,7 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         by()
             .isNotNull('path')
             .ne('path', '')
-            .findAll { f ->
+            .findAll {f ->
                 ids.any {
                     it in f.path.split('/')
                 }
@@ -140,5 +167,4 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         if (filters.label) criteria = criteria.ilike('label', "%${filters.label}%")
         criteria
     }
-
 }

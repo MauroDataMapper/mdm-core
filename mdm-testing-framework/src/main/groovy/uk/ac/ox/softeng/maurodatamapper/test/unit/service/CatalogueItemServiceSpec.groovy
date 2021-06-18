@@ -18,6 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.test.unit.service
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.ClassifierService
@@ -56,9 +57,11 @@ class CatalogueItemServiceSpec extends BaseUnitSpec {
         mockArtefact(EditService)
         mockArtefact(MetadataService)
         mockArtefact(RuleService)
+        mockArtefact(AuthorityService)
         mockDomains(Classifier, Folder, Annotation, Edit, Metadata, ReferenceFile, SemanticLink, BreadcrumbTree, Authority)
         checkAndSave(new Folder(label: 'catalogue', createdBy: StandardEmailAddress.UNIT_TEST))
         checkAndSave(new Authority(label: 'Test Authority', url: 'http:localhost', createdBy: StandardEmailAddress.UNIT_TEST))
+        checkAndSave(new Authority(label: 'Mauro Data Mapper', url: 'http://localhost', createdBy: StandardEmailAddress.UNIT_TEST))
     }
 
     Folder getTestFolder() {

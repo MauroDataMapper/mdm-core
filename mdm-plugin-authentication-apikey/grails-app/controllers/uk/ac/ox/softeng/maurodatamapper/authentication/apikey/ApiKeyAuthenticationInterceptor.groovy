@@ -35,7 +35,7 @@ class ApiKeyAuthenticationInterceptor implements SecurityPolicyManagerIntercepto
             .excludes(controller: 'authenticating', action: 'login')
             .excludes(controller: 'authenticating', action: 'logout')
         // We want to authenticate before we try to load the usersecuritypolicy manager
-        order = UserSecurityPolicyManagerInterceptor.ORDER - 100
+        order = UserSecurityPolicyManagerInterceptor.ORDER - 1000
     }
 
     boolean before() {

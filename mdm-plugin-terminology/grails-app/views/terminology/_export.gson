@@ -1,5 +1,6 @@
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
 import uk.ac.ox.softeng.maurodatamapper.terminology.Terminology
+import uk.ac.ox.softeng.maurodatamapper.terminology.item.term.TermRelationship
 
 inherits template: '/catalogueItem/export'
 model {
@@ -20,8 +21,9 @@ json {
     if (export.termRelationshipTypes) termRelationshipTypes tmpl.'/termRelationshipType/export'(export.termRelationshipTypes)
     if (export.terms) {
         terms tmpl.'/term/export'(export.terms)
-        if (export.getAllTermRelationships()) {
-            termRelationships tmpl.'/termRelationship/export'(export.getAllTermRelationships())
+        List<TermRelationship> relationships = export.getAllTermRelationships()
+        if (relationships) {
+            termRelationships tmpl.'/termRelationship/export'(relationships)
         }
     }
 }

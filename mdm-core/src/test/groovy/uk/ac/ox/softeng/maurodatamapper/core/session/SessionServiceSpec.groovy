@@ -30,15 +30,19 @@ import javax.servlet.http.HttpSession
  */
 class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<SessionService>, GrailsWebUnitTest {
 
+    def setup() {
+        service.servletContext = servletContext
+    }
+
     void 'test servlet context setup'() {
         expect:
-        service.getActiveSessionMap(servletContext) == null
+        service.getActiveSessionMap() == null
 
         when:
         initialiseContext()
 
         then:
-        service.getActiveSessionMap(servletContext) != null
+        service.getActiveSessionMap() != null
     }
 
     void 'create session info'() {
@@ -50,7 +54,7 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
         service.setUserEmailAddress(session, 'test@test.com')
         service.setUserName(session,'first','last')
         service.setUserOrganisation(session,'Test Organisation')
-        HttpSession httpSession = service.retrieveSession(servletContext, session.id)
+        HttpSession httpSession = service.retrieveSession(session.id)
 
         then:
         httpSession
@@ -75,7 +79,7 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
         service.setLastAccessedUrl(session, '/test/url')
 
         and:
-        HttpSession httpSession = service.retrieveSession(servletContext, session.id)
+        HttpSession httpSession = service.retrieveSession(session.id)
 
         then:
         httpSession
@@ -103,7 +107,7 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
         service.destroySession(session)
 
         and:
-        HttpSession httpSession = service.retrieveSession(servletContext, session.id)
+        HttpSession httpSession = service.retrieveSession(session.id)
 
         then:
         !httpSession
@@ -112,7 +116,7 @@ class SessionServiceSpec extends BaseUnitSpec implements ServiceUnitTest<Session
     private void initialiseContext() {
         try {
             // we have to wrap due to thrown exception from mock servlet
-            service.initialiseToContext(servletContext)
+            service.initialiseToContext()
         } catch (UnsupportedOperationException ignored) {
             //ignore
         }

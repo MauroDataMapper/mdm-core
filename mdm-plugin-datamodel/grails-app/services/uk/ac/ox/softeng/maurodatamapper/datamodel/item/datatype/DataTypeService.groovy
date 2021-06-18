@@ -24,6 +24,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItemService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadata
 import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.SummaryMetadataService
@@ -232,64 +233,6 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
         super.save(args, domain)
     }
 
-    def saveAll(Collection<DataType> dataTypes, boolean batching = true) {
-        List<Classifier> classifiers = dataTypes.collectMany {it.classifiers ?: []} as List<Classifier>
-        if (classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
-        }
-
-        Collection<DataType> alreadySaved = dataTypes.findAll {it.ident() && it.isDirty()}
-        Collection<DataType> notSaved = dataTypes.findAll {!it.ident()}
-
-        if (alreadySaved) {
-            log.trace('Straight saving {} already saved DataTypes ', alreadySaved.size())
-            DataType.saveAll(alreadySaved)
-        }
-
-        if (notSaved) {
-            if (batching) {
-                log.trace('Batch saving {} new DataTypes in batches of {}', notSaved.size(), DataType.BATCH_SIZE)
-                List batch = []
-                int count = 0
-
-                notSaved.each {dt ->
-                    dt.dataElements?.clear()
-                    batch += dt
-                    count++
-                    if (count % DataType.BATCH_SIZE == 0) {
-                        batchSave(batch)
-                        batch.clear()
-                    }
-
-                }
-                batchSave(batch)
-                batch.clear()
-            } else {
-                log.trace('Straight saving {} new DataTypes', notSaved.size())
-                notSaved.each {dt ->
-                    save(flush: false, validate: false, dt)
-                    updateFacetsAfterInsertingCatalogueItem(dt)
-                }
-            }
-        }
-    }
-
-    void batchSave(List<DataType> dataTypes) {
-        long start = System.currentTimeMillis()
-        log.trace('Performing batch save of {} DataTypes', dataTypes.size())
-
-        DataType.saveAll(dataTypes)
-        dataTypes.each {dt ->
-            updateFacetsAfterInsertingCatalogueItem(dt)
-        }
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
     DataType validate(DataType dataType) {
         dataType.validate()
         dataType
@@ -410,7 +353,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
     }
 
     DataType copyDataType(DataModel copiedDataModel, DataType original, User copier, UserSecurityPolicyManager userSecurityPolicyManager,
-                          boolean copySummaryMetadata = false) {
+                          boolean copySummaryMetadata = false, CopyInformation copyInformation = new CopyInformation()) {
 
         DataType copy
 
@@ -436,7 +379,7 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                 throw new ApiInternalException('DTSXX', 'DataType domain type is unknown and therefore cannot be copied')
         }
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataTypes(copy)
@@ -448,8 +391,9 @@ class DataTypeService extends ModelItemService<DataType> implements DefaultDataT
                                           DataType copy,
                                           User copier,
                                           UserSecurityPolicyManager userSecurityPolicyManager,
-                                          boolean copySummaryMetadata) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+                                          boolean copySummaryMetadata,
+                                         copyInformation = new CopyInformation()) {
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)

@@ -45,7 +45,7 @@ abstract class ModelInterceptor extends TieredAccessSecurableResourceInterceptor
     @Override
     List<String> getReadAccessMethods() {
         ['exportModel', 'newForkModel', 'latestModelVersion', 'latestFinalisedModel', 'currentMainBranch', 'availableBranches',
-         'modelVersionTree']
+         'modelVersionTree', 'simpleModelVersionTree']
     }
 
     @Override

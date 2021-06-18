@@ -18,7 +18,7 @@
 package uk.ac.ox.softeng.maurodatamapper.security.policy
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
-import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
 import uk.ac.ox.softeng.maurodatamapper.core.file.UserImageFile
@@ -41,6 +41,7 @@ import grails.core.GrailsClass
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
+import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 
 import java.util.function.Predicate
 
@@ -71,6 +72,18 @@ import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.S
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.STANDARD_EDIT_ACTIONS
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.UPDATE_ACTION
 import static uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions.USER_ADMIN_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_CONTAINER_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_FOLDER_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CONTAINER_ADMIN_MODEL_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CREATE_FOLDER
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CREATE_MODEL
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CREATE_MODEL_ITEM
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.CREATE_VERSIONED_FOLDER
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.DISALLOWED_MODELITEM_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.EDITOR_CONTAINER_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.EDITOR_FOLDER_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.EDITOR_MODEL_TREE_ACTIONS
+import static uk.ac.ox.softeng.maurodatamapper.security.policy.TreeActions.MOVE_TO_VERSIONED_FOLDER
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.APPLICATION_ADMIN_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.AUTHOR_ROLE_NAME
 import static uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole.CONTAINER_ADMIN_ROLE_NAME
@@ -99,6 +112,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     List<SecurableResourceGroupRole> securableResourceGroupRoles
     Set<VirtualSecurableResourceGroupRole> virtualSecurableResourceGroupRoles
     Set<GroupRole> applicationPermittedRoles
+    HibernateProxyHandler hibernateProxyHandler = new HibernateProxyHandler()
 
     GrailsApplication grailsApplication
 
@@ -193,7 +207,7 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     @Override
     List<UUID> listReadableSecuredResourceIds(Class<? extends SecurableResource> securableResourceClass) {
         virtualSecurableResourceGroupRoles
-            .findAll {it.domainType == securableResourceClass.simpleName}
+            .findAll {it.domainType == securableResourceClass.simpleName || it.alternateDomainType == securableResourceClass.simpleName}
             .collect {it.domainId}
             .toSet()
             .toList()
@@ -221,10 +235,15 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         }
         // Allow reviewers to create annotations on a model if they have reviewer status
         if (Utils.parentClassIsAssignableFromChild(Annotation, resourceClass) &&
-                (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
-            Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass)))
-                        {
+            (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
+             Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass))) {
             return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, REVIEWER_ROLE_NAME)
+        }
+        // Allow editors to edit/create permissions on models and containers no matter what state the secured resource is in
+        if (Utils.parentClassIsAssignableFromChild(SecurableResourceGroupRole, resourceClass) &&
+            (Utils.parentClassIsAssignableFromChild(Model, owningSecureResourceClass) ||
+             Utils.parentClassIsAssignableFromChild(Container, owningSecureResourceClass))) {
+            return getSpecificLevelAccessToSecuredResource(owningSecureResourceClass, owningSecureResourceId, EDITOR_ROLE_NAME)
         }
         // Allow users to create their own user image file
         if (Utils.parentClassIsAssignableFromChild(UserImageFile, resourceClass) &&
@@ -347,13 +366,12 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                     // Can the model be finalised
                     VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
                     return role ? role.canFinalise() : false
-                    //                case NEW_MODEL_VERSION_ACTION:
-                    //                case NEW_BRANCH_MODEL_VERSION_ACTION:
-                    //                case NEW_DOCUMENTATION_ACTION:
-                    //                    // If model is finalised then these actions are allowed
-                    //                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass,
-                    //                    id, EDITOR_ROLE_NAME)
-                    //                    return role ? role.isFinalised() : false
+                case NEW_MODEL_VERSION_ACTION:
+                case NEW_BRANCH_MODEL_VERSION_ACTION:
+                case NEW_DOCUMENTATION_ACTION:
+                    // If model is finalised then these actions are allowed
+                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+                    return role ? role.canVersion() : false
                     //                case MERGE_INTO_ACTION:
                     //                    // If the model is finalised then these actions are NOT allowed
                     //                    VirtualSecurableResourceGroupRole role = getSpecificLevelAccessToSecuredResource(securableResourceClass,
@@ -394,11 +412,8 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
     }
 
     @Override
-    List<String> userAvailableActions(Class resourceClass, UUID id) {
-        if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return securedResourceUserAvailableActions(resourceClass, id).toSet().sort()
-        }
-        throw new ApiNotYetImplementedException('USPM01', 'Obtain user actions for non-secured resource')
+    List<String> userAvailableActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        return securedResourceUserAvailableActions(securableResourceClass, id).toSet().sort()
     }
 
     @Override
@@ -430,12 +445,36 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
                                       UUID owningSecureResourceId) {
 
         if (Utils.parentClassIsAssignableFromChild(SecurableResource, resourceClass)) {
-            return userAvailableActions(resourceClass, id)
+            return userAvailableActions(resourceClass as Class<? extends SecurableResource>, id)
         }
 
         List<String> owningResourceActions = userAvailableActions(owningSecureResourceClass, owningSecureResourceId)
         if (Utils.parentClassIsAssignableFromChild(ModelItem, resourceClass)) {
             return owningResourceActions - DISALLOWED_MODELITEM_ACTIONS
+        }
+        return owningResourceActions
+    }
+
+    @Override
+    List<String> userAvailableTreeActions(String securableResourceDomainType, UUID id) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, securableResourceDomainType)
+        userAvailableTreeActions(grailsClass.getClazz(), id)
+    }
+
+    List<String> userAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+        securedResourceUserAvailableTreeActions(hibernateProxyHandler.unwrapIfProxy(securableResourceClass) as Class<? extends SecurableResource>, id).toSet().sort()
+    }
+
+    @Override
+    List<String> userAvailableTreeActions(String resourceDomainType, UUID id, String owningSecureResourceDomainType, UUID owningSecureResourceId) {
+        GrailsClass grailsClass = Utils.lookupGrailsDomain(grailsApplication, resourceDomainType)
+        if (Utils.parentClassIsAssignableFromChild(SecurableResource, grailsClass.getClazz())) {
+            return userAvailableTreeActions(grailsClass.getClazz() as Class<? extends SecurableResource>, id)
+        }
+
+        List<String> owningResourceActions = userAvailableTreeActions(owningSecureResourceDomainType, owningSecureResourceId)
+        if (Utils.parentClassIsAssignableFromChild(ModelItem, grailsClass.getClazz())) {
+            return owningResourceActions - DISALLOWED_MODELITEM_TREE_ACTIONS
         }
         return owningResourceActions
     }
@@ -545,6 +584,50 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         []
     }
 
+    private List<String> securedResourceUserAvailableTreeActions(Class<? extends SecurableResource> securableResourceClass, UUID id) {
+
+        VirtualSecurableResourceGroupRole role
+
+        if (Utils.parentClassIsAssignableFromChild(Model, securableResourceClass)) {
+            // The below should get editor level versioning and finalisation rights
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+            if (role) {
+                return updateBaseTreeActions(CONTAINER_ADMIN_MODEL_TREE_ACTIONS, role)
+            }
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+            if (role) {
+                return updateBaseTreeActions(EDITOR_MODEL_TREE_ACTIONS, role)
+            }
+            return []
+        }
+
+        if (Utils.parentClassIsAssignableFromChild(Folder, securableResourceClass)) {
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)
+            if (role) {
+                return updateBaseTreeActions(CONTAINER_ADMIN_FOLDER_TREE_ACTIONS, role)
+            }
+            role = getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)
+            if (role) {
+                return updateBaseTreeActions(EDITOR_FOLDER_TREE_ACTIONS, role)
+            }
+            return []
+        }
+
+        // Allow for non-folder containers
+        if (Utils.parentClassIsAssignableFromChild(Container, securableResourceClass)) {
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, CONTAINER_ADMIN_ROLE_NAME)) {
+                return CONTAINER_ADMIN_CONTAINER_TREE_ACTIONS
+            }
+            if (getSpecificLevelAccessToSecuredResource(securableResourceClass, id, EDITOR_ROLE_NAME)) {
+                return EDITOR_CONTAINER_TREE_ACTIONS
+            }
+            return []
+        }
+
+        log.warn('Attempt to gain available tree actions for unhandled secured class {} id {}', securableResourceClass.simpleName, id)
+        []
+    }
+
     private List<String> updateBaseModelActionsForEditor(List<String> baseActions, VirtualSecurableResourceGroupRole role) {
         List<String> updatedActions = new ArrayList<>(baseActions)
         if (role.canFinalise()) updatedActions << FINALISE_ACTION
@@ -562,8 +645,23 @@ class GroupBasedUserSecurityPolicyManager implements UserSecurityPolicyManager {
         if (role.isFinalised()) {
             updatedActions.removeAll(DISALLOWED_ONCE_FINALISED_ACTIONS)
         }
-        if (role.canVersion()) {
+        if (role.canVersion() && isAuthenticated()) {
             updatedActions.addAll(READER_VERSIONING_ACTIONS)
+        }
+        updatedActions
+    }
+
+    private List<String> updateBaseTreeActions(List<String> baseActions, VirtualSecurableResourceGroupRole role) {
+        List<String> updatedActions = new ArrayList<>(baseActions)
+        if (role.isFinalised()) {
+            updatedActions.removeAll([MOVE_TO_VERSIONED_FOLDER, CREATE_FOLDER, CREATE_MODEL, CREATE_MODEL_ITEM, CREATE_VERSIONED_FOLDER])
+        }
+        if (role.hasVersionedContents()) {
+            // Cannot move anything versioned controlled into a VF, this includes a folder which contains VFs
+            updatedActions.remove(MOVE_TO_VERSIONED_FOLDER)
+        }
+        if (role.isVersionControlled()) {
+            updatedActions.remove(CREATE_VERSIONED_FOLDER)
         }
         updatedActions
     }

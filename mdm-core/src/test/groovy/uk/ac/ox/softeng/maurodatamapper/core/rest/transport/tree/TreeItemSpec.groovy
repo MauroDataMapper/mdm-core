@@ -52,7 +52,7 @@ class TreeItemSpec extends BaseUnitSpec {
     void 'test no children BasicModel tree'() {
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', false, false)
+        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', false, false, [])
 
         then:
         basicModel.id
@@ -71,7 +71,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false)
+        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false, [])
 
         then:
         basicModel.id
@@ -92,7 +92,7 @@ class TreeItemSpec extends BaseUnitSpec {
         !treeItem.hasChildren()
 
         when:
-        treeItem.recursivelyAddToChildren(basicModel.modelItems.collect {new ModelItemTreeItem(it, false)})
+        treeItem.recursivelyAddToChildren(basicModel.modelItems.collect {new ModelItemTreeItem(it, false, [])})
 
         then:
         treeItem.id == basicModel.id
@@ -136,7 +136,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false)
+        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false, [])
 
         then:
         basicModel.id
@@ -158,7 +158,7 @@ class TreeItemSpec extends BaseUnitSpec {
 
         when:
         treeItem.recursivelyAddToChildren(
-            basicModel.getAllModelItems().collect {new ModelItemTreeItem(it as ModelItem, (it as BasicModelItem).hasChildren())})
+            basicModel.getAllModelItems().collect {new ModelItemTreeItem(it as ModelItem, (it as BasicModelItem).hasChildren(), [])})
         //treeItem.recursivelyAddToChildren(dataClass2.childModelItems.collect {new TreeItem(it as ModelItem, (it as BasicModelItem).hasChildren())})
 
         then:
@@ -244,7 +244,7 @@ class TreeItemSpec extends BaseUnitSpec {
         checkAndSave(basicModel)
 
         when:
-        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false)
+        TreeItem treeItem = new ModelTreeItem(basicModel, 'folder', true, false, [])
 
         then:
         basicModel.id
@@ -265,7 +265,7 @@ class TreeItemSpec extends BaseUnitSpec {
         !treeItem.hasChildren()
 
         when:
-        treeItem.recursivelyAddToChildren(basicModel.getAllModelItems().collect {new ModelItemTreeItem(it, null)})
+        treeItem.recursivelyAddToChildren(basicModel.getAllModelItems().collect {new ModelItemTreeItem(it, null, [])})
 
         then:
         treeItem.id == basicModel.id

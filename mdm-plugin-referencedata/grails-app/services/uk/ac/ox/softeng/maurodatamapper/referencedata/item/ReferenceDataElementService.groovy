@@ -154,54 +154,6 @@ class ReferenceDataElementService extends ModelItemService<ReferenceDataElement>
         results
     }
 
-    def saveAll(Collection<ReferenceDataElement> dataElements) {
-
-        List<Classifier> classifiers = dataElements.collectMany { it.classifiers ?: [] } as List<Classifier>
-        if (classifiers) {
-            log.trace('Saving {} classifiers')
-            classifierService.saveAll(classifiers)
-        }
-
-        Collection<ReferenceDataElement> alreadySaved = dataElements.findAll { it.ident() && it.isDirty() }
-        Collection<ReferenceDataElement> notSaved = dataElements.findAll { !it.ident() }
-
-        if (alreadySaved) {
-            log.trace('Straight saving {} already saved DataElements', alreadySaved.size())
-            ReferenceDataElement.saveAll(alreadySaved)
-        }
-
-        if (notSaved) {
-            log.trace('Batch saving {} new DataElements in batches of {}', notSaved.size(), ReferenceDataElement.BATCH_SIZE)
-            List batch = []
-            int count = 0
-
-            notSaved.each { de ->
-
-                batch += de
-                count++
-                if (count % ReferenceDataElement.BATCH_SIZE == 0) {
-                    batchSave(batch)
-                    batch.clear()
-                }
-            }
-            batchSave(batch)
-            batch.clear()
-        }
-    }
-
-    void batchSave(List<ReferenceDataElement> dataElements) {
-        long start = System.currentTimeMillis()
-        log.trace('Performing batch save of {} DataElements', dataElements.size())
-
-        ReferenceDataElement.saveAll(dataElements)
-        dataElements.each { updateFacetsAfterInsertingCatalogueItem(it) }
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
     void matchUpDataTypes(ReferenceDataModel referenceDataModel, Collection<ReferenceDataElement> dataElements) {
         if (referenceDataModel.referenceDataTypes == null) referenceDataModel.referenceDataTypes = [] as HashSet
         if (dataElements) {

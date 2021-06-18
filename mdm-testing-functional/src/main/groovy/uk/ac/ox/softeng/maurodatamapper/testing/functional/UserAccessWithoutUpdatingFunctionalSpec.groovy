@@ -250,6 +250,11 @@ abstract class UserAccessWithoutUpdatingFunctionalSpec extends ReadOnlyUserAcces
 
     @Transactional
     void cleanUpRoles(String... ids) {
+        cleanUpRoles(ids.toList())
+    }
+
+    @Transactional
+    void cleanUpRoles(Collection<String> ids) {
         log.info('Cleaning up roles and groups')
         log.debug('Cleaning up {} roles for ids {}', SecurableResourceGroupRole.count(), ids)
         SecurableResourceGroupRole.bySecurableResourceIds(ids.collect { Utils.toUuid(it) }).deleteAll()

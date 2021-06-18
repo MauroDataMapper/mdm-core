@@ -83,4 +83,8 @@ class ArrayDiff<T extends Diffable> extends FieldDiff<Collection<T>> {
     static <K extends Diffable> ArrayDiff<K> builder(Class<K> arrayClass) {
         new ArrayDiff<K>()
     }
+
+    static boolean isArrayDiff(Diff diff) {
+        diff.diffType == ArrayDiff.simpleName
+    }
 }

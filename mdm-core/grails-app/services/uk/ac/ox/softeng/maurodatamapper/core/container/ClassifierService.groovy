@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItemService
 import uk.ac.ox.softeng.maurodatamapper.core.model.ContainerService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
+import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -120,7 +121,7 @@ class ClassifierService extends ContainerService<Classifier> {
     List<Classifier> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm) {
         log.debug('Searching readable classifiers for search term in label')
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
-        Classifier.luceneTreeLabelSearch(readableIds.collect { it.toString() }, searchTerm)
+        Classifier.luceneTreeLabelSearch(readableIds.collect {it.toString()}, searchTerm)
     }
 
     @Override
@@ -158,8 +159,8 @@ class ClassifierService extends ContainerService<Classifier> {
 
     def saveAll(Collection<Classifier> classifiers) {
 
-        Collection<Classifier> alreadySaved = classifiers.findAll { it.ident() && it.isDirty() }
-        Collection<Classifier> notSaved = classifiers.findAll { !it.ident() }
+        Collection<Classifier> alreadySaved = classifiers.findAll {it.ident() && it.isDirty()}
+        Collection<Classifier> notSaved = classifiers.findAll {!it.ident()}
 
         if (alreadySaved) {
             log.debug('Straight saving {} classifiers', alreadySaved.size())
@@ -171,7 +172,7 @@ class ClassifierService extends ContainerService<Classifier> {
             List batch = []
             int count = 0
 
-            notSaved.each { de ->
+            notSaved.each {de ->
 
                 batch += de
                 count++
@@ -265,7 +266,7 @@ class ClassifierService extends ContainerService<Classifier> {
         // Filter out all the classifiers which the user can't read
         Collection<Classifier> allClassifiersInItem = catalogueItem.classifiers
         List<UUID> readableIds = userSecurityPolicyManager.listReadableSecuredResourceIds(Classifier)
-        allClassifiersInItem.findAll { it.id in readableIds }.toList()
+        new PaginatedResultList(allClassifiersInItem.findAll {it.id in readableIds}.toList(), pagination)
     }
 
     List<Classifier> findAllByParentClassifierId(UUID parentClassifierId, Map pagination = [:]) {
@@ -280,13 +281,13 @@ class ClassifierService extends ContainerService<Classifier> {
     }
 
     def <C extends CatalogueItem> Classifier addClassifierToCatalogueItem(Class<C> catalogueItemClass, UUID catalogueItemId, Classifier classifier) {
-        CatalogueItemService service = catalogueItemServices.find { it.handles(catalogueItemClass) }
+        CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItemClass)}
         service.addClassifierToCatalogueItem(catalogueItemId, classifier)
         classifier
     }
 
     def <C extends CatalogueItem> void removeClassifierFromCatalogueItem(Class<C> catalogueItemClass, UUID catalogueItemId, Classifier classifier) {
-        CatalogueItemService service = catalogueItemServices.find { it.handles(catalogueItemClass) }
+        CatalogueItemService service = catalogueItemServices.find {it.handles(catalogueItemClass)}
         service.removeClassifierFromCatalogueItem(catalogueItemId, classifier)
         classifier
     }
@@ -294,7 +295,7 @@ class ClassifierService extends ContainerService<Classifier> {
     void checkClassifiers(User catalogueUser, def classifiedItem) {
         if (!classifiedItem.classifiers) return
 
-        classifiedItem.classifiers.each { it ->
+        classifiedItem.classifiers.each {it ->
             it.createdBy = it.createdBy ?: classifiedItem.createdBy
         }
 
@@ -303,13 +304,13 @@ class ClassifierService extends ContainerService<Classifier> {
 
         classifiedItem.classifiers?.clear()
 
-        List<Classifier> foundOrCreated = classifiers.collect { cls ->
+        List<Classifier> foundOrCreated = classifiers.collect {cls ->
             findOrCreateClassifier(catalogueUser, cls)
         }
 
         batchSave(foundOrCreated)
 
-        foundOrCreated.each { cls ->
+        foundOrCreated.each {cls ->
             classifiedItem.addToClassifiers(cls)
         }
     }
@@ -317,13 +318,13 @@ class ClassifierService extends ContainerService<Classifier> {
     List<CatalogueItem> findAllReadableCatalogueItemsByClassifierId(UserSecurityPolicyManager userSecurityPolicyManager,
                                                                     UUID classifierId, Map pagination = [:]) {
         Classifier classifier = get(classifierId)
-        catalogueItemServices.collect { service ->
+        catalogueItemServices.collect {service ->
             service.findAllReadableByClassifier(userSecurityPolicyManager, classifier)
         }.findAll().flatten()
     }
 
     private void cleanoutClassifier(Classifier classifier) {
-        classifier.childClassifiers.each { cleanoutClassifier(it) }
-        catalogueItemServices.each { it.removeAllFromClassifier(classifier) }
+        classifier.childClassifiers.each {cleanoutClassifier(it)}
+        catalogueItemServices.each {it.removeAllFromClassifier(classifier)}
     }
 }

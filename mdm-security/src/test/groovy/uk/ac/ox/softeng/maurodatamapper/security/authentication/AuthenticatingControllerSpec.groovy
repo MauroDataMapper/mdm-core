@@ -47,7 +47,8 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         SessionController sessionController = mockController(SessionController)
         implementSecurityUsers('unitTest')
         sessionService = new SessionService()
-        sessionService.initialiseToContext(session.servletContext)
+        sessionService.servletContext = servletContext
+        sessionService.initialiseToContext()
         sessionService.storeSession(session)
         sessionController.sessionService = sessionService
     }
@@ -70,7 +71,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         response.errorMessage == 'Authentication Information not provided'
 
         and:
-        !sessionService.isAuthenticatedSession(session, session.id)
+        !sessionService.isAuthenticatedSession(session.id)
     }
 
     void 'test login no such user'() {
@@ -91,7 +92,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         response.status == UNAUTHORIZED.value()
 
         and:
-        !sessionService.isAuthenticatedSession(session, session.id)
+        !sessionService.isAuthenticatedSession(session.id)
     }
 
     void 'test login invalid credentials'() {
@@ -112,7 +113,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         response.status == UNAUTHORIZED.value()
 
         and:
-        !sessionService.isAuthenticatedSession(session, session.id)
+        !sessionService.isAuthenticatedSession(session.id)
     }
 
     void 'test login valid credentials'() {
@@ -141,7 +142,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         !response.json.password
 
         and:
-        sessionService.isAuthenticatedSession(session, session.id)
+        sessionService.isAuthenticatedSession(session.id)
         session.getAttribute('emailAddress') == admin.emailAddress
 
         when:
@@ -205,7 +206,7 @@ class AuthenticatingControllerSpec extends BaseUnitSpec implements ControllerUni
         session.isNew()
 
         when:
-        sessionService.isAuthenticatedSession(session, session.id)
+        sessionService.isAuthenticatedSession(session.id)
 
         then:
         thrown(ApiUnauthorizedException)

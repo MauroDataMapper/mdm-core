@@ -34,6 +34,8 @@ class BootStrap {
 
     AuthorityService authorityService
 
+    DataModelService dataModelService
+
     def init = {servletContext ->
 
         log.debug('Main bootstrap complete')
@@ -51,6 +53,9 @@ class BootStrap {
                     }
                     if (DataModel.countByLabel(BootstrapModels.FINALISED_EXAMPLE_DATAMODEL_NAME) == 0) {
                         BootstrapModels.buildAndSaveFinalisedSimpleDataModel(messageSource, folder, authority)
+                    }
+                    if (DataModel.countByLabel(BootstrapModels.MODEL_VERSION_TREE_DATAMODEL_NAME) == 0) {
+                        BootstrapModels.buildAndSaveModelVersionTree(messageSource, folder, authority, dataModelService)
                     }
                     if (DataModel.countByAuthorityIsNull() != 0) {
                         log.warn('DataModels missing authority, updating with default authority')

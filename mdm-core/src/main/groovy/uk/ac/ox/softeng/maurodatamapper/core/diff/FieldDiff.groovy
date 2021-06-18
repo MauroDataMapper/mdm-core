@@ -24,6 +24,7 @@ class FieldDiff<T> extends Diff<T> {
     FieldDiff() {
     }
 
+
     FieldDiff<T> fieldName(String fieldName) {
         this.fieldName = fieldName
         this
@@ -64,5 +65,9 @@ class FieldDiff<T> extends Diff<T> {
 
     static <K> FieldDiff<K> builder(Class<K> fieldClass) {
         new FieldDiff<K>()
+    }
+
+    static boolean isFieldDiff(Diff diff) {
+        diff.diffType == FieldDiff.simpleName
     }
 }

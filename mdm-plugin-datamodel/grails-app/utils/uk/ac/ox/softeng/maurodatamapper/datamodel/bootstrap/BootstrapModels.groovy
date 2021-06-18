@@ -23,11 +23,15 @@ import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
+import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.EnumerationType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.PrimitiveType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
+import uk.ac.ox.softeng.maurodatamapper.security.User
+import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import groovy.util.logging.Slf4j
@@ -45,6 +49,7 @@ class BootstrapModels {
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
+    public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Model Version Tree DataModel'
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel simpleDataModel = DataModel.findByLabel(SIMPLE_DATAMODEL_NAME)
@@ -80,8 +85,6 @@ class BootstrapModels {
             dataClass.addToMetadata(createdBy: DEVELOPMENT, namespace: 'test.com/simple', key: 'mdk1', value: 'mdv1')
 
             checkAndSave(messageSource, simpleDataModel)
-        } else {
-            log.debug("simple datamodel already exists")
         }
 
         log.debug("Simple Test DataModel id = {}", simpleDataModel.id.toString())
@@ -234,5 +237,90 @@ class BootstrapModels {
         }
 
         simpleDataModel
+    }
+
+
+    static void buildAndSaveModelVersionTree(MessageSource messageSource, Folder folder, Authority authority, DataModelService dataModelService) {
+        /*
+                                                 /- anotherFork
+    v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
+      \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
+       \_ fork ---- main                                               \_ interestingBranch (v5)
+    */
+        log.debug("Creating model version tree")
+        User dev = [emailAddress: DEVELOPMENT] as User
+        UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
+
+        // V1
+        DataModel v1 = new DataModel(createdBy: DEVELOPMENT,
+                                     label: MODEL_VERSION_TREE_DATAMODEL_NAME,
+                                     folder: folder,
+                                     authority: authority)
+        checkAndSave(messageSource, v1)
+        v1 = dataModelService.finaliseModel(v1, dev, Version.from('1'), null, null)
+        checkAndSave(messageSource, v1)
+
+        // Fork and finalise fork
+        DataModel fork = dataModelService.createNewForkModel("$MODEL_VERSION_TREE_DATAMODEL_NAME fork", v1, dev, false, policyManager)
+        checkAndSave(messageSource, fork)
+        fork = dataModelService.finaliseModel(fork, dev, Version.from('1'), null, null)
+        checkAndSave(messageSource, fork)
+
+        // Fork main branch
+        DataModel forkMain = dataModelService.createNewBranchModelVersion('main', fork, dev, false, policyManager)
+        checkAndSave(messageSource, forkMain)
+
+        // V2 main branch
+        DataModel v2 = dataModelService.createNewBranchModelVersion('main', v1, dev, false, policyManager)
+        checkAndSave(messageSource, v2)
+
+        // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        DataModel newBranch = dataModelService.createNewBranchModelVersion('newBranch', v1, dev, false, policyManager)
+        checkAndSave(messageSource, newBranch)
+
+        // Finalise the main branch to v2
+        v2 = dataModelService.finaliseModel(v2, dev, Version.from('2'), null, null)
+        checkAndSave(messageSource, v2)
+
+        // V3 main branch
+        DataModel v3 = dataModelService.createNewBranchModelVersion('main', v2, dev, false, policyManager)
+        checkAndSave(messageSource, v3)
+        // Finalise the main branch to v3
+        v3 = dataModelService.finaliseModel(v3, dev, Version.from('3'), null, null)
+        checkAndSave(messageSource, v3)
+
+        // V4 main branch
+        DataModel v4 = dataModelService.createNewBranchModelVersion('main', v3, dev, false, policyManager)
+        checkAndSave(messageSource, v4)
+
+        // testBranch from v3 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        DataModel testBranch = dataModelService.createNewBranchModelVersion('testBranch', v3, dev, false, policyManager)
+        checkAndSave(messageSource, testBranch)
+
+        // Finalise main branch to v4
+        v4 = dataModelService.finaliseModel(v4, dev, Version.from('4'), null, null)
+        checkAndSave(messageSource, v4)
+
+        // Fork from v4
+        DataModel anotherFork = dataModelService.createNewForkModel("$MODEL_VERSION_TREE_DATAMODEL_NAME another fork", v4, dev, false, policyManager)
+        checkAndSave(messageSource, anotherFork)
+
+        // V5 and finalise
+        DataModel v5 = dataModelService.createNewBranchModelVersion('main', v4, dev, false, policyManager)
+        checkAndSave(messageSource, v5)
+        v5 = dataModelService.finaliseModel(v5, dev, Version.from('5'), null, null)
+        checkAndSave(messageSource, v5)
+
+        // Main branch
+        DataModel main = dataModelService.createNewBranchModelVersion('main', v5, dev, false, policyManager)
+        checkAndSave(messageSource, main)
+
+        // Another branch
+        DataModel anotherBranch = dataModelService.createNewBranchModelVersion('anotherBranch', v5, dev, false, policyManager)
+        checkAndSave(messageSource, anotherBranch)
+
+        // Interesting branch
+        DataModel interestingBranch = dataModelService.createNewBranchModelVersion('interestingBranch', v5, dev, false, policyManager)
+        checkAndSave(messageSource, interestingBranch)
     }
 }

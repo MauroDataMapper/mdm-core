@@ -50,9 +50,9 @@ abstract class ContainerService<K extends Container> implements SecurableResourc
 
     abstract String getContainerPropertyNameInModel()
 
-    abstract List<K> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm)
+    abstract List<Container> findAllReadableContainersBySearchTerm(UserSecurityPolicyManager userSecurityPolicyManager, String searchTerm)
 
-    abstract List<K> findAllContainersInside(UUID containerId)
+    abstract List<Container> findAllContainersInside(UUID containerId)
 
     abstract K findDomainByLabel(String label)
 

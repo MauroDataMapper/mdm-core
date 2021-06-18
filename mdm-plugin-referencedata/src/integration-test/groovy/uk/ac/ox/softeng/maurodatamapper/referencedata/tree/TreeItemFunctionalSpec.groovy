@@ -99,6 +99,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -106,6 +107,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Functional Test DataModel",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -118,6 +120,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "ReferenceDataModel",
         "label": "Functional Test DataModel 2",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -141,6 +144,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Classifier",
     "label": "Functional Test Classifier",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false
   },
   {
@@ -148,6 +152,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Classifier",
     "label": "Functional Test Classifier 2",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false
   }
 ]''')
@@ -404,6 +409,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -412,6 +418,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "label": "Functional Test Model deleted",
         "modelVersion": "1.0.0",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": true,
         "finalised": true,
         "superseded": false,
@@ -465,6 +472,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -473,6 +481,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "label": "Functional Test Model doc superseded",
         "modelVersion": "1.0.0",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": true,
         "superseded": true,
@@ -530,6 +539,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Folder",
         "label": "Functional Test Folder",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "children": [
           {
@@ -538,6 +548,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
             "label": "Functional Test Model model superseded",
             "modelVersion": "1.0.0",
             "hasChildren": false,
+            "availableActions": [],
             "deleted": false,
             "finalised": true,
             "superseded": true,

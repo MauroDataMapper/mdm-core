@@ -51,19 +51,14 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         id = terminology1.id
     }
 
-    protected Terminology checkAndSaveNewVersion(Terminology terminology) {
-        check(terminology)
-        terminologyService.saveModelWithContent(terminology)
-    }
-
-    protected Terminology getAndFinaliseDataModel(UUID idToFinalise = id) {
+    Terminology getAndFinaliseDataModel(UUID idToFinalise = id) {
         Terminology terminology = terminologyService.get(idToFinalise)
         terminologyService.finaliseModel(terminology, admin, null, null, null)
         checkAndSave(terminology)
         terminology
     }
 
-    protected UUID createAndSaveNewBranchModel(String branchName, Terminology base) {
+    UUID createAndSaveNewBranchModel(String branchName, Terminology base) {
         Terminology terminology = terminologyService.createNewBranchModelVersion(branchName, base, admin, false, adminSecurityPolicyManager)
         if (terminology.hasErrors()) {
             GormUtils.outputDomainErrors(messageSource, terminology)
@@ -74,7 +69,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         terminology.id
     }
 
-    protected Terminology createSaveAndGetNewBranchModel(String branchName, Terminology base) {
+    Terminology createSaveAndGetNewBranchModel(String branchName, Terminology base) {
         UUID id = createAndSaveNewBranchModel(branchName, base)
         terminologyService.get(id)
     }
@@ -295,7 +290,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         draftModel.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
 
         when:
-        def currentMainBranch = terminologyService.findCurrentMainBranchForModel(testModel)
+        def currentMainBranch = terminologyService.findCurrentMainBranchByLabel(testModel.label)
 
         then:
         currentMainBranch.id == draftModel.id
@@ -325,8 +320,6 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         def draftModel = createSaveAndGetNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, finalisedModel)
 
         then:
-        checkAndSave(testModel)
-        checkAndSave(draftModel)
         testModel.modelVersion == null
         testModel.branchName == 'test'
         finalisedModel.modelVersion == Version.from('2')
@@ -339,8 +332,8 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
 
         then:
         availableBranches.size() == 2
-        availableBranches.each { it.id in [draftModel.id, testModel.id] }
-        availableBranches.each { it.label == terminology.label }
+        availableBranches.each {it.id in [draftModel.id, testModel.id]}
+        availableBranches.each {it.label == terminology.label}
     }
 
     void 'TSM01 : test finding merge difference between two terminologies'() {
@@ -364,7 +357,7 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         right.branchName == 'right'
 
         when:
-        def mergeDiff = terminologyService.getMergeDiffForModels(left, right)
+        def mergeDiff = terminologyService.getMergeDiffForModels(terminologyService.get(left.id), terminologyService.get(right.id))
 
         then:
         mergeDiff.diffs.size == 1

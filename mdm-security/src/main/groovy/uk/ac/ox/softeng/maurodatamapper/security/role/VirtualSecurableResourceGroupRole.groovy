@@ -17,14 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.security.role
 
-import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
-import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.container.VersionedFolder
-import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResource
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
-import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import org.springframework.core.Ordered
 
@@ -38,52 +33,38 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     private UserGroup userGroup
     private int order
     private boolean finalised
-    private boolean finalisable
     // Defines if resource COULD be finalised, other factors may apply
-    private boolean versionable
+    private boolean finalisable
     // Defines if resource COULD be versioned, other factors may apply
+    private boolean versionable
+    // Has the resource had a version set outside of its control, i.e. by the parent
+    private boolean versionControlled
+    // Does the resource contain versioned contents
+    private boolean versionedContents
+
     private UUID dependsOnDomainIdAccess
 
-    VirtualSecurableResourceGroupRole() {
+    // Should only use the service to build a new object
+    protected VirtualSecurableResourceGroupRole() {
         finalised = false
         finalisable = false
         versionable = false
+        versionControlled = false
     }
 
-    VirtualSecurableResourceGroupRole fromSecurableResourceGroupRole(SecurableResourceGroupRole securableResourceGroupRole) {
-        this.forSecurableResource(securableResourceGroupRole.securableResource)
-            .definedByGroup(securableResourceGroupRole.userGroup)
-            .definedByAccessLevel(securableResourceGroupRole.groupRole)
-    }
-
-    VirtualSecurableResourceGroupRole forSecurableResource(SecurableResource securableResource) {
+    protected VirtualSecurableResourceGroupRole forSecurableResource(SecurableResource securableResource) {
         this.domainType = securableResource.domainType
         this.domainId = securableResource.resourceId
-        if (domainType == VersionedFolder.simpleName) alternateDomainType = Folder.simpleName
+        this
+    }
 
-        if (Utils.parentClassIsAssignableFromChild(Folder, securableResource.class)) {
-            dependsOnDomainIdAccess = (securableResource as Folder).parentFolder?.id
-        } else if (Utils.parentClassIsAssignableFromChild(Classifier, securableResource.class)) {
-            dependsOnDomainIdAccess = (securableResource as Classifier).parentClassifier?.id
-        }
+    VirtualSecurableResourceGroupRole withAlternateDomainType(String alternateDomainType) {
+        this.alternateDomainType = alternateDomainType
+        this
+    }
 
-        if (Utils.parentClassIsAssignableFromChild(Model, securableResource.class)) {
-            Model model = securableResource as Model
-            dependsOnDomainIdAccess = model.folder?.id
-            asFinalised model.finalised
-            // If the container is versioned then models inside it cannot be finalised
-            asFinalisable model.folder.domainType != VersionedFolder.simpleName &&
-                          model.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-            asVersionable model.folder.domainType != VersionedFolder.simpleName
-        }
-
-        if (Utils.parentClassIsAssignableFromChild(VersionedFolder, securableResource.class)) {
-            VersionedFolder versionedFolder = securableResource as VersionedFolder
-            asFinalised versionedFolder.finalised
-            asFinalisable versionedFolder.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
-            asVersionable true
-        }
-
+    VirtualSecurableResourceGroupRole withDependencyOnAccessToDomainId(UUID domainIdDependency) {
+        this.dependsOnDomainIdAccess = domainIdDependency
         this
     }
 
@@ -115,6 +96,16 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
 
     VirtualSecurableResourceGroupRole asVersionable(boolean canVersion) {
         this.versionable = canVersion
+        this
+    }
+
+    VirtualSecurableResourceGroupRole asVersionControlled(boolean versionControlled) {
+        this.versionControlled = versionControlled
+        this
+    }
+
+    VirtualSecurableResourceGroupRole withVersionedContents(boolean versionedContents) {
+        this.versionedContents = versionedContents
         this
     }
 
@@ -194,7 +185,15 @@ class VirtualSecurableResourceGroupRole implements Ordered, Comparable<VirtualSe
     }
 
     boolean canVersion() {
-        finalised && versionable
+        !versionControlled && finalised && versionable
+    }
+
+    boolean isVersionControlled() {
+        domainType == VersionedFolder.simpleName || versionControlled
+    }
+
+    boolean hasVersionedContents() {
+        versionedContents
     }
 
     int getOrder() {

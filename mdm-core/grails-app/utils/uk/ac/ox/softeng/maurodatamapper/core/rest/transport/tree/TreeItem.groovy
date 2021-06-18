@@ -46,9 +46,10 @@ class TreeItem implements Comparable<TreeItem> {
     Boolean childrenExist
 
     int domainTypeIndex
+    List<String> availableActions
 
 
-    protected TreeItem(GormEntity object, UUID id, String label, String domainType, Boolean childrenExist) {
+    protected TreeItem(GormEntity object, UUID id, String label, String domainType, Boolean childrenExist, List<String> availableTreeActions) {
         childSet = [] as HashSet
         renderChildren = false
         depth = 0
@@ -59,6 +60,7 @@ class TreeItem implements Comparable<TreeItem> {
         this.label = label
         this.domainType = domainType
         this.childrenExist = childrenExist
+        this.availableActions = availableTreeActions
 
         if (object.instanceOf(PathAware)) {
             object.buildPath()
@@ -134,7 +136,7 @@ class TreeItem implements Comparable<TreeItem> {
         parentId != rootId
     }
 
-    TreeItem addAllToChildren(Collection<TreeItem> childrenToAdd) {
+    TreeItem addAllToChildren(Collection<? extends TreeItem> childrenToAdd) {
         childSet.addAll(childrenToAdd)
         childrenExist = true
         this
@@ -168,8 +170,8 @@ class TreeItem implements Comparable<TreeItem> {
      * @param childrenToAdd
      * @return
      */
-    TreeItem recursivelyAddToChildren(Collection<TreeItem> childrenToAdd, int indent = 2, boolean addMissingOnly = false) {
-        Map<String, List<TreeItem>> levelGrouped = childrenToAdd.groupBy {it.getParentId() == id ? 'alpha' : 'beta'}
+    TreeItem recursivelyAddToChildren(Collection<? extends TreeItem> childrenToAdd, int indent = 2, boolean addMissingOnly = false) {
+        Map<String, List<TreeItem>> levelGrouped = (childrenToAdd.groupBy {it.getParentId() == id ? 'alpha' : 'beta'} as Map<String, List<TreeItem>>)
 
         if (levelGrouped.alpha) {
             List<TreeItem> toAdd = addMissingOnly || childSet.empty ?
@@ -229,67 +231,4 @@ class TreeItem implements Comparable<TreeItem> {
             parentId = pathIds?.last()
         }
     }
-
-    /*
-
-
-
-
-
-
-        void setDocumentationVersion(String documentationVersionStr) {
-            this.documentationVersion = documentationVersionStr ? Version.from(documentationVersionStr) : null
-        }
-
-
-
-
-
-
-        TreeItem addToChildren(TreeItem child) {
-            children += child
-            childrenExist = true
-            this
-        }
-
-        Boolean any(@DelegatesTo(Set) @ClosureParams(value = SimpleType,
-            options = 'ox.softeng.maurodatamapper.core.rest.transport.TreeItem') Closure closure) {
-            children.any closure
-        }
-
-        Boolean contains(String label) {
-            this.label == label || children.any {it.contains(label)}
-        }
-
-
-        void recursivelySetRenderChildren(boolean render) {
-            renderChildren = render
-            children.each {it.recursivelySetRenderChildren(render)}
-        }
-
-
-
-        static List<TreeItem> listFrom(Collection<? extends GormEntity> items, Map<UUID, Long> childExistence, boolean contentSort) {
-            List<TreeItem> tree = items.collect {new TreeItem(it, childExistence[it.ident()])}
-            contentSort ? sort(tree) : tree
-        }
-
-        static List<TreeItem> listFrom(Collection<Folder> folders) {
-            sort folders.collect {new TreeItem(it)}
-        }
-
-        static List<TreeItem> sort(Collection<TreeItem> treeItems) {
-            treeItems.sort()
-        }
-
-
-
-        static Double extractNumber(String s) {
-            try {
-                s.findAll(/\d+(\.\d+)?/).join('').toDouble()
-            } catch (NumberFormatException ignored) {
-                0
-            }
-        }
-        */
 }

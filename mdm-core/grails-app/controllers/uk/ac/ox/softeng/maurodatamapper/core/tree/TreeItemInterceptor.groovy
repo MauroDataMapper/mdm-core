@@ -61,6 +61,9 @@ class TreeItemInterceptor implements MdmInterceptor {
             }
 
             if (isShow()) {
+                if (params.containerId) {
+                    return checkActionAuthorisationOnUnsecuredResource(params.containerClass, params.containerId, params.containerClass, params.containerid)
+                }
                 mapDomainTypeToClass('catalogueItem', true)
                 // Verify the user can see the catalogue item to allow them to see the tree
                 if (Utils.parentClassIsAssignableFromChild(SecurableResource, params.catalogueItemClass)) {

@@ -25,6 +25,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.search.SearchService
 import uk.ac.ox.softeng.maurodatamapper.search.PaginatedLuceneResult
@@ -34,7 +35,6 @@ import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import static org.springframework.http.HttpStatus.NO_CONTENT
 
 class VersionedFolderController extends EditLoggingController<VersionedFolder> {
@@ -144,7 +144,7 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!instance) return notFound(params.versionedFolderId)
 
-        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return METHOD_NOT_ALLOWED
+        if (instance.branchName != VersionAwareConstraints.DEFAULT_BRANCH_NAME) return forbidden('Cannot finalise a non-main branch')
 
         instance = versionedFolderService.finaliseFolder(instance, currentUser,
                                                          finaliseData.version,
@@ -178,6 +178,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!instance) return notFound(params.versionedFolderId)
 
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
+
         VersionedFolder copy = versionedFolderService.createNewBranchModelVersion(createNewVersionData.branchName, instance, currentUser,
                                                                                   createNewVersionData.copyPermissions,
                                                                                   currentUserSecurityPolicyManager)
@@ -200,6 +202,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         VersionedFolder instance = queryForResource(params.versionedFolderId)
 
         if (!instance) return notFound(params.versionedFolderId)
+
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
 
         if (!currentUserSecurityPolicyManager.userCanCreateSecuredResourceId(resource, params.versionedFolderId)) {
             createNewVersionData.copyPermissions = false
@@ -232,6 +236,8 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
         if (!instance) return notFound(params.versionedFolderId)
 
+        if (!instance.finalised) return forbidden('Cannot create a new version of a non-finalised model')
+
         VersionedFolder copy = versionedFolderService.createNewDocumentationVersion(instance, currentUser, createNewVersionData.copyPermissions,
                                                                                     currentUserSecurityPolicyManager)
 
@@ -244,6 +250,70 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         saveResponse(copy)
     }
 
+
+    def latestFinalisedModel() {
+        VersionedFolder source = queryForResource(params.versionedFolderId)
+        if (!source) return notFound(params.versionedFolderId)
+
+        respond versionedFolderService.findLatestFinalisedModelByLabel(source.label)
+    }
+
+    def latestModelVersion() {
+        VersionedFolder source = queryForResource(params.versionedFolderId)
+        if (!source) return notFound(params.versionedFolderId)
+
+        respond versionedFolderService.getLatestModelVersionByLabel(source.label)
+    }
+
+    def currentMainBranch() {
+        VersionedFolder source = queryForResource(params.versionedFolderId)
+        if (!source) return notFound(params.versionedFolderId)
+
+        respond versionedFolderService.findCurrentMainBranchForModel(source)
+    }
+
+    def availableBranches() {
+        VersionedFolder source = queryForResource(params.versionedFolderId)
+        if (!source) return notFound(params.versionedFolderId)
+
+        respond versionedFolderService.findAllAvailableBranchesByLabel(source.label)
+    }
+
+    def modelVersionTree() {
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+        if (!instance) return notFound(params.versionedFolderId)
+
+        VersionedFolder oldestAncestor = versionedFolderService.findOldestAncestor(instance)
+
+        List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null,
+                                                                                                   null, true,
+                                                                                                   currentUserSecurityPolicyManager)
+        respond versionTreeModelList
+    }
+
+    def commonAncestor() {
+        VersionedFolder left = queryForResource(params.versionedFolderId)
+        if (!left) return notFound(params.versionedFolderId)
+
+        VersionedFolder right = queryForResource(params.otherVersionedFolderId)
+        if (!right) return notFound(params.otherVersionedFolderId)
+
+        respond versionedFolderService.findCommonAncestorBetweenModels(left, right)
+    }
+
+    def simpleModelVersionTree() {
+        VersionedFolder instance = queryForResource(params.versionedFolderId)
+        if (!instance) return notFound(params.versionedFolderId)
+
+        VersionedFolder oldestAncestor = versionedFolderService.findOldestAncestor(instance) as VersionedFolder
+
+        List<VersionTreeModel> versionTreeModelList = versionedFolderService.buildModelVersionTree(oldestAncestor, null, null, false,
+                                                                                                   currentUserSecurityPolicyManager)
+
+        respond versionTreeModelList.findAll {!it.newFork}
+    }
+
+
     @Override
     protected VersionedFolder queryForResource(Serializable id) {
         versionedFolderService.get(id)
@@ -253,9 +323,6 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
     protected VersionedFolder createResource() {
         //Explicitly set the exclude map to empty so that the transient property VersionedFolder.userGroups is bound (if present) from the request
         VersionedFolder resource = super.createResource([exclude: []]) as VersionedFolder
-        if (params.versionedFolderId) {
-            resource.parentFolder = versionedFolderService.get(params.versionedFolderId)
-        }
         if (params.folderId) {
             resource.parentFolder = folderService.get(params.folderId)
         }
@@ -289,12 +356,10 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
 
     @Override
     protected List<VersionedFolder> listAllReadableResources(Map params) {
-        if (params.versionedFolderId) {
-            return versionedFolderService.findAllByParentId(params.versionedFolderId, params)
+        if (params.folderId) {
+            return versionedFolderService.findAllByParentId(params.folderId, params)
         }
-
-        def r = versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
-        r
+        versionedFolderService.findAllByUser(currentUserSecurityPolicyManager, params)
     }
 
     @Override
@@ -318,5 +383,4 @@ class VersionedFolderController extends EditLoggingController<VersionedFolder> {
         }
         instance
     }
-
 }

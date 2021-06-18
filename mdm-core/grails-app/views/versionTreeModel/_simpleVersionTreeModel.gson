@@ -1,0 +1,13 @@
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
+
+model {
+    VersionTreeModel versionTreeModel
+}
+
+json {
+    id versionTreeModel.id
+    branch versionTreeModel.branchName
+    modelVersion versionTreeModel.modelVersion?.toString()
+    documentationVersion versionTreeModel.documentationVersion?.toString()
+    displayName versionTreeModel.simpleDisplayName
+}

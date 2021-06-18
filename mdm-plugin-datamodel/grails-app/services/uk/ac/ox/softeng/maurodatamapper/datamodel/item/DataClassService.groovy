@@ -35,6 +35,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.ReferenceTypeService
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
@@ -291,19 +292,6 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataElements
     }
 
-    void batchSave(List<DataClass> dataClasses) {
-        long start = System.currentTimeMillis()
-        log.trace('Performing batch save of {} DataClasses', dataClasses.size())
-
-        DataClass.saveAll(dataClasses)
-        dataClasses.each {updateFacetsAfterInsertingCatalogueItem(it)}
-
-        sessionFactory.currentSession.flush()
-        sessionFactory.currentSession.clear()
-
-        log.trace('Batch save took {}', Utils.getTimeString(System.currentTimeMillis() - start))
-    }
-
     private void removeAssociations(DataClass dataClass) {
         removeSemanticLinks(dataClass)
         removeReferenceTypes(dataClass)
@@ -359,14 +347,15 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             Map<String, List<ReferenceType>> dmGrouped = labelReferenceTypes.groupBy {it.dataModel ? 'dataModel' : 'noDataModel'}
 
             // There will be only 1 datamodel owned type as we've already merged datamodel owned datatypes
-            // If no datamodel owned, then we merge no datamodel and assign
-            if (!dmGrouped.dataModel) {
+            if (dmGrouped.dataModel) {
+                // Merge all unowned reference types into the owned one
+                dataTypeService.mergeDataTypes(dmGrouped.dataModel.first(), dmGrouped.noDataModel)
+            } else {
+                // If no datamodel owned, then we merge no datamodel and assign
                 log.warn('No ReferenceType with label {} is owned by DataModel, merging existing and assigning to DataModel', label)
                 ReferenceType keep = dataTypeService.mergeDataTypes(dmGrouped.dataModel)
                 dataModel.addToDataTypes(keep)
-            } else {
-                // Merge all unowned reference types into the owned one
-                dataTypeService.mergeDataTypes(dmGrouped.dataModel.first(), dmGrouped.noDataModel)
+
             }
         }
     }
@@ -592,23 +581,28 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     }
 
     DataClass copyDataClassMatchingAllReferenceTypes(DataModel copiedDataModel, DataClass original, User copier,
-                                                     UserSecurityPolicyManager userSecurityPolicyManager, Serializable parentDataClassId) {
-        DataClass copiedDataClass = copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager, parentDataClassId)
+                                                     UserSecurityPolicyManager userSecurityPolicyManager, Serializable parentDataClassId,
+                                                     CopyInformation copyInformation = new CopyInformation()) {
+        DataClass copiedDataClass = copyDataClass(copiedDataModel, original, copier, userSecurityPolicyManager, parentDataClassId, false,
+                                                  copyInformation)
         log.debug('Copied required DataClass, now checking for reference classes which haven\'t been matched or added')
         matchUpAndAddMissingReferenceTypeClasses(copiedDataModel, original.dataModel, copier, userSecurityPolicyManager)
         copiedDataClass
 
     }
 
+
     @Override
     DataClass copy(Model copiedDataModel, DataClass original, UserSecurityPolicyManager userSecurityPolicyManager,
-                   UUID parentDataClassId = null) {
-        copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager, parentDataClassId)
+                   UUID parentDataClassId = null, CopyInformation copyInformation = new CopyInformation()) {
+        copyDataClass(copiedDataModel as DataModel, original, userSecurityPolicyManager.user, userSecurityPolicyManager,
+                      parentDataClassId, false, copyInformation)
     }
 
     DataClass copyDataClass(DataModel copiedDataModel, DataClass original, User copier,
                             UserSecurityPolicyManager userSecurityPolicyManager,
-                            Serializable parentDataClassId = null, boolean copySummaryMetadata = false) {
+                            Serializable parentDataClassId = null, boolean copySummaryMetadata = false,
+                            CopyInformation copyInformation = new CopyInformation()) {
         if (!original) throw new ApiInternalException('DCSXX', 'Cannot copy non-existent DataClass')
 
         DataClass copy = new DataClass(
@@ -616,7 +610,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             maxMultiplicity: original.maxMultiplicity
         )
 
-        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata)
+        copy = copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copySummaryMetadata, copyInformation)
         setCatalogueItemRefinesCatalogueItem(copy, original, copier)
 
         copiedDataModel.addToDataClasses(copy)
@@ -629,7 +623,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
             throw new ApiInvalidModelException('DCS01', 'Copied DataClass is invalid', copy.errors, messageSource)
 
         original.referenceTypes.each {refType ->
-            ReferenceType referenceType = copiedDataModel.referenceTypes.find {it.label == refType.label}
+            ReferenceType referenceType = copiedDataModel.referenceTypes.find {it.label == refType.label }
             if (!referenceType) {
                 referenceType = new ReferenceType(createdBy: copier.emailAddress, label: refType.label)
                 copiedDataModel.addToDataTypes(referenceType)
@@ -655,8 +649,9 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
                                            DataClass copy,
                                            User copier,
                                            UserSecurityPolicyManager userSecurityPolicyManager,
-                                           boolean copySummaryMetadata) {
-        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager)
+                                           boolean copySummaryMetadata, CopyInformation copyInformation) {
+
+        copy = super.copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, copyInformation)
         if (copySummaryMetadata) {
             summaryMetadataService.findAllByMultiFacetAwareItemId(original.id).each {
                 copy.addToSummaryMetadata(label: it.label, summaryMetadataType: it.summaryMetadataType, createdBy: copier.emailAddress)
@@ -669,8 +664,8 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     DataClass copyCatalogueItemInformation(DataClass original,
                                            DataClass copy,
                                            User copier,
-                                           UserSecurityPolicyManager userSecurityPolicyManager) {
-        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false)
+                                           UserSecurityPolicyManager userSecurityPolicyManager, CopyInformation copyInformation = null) {
+        copyCatalogueItemInformation(original, copy, copier, userSecurityPolicyManager, false, copyInformation)
     }
 
     void matchUpAndAddMissingReferenceTypeClasses(DataModel copiedDataModel, DataModel originalDataModel, User copier,
@@ -698,7 +693,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
     private Set<ReferenceType> getAllNestedReferenceTypes(DataClass dataClass) {
         Set<ReferenceType> referenceTypes = []
         referenceTypes.addAll(dataClass.referenceTypes ?: [])
-        referenceTypes.addAll(dataClass.dataElements.dataType.findAll {it.instanceOf(ReferenceType)})
+        referenceTypes.addAll(dataClass.dataElements.dataType.findAll {it.instanceOf(ReferenceType) })
         dataClass.dataClasses.each {
             referenceTypes.addAll(getAllNestedReferenceTypes(it))
         }
@@ -707,7 +702,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
 
     private Set<ReferenceType> findAllEmptyReferenceTypes(DataModel dataModel) {
-        dataModel.referenceTypes.findAll {!(it as ReferenceType).referenceClass} as Set<ReferenceType>
+        dataModel.referenceTypes.findAll {!(it as ReferenceType).referenceClass } as Set<ReferenceType>
     }
 
 
@@ -746,7 +741,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
 
     @Override
     List<DataClass> findAllReadableByClassifier(UserSecurityPolicyManager userSecurityPolicyManager, Classifier classifier) {
-        DataClass.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id)}
+        DataClass.byClassifierId(classifier.id).list().findAll {userSecurityPolicyManager.userCanReadSecuredResourceId(DataModel, it.model.id) }
     }
 
     @Override
@@ -787,7 +782,7 @@ class DataClassService extends ModelItemService<DataClass> implements SummaryMet
         dataClasses.each {de ->
             fromDataClasses.each {fde ->
                 // If no link already exists then add a new one
-                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id}) {
+                if (!alreadyExistingLinks.any {it.multiFacetAwareItemId == de.id && it.targetMultiFacetAwareItemId == fde.id }) {
                     setDataClassIsFromDataClass(de, fde, user)
                 }
             }

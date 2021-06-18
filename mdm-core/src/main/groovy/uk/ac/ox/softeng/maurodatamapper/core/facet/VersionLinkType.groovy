@@ -21,9 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.facet
  * @since 12/02/2018
  */
 enum VersionLinkType {
-    @Deprecated SUPERSEDED_BY_FORK('Superseded By Fork'), // DEPRECATED
     NEW_FORK_OF('New Fork Of'),
-    @Deprecated SUPERSEDED_BY_DOCUMENTATION('Superseded By Documentation'),
     NEW_DOCUMENTATION_VERSION_OF('New Documentation Version Of'),
     NEW_MODEL_VERSION_OF('New Model Version Of')
 

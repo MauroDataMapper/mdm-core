@@ -92,7 +92,9 @@ class Term implements ModelItem<Term, Terminology> {
             key   : 'term_id',
             column: 'codeSet_id'
         ]
-        terminology index: 'term_terminology_idx', cascade: 'all-delete-orphan'
+        terminology index: 'term_terminology_idx'
+        sourceTermRelationships cascade: 'all-delete-orphan'
+        targetTermRelationships cascade: 'all-delete-orphan'
     }
 
     static mappedBy = [
@@ -125,7 +127,9 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     def beforeValidate() {
-        label = code && definition ? "${code}: ${definition}".toString() : null
+        label = code && definition && code == definition ? "${code}".toString() :
+                code && definition ? "${code}: ${definition}".toString() :
+                null
         buildTermPath()
         beforeValidateModelItem()
     }
@@ -171,12 +175,12 @@ class Term implements ModelItem<Term, Terminology> {
 
     void setCode(String code) {
         this.code = code
-        this.label = "${this.code}: ${this.definition}"
+        this.label = this.code == this.definition ? "${this.code}" : "${this.code}: ${this.definition}"
     }
 
     void setDefinition(String definition) {
         this.definition = definition
-        this.label = "${this.code}: ${this.definition}"
+        this.label = this.code == this.definition ? "${this.code}" : "${this.code}: ${this.definition}"
     }
 
     String buildTermPath() {
@@ -186,12 +190,13 @@ class Term implements ModelItem<Term, Terminology> {
         } else {
             path = ''
         }
-        if (!breadcrumbTree) {
-            breadcrumbTree = new BreadcrumbTree(this)
-        } else {
+        if (breadcrumbTree) {
             if (!breadcrumbTree.matchesPath(path)) {
                 breadcrumbTree.update(this)
             }
+
+        } else {
+            breadcrumbTree = new BreadcrumbTree(this)
         }
         path
     }
@@ -210,12 +215,12 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     Term addToSourceTermRelationships(TermRelationship termRelationship) {
-        termRelationship.targetTerm.addTo('targetTermRelationships', termRelationship)
+        termRelationship.targetTerm?.addTo('targetTermRelationships', termRelationship)
         addTo('sourceTermRelationships', termRelationship)
     }
 
     Term addToTargetTermRelationships(TermRelationship termRelationship) {
-        termRelationship.sourceTerm.addTo('sourceTermRelationships', termRelationship)
+        termRelationship.sourceTerm?.addTo('sourceTermRelationships', termRelationship)
         addTo('targetTermRelationships', termRelationship)
     }
 
@@ -301,10 +306,9 @@ class Term implements ModelItem<Term, Terminology> {
     }
 
     /**
-    * A path used when exporting as part of a CodeSet
-    */
-    String termPath()
-    {
+     * A path used when exporting as part of a CodeSet
+     */
+    String termPath() {
         "te:${terminology.label}|tm:${label}"
     }
 

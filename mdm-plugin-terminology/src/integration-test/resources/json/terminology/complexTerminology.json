@@ -1,0 +1,1512 @@
+{
+  "terminology": {
+    "id": "${json-unit.matches:id}",
+    "label": "Complex Test Terminology",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "classifiers": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "test classifier",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "test classifier2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "metadata": [
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "terminology.test.com/simple",
+        "key": "mdk1",
+        "value": "mdv1",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "terminology.test.com",
+        "key": "mdk2",
+        "value": "mdv2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "namespace": "terminology.test.com/simple",
+        "key": "mdk2",
+        "value": "mdv2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "annotations": [
+      {
+        "id": "${json-unit.matches:id}",
+        "createdBy": "development@test.com",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "label": "test annotation 1"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "createdBy": "development@test.com",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "label": "test annotation 2",
+        "description": "with description"
+      }
+    ],
+    "author": "Test Bootstrap",
+    "organisation": "Oxford BRC",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "url": "http://localhost",
+      "label": "Test Authority"
+    },
+    "termRelationshipTypes": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "is-a",
+        "displayLabel": "Is A",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "parentalRelationship": false,
+        "childRelationship": false
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "is-a-part-of",
+        "displayLabel": "Is A Part Of",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "parentalRelationship": false,
+        "childRelationship": true
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "broaderThan",
+        "displayLabel": "Broader Than",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "parentalRelationship": true,
+        "childRelationship": false
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "narrowerThan",
+        "displayLabel": "Narrower Than",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "parentalRelationship": false,
+        "childRelationship": false
+      }
+    ],
+    "terms": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT00: Complex Test Term 00",
+        "description": "This is a very important description",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT00",
+        "definition": "Complex Test Term 00",
+        "depth": 1,
+        "url": "https://google.co.uk"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT1: Complex Test Term 1",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT1",
+        "definition": "Complex Test Term 1",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT2: Complex Test Term 2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT2",
+        "definition": "Complex Test Term 2",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT3: Complex Test Term 3",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT3",
+        "definition": "Complex Test Term 3",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT4: Complex Test Term 4",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT4",
+        "definition": "Complex Test Term 4",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT5: Complex Test Term 5",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT5",
+        "definition": "Complex Test Term 5",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT6: Complex Test Term 6",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT6",
+        "definition": "Complex Test Term 6",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT7: Complex Test Term 7",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT7",
+        "definition": "Complex Test Term 7",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT8: Complex Test Term 8",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT8",
+        "definition": "Complex Test Term 8",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT9: Complex Test Term 9",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT9",
+        "definition": "Complex Test Term 9",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT10: Complex Test Term 10",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT10",
+        "definition": "Complex Test Term 10",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT11: Complex Test Term 11",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT11",
+        "definition": "Complex Test Term 11",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT12: Complex Test Term 12",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT12",
+        "definition": "Complex Test Term 12",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT13: Complex Test Term 13",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT13",
+        "definition": "Complex Test Term 13",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT14: Complex Test Term 14",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT14",
+        "definition": "Complex Test Term 14",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT15: Complex Test Term 15",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT15",
+        "definition": "Complex Test Term 15",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT16: Complex Test Term 16",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT16",
+        "definition": "Complex Test Term 16",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT17: Complex Test Term 17",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT17",
+        "definition": "Complex Test Term 17",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT18: Complex Test Term 18",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT18",
+        "definition": "Complex Test Term 18",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT19: Complex Test Term 19",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT19",
+        "definition": "Complex Test Term 19",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT20: Complex Test Term 20",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT20",
+        "definition": "Complex Test Term 20",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT21: Complex Test Term 21",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT21",
+        "definition": "Complex Test Term 21",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT22: Complex Test Term 22",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT22",
+        "definition": "Complex Test Term 22",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT23: Complex Test Term 23",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT23",
+        "definition": "Complex Test Term 23",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT24: Complex Test Term 24",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT24",
+        "definition": "Complex Test Term 24",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT25: Complex Test Term 25",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT25",
+        "definition": "Complex Test Term 25",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT26: Complex Test Term 26",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT26",
+        "definition": "Complex Test Term 26",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT27: Complex Test Term 27",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT27",
+        "definition": "Complex Test Term 27",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT28: Complex Test Term 28",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT28",
+        "definition": "Complex Test Term 28",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT29: Complex Test Term 29",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT29",
+        "definition": "Complex Test Term 29",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT30: Complex Test Term 30",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT30",
+        "definition": "Complex Test Term 30",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT31: Complex Test Term 31",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT31",
+        "definition": "Complex Test Term 31",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT32: Complex Test Term 32",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT32",
+        "definition": "Complex Test Term 32",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT33: Complex Test Term 33",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT33",
+        "definition": "Complex Test Term 33",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT34: Complex Test Term 34",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT34",
+        "definition": "Complex Test Term 34",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT35: Complex Test Term 35",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT35",
+        "definition": "Complex Test Term 35",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT36: Complex Test Term 36",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT36",
+        "definition": "Complex Test Term 36",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT37: Complex Test Term 37",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT37",
+        "definition": "Complex Test Term 37",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT38: Complex Test Term 38",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT38",
+        "definition": "Complex Test Term 38",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT39: Complex Test Term 39",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT39",
+        "definition": "Complex Test Term 39",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT40: Complex Test Term 40",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT40",
+        "definition": "Complex Test Term 40",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT41: Complex Test Term 41",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT41",
+        "definition": "Complex Test Term 41",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT42: Complex Test Term 42",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT42",
+        "definition": "Complex Test Term 42",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT43: Complex Test Term 43",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT43",
+        "definition": "Complex Test Term 43",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT44: Complex Test Term 44",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT44",
+        "definition": "Complex Test Term 44",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT45: Complex Test Term 45",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT45",
+        "definition": "Complex Test Term 45",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT46: Complex Test Term 46",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT46",
+        "definition": "Complex Test Term 46",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT47: Complex Test Term 47",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT47",
+        "definition": "Complex Test Term 47",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT48: Complex Test Term 48",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT48",
+        "definition": "Complex Test Term 48",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT49: Complex Test Term 49",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT49",
+        "definition": "Complex Test Term 49",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT50: Complex Test Term 50",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT50",
+        "definition": "Complex Test Term 50",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT51: Complex Test Term 51",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT51",
+        "definition": "Complex Test Term 51",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT52: Complex Test Term 52",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT52",
+        "definition": "Complex Test Term 52",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT53: Complex Test Term 53",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT53",
+        "definition": "Complex Test Term 53",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT54: Complex Test Term 54",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT54",
+        "definition": "Complex Test Term 54",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT55: Complex Test Term 55",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT55",
+        "definition": "Complex Test Term 55",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT56: Complex Test Term 56",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT56",
+        "definition": "Complex Test Term 56",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT57: Complex Test Term 57",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT57",
+        "definition": "Complex Test Term 57",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT58: Complex Test Term 58",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT58",
+        "definition": "Complex Test Term 58",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT59: Complex Test Term 59",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT59",
+        "definition": "Complex Test Term 59",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT60: Complex Test Term 60",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT60",
+        "definition": "Complex Test Term 60",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT61: Complex Test Term 61",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT61",
+        "definition": "Complex Test Term 61",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT62: Complex Test Term 62",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT62",
+        "definition": "Complex Test Term 62",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT63: Complex Test Term 63",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT63",
+        "definition": "Complex Test Term 63",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT64: Complex Test Term 64",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT64",
+        "definition": "Complex Test Term 64",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT65: Complex Test Term 65",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT65",
+        "definition": "Complex Test Term 65",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT66: Complex Test Term 66",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT66",
+        "definition": "Complex Test Term 66",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT67: Complex Test Term 67",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT67",
+        "definition": "Complex Test Term 67",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT68: Complex Test Term 68",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT68",
+        "definition": "Complex Test Term 68",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT69: Complex Test Term 69",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT69",
+        "definition": "Complex Test Term 69",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT70: Complex Test Term 70",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT70",
+        "definition": "Complex Test Term 70",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT71: Complex Test Term 71",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT71",
+        "definition": "Complex Test Term 71",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT72: Complex Test Term 72",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT72",
+        "definition": "Complex Test Term 72",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT73: Complex Test Term 73",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT73",
+        "definition": "Complex Test Term 73",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT74: Complex Test Term 74",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT74",
+        "definition": "Complex Test Term 74",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT75: Complex Test Term 75",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT75",
+        "definition": "Complex Test Term 75",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT76: Complex Test Term 76",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT76",
+        "definition": "Complex Test Term 76",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT77: Complex Test Term 77",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT77",
+        "definition": "Complex Test Term 77",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT78: Complex Test Term 78",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT78",
+        "definition": "Complex Test Term 78",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT79: Complex Test Term 79",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT79",
+        "definition": "Complex Test Term 79",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT80: Complex Test Term 80",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT80",
+        "definition": "Complex Test Term 80",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT81: Complex Test Term 81",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT81",
+        "definition": "Complex Test Term 81",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT82: Complex Test Term 82",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT82",
+        "definition": "Complex Test Term 82",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT83: Complex Test Term 83",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT83",
+        "definition": "Complex Test Term 83",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT84: Complex Test Term 84",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT84",
+        "definition": "Complex Test Term 84",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT85: Complex Test Term 85",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT85",
+        "definition": "Complex Test Term 85",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT86: Complex Test Term 86",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT86",
+        "definition": "Complex Test Term 86",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT87: Complex Test Term 87",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT87",
+        "definition": "Complex Test Term 87",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT88: Complex Test Term 88",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT88",
+        "definition": "Complex Test Term 88",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT89: Complex Test Term 89",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT89",
+        "definition": "Complex Test Term 89",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT90: Complex Test Term 90",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT90",
+        "definition": "Complex Test Term 90",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT91: Complex Test Term 91",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT91",
+        "definition": "Complex Test Term 91",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT92: Complex Test Term 92",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT92",
+        "definition": "Complex Test Term 92",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT93: Complex Test Term 93",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT93",
+        "definition": "Complex Test Term 93",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT94: Complex Test Term 94",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT94",
+        "definition": "Complex Test Term 94",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT95: Complex Test Term 95",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT95",
+        "definition": "Complex Test Term 95",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT96: Complex Test Term 96",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT96",
+        "definition": "Complex Test Term 96",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT97: Complex Test Term 97",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT97",
+        "definition": "Complex Test Term 97",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT98: Complex Test Term 98",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT98",
+        "definition": "Complex Test Term 98",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT99: Complex Test Term 99",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT99",
+        "definition": "Complex Test Term 99",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT100: Complex Test Term 100",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT100",
+        "definition": "Complex Test Term 100",
+        "depth": 1
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "CTT101",
+        "description": "Example of truncated term label when code and definition are the same",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "CTT101",
+        "definition": "CTT101",
+        "depth": 1
+      }
+    ],
+    "termRelationships": [
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT1",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT2",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "CTT2",
+        "targetTerm": "CTT1"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT3",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "CTT3",
+        "targetTerm": "CTT2"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT4",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "CTT4",
+        "targetTerm": "CTT3"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT5",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "CTT5",
+        "targetTerm": "CTT4"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT6",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "CTT6",
+        "targetTerm": "CTT5"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT7",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "CTT7",
+        "targetTerm": "CTT6"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT8",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "CTT8",
+        "targetTerm": "CTT7"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT9",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "narrowerThan",
+        "sourceTerm": "CTT9",
+        "targetTerm": "CTT8"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT10",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT11",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "broaderThan",
+        "sourceTerm": "CTT11",
+        "targetTerm": "CTT12"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT12",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "broaderThan",
+        "sourceTerm": "CTT12",
+        "targetTerm": "CTT13"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT13",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "broaderThan",
+        "sourceTerm": "CTT13",
+        "targetTerm": "CTT14"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT14",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "broaderThan",
+        "sourceTerm": "CTT14",
+        "targetTerm": "CTT15"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT15",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "broaderThan",
+        "sourceTerm": "CTT15",
+        "targetTerm": "CTT16"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT16",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "broaderThan",
+        "sourceTerm": "CTT16",
+        "targetTerm": "CTT17"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT17",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "broaderThan",
+        "sourceTerm": "CTT17",
+        "targetTerm": "CTT18"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT18",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "broaderThan",
+        "sourceTerm": "CTT18",
+        "targetTerm": "CTT19"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT19",
+        "targetTerm": "CTT10"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT20",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT21",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT22",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT23",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT24",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT25",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT26",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT27",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT28",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT29",
+        "targetTerm": "CTT20"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT30",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT31",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT32",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT33",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT34",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT35",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT36",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT37",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT38",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT39",
+        "targetTerm": "CTT30"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT40",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT41",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT42",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT43",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT44",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT45",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT46",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT47",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT48",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT49",
+        "targetTerm": "CTT40"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT50",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT51",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT52",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT53",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT54",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT55",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT56",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT57",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT58",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT59",
+        "targetTerm": "CTT50"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT60",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT61",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT62",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT63",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT64",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT65",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT66",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT67",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT68",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT69",
+        "targetTerm": "CTT60"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT70",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT71",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT72",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT73",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT74",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT75",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT76",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT77",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT78",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT79",
+        "targetTerm": "CTT70"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT80",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT81",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT82",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT83",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT84",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT85",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT86",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT87",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT88",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT89",
+        "targetTerm": "CTT80"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT90",
+        "targetTerm": "CTT00"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT91",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT92",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT93",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT94",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT95",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT96",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT97",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT98",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a-part-of",
+        "sourceTerm": "CTT99",
+        "targetTerm": "CTT90"
+      },
+      {
+        "relationshipType": "is-a",
+        "sourceTerm": "CTT100",
+        "targetTerm": "CTT00"
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "TerminologyJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}

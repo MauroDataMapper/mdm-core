@@ -89,7 +89,6 @@ class UrlMappings {
 
             '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES) {
                 '/folders'(resources: 'folder', excludes: DEFAULT_EXCLUDES)
-                '/versionedFolders'(resources: 'versionedFolder', excludes: DEFAULT_EXCLUDES)
 
                 put '/finalise'(controller: 'versionedFolder', action: 'finalise')
                 put '/newBranchModelVersion'(controller: 'versionedFolder', action: 'newBranchModelVersion')
@@ -103,6 +102,14 @@ class UrlMappings {
 
                 post '/search'(controller: 'versionedFolder', action: 'search')
                 get '/search'(controller: 'versionedFolder', action: 'search')
+                
+                get "/commonAncestor/$otherVersionedFolderId"(controller: 'VersionedFolder', action: 'commonAncestor')
+                get '/latestFinalisedModel'(controller: 'VersionedFolder', action: 'latestFinalisedModel')
+                get '/latestModelVersion'(controller: 'VersionedFolder', action: 'latestModelVersion')
+                get '/modelVersionTree'(controller: 'VersionedFolder', action: 'modelVersionTree')
+                get '/currentMainBranch'(controller: 'VersionedFolder', action: 'currentMainBranch')
+                get '/availableBranches'(controller: 'VersionedFolder', action: 'availableBranches')
+                get '/simpleModelVersionTree'(controller: 'VersionedFolder', action: 'simpleModelVersionTree')
             }
 
             '/classifiers'(resources: 'classifier', excludes: DEFAULT_EXCLUDES) {
@@ -231,10 +238,11 @@ class UrlMappings {
             group '/tree', {
                 group "/$containerDomainType", {
                     get '/'(controller: 'treeItem', action: 'index')
+                    get "/${containerId}"(controller: 'treeItem', action: 'show')
                     get "/${catalogueItemDomainType}/$catalogueItemId"(controller: 'treeItem', action: 'show')
                     get "/search/$searchTerm"(controller: 'treeItem', action: 'search')
                 }
-                "/$modelDomainType/$modelId"(controller: 'treeItem', action: 'fullModelTree')
+                "/full/$modelDomainType/$modelId"(controller: 'treeItem', action: 'fullModelTree')
             }
 
             /*

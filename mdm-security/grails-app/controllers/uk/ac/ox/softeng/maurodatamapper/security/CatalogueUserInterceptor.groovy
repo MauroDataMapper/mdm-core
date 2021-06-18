@@ -48,7 +48,7 @@ class CatalogueUserInterceptor extends TieredAccessSecurableResourceInterceptor 
     @Override
     List<String> getApplicationAdminAccessMethods() {
         ['userExists', 'pending', 'pendingCount', 'adminRegister', 'userExists',
-         'adminPasswordReset', 'approveRegistration', 'rejectRegistration']
+         'adminPasswordReset', 'approveRegistration', 'rejectRegistration', 'exportUsers']
     }
 
     @Override

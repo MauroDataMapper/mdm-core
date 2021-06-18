@@ -61,6 +61,11 @@ interface UserSecurityPolicyManager {
     List<String> userAvailableActions(Class resourceClass, UUID id,
                                       Class<? extends SecurableResource> owningSecureResourceClass, UUID owningSecureResourceId)
 
+    List<String> userAvailableTreeActions(String securableResourceDomainType, UUID id)
+
+    List<String> userAvailableTreeActions(String resourceDomainType, UUID id,
+                                          String owningSecureResourceDomainType, UUID owningSecureResourceId)
+
     boolean isApplicationAdministrator()
 
     boolean isAuthenticated()

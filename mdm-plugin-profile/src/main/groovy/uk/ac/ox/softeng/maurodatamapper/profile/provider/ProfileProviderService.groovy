@@ -18,8 +18,8 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.provider.MauroDataMapperService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.lang.reflect.ParameterizedType
 
 @CompileStatic
-abstract class ProfileProviderService<P extends Profile, D extends CatalogueItem> extends MauroDataMapperService {
+abstract class ProfileProviderService<P extends Profile, D extends MultiFacetAware> extends MauroDataMapperService {
 
     @Autowired
     MetadataService metadataService

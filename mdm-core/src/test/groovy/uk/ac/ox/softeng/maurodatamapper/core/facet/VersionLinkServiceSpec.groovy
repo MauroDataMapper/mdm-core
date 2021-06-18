@@ -50,7 +50,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         checkAndSave(basicModel2)
         checkAndSave(basicModel3)
 
-        VersionLink sl1 = new VersionLink(createdBy: admin.emailAddress, linkType: VersionLinkType.SUPERSEDED_BY_FORK)
+        VersionLink sl1 = new VersionLink(createdBy: admin.emailAddress, linkType: VersionLinkType.NEW_FORK_OF)
         basicModel.addToVersionLinks(sl1)
         sl1.setTargetModel(basicModel2)
         VersionLink sl2 = new VersionLink(createdBy: admin.emailAddress, linkType: VersionLinkType.NEW_MODEL_VERSION_OF)
@@ -211,7 +211,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         when:
         sl = service.findBySourceModelAndTargetModelAndLinkType(BasicModel.findByLabel('dm1'),
                                                                 BasicModel.findByLabel('dm2'),
-                                                                VersionLinkType.SUPERSEDED_BY_FORK)
+                                                                VersionLinkType.NEW_FORK_OF)
 
         then:
         sl
@@ -229,7 +229,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         when:
         service.deleteBySourceModelAndTargetModelAndLinkType(BasicModel.findByLabel('dm1'),
                                                              BasicModel.findByLabel('dm2'),
-                                                             VersionLinkType.SUPERSEDED_BY_FORK)
+                                                             VersionLinkType.NEW_FORK_OF)
 
         then:
         service.count() == 1
@@ -309,13 +309,13 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         ids.size() == 0
 
         // bm3 NEW_DOCUMENTATION_VERSION_OF bm2 -- bm2 is superseded
-        // bm4 SUPERSEDED_BY_DOCUMENTATION bm3 -- bm4 is superseded
+        // bm4 NEW_DOCUMENTATION_VERSION_OF bm3 -- bm3 is superseded
         when:
         basicModel3.addToVersionLinks(new VersionLink(createdByUser: admin,
                                                       linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm2')))
         basicModel4.addToVersionLinks(new VersionLink(createdByUser: admin,
-                                                      linkType: VersionLinkType.SUPERSEDED_BY_DOCUMENTATION,
+                                                      linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm3')))
         checkAndSave(basicModel3)
         checkAndSave(basicModel4)
@@ -324,7 +324,7 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         then:
         ids.size() == 2
         ids.any {it == basicModel2.id}
-        ids.any {it == basicModel4.id}
+        ids.any {it == basicModel3.id}
 
     }
 
@@ -358,13 +358,13 @@ class VersionLinkServiceSpec extends MultiFacetItemAwareServiceSpec<VersionLink,
         ids.any {it == basicModel2.id}
 
         // bm3 NEW_DOCUMENTATION_VERSION_OF bm2 -- not a relevant supersede
-        // bm4 SUPERSEDED_BY_DOCUMENTATION bm3 -- not a relevant supersede
+        // bm4 NEW_DOCUMENTATION_VERSION_OF bm3 -- not a relevant supersede
         when:
         basicModel3.addToVersionLinks(new VersionLink(createdByUser: admin,
                                                       linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm2')))
         basicModel4.addToVersionLinks(new VersionLink(createdByUser: admin,
-                                                      linkType: VersionLinkType.SUPERSEDED_BY_DOCUMENTATION,
+                                                      linkType: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF,
                                                       targetModel: BasicModel.findByLabel('dm3')))
         checkAndSave(basicModel3)
         checkAndSave(basicModel4)

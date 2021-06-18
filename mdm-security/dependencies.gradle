@@ -12,4 +12,6 @@ dependencies {
     runtimeOnly group: 'org.postgresql', name: 'postgresql'
 
     testImplementation project(':mdm-testing-framework')
+
+    implementation 'com.opencsv:opencsv:5.1'
 }

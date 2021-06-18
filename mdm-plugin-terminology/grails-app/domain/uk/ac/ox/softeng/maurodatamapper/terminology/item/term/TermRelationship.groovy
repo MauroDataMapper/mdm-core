@@ -58,12 +58,12 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
 
     static constraints = {
         CallableConstraints.call(ModelItemConstraints, delegate)
-        sourceTerm validator: {val, obj -> val != obj.targetTerm ?: ['invalid.same.property.message', 'targetTerm']}
+        sourceTerm validator: {val, obj -> val == obj.targetTerm ? ['invalid.same.property.message', 'targetTerm'] : true}
     }
 
     static mapping = {
-        sourceTerm index: 'term_relationship_source_term_idx'
-        targetTerm index: 'term_relationship_target_term_idx'
+        sourceTerm index: 'term_relationship_source_term_idx', cascade: 'none'
+        targetTerm index: 'term_relationship_target_term_idx', cascade: 'none'
     }
 
     static transients = ['aliases', 'model']

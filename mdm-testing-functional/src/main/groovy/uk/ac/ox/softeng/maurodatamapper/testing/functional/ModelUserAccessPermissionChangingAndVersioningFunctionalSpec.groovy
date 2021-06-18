@@ -17,16 +17,18 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.testing.functional
 
+import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.security.policy.ResourceActions
+import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 import uk.ac.ox.softeng.maurodatamapper.testing.functional.UserAccessAndPermissionChangingFunctionalSpec
 import uk.ac.ox.softeng.maurodatamapper.util.VersionChangeType
 
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import groovy.util.logging.Slf4j
-import io.micronaut.core.type.Argument
-import io.micronaut.http.HttpResponse
+import spock.lang.Unroll
 
 import static io.micronaut.http.HttpStatus.CREATED
 import static io.micronaut.http.HttpStatus.FORBIDDEN
@@ -104,11 +106,19 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
 
     @Override
     List<String> getEditorAvailableActions() {
-        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete']
+        ['show', 'comment', 'editDescription', 'update', 'save', 'softDelete', 'finalise', 'delete'].sort()
     }
 
     List<String> getReaderAvailableActions() {
-        ['show', 'comment']
+        ['show', 'comment'].sort()
+    }
+
+    List<String> getFinalisedReaderAvailableActions() {
+        [
+            'show',
+            'createNewVersions',
+            'newForkModel',
+        ].sort()
     }
 
     List<String> getFinalisedEditorAvailableActions() {
@@ -122,7 +132,12 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
             'newBranchModelVersion',
             'softDelete',
             'delete'
-        ]
+        ].sort()
+    }
+
+    @Transactional
+    String getTestVersionedFolderId() {
+        Folder.findByLabel('Functional Test VersionedFolder').id.toString()
     }
 
     void 'L16 : Test finalising Model (as not logged in)'() {
@@ -266,7 +281,6 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         DELETE("folders/$versionedFolderId?permanent=true", MAP_ARG, true)
         verifyResponse NO_CONTENT, response
     }
-
 
     void 'L17 : test creating a new fork model of a Model<T> (as not logged in)'() {
         given:
@@ -530,6 +544,7 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         responseBody().id != id
         responseBody().label == validJson.label
         responseBody().documentationVersion == '1.0.0'
+        responseBody().availableActions == getEditorAvailableActions().sort() - 'finalise'
         responseBody().branchName == 'newBranchModelVersion'
         !responseBody().modelVersion
 
@@ -983,155 +998,200 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         cleanUpRoles(target, source, id)
     }
 
-    void 'E26a : Test getting versionTreeModel (as editor)'() {
+    Map<String, String> buildModelVersionTree() {
         /*
-        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
-        given:
-        String id = getValidFinalisedId()
+                                                   /- anotherFork
+      v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
+        \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
+         \_ fork ---- main                                               \_ interestingBranch (v5)
+      */
+        // V1
+        String v1 = getValidFinalisedId()
         loginEditor()
-        PUT("$id/newForkModel", [label: "Functional Test ${modelType} v2" as String])
+
+        // Fork and finalise fork
+        PUT("$v1/newForkModel", [label: "Functional Test Fork ${modelType}" as String])
         verifyResponse CREATED, response
-        String forkId = responseBody().id
-        PUT("$id/newBranchModelVersion", [:])
-        verifyResponse CREATED, response
-        String mainBranchId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
-        PUT("$forkId/finalise", [versionChangeType: VersionChangeType.MINOR])
+        String fork = responseBody().id
+        PUT("$fork/finalise", [versionChangeType: VersionChangeType.MINOR])
         verifyResponse OK, response
-        PUT("$forkId/newDocumentationVersion", [:])
+
+        // Fork main branch
+        PUT("$fork/newBranchModelVersion", [:])
         verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
+        String forkMain = responseBody().id
 
-        when: 'logged in as editor'
-        HttpResponse<List<Map>> localResponse = GET("$id/modelVersionTree", Argument.listOf(Map))
+        // V2 main branch
+        PUT("$v1/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v2 = responseBody().id
 
-        then:
-        verifyResponse OK, localResponse
-        localResponse.body()
-        localResponse.body().size() == 5
+        // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        PUT("$v1/newBranchModelVersion", [branchName: 'newBranch'])
+        verifyResponse CREATED, response
+        String newBranch = responseBody().id
 
+        // Finalise the main branch to v2
+        PUT("$v2/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
 
-        Map sourceMap = localResponse.body().find { it.modelId == id }
-        sourceMap
-        sourceMap == [branchName             : "main",
-                      label                  : "Functional Test ${getModelType()}",
-                      modelId                : id,
-                      newBranchModelVersion  : false,
-                      newDocumentationVersion: false,
-                      newFork                : false,
-                      targets                : [[
-                                                    modelId    : forkId,
-                                                    description: VersionLinkType.NEW_FORK_OF.label
-                                                ],
-                                                [
-                                                    modelId    : mainBranchId,
-                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
-                                                ],
-                                                [
-                                                    modelId    : newBranchId,
-                                                    description: VersionLinkType.NEW_MODEL_VERSION_OF.label
-                                                ]]
+        // V3 main branch
+        PUT("$v2/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v3 = responseBody().id
+
+        // Finalise the main branch to v3
+        PUT("$v3/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+
+        // V4 main branch
+        PUT("$v3/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v4 = responseBody().id
+
+        // testBranch from v3 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        PUT("$v3/newBranchModelVersion", [branchName: 'testBranch'])
+        verifyResponse CREATED, response
+        String testBranch = responseBody().id
+
+        // Finalise main branch to v4
+        PUT("$v4/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+
+        // Fork from v4
+        PUT("$v4/newForkModel", [label: "Functional Test AnotherFork ${modelType}" as String])
+        verifyResponse CREATED, response
+        String anotherFork = responseBody().id
+
+        // V5 and finalise
+        PUT("$v4/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String v5 = responseBody().id
+        PUT("$v5/finalise", [versionChangeType: VersionChangeType.MAJOR])
+        verifyResponse OK, response
+
+        // Main branch
+        PUT("$v5/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String main = responseBody().id
+
+        // Another branch
+        PUT("$v5/newBranchModelVersion", [branchName: 'anotherBranch'])
+        verifyResponse CREATED, response
+        String anotherBranch = responseBody().id
+
+        // Interesting branch
+        PUT("$v5/newBranchModelVersion", [branchName: 'interestingBranch'])
+        verifyResponse CREATED, response
+        String interestingBranch = responseBody().id
+
+        logout()
+        [v1       : v1, v2: v2, v3: v3, v4: v4, v5: v5,
+         newBranch: newBranch, testBranch: testBranch, main: main, anotherBranch: anotherBranch, interestingBranch: interestingBranch,
+         fork     : fork, anotherFork: anotherFork, forkMain: forkMain
         ]
-
-        Map forkMap = localResponse.body().find { it.modelId == forkId }
-        forkMap
-        forkMap == [branchName             : "main",
-                    label                  : "Functional Test ${getModelType()} v2",
-                    modelId                : forkId,
-                    newBranchModelVersion  : false,
-                    newDocumentationVersion: false,
-                    newFork                : true,
-                    targets                : [[
-                                                  modelId    : latestDraftId,
-                                                  description: VersionLinkType.NEW_DOCUMENTATION_VERSION_OF.label
-                                              ]]
-        ]
-
-        Map mainBranchMap = localResponse.body().find { it.modelId == mainBranchId }
-        mainBranchMap
-        mainBranchMap == [branchName             : "main",
-                          label                  : "Functional Test ${getModelType()}",
-                          modelId                : mainBranchId,
-                          newBranchModelVersion  : true,
-                          newDocumentationVersion: false,
-                          newFork                : false,
-                          targets                : []]
-
-        Map newBranchMap = localResponse.body().find { it.modelId == newBranchId }
-        newBranchMap
-        newBranchMap == [branchName             : "newBranch",
-                         label                  : "Functional Test ${getModelType()}",
-                         modelId                : newBranchId,
-                         newBranchModelVersion  : true,
-                         newDocumentationVersion: false,
-                         newFork                : false,
-                         targets                : []]
-
-        Map latestDraftMap = localResponse.body().find { it.modelId == latestDraftId }
-        latestDraftMap
-        latestDraftMap == [branchName             : "main",
-                           label                  : "Functional Test ${getModelType()}" + " v2",
-                           modelId                : latestDraftId,
-                           newBranchModelVersion  : false,
-                           newDocumentationVersion: true,
-                           newFork                : false,
-                           targets                : []]
-
-        cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(forkId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        removeValidIdObjectUsingTransaction(mainBranchId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(forkId)
-        cleanUpRoles(latestDraftId)
     }
 
-    void 'E26b : Test getting versionTreeModel is same across ancestors (as editor)'() {
-        /*
-        id (finalised) -- finalisedId (finalised) -- latestDraftId (draft)
-          \_ newBranchId (draft)
-        */
-        given:
-        String id = getValidFinalisedId()
-        loginEditor()
-        PUT("$id/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String finalisedId = responseBody().id
-        PUT("$id/newBranchModelVersion", [branchName: 'newBranch'])
-        verifyResponse CREATED, response
-        String newBranchId = responseBody().id
-        PUT("$finalisedId/finalise", [versionChangeType: 'Major'])
-        verifyResponse OK, response
-        PUT("$finalisedId/newBranchModelVersion", [branchName: VersionAwareConstraints.DEFAULT_BRANCH_NAME])
-        verifyResponse CREATED, response
-        String latestDraftId = responseBody().id
+    void cleanupModelVersionTree(Map<String, String> data) {
+        data.each { k, v ->
+            removeValidIdObjectUsingTransaction(v)
+        }
+        cleanUpRoles(data.values())
+    }
 
-        when: 'logged in as editor'
-        HttpResponse<List<Map>> localResponseOldestAncestor = GET("$id/modelVersionTree", Argument.listOf(Map))
-        HttpResponse<List<Map>> localResponseYoungestAncestor = GET("$latestDraftId/modelVersionTree", Argument.listOf(Map))
+    @Unroll
+    void 'E26a : Test getting versionTreeModel at #tag (as editor)'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+
+        when: 'getting the tree'
+        GET("${data[tag]}/modelVersionTree", STRING_ARG)
 
         then:
-        verifyResponse OK, localResponseOldestAncestor
-        verifyResponse OK, localResponseYoungestAncestor
-
-        localResponseOldestAncestor.body() == localResponseYoungestAncestor.body()
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(getExpectedModelTreeVersionString(data), jsonCapableResponse.body(), false, true)
 
         cleanup:
-        removeValidIdObjectUsingTransaction(id)
-        removeValidIdObjectUsingTransaction(newBranchId)
-        removeValidIdObjectUsingTransaction(finalisedId)
-        removeValidIdObjectUsingTransaction(latestDraftId)
-        cleanUpRoles(id)
-        cleanUpRoles(newBranchId)
-        cleanUpRoles(finalisedId)
-        cleanUpRoles(latestDraftId)
+        cleanupModelVersionTree(data)
+
+        // For all versions and branches we should get the same tree, no matter where it was requested
+        // But it should NOT include the branch of the fork
+        where:
+        tag << ['v1', 'v2', 'v3', 'v4', 'v5',
+                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
+    }
+
+    void 'E26b : Test getting versionTreeModel at fork only shows the fork and its branch'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.fork}",
+    "label": "Functional Test Fork ${modelType}",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+     {
+        "id": "${data.forkMain}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.forkMain}",
+    "label": "Functional Test Fork ${modelType}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.fork}/modelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'E26c : Test getting versionTreeModel at anotherFork only shows the fork'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.anotherFork}",
+    "label": "Functional Test AnotherFork ${modelType}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": []
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.anotherFork}/modelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
     }
 
     void 'L27 : Test undoing a soft delete (as not logged in)'() {
@@ -1230,4 +1290,643 @@ abstract class ModelUserAccessPermissionChangingAndVersioningFunctionalSpec exte
         removeValidIdObject(id)
     }
 
+
+    @Unroll
+    void 'E28a : Test getting simple versionTreeModel at #tag (as editor)'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+
+        when: 'getting the tree'
+        GET("${data[tag]}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(getExpectedSimpleModelTreeVersionString(data), jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+
+        // For all versions and branches we should get the same tree, no matter where it was requested
+        // But it should NOT include the branch of the fork
+        where:
+        tag << ['v1', 'v2', 'v3', 'v4', 'v5',
+                'newBranch', 'testBranch', 'main', 'anotherBranch', 'interestingBranch']
+    }
+
+    void 'E28b : Test getting simple versionTreeModel at fork only shows the fork and its branch'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.fork}",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V0.1.0"
+  },
+  {
+    "id": "${data.forkMain}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main (V0.1.0)"
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.fork}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'E28c : Test getting simple versionTreeModel at anotherFork only shows the fork'() {
+        given:
+        Map data = buildModelVersionTree()
+        loginEditor()
+        String expectedJson = """[{
+    "id": "${data.anotherFork}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main"
+  }]"""
+
+        when: 'getting the tree'
+        GET("${data.anotherFork}/simpleModelVersionTree", STRING_ARG)
+
+        then:
+        verifyResponse OK, jsonCapableResponse
+        verifyJson(expectedJson, jsonCapableResponse.body(), false, true)
+
+        cleanup:
+        cleanupModelVersionTree(data)
+    }
+
+    void 'R29a : Test available actions inside a VersionedFolder (as reader)'() {
+        given:
+        loginEditor()
+        POST("folders/${testVersionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+
+        when:
+        loginReader()
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().availableActions == getReaderAvailableActions()
+
+        cleanup:
+        loginEditor()
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(id)
+    }
+
+    void 'R29b : Test available actions inside a Folder inside a VersionedFolder (as reader)'() {
+        given:
+        loginEditor()
+        POST("folders/${testVersionedFolderId}/folders/", [label: 'folder in versionedfolder'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String folderId = response.body().id
+        POST("folders/${folderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+
+        when:
+        loginReader()
+        GET("folders/${testVersionedFolderId}", MAP_ARG, true)
+        verifyResponse(OK, response)
+        GET("folders/${folderId}", MAP_ARG, true)
+        verifyResponse(OK, response)
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().availableActions == getReaderAvailableActions()
+
+        cleanup:
+        loginEditor()
+        DELETE("folders/${folderId}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+        cleanUpRoles(id)
+    }
+
+    void 'E29a : Test available actions inside a VersionedFolder (as editor)'() {
+        given:
+        loginEditor()
+        POST("folders/${testVersionedFolderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+
+        when:
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().availableActions == getEditorAvailableActions() - 'finalise'
+
+        cleanup:
+        loginEditor()
+        removeValidIdObjectUsingTransaction(id)
+        cleanUpRoles(id)
+    }
+
+    void 'E29b : Test available actions inside a Folder inside a VersionedFolder (as editor)'() {
+        given:
+        loginEditor()
+        POST("folders/${testVersionedFolderId}/folders/", [label: 'folder in versionedfolder'], MAP_ARG, true)
+        verifyResponse CREATED, response
+        String folderId = response.body().id
+        POST("folders/${folderId}/${getResourcePath()}", validJson, MAP_ARG, true)
+        verifyResponse CREATED, response
+        String id = response.body().id
+        logout()
+
+        when:
+        loginEditor()
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        responseBody().availableActions == getEditorAvailableActions() - 'finalise'
+
+        cleanup:
+        loginEditor()
+        DELETE("folders/${folderId}?permanent=true", MAP_ARG, true)
+        verifyResponse(NO_CONTENT, response)
+        cleanUpRoles(id)
+    }
+
+    void 'L08b : test accessing finalised when readable by everyone (not logged in)'() {
+        given:
+        String id = getValidFinalisedId()
+        loginEditor()
+        PUT("$id/readByEveryone", [:])
+        verifyResponse OK, response
+        logout()
+
+        when: 'not logged in'
+        GET(id)
+
+        then:
+        verifyResponse(OK, response)
+        response.body().readableByEveryone == true
+        response.body().availableActions == ['show']
+
+        when: 'removing readable by everyone'
+        loginEditor()
+        DELETE("$id/readByEveryone", [:])
+        verifyResponse OK, response
+        logout()
+
+        and:
+        GET(id)
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E09b : test adding readable by authenticated once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        def endpoint = "$id/readByAuthenticated"
+
+        when: 'logged in as user with write access'
+        loginEditor()
+        PUT(endpoint, [:])
+
+        then:
+        verifyResponse(OK, response)
+        response.body().readableByAuthenticatedUsers == true
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E10b : test removing readable by authenticated once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        def endpoint = "$id/readByAuthenticated"
+        loginEditor()
+        PUT(endpoint, [:])
+        verifyResponse OK, response
+        response.body().readableByAuthenticatedUsers == true
+        logout()
+
+        when: 'logged in as user with write access'
+        loginEditor()
+        DELETE(endpoint)
+
+        then:
+        verifyResponse(OK, response)
+        response.body().readableByAuthenticatedUsers == false
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E12b : test adding reader share once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+
+        when: 'logged in as writer'
+        loginEditor()
+        POST(endpoint, [:])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().securableResourceId == id
+        response.body().userGroup.id == readerGroupId
+        response.body().groupRole.id == groupRoleId
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        response.body().availableActions == getFinalisedReaderAvailableActions()
+        response.body().id == id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E13b : test removing reader share once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(GroupRole.READER_ROLE_NAME).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+        loginEditor()
+        POST(endpoint, [:])
+        logout()
+
+        when: 'logged in as writer'
+        loginEditor()
+        DELETE(endpoint, [:])
+
+        then:
+        verifyResponse NO_CONTENT, response
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E14b : test adding "editor" share once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+
+        when: 'logged in as writer'
+        loginEditor()
+        POST(endpoint, [:])
+
+        then:
+        verifyResponse CREATED, response
+        response.body().securableResourceId == id
+        response.body().userGroup.id == readerGroupId
+        response.body().groupRole.id == groupRoleId
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyResponse OK, response
+        response.body().availableActions == getFinalisedEditorAvailableActions()
+        response.body().id == id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    void 'E15b : test removing "editor" share once finalised (as editor)'() {
+        given:
+        String id = getValidFinalisedId()
+        String groupRoleId = getGroupRole(getEditorGroupRoleName()).id.toString()
+        String readerGroupId = getUserGroup('extraGroup').id.toString()
+        String endpoint = "$id/groupRoles/$groupRoleId/userGroups/$readerGroupId"
+        loginEditor()
+        POST(endpoint, [:])
+        logout()
+
+        when: 'logged in as writer'
+        loginEditor()
+        DELETE(endpoint, [:])
+
+        then:
+        verifyResponse NO_CONTENT, response
+
+        when: 'getting item as new reader'
+        loginAuthenticated2()
+        GET(id)
+
+        then:
+        verifyNotFound response, id
+
+        cleanup:
+        removeValidIdObject(id)
+    }
+
+    String getExpectedModelTreeVersionString(Map data) {
+        """[
+  {
+    "id": "${data.v1}",
+    "label": "Functional Test ${modelType}",
+    "branch": null,
+    "modelVersion" : "1.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+     {
+        "id": "${data.fork}",
+        "description": "New Fork Of"
+      },
+      {
+        "id": "${data.v2}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.newBranch}",
+        "description": "New Model Version Of"
+      }
+      
+    ]
+  },
+  {
+    "id": "${data.newBranch}",
+    "label": "Functional Test ${modelType}",
+    "branch": "newBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.fork}",
+    "label": "Functional Test Fork ${modelType}",
+    "branch": null,
+    "modelVersion": "0.1.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": true,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.v2}",
+    "label": "Functional Test ${modelType}",
+    "branch": null,
+    "modelVersion" : "2.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.v3}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.v3}",
+    "label": "Functional Test ${modelType}",
+    "branch": null,
+    "modelVersion" : "3.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.v4}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.testBranch}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.testBranch}",
+    "label": "Functional Test ${modelType}",
+    "branch": "testBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+   "id": "${data.v4}",
+    "label": "Functional Test ${modelType}",
+    "branch": null,
+    "modelVersion" : "4.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      {
+        "id": "${data.anotherFork}",
+        "description": "New Fork Of"
+      },
+      {
+        "id": "${data.v5}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.anotherFork}",
+    "label": "Functional Test AnotherFork ${modelType}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": false,
+    "isNewDocumentationVersion": false,
+    "isNewFork": true,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.v5}",
+    "label": "Functional Test ${modelType}",
+    "branch": null,
+    "modelVersion" : "5.0.0",
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+    {
+        "id": "${data.main}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.anotherBranch}",
+        "description": "New Model Version Of"
+      },
+      {
+        "id": "${data.interestingBranch}",
+        "description": "New Model Version Of"
+      }
+    ]
+  },
+  {
+    "id": "${data.main}",
+    "label": "Functional Test ${modelType}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+    {
+    "id": "${data.anotherBranch}",
+    "label": "Functional Test ${modelType}",
+    "branch": "anotherBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  },
+  {
+    "id": "${data.interestingBranch}",
+    "label": "Functional Test ${modelType}",
+    "branch": "interestingBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "isNewBranchModelVersion": true,
+    "isNewDocumentationVersion": false,
+    "isNewFork": false,
+    "targets": [
+      
+    ]
+  }
+]"""
+    }
+
+    String getExpectedSimpleModelTreeVersionString(Map data) {
+        """[
+  {
+    "id": "${data.v1}",
+    "branch": null,
+    "modelVersion" : "1.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V1.0.0"
+  },
+  {
+    "id": "${data.newBranch}",
+    "branch": "newBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "newBranch (V1.0.0)"
+  },
+  {
+    "id": "${data.v2}",
+    "branch": null,
+    "modelVersion" : "2.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V2.0.0"
+  },
+  {
+    "id": "${data.v3}",
+    "branch": null,
+    "modelVersion" : "3.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V3.0.0"
+  },
+  {
+    "id": "${data.testBranch}",
+    "branch": "testBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "testBranch (V3.0.0)"
+  },
+  {
+    "id": "${data.v4}",
+    "branch": null,
+    "modelVersion" : "4.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V4.0.0"
+  },
+  {
+    "id": "${data.v5}",
+    "branch": null,
+    "modelVersion" : "5.0.0",
+    "documentationVersion": "1.0.0",
+    "displayName": "V5.0.0"
+  },
+  {
+    "id": "${data.main}",
+    "branch": "main",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "main (V5.0.0)"
+  },
+    {
+    "id": "${data.anotherBranch}",
+    "branch": "anotherBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+    "displayName": "anotherBranch (V5.0.0)"
+  },
+  {
+    "id": "${data.interestingBranch}",
+    "branch": "interestingBranch",
+    "modelVersion": null,
+    "documentationVersion": "1.0.0",
+   "displayName": "interestingBranch (V5.0.0)"
+  }
+]"""
+    }
 }

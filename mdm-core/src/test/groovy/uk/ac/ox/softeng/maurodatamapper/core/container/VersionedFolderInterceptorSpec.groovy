@@ -52,7 +52,7 @@ class VersionedFolderInterceptorSpec extends ResourceInterceptorUnitSpec impleme
         params.currentUserSecurityPolicyManager = idSecuredUserSecurityPolicyManager
 
         when:
-        params.folderId = resourceId.toString()
+        params.versionedFolderId = resourceId.toString()
         withRequest([controller: controllerName])
         request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
 
@@ -97,7 +97,7 @@ class VersionedFolderInterceptorSpec extends ResourceInterceptorUnitSpec impleme
         params.currentUserSecurityPolicyManager = idSecuredUserSecurityPolicyManager
 
         when:
-        params.folderId = resourceId.toString()
+        params.versionedFolderId = resourceId.toString()
         withRequest([controller: controllerName])
         request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, action)
 

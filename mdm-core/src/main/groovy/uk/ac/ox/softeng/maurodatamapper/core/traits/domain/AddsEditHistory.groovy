@@ -19,11 +19,13 @@ package uk.ac.ox.softeng.maurodatamapper.core.traits.domain
 
 import uk.ac.ox.softeng.maurodatamapper.security.User
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import grails.compiler.GrailsCompileStatic
 
 /**
  * @since 01/12/2017
  */
+@SuppressFBWarnings('BC_IMPOSSIBLE_INSTANCEOF')
 @GrailsCompileStatic
 trait AddsEditHistory {
 

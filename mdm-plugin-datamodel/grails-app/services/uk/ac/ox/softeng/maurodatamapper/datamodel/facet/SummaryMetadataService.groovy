@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.facet
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
@@ -25,9 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.facet.summarymetadata.SummaryM
 import uk.ac.ox.softeng.maurodatamapper.datamodel.traits.service.SummaryMetadataAwareService
 
 import grails.gorm.DetachedCriteria
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-
-import javax.transaction.Transactional
 
 @Slf4j
 @Transactional

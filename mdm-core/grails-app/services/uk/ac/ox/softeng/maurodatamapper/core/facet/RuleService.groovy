@@ -27,9 +27,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.DetachedCriteria
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-
-import javax.transaction.Transactional
 
 @Slf4j
 @Transactional

@@ -122,7 +122,6 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
         ]
     }
 
-
     @Override
     Map getValidUpdateJson() {
         [
@@ -204,6 +203,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT21: Complex Test Term 21"
   },
@@ -211,6 +211,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT22: Complex Test Term 22"
   },
@@ -218,6 +219,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT23: Complex Test Term 23"
   },
@@ -225,6 +227,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT24: Complex Test Term 24"
   },
@@ -232,6 +235,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT25: Complex Test Term 25"
   },
@@ -239,6 +243,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT26: Complex Test Term 26"
   },
@@ -246,6 +251,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT27: Complex Test Term 27"
   },
@@ -253,6 +259,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT28: Complex Test Term 28"
   },
@@ -260,6 +267,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "modelId": "${json-unit.matches:id}",
     "hasChildren": false,
+    "availableActions": [],
     "id": "${json-unit.matches:id}",
     "label": "CTT29: Complex Test Term 29"
   }
@@ -299,6 +307,15 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "label": "CTT100: Complex Test Term 100",
     "hasChildren": false,
+    "availableActions": [],
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT101",
+    "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -306,9 +323,40 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
     "domainType": "Term",
     "label": "CTT00: Complex Test Term 00",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   }
 ]'''
+    }
+
+    @Transactional
+    void 'T09 : test getting the tree for term with truncated label'() {
+        given:
+        def id = Term.findByCode('CTT101').id
+
+        when:
+        GET("terminologies/${complexTerminologyId}/terms/$id", STRING_ARG, true)
+
+        then:
+        verifyJsonResponse OK, '''{
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT101",
+    "model": "${json-unit.matches:id}",
+    "breadcrumbs": [
+        {
+            "id": "${json-unit.matches:id}",
+            "label": "Complex Test Terminology",
+            "domainType": "Terminology",
+            "finalised": false
+        }
+    ],
+    "availableActions": ["delete","show","update"],
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "code": "CTT101",
+    "definition": "CTT101",
+    "description": "Example of truncated term label when code and definition are the same"
+}'''
     }
 
     void 'S01 : Test searching terms'() {
@@ -318,7 +366,7 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
 
         then: 'The response is OK'
         verifyJsonResponse OK, '''{
-  "count": 12,
+  "count": 13,
   "items": [
     {
       "id": "${json-unit.matches:id}",
@@ -367,6 +415,23 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
       ],
       "code": "CTT100",
       "definition": "Complex Test Term 100"
+    },
+    {
+      "id": "${json-unit.matches:id}",
+      "domainType": "Term",
+      "label": "CTT101",
+      "model": "${json-unit.matches:id}",
+      "breadcrumbs": [
+        {
+          "id": "${json-unit.matches:id}",
+          "label": "Complex Test Terminology",
+          "domainType": "Terminology",
+          "finalised": false
+        }
+      ],
+      "code": "CTT101",
+      "definition": "CTT101",
+      "description": "Example of truncated term label when code and definition are the same"
     },
     {
       "id": "${json-unit.matches:id}",
@@ -463,22 +528,6 @@ class TermFunctionalSpec extends ResourceFunctionalSpec<Term> {
       ],
       "code": "CTT16",
       "definition": "Complex Test Term 16"
-    },
-    {
-      "id": "${json-unit.matches:id}",
-      "domainType": "Term",
-      "label": "CTT17: Complex Test Term 17",
-      "model": "${json-unit.matches:id}",
-      "breadcrumbs": [
-        {
-          "id": "${json-unit.matches:id}",
-          "label": "Complex Test Terminology",
-          "domainType": "Terminology",
-          "finalised": false
-        }
-      ],
-      "code": "CTT17",
-      "definition": "Complex Test Term 17"
     }
   ]
 }'''

@@ -20,13 +20,12 @@ package uk.ac.ox.softeng.maurodatamapper.profile
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.search.SearchParams
 import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.ResourcelessMdmController
-import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
@@ -43,7 +42,6 @@ class ProfileController implements ResourcelessMdmController {
     SessionFactory sessionFactory
 
     ProfileService profileService
-    DataModelService dataModelService
 
     MetadataService metadataService
 
@@ -60,38 +58,45 @@ class ProfileController implements ResourcelessMdmController {
     }
 
     def profiles() {
-        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        if (!catalogueItem) {
-            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
+            .multiFacetAwareItemId)
+        if (!multiFacetAware) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUsedProfileServices(catalogueItem)
+        respond profileProviderServices: profileService.getUsedProfileServices(multiFacetAware)
     }
 
     def unusedProfiles() {
-        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        if (!catalogueItem) {
-            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
+            .multiFacetAwareItemId)
+        if (!multiFacetAware) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        respond profileProviderServices: profileService.getUnusedProfileServices(catalogueItem)
+        respond profileProviderServices: profileService.getUnusedProfileServices(multiFacetAware)
     }
 
     def otherMetadata() {
-        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        if (!catalogueItem) {
-            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        MultiFacetAware multiFacetAware =
+            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+        if (!multiFacetAware) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
-        Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(catalogueItem)
+        Set<ProfileProviderService> usedProfiles = profileService.getUsedProfileServices(multiFacetAware)
         Set<String> profileNamespaces = usedProfiles.collect{it.metadataNamespace}
-        respond(view: "/metadata/index",
-                model: [metadataList: metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(catalogueItem.id, profileNamespaces.asList(),
-                                                                                                     params)])
+        respond metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(),params),
+                view: "/metadata/index"
+
+//        respond(view: "/metadata/index",
+//                model: [metadataList: metadataService.findAllByMultiFacetAwareItemIdAndNotNamespaces(multiFacetAware.id, profileNamespaces.asList(),
+//                                                                                                     params)])
     }
 
     @Transactional
-    def deleteProfile() {
-        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        if (!catalogueItem) {
-            return notFound(params.catalogueItemClass, params.catalogueItemId)
+    def delete() {
+        MultiFacetAware multiFacetAware =
+            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
+        if (!multiFacetAware) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -101,20 +106,21 @@ class ProfileController implements ResourcelessMdmController {
         }
 
         Set<Metadata> mds =
-        catalogueItem.metadata
+            multiFacetAware.metadata
             .findAll{ it.namespace == profileProviderService.metadataNamespace }
 
         mds.each {md ->
-                //catalogueItem.metadata.remove(md)
+                //multiFacetAware.metadata.remove(md)
                 metadataService.delete(md, true)
-                metadataService.addDeletedEditToMultiFacetAwareItem(currentUser, md, params.catalogueItemDomainType, params.catalogueItemId)}
+                metadataService.addDeletedEditToMultiFacetAwareItem(currentUser, md, params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)}
     }
 
     def show() {
 
-        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
-        if (!catalogueItem) {
-            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        MultiFacetAware multiFacetAware = profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params
+            .multiFacetAwareItemId)
+        if (!multiFacetAware) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -123,17 +129,18 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.createProfile(profileProviderService, catalogueItem)
+        respond profileService.createProfile(profileProviderService, multiFacetAware)
 
     }
 
     @Transactional
     def save() {
 
-        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        MultiFacetAware multiFacetAware =
+            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
-        if (!catalogueItem) {
-            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        if (!multiFacetAware) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -142,21 +149,22 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        profileService.storeProfile(profileProviderService, catalogueItem, request, currentUser)
+        profileService.storeProfile(profileProviderService, multiFacetAware, request, currentUser)
 
         // Flush the profile before we create as the create method retrieves whatever is stored in the database
         sessionFactory.currentSession.flush()
 
         // Create the profile as the stored profile may only be segments of the profile and we now want to get everything
-        respond profileService.createProfile(profileProviderService, catalogueItem)
+        respond profileService.createProfile(profileProviderService, multiFacetAware)
     }
 
     def validate() {
         log.debug("validating profile...")
-        CatalogueItem catalogueItem = profileService.findCatalogueItemByDomainTypeAndId(params.catalogueItemDomainType, params.catalogueItemId)
+        MultiFacetAware multiFacetAware =
+            profileService.findMultiFacetAwareItemByDomainTypeAndId(params.multiFacetAwareItemDomainType, params.multiFacetAwareItemId)
 
-        if (!catalogueItem) {
-            return notFound(params.catalogueItemClass, params.catalogueItemId)
+        if (!multiFacetAware) {
+            return notFound(params.multiFacetAwareItemClass, params.multiFacetAwareItemId)
         }
 
         ProfileProviderService profileProviderService = profileService.findProfileProviderService(params.profileNamespace, params.profileName,
@@ -165,7 +173,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        respond profileService.validateProfile(profileProviderService, catalogueItem, request, currentUser)
+        respond profileService.validateProfile(profileProviderService, request)
     }
 
 
@@ -176,7 +184,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
         PaginatedResultList<Profile> profiles =
-                profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params.catalogueItemDomainType, params)
+                profileService.getModelsWithProfile(profileProviderService, currentUserSecurityPolicyManager, params.multiFacetAwareItemDomainType, params)
         respond profileList: profiles
     }
 
@@ -187,7 +195,7 @@ class ProfileController implements ResourcelessMdmController {
             return notFound(ProfileProviderService, getProfileProviderServiceId(params))
         }
 
-        List<MetadataAware> profiledItems = profileProviderService.findAllProfiledItems(params.catalogueItemDomainType)
+        List<MetadataAware> profiledItems = profileProviderService.findAllProfiledItems(params.multiFacetAwareItemDomainType)
         List<MetadataAware> filteredProfiledItems = []
         profiledItems.each {profiledItem ->
             if(profiledItem instanceof Model
@@ -195,7 +203,7 @@ class ProfileController implements ResourcelessMdmController {
                     filteredProfiledItems.add(profiledItem)
             } else if (profiledItem instanceof ModelItem) {
 
-                CatalogueItem model = proxyHandler.unwrapIfProxy(profiledItem.getModel())
+                Model model = proxyHandler.unwrapIfProxy(profiledItem.getModel())
                 if(currentUserSecurityPolicyManager.userCanReadResourceId(profiledItem.getClass(), profiledItem.id, model.getClass(), model.id)) {
                         filteredProfiledItems.add(profiledItem)
                     }

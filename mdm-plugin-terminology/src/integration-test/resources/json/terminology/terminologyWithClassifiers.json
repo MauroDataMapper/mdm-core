@@ -1,0 +1,47 @@
+{
+  "terminology": {
+    "id": "${json-unit.matches:id}",
+    "label": "Imported Test Terminology",
+    "lastUpdated": "${json-unit.matches:offsetDateTime}",
+    "classifiers": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "test classifier import",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      },
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "test classifier import 2",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}"
+      }
+    ],
+    "author": "Test Author",
+    "organisation": "Test Organisation",
+    "documentationVersion": "1.0.0",
+    "finalised": false,
+    "authority": {
+      "id": "${json-unit.matches:id}",
+      "label": "Test Authority",
+      "url": "http://localhost"
+    },
+    "terms": [
+      {
+        "id": "${json-unit.matches:id}",
+        "label": "STT01: Simple Test Term 01",
+        "lastUpdated": "${json-unit.matches:offsetDateTime}",
+        "code": "STT01",
+        "definition": "Simple Test Term 01",
+        "depth": 1
+      }
+    ]
+  },
+  "exportMetadata": {
+    "exportedBy": "Admin User",
+    "exportedOn": "${json-unit.matches:offsetDateTime}",
+    "exporter": {
+      "namespace": "uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter",
+      "name": "TerminologyJsonExporterService",
+      "version": "3.0"
+    }
+  }
+}

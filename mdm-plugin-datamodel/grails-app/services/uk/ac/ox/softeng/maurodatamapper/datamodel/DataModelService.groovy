@@ -209,7 +209,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataModel saveModelWithContent(DataModel dataModel) {
 
         if (dataModel.dataTypes.any { it.id } || dataModel.dataClasses.any { it.id }) {
-            throw new ApiInternalException('DMSXX', 'Cannot use saveWithBatching method to save DataModel',
+            throw new ApiInternalException('DMSXX', 'Cannot use saveModelWithContent method to save DataModel',
                                            new IllegalStateException('DataModel has previously saved content'))
         }
 
@@ -251,7 +251,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
 
         sessionFactory.currentSession.flush()
 
-        saveContent(dataModel, enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses)
+        saveContent(enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses)
         log.debug('Complete save of DataModel complete in {}', Utils.timeTaken(start))
         // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
         get(dataModel.id)
@@ -285,28 +285,28 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
             dataElements.addAll dataModel.dataClasses.collectMany { it.dataElements.findAll { !it.id } }
         }
 
-        saveContent(dataModel, enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses, dataElements)
+        saveContent(enumerationTypes, primitiveTypes, referenceTypes, modelDataTypes, dataClasses, dataElements)
         log.debug('Complete save of DataModel complete in {}', Utils.timeTaken(start))
         // Return the clean stored version of the datamodel, as we've messed with it so much this is much more stable
         get(dataModel.id)
     }
 
-    void saveContent(DataModel dataModel, Collection<EnumerationType> enumerationTypes,
+    void saveContent(Collection<EnumerationType> enumerationTypes,
                      Collection<PrimitiveType> primitiveTypes,
                      Collection<ReferenceType> referenceTypes,
                      Collection<ModelDataType> modelDataTypes,
                      Collection<DataClass> dataClasses,
-                     Set<DataElement> dataElements = []) {
+                     Set<DataElement> dataElements = [] as HashSet) {
 
         sessionFactory.currentSession.clear()
         long start = System.currentTimeMillis()
         log.trace('Disabling validation on contents')
-        enumerationTypes.each { dt ->
+        enumerationTypes.each {dt ->
             dt.skipValidation(true)
-            dt.enumerationValues.each { ev -> ev.skipValidation(true) }
+            dt.enumerationValues.each {ev -> ev.skipValidation(true)}
         }
-        primitiveTypes.each { it.skipValidation(true) }
-        referenceTypes.each { it.skipValidation(true) }
+        primitiveTypes.each {it.skipValidation(true)}
+        referenceTypes.each {it.skipValidation(true)}
         modelDataTypes.each { it.skipValidation(true) }
         dataClasses.each { dc ->
             dc.skipValidation(true)
@@ -571,7 +571,7 @@ class DataModelService extends ModelService<DataModel> implements SummaryMetadat
     DataModel copyModel(DataModel original, Folder folderToCopyInto, User copier, boolean copyPermissions, String label, Version copyDocVersion,
                         String branchName, boolean throwErrors, UserSecurityPolicyManager userSecurityPolicyManager, boolean copySummaryMetadata) {
         DataModel copy = new DataModel(author: original.author, organisation: original.organisation, modelType: original.modelType, finalised: false,
-                                       deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto, authority: original.authority,
+                                       deleted: false, documentationVersion: copyDocVersion, folder: folderToCopyInto, authority: authorityService.defaultAuthority,
                                        branchName: branchName
         )
 

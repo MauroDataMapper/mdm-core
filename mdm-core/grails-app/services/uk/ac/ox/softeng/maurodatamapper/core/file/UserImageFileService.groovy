@@ -23,11 +23,10 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import asset.pipeline.grails.AssetResourceLocator
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.Resource
-
-import javax.transaction.Transactional
 
 @Slf4j
 @Transactional

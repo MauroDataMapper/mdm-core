@@ -139,7 +139,7 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
     @Override
     String getExpectedNewlineLabel() {
         'TT01: A part of TT'
-    }    
+    }
 
     void 'test unique label naming with validation done at terminology level'() {
         given:
@@ -206,7 +206,6 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
         terminology2.addToTerms(code: 'TT03', createdBy: StandardEmailAddress.UNIT_TEST, definition: 'New definition')
         terminology2.addToTerms(code: 'TT02', createdBy: StandardEmailAddress.UNIT_TEST, definition: 'New definition')
 
-
         then: 'terminology should be invalid'
         checkAndSave(terminology)
 
@@ -216,6 +215,35 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
         then:
         thrown(InternalSpockError)
         terminology2.hasErrors()
+    }
+
+    void 'test label naming truncation when code and definition are the same'() {
+        given:
+        setValidDomainValues()
+        Term term2 = new Term(code: 'Code of TT02', definition: 'TT02', createdBy: StandardEmailAddress.UNIT_TEST)
+        Term term3 = new Term(code: 'TT03', definition: 'TT03', createdBy: StandardEmailAddress.UNIT_TEST)
+        terminology.addToTerms(term2)
+        terminology.addToTerms(term3)
+        checkAndSave(terminology)
+
+        expect: 'normal label naming when code and definition are different'
+        domain.label == 'TT01: A part of TT'
+        term2.label == 'Code of TT02: TT02'
+
+        and: 'label with same code and definition should be truncated'
+        term3.label == 'TT03'
+
+        when: 'code is changed to be the same as definition'
+        term2.code = 'TT02'
+
+        then: 'label should be truncated'
+        term2.label == 'TT02'
+
+        when: 'definition is changed to be the same as code'
+        domain.definition = 'TT01'
+
+        then: 'label should be truncated'
+        domain.label == 'TT01'
     }
 
     void 'test unique relationships'() {
@@ -240,6 +268,5 @@ class TermSpec extends ModelItemSpec<Term> implements DomainUnitTest<Term> {
         then:
         thrown(InternalSpockError)
         domain.hasErrors()
-
     }
 }

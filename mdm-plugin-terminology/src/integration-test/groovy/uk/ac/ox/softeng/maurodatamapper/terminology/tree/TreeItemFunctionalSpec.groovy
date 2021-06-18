@@ -94,7 +94,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         checkAndSave(folder)
 
         Terminology terminology = new Terminology(label: 'Functional Test Terminology', createdBy: FUNCTIONAL_TEST,
-                                            folder: folder, authority: testAuthority).save(flush: true)
+                                                  folder: folder, authority: testAuthority).save(flush: true)
         terminologyId = terminology.id
         otherTerminologyId = new Terminology(label: 'Functional Test Terminology 2', createdBy: FUNCTIONAL_TEST,
                                              folder: folder, authority: testAuthority).save(flush: true).id
@@ -139,6 +139,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -146,6 +147,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Terminology",
         "label": "Complex Test Terminology",
         "hasChildren": true,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -158,6 +160,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "CodeSet",
         "label": "Functional Test CodeSet",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -170,6 +173,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "CodeSet",
         "label": "Functional Test CodeSet 2",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -182,6 +186,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Terminology",
         "label": "Functional Test Terminology",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -194,6 +199,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Terminology",
         "label": "Functional Test Terminology 2",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -206,6 +212,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "domainType": "Terminology",
         "label": "Simple Test Terminology",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": false,
         "superseded": false,
@@ -229,6 +236,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Classifier",
     "label": "test classifier",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false
   },
   {
@@ -236,6 +244,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Classifier",
     "label": "test classifier simple",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false
   },
   {
@@ -243,6 +252,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Classifier",
     "label": "test classifier2",
     "hasChildren": false,
+    "availableActions": [],
     "deleted": false
   }
 ]''')
@@ -276,7 +286,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         given:
         String termId = getTermIdByCode(complexTerminologyId, 'CTT00')
 
-
         when:
         GET("folders/terms/${termId}", STRING_ARG)
 
@@ -287,7 +296,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     void 'T05b : test term tree endpoint for term CTT00'() {
         given:
         String termId = getTermIdByCode(complexTerminologyId, 'CTT00')
-
 
         when:
         GET("terminologies/${complexTerminologyId}/terms/tree/${termId}", STRING_ARG, true)
@@ -300,7 +308,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         given:
         String termId = getTermIdByCode(complexTerminologyId, 'CTT20')
 
-
         when:
         GET("folders/terms/${termId}", STRING_ARG)
 
@@ -311,7 +318,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     void 'T06b : test term tree endpoint for term CTT20'() {
         given:
         String termId = getTermIdByCode(complexTerminologyId, 'CTT20')
-
 
         when:
         GET("terminologies/${complexTerminologyId}/terms/tree/${termId}", STRING_ARG, true)
@@ -628,6 +634,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -636,6 +643,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "label": "Functional Test Model deleted",
         "modelVersion": "1.0.0",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": true,
         "finalised": true,
         "superseded": false,
@@ -650,7 +658,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanup:
         cleanUpData(firstId, 'terminologies')
     }
-
 
     void 'TA02 : test getting terminology superseded documentation when there are none'() {
         when: 'finalised terminology has not yet been created'
@@ -687,6 +694,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -695,6 +703,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "label": "Functional Test Model documentation superseded",
         "modelVersion": "1.0.0",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": true,
         "superseded": true,
@@ -751,6 +760,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -759,6 +769,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "label": "Functional Test Model model superseded",
         "modelVersion": "1.0.0",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": true,
         "superseded": true,
@@ -805,6 +816,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -813,6 +825,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "label": "Functional Test Model deleted",
         "modelVersion": "1.0.0",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": true,
         "finalised": true,
         "superseded": false,
@@ -827,7 +840,6 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         cleanup:
         cleanUpData(firstId, 'codeSets')
     }
-
 
     void 'TA07 : test getting codeSets superseded documentation when there are none'() {
         when: 'finalised terminology has not yet been created'
@@ -864,6 +876,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -872,6 +885,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "label": "Functional Test Model documentation superseded",
         "modelVersion": "1.0.0",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": true,
         "superseded": true,
@@ -928,6 +942,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Folder",
     "label": "Functional Test Folder",
     "hasChildren": true,
+    "availableActions": [],
     "deleted": false,
     "children": [
       {
@@ -936,6 +951,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
         "label": "Functional Test Model model superseded",
         "modelVersion": "1.0.0",
         "hasChildren": false,
+        "availableActions": [],
         "deleted": false,
         "finalised": true,
         "superseded": true,
@@ -965,6 +981,15 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT100: Complex Test Term 100",
     "hasChildren": false,
+    "availableActions": [],
+    "modelId": "${json-unit.matches:id}"
+  },
+  {
+    "id": "${json-unit.matches:id}",
+    "domainType": "Term",
+    "label": "CTT101",
+    "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -972,6 +997,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT00: Complex Test Term 00",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   }
 ]'''
@@ -984,6 +1010,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT1: Complex Test Term 1",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -991,6 +1018,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT2: Complex Test Term 2",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -998,6 +1026,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT3: Complex Test Term 3",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1005,6 +1034,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT4: Complex Test Term 4",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1012,6 +1042,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT5: Complex Test Term 5",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1019,6 +1050,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT6: Complex Test Term 6",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1026,6 +1058,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT7: Complex Test Term 7",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1033,6 +1066,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT8: Complex Test Term 8",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1040,6 +1074,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT9: Complex Test Term 9",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1047,6 +1082,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT10: Complex Test Term 10",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1054,6 +1090,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT20: Complex Test Term 20",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1061,6 +1098,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT30: Complex Test Term 30",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1068,6 +1106,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT40: Complex Test Term 40",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1075,6 +1114,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT50: Complex Test Term 50",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1082,6 +1122,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT60: Complex Test Term 60",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1089,6 +1130,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT70: Complex Test Term 70",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1096,6 +1138,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT80: Complex Test Term 80",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1103,6 +1146,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT90: Complex Test Term 90",
     "hasChildren": true,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   }
 ]'''
@@ -1115,6 +1159,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT21: Complex Test Term 21",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1122,6 +1167,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT22: Complex Test Term 22",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1129,6 +1175,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT23: Complex Test Term 23",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1136,6 +1183,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT24: Complex Test Term 24",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1143,6 +1191,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT25: Complex Test Term 25",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1150,6 +1199,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT26: Complex Test Term 26",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1157,6 +1207,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT27: Complex Test Term 27",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1164,6 +1215,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT28: Complex Test Term 28",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   },
   {
@@ -1171,6 +1223,7 @@ class TreeItemFunctionalSpec extends BaseFunctionalSpec {
     "domainType": "Term",
     "label": "CTT29: Complex Test Term 29",
     "hasChildren": false,
+    "availableActions": [],
     "modelId": "${json-unit.matches:id}"
   }
 ]'''

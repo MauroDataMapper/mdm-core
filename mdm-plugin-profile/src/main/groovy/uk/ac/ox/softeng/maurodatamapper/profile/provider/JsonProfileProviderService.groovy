@@ -18,28 +18,28 @@
 package uk.ac.ox.softeng.maurodatamapper.profile.provider
 
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
+import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
 import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileSection
 import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 
-abstract class JsonProfileProviderService extends ProfileProviderService<JsonProfile, CatalogueItem> {
+abstract class JsonProfileProviderService extends ProfileProviderService<JsonProfile, MultiFacetAware> {
 
     abstract String getJsonResourceFile()
 
     @Override
-    JsonProfile createProfileFromEntity(CatalogueItem entity) {
+    JsonProfile createProfileFromEntity(MultiFacetAware entity) {
         JsonProfile jsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
-        jsonProfile.catalogueItemId = entity.id
-        jsonProfile.catalogueItemDomainType = entity.domainType
-        jsonProfile.catalogueItemLabel = entity.label
+        jsonProfile.profiledItemId = entity.id
+        jsonProfile.profiledItemDomainType = entity.domainType
+        jsonProfile.profiledItemLabel = entity.label
 
         List<Metadata> metadataList = metadataService.findAllByMultiFacetAwareItemIdAndNamespace(entity.id, this.getMetadataNamespace())
 
         jsonProfile.sections.each {section ->
-            section.fields.each { field ->
-                Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName }
-                if(matchingField) {
+            section.fields.each {field ->
+                Metadata matchingField = metadataList.find {it.key == field.metadataPropertyName}
+                if (matchingField) {
                     field.currentValue = matchingField.value
                 } else {
                     field.currentValue = ""
@@ -50,39 +50,43 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
         jsonProfile
     }
 
-    @Override
-    void storeProfileInEntity(CatalogueItem catalogueItem, JsonProfile jsonProfile, String userEmailAddress) {
-        JsonProfile emptyJsonProfile = EmptyJsonProfileFactory.instance.getEmptyProfile(this)
+    JsonProfile createNewEmptyJsonProfile() {
+        EmptyJsonProfileFactory.instance.getEmptyProfile(this)
+    }
 
+    @Override
+    void storeProfileInEntity(MultiFacetAware entity, JsonProfile jsonProfile, String userEmailAddress) {
+        JsonProfile emptyJsonProfile = createNewEmptyJsonProfile()
         emptyJsonProfile.sections.each {section ->
-            ProfileSection submittedSection = jsonProfile.sections.find{it.sectionName == section.sectionName }
-            if(submittedSection) {
+            ProfileSection submittedSection = jsonProfile.sections.find {it.sectionName == section.sectionName}
+            if (submittedSection) {
                 section.fields.each {field ->
-                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName }
-                    if(submittedField) {
-                        System.err.println(field.fieldName + " : " + submittedField.currentValue)
-                        if(submittedField.currentValue && submittedField.metadataPropertyName) {
-                            catalogueItem.addToMetadata(metadataNamespace, field.metadataPropertyName, submittedField.currentValue, userEmailAddress)
-                        } else if(!field.metadataPropertyName) {
-                            log.error("No metadataPropertyName set for field: " + field.fieldName)
-                        } else if(!submittedField.currentValue) {
-                            Metadata md = catalogueItem.metadata.find{
-                                it.namespace == metadataNamespace && it.key == field.metadataPropertyName
-                            }
-                            if(md) {
-                                catalogueItem.metadata.remove(md)
-                                metadataService.delete(md)
-                            }
-                        }
-                    }
+                    ProfileField submittedField = submittedSection.fields.find {it.fieldName == field.fieldName}
+
+                    String newValue = submittedField.currentValue ?: ""
+                    String key = field.getMetadataKeyForSaving(submittedSection.sectionName)
+                    storeFieldInEntity(entity, newValue, key, userEmailAddress)
                 }
             }
         }
-        catalogueItem.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
-
-        Metadata.saveAll(catalogueItem.metadata)
-
+        entity.addToMetadata(metadataNamespace, '_profiled', 'Yes', userEmailAddress)
+        Metadata.saveAll(entity.metadata)
     }
+
+    void storeFieldInEntity(MultiFacetAware entity, String value, String key, String userEmailAddress) {
+
+        if (value && value != "" && key ) {
+            entity.addToMetadata(metadataNamespace, key, value, userEmailAddress)
+        } else {
+            Metadata md = entity.metadata.find {
+                it.namespace == metadataNamespace && it.key == key
+            }
+            if (md) {
+                metadataService.delete(md)
+            }
+        }
+    }
+
 
     @Override
     Set<String> getKnownMetadataKeys() {
@@ -92,6 +96,11 @@ abstract class JsonProfileProviderService extends ProfileProviderService<JsonPro
     @Override
     String getVersion() {
         getClass().getPackage().getSpecificationVersion() ?: 'SNAPSHOT'
+    }
+
+    @Override
+    JsonProfile getNewProfile() {
+        createNewEmptyJsonProfile()
     }
 
 
