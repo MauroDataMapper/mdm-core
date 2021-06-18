@@ -243,11 +243,6 @@ class BootstrapModels {
 
     static void buildAndSaveModelVersionTree(MessageSource messageSource, Folder folder, Authority authority, DataModelService dataModelService) {
         /*
-                                                 /- anotherFork
-    v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
-      \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
-       \_ fork ---- main                                               \_ interestingBranch (v5)
-
                 -Development Folder
                  -Example model v1 (finalised)
                      +Stuff
@@ -257,10 +252,10 @@ class BootstrapModels {
                         DEV (finalised)
                             |
                             |
-                        Dev (main)
-                                  \
-                                    \
-                                     Dev (branch)
+                        Dev (main)  ---------------- dev (main Fork)
+                            |      \
+                            |        \
+                            |         Dev (branch)
 
         */
         User dev = [emailAddress: DEVELOPMENT] as User
@@ -284,19 +279,19 @@ class BootstrapModels {
             checkAndSave(messageSource, v1DataModel)
 
             PrimitiveType V1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
-                                                               label: 'v1 Finalised Data Type')
+                                                               label: 'V1 Finalised Data Type')
             DataElement V1DataElement1 = new DataElement(createdBy: DEVELOPMENT,
-                                                         label: 'v1 Finalised Data Element',
+                                                         label: 'V1 Finalised Data Element',
                                                          minMultiplicity: 1,
                                                          maxMultiplicity: 1,
                                                          dataType: V1PrimitiveType1)
             DataElement V1DataElement2 = new DataElement(createdBy: DEVELOPMENT,
-                                                         label: 'v1 Another DataElement',
+                                                         label: 'V1 Second DataElement',
                                                          minMultiplicity: 1,
                                                          maxMultiplicity: 1,
                                                          dataType: V1PrimitiveType1)
             DataClass V1DataClass = new DataClass(createdBy: DEVELOPMENT,
-                                                  label: 'v1 Finalised Data Class')
+                                                  label: 'V1 Finalised Data Class')
 
             V1DataClass.addToDataElements(V1DataElement1).addToDataElements(V1DataElement2)
 
@@ -330,19 +325,19 @@ class BootstrapModels {
             checkAndSave(messageSource, v2DataModel)
 
             PrimitiveType V2PrimitiveType = new PrimitiveType(createdBy: DEVELOPMENT,
-                                                              label: 'V2 Draft Data Type')
+                                                              label: 'V2 Data Type')
             DataElement V2DataElement1 = new DataElement(createdBy: DEVELOPMENT,
-                                                         label: 'V2 Draft Data Element',
+                                                         label: 'V2 Data Element',
                                                          minMultiplicity: 1,
                                                          maxMultiplicity: 1,
                                                          dataType: V2PrimitiveType)
             DataElement V2DataElement2 = new DataElement(createdBy: DEVELOPMENT,
-                                                         label: 'V2 Another Draft DataElement',
+                                                         label: 'V2 Second DataElement',
                                                          minMultiplicity: 1,
                                                          maxMultiplicity: 1,
                                                          dataType: V2PrimitiveType)
             DataClass V2DataClass = new DataClass(createdBy: DEVELOPMENT,
-                                                  label: 'V2 Draft Data Class')
+                                                  label: 'V2 Data Class')
 
             V2DataClass.addToDataElements(V2DataElement1).addToDataElements(V2DataElement2)
 
