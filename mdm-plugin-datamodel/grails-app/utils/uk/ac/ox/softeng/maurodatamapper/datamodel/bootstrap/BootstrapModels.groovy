@@ -51,7 +51,9 @@ class BootstrapModels {
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
     public static final String MODEL_VERSION_TREE_DATAMODEL_V1 = 'Versioning Tree Example DataModel - Version 1'
     public static final String MODEL_VERSION_TREE_DATAMODEL_V2 = 'Versioning Tree Example DataModel - Version 2'
-    public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Versioning Tree Branch'
+
+    public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Model Version Tree DataModel'
+
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel simpleDataModel = DataModel.findByLabel(SIMPLE_DATAMODEL_NAME)
@@ -260,116 +262,205 @@ class BootstrapModels {
         */
         User dev = [emailAddress: DEVELOPMENT] as User
         UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
-
-        buildVersionTreeV1Model(messageSource, folder, authority)
-        DataModel v2DataModel = buildVersionTreeV2Model(messageSource, folder, authority, dataModelService)
-        buildVersionTreeV2Branches(messageSource, dataModelService, v2DataModel, dev, policyManager)
+        buildAndSaveModelVersionTreeStructure(messageSource, folder, authority, dataModelService, dev, policyManager)
     }
 
 
-    static void buildVersionTreeV1Model(MessageSource messageSource, Folder folder, Authority authority) {
+    static void buildAndSaveModelVersionTreeStructure(MessageSource messageSource, Folder folder, Authority authority,
+                                                      DataModelService dataModelService, User dev, UserSecurityPolicyManager policyManager) {
+        /*
+                                                 /- anotherFork
+    v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
+      \\_ newBranch (v1)                  \_ testBranch (v3)          \__ anotherBranch (v5)
+       \_ fork ---- main                                               \_ interestingBranch (v5)
+    */
+        log.debug("Creating model version tree")
 
-        DataModel v1DataModel = DataModel.findByLabel(MODEL_VERSION_TREE_DATAMODEL_V1)
-
-        if (!v1DataModel) {
-            v1DataModel = new DataModel(createdBy: DEVELOPMENT,
-                                        label: MODEL_VERSION_TREE_DATAMODEL_V1,
-                                        folder: folder,
-                                        authority: authority)
-            checkAndSave(messageSource, v1DataModel)
-
-            PrimitiveType V1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
-                                                               label: 'V1 Finalised Data Type')
-            DataElement V1DataElement1 = new DataElement(createdBy: DEVELOPMENT,
-                                                         label: 'V1 Finalised Data Element',
-                                                         minMultiplicity: 1,
-                                                         maxMultiplicity: 1,
-                                                         dataType: V1PrimitiveType1)
-            DataElement V1DataElement2 = new DataElement(createdBy: DEVELOPMENT,
-                                                         label: 'V1 Second DataElement',
-                                                         minMultiplicity: 1,
-                                                         maxMultiplicity: 1,
-                                                         dataType: V1PrimitiveType1)
-            DataClass V1DataClass = new DataClass(createdBy: DEVELOPMENT,
-                                                  label: 'V1 Finalised Data Class')
-
-            V1DataClass.addToDataElements(V1DataElement1).addToDataElements(V1DataElement2)
-
-            v1DataModel
-                .addToDataClasses(V1DataClass)
-                .addToDataClasses(createdBy: DEVELOPMENT, label: 'V1 Another Data Class')
-                .addToDataTypes(V1PrimitiveType1)
-
-            checkAndSave(messageSource, v1DataModel)
-
-            v1DataModel.finalised = true
-            v1DataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-            v1DataModel.breadcrumbTree.finalised = true
-            v1DataModel.breadcrumbTree.updateTree()
-            v1DataModel.modelVersion = Version.from('1.0.0')
-
-            checkAndSave(messageSource, v1DataModel)
-        }
-    }
-
-    static DataModel buildVersionTreeV2Model(MessageSource messageSource, Folder folder, Authority authority, DataModelService dataModelService) {
-        DataModel v2DataModel = DataModel.findByLabel(MODEL_VERSION_TREE_DATAMODEL_V2)
-
-        if (!v2DataModel) {
-            v2DataModel = new DataModel(createdBy: DEVELOPMENT,
-                                        label: MODEL_VERSION_TREE_DATAMODEL_V2,
-                                        folder: folder,
-                                        authority: authority)
+        // V1
+        DataModel v1 = new DataModel(createdBy: DEVELOPMENT,
+                                     label: MODEL_VERSION_TREE_DATAMODEL_NAME,
+                                     orginisation: 'bootStrap',
+                                     author: 'bill',
+                                     folder: folder,
+                                     authority: authority)
 
 
-            checkAndSave(messageSource, v2DataModel)
+        checkAndSave(messageSource, v1)
+        v1 = addV1DataElements(v1, messageSource)
+        v1 = dataModelService.finaliseModel(v1, dev, Version.from('1'), null, null)
+        checkAndSave(messageSource, v1)
 
-            PrimitiveType V2PrimitiveType = new PrimitiveType(createdBy: DEVELOPMENT,
-                                                              label: 'V2 Data Type')
-            DataElement V2DataElement1 = new DataElement(createdBy: DEVELOPMENT,
-                                                         label: 'V2 Data Element',
-                                                         minMultiplicity: 1,
-                                                         maxMultiplicity: 1,
-                                                         dataType: V2PrimitiveType)
-            DataElement V2DataElement2 = new DataElement(createdBy: DEVELOPMENT,
-                                                         label: 'V2 Second DataElement',
-                                                         minMultiplicity: 1,
-                                                         maxMultiplicity: 1,
-                                                         dataType: V2PrimitiveType)
-            DataClass V2DataClass = new DataClass(createdBy: DEVELOPMENT,
-                                                  label: 'V2 Data Class')
 
-            V2DataClass.addToDataElements(V2DataElement1).addToDataElements(V2DataElement2)
 
-            v2DataModel
-                .addToDataClasses(V2DataClass)
-                .addToDataClasses(createdBy: DEVELOPMENT, label: 'V2 Another Data Class')
-                .addToDataTypes(V2PrimitiveType)
+        // Fork and finalise fork
+        DataModel fork = dataModelService.createNewForkModel("$MODEL_VERSION_TREE_DATAMODEL_NAME fork", v1, dev, false, policyManager)
+        checkAndSave(messageSource, fork)
+        fork = dataModelService.finaliseModel(fork, dev, Version.from('1'), null, null)
+        checkAndSave(messageSource, fork)
 
-            checkAndSave(messageSource, v2DataModel)
+        // Fork main branch
+        DataModel forkMain = dataModelService.createNewBranchModelVersion('main', fork, dev, false, policyManager)
+        checkAndSave(messageSource, forkMain)
 
-            v2DataModel.finalised = true
-            v2DataModel.dateFinalised = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)
-            v2DataModel.breadcrumbTree.finalised = true
-            v2DataModel.breadcrumbTree.updateTree()
-            v2DataModel.modelVersion = Version.from('2.0.0')
+        // V2 main branch
+        DataModel v2 = dataModelService.createNewBranchModelVersion('main', v1, dev, false, policyManager)
+        v2 = addV2DataElements(v2)
+        checkAndSave(messageSource, v2)
 
-            checkAndSave(messageSource, v2DataModel)
+        // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        DataModel newBranch = dataModelService.createNewBranchModelVersion('newBranch', v1, dev, false, policyManager)
+        checkAndSave(messageSource, newBranch)
 
-            return v2DataModel
-        }
-    }
+        // Finalise the main branch to v2
+        v2 = dataModelService.finaliseModel(v2, dev, Version.from('2'), null, null)
+        checkAndSave(messageSource, v2)
 
-    static void buildVersionTreeV2Branches(MessageSource messageSource, DataModelService dataModelService,
-                                           DataModel v2DataModel, User dev, UserSecurityPolicyManager policyManager) {
+        // V3 main branch
+        DataModel v3 = dataModelService.createNewBranchModelVersion('main', v2, dev, false, policyManager)
+        v3 = addV3DataElements(v3)
+        checkAndSave(messageSource, v3)
+        // Finalise the main branch to v3
+        v3 = dataModelService.finaliseModel(v3, dev, Version.from('3'), null, null)
+        checkAndSave(messageSource, v3)
 
-        DataModel v2MainBranch = dataModelService.createNewBranchModelVersion('main', v2DataModel, dev, false, policyManager)
-        checkAndSave(messageSource, v2MainBranch)
+        // V4 main branch
+        DataModel v4 = dataModelService.createNewBranchModelVersion('main', v3, dev, false, policyManager)
+        checkAndSave(messageSource, v4)
 
-        DataModel anotherFork = dataModelService.createNewForkModel("V2 Main Fork", v2MainBranch, dev, false, policyManager)
+        // testBranch from v3 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
+        DataModel testBranch = dataModelService.createNewBranchModelVersion('testBranch', v3, dev, false, policyManager)
+        checkAndSave(messageSource, testBranch)
+
+        // Finalise main branch to v4
+        v4 = dataModelService.finaliseModel(v4, dev, Version.from('4'), null, null)
+        checkAndSave(messageSource, v4)
+
+        // Fork from v4
+        DataModel anotherFork = dataModelService.createNewForkModel("$MODEL_VERSION_TREE_DATAMODEL_NAME another fork", v4, dev, false, policyManager)
         checkAndSave(messageSource, anotherFork)
 
-        DataModel v2WorkingBranch = dataModelService.createNewBranchModelVersion('V2 Working Branch', v2DataModel, dev, false, policyManager)
-        checkAndSave(messageSource, v2WorkingBranch)
+        // V5 and finalise
+        DataModel v5 = dataModelService.createNewBranchModelVersion('main', v4, dev, false, policyManager)
+        checkAndSave(messageSource, v5)
+        v5 = dataModelService.finaliseModel(v5, dev, Version.from('5'), null, null)
+        checkAndSave(messageSource, v5)
+
+        // Main branch
+        DataModel main = dataModelService.createNewBranchModelVersion('main', v5, dev, false, policyManager)
+        checkAndSave(messageSource, main)
+
+        // Another branch
+        DataModel anotherBranch = dataModelService.createNewBranchModelVersion('anotherBranch', v5, dev, false, policyManager)
+        checkAndSave(messageSource, anotherBranch)
+
+        // Interesting branch
+        DataModel interestingBranch = dataModelService.createNewBranchModelVersion('interestingBranch', v5, dev, false, policyManager)
+        checkAndSave(messageSource, interestingBranch)
+    }
+
+    static DataModel addV1DataElements(DataModel v1DataModel, MessageSource messageSource) {
+
+        Classifier v1classifier
+
+        v1classifier = Classifier.findByLabel('ModelVersion classifier v1')
+
+        if (!v1classifier) {
+            v1classifier = new Classifier(createdBy: DEVELOPMENT, label: 'ModelVersion classifier v1', readableByAuthenticatedUsers: true)
+            checkAndSave(messageSource, v1classifier)
+        } else {
+            log.debug("test classifier simple already exists")
+        }
+        v1DataModel.addToClassifiers(v1classifier)
+
+        //        v1DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'mkv1', value: 'mkv2')
+        //            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'abc2', value: 'abc3')
+        //            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'cat3', value: 'dog4')
+
+        PrimitiveType v1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
+                                                           label: 'V1 Finalised Data Type')
+        DataElement v1DataElement1 = new DataElement(createdBy: DEVELOPMENT,
+                                                     label: 'V1 Finalised Data Element',
+                                                     minMultiplicity: 1,
+                                                     maxMultiplicity: 1,
+                                                     dataType: v1PrimitiveType1)
+        DataElement v1DataElement2 = new DataElement(createdBy: DEVELOPMENT,
+                                                     label: 'V1 Second DataElement',
+                                                     minMultiplicity: 1,
+                                                     maxMultiplicity: 1,
+                                                     dataType: v1PrimitiveType1)
+        DataClass v1DataClass = new DataClass(createdBy: DEVELOPMENT,
+                                              label: 'V1 Finalised Data Class')
+
+        v1DataClass.addToDataElements(v1DataElement1).addToDataElements(v1DataElement2)
+
+        v1DataModel
+            .addToDataClasses(v1DataClass)
+            .addToDataClasses(createdBy: DEVELOPMENT, label: 'V1 Another Data Class')
+            .addToDataTypes(v1PrimitiveType1)
+
+        return v1DataModel
+
+    }
+
+    static DataModel addV2DataElements(DataModel v2DataModel) {
+        //        v2DataModel.addToMetadata(createdBy: 'JuniorDeveloper@test.com', namespace: 'JRDev.com/versioning', key: 'mkv1', value: 'mkv2')
+        //            .addToMetadata(createdBy: 'JuniorDeveloper@test.com', namespace: 'JRDev.com/versioning', key: 'abc2', value: 'abc3')
+        User v2Dev = [emailAddress: 'JuniorDeveloper@test.com'] as User
+        v2DataModel.setAuthor('Dante')
+        v2DataModel.setOrganisation('Baal')
+
+        v2DataModel.setDescription(getDescriptionFromFile('/bootstrapModels.datamodel.baalDesc.txt'))
+
+        PrimitiveType v2PrimitiveType1 = new PrimitiveType(createdBy: v2Dev,
+                                                           label: 'V2 Data Type')
+        PrimitiveType v2PrimitiveType2 = new PrimitiveType(createdBy: v2Dev,
+                                                           label: 'V2 Data Type 2')
+        PrimitiveType v2PrimitiveType3 = new PrimitiveType(createdBy: v2Dev,
+                                                           label: 'V2 Data Type 3')
+        DataElement v2DataElement1 = new DataElement(createdBy: v2Dev,
+                                                     label: 'V2 Data Element',
+                                                     minMultiplicity: 1,
+                                                     maxMultiplicity: 1,
+                                                     dataType: v2PrimitiveType1)
+        DataElement v2DataElement2 = new DataElement(createdBy: v2Dev,
+                                                     label: 'V2 Second DataElement',
+                                                     minMultiplicity: 1,
+                                                     maxMultiplicity: 1,
+                                                     dataType: v2PrimitiveType2)
+        DataElement v2DataElement3 = new DataElement(createdBy: v2Dev,
+                                                     label: 'V2 Third DataElement',
+                                                     minMultiplicity: 1,
+                                                     maxMultiplicity: 1,
+                                                     dataType: v2PrimitiveType3)
+        DataClass v2DataClass = new DataClass(createdBy: v2Dev,
+                                              label: 'V2 Data Class')
+
+
+        v2DataClass.addToDataElements(v2DataElement1).addToDataElements(v2DataElement2).addToDataElements(v2DataElement3)
+
+        v2DataModel
+            .addToDataClasses(v2DataClass)
+            .addToDataClasses(createdBy: 'JuniorDeveloper@test.com', label: 'V2 Another Data Class')
+            .addToDataTypes(v2PrimitiveType1)
+            .addToDataTypes(v2PrimitiveType2)
+            .addToDataTypes(v2PrimitiveType3)
+
+        return v2DataModel
+
+    }
+
+    static DataModel addV3DataElements(DataModel v3DataModel) {
+
+
+        return v3DataModel
+    }
+
+    static String getDescriptionFromFile(path) {
+        try {
+            String fileContents = new File(path).getText('UTF-8')
+            return fileContents
+        } catch (FileNotFoundException e) {
+            log.error("Cannot locate file in src/resources folder", e)
+        }
     }
 }
