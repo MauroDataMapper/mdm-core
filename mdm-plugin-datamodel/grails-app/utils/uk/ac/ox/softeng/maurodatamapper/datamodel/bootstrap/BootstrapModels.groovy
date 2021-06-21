@@ -34,26 +34,38 @@ import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.security.basic.PublicAccessSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Version
 
+import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
+import org.springframework.core.io.Resource
+import org.springframework.stereotype.Component
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import javax.annotation.PostConstruct
+import javax.inject.Inject
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
 @Slf4j
+@Component("BootstrapModels")
 class BootstrapModels {
+
 
     public static final String COMPLEX_DATAMODEL_NAME = 'Complex Test DataModel'
     public static final String SIMPLE_DATAMODEL_NAME = 'Simple Test DataModel'
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
-    public static final String MODEL_VERSION_TREE_DATAMODEL_V1 = 'Versioning Tree Example DataModel - Version 1'
-    public static final String MODEL_VERSION_TREE_DATAMODEL_V2 = 'Versioning Tree Example DataModel - Version 2'
 
     public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Model Version Tree DataModel'
+    private static AssetResourceLocator assetResourceLocator
 
+    @Autowired
+    void setAssetResourceLocator(AssetResourceLocator assetResourceLocator) {
+        BootstrapModels.assetResourceLocator = assetResourceLocator;
+    }
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel simpleDataModel = DataModel.findByLabel(SIMPLE_DATAMODEL_NAME)
@@ -372,9 +384,9 @@ class BootstrapModels {
         }
         v1DataModel.addToClassifiers(v1classifier)
 
-        //        v1DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'mkv1', value: 'mkv2')
-        //            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'abc2', value: 'abc3')
-        //            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'cat3', value: 'dog4')
+        //v1DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'jun1', value: 'jun2')
+        //.addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'abc2', value: 'abc3')
+        //.addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'cat3', value: 'dog4')
 
         PrimitiveType v1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V1 Finalised Data Type')
@@ -403,36 +415,37 @@ class BootstrapModels {
     }
 
     static DataModel addV2DataElements(DataModel v2DataModel) {
-        //        v2DataModel.addToMetadata(createdBy: 'JuniorDeveloper@test.com', namespace: 'JRDev.com/versioning', key: 'mkv1', value: 'mkv2')
-        //            .addToMetadata(createdBy: 'JuniorDeveloper@test.com', namespace: 'JRDev.com/versioning', key: 'abc2', value: 'abc3')
-        User v2Dev = [emailAddress: 'JuniorDeveloper@test.com'] as User
+        //  v2DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'mkv1', value: 'mkv2')
+        //    .addToMetadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'abc2', value: 'abc3')
+
         v2DataModel.setAuthor('Dante')
         v2DataModel.setOrganisation('Baal')
 
-        v2DataModel.setDescription(getDescriptionFromFile('/bootstrapModels.datamodel.baalDesc.txt'))
+        v2DataModel.
+            setDescription(getDescriptionFromFile("modelDescription.txt"))
 
-        PrimitiveType v2PrimitiveType1 = new PrimitiveType(createdBy: v2Dev,
+        PrimitiveType v2PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V2 Data Type')
-        PrimitiveType v2PrimitiveType2 = new PrimitiveType(createdBy: v2Dev,
+        PrimitiveType v2PrimitiveType2 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V2 Data Type 2')
-        PrimitiveType v2PrimitiveType3 = new PrimitiveType(createdBy: v2Dev,
+        PrimitiveType v2PrimitiveType3 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V2 Data Type 3')
-        DataElement v2DataElement1 = new DataElement(createdBy: v2Dev,
+        DataElement v2DataElement1 = new DataElement(createdBy: DEVELOPMENT,
                                                      label: 'V2 Data Element',
                                                      minMultiplicity: 1,
                                                      maxMultiplicity: 1,
                                                      dataType: v2PrimitiveType1)
-        DataElement v2DataElement2 = new DataElement(createdBy: v2Dev,
+        DataElement v2DataElement2 = new DataElement(createdBy: DEVELOPMENT,
                                                      label: 'V2 Second DataElement',
                                                      minMultiplicity: 1,
                                                      maxMultiplicity: 1,
                                                      dataType: v2PrimitiveType2)
-        DataElement v2DataElement3 = new DataElement(createdBy: v2Dev,
+        DataElement v2DataElement3 = new DataElement(createdBy: DEVELOPMENT,
                                                      label: 'V2 Third DataElement',
                                                      minMultiplicity: 1,
                                                      maxMultiplicity: 1,
                                                      dataType: v2PrimitiveType3)
-        DataClass v2DataClass = new DataClass(createdBy: v2Dev,
+        DataClass v2DataClass = new DataClass(createdBy: DEVELOPMENT,
                                               label: 'V2 Data Class')
 
 
@@ -440,7 +453,6 @@ class BootstrapModels {
 
         v2DataModel
             .addToDataClasses(v2DataClass)
-            .addToDataClasses(createdBy: 'JuniorDeveloper@test.com', label: 'V2 Another Data Class')
             .addToDataTypes(v2PrimitiveType1)
             .addToDataTypes(v2PrimitiveType2)
             .addToDataTypes(v2PrimitiveType3)
@@ -455,12 +467,14 @@ class BootstrapModels {
         return v3DataModel
     }
 
-    static String getDescriptionFromFile(path) {
+    static String getDescriptionFromFile(fileName) {
         try {
-            String fileContents = new File(path).getText('UTF-8')
-            return fileContents
+            Resource resource = assetResourceLocator.findAssetForURI(fileName)
+            return resource.getInputStream().getText()
+
         } catch (FileNotFoundException e) {
             log.error("Cannot locate file in src/resources folder", e)
+            return 'File Path not located: default description'
         }
     }
 }
