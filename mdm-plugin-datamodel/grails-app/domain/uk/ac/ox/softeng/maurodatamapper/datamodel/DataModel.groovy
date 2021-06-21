@@ -189,7 +189,6 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         modelDiffBuilder(DataModel, this, otherDataModel)
             .appendList(DataType, 'dataTypes', this.getDataTypes(), otherDataModel.getDataTypes())
             .appendList(DataClass, 'dataClasses', this.childDataClasses, otherDataModel.childDataClasses)
-            .appendList(DataElement, 'dataElements', this.getAllDataElements(), otherDataModel.getAllDataElements())
     }
 
     def beforeValidate() {
