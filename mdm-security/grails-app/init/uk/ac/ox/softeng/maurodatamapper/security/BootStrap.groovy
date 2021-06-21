@@ -69,16 +69,18 @@ class BootStrap implements SecurityDefinition {
             groupBasedSecurityPolicyManagerService.storeUserSecurityPolicyManager(defaultUserSecurityPolicyManager)
         }
 
-        CatalogueUser.withNewTransaction {
-            admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
-            if (!admin) {
-                createAdminUser('admin')
-                checkAndSave(messageSource, admin)
-            }
-            admins = UserGroup.findByName('administrators')
-            if (!admins) {
-                createAdminGroup('admin')
-                checkAndSave(messageSource, admins)
+        if (grailsApplication.config.maurodatamapper.bootstrap.adminuser == true) {
+            CatalogueUser.withNewTransaction {
+                admin = CatalogueUser.findByEmailAddress(StandardEmailAddress.ADMIN)
+                if (!admin) {
+                    createAdminUser('admin')
+                    checkAndSave(messageSource, admin)
+                }
+                admins = UserGroup.findByName('administrators')
+                if (!admins) {
+                    createAdminGroup('admin')
+                    checkAndSave(messageSource, admins)
+                }
             }
         }
 
@@ -88,60 +90,63 @@ class BootStrap implements SecurityDefinition {
 
         environments {
             development {
-                CatalogueUser.withNewTransaction {
+                //dev env relies almost entirely upon adminusers being bootstrapped
+                if (grailsApplication.config.maurodatamapper.bootstrap.adminuser == true) {
+                    CatalogueUser.withNewTransaction {
 
-                    getOrCreateModernSecurityUsers('development', false)
-                    checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
+                        getOrCreateModernSecurityUsers('development', false)
+                        checkAndSave(messageSource, editor, reader, authenticated, pending, containerAdmin, author, reviewer)
 
-                    getOrCreateBasicGroups('development', false)
-                    checkAndSave(messageSource, editors, readers)
+                        getOrCreateBasicGroups('development', false)
+                        checkAndSave(messageSource, editors, readers)
 
-                    Folder folder = Folder.findByLabel('Development Folder')
+                        Folder folder = Folder.findByLabel('Development Folder')
 
-                    if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                        folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, editors.id).count() == 0) {
-                        // Make editors container admin (existing permissions) of the test folder
-                        checkAndSave(messageSource, new SecurableResourceGroupRole(
-                            createdBy: userEmailAddresses.development,
-                            securableResource: folder,
-                            userGroup: editors,
-                            groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
-                        )
+                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                            folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, editors.id).count() == 0) {
+                            // Make editors container admin (existing permissions) of the test folder
+                            checkAndSave(messageSource, new SecurableResourceGroupRole(
+                                createdBy: userEmailAddresses.development,
+                                securableResource: folder,
+                                userGroup: editors,
+                                groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+                            )
+                        }
+                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                            folder, groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole.id, readers.id).count() == 0) {
+                            // Make readers reader of the test folder
+                            checkAndSave(messageSource, new SecurableResourceGroupRole(
+                                createdBy: userEmailAddresses.development,
+                                securableResource: folder,
+                                userGroup: readers,
+                                groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
+                            )
+                        }
+                        Classifier classifier = Classifier.findByLabel('Development Classifier')
+
+                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                            classifier, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, editors.id).count() == 0) {
+                            // Make editors container admin (existing permissions) of the test classifier
+                            checkAndSave(messageSource, new SecurableResourceGroupRole(
+                                createdBy: userEmailAddresses.development,
+                                securableResource: classifier,
+                                userGroup: editors,
+                                groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
+                            )
+                        }
+                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                            classifier, groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole.id, readers.id).count() == 0) {
+                            // Make readers reader of the test classifier
+                            checkAndSave(messageSource, new SecurableResourceGroupRole(
+                                createdBy: userEmailAddresses.development,
+                                securableResource: classifier,
+                                userGroup: readers,
+                                groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
+                            )
+                        }
                     }
-                    if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                        folder, groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole.id, readers.id).count() == 0) {
-                        // Make readers reader of the test folder
-                        checkAndSave(messageSource, new SecurableResourceGroupRole(
-                            createdBy: userEmailAddresses.development,
-                            securableResource: folder,
-                            userGroup: readers,
-                            groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
-                        )
-                    }
-                    Classifier classifier = Classifier.findByLabel('Development Classifier')
-
-                    if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                        classifier, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, editors.id).count() == 0) {
-                        // Make editors container admin (existing permissions) of the test classifier
-                        checkAndSave(messageSource, new SecurableResourceGroupRole(
-                            createdBy: userEmailAddresses.development,
-                            securableResource: classifier,
-                            userGroup: editors,
-                            groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole)
-                        )
-                    }
-                    if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                        classifier, groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole.id, readers.id).count() == 0) {
-                        // Make readers reader of the test classifier
-                        checkAndSave(messageSource, new SecurableResourceGroupRole(
-                            createdBy: userEmailAddresses.development,
-                            securableResource: classifier,
-                            userGroup: readers,
-                            groupRole: groupRoleService.getFromCache(GroupRole.READER_ROLE_NAME).groupRole)
-                        )
-                    }
+                    log.debug('Development environment bootstrap complete')
                 }
-                log.debug('Development environment bootstrap complete')
             }
             production {
                 CatalogueUser.withNewTransaction {
