@@ -22,6 +22,8 @@ import uk.ac.ox.softeng.maurodatamapper.security.CatalogueUser
 import uk.ac.ox.softeng.maurodatamapper.security.UserGroup
 import uk.ac.ox.softeng.maurodatamapper.security.role.GroupRole
 
+import grails.util.Environment
+
 trait SecurityDefinition {
 
     CatalogueUser admin
@@ -67,7 +69,11 @@ trait SecurityDefinition {
                                   organisation: 'Oxford BRC Informatics',
                                   jobTitle: 'God',
                                   createdBy: userEmailAddresses[creatorKey])
-        admin.encryptAndSetPassword('password')
+        if (Environment.current == Environment.PRODUCTION) {
+            admin.setTempPassword('password')
+        } else {
+            admin.encryptAndSetPassword('password')
+        }
         admin
     }
 
