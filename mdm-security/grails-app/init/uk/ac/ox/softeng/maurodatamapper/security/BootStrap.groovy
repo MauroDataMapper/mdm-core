@@ -149,24 +149,26 @@ class BootStrap implements SecurityDefinition {
                 }
             }
             production {
-                CatalogueUser.withNewTransaction {
-                    if (!Folder.count()) {
-                        Folder folder = new Folder(
-                            label: 'Example Folder',
-                            createdBy: admin.emailAddress,
-                            readableByAuthenticatedUsers: true,
-                            description: 'This folder is readable by all authenticated users, and currently only editable by users in the ' +
-                                         'administrators group. Future suggestions: rename this folder to be more descriptive, and alter group ' +
-                                         'access.')
-                        checkAndSave(messageSource, folder)
-
-                        if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
-                            folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, admins.id).count() == 0) {
-                            checkAndSave(messageSource, new SecurableResourceGroupRole(
+                if (grailsApplication.config.maurodatamapper.bootstrap.folder) {
+                    CatalogueUser.withNewTransaction {
+                        if (!Folder.count()) {
+                            Folder folder = new Folder(
+                                label: 'Example Folder',
                                 createdBy: admin.emailAddress,
-                                securableResource: folder,
-                                userGroup: admins,
-                                groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole))
+                                readableByAuthenticatedUsers: true,
+                                description: 'This folder is readable by all authenticated users, and currently only editable by users in the ' +
+                                             'administrators group. Future suggestions: rename this folder to be more descriptive, and alter group ' +
+                                             'access.')
+                            checkAndSave(messageSource, folder)
+
+                            if (SecurableResourceGroupRole.bySecurableResourceAndGroupRoleIdAndUserGroupId(
+                                folder, groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole.id, admins.id).count() == 0) {
+                                checkAndSave(messageSource, new SecurableResourceGroupRole(
+                                    createdBy: admin.emailAddress,
+                                    securableResource: folder,
+                                    userGroup: admins,
+                                    groupRole: groupRoleService.getFromCache(GroupRole.CONTAINER_ADMIN_ROLE_NAME).groupRole))
+                            }
                         }
                     }
                 }

@@ -3,3 +3,4 @@ maurodatamapper:
         public: false
     bootstrap:
         adminuser: true
+        folder: true
