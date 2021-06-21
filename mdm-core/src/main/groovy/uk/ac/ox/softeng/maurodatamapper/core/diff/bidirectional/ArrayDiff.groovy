@@ -17,10 +17,12 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional
 
-import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
+
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.CreationDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
+
+import groovy.transform.CompileStatic
 
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.creationDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.deletionDiff
@@ -29,30 +31,31 @@ import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.deletionDif
  * Note the same object cannot exist in more than one of created, deleted, modified.
  * These collections are mutually exclusive
  */
+@CompileStatic
 class ArrayDiff<C extends Diffable> extends FieldDiff<Collection<C>> {
 
     Collection<CreationDiff<C>> created
     Collection<DeletionDiff<C>> deleted
     Collection<ObjectDiff<C>> modified
 
-    ArrayDiff(Class<Collection<C>> targetClass) {
-        super(targetClass)
+    ArrayDiff(Class<Collection<C>> targetArrayClass) {
+        super(targetArrayClass)
         created = []
         deleted = []
         modified = []
     }
 
-    ArrayDiff<C> created(Collection<C> created) {
+    ArrayDiff<C> createdObjects(Collection<C> created) {
         this.created = created.collect { creationDiff(it.class as Class<C>).created(it) }
         this
     }
 
-    ArrayDiff<C> deleted(Collection<C> deleted) {
+    ArrayDiff<C> deletedObjects(Collection<C> deleted) {
         this.deleted = deleted.collect { deletionDiff(it.class as Class<C>).deleted(it) }
         this
     }
 
-    ArrayDiff<C> modified(Collection<ObjectDiff<C>> modified) {
+    ArrayDiff<C> withModifiedDiffs(Collection<ObjectDiff<C>> modified) {
         this.modified = modified
         this
     }
@@ -83,11 +86,6 @@ class ArrayDiff<C extends Diffable> extends FieldDiff<Collection<C>> {
     }
 
     @Override
-    ArrayDiff<C> commonAncestor(Collection<C> ca) {
-        super.commonAncestor(ca) as ArrayDiff<C>
-    }
-
-    @Override
     Integer getNumberOfDiffs() {
         created.size() + deleted.size() + ((modified.sum { it.getNumberOfDiffs() } ?: 0) as Integer)
     }
@@ -106,9 +104,5 @@ class ArrayDiff<C extends Diffable> extends FieldDiff<Collection<C>> {
             stringBuilder.append('\n  Modified ::\n').append(modified)
         }
         stringBuilder.toString()
-    }
-
-    static boolean isArrayDiff(Diff diff) {
-        diff.diffType == ArrayDiff.simpleName
     }
 }

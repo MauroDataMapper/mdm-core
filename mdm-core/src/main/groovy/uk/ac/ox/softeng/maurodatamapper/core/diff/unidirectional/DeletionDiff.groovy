@@ -11,17 +11,16 @@ class DeletionDiff<D extends Diffable> extends UniDirectionalDiff<D> {
         super(targetClass)
     }
 
-    DeletionDiff deleted(D object) {
+    D getDeleted() {
+        super.getValue() as D
+    }
+
+    String getDeletedIdentifier() {
+        value.diffIdentifier
+    }
+
+    DeletionDiff<D> deleted(D object) {
         this.value = object
         this
-    }
-
-    DeletionDiff<D> commonAncestor(D ca) {
-        super.commonAncestor(ca) as DeletionDiff<D>
-    }
-
-    @Override
-    DeletionDiff<D> asMergeConflict() {
-        super.asMergeConflict() as DeletionDiff<D>
     }
 }

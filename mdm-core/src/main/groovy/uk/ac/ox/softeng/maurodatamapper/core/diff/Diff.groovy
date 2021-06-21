@@ -23,13 +23,12 @@ import groovy.transform.CompileStatic
 abstract class Diff<T> {
 
     T value
-    Boolean mergeConflict
-    T commonAncestor
+
     Class<T> targetClass
 
     protected Diff(Class<T> targetClass) {
         this.targetClass = targetClass
-        mergeConflict = false
+
     }
 
     abstract Integer getNumberOfDiffs()
@@ -52,19 +51,5 @@ abstract class Diff<T> {
 
     boolean objectsAreIdentical() {
         !getNumberOfDiffs()
-    }
-
-    Boolean isMergeConflict() {
-        mergeConflict
-    }
-
-    Diff<T> commonAncestor(T ca) {
-        this.commonAncestor = ca
-        this
-    }
-
-    Diff<T> asMergeConflict() {
-        this.mergeConflict = true
-        this
     }
 }

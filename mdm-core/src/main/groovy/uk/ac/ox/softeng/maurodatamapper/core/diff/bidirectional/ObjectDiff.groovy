@@ -38,7 +38,6 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
     String leftIdentifier
     String rightIdentifier
-    String path
 
     ObjectDiff(Class<O> targetClass) {
         super(targetClass)
@@ -118,20 +117,22 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         // If no lhs or rhs then nothing to compare
         if (!lhs && !rhs) return this
 
-        ArrayDiff diff = arrayDiff(diffableClass)
+        List<K> diffableList = []
+
+        ArrayDiff<K> diff = arrayDiff(diffableList.class)
             .fieldName(fieldName)
             .leftHandSide(lhs)
-            .rightHandSide(rhs)
+            .rightHandSide(rhs) as ArrayDiff<K>
 
 
         // If no lhs then all rhs have been created/added
         if (!lhs) {
-            return append(diff.created(rhs))
+            return append(diff.createdObjects(rhs))
         }
 
         // If no rhs then all lhs have been deleted/removed
         if (!rhs) {
-            return append(diff.deleted(lhs))
+            return append(diff.deletedObjects(lhs))
         }
 
         Collection<K> deleted = []
@@ -161,9 +162,9 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
         }
 
         if (created || deleted || modified) {
-            append(diff.created(created)
-                       .deleted(deleted)
-                       .modified(modified))
+            append(diff.createdObjects(created)
+                       .deletedObjects(deleted)
+                       .withModifiedDiffs(modified))
         }
         this
     }

@@ -11,17 +11,16 @@ class CreationDiff<C extends Diffable> extends UniDirectionalDiff<C> {
         super(targetClass)
     }
 
+    C getCreated() {
+        super.getValue() as C
+    }
+
+    String getCreatedIdentifier() {
+        value.diffIdentifier
+    }
+
     CreationDiff created(C object) {
         this.value = object
         this
-    }
-
-    CreationDiff<C> commonAncestor(C ca) {
-        super.commonAncestor(ca) as CreationDiff<C>
-    }
-
-    @Override
-    CreationDiff<C> asMergeConflict() {
-        super.asMergeConflict() as CreationDiff<C>
     }
 }

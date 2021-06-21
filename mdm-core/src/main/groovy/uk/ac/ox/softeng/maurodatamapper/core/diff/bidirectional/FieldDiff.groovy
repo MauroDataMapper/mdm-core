@@ -17,8 +17,9 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional
 
-import uk.ac.ox.softeng.maurodatamapper.core.diff.Diff
+import groovy.transform.CompileStatic
 
+@CompileStatic
 class FieldDiff<F> extends BiDirectionalDiff<F> {
 
     String fieldName
@@ -61,21 +62,7 @@ class FieldDiff<F> extends BiDirectionalDiff<F> {
     }
 
     @Override
-    FieldDiff<F> commonAncestor(F ca) {
-        super.commonAncestor(ca) as FieldDiff<F>
-    }
-
-    @Override
-    FieldDiff<F> asMergeConflict() {
-       super.asMergeConflict() as FieldDiff<F>
-    }
-
-    @Override
     String toString() {
         "${fieldName} :: ${left?.toString()} <> ${right?.toString()}"
-    }
-
-    static boolean isFieldDiff(Diff diff) {
-        diff.diffType == FieldDiff.simpleName
     }
 }
