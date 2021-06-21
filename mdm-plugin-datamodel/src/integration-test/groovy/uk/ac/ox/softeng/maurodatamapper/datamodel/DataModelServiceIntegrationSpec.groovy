@@ -18,10 +18,10 @@
 package uk.ac.ox.softeng.maurodatamapper.datamodel
 
 import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
-import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
-import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
-import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.ArrayMergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.FieldMergeDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
@@ -1062,11 +1062,11 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         //        mergeDiff.numberOfDiffs == 11
 
         when: 'branch name is a non-conflicting diff'
-        FieldDiff<String> stringFieldDiff = mergeDiff.find { it.fieldName == 'branchName' }
+        FieldMergeDiff<String> stringFieldDiff = mergeDiff.find { it.fieldName == 'branchName' }
 
         then:
-        stringFieldDiff.left == 'test'
-        stringFieldDiff.right == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        stringFieldDiff.source == 'test'
+        stringFieldDiff.target == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         stringFieldDiff.commonAncestor == VersionAwareConstraints.DEFAULT_BRANCH_NAME
         !stringFieldDiff.isMergeConflict()
 
@@ -1074,8 +1074,8 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         stringFieldDiff = mergeDiff.find { it.fieldName == 'organisation' }
 
         then:
-        stringFieldDiff.left == 'under test'
-        stringFieldDiff.right == null
+        stringFieldDiff.source == 'under test'
+        stringFieldDiff.target == null
         stringFieldDiff.commonAncestor == null
         !stringFieldDiff.isMergeConflict()
 
@@ -1083,60 +1083,69 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         stringFieldDiff = mergeDiff.find { it.fieldName == 'author' }
 
         then:
-        stringFieldDiff.left == 'harry'
-        stringFieldDiff.right == 'dick'
+        stringFieldDiff.source == 'harry'
+        stringFieldDiff.target == 'dick'
         stringFieldDiff.commonAncestor == 'john'
         stringFieldDiff.isMergeConflict()
 
         when: 'single array change in datatypes'
-        ArrayDiff<DataType> dataTypeDiff = mergeDiff.find { it.fieldName == 'dataTypes' } as ArrayDiff<DataType>
+        ArrayMergeDiff<DataType> dataTypeDiff = mergeDiff.find { it.fieldName == 'dataTypes' } as ArrayMergeDiff<DataType>
 
         then:
         dataTypeDiff.deleted.isEmpty()
         dataTypeDiff.modified.isEmpty()
         dataTypeDiff.created.size() == 1
-        dataTypeDiff.created.first().valueIdentifier == 'addSourceOnlyOnlyChangeInArray'
+        dataTypeDiff.created.first().createdIdentifier == 'addSourceOnlyOnlyChangeInArray'
         !dataTypeDiff.created.first().isMergeConflict()
         !dataTypeDiff.created.first().commonAncestor
+        !dataTypeDiff.created.first().target
 
         when: 'metadata has array diffs'
-        ArrayDiff<Metadata> metadataDiff = mergeDiff.find { it.fieldName == 'metadata' } as ArrayDiff<Metadata>
+        ArrayMergeDiff<Metadata> metadataDiff = mergeDiff.find { it.fieldName == 'metadata' } as ArrayMergeDiff<Metadata>
 
         then:
-        metadataDiff.left.size() == 1
-        metadataDiff.right.size() == 2
+        metadataDiff.source.size() == 1
+        metadataDiff.target.size() == 2
         metadataDiff.commonAncestor.size() == 2
         metadataDiff.created.isEmpty()
         metadataDiff.deleted.size() == 1
-        metadataDiff.deleted.first().valueIdentifier == 'test.deleteSourceOnly'
+        metadataDiff.deleted.first().deletedIdentifier == 'test.deleteSourceOnly'
         metadataDiff.modified.size() == 1
-        metadataDiff.modified.first().leftIdentifier == 'test.modifySourceOnly'
+        metadataDiff.modified.first().sourceIdentifier == 'test.modifySourceOnly'
         metadataDiff.modified.first().diffs.size() == 1
         metadataDiff.modified.first().diffs.first().fieldName == 'value'
-        metadataDiff.modified.first().diffs.first().left == 'altered'
-        metadataDiff.modified.first().diffs.first().right == 'modifySourceOnly'
+        metadataDiff.modified.first().diffs.first().source == 'altered'
+        metadataDiff.modified.first().diffs.first().target == 'modifySourceOnly'
         metadataDiff.modified.first().diffs.first().commonAncestor == 'modifySourceOnly'
         !metadataDiff.modified.first().diffs.first().isMergeConflict()
 
 
         and: 'array diffs on the dataclass list'
-        ArrayDiff<DataClass> dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' } as ArrayDiff<DataClass>
-        dataClassesDiff.created.size() == 3
-        dataClassesDiff.deleted.size() == 2
+        ArrayMergeDiff<DataClass> dataClassesDiff = mergeDiff.diffs.find { it.fieldName == 'dataClasses' } as ArrayMergeDiff<DataClass>
+        dataClassesDiff.created.size() == 1
+        //        dataClassesDiff.deleted.size() == 2
         //        dataClassesDiff.modified.size() == 4
 
-        dataClassesDiff.created.value.label as Set == ['addSourceOnly', 'leftParentDataClass', 'modifyAndDelete'] as Set
-        !dataClassesDiff.created.find { it.value.label == 'addSourceOnly' }.isMergeConflict()
-        !dataClassesDiff.created.find { it.value.label == 'addSourceOnly' }.commonAncestor
-        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.isMergeConflict()
-        !dataClassesDiff.created.find { it.value.label == 'leftParentDataClass' }.commonAncestor
-        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.isMergeConflict()
-        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestor
-        dataClassesDiff.deleted.value.label as Set == ['deleteAndModify', 'deleteSourceOnly'] as Set
-        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.isMergeConflict()
-        dataClassesDiff.deleted.find { it.value.label == 'deleteAndModify' }.commonAncestor
+        and: 'created'
+        dataClassesDiff.created.value.label as Set == ['addSourceOnly'] as Set
+        !dataClassesDiff.created.find { it.createdIdentifier == 'addSourceOnly' }.isMergeConflict()
+        !dataClassesDiff.created.find { it.createdIdentifier == 'addSourceOnly' }.commonAncestor
+        //
+        //        !dataClassesDiff.created.find { it.value.label == 'targetParentDataClass' }.isMergeConflict()
+        //        !dataClassesDiff.created.find { it.value.label == 'targetParentDataClass' }.commonAncestor
+        //
+        //        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.isMergeConflict()
+        //        dataClassesDiff.created.find { it.value.label == 'modifyAndDelete' }.commonAncestor
+
+        and:
+        dataClassesDiff.deleted.value.label as Set == ['deleteSourceAndModifyTarget', 'deleteSourceOnly'] as Set
+        dataClassesDiff.deleted.find { it.value.label == 'deleteSourceAndModifyTarget' }.isMergeConflict()
+        dataClassesDiff.deleted.find { it.value.label == 'deleteSourceAndModifyTarget' }.commonAncestor
+        dataClassesDiff.deleted.find { it.value.label == 'deleteSourceAndModifyTarget' }.right
         !dataClassesDiff.deleted.find { it.value.label == 'deleteSourceOnly' }.isMergeConflict()
         !dataClassesDiff.deleted.find { it.value.label == 'deleteSourceOnly' }.commonAncestor
+
+        and:
         dataClassesDiff.modified.left.diffIdentifier as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifySourceOnly',
                                                                 'addAndAddReturningDifference'] as Set
         dataClassesDiff.modified.find { it.left.diffIdentifier == 'modifyAndModifyReturningDifference' }.diffs[0].fieldName == 'description'

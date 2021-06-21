@@ -24,8 +24,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
-import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.BreadcrumbTreeService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.EditTitle
@@ -395,7 +395,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         //TODO validation on saving merges
         if (!modelMergeObjectDiff.hasDiffs()) return targetModel
         log.debug('Merging {} diffs into model {}', modelMergeObjectDiff.getValidDiffs().size(), targetModel.label)
-        modelMergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
+        modelMergeObjectDiff.getValidDiffs().each { mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -403,7 +403,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
+                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
                 if (modelItemService) {
                     modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager)
                 } else {
@@ -428,7 +428,7 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
         if (versionLinkType == VersionLinkType.NEW_FORK_OF) return includeForks ? versionTreeModelList : []
 
         List<VersionLink> versionLinks = versionLinkService.findAllByTargetModelId(instance.id)
-        versionLinks.each {link ->
+        versionLinks.each { link ->
             K linkedModel = get(link.multiFacetAwareItemId)
             versionTreeModelList.
                 addAll(buildModelVersionTree(linkedModel, link.linkType, rootVersionTreeModel, includeForks, branchesOnly, userSecurityPolicyManager))
@@ -443,8 +443,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
     K findCommonAncestorBetweenModels(K leftModel, K rightModel) {
 
         if (leftModel.label != rightModel.label) {
-            throw new ApiBadRequestException('MS03', "Model [${leftModel.id}] does not share its label with [${leftModel.id}] therefore they cannot have a " +
-                                                     "common ancestor")
+            throw new ApiBadRequestException('MS03',
+                                             "Model [${leftModel.id}] does not share its label with [${leftModel.id}] therefore they cannot have a " +
+                                             "common ancestor")
         }
 
         K finalisedLeftParent = getFinalisedParent(leftModel)
@@ -518,11 +519,16 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
         ObjectDiff<K> caDiffSource = commonAncestor.diff(sourceModel)
         ObjectDiff<K> caDiffTarget = commonAncestor.diff(targetModel)
-        ObjectDiff<K> sourceDiffTarget = sourceModel.diff(targetModel)
+        //        ObjectDiff<K> sourceDiffTarget = sourceModel.diff(targetModel)
 
         DiffBuilder
-            .mergeDiff(sourceDiffTarget, commonAncestor)
-            .diff(sourceDiffTarget, caDiffTarget, caDiffSource) as MergeDiff<K>
+            .mergeDiff(sourceModel.class as Class<K>)
+            .forMergingDiffable(sourceModel)
+            .intoDiffable(targetModel)
+            .havingCommonAncestor(commonAncestor)
+            .withCommonAncestorDiffedAgainstSource(caDiffSource)
+            .withCommonAncestorDiffedAgainstTarget(caDiffTarget)
+            .generate()
     }
 
     @Override
@@ -635,12 +641,12 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
 
             if (countByAuthorityAndLabel(model.authority, model.label)) {
                 List<K> existingModels = findAllByAuthorityAndLabel(model.authority, model.label)
-                existingModels.each {existing ->
+                existingModels.each { existing ->
                     log.debug('Setting Model as new documentation version of [{}:{}]', existing.label, existing.documentationVersion)
                     if (!existing.finalised) finaliseModel(existing, catalogueUser, null, null, null)
                     setModelIsNewDocumentationVersionOfModel(model, existing, catalogueUser)
                 }
-                Version latestVersion = existingModels.max {it.documentationVersion}.documentationVersion
+                Version latestVersion = existingModels.max { it.documentationVersion }.documentationVersion
                 model.documentationVersion = Version.nextMajorVersion(latestVersion)
 
             } else log.info('Marked as importAsNewDocumentationVersion but no existing Models with label [{}]', model.label)
