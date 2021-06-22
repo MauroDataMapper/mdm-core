@@ -144,7 +144,7 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
                                    CopyInformation copyInformation = new CopyInformation()) {
         copy = populateCopyData(original, copy, copier, copyInformation)
         classifierService.findAllByCatalogueItemId(userSecurityPolicyManager, original.id).each { copy.addToClassifiers(it) }
-        metadataService.findAllByMultiFacetAwareItemId(original.id).each { copy.addToMetadata(it.namespace, it.key, it.value, copier) }
+        metadataService.findAllByMultiFacetAwareItemId(original.id).each {copy.addToMetadata(it.namespace, it.key, it.value, copier.emailAddress)}
         ruleService.findAllByMultiFacetAwareItemId(original.id).each { rule ->
             Rule copiedRule = new Rule(name: rule.name, description: rule.description, createdBy: copier.emailAddress)
             rule.ruleRepresentations.each { ruleRepresentation ->
