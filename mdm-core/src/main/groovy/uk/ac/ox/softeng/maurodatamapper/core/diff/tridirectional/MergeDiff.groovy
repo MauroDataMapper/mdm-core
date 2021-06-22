@@ -1,5 +1,6 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
+
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ArrayDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
@@ -12,13 +13,10 @@ import groovy.transform.stc.SimpleType
 import groovy.util.logging.Slf4j
 
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.arrayMergeDiff
-import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.creationDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.creationMergeDiff
-import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.deletionDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.deletionMergeDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.fieldMergeDiff
 import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.mergeDiff
-import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.objectDiff
 
 /**
  * Holds the  result of 2 diffs which provides a unified diff of the changes which one object has made which another object has not made
@@ -41,10 +39,11 @@ import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.objectDiff
 @Slf4j
 class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
 
-    List<FieldMergeDiff> diffs
+    private List<FieldMergeDiff> diffs
 
-    ObjectDiff<M> commonAncestorDiffSource
-    ObjectDiff<M> commonAncestorDiffTarget
+    private ObjectDiff<M> commonAncestorDiffSource
+    private ObjectDiff<M> commonAncestorDiffTarget
+    private ObjectDiff<M> sourceDiffTarget
 
     MergeDiff(Class<M> targetClass) {
         super(targetClass)
@@ -52,8 +51,38 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
     }
 
     @Override
+    Boolean isMergeConflict() {
+        !objectsAreIdentical()
+    }
+
+    @Override
     Integer getNumberOfDiffs() {
-        diffs?.sum { it.getNumberOfDiffs() } as Integer ?: 0
+        diffs?.sum {it.getNumberOfDiffs()} as Integer ?: 0
+    }
+
+    String getSourceIdentifier() {
+        source.diffIdentifier
+    }
+
+    String getTargetIdentifier() {
+        target.diffIdentifier
+    }
+
+    FieldMergeDiff first() {
+        diffs.first()
+    }
+
+    int size() {
+        diffs.size()
+    }
+
+    boolean isEmpty() {
+        diffs.isEmpty()
+    }
+
+    @Override
+    String toString() {
+        "${sourceIdentifier} --> ${targetIdentifier} [${commonAncestor.diffIdentifier}]"
     }
 
     MergeDiff<M> forMergingDiffable(M sourceSide) {
@@ -78,9 +107,23 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
         this
     }
 
-    MergeDiff<M> append(FieldMergeDiff fieldDiff) {
-        diffs.add(fieldDiff)
+    MergeDiff<M> withSourceDiffedAgainstTarget(ObjectDiff<M> sourceDiffTarget) {
+        this.sourceDiffTarget = sourceDiffTarget
         this
+    }
+
+    MergeDiff<M> append(FieldMergeDiff fieldDiff) {
+        if (fieldDiff) diffs.add(fieldDiff)
+        this
+    }
+
+    MergeDiff<M> asMergeConflict() {
+        super.asMergeConflict() as MergeDiff<M>
+    }
+
+    FieldMergeDiff find(@DelegatesTo(List) @ClosureParams(value = SimpleType,
+        options = 'uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.FieldMergeDiff') Closure closure) {
+        diffs.find closure
     }
 
     /**
@@ -90,13 +133,31 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
      */
     @SuppressWarnings('GroovyVariableNotAssigned')
     MergeDiff<M> generate() {
-        log.debug('Generating merge diff')
-        commonAncestorDiffSource.diffs.each { FieldDiff caSourceFieldDiff ->
-            FieldDiff caTargetFieldDiff = commonAncestorDiffTarget.find { it.fieldName == caSourceFieldDiff.fieldName }
+
+        // Both sides then calculate the merge
+        if (commonAncestorDiffSource && commonAncestorDiffTarget) {
+            return generateMergeDiffFromCommonAncestorAgainstSourceAndTarget()
+        }
+        // Only source means this is a merge diff recurse where there is no content on the target side
+        if (commonAncestorDiffSource) {
+            return generateMergeDiffFromCommonAncestorAgainstSource()
+        }
+        // Otherwise we have the source diff target where there is no common ancestor
+        generateMergeDiffFromSourceAgainstTarget()
+    }
+
+
+    private MergeDiff<M> generateMergeDiffFromCommonAncestorAgainstSourceAndTarget() {
+        log.debug('Generating merge diff from common ancestor diffs against source and target for [{}]', commonAncestorDiffSource.leftIdentifier)
+        commonAncestorDiffSource.diffs.each {FieldDiff caSourceFieldDiff ->
+
+            log.debug('Processing field [{}] with change type [{}] present between common ancestor and source', caSourceFieldDiff.fieldName, caSourceFieldDiff.diffType)
+            FieldDiff caTargetFieldDiff = commonAncestorDiffTarget.find {it.fieldName == caSourceFieldDiff.fieldName}
 
             // If diff also exists on the target side then it may be a conflicting change if both sides a different
             // Or it is an identical change in which case it does not need to be included in this merge diff
             if (caTargetFieldDiff) {
+                log.debug('[{}] Change present between common ancestor and target', caSourceFieldDiff.fieldName)
                 switch (caSourceFieldDiff.diffType) {
                     case ArrayDiff.simpleName:
                         append createArrayMergeDiffPresentOnBothSides(caSourceFieldDiff as ArrayDiff,
@@ -111,6 +172,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
             }
             // If no diff between CA and target then this is a non-conflicting change
             else {
+                log.debug('[{}] No change present between common ancestor and target', caSourceFieldDiff.fieldName)
                 switch (caSourceFieldDiff.diffType) {
                     case ArrayDiff.simpleName:
                         append createArrayMergeDiffPresentOnOneSide(caSourceFieldDiff as ArrayDiff)
@@ -126,44 +188,65 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
         this
     }
 
-    FieldMergeDiff find(@DelegatesTo(List) @ClosureParams(value = SimpleType,
-        options = 'uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.FieldMergeDiff') Closure closure) {
-        diffs.find closure
+    private MergeDiff<M> generateMergeDiffFromCommonAncestorAgainstSource() {
+        log.debug('Generating merge diff from common ancestor diff against source for [{}]', commonAncestorDiffSource.leftIdentifier)
+        commonAncestorDiffSource.diffs.each {FieldDiff caSourceFieldDiff ->
+            log.debug('Processing field [{}] with change type [{}] present between common ancestor and source', caSourceFieldDiff.fieldName, caSourceFieldDiff.diffType)
+            switch (caSourceFieldDiff.diffType) {
+                case ArrayDiff.simpleName:
+                    append createArrayMergeDiffPresentOnOneSide(caSourceFieldDiff as ArrayDiff)
+                    break
+                case FieldDiff.simpleName:
+                    append createFieldMergeDiffPresentOnOneSide(caSourceFieldDiff)
+                    break
+                default:
+                    log.warn('Unhandled diff type {} on both sides', caSourceFieldDiff.diffType)
+            }
+        }
+        this
     }
 
-    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnBothSides(ArrayDiff<A> caSourceArrayDiff,
-                                                                                         ArrayDiff<A> caTargetArrayDiff) {
-        //        createBaseArrayMergeDiffPresentOnOneSide(caSourceArrayDiff)
-        //            .rightHandSide(caTargetArrayDiff.right)
-        //            .withCreatedDiffs(createCreationMergeDiffs(caSourceArrayDiff, caTargetArrayDiff))
-        //            .withDeletedDiffs(findAllDeletedMergeDiffs(caSourceArrayDiff.deleted, caTargetArrayDiff))
-        //        //            .modified(findAllModifiedMergeDiffs(sourceTargetDiff.modified, caSourceDiff, caTargetDiff))
-        []
+    private MergeDiff<M> generateMergeDiffFromSourceAgainstTarget() {
+        log.debug('Generating merge diff from source diff against target for [{}]', sourceDiffTarget.leftIdentifier)
+        sourceDiffTarget.diffs.each {FieldDiff sourceTargetFieldDiff ->
+            log.debug('Processing field [{}] with change type [{}] present between source and target', sourceTargetFieldDiff.fieldName, sourceTargetFieldDiff.diffType)
+            switch (sourceTargetFieldDiff.diffType) {
+                case ArrayDiff.simpleName:
+                    append createArrayMergeDiffFromSourceTargetArrayDiff(sourceTargetFieldDiff as ArrayDiff)
+                    break
+                case FieldDiff.simpleName:
+                    append createFieldMergeDiffFromSourceTargetFieldDiff(sourceTargetFieldDiff)
+                    break
+                default:
+                    log.warn('Unhandled diff type {} on both sides', sourceTargetFieldDiff.diffType)
+            }
+        }
+        this
     }
 
-
-    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnOneSide(ArrayDiff<A> caSourceArrayDiff) {
-
+    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffFromSourceTargetArrayDiff(ArrayDiff<A> sourceTargetArrayDiff) {
+        log.debug('[{}] Processing array differences against target from source', sourceTargetArrayDiff.fieldName)
         // Created and Deleted diffs in this array are left as-is as they are guaranteed to be unique and no issue
-        createBaseArrayMergeDiffPresentOnOneSide(caSourceArrayDiff)
-            .withCreatedMergeDiffs(createCreationMergeDiffsForOneSide(caSourceArrayDiff.created))
-            .withDeletedMergeDiffs(createDeletionMergeDiffsForOneSide(caSourceArrayDiff.deleted))
-            .withModifiedMergeDiffs(createModifiedMergeDiffsForOneSide(caSourceArrayDiff.modified))
-    }
+        arrayMergeDiff(sourceTargetArrayDiff.targetClass)
+            .forFieldName(sourceTargetArrayDiff.fieldName)
+            .withSource(sourceTargetArrayDiff.left)
+            .withTarget(sourceTargetArrayDiff.right)
+            .withCommonAncestor(null)
+            .withCreatedMergeDiffs(sourceTargetArrayDiff.created.collect {c ->
+                creationMergeDiff(c.targetClass).whichCreated(c.created)
+            })
+            .withDeletedMergeDiffs(sourceTargetArrayDiff.deleted.collect {d ->
+                deletionMergeDiff(d.targetClass).whichDeleted(d.deleted)
+            })
+            .withModifiedMergeDiffs(sourceTargetArrayDiff.modified.collect {m ->
+                mergeDiff(m.targetClass)
+                    .forMergingDiffable(m.left)
+                    .intoDiffable(m.right)
+                    .havingCommonAncestor(null)
+                    .withSourceDiffedAgainstTarget(m)
+                    .generate()
+            })
 
-    static <F> FieldMergeDiff<F> createFieldMergeDiffPresentOnOneSide(FieldDiff<F> caSourceFieldDiff) {
-        fieldMergeDiff(caSourceFieldDiff.targetClass)
-            .forFieldName(caSourceFieldDiff.fieldName)
-            .withSource(caSourceFieldDiff.right)
-        // just use whats in the commonAncestor as no caTarget data denotes no difference between the CA and the target
-            .withTarget(caSourceFieldDiff.left)
-            .withCommonAncestor(caSourceFieldDiff.left) // both diffs have the same LHS
-    }
-
-    static <F> FieldMergeDiff<F> createFieldMergeDiffPresentOnBothSides(FieldDiff<F> caSourceFieldDiff, FieldDiff<F> caTargetFieldDiff) {
-        createFieldMergeDiffPresentOnOneSide(caSourceFieldDiff)
-            .withTarget(caTargetFieldDiff.right)
-            .asMergeConflict()
     }
 
     static <A extends Diffable> ArrayMergeDiff<A> createBaseArrayMergeDiffPresentOnOneSide(ArrayDiff<A> caSourceArrayDiff) {
@@ -177,49 +260,82 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
             .withCommonAncestor(caSourceArrayDiff.left) // both diffs have the same LHS
     }
 
-    static <M extends Diffable> Collection<MergeDiff<M>> createModifiedMergeDiffsForOneSide(Collection<ObjectDiff<M>> caSourceModifiedDiffs) {
-        // Modified diffs represent diffs which have modifications down the chain but no changes on the target side
-        // Therefore we can use an empty object diff
-        caSourceModifiedDiffs.collect { objDiff ->
-            Class<M> targetClass = objDiff.left.class as Class<M>
-            mergeDiff(targetClass)
-                .forMergingDiffable(objDiff.right)
-                .intoDiffable(objDiff.left)
-                .havingCommonAncestor(objDiff.left)
-                .withCommonAncestorDiffedAgainstSource(objDiff)
-                .withCommonAncestorDiffedAgainstTarget(objectDiff(targetClass))
-                .generate()
-        }
+    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnBothSides(ArrayDiff<A> caSourceArrayDiff,
+                                                                                         ArrayDiff<A> caTargetArrayDiff) {
+        log.debug('[{}] Processing array differences against common ancestor on both sides', caSourceArrayDiff.fieldName)
+        ArrayMergeDiff arrayMergeDiff = createBaseArrayMergeDiffPresentOnOneSide(caSourceArrayDiff)
+            .withTarget(caTargetArrayDiff.right)
+            .withCreatedMergeDiffs(createCreationMergeDiffsPresentOnBothSides(caSourceArrayDiff, caTargetArrayDiff))
+            .withDeletedMergeDiffs(createDeletionMergeDiffsPresentOnBothSides(caSourceArrayDiff.deleted, caTargetArrayDiff))
+            .withModifiedMergeDiffs(createModifiedMergeDiffsPresentOnBothSides(caSourceArrayDiff, caTargetArrayDiff))
+
+        // If no actual differences in any section then return null
+        arrayMergeDiff.hasDiffs() ? arrayMergeDiff : null
     }
 
-    static <C extends Diffable> Collection<CreationMergeDiff<C>> createCreationMergeDiffsForOneSide(
+
+    static <A extends Diffable> ArrayMergeDiff<A> createArrayMergeDiffPresentOnOneSide(ArrayDiff<A> caSourceArrayDiff) {
+        log.debug('[{}] Processing array differences against common ancestor on one side', caSourceArrayDiff.fieldName)
+        // Created and Deleted diffs in this array are left as-is as they are guaranteed to be unique and no issue
+        createBaseArrayMergeDiffPresentOnOneSide(caSourceArrayDiff)
+            .withCreatedMergeDiffs(createCreationMergeDiffsPresentOnOneSide(caSourceArrayDiff.created))
+            .withDeletedMergeDiffs(createDeletionMergeDiffsPresentOnOneSide(caSourceArrayDiff.deleted))
+            .withModifiedMergeDiffs(createModifiedMergeDiffsPresentOnOneSide(caSourceArrayDiff.modified))
+    }
+
+    static <F> FieldMergeDiff<F> createFieldMergeDiffFromSourceTargetFieldDiff(FieldDiff<F> sourceTargetFieldDiff) {
+        log.debug('[{}] Processing field difference against target from source', sourceTargetFieldDiff.fieldName)
+        fieldMergeDiff(sourceTargetFieldDiff.targetClass)
+            .forFieldName(sourceTargetFieldDiff.fieldName)
+            .withSource(sourceTargetFieldDiff.left)
+            .withTarget(sourceTargetFieldDiff.right)
+            .withCommonAncestor(null)
+            .asMergeConflict() // Always a merge conflict as the values have to be different otherwise we wouldnt be here
+    }
+
+    static <F> FieldMergeDiff<F> createFieldMergeDiffPresentOnBothSides(FieldDiff<F> caSourceFieldDiff, FieldDiff<F> caTargetFieldDiff) {
+        log.debug('[{}] Processing field difference against common ancestor on both sides', caSourceFieldDiff.fieldName)
+        FieldMergeDiff fieldMergeDiff = createBaseFieldMergeDiffPresentOnOneSide(caSourceFieldDiff)
+            .withTarget(caTargetFieldDiff.right)
+            .asMergeConflict()
+        // This is a safety check to handle when 2 diffs are used with modifications but no actual difference
+        fieldMergeDiff.hasDiff() ? fieldMergeDiff : null
+    }
+
+    static <F> FieldMergeDiff<F> createFieldMergeDiffPresentOnOneSide(FieldDiff<F> caSourceFieldDiff) {
+        log.debug('[{}] Processing field difference against common ancestor on one side', caSourceFieldDiff.fieldName)
+        createBaseFieldMergeDiffPresentOnOneSide(caSourceFieldDiff)
+        // just use whats in the commonAncestor as no caTarget data denotes no difference between the CA and the target
+            .withTarget(caSourceFieldDiff.left)
+    }
+
+    static <F> FieldMergeDiff<F> createBaseFieldMergeDiffPresentOnOneSide(FieldDiff<F> caSourceFieldDiff) {
+        fieldMergeDiff(caSourceFieldDiff.targetClass)
+            .forFieldName(caSourceFieldDiff.fieldName)
+            .withSource(caSourceFieldDiff.right)
+            .withCommonAncestor(caSourceFieldDiff.left) // both diffs have the same LHS
+    }
+
+    static <C extends Diffable> Collection<CreationMergeDiff<C>> createCreationMergeDiffsPresentOnOneSide(
         Collection<CreationDiff<C>> caSourceCreatedDiffs) {
-        caSourceCreatedDiffs.collect { created ->
+        caSourceCreatedDiffs.collect {created ->
             creationMergeDiff(created.targetClass)
                 .whichCreated(created.created)
         }
     }
 
-    static <D extends Diffable> Collection<DeletionMergeDiff<D>> createDeletionMergeDiffsForOneSide(
-        Collection<DeletionDiff<D>> caSourceDeletionDiffs) {
-        caSourceDeletionDiffs.collect { deleted ->
-            deletionMergeDiff(deleted.targetClass)
-                .whichDeleted(deleted.deleted)
-        }
-    }
-
     /**
-     * Identify all the objects in the array field created on the LHS and flag all those which
+     * Identify all the objects in the array field created on the LHS and flag in the logs all those which were created on both sides as they may be a merge conflict
      *
      * Important to note that due to the way diff works the same object cannot exist in more than one of created, deleted, modified in an
      * ArrayDIff
      */
-    static <C extends Diffable> Collection<CreationMergeDiff> createCreationMergeDiffs(ArrayDiff<C> caSourceDiff,
-                                                                                       ArrayDiff<C> caTargetDiff) {
-        List<CreationDiff<C>> creationDiffs = caSourceDiff.created.collect { diff ->
+    static <C extends Diffable> Collection<CreationMergeDiff> createCreationMergeDiffsPresentOnBothSides(ArrayDiff<C> caSourceDiff,
+                                                                                                         ArrayDiff<C> caTargetDiff) {
+        caSourceDiff.created.collect {diff ->
             if (diff.createdIdentifier in caTargetDiff.created*.createdIdentifier) {
                 // Both sides added : potential conflict and therefore is a modified rather than create or no diff
-                log.debug('ca/source created {} exists in ca/target created', diff.createdIdentifier)
+                log.trace('[{}] ca/source created exists in ca/target created. Possible merge conflict will be rendered as a modified MergeDiff', diff.createdIdentifier)
                 return null
             }
             if (diff.createdIdentifier in caTargetDiff.deleted*.deletedIdentifier) {
@@ -231,24 +347,18 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
                 return null
             }
             // Only added on source side : no conflict
-            log.debug('ca/source created {} doesnt exist in ca/target', diff.createdIdentifier)
-            return creationDiff(diff.targetClass).created(diff.value)
-        }.findAll() as Collection<CreationDiff>
+            log.debug('[{}] ca/source created doesnt exist in ca/target', diff.createdIdentifier)
+            return creationMergeDiff(diff.targetClass).whichCreated(diff.value)
+        }.findAll() as Collection<CreationMergeDiff>
+    }
 
-        //        creationDiffs.addAll(caSourceDiff.modified.collect { caSourceModifiedDiff ->
-        //            DeletionDiff<C> caTargetDeletedDiff = caTargetDiff.deleted.find { it.deletedIdentifier == caSourceModifiedDiff.leftIdentifier }
-        //            if (caTargetDeletedDiff) {
-        //                // Modified in source but deleted in target : conflict but should appear as creation
-        //                return creationDiff(caSourceModifiedDiff.targetClass.arrayType() as Class<C>)
-        //                    .created(caSourceModifiedDiff.right)
-        //                    .withMergeDeletion(caTargetDeletedDiff.deleted)
-        //                    .withCommonAncestor(caSourceDiff.left)
-        //                    .asMergeConflict()
-        //            }
-        //            null
-        //        }.findAll() as Collection<CreationDiff<C>>)
 
-        creationDiffs
+    static <D extends Diffable> Collection<DeletionMergeDiff<D>> createDeletionMergeDiffsPresentOnOneSide(
+        Collection<DeletionDiff<D>> caSourceDeletionDiffs) {
+        caSourceDeletionDiffs.collect {deleted ->
+            deletionMergeDiff(deleted.targetClass)
+                .whichDeleted(deleted.deleted)
+        }
     }
 
     /**
@@ -258,40 +368,122 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
      * ArrayDIff
      *
      */
-    static <D extends Diffable> Collection<DeletionMergeDiff> findAllDeletedMergeDiffs(Collection<DeletionDiff<D>> caSourceDeletedDiffs,
-                                                                                       ArrayDiff<D> caTargetDiff) {
-        caSourceDeletedDiffs.collect { diff ->
+    static <D extends Diffable> Collection<DeletionMergeDiff> createDeletionMergeDiffsPresentOnBothSides(Collection<DeletionDiff<D>> caSourceDeletedDiffs,
+                                                                                                         ArrayDiff<D> caTargetDiff) {
+        caSourceDeletedDiffs.collect {diff ->
             if (diff.deletedIdentifier in caTargetDiff.created*.createdIdentifier) {
                 //  Impossible as you can't delete something which never existed
                 return null
             }
             if (diff.deletedIdentifier in caTargetDiff.deleted*.deletedIdentifier) {
                 // Deleted in source, deleted in target : no conflict no diff
-                log.debug('ca/source deleted {} exists in ca/target deleted', diff.deletedIdentifier)
+                log.trace('[{}] ca/source deleted exists in ca/target deleted', diff.deletedIdentifier)
                 return null
             }
-            ObjectDiff<D> modifiedTargetDiff = caTargetDiff.modified.find { it.rightIdentifier == diff.deletedIdentifier }
-            if (modifiedTargetDiff) {
+            ObjectDiff<D> caTargetModifiedDiff = caTargetDiff.modified.find {it.rightIdentifier == diff.deletedIdentifier}
+            if (caTargetModifiedDiff) {
                 // Deleted in source, modified in target : conflict as deletion diff
-                log.debug('ca/source deleted {} exists in ca/target modified', diff.deletedIdentifier)
-                return deletionDiff(diff.targetClass)
-                    .deleted(diff.value)
-                    .withMergeModification(modifiedTargetDiff.right)
-                    .withCommonAncestor(modifiedTargetDiff.left)
+                log.debug('[{}] ca/source deleted exists in ca/target modified', diff.deletedIdentifier)
+                return deletionMergeDiff(diff.targetClass)
+                    .whichDeleted(diff.value)
+                    .withMergeModification(caTargetModifiedDiff) // TODO does this work with giving the information needed???
+                    .withCommonAncestor(caTargetModifiedDiff.left)
                     .asMergeConflict()
             }
             // Deleted in source but not touched in target : no conflict
-            log.debug('ca/source deleted {} doesnt exist in ca/target', diff.deletedIdentifier)
-            return deletionDiff(diff.targetClass).deleted(diff.value).withNoMergeModification()
-        }.findAll() as Collection<DeletionDiff>
+            log.debug('[{}] ca/source deleted doesnt exist in ca/target', diff.deletedIdentifier)
+            return deletionMergeDiff(diff.targetClass).whichDeleted(diff.value).withNoMergeModification()
+        }.findAll()
     }
 
-    //    static Collection<ObjectDiff> findAllModifiedMergeDiffs(Collection<ObjectDiff> modified, ArrayDiff sourceArrayDiff, ArrayDiff
-    //    targetArrayDiff) {
-    //        modified.collect { ObjectDiff objDiff ->
+    static <M extends Diffable> Collection<MergeDiff<M>> createModifiedMergeDiffsPresentOnOneSide(Collection<ObjectDiff<M>> caSourceModifiedDiffs) {
+        // Modified diffs represent diffs which have modifications down the chain but no changes on the target side
+        // Therefore we can use an empty object diff
+        caSourceModifiedDiffs.collect {objDiff ->
+            Class<M> targetClass = objDiff.left.class as Class<M>
+            mergeDiff(targetClass)
+                .forMergingDiffable(objDiff.right)
+                .intoDiffable(objDiff.left)
+                .havingCommonAncestor(objDiff.left)
+                .withCommonAncestorDiffedAgainstSource(objDiff)
+                .generate()
+        }
+    }
+
+    static <M extends Diffable> Collection<MergeDiff<M>> createModifiedMergeDiffsPresentOnBothSides(ArrayDiff<M> caSourceDiff, ArrayDiff<M> caTargetDiff) {
+
+        List<MergeDiff<M>> modifiedDiffs = caSourceDiff.modified.collect {caSourceModifiedDiff ->
+            ObjectDiff<M> caTargetModifiedDiff = caTargetDiff.modified.find {it.leftIdentifier == caSourceModifiedDiff.leftIdentifier}
+            if (caTargetModifiedDiff) {
+                log.debug('[{}] modified on both sides', caSourceModifiedDiff.leftIdentifier)
+
+                //                ObjectDiff<M> sourceTargetDiff = caSourceModifiedDiff.right.diff(caTargetModifiedDiff.right)
+                //
+                //                if (sourceTargetDiff.objectsAreIdentical()) {
+                //                    log.debug('Both sides modified but the modifications are identical')
+                //                    return null
+                //                }
+
+                MergeDiff sourceTargetMergeDiff = mergeDiff(caSourceModifiedDiff.targetClass)
+                    .forMergingDiffable(caSourceModifiedDiff.right)
+                    .intoDiffable(caTargetModifiedDiff.right)
+                    .havingCommonAncestor(caSourceModifiedDiff.left)
+                    .withCommonAncestorDiffedAgainstSource(caSourceModifiedDiff)
+                    .withCommonAncestorDiffedAgainstTarget(caTargetModifiedDiff)
+                    .generate()
+                // If no diffs then the modifications are the same so dont include
+                return sourceTargetMergeDiff.isEmpty() ? null : sourceTargetMergeDiff
+
+            }
+            DeletionDiff<M> caTargetDeletionDiff = caTargetDiff.deleted.find {it.deletedIdentifier == caSourceModifiedDiff.leftIdentifier}
+            if (caTargetDeletionDiff) {
+                log.debug('[{}] modified on ca/source side and deleted on ca/target side. NOT HANDLED', caSourceModifiedDiff.leftIdentifier)
+                return null
+            }
+
+            log.debug('[{}] only modified on ca/source side', caSourceModifiedDiff.leftIdentifier)
+            mergeDiff(caSourceModifiedDiff.targetClass)
+                .forMergingDiffable(caSourceModifiedDiff.right)
+                .intoDiffable(caSourceModifiedDiff.left)
+                .havingCommonAncestor(caSourceModifiedDiff.left)
+                .withCommonAncestorDiffedAgainstSource(caSourceModifiedDiff)
+                .generate()
+        }.findAll()
+
+
+        List<MergeDiff<M>> createdModifiedDiffs = caSourceDiff.created.collect {caSourceCreationDiff ->
+            CreationDiff<M> caTargetCreationDiff = caTargetDiff.created.find {it.createdIdentifier == caSourceCreationDiff.createdIdentifier}
+            if (caTargetCreationDiff) {
+                // Both sides added : potential conflict and therefore is a modified rather than create or no diff
+                log.debug('[{}] ca/source created exists in ca/target created. This is a potential merge modification', caSourceCreationDiff.createdIdentifier)
+
+                // Get the diff of the 2 objects, we need to determine if theres actually a merge conflict
+                ObjectDiff<M> sourceTargetDiff = caSourceCreationDiff.created.diff(caTargetCreationDiff.created)
+                // If objects are identical then theres no merge difference so it can be ignored
+                if (sourceTargetDiff.objectsAreIdentical()) {
+                    log.debug('Both sides created but the creations are identical')
+                    return null
+                }
+
+                return mergeDiff(sourceTargetDiff.targetClass as Class<M>)
+                    .forMergingDiffable(caSourceCreationDiff.created)
+                    .intoDiffable(caTargetCreationDiff.created)
+                    .havingCommonAncestor(null)
+                    .withSourceDiffedAgainstTarget(sourceTargetDiff)
+                    .generate()
+            }
+            null
+        }.findAll()
+
+        modifiedDiffs + createdModifiedDiffs
+    }
+
+    //        modified.collect {ObjectDiff objDiff ->
     //            def diffIdentifier = objDiff.target.diffIdentifier
-    //            if (diffIdentifier in sourceArrayDiff.created.value.diffIdentifier) { return updateModifiedObjectMergeDiffCreatedOnOneSide
-    //            (objDiff) }
+    //            if (diffIdentifier in sourceArrayDiff.created.value.diffIdentifier) {
+    //                return updateModifiedObjectMergeDiffCreatedOnOneSide
+    //                (objDiff)
+    //            }
     //            if
     //            (diffIdentifier in sourceArrayDiff.modified.source.diffIdentifier) {
     //                if (diffIdentifier in targetArrayDiff.modified.source.diffIdentifier) {
@@ -299,18 +491,21 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
     //                    top modified, source modified , target modified
     //                    return createModifiedObjectMergeDiffModifiedOnBothSides(objDiff,
     //                                                                            sourceArrayDiff.modified.
-    //                                                                                find { it.source.diffIdentifier == diffIdentifier } as
+    //                                                                                find {it.source.diffIdentifier == diffIdentifier} as
     //                                                                                ObjectDiff,
     //                                                                            targetArrayDiff.modified.
-    //                                                                                find { it.source.diffIdentifier == diffIdentifier } as
+    //                                                                                find {it.source.diffIdentifier == diffIdentifier} as
     //                                                                                ObjectDiff,
-    //                                                                            targetArrayDiff.source.find { it.diffIdentifier ==
-    //                                                                            diffIdentifier })
+    //                                                                            targetArrayDiff.source.find {
+    //                                                                                it.diffIdentifier ==
+    //                                                                                diffIdentifier
+    //                                                                            })
     //                } // top modified, source modified, target not modified
     //                return updateModifiedObjectMergeDiffPresentOnOneSide(objDiff)
     //            } null
     //        }.findAll()
-    //    }
+
+
     //    static ObjectDiff updateModifiedObjectMergeDiffCreatedOnOneSide(ObjectDiff objectDiff) {
     //        // top modified, target created, (source also created)
     //        objectDiff.diffs.each {

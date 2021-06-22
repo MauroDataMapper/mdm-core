@@ -80,7 +80,11 @@ class ArrayMergeDiff<C extends Diffable> extends FieldMergeDiff<Collection<C>> {
 
     @Override
     Integer getNumberOfDiffs() {
-        created.size() + deleted.size() + ((modified.sum { it.getNumberOfDiffs() } ?: 0) as Integer)
+        created.size() + deleted.size() + ((modified.sum {it.getNumberOfDiffs()} ?: 0) as Integer)
+    }
+
+    boolean hasDiffs() {
+        getNumberOfDiffs() != 0
     }
 
     @Override

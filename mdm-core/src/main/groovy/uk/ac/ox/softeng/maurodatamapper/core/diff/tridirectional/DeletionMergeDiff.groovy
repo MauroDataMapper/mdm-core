@@ -1,11 +1,14 @@
 package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
+import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 
 import groovy.transform.CompileStatic
 
 @CompileStatic
 class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> {
+
+    ObjectDiff<D> mergeModificationDiff
 
     DeletionMergeDiff(Class<D> targetClass) {
         super(targetClass)
@@ -26,12 +29,12 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> {
 
     DeletionMergeDiff<D> whichDeleted(D object) {
         this.value = object
-        this.commonAncestor = object
-        this
+        withCommonAncestor object
     }
 
-    DeletionMergeDiff<D> withMergeModification(D modified) {
-        super.rightHandSide(modified) as DeletionMergeDiff<D>
+    DeletionMergeDiff<D> withMergeModification(ObjectDiff<D> modifiedDiff) {
+        this.mergeModificationDiff = modifiedDiff
+        this
     }
 
     DeletionMergeDiff<D> withNoMergeModification() {
@@ -59,6 +62,7 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> {
 
     @Override
     String toString() {
-        "Deleted :: ${deletedIdentifier}"
+        String str = "Deleted :: ${deletedIdentifier}"
+        mergeModificationDiff ? "${str} Modified :: ${mergeModificationDiff}" : str
     }
 }

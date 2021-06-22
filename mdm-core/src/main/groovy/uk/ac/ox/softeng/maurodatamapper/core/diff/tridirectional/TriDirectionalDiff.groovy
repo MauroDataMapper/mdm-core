@@ -8,8 +8,8 @@ import groovy.transform.CompileStatic
 @CompileStatic
 abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
 
-    Boolean mergeConflict
-    T commonAncestor
+    private Boolean mergeConflict
+    private T commonAncestor
 
     protected TriDirectionalDiff(Class<T> targetClass) {
         super(targetClass)
@@ -53,6 +53,10 @@ abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
 
     Boolean isMergeConflict() {
         mergeConflict
+    }
+
+    T getCommonAncestor() {
+        commonAncestor
     }
 
     T getTarget() {
