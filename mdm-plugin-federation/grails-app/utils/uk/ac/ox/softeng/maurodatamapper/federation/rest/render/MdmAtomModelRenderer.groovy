@@ -17,7 +17,6 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.federation.rest.render
 
-
 import uk.ac.ox.softeng.maurodatamapper.core.admin.ApiPropertyService
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
@@ -30,7 +29,6 @@ import grails.rest.render.atom.AtomRenderer
 import groovy.util.logging.Slf4j
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.ToOne
-import org.grails.web.xml.PrettyPrintXMLStreamWriter
 import org.grails.web.xml.StreamingMarkupWriter
 import org.grails.web.xml.XMLStreamWriter
 import org.springframework.beans.factory.annotation.Autowired
@@ -78,8 +76,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
     @Override
     void renderInternal(T object, RenderContext context) {
         final streamingWriter = new StreamingMarkupWriter(context.writer, encoding)
-        XMLStreamWriter w = prettyPrint ? new PrettyPrintXMLStreamWriter(streamingWriter) : new XMLStreamWriter(streamingWriter)
-        XML xml = new XML(w)
+        XML xml = new XML(new XMLStreamWriter(streamingWriter))
 
         final entity = mappingContext.getPersistentEntity(object.class.name)
         boolean isDomain = entity != null
@@ -87,7 +84,8 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         Authority authority = authorityService.defaultAuthority
 
         Set writtenObjects = []
-        w.startDocument(encoding, "1.0")
+        XMLStreamWriter writer = xml.getWriter()
+        writer.startDocument(encoding, "1.0")
 
         if (isDomain) {
             writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects)
@@ -95,7 +93,6 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
             final locale = context.locale
             String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET, absolute: true)
             final title = getResourceTitle(context.resourcePath, locale)
-            XMLStreamWriter writer = xml.getWriter()
             writer
                 .startNode(FEED_TAG)
                 .attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
@@ -122,7 +119,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
             https://validator.w3.org/feed/docs/atom.html#requiredEntryElements
             */
             if (object.size() > 0) {
-                def mostRecentlyUpdated = object.max {it.lastUpdated}
+                def mostRecentlyUpdated = object.max { it.lastUpdated }
                 writer.startNode(UPDATED_TAG)
                     .characters(formatLastUpdated(mostRecentlyUpdated))
                     .end()
@@ -320,7 +317,7 @@ class MdmAtomModelRenderer<T> extends AtomRenderer<T> {
         Optional fields
          */
         writer.startNode(PUBLISHED_TAG)
-            .characters(formatDateCreated(object))
+            .characters(formatAtomDate(object.dateFinalised))
             .end()
 
         writer.startNode(CATEGORY_TAG)
