@@ -20,6 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
@@ -285,6 +286,8 @@ class BootstrapModels {
         DataModel v2 = dataModelService.createNewBranchModelVersion('main', v1, dev, false, policyManager)
         v2 = populateV2(v2, messageSource, assetResourceLocator)
         checkAndSave(messageSource, v2)
+        v2 = modifyV1(v2, messageSource, assetResourceLocator)
+        checkAndSave(messageSource, v2)
 
         // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
         DataModel newBranch = dataModelService.createNewBranchModelVersion('newBranch', v1, dev, false, policyManager)
@@ -355,18 +358,107 @@ class BootstrapModels {
                                                      minMultiplicity: 1,
                                                      maxMultiplicity: 1,
                                                      dataType: v1PrimitiveType1)
+        DataElement v1ModifyDataElement3 = new DataElement(createdBy: DEVELOPMENT,
+                                                           label: 'V1 Modify DataElement',
+                                                           minMultiplicity: 1,
+                                                           maxMultiplicity: 1,
+                                                           dataType: v1PrimitiveType1)
+        DataElement v1ModifyDataElement4 = new DataElement(createdBy: DEVELOPMENT,
+                                                           label: 'V1 Modify DataElement 2',
+                                                           minMultiplicity: 1,
+                                                           maxMultiplicity: 1,
+                                                           dataType: v1PrimitiveType1)
         DataClass v1DataClass = new DataClass(createdBy: DEVELOPMENT,
                                               label: 'V1 Finalised Data Class')
+        DataClass v1InternalDataClass = new DataClass(createdBy: DEVELOPMENT,
+                                                      label: 'V1 Internal Data Class')
+        DataClass v1ModifyDataClass = new DataClass(createdBy: DEVELOPMENT,
+                                                    label: 'V1 Modify Data Class')
 
-        v1DataClass.addToDataElements(v1DataElement1).addToDataElements(v1DataElement2)
+
+        v1InternalDataClass.addToDataElements(v1DataElement1)
+        v1ModifyDataClass.addToDataElements(v1ModifyDataElement3).addToDataElements(v1ModifyDataElement4)
+        v1DataClass.addToDataElements(v1DataElement2)
+            .addToDataClasses(v1InternalDataClass)
+
 
         v1DataModel
             .addToDataClasses(v1DataClass)
+            .addToDataClasses(v1ModifyDataClass)
             .addToDataClasses(createdBy: DEVELOPMENT, label: 'V1 Another Data Class')
             .addToDataTypes(v1PrimitiveType1)
         checkAndSave(messageSource, v1DataModel)
         return v1DataModel
 
+    }
+
+    static DataModel modifyV1(DataModel v2DataModel, MessageSource messageSource) {
+
+        manipulateDataElements(v2DataModel, messageSource)
+        manipulateDataClasses(v2DataModel, messageSource)
+        manipulateMetaData(v2DataModel, messageSource)
+
+        v2DataModel = DataModel.findById(v2DataModel.id)
+
+        return v2DataModel
+    }
+
+    static void manipulateDataClasses(DataModel v2DataModel, MessageSource messageSource) {
+
+        v2DataModel = DataModel.findById(v2DataModel.id)
+
+        DataClass v1DataClass = v2DataModel.getDataClasses().find { it.label = 'V1 Finalised Data Class' }
+        DataClass v1InternalDataClass = v1DataClass.getDataClasses().find { it.label = '1 Finalised Data Class' }
+
+        //modify dataClass and internal DataClass
+        v1InternalDataClass.label = 'Modified this internal label name'
+        v1DataClass.label = 'Modified this label name'
+        checkAndSave(messageSource, v1InternalDataClass)
+        checkAndSave(messageSource, v1DataClass)
+
+        //remove internal Dataclass, then DataClass
+        v1DataClass.removeFromDataClasses(v1InternalDataClass)
+        checkAndSave(messageSource, v1DataClass)
+        v2DataModel.removeFromDataClasses(v1DataClass)
+        checkAndSave(messageSource, v2DataModel)
+
+
+    }
+
+    static void manipulateDataElements(DataModel v2DataModel, MessageSource messageSource) {
+
+        v2DataModel = DataModel.findById(v2DataModel.id)
+
+        DataClass v1ModifyDataClass = v2DataModel.getDataClasses().find { it.label = 'V1 Modify Data Class' }
+
+        //Modify DataElement
+        DataElement modifyDataElement1 = v1ModifyDataClass.getDataElements().find { it.label = 'V1 Modify DataElement' }
+        modifyDataElement1.label = 'Modified Label On this element'
+        checkAndSave(messageSource, modifyDataElement1)
+
+        //Add modified and remove other data element
+        DataElement modifyDataElement2 = v1ModifyDataClass.getDataElements().find { it.label = 'V1 Modify DataElement 2' }
+        v1ModifyDataClass.removeFromDataElements(modifyDataElement2)
+        checkAndSave(messageSource, v1ModifyDataClass)
+        v1ModifyDataClass.addToDataElements(modifyDataElement1)
+        checkAndSave(messageSource, v1ModifyDataClass)
+
+
+    }
+
+    static void manipulateMetaData(DataModel v2DataModel, MessageSource messageSource) {
+
+        v2DataModel = DataModel.findById(v2DataModel.id)
+        //modify metaData
+        Metadata md1 = v2DataModel.getMetadata().find { it.key = 'jun1' }
+        md1.value = 'mod1'
+        v2DataModel.metadata.add(md1)
+        checkAndSave(messageSource, v2DataModel)
+
+        //remove metaData
+        Metadata md2 = v2DataModel.getMetadata().find { it.key = 'mdk2' }
+        v2DataModel.removeFromMetadata(md2)
+        checkAndSave(messageSource, v2DataModel)
     }
 
     static DataModel populateV2(DataModel v2DataModel, MessageSource messageSource,
@@ -411,7 +503,6 @@ class BootstrapModels {
             .addToDataTypes(v2PrimitiveType1)
             .addToDataTypes(v2PrimitiveType2)
             .addToDataTypes(v2PrimitiveType3)
-        //.removeFromDataClasses(DataClass.findByLabel('V1 Another Data Class'))
 
         checkAndSave(messageSource, v2DataModel)
         v2DataModel
@@ -449,7 +540,7 @@ class BootstrapModels {
             Resource resource = assetResourceLocator.findResourceForURI(fileName)
             resource.getInputStream().getText()
         } catch (FileNotFoundException e) {
-            log.error("Cannot locate file " + fileName + ", e")
+            log.error("Cannot locate file " + fileName + "---" + e)
             'File Path not located: default description'
         }
     }
