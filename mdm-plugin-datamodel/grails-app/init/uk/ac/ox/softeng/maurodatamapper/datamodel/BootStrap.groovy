@@ -22,6 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 
+import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -35,6 +36,8 @@ class BootStrap {
     AuthorityService authorityService
 
     DataModelService dataModelService
+
+    AssetResourceLocator assetResourceLocator
 
     def init = {servletContext ->
 
@@ -55,7 +58,7 @@ class BootStrap {
                         BootstrapModels.buildAndSaveFinalisedSimpleDataModel(messageSource, folder, authority)
                     }
                     if (DataModel.countByLabel(BootstrapModels.MODEL_VERSION_TREE_DATAMODEL_NAME) == 0) {
-                        BootstrapModels.buildAndSaveModelVersionTree(messageSource, folder, authority, dataModelService)
+                        BootstrapModels.buildAndSaveModelVersionTree(messageSource, folder, authority, dataModelService, assetResourceLocator)
                     }
                     if (DataModel.countByAuthorityIsNull() != 0) {
                         log.warn('DataModels missing authority, updating with default authority')

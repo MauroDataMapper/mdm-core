@@ -20,11 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
-import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -39,20 +36,16 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.core.io.Resource
-import org.springframework.stereotype.Component
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
-import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
 @Slf4j
-@Component("BootstrapModels")
 class BootstrapModels {
 
 
@@ -61,13 +54,6 @@ class BootstrapModels {
     public static final String FINALISED_EXAMPLE_DATAMODEL_NAME = 'Finalised Example Test DataModel'
 
     public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Model Version Tree DataModel'
-    private static AssetResourceLocator assetResourceLocator
-
-
-    @Autowired
-    void setAssetResourceLocator(AssetResourceLocator assetResourceLocator) {
-        BootstrapModels.assetResourceLocator = assetResourceLocator;
-    }
 
     static DataModel buildAndSaveSimpleDataModel(MessageSource messageSource, Folder folder, Authority authority) {
         DataModel simpleDataModel = DataModel.findByLabel(SIMPLE_DATAMODEL_NAME)
@@ -257,32 +243,8 @@ class BootstrapModels {
         simpleDataModel
     }
 
-    static void buildAndSaveModelVersionTree(MessageSource messageSource, Folder folder, Authority authority, DataModelService dataModelService) {
-        /*
-                -Development Folder
-                 -Example model v1 (finalised)
-                     +Stuff
-                 +Example model v2 (draft)
-                 +Example model v2 Branch (draft)
-
-                        DEV (finalised)
-                            |
-                            |
-                        Dev (main)  ---------------- dev (main Fork)
-                            |      \
-                            |        \
-                            |         Dev (branch)
-
-        */
-
-        User dev = [emailAddress: DEVELOPMENT] as User
-        UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
-        buildAndSaveModelVersionTreeStructure(messageSource, folder, authority, dataModelService, dev, policyManager)
-    }
-
-
-    static void buildAndSaveModelVersionTreeStructure(MessageSource messageSource, Folder folder, Authority authority,
-                                                      DataModelService dataModelService, User dev, UserSecurityPolicyManager policyManager) {
+    static void buildAndSaveModelVersionTree(MessageSource messageSource, Folder folder, Authority authority, DataModelService dataModelService,
+                                             AssetResourceLocator assetResourceLocator) {
         /*
                                                  /- anotherFork
     v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
@@ -290,11 +252,13 @@ class BootstrapModels {
        \_ fork ---- main                                               \_ interestingBranch (v5)
     */
         log.debug("Creating model version tree")
+        User dev = [emailAddress: DEVELOPMENT] as User
+        UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
 
         // V1
         DataModel v1 = new DataModel(createdBy: DEVELOPMENT,
                                      label: MODEL_VERSION_TREE_DATAMODEL_NAME,
-                                     orginisation: 'bootStrap',
+                                     organisation: 'bootStrap',
                                      author: 'bill',
                                      folder: folder,
                                      authority: authority)
@@ -319,14 +283,14 @@ class BootstrapModels {
 
         // V2 main branch
         DataModel v2 = dataModelService.createNewBranchModelVersion('main', v1, dev, false, policyManager)
-        v2 = populateV2(v2)
+        v2 = populateV2(v2, messageSource, assetResourceLocator)
         checkAndSave(messageSource, v2)
 
         // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
         DataModel newBranch = dataModelService.createNewBranchModelVersion('newBranch', v1, dev, false, policyManager)
         checkAndSave(messageSource, newBranch)
-        newBranch = populateV1Branch(messageSource, newBranch)
-        checkAndSave(messageSource, newBranch)
+        populateNewBranch(newBranch, messageSource)
+
         // Finalise the main branch to v2
         v2 = dataModelService.finaliseModel(v2, dev, Version.from('2'), null, null)
         checkAndSave(messageSource, v2)
@@ -375,14 +339,9 @@ class BootstrapModels {
 
     static DataModel populateV1(DataModel v1DataModel, MessageSource messageSource) {
 
-        Classifier v1classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'Versioning v1 classifier',
-                                                               readableByAuthenticatedUsers: true)
-        checkAndSave(messageSource, v1classifier)
-        v1DataModel.addToClassifiers(v1classifier)
-
-        v1DataModel.addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'jun1', value: 'jun2'))
-            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'mdk1', value: 'mdv1'))
-            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'mdk2', value: 'mdv2'))
+        v1DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'jun1', value: 'jun2')
+            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'mdk1', value: 'mdv1')
+            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'mdk2', value: 'mdv2')
 
         PrimitiveType v1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V1 Finalised Data Type')
@@ -410,15 +369,15 @@ class BootstrapModels {
 
     }
 
-    static DataModel populateV2(DataModel v2DataModel) {
-          v2DataModel.addToMetadata(new Metadata (createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'mkv1', value: 'mkv2'))
-            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'abc2', value: 'abc3'))
+    static DataModel populateV2(DataModel v2DataModel, MessageSource messageSource,
+                                AssetResourceLocator assetResourceLocator) {
+        v2DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'mkv1', value: 'mkv2')
+            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'abc2', value: 'abc3')
 
         v2DataModel.setAuthor('Dante')
         v2DataModel.setOrganisation('Baal')
 
-        v2DataModel.
-            setDescription(getDescriptionFromFile("modelDescription.txt"))
+        v2DataModel.setDescription(getDescriptionFromFile(assetResourceLocator, 'modelDescription.txt'))
 
         PrimitiveType v2PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V2 Data Type')
@@ -454,31 +413,23 @@ class BootstrapModels {
             .addToDataTypes(v2PrimitiveType3)
         //.removeFromDataClasses(DataClass.findByLabel('V1 Another Data Class'))
 
-
-        return v2DataModel
+        checkAndSave(messageSource, v2DataModel)
+        v2DataModel
 
     }
 
-    static DataModel populateV1Branch(MessageSource messageSource, DataModel v1Branch) {
+    static DataModel populateNewBranch(DataModel newBranch, MessageSource messageSource) {
 
 
-        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'Versioning classifier',
-                                                             readableByAuthenticatedUsers: true)
-        Classifier classifier1 = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'Versioning classifier2',
-                                                              readableByAuthenticatedUsers: true)
-        checkAndSave(messageSource, classifier)
-        checkAndSave(messageSource, classifier1)
         PrimitiveType stringPrimitive = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
 
-        v1Branch.addToClassifiers(classifier)
-            .addToClassifiers(classifier1)
+        newBranch
+            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'versioning.com', key: 'mdk1', value: 'mdv1')
+            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'versioning.com', key: 'mdk2', value: 'mdv2')
+            .addToMetadata(createdBy: DEVELOPMENT, namespace: 'versioning.com/bootstrap', key: 'mdk1', value: 'mdv2')
 
-            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'versioning.com', key: 'mdk1', value: 'mdv1'))
-            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'versioning.com', key: 'mdk2', value: 'mdv2'))
-            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'versioning.com/bootstrap', key: 'mdk1', value: 'mdv2'))
-
-            .addToAnnotations(new Annotation(createdBy: DEVELOPMENT, label: 'versioning annotation 1'))
-            .addToAnnotations(new Annotation(createdBy: DEVELOPMENT, label: 'versioning annotation 2', description: 'with description'))
+            .addToAnnotations(createdBy: DEVELOPMENT, label: 'versioning annotation 1')
+            .addToAnnotations(createdBy: DEVELOPMENT, label: 'versioning annotation 2', description: 'with description')
 
             .addToDataTypes(stringPrimitive)
             .addToDataTypes(new PrimitiveType(createdBy: DEVELOPMENT, label: 'integer'))
@@ -488,19 +439,18 @@ class BootstrapModels {
                                 .addToEnumerationValues(key: 'C', value: 'Cat', idx: 0)
                                 .addToEnumerationValues(key: 'D', value: 'Dog', idx: 1)
                                 .addToEnumerationValues(key: 'F', value: 'Fish', idx: 2))
-
-        return v1Branch
+        checkAndSave(messageSource, newBranch)
+        newBranch
 
     }
 
-    static String getDescriptionFromFile(fileName) {
+    static String getDescriptionFromFile(AssetResourceLocator assetResourceLocator, fileName) {
         try {
-            Resource resource = assetResourceLocator.findAssetForURI(fileName)
-            return resource.getInputStream().getText()
-
+            Resource resource = assetResourceLocator.findResourceForURI(fileName)
+            resource.getInputStream().getText()
         } catch (FileNotFoundException e) {
             log.error("Cannot locate file " + fileName + ", e")
-            return 'File Path not located: default description'
+            'File Path not located: default description'
         }
     }
 
