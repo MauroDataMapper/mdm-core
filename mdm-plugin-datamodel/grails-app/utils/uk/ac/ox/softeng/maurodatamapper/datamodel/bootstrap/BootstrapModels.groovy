@@ -20,8 +20,11 @@ package uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Annotation
+import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.security.UserService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -37,16 +40,14 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Component
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import javax.annotation.PostConstruct
-import javax.inject.Inject
 
+import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
 
@@ -61,6 +62,7 @@ class BootstrapModels {
 
     public static final String MODEL_VERSION_TREE_DATAMODEL_NAME = 'Model Version Tree DataModel'
     private static AssetResourceLocator assetResourceLocator
+
 
     @Autowired
     void setAssetResourceLocator(AssetResourceLocator assetResourceLocator) {
@@ -272,6 +274,7 @@ class BootstrapModels {
                             |         Dev (branch)
 
         */
+
         User dev = [emailAddress: DEVELOPMENT] as User
         UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
         buildAndSaveModelVersionTreeStructure(messageSource, folder, authority, dataModelService, dev, policyManager)
@@ -298,7 +301,7 @@ class BootstrapModels {
 
 
         checkAndSave(messageSource, v1)
-        v1 = addV1DataElements(v1, messageSource)
+        v1 = populateV1(v1, messageSource)
         v1 = dataModelService.finaliseModel(v1, dev, Version.from('1'), null, null)
         checkAndSave(messageSource, v1)
 
@@ -316,20 +319,20 @@ class BootstrapModels {
 
         // V2 main branch
         DataModel v2 = dataModelService.createNewBranchModelVersion('main', v1, dev, false, policyManager)
-        v2 = addV2DataElements(v2)
+        v2 = populateV2(v2)
         checkAndSave(messageSource, v2)
 
         // newBranch from v1 (do this after is it creates the main branch if done before and then we have to hassle getting the id)
         DataModel newBranch = dataModelService.createNewBranchModelVersion('newBranch', v1, dev, false, policyManager)
         checkAndSave(messageSource, newBranch)
-
+        newBranch = populateV1Branch(messageSource, newBranch)
+        checkAndSave(messageSource, newBranch)
         // Finalise the main branch to v2
         v2 = dataModelService.finaliseModel(v2, dev, Version.from('2'), null, null)
         checkAndSave(messageSource, v2)
 
         // V3 main branch
         DataModel v3 = dataModelService.createNewBranchModelVersion('main', v2, dev, false, policyManager)
-        v3 = addV3DataElements(v3)
         checkAndSave(messageSource, v3)
         // Finalise the main branch to v3
         v3 = dataModelService.finaliseModel(v3, dev, Version.from('3'), null, null)
@@ -370,23 +373,16 @@ class BootstrapModels {
         checkAndSave(messageSource, interestingBranch)
     }
 
-    static DataModel addV1DataElements(DataModel v1DataModel, MessageSource messageSource) {
+    static DataModel populateV1(DataModel v1DataModel, MessageSource messageSource) {
 
-        Classifier v1classifier
-
-        v1classifier = Classifier.findByLabel('ModelVersion classifier v1')
-
-        if (!v1classifier) {
-            v1classifier = new Classifier(createdBy: DEVELOPMENT, label: 'ModelVersion classifier v1', readableByAuthenticatedUsers: true)
-            checkAndSave(messageSource, v1classifier)
-        } else {
-            log.debug("test classifier simple already exists")
-        }
+        Classifier v1classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'Versioning v1 classifier',
+                                                               readableByAuthenticatedUsers: true)
+        checkAndSave(messageSource, v1classifier)
         v1DataModel.addToClassifiers(v1classifier)
 
-        //v1DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'jun1', value: 'jun2')
-        //.addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'abc2', value: 'abc3')
-        //.addToMetadata(createdBy: DEVELOPMENT, namespace: 'development.com/versioning', key: 'cat3', value: 'dog4')
+        v1DataModel.addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'jun1', value: 'jun2'))
+            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'mdk1', value: 'mdv1'))
+            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'v1Versioning.com', key: 'mdk2', value: 'mdv2'))
 
         PrimitiveType v1PrimitiveType1 = new PrimitiveType(createdBy: DEVELOPMENT,
                                                            label: 'V1 Finalised Data Type')
@@ -409,14 +405,14 @@ class BootstrapModels {
             .addToDataClasses(v1DataClass)
             .addToDataClasses(createdBy: DEVELOPMENT, label: 'V1 Another Data Class')
             .addToDataTypes(v1PrimitiveType1)
-
+        checkAndSave(messageSource, v1DataModel)
         return v1DataModel
 
     }
 
-    static DataModel addV2DataElements(DataModel v2DataModel) {
-        //  v2DataModel.addToMetadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'mkv1', value: 'mkv2')
-        //    .addToMetadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'abc2', value: 'abc3')
+    static DataModel populateV2(DataModel v2DataModel) {
+          v2DataModel.addToMetadata(new Metadata (createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'mkv1', value: 'mkv2'))
+            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'JRDev.com/versioning', key: 'abc2', value: 'abc3'))
 
         v2DataModel.setAuthor('Dante')
         v2DataModel.setOrganisation('Baal')
@@ -456,15 +452,45 @@ class BootstrapModels {
             .addToDataTypes(v2PrimitiveType1)
             .addToDataTypes(v2PrimitiveType2)
             .addToDataTypes(v2PrimitiveType3)
+        //.removeFromDataClasses(DataClass.findByLabel('V1 Another Data Class'))
+
 
         return v2DataModel
 
     }
 
-    static DataModel addV3DataElements(DataModel v3DataModel) {
+    static DataModel populateV1Branch(MessageSource messageSource, DataModel v1Branch) {
 
 
-        return v3DataModel
+        Classifier classifier = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'Versioning classifier',
+                                                             readableByAuthenticatedUsers: true)
+        Classifier classifier1 = Classifier.findOrCreateWhere(createdBy: DEVELOPMENT, label: 'Versioning classifier2',
+                                                              readableByAuthenticatedUsers: true)
+        checkAndSave(messageSource, classifier)
+        checkAndSave(messageSource, classifier1)
+        PrimitiveType stringPrimitive = new PrimitiveType(createdBy: DEVELOPMENT, label: 'string')
+
+        v1Branch.addToClassifiers(classifier)
+            .addToClassifiers(classifier1)
+
+            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'versioning.com', key: 'mdk1', value: 'mdv1'))
+            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'versioning.com', key: 'mdk2', value: 'mdv2'))
+            .addToMetadata(new Metadata(createdBy: DEVELOPMENT, namespace: 'versioning.com/bootstrap', key: 'mdk1', value: 'mdv2'))
+
+            .addToAnnotations(new Annotation(createdBy: DEVELOPMENT, label: 'versioning annotation 1'))
+            .addToAnnotations(new Annotation(createdBy: DEVELOPMENT, label: 'versioning annotation 2', description: 'with description'))
+
+            .addToDataTypes(stringPrimitive)
+            .addToDataTypes(new PrimitiveType(createdBy: DEVELOPMENT, label: 'integer'))
+
+            .addToDataClasses(createdBy: DEVELOPMENT, label: 'emptyVersioningClass', description: 'dataclass with desc')
+            .addToDataTypes(new EnumerationType(createdBy: DEVELOPMENT, label: 'catdogfish')
+                                .addToEnumerationValues(key: 'C', value: 'Cat', idx: 0)
+                                .addToEnumerationValues(key: 'D', value: 'Dog', idx: 1)
+                                .addToEnumerationValues(key: 'F', value: 'Fish', idx: 2))
+
+        return v1Branch
+
     }
 
     static String getDescriptionFromFile(fileName) {
@@ -473,8 +499,9 @@ class BootstrapModels {
             return resource.getInputStream().getText()
 
         } catch (FileNotFoundException e) {
-            log.error("Cannot locate file in src/resources folder", e)
+            log.error("Cannot locate file " + fileName + ", e")
             return 'File Path not located: default description'
         }
     }
+
 }
