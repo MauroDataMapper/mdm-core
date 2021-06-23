@@ -20,8 +20,8 @@ package uk.ac.ox.softeng.maurodatamapper.core.model
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
@@ -59,12 +59,12 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         throw new ApiNotYetImplementedException('MIS03', "copy [for ModelItem ${getModelItemClass().simpleName}] (with parent id), and relabel")
     }
 
-    Model mergeObjectDiffIntoModelItem(MergeObjectDiffData mergeObjectDiff, K targetModelItem, Model targetModel,
-                                       UserSecurityPolicyManager userSecurityPolicyManager) {
+    Model mergeObjectPatchDataIntoModelItem(ObjectPatchData objectPatchData, K targetModelItem, Model targetModel,
+                                            UserSecurityPolicyManager userSecurityPolicyManager) {
         //TODO validation on saving merges
-        if (!mergeObjectDiff.hasDiffs()) return targetModel
-        log.debug('Merging {} diffs into modelItem [{}]', mergeObjectDiff.getValidDiffs().size(), targetModelItem.label)
-        mergeObjectDiff.getValidDiffs().each {mergeFieldDiff ->
+        if (!objectPatchData.hasPatches()) return targetModel
+        log.debug('Merging {} diffs into modelItem [{}]', objectPatchData.getPatches().size(), targetModelItem.label)
+        objectPatchData.getPatches().each {mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -83,7 +83,7 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
                 }
 
                 if (modelItemService) {
-                    modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager, parentId)
+                    modelItemService.processFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager, parentId)
 
                 } else {
                     log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
@@ -95,17 +95,16 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         targetModel
     }
 
-    void processMergeFieldDiff(MergeFieldDiffData mergeFieldDiff, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager,
-                               UUID parentId = null) {
+    void processFieldPatchData(FieldPatchData fieldPatchData, Model targetModel, UserSecurityPolicyManager userSecurityPolicyManager, UUID parentId = null) {
         // apply deletions of children to target object
-        mergeFieldDiff.deleted.each {mergeItemData ->
-            ModelItem modelItem = get(mergeItemData.id) as ModelItem
+        fieldPatchData.deleted.each {deletedItemPatchData ->
+            ModelItem modelItem = get(deletedItemPatchData.id) as ModelItem
             delete(modelItem)
         }
 
         // copy additions from source to target object
-        mergeFieldDiff.created.each {mergeItemData ->
-            ModelItem modelItem = get(mergeItemData.id) as ModelItem
+        fieldPatchData.created.each {createdItemPatchData ->
+            ModelItem modelItem = get(createdItemPatchData.id) as ModelItem
             ModelItem copyModelItem
             if (parentId) {
                 copyModelItem = copy(targetModel, modelItem, userSecurityPolicyManager, parentId)
@@ -116,9 +115,9 @@ abstract class ModelItemService<K extends ModelItem> extends CatalogueItemServic
         }
 
         // for modifications, recursively call this method
-        mergeFieldDiff.modified.each {mergeObjectDiffData ->
-            ModelItem modelItem = get(mergeObjectDiffData.leftId) as ModelItem
-            mergeObjectDiffIntoModelItem(mergeObjectDiffData, modelItem, targetModel, userSecurityPolicyManager)
+        fieldPatchData.modified.each {modifiedObjectPatchData ->
+            ModelItem modelItem = get(modifiedObjectPatchData.targetId) as ModelItem
+            mergeObjectPatchDataIntoModelItem(modifiedObjectPatchData, modelItem, targetModel, userSecurityPolicyManager)
         }
     }
 

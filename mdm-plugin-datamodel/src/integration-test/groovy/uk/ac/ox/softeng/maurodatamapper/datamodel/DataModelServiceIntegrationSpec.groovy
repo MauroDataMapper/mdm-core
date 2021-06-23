@@ -27,9 +27,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
 import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.VersionLinkType
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeItemData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ItemPatchData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap.BootstrapModels
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClassService
@@ -1162,92 +1162,89 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
         mergeDiff.numberOfDiffs == 16
 
         when:
-        DataClass addLeftOnly = dataClassService.findByDataModelIdAndLabel(mergeData.sourceId, 'addTargetOnly')
-        DataClass addAndAddReturningDifference = dataClassService.findByDataModelIdAndLabel(mergeData.sourceId, 'addBothReturningDifference')
-        DataClass addLeftToExistingClass = dataClassService.findByDataModelIdAndLabel(mergeData.sourceId, 'addTargetToExistingClass')
-        def patch = new MergeObjectDiffData(
+        DataClass targetExistingClass = dataClassService.findByParentAndLabel(rightMain, 'existingClass')
+        DataClass sourceExistingClass = dataClassService.findByParentAndLabel(leftTest, 'existingClass')
+
+        def patch = new ObjectPatchData(
             targetId: rightMain.id,
             sourceId: leftTest.id,
-            diffs: [
-                new MergeFieldDiffData(
+            patches: [
+                new FieldPatchData(
                     fieldName: 'description',
                     value: 'DescriptionLeft'
                 ),
-                new MergeFieldDiffData(
+                new FieldPatchData(
                     fieldName: 'dataClasses',
                     deleted: [
-                        new MergeItemData(
-                            id: dataClassService.findByParentAndLabel(rightMain, deleteAndModify.label).id,
-                            label: deleteAndModify.label
+                        new ItemPatchData(
+                            id: dataClassService.findByParentAndLabel(rightMain, 'deleteSourceAndModifyTarget').id,
+                            label: 'deleteSourceAndModifyTarget'
                         ),
-                        new MergeItemData(
-                            id: dataClassService.findByParentAndLabel(rightMain, deleteLeftOnly.label).id,
-                            label: deleteLeftOnly.label
+                        new ItemPatchData(
+                            id: dataClassService.findByParentAndLabel(rightMain, 'deleteSourceOnly').id,
+                            label: 'deleteSourceOnly'
                         )
                     ],
                     created: [
-                        new MergeItemData(
-                            id: addLeftOnly.id,
-                            label: addLeftOnly.label
+                        new ItemPatchData(
+                            id: dataClassService.findByParentAndLabel(leftTest, 'addSourceOnly').id,
+                            label: 'addSourceOnly'
                         ),
-                        new MergeItemData(
-                            id: dataClassService.findByParentAndLabel(leftTest, modifyAndDelete.label).id,
-                            label: modifyAndDelete.label
+                        new ItemPatchData(
+                            id: dataClassService.findByParentAndLabel(leftTest, 'modifySourceAndDeleteTarget').id,
+                            label: 'modifySourceAndDeleteTarget'
                         )
                     ],
                     modified: [
-                        new MergeObjectDiffData(
-                            leftId: addAndAddReturningDifference.id,
-                            label: addAndAddReturningDifference.label,
-                            diffs: [
-                                new MergeFieldDiffData(
+                        new ObjectPatchData(
+                            targetId: dataClassService.findByParentAndLabel(rightMain, 'addBothReturningDifference').id,
+                            label: 'addBothReturningDifference',
+                            patches: [
+                                new FieldPatchData(
                                     fieldName: 'description',
                                     value: 'addedDescriptionSource'
                                 )
                             ]
                         ),
-                        new MergeObjectDiffData(
-                            leftId: dataClassService.findByParentAndLabel(rightMain, existingClass.label).id,
-                            label: existingClass.label,
-                            diffs: [
-                                new MergeFieldDiffData(
+                        new ObjectPatchData(
+                            targetId: targetExistingClass.id,
+                            label: 'existingClass',
+                            patches: [
+                                new FieldPatchData(
                                     fieldName: "dataClasses",
-
                                     deleted: [
-                                        new MergeItemData(
-                                            id: dataClassService.findByParentAndLabel(
-                                                dataClassService.findByParentAndLabel(rightMain, existingClass.label),
-                                                deleteLeftOnlyFromExistingClass.label).id,
-                                            label: deleteLeftOnlyFromExistingClass.label
+                                        new ItemPatchData(
+                                            id: dataClassService.findByParentAndLabel(targetExistingClass, 'deleteSourceOnlyFromExistingClass').id,
+                                            label: 'deleteSourceOnlyFromExistingClass'
                                         )
                                     ],
                                     created: [
-                                        new MergeItemData(
-                                            id: addLeftToExistingClass.id,
-                                            label: addLeftToExistingClass.label
+                                        new ItemPatchData(
+                                            id: dataClassService.findByParentAndLabel(sourceExistingClass, 'addSourceToExistingClass').id,
+                                            label: 'addSourceToExistingClass'
                                         )
                                     ]
 
                                 )
                             ]
                         ),
-                        new MergeObjectDiffData(
-                            leftId: dataClassService.findByParentAndLabel(rightMain, modifyAndModifyReturningDifference.label).id,
-                            label: modifyAndModifyReturningDifference.label,
-                            diffs: [
-                                new MergeFieldDiffData(
+                        new ObjectPatchData(
+                            targetId: dataClassService.findByParentAndLabel(rightMain, 'modifyBothReturningDifference').id,
+                            label: 'modifyBothReturningDifference',
+                            patches: [
+                                new FieldPatchData(
                                     fieldName: 'description',
-                                    value: 'DescriptionLeft'
+                                    value: 'DescriptionSource'
                                 ),
                             ]
                         ),
-                        new MergeObjectDiffData(
-                            leftId: dataClassService.findByParentAndLabel(rightMain, "modifyLeftOnly").id,
-                            label: "modifyLeftOnly",
-                            diffs: [
-                                new MergeFieldDiffData(
+                        new ObjectPatchData(
+                            targetId: dataClassService.findByParentAndLabel(rightMain, 'modifySourceOnly').id,
+                            label: 'modifySourceOnly',
+                            patches: [
+                                new FieldPatchData(
                                     fieldName: 'description',
-                                    value: 'Description'
+                                    value: 'DescriptionSource'
                                 )
                             ]
 
@@ -1257,18 +1254,33 @@ class DataModelServiceIntegrationSpec extends BaseDataModelIntegrationSpec {
                 )
             ]
         )
-        def mergedModel = dataModelService.mergeObjectDiffIntoModel(patch, rightMain, adminSecurityPolicyManager)
+        then:
+        check(patch)
+
+        when:
+        def mergedModel = dataModelService.mergeObjectPatchDataIntoModel(patch, rightMain, adminSecurityPolicyManager)
+        List<String> dataClassLabels = mergedModel.dataClasses*.label
 
         then:
         mergedModel.description == 'DescriptionLeft'
-        mergedModel.dataClasses.size() == 9
-        mergedModel.dataClasses.label as Set == ['existingClass', 'modifyAndModifyReturningDifference', 'modifyLeftOnly', 'sdmclass',
-                                                 'addAndAddReturningDifference', 'addLeftOnly', 'modifyAndDelete', 'addLeftToExistingClass',
-                                                 'addRightToExistingClass'] as Set
-        mergedModel.dataClasses.find {it.label == 'existingClass'}.dataClasses.label as Set == ['addRightToExistingClass',
-                                                                                                'addLeftToExistingClass'] as Set
-        mergedModel.dataClasses.find {it.label == 'modifyAndModifyReturningDifference'}.description == 'DescriptionLeft'
-        mergedModel.dataClasses.find {it.label == 'modifyLeftOnly'}.description == 'Description'
+        mergedModel.dataClasses.size() == 15
+
+        and: 'created are present'
+        'addSourceOnly' in dataClassLabels
+        'modifySourceAndDeleteTarget' in dataClassLabels
+
+        and: 'deleted are not present'
+        !('deleteSourceOnly' in dataClassLabels)
+        !('deleteSourceAndModifyTarget' in dataClassLabels)
+
+
+        and: 'existing class has correct child content'
+        mergedModel.dataClasses.find {it.label == 'existingClass'}.dataClasses*.label as Set == ['addTargetToExistingClass', 'addSourceToExistingClass'] as Set
+
+        and: 'modifications are correct'
+        mergedModel.dataClasses.find {it.label == 'addBothReturningDifference'}.description == 'addedDescriptionSource'
+        mergedModel.dataClasses.find {it.label == 'modifyBothReturningDifference'}.description == 'DescriptionSource'
+        mergedModel.dataClasses.find {it.label == 'modifySourceOnly'}.description == 'DescriptionSource'
     }
 
 

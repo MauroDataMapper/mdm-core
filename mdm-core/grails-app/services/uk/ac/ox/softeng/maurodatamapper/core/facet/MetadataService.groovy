@@ -22,7 +22,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MultiFacetAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.MauroDataMapperServiceProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.facet.NamespaceKeys
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetItemAwareService
 import uk.ac.ox.softeng.maurodatamapper.gorm.PaginatedResultList
@@ -234,19 +234,19 @@ class MetadataService implements MultiFacetItemAwareService<Metadata> {
 
     }
 
-    void mergeMetadataIntoCatalogueItem(CatalogueItem targetCatalogueItem, MergeObjectDiffData mergeObjectDiffData) {
+    void mergeMetadataIntoCatalogueItem(CatalogueItem targetCatalogueItem, ObjectPatchData objectPatchData) {
 
-        if (!mergeObjectDiffData.hasDiffs()) return
+        if (!objectPatchData.hasPatches()) return
 
-        Metadata targetMetadata = findByMultiFacetAwareItemIdAndId(targetCatalogueItem.id, mergeObjectDiffData.leftId)
+        Metadata targetMetadata = findByMultiFacetAwareItemIdAndId(targetCatalogueItem.id, objectPatchData.targetId)
         if (!targetMetadata) {
-            log.error('Attempted to merge non-existent metadata [{}] inside target catalogue item [{}]', mergeObjectDiffData.leftId,
+            log.error('Attempted to merge non-existent metadata [{}] inside target catalogue item [{}]', objectPatchData.targetId,
                       targetCatalogueItem.id)
         }
 
-        mergeObjectDiffData.getValidDiffs().each {mergeFieldDiffData ->
-            if (mergeFieldDiffData.value) {
-                targetMetadata.setProperty(mergeFieldDiffData.fieldName, mergeFieldDiffData.value)
+        objectPatchData.getPatches().each {fieldPatchData ->
+            if (fieldPatchData.value) {
+                targetMetadata.setProperty(fieldPatchData.fieldName, fieldPatchData.value)
             } else {
                 log.error('Only field diff types can be handled inside MetadataService')
             }

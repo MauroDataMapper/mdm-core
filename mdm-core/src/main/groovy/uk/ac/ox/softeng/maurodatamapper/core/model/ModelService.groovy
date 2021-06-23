@@ -38,7 +38,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.dataloader.DataLoaderProvi
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.core.rest.converter.json.OffsetDateTimeConverter
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeObjectDiffData
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.ObjectPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.VersionLinkAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.SecurableResourceService
@@ -385,17 +385,18 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
      * from ObjectDiff.mergeDiff(), customised by the user.
      * @param sourceModel Source model
      * @param targetModel Target model
-     * @param modelMergeObjectDiff Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
+     * @param objectPatchData Differences to merge, based on return from ObjectDiff.mergeDiff(), customised by user
      * @param userSecurityPolicyManager To get user details and permissions when copying "added" items
      * @param domainService Service which handles catalogueItems of the leftModel and rightModel type.
      * @return The model resulting from the merging of changes.
      */
-    K mergeObjectDiffIntoModel(MergeObjectDiffData modelMergeObjectDiff, K targetModel,
-                               UserSecurityPolicyManager userSecurityPolicyManager) {
+    K mergeObjectPatchDataIntoModel(ObjectPatchData objectPatchData, K targetModel,
+                                    UserSecurityPolicyManager userSecurityPolicyManager) {
         //TODO validation on saving merges
-        if (!modelMergeObjectDiff.hasDiffs()) return targetModel
-        log.debug('Merging {} diffs into model {}', modelMergeObjectDiff.getValidDiffs().size(), targetModel.label)
-        modelMergeObjectDiff.getValidDiffs().each { mergeFieldDiff ->
+        if (!objectPatchData.hasPatches()) return targetModel
+
+        log.debug('Merging {} diffs into model {}', objectPatchData.getPatches().size(), targetModel.label)
+        objectPatchData.getPatches().each {mergeFieldDiff ->
             log.debug('{}', mergeFieldDiff.summary)
 
             if (mergeFieldDiff.isFieldChange()) {
@@ -403,9 +404,9 @@ abstract class ModelService<K extends Model> extends CatalogueItemService<K> imp
             } else if (mergeFieldDiff.isMetadataChange()) {
                 mergeMetadataIntoCatalogueItem(mergeFieldDiff, targetModel, userSecurityPolicyManager)
             } else {
-                ModelItemService modelItemService = modelItemServices.find { it.handles(mergeFieldDiff.fieldName) }
+                ModelItemService modelItemService = modelItemServices.find {it.handles(mergeFieldDiff.fieldName)}
                 if (modelItemService) {
-                    modelItemService.processMergeFieldDiff(mergeFieldDiff, targetModel, userSecurityPolicyManager)
+                    modelItemService.processFieldPatchData(mergeFieldDiff, targetModel, userSecurityPolicyManager)
                 } else {
                     log.error('Unknown ModelItem field to merge [{}]', mergeFieldDiff.fieldName)
                 }

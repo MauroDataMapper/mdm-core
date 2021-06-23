@@ -28,9 +28,8 @@ import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.RuleService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.FieldPatchData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CopyInformation
-import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeFieldDiffData
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.DomainService
 import uk.ac.ox.softeng.maurodatamapper.core.traits.service.MultiFacetAwareService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -193,23 +192,23 @@ abstract class CatalogueItemService<K extends CatalogueItem> implements DomainSe
         null
     }
 
-    void mergeMetadataIntoCatalogueItem(MergeFieldDiffData mergeFieldDiff, K targetCatalogueItem,
+    void mergeMetadataIntoCatalogueItem(FieldPatchData fieldPatchData, K targetCatalogueItem,
                                         UserSecurityPolicyManager userSecurityPolicyManager) {
         log.debug('Merging Metadata into Catalogue Item')
         // call metadataService version of below
-        mergeFieldDiff.deleted.each { mergeItemData ->
-            Metadata metadata = metadataService.get(mergeItemData.id)
+        fieldPatchData.deleted.each {deletedItemPatchData ->
+            Metadata metadata = metadataService.get(deletedItemPatchData.id)
             metadataService.delete(metadata)
         }
 
         // copy additions from source to target object
-        mergeFieldDiff.created.each { mergeItemData ->
-            Metadata metadata = metadataService.get(mergeItemData.id)
+        fieldPatchData.created.each {createdItemPatchData ->
+            Metadata metadata = metadataService.get(createdItemPatchData.id)
             metadataService.copy(targetCatalogueItem, metadata, userSecurityPolicyManager)
         }
         // for modifications, recursively call this method
-        mergeFieldDiff.modified.each { mergeObjectDiffData ->
-            metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, mergeObjectDiffData)
+        fieldPatchData.modified.each {modifiedObjectPatchData ->
+            metadataService.mergeMetadataIntoCatalogueItem(targetCatalogueItem, modifiedObjectPatchData)
         }
     }
 

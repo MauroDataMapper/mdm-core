@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
+package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
 
 
 import grails.validation.Validateable
@@ -23,8 +23,13 @@ import grails.validation.Validateable
 /**
  * @since 07/02/2018
  */
-class MergeItemData implements Validateable {
+class ItemPatchData implements Validateable {
 
     UUID id
     String label
+
+    static constraints = {
+        id nullable: false
+        label nullable: false, blank: false
+    }
 }

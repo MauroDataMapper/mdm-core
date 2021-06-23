@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
+package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
 
 import grails.validation.Validateable
 
@@ -24,7 +24,7 @@ import grails.validation.Validateable
  */
 class MergeIntoData implements Validateable {
 
-    MergeObjectDiffData patch
+    ObjectPatchData patch
     boolean deleteBranch = false
     String changeNotice
 

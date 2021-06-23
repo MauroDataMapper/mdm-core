@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
+package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
 
 
 import grails.validation.Validateable
@@ -23,22 +23,39 @@ import grails.validation.Validateable
 /**
  * @since 07/02/2018
  */
-class MergeObjectDiffData<T> implements Validateable {
+class ObjectPatchData<T> implements Validateable {
 
-    UUID leftId
-    UUID rightId
+    UUID sourceId
+    UUID targetId
     String label
-    List<MergeFieldDiffData> diffs
+    private List<FieldPatchData> patches
 
-    MergeObjectDiffData() {
-        diffs = []
+    static constraints = {
+        sourceId nullable: false
+        targetId nullable: false
+        label nullable: true, blank: false
+        patches minSize: 1
     }
 
-    boolean hasDiffs() {
-        diffs.any {it.hasDiffs()}
+    ObjectPatchData() {
+        patches = []
     }
 
-    List<MergeFieldDiffData> getValidDiffs() {
-        diffs.findAll {it.hasDiffs()}
+    boolean hasPatches() {
+        patches.any {it.hasPatches()}
+    }
+
+    List<FieldPatchData> getPatches() {
+        patches.findAll {it.hasPatches()}
+    }
+
+    @Deprecated
+    void setLeftId(UUID leftId) {
+        this.targetId = leftId
+    }
+
+    @Deprecated
+    void setRightId(UUID rightId) {
+        this.sourceId = rightId
     }
 }

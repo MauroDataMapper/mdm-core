@@ -34,9 +34,9 @@ import uk.ac.ox.softeng.maurodatamapper.core.provider.exporter.ExporterProviderS
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.ModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.ModelImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge.MergeIntoData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.CreateNewVersionData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.FinaliseData
-import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.MergeIntoData
 import uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model.VersionTreeModel
 import uk.ac.ox.softeng.maurodatamapper.security.SecurityPolicyManagerService
 import uk.ac.ox.softeng.maurodatamapper.util.Utils
@@ -264,15 +264,13 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
 
     def mergeDiff() {
 
-        // Test branch
-        T left = queryForResource params.otherModelId
-        if (!left) return notFound(params.otherModelId)
+        T source = queryForResource params[alternateParamsIdKey]
+        if (!source) return notFound(params[alternateParamsIdKey])
 
-        // Main branch
-        T right = queryForResource params[alternateParamsIdKey]
-        if (!right) return notFound(params[alternateParamsIdKey])
+        T target = queryForResource params.otherModelId
+        if (!target) return notFound(params.otherModelId)
 
-        respond modelService.getMergeDiffForModels(left, right)
+        respond modelService.getMergeDiffForModels(source, target)
     }
 
     @Transactional
@@ -282,10 +280,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
             return
         }
 
-        if (mergeIntoData.patch.rightId != params[alternateParamsIdKey]) {
+        if (mergeIntoData.patch.sourceId != params[alternateParamsIdKey]) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Source model id passed in request body does not match source model id in URI.')
         }
-        if (mergeIntoData.patch.leftId != params.otherModelId) {
+        if (mergeIntoData.patch.targetId != params.otherModelId) {
             return errorResponse(UNPROCESSABLE_ENTITY, 'Target model id passed in request body does not match target model id in URI.')
         }
 
@@ -295,7 +293,7 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T targetModel = queryForResource params.otherModelId
         if (!targetModel) return notFound(params.otherModelId)
 
-        T instance = modelService.mergeObjectDiffIntoModel(mergeIntoData.patch, targetModel, currentUserSecurityPolicyManager) as T
+        T instance = modelService.mergeObjectPatchDataIntoModel(mergeIntoData.patch, targetModel, currentUserSecurityPolicyManager) as T
 
         if (!validateResource(instance, 'merge')) return
 

@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.model
+package uk.ac.ox.softeng.maurodatamapper.core.rest.transport.merge
 
 
 import grails.validation.Validateable
@@ -23,24 +23,32 @@ import grails.validation.Validateable
 /**
  * @since 07/02/2018
  */
-class MergeFieldDiffData<T, K> implements Validateable {
+class FieldPatchData<T, K> implements Validateable {
 
     String fieldName
     T value
-    Collection<MergeItemData> created
-    Collection<MergeItemData> deleted
-    Collection<MergeObjectDiffData> modified
+    Collection<ItemPatchData> created
+    Collection<ItemPatchData> deleted
+    Collection<ObjectPatchData> modified
 
-    MergeFieldDiffData() {
+    static constraints = {
+        fieldName nullable: false, blank: false
+        value validator: {val, obj ->
+            if (val && (created || deleted || modified)) return ['invalid.patch.value.and.array.changes']
+            if (!val && !created && !deleted && !modified) return ['invalid.patch.no.changes']
+            true
+        }
+    }
+
+    FieldPatchData() {
         created = []
         deleted = []
         modified = []
     }
 
-    boolean hasDiffs() {
-        value || !created.isEmpty() || !deleted.isEmpty() || modified.any {it.hasDiffs()}
+    boolean hasPatches() {
+        value || !created.isEmpty() || !deleted.isEmpty() || modified.any {it.hasPatches()}
     }
-
 
     boolean isFieldChange() {
         value
@@ -51,12 +59,12 @@ class MergeFieldDiffData<T, K> implements Validateable {
     }
 
     String getSummary() {
-        String prefix = "Merge Summary on field [${fieldName}]"
+        String prefix = "Merge patch summary on field [${fieldName}]"
         if (isFieldChange()) return "${prefix}: Changing value"
         "${prefix}: Creating ${created.size()} Deleting ${deleted.size()} Modifying ${modified.size()}"
     }
 
     String toString() {
-        "Merge on field [${fieldName}]"
+        "Merge patch on field [${fieldName}]"
     }
 }
