@@ -89,16 +89,17 @@ class ArrayMergeDiff<C extends Diffable> extends FieldMergeDiff<Collection<C>> {
 
     @Override
     String toString() {
-        StringBuilder stringBuilder = new StringBuilder(super.toString())
+        String diffIdentifier = source?.first()?.diffIdentifier ?: target?.first()?.diffIdentifier ?: commonAncestor?.first()?.diffIdentifier
+        StringBuilder stringBuilder = new StringBuilder("${diffIdentifier}.${fieldName} :: ${source.size()} <> ${target.size()} :: ${commonAncestor.size()}")
 
         if (created) {
-            stringBuilder.append('\n  Created ::\n').append(created)
+            stringBuilder.append('\n').append(created.join('\n'))
         }
         if (deleted) {
-            stringBuilder.append('\n  Deleted ::\n').append(deleted)
+            stringBuilder.append('\n').append(deleted.join('\n'))
         }
         if (modified) {
-            stringBuilder.append('\n  Modified ::\n').append(modified)
+            stringBuilder.append('\n  Modified ::\n').append(modified.join('\n'))
         }
         stringBuilder.toString()
     }

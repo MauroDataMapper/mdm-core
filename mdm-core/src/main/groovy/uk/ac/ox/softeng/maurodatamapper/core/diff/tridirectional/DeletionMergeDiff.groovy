@@ -63,6 +63,6 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> {
     @Override
     String toString() {
         String str = "Deleted :: ${deletedIdentifier}"
-        mergeModificationDiff ? "${str} Modified :: ${mergeModificationDiff}" : str
+        mergeModificationDiff ? "${str}\n    >> Modified :: ${mergeModificationDiff}" : str
     }
 }

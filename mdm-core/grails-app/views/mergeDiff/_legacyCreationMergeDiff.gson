@@ -1,0 +1,11 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.CreationMergeDiff
+
+model {
+    CreationMergeDiff creationMergeDiff
+}
+
+json {
+    value tmpl.'/diffable/diffable'(creationMergeDiff.value)
+    isMergeConflict creationMergeDiff.isMergeConflict()
+    if (creationMergeDiff.isMergeConflict()) commonAncestorValue tmpl.'/diffable/diffable'(creationMergeDiff.commonAncestor)
+}

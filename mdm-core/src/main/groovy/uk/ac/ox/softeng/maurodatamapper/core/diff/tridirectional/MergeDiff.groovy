@@ -95,7 +95,9 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
 
     @Override
     String toString() {
-        "${sourceIdentifier} --> ${targetIdentifier} [${commonAncestor.diffIdentifier}]"
+        String str = "${sourceIdentifier} --> ${targetIdentifier}"
+        if (commonAncestor) str = "${str} [${commonAncestor.diffIdentifier}]"
+        str
     }
 
     MergeDiff<M> forMergingDiffable(M sourceSide) {

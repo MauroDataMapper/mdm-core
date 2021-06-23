@@ -270,9 +270,10 @@ abstract class ModelController<T extends Model> extends CatalogueItemController<
         T target = queryForResource params.otherModelId
         if (!target) return notFound(params.otherModelId)
 
-        String view = 'mergeDiff'
+        String view = 'legacyMergeDiff'
+        // default to legacy until UI is updated
         if (params.style == 'legacy') view = 'legacyMergeDiff'
-        if (params.style == 'new') view = 'updatedMergeDiff'
+        if (params.style == 'new') view = 'mergeDiff'
 
         respond modelService.getMergeDiffForModels(source, target), view: view
     }

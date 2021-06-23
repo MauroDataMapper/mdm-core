@@ -77,6 +77,6 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> {
 
     @Override
     String toString() {
-        "${fieldName} :: ${source} <> ${target} :: ${commonAncestor} "
+        "${fieldName} :: ${source} <> ${target} :: ${commonAncestor}"
     }
 }
