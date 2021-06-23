@@ -1,0 +1,12 @@
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.ArrayMergeDiff
+
+model {
+    ArrayMergeDiff arrayMergeDiff
+
+}
+
+json("${arrayMergeDiff.fieldName}") {
+    if (arrayMergeDiff.deleted) deleted g.render(arrayMergeDiff.deleted)
+    if (arrayMergeDiff.created) created g.render(arrayMergeDiff.created)
+    if (arrayMergeDiff.modified) modified g.render(arrayMergeDiff.modified)
+}

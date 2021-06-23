@@ -7,6 +7,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.FieldDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.CreationDiff
 import uk.ac.ox.softeng.maurodatamapper.core.diff.unidirectional.DeletionDiff
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
@@ -68,6 +69,14 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
         target.diffIdentifier
     }
 
+    String getSourceId() {
+        (source as CreatorAware).id
+    }
+
+    String getTargetId() {
+        (target as CreatorAware).id
+    }
+
     FieldMergeDiff first() {
         diffs.first()
     }
@@ -78,6 +87,10 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
 
     boolean isEmpty() {
         diffs.isEmpty()
+    }
+
+    List<FieldMergeDiff> getDiffs() {
+        diffs
     }
 
     @Override
