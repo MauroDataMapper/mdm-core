@@ -36,8 +36,8 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
     List<FieldDiff> diffs
 
-    String leftIdentifier
-    String rightIdentifier
+    String leftId
+    String rightId
 
     ObjectDiff(Class<O> targetClass) {
         super(targetClass)
@@ -52,8 +52,8 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
         ObjectDiff<O> objectDiff = (ObjectDiff<O>) o
 
-        if (leftIdentifier != objectDiff.leftIdentifier) return false
-        if (rightIdentifier != objectDiff.rightIdentifier) return false
+        if (leftId != objectDiff.leftId) return false
+        if (rightId != objectDiff.rightId) return false
         if (diffs != objectDiff.diffs) return false
 
         return true
@@ -63,33 +63,31 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
     String toString() {
         int numberOfDiffs = getNumberOfDiffs()
         if (!numberOfDiffs) return "${leftIdentifier} == ${rightIdentifier}"
-        "${leftIdentifier} <> ${rightIdentifier} :: ${numberOfDiffs} differences\n  ${diffs.collect { it.toString() }.join('\n  ')}"
+        "${leftIdentifier} <> ${rightIdentifier} :: ${numberOfDiffs} differences\n  ${diffs.collect {it.toString()}.join('\n  ')}"
     }
 
     @Override
     Integer getNumberOfDiffs() {
-        diffs?.sum { it.getNumberOfDiffs() } as Integer ?: 0
+        diffs?.sum {it.getNumberOfDiffs()} as Integer ?: 0
     }
 
-    @Deprecated
+    String getLeftIdentifier() {
+        left.diffIdentifier
+    }
+
+    String getRightIdentifier() {
+        right.diffIdentifier
+    }
+
     ObjectDiff<O> leftHandSide(String leftId, O lhs) {
-        leftHandSide(lhs)
-    }
-
-    @Deprecated
-    ObjectDiff<O> rightHandSide(String rightId, O rhs) {
-        rightHandSide(rhs)
-    }
-
-    ObjectDiff<O> leftHandSide(O lhs) {
         super.leftHandSide(lhs)
-        this.leftIdentifier = lhs.diffIdentifier
+        this.leftId = leftId
         this
     }
 
-    ObjectDiff<O> rightHandSide(O rhs) {
-        super.rightHandSide(rhs)
-        this.rightIdentifier = rhs.diffIdentifier
+    ObjectDiff<O> rightHandSide(String rightId, O rhs) {
+        rightHandSide(rhs)
+        this.rightId = rightId
         this
     }
 
@@ -198,15 +196,6 @@ class ObjectDiff<O extends Diffable> extends BiDirectionalDiff<O> {
 
     static String clean(String s) {
         s?.trim() ?: null
-    }
-
-    /**
-     * @use DiffBuilder.objectDiff* @param objectClass
-     * @return
-     */
-    @Deprecated
-    static <K extends Diffable> ObjectDiff<K> builder(Class<K> objectClass) {
-        new ObjectDiff<K>()
     }
 }
 
