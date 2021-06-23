@@ -10,8 +10,8 @@ model {
 
 json {
 
-    leftId objectDiff.getLeftIdentifier()
-    rightId objectDiff.getRightIdentifier()
+    leftId objectDiff.getLeftId()
+    rightId objectDiff.getRightId()
     if (objectDiff.getLeft() instanceof InformationAware) {
         label(((InformationAware) objectDiff.getLeft()).getLabel())
     }
