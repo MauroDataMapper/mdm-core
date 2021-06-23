@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.rule.RuleRepresentation
@@ -88,7 +89,7 @@ class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
 
     @Override
     ObjectDiff<Rule> diff(Rule obj) {
-        ObjectDiff.builder(Rule)
+        DiffBuilder.objectDiff(Rule)
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)
             .appendString('name', this.name, obj.name)

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet.rule
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
@@ -83,7 +84,7 @@ class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAwa
 
     @Override
     ObjectDiff<RuleRepresentation> diff(RuleRepresentation obj) {
-        ObjectDiff.builder(RuleRepresentation)
+        DiffBuilder.objectDiff(RuleRepresentation)
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)
             .appendString('language', this.language, obj.language)

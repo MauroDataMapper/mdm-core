@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.InformationAwareConstraints
@@ -112,7 +113,7 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Cr
 
     @Override
     ObjectDiff<Annotation> diff(Annotation otherAnnotation) {
-        ObjectDiff.builder(Annotation)
+        DiffBuilder.objectDiff(Annotation)
             .leftHandSide(this.id.toString(), this)
             .rightHandSide(otherAnnotation.id.toString(), otherAnnotation)
             .appendString('description', this.description, otherAnnotation.description)

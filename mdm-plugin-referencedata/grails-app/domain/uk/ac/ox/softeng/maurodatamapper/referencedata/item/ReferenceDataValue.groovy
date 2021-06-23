@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.referencedata.item
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.referencedata.ReferenceDataModel
@@ -67,8 +68,7 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
     ObjectDiff<ReferenceDataValue> diff(ReferenceDataValue otherValue) {
         String lhsId = this.id ?: "Left:Unsaved_${this.domainType}"
         String rhsId = otherValue.id ?: "Right:Unsaved_${otherValue.domainType}"
-        ObjectDiff
-            .builder(ReferenceDataValue)
+        DiffBuilder.objectDiff(ReferenceDataValue)
             .leftHandSide(lhsId, this)
             .rightHandSide(rhsId, otherValue)
             .appendNumber('rowNumber', this.rowNumber, otherValue.rowNumber)

@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.core.facet
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder
 import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import uk.ac.ox.softeng.maurodatamapper.core.traits.domain.MultiFacetItemAware
@@ -90,7 +91,7 @@ class Metadata implements MultiFacetItemAware, CreatorAware, Diffable<Metadata> 
 
     @Override
     ObjectDiff<Metadata> diff(Metadata obj) {
-        ObjectDiff.builder(Metadata)
+        DiffBuilder.objectDiff(Metadata)
             .leftHandSide(id.toString(), this)
             .rightHandSide(obj.id.toString(), obj)
             .appendString('namespace', this.namespace, obj.namespace)
