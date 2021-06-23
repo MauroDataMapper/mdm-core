@@ -9,8 +9,9 @@ model {
 
 json {
 
-    leftId mergeDiff.getTargetId()
-    rightId mergeDiff.getSourceId()
+    sourceId mergeDiff.getSourceId()
+    targetId mergeDiff.getTargetId()
+
     if (mergeDiff.getTarget() instanceof InformationAware) {
         label(((InformationAware) mergeDiff.getTarget()).getLabel())
     }
@@ -20,7 +21,7 @@ json {
         key(((Metadata) mergeDiff.getTarget()).getKey())
     }
 
-    if (mergeDiff.getTarget() instanceof ModelItem && mergeDiff.getRight() instanceof ModelItem) {
+    if (mergeDiff.getTarget() instanceof ModelItem && mergeDiff.getSource() instanceof ModelItem) {
         ModelItem source = mergeDiff.getTarget() as ModelItem
         ModelItem target = mergeDiff.getTarget() as ModelItem
         leftBreadcrumbs g.render(source.getBreadcrumbs())
@@ -29,6 +30,4 @@ json {
 
     count mergeDiff.getNumberOfDiffs()
     diffs g.render(mergeDiff.getDiffs())
-
-
 }

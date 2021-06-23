@@ -5,7 +5,7 @@ model {
 }
 
 json {
-    value tmpl.'/diffable/diffable'(creationMergeDiff.value)
+    created tmpl.'/diffable/diffable'(creationMergeDiff.created)
     isMergeConflict creationMergeDiff.isMergeConflict()
-    if (creationMergeDiff.isMergeConflict()) commonAncestorValue tmpl.'/diffable/diffable'(creationMergeDiff.commonAncestor)
+    isSourceModificationAndTargetDeletion creationMergeDiff.isSourceModificationAndTargetDeletion()
 }

@@ -151,7 +151,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 }'''
     }
 
-    String getExpectedMergeDiffJson() {
+    String getExpectedLegacyMergeDiffJson() {
         '''{
   "leftId": "${json-unit.matches:id}",
   "rightId": "${json-unit.matches:id}",
@@ -426,6 +426,274 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 "description": {
                   "left": null,
                   "right": "Description",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}'''
+    }
+
+    String getExpectedMergeDiffJson() {
+        '''{
+  "sourceId": "${json-unit.matches:id}",
+  "targetId": "${json-unit.matches:id}",
+  "label": "Functional Test Model",
+  "count": 11,
+  "diffs": [
+    {
+      "description": {
+        "source": "DescriptionLeft",
+        "target": "DescriptionRight",
+        "commonAncestor": null,
+        "isMergeConflict": true
+      }
+    },
+    {
+      "branchName": {
+        "source": "source",
+        "target": "main",
+        "commonAncestor": "main",
+        "isMergeConflict": false
+      }
+    },
+    {
+      "dataClasses": {
+        "deleted": [
+          {
+            "deleted": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "isSourceDeletionAndTargetModification": true
+          },
+           {
+            "deleted": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false,
+            "isSourceDeletionAndTargetModification": false
+          }
+        ],
+        "created": [
+          {
+            "created": {
+              "id": "${json-unit.matches:id}",
+              "label": "addLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "DataModel",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": false,
+            "isSourceModificationAndTargetDeletion": false
+          },
+          {
+            "created": {
+              "id": "${json-unit.matches:id}",
+              "label": "modifyAndDelete",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "DataModel",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "isSourceModificationAndTargetDeletion": true
+          }
+        ],
+ "modified": [
+          {
+            "targetId": "${json-unit.matches:id}",
+            "sourceId": "${json-unit.matches:id}",
+            "label": "addAndAddReturningDifference",
+            "targetBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "sourceBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "target": "DescriptionRight",
+                  "source": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestor": null
+                }
+              }
+            ]
+          },
+          {
+            "targetId": "${json-unit.matches:id}",
+            "sourceId": "${json-unit.matches:id}",
+            "label": "existingClass",
+            "targetBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "sourceBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "count": 2,
+            "diffs": [
+              {
+                "dataClasses": {
+                  "deleted": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteLeftOnlyFromExistingClass",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Model",
+                            "domainType": "DataModel",
+                            "finalised": true
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "existingClass",
+                            "domainType": "DataClass"
+                          }
+                        ]
+                      },
+                      "isMergeConflict": false
+                    }
+                  ],
+                  "created": [
+                    {
+                      "value": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "addLeftToExistingClass",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Model",
+                            "domainType": "DataModel",
+                            "finalised": false
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "existingClass",
+                            "domainType": "DataClass"
+                          }
+                        ]
+                      },
+                      "isMergeConflict": false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "targetId": "${json-unit.matches:id}",
+            "sourceId": "${json-unit.matches:id}",
+            "label": "modifyAndModifyReturningDifference",
+            "targetBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "sourceBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "target": "DescriptionRight",
+                  "source": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestor": null
+                }
+              }
+            ]
+          },
+          {
+            "targetId": "${json-unit.matches:id}",
+            "sourceId": "${json-unit.matches:id}",
+            "label": "modifyLeftOnly",
+            "targetBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": true
+              }
+            ],
+            "sourceBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "DataModel",
+                "finalised": true
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "target": null,
+                  "source": "Description",
                   "isMergeConflict": false
                 }
               }
@@ -1390,6 +1658,81 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
 
     void 'MD02 : test finding merge difference of two complex datamodels'() {
         given:
+        Map<String, String> mergeData = buildComplexDataModelsForMerging()
+
+        when:
+        GET("$mergeData.source/mergeDiff/$mergeData.target", STRING_ARG)
+
+        then:
+        log.debug('{}', jsonResponseBody())
+        verifyJsonResponse OK, expectedLegacyMergeDiffJson
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.id)
+    }
+
+    void 'MD03 : test finding merge difference of two datamodels with the new style'() {
+        given:
+        String id = createNewItem(validJson)
+        PUT("$id/finalise", [versionChangeType: 'Major'])
+        verifyResponse OK, response
+        PUT("$id/newBranchModelVersion", [:])
+        verifyResponse CREATED, response
+        String mainId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'left'])
+        verifyResponse CREATED, response
+        String leftId = responseBody().id
+        PUT("$id/newBranchModelVersion", [branchName: 'right'])
+        verifyResponse CREATED, response
+        String rightId = responseBody().id
+
+        when:
+        GET("$leftId/mergeDiff/$mainId?style=new", STRING_ARG)
+        log.debug('{}', jsonResponseBody())
+        GET("$leftId/mergeDiff/$mainId?style=new")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == mainId
+        responseBody().sourceId == leftId
+
+        when:
+        GET("$rightId/mergeDiff/$mainId?style=new", STRING_ARG)
+        log.debug('{}', jsonResponseBody())
+        GET("$rightId/mergeDiff/$mainId?style=new")
+
+        then:
+        verifyResponse OK, response
+        responseBody().targetId == mainId
+        responseBody().sourceId == rightId
+
+        cleanup:
+        cleanUpData(mainId)
+        cleanUpData(leftId)
+        cleanUpData(rightId)
+        cleanUpData(id)
+    }
+
+    void 'MD04 : test finding merge difference of two complex datamodels with the new style'() {
+        given:
+        Map<String, String> mergeData = buildComplexDataModelsForMerging()
+
+        when:
+        GET("$mergeData.source/mergeDiff/$mergeData.target?style=new", STRING_ARG)
+
+        then:
+        verifyJsonResponse OK, expectedMergeDiffJson
+
+        cleanup:
+        cleanUpData(mergeData.source)
+        cleanUpData(mergeData.target)
+        cleanUpData(mergeData.id)
+    }
+
+    Map<String, String> buildComplexDataModelsForMerging() {
+
         String id = createNewItem(validJson)
 
         POST("$id/dataClasses", [label: 'deleteLeftOnly'])
@@ -1427,7 +1770,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse CREATED, response
         String source = responseBody().id
 
-        when:
         GET("$source/path/dm%3A%7Cdc%3AexistingClass")
         verifyResponse OK, response
         existingClass = responseBody().id
@@ -1457,7 +1799,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         String modifyAndModifyReturningDifference = responseBody().id
 
-        then:
         DELETE("$source/dataClasses/$deleteAndDelete")
         verifyResponse NO_CONTENT, response
         DELETE("$source/dataClasses/$existingClass/dataClasses/$deleteLeftOnlyFromExistingClass")
@@ -1488,7 +1829,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$source", [description: 'DescriptionLeft'])
         verifyResponse OK, response
 
-        when:
         GET("$target/path/dm%3A%7Cdc%3AexistingClass")
         verifyResponse OK, response
         existingClass = responseBody().id
@@ -1518,7 +1858,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         verifyResponse OK, response
         modifyAndModifyReturningDifference = responseBody().id
 
-        then:
         DELETE("$target/dataClasses/$existingClass/dataClasses/$deleteRightOnlyFromExistingClass")
         verifyResponse NO_CONTENT, response
         DELETE("$target/dataClasses/$deleteRightOnly")
@@ -1549,16 +1888,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         PUT("$target", [description: 'DescriptionRight'])
         verifyResponse OK, response
 
-        when:
-        GET("$source/mergeDiff/$target", STRING_ARG)
-
-        then:
-        verifyJsonResponse OK, expectedMergeDiffJson
-
-        cleanup:
-        cleanUpData(source)
-        cleanUpData(target)
-        cleanUpData(id)
+        [id    : id,
+         source: source,
+         target: target]
     }
 
     void 'MP01 : test merging diff with no patch data'() {
@@ -1794,7 +2126,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         GET("$source/mergeDiff/$target", STRING_ARG)
 
         then:
-        verifyJsonResponse OK, expectedMergeDiffJson
+        verifyJsonResponse OK, expectedLegacyMergeDiffJson
 
         when:
         String modifiedDescriptionSource = 'modifiedDescriptionSource'

@@ -24,6 +24,10 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> {
         created.diffIdentifier
     }
 
+    boolean isSourceModificationAndTargetDeletion() {
+        commonAncestor != null
+    }
+
     @SuppressWarnings('GrDeprecatedAPIUsage')
     CreationMergeDiff whichCreated(C object) {
         withSource(object) as CreationMergeDiff<C>
@@ -31,14 +35,6 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> {
 
     CreationMergeDiff<C> withCommonAncestor(C ca) {
         super.withCommonAncestor(ca) as CreationMergeDiff<C>
-    }
-
-    CreationMergeDiff<C> withMergeDeletion(C deleted) {
-        super.rightHandSide(deleted) as CreationMergeDiff<C>
-    }
-
-    CreationMergeDiff<C> withNoMergeDeletion() {
-        this
     }
 
     @Override

@@ -27,6 +27,10 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> {
         value.diffIdentifier
     }
 
+    boolean isSourceDeletionAndTargetModification() {
+        mergeModificationDiff != null
+    }
+
     DeletionMergeDiff<D> whichDeleted(D object) {
         this.value = object
         withCommonAncestor object

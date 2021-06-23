@@ -2,11 +2,10 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.DeletionMergeDi
 
 model {
     DeletionMergeDiff deletionMergeDiff
-
 }
 
 json {
-    value tmpl.'/diffable/diffable'(deletionMergeDiff.value)
+    deleted tmpl.'/diffable/diffable'(deletionMergeDiff.deleted)
     isMergeConflict deletionMergeDiff.isMergeConflict()
-    if (deletionMergeDiff.isMergeConflict()) commonAncestorValue tmpl.'/diffable/diffable'(deletionMergeDiff.commonAncestor)
+    isSourceDeletionAndTargetModification deletionMergeDiff.isSourceDeletionAndTargetModification()
 }
