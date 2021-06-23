@@ -17,13 +17,17 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.datamodel.bootstrap
 
+import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInvalidModelException
 import uk.ac.ox.softeng.maurodatamapper.core.authority.Authority
+import uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress
 import uk.ac.ox.softeng.maurodatamapper.core.container.Classifier
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
+import uk.ac.ox.softeng.maurodatamapper.core.facet.MetadataService
 import uk.ac.ox.softeng.maurodatamapper.core.facet.Rule
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLink
 import uk.ac.ox.softeng.maurodatamapper.core.facet.SemanticLinkType
+import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
@@ -40,6 +44,7 @@ import uk.ac.ox.softeng.maurodatamapper.util.Version
 
 import asset.pipeline.grails.AssetResourceLocator
 import groovy.util.logging.Slf4j
+import org.hibernate.SessionFactory
 import org.springframework.context.MessageSource
 import org.springframework.core.io.Resource
 
@@ -47,7 +52,9 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 import static uk.ac.ox.softeng.maurodatamapper.core.bootstrap.StandardEmailAddress.DEVELOPMENT
+import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.check
 import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.checkAndSave
+import static uk.ac.ox.softeng.maurodatamapper.util.GormUtils.outputDomainErrors
 
 @Slf4j
 class BootstrapModels {
@@ -621,4 +628,133 @@ v1 --------------------------- v2 -- v3  -- v4 --------------- v5 --- main
 
     }
 
+
+    static Map<String, UUID> buildMergeModelsForTestingOnly(UUID id, User creator, DataModelService dataModelService, DataClassService dataClassService,
+                                                            MetadataService metadataService, SessionFactory sessionFactory, MessageSource messageSource) {
+        // generate common ancestor
+        UserSecurityPolicyManager policyManager = PublicAccessSecurityPolicyManager.instance
+        DataModel commonAncestor = dataModelService.get(id)
+        commonAncestor.author = 'john'
+        commonAncestor.addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'deleteSourceOnly'))
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'deleteTargetOnly'))
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'modifySourceOnly', description: 'common'))
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'modifyTargetOnly'))
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'deleteBoth'))
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'deleteSourceAndModifyTarget'))
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'modifySourceAndDeleteTarget'))
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'modifyBothReturningNoDifference', description: 'common'))
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'modifyBothReturningDifference', description: 'common'))
+        commonAncestor.addToDataClasses(
+            new DataClass(createdBy: creator.emailAddress, label: 'existingClass')
+                .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'deleteSourceOnlyFromExistingClass'))
+                .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'deleteTargetOnlyFromExistingClass'))
+        ).addToMetadata(namespace: 'test', key: 'deleteSourceOnly', value: 'deleteSourceOnly')
+            .addToMetadata(namespace: 'test', key: 'modifySourceOnly', value: 'modifySourceOnly')
+        dataModelService.finaliseModel(commonAncestor, creator, null, null, null)
+        checkAndSave(messageSource, commonAncestor)
+
+        assert commonAncestor.branchName == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+
+
+        // Generate main/target branch
+        UUID rightMainId = createAndSaveNewBranchModel(VersionAwareConstraints.DEFAULT_BRANCH_NAME, commonAncestor, creator, dataModelService,
+                                                       messageSource, policyManager)
+
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteTargetOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteTargetOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteBoth'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifySourceAndDeleteTarget'))
+
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyTargetOnly').tap {
+            description = 'Description'
+        }
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'deleteSourceAndModifyTarget').tap {
+            description = 'Description'
+        }
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyBothReturningNoDifference').tap {
+            description = 'Description'
+        }
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'modifyBothReturningDifference').tap {
+            description = 'DescriptionTarget'
+        }
+
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(rightMainId, 'existingClass')
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'addTargetToExistingClass'))
+
+        DataModel draftModel = dataModelService.get(rightMainId)
+        draftModel.author = 'dick'
+        checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addTargetWithNestedChild', dataModel: draftModel)
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'addTargetNestedChild', dataModel: draftModel))
+        checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addTargetOnly', dataModel: draftModel)
+        checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addBothReturningNoDifference', dataModel: draftModel)
+        checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addBothReturningDifference', description: 'target', dataModel: draftModel)
+
+        checkAndSave messageSource, dataModelService.get(rightMainId).tap {
+            description = 'DescriptionTarget'
+        }
+
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+
+        // Generate test/source branch
+        UUID leftTestId = createAndSaveNewBranchModel('test', commonAncestor, creator, dataModelService, messageSource, policyManager)
+
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceOnlyFromExistingClass'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceOnly'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteBoth'))
+        dataClassService.delete(dataClassService.findByDataModelIdAndLabel(leftTestId, 'deleteSourceAndModifyTarget'))
+        metadataService.delete(metadataService.findAllByMultiFacetAwareItemId(leftTestId).find {it.key == 'deleteSourceOnly'})
+
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifySourceOnly').tap {
+            description = 'Description'
+        }
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifySourceAndDeleteTarget').tap {
+            description = 'Description'
+        }
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifyBothReturningNoDifference').tap {
+            description = 'Description'
+        }
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'modifyBothReturningDifference').tap {
+            description = 'DescriptionSource'
+        }
+
+        checkAndSave messageSource, dataClassService.findByDataModelIdAndLabel(leftTestId, 'existingClass')
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'addSourceToExistingClass'))
+
+        DataModel testModel = dataModelService.get(leftTestId)
+        testModel.organisation = 'under test'
+        testModel.author = 'harry'
+        checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addSourceWithNestedChild', dataModel: testModel)
+            .addToDataClasses(new DataClass(createdBy: creator.emailAddress, label: 'addSourceNestedChild', dataModel: testModel))
+
+        checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addSourceOnly', dataModel: testModel)
+        checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addBothReturningNoDifference', dataModel: testModel)
+        checkAndSave messageSource, new DataClass(createdBy: creator.emailAddress, label: 'addBothReturningDifference', description: 'source', dataModel: testModel)
+        checkAndSave messageSource, new PrimitiveType(createdBy: StandardEmailAddress.ADMIN, label: 'addSourceOnlyOnlyChangeInArray', dataModel: testModel)
+
+
+        checkAndSave messageSource, metadataService.findAllByMultiFacetAwareItemId(leftTestId).find {it.key == 'modifySourceOnly'}.tap {
+            value = 'altered'
+        }
+
+        sessionFactory.currentSession.flush()
+        sessionFactory.currentSession.clear()
+
+        [commonAncestorId: commonAncestor.id,
+         sourceId        : leftTestId,
+         targetId        : rightMainId]
+    }
+
+    static UUID createAndSaveNewBranchModel(String branchName, DataModel base, User creator, DataModelService dataModelService, MessageSource messageSource,
+                                            UserSecurityPolicyManager userSecurityPolicyManager) {
+        DataModel dataModel = dataModelService.createNewBranchModelVersion(branchName, base, creator, false, userSecurityPolicyManager)
+        if (dataModel.hasErrors()) {
+            outputDomainErrors(messageSource, dataModel)
+            throw new ApiInvalidModelException('BM01', 'Could not create new branch version', dataModel.errors)
+        }
+        check(messageSource, dataModel)
+        dataModelService.saveModelWithContent(dataModel)
+        dataModel.id
+    }
 }

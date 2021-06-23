@@ -332,7 +332,18 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
      */
     static <C extends Diffable> Collection<CreationMergeDiff> createCreationMergeDiffsPresentOnBothSides(ArrayDiff<C> caSourceDiff,
                                                                                                          ArrayDiff<C> caTargetDiff) {
-        caSourceDiff.created.collect {diff ->
+        List<CreationMergeDiff> modificationCreationMergeDiffs = caSourceDiff.modified.collect {caSourceModificationDiff ->
+            DeletionDiff caTargetDeletionDiff = caTargetDiff.deleted.find {it.deletedIdentifier == caSourceModificationDiff.leftIdentifier}
+            if (caTargetDeletionDiff) {
+                log.debug('[{}] ca/source modified exists in ca/target deleted.')
+                return creationMergeDiff(caSourceModificationDiff.targetClass)
+                    .whichCreated(caSourceModificationDiff.right)
+                    .withCommonAncestor(caSourceModificationDiff.left)
+                    .asMergeConflict()
+            }
+            null
+        }.findAll() as Collection<CreationMergeDiff>
+        List<CreationMergeDiff> creationMergeDiffs = caSourceDiff.created.collect {diff ->
             if (diff.createdIdentifier in caTargetDiff.created*.createdIdentifier) {
                 // Both sides added : potential conflict and therefore is a modified rather than create or no diff
                 log.trace('[{}] ca/source created exists in ca/target created. Possible merge conflict will be rendered as a modified MergeDiff', diff.createdIdentifier)
@@ -350,6 +361,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
             log.debug('[{}] ca/source created doesnt exist in ca/target', diff.createdIdentifier)
             return creationMergeDiff(diff.targetClass).whichCreated(diff.value)
         }.findAll() as Collection<CreationMergeDiff>
+        modificationCreationMergeDiffs + creationMergeDiffs
     }
 
 
@@ -417,13 +429,6 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
             if (caTargetModifiedDiff) {
                 log.debug('[{}] modified on both sides', caSourceModifiedDiff.leftIdentifier)
 
-                //                ObjectDiff<M> sourceTargetDiff = caSourceModifiedDiff.right.diff(caTargetModifiedDiff.right)
-                //
-                //                if (sourceTargetDiff.objectsAreIdentical()) {
-                //                    log.debug('Both sides modified but the modifications are identical')
-                //                    return null
-                //                }
-
                 MergeDiff sourceTargetMergeDiff = mergeDiff(caSourceModifiedDiff.targetClass)
                     .forMergingDiffable(caSourceModifiedDiff.right)
                     .intoDiffable(caTargetModifiedDiff.right)
@@ -437,7 +442,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
             }
             DeletionDiff<M> caTargetDeletionDiff = caTargetDiff.deleted.find {it.deletedIdentifier == caSourceModifiedDiff.leftIdentifier}
             if (caTargetDeletionDiff) {
-                log.debug('[{}] modified on ca/source side and deleted on ca/target side. NOT HANDLED', caSourceModifiedDiff.leftIdentifier)
+                log.debug('[{}] modified on ca/source side and deleted on ca/target side. TREATED AS CREATION', caSourceModifiedDiff.leftIdentifier)
                 return null
             }
 
@@ -477,60 +482,4 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
 
         modifiedDiffs + createdModifiedDiffs
     }
-
-    //        modified.collect {ObjectDiff objDiff ->
-    //            def diffIdentifier = objDiff.target.diffIdentifier
-    //            if (diffIdentifier in sourceArrayDiff.created.value.diffIdentifier) {
-    //                return updateModifiedObjectMergeDiffCreatedOnOneSide
-    //                (objDiff)
-    //            }
-    //            if
-    //            (diffIdentifier in sourceArrayDiff.modified.source.diffIdentifier) {
-    //                if (diffIdentifier in targetArrayDiff.modified.source.diffIdentifier) {
-    //                    //
-    //                    top modified, source modified , target modified
-    //                    return createModifiedObjectMergeDiffModifiedOnBothSides(objDiff,
-    //                                                                            sourceArrayDiff.modified.
-    //                                                                                find {it.source.diffIdentifier == diffIdentifier} as
-    //                                                                                ObjectDiff,
-    //                                                                            targetArrayDiff.modified.
-    //                                                                                find {it.source.diffIdentifier == diffIdentifier} as
-    //                                                                                ObjectDiff,
-    //                                                                            targetArrayDiff.source.find {
-    //                                                                                it.diffIdentifier ==
-    //                                                                                diffIdentifier
-    //                                                                            })
-    //                } // top modified, source modified, target not modified
-    //                return updateModifiedObjectMergeDiffPresentOnOneSide(objDiff)
-    //            } null
-    //        }.findAll()
-
-
-    //    static ObjectDiff updateModifiedObjectMergeDiffCreatedOnOneSide(ObjectDiff objectDiff) {
-    //        // top modified, target created, (source also created)
-    //        objectDiff.diffs.each {
-    //            it.isMergeConflict = true
-    //            it.commonAncestorValue = null
-    //        } objectDiff . isMergeConflict = true
-    //        objectDiff.commonAncestorValue = null
-    //        return objectDiff
-    //    }
-    //
-    //    static ObjectDiff createModifiedObjectMergeDiffModifiedOnBothSides(ObjectDiff objectDiff, ObjectDiff sourceObjDiff,
-    //                                                                       ObjectDiff targetObjDiff,
-    //                                                                       Object commonAncestorValue) {
-    //        // call recursively
-    //        ObjectDiff mergeDiff = objectDiff.mergeDiff(sourceObjDiff, targetObjDiff)
-    //        mergeDiff.isMergeConflict = true
-    //        mergeDiff.commonAncestorValue = commonAncestorValue
-    //        return mergeDiff
-    //    }
-    //
-    //    static ObjectDiff updateModifiedObjectMergeDiffPresentOnOneSide(ObjectDiff objectDiff) {
-    //        objectDiff.diffs.each {
-    //            it.isMergeConflict = false
-    //        }
-    //        objectDiff.isMergeConflict = false
-    //        objectDiff
-    //    }
 }
