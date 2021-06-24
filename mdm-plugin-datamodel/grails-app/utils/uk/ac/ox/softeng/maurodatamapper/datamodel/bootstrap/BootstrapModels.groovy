@@ -472,7 +472,7 @@ class BootstrapModels {
         v2DataModel.setAuthor('Dante')
         v2DataModel.setOrganisation('Baal')
 
-        Resource resource = assetResourceLocator.findResourceForURI('/txt/versioningModelDescription.txt')
+        Resource resource = assetResourceLocator.findAssetForURI('versioningModelDescription.txt')
 
         v2DataModel.setDescription(resource.getInputStream().getText())
 
