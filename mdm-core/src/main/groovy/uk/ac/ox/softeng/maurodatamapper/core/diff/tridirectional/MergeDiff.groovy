@@ -38,7 +38,7 @@ import static uk.ac.ox.softeng.maurodatamapper.core.diff.DiffBuilder.mergeDiff
  * </pre>
  */
 @Slf4j
-class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
+class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> implements Comparable<MergeDiff> {
 
     private List<FieldMergeDiff> diffs
 
@@ -90,7 +90,7 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
     }
 
     List<FieldMergeDiff> getDiffs() {
-        diffs
+        diffs.sort()
     }
 
     @Override
@@ -496,5 +496,10 @@ class MergeDiff<M extends Diffable> extends TriDirectionalDiff<M> {
         }.findAll()
 
         modifiedDiffs + createdModifiedDiffs
+    }
+
+    @Override
+    int compareTo(MergeDiff that) {
+        this.sourceIdentifier <=> that.sourceIdentifier
     }
 }

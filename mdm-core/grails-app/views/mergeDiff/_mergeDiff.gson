@@ -24,8 +24,8 @@ json {
     if (mergeDiff.getTarget() instanceof ModelItem && mergeDiff.getSource() instanceof ModelItem) {
         ModelItem source = mergeDiff.getTarget() as ModelItem
         ModelItem target = mergeDiff.getTarget() as ModelItem
-        leftBreadcrumbs g.render(source.getBreadcrumbs())
-        rightBreadcrumbs g.render(target.getBreadcrumbs())
+        sourceBreadcrumbs g.render(source.getBreadcrumbs())
+        targetBreadcrumbs g.render(target.getBreadcrumbs())
     }
 
     count mergeDiff.getNumberOfDiffs()

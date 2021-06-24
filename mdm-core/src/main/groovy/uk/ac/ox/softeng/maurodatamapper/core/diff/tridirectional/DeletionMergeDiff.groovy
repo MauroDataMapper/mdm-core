@@ -6,7 +6,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.bidirectional.ObjectDiff
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> {
+class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implements Comparable<DeletionMergeDiff> {
 
     ObjectDiff<D> mergeModificationDiff
 
@@ -68,5 +68,10 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> {
     String toString() {
         String str = "Deleted :: ${deletedIdentifier}"
         mergeModificationDiff ? "${str}\n    >> Modified :: ${mergeModificationDiff}" : str
+    }
+
+    @Override
+    int compareTo(DeletionMergeDiff that) {
+        this.deletedIdentifier <=> that.deletedIdentifier
     }
 }

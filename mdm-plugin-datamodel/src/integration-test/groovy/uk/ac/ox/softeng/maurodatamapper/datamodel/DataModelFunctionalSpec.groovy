@@ -446,14 +446,6 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
   "count": 11,
   "diffs": [
     {
-      "description": {
-        "source": "DescriptionLeft",
-        "target": "DescriptionRight",
-        "commonAncestor": null,
-        "isMergeConflict": true
-      }
-    },
-    {
       "branchName": {
         "source": "source",
         "target": "main",
@@ -462,41 +454,15 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
       }
     },
     {
+      "description": {
+        "source": "DescriptionLeft",
+        "target": "DescriptionRight",
+        "commonAncestor": null,
+        "isMergeConflict": true
+      }
+    },
+    {
       "dataClasses": {
-        "deleted": [
-          {
-            "deleted": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteAndModify",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": true,
-            "isSourceDeletionAndTargetModification": true
-          },
-           {
-            "deleted": {
-              "id": "${json-unit.matches:id}",
-              "label": "deleteLeftOnly",
-              "breadcrumbs": [
-                {
-                  "id": "${json-unit.matches:id}",
-                  "label": "Functional Test Model",
-                  "domainType": "DataModel",
-                  "finalised": true
-                }
-              ]
-            },
-            "isMergeConflict": false,
-            "isSourceDeletionAndTargetModification": false
-          }
-        ],
         "created": [
           {
             "created": {
@@ -531,12 +497,46 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             "isSourceModificationAndTargetDeletion": true
           }
         ],
- "modified": [
+        "deleted": [
           {
-            "targetId": "${json-unit.matches:id}",
+            "deleted": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "isSourceDeletionAndTargetModification": true
+          },
+          {
+            "deleted": {
+              "id": "${json-unit.matches:id}",
+              "label": "deleteLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "DataModel",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false,
+            "isSourceDeletionAndTargetModification": false
+          }
+        ],
+        "modified": [
+          {
             "sourceId": "${json-unit.matches:id}",
+            "targetId": "${json-unit.matches:id}",
             "label": "addAndAddReturningDifference",
-            "targetBreadcrumbs": [
+            "sourceBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
@@ -544,7 +544,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 "finalised": false
               }
             ],
-            "sourceBreadcrumbs": [
+            "targetBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
@@ -556,19 +556,19 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             "diffs": [
               {
                 "description": {
-                  "target": "DescriptionRight",
                   "source": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestor": null
+                  "target": "DescriptionRight",
+                  "commonAncestor": null,
+                  "isMergeConflict": true
                 }
               }
             ]
           },
           {
-            "targetId": "${json-unit.matches:id}",
             "sourceId": "${json-unit.matches:id}",
+            "targetId": "${json-unit.matches:id}",
             "label": "existingClass",
-            "targetBreadcrumbs": [
+            "sourceBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
@@ -576,7 +576,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 "finalised": false
               }
             ],
-            "sourceBreadcrumbs": [
+            "targetBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
@@ -588,31 +588,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             "diffs": [
               {
                 "dataClasses": {
-                  "deleted": [
-                    {
-                      "value": {
-                        "id": "${json-unit.matches:id}",
-                        "label": "deleteLeftOnlyFromExistingClass",
-                        "breadcrumbs": [
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "Functional Test Model",
-                            "domainType": "DataModel",
-                            "finalised": true
-                          },
-                          {
-                            "id": "${json-unit.matches:id}",
-                            "label": "existingClass",
-                            "domainType": "DataClass"
-                          }
-                        ]
-                      },
-                      "isMergeConflict": false
-                    }
-                  ],
                   "created": [
                     {
-                      "value": {
+                      "created": {
                         "id": "${json-unit.matches:id}",
                         "label": "addLeftToExistingClass",
                         "breadcrumbs": [
@@ -629,7 +607,31 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                           }
                         ]
                       },
-                      "isMergeConflict": false
+                      "isMergeConflict": false,
+                      "isSourceModificationAndTargetDeletion": false
+                    }
+                  ],
+                  "deleted": [
+                    {
+                      "deleted": {
+                        "id": "${json-unit.matches:id}",
+                        "label": "deleteLeftOnlyFromExistingClass",
+                        "breadcrumbs": [
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "Functional Test Model",
+                            "domainType": "DataModel",
+                            "finalised": true
+                          },
+                          {
+                            "id": "${json-unit.matches:id}",
+                            "label": "existingClass",
+                            "domainType": "DataClass"
+                          }
+                        ]
+                      },
+                      "isMergeConflict": false,
+                      "isSourceDeletionAndTargetModification": false
                     }
                   ]
                 }
@@ -637,10 +639,10 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             ]
           },
           {
-            "targetId": "${json-unit.matches:id}",
             "sourceId": "${json-unit.matches:id}",
+            "targetId": "${json-unit.matches:id}",
             "label": "modifyAndModifyReturningDifference",
-            "targetBreadcrumbs": [
+            "sourceBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
@@ -648,7 +650,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 "finalised": false
               }
             ],
-            "sourceBreadcrumbs": [
+            "targetBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
@@ -660,19 +662,19 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             "diffs": [
               {
                 "description": {
-                  "target": "DescriptionRight",
                   "source": "DescriptionLeft",
-                  "isMergeConflict": true,
-                  "commonAncestor": null
+                  "target": "DescriptionRight",
+                  "commonAncestor": null,
+                  "isMergeConflict": true
                 }
               }
             ]
           },
           {
-            "targetId": "${json-unit.matches:id}",
             "sourceId": "${json-unit.matches:id}",
+            "targetId": "${json-unit.matches:id}",
             "label": "modifyLeftOnly",
-            "targetBreadcrumbs": [
+            "sourceBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
@@ -680,7 +682,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
                 "finalised": true
               }
             ],
-            "sourceBreadcrumbs": [
+            "targetBreadcrumbs": [
               {
                 "id": "${json-unit.matches:id}",
                 "label": "Functional Test Model",
@@ -692,8 +694,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
             "diffs": [
               {
                 "description": {
-                  "target": null,
                   "source": "Description",
+                  "target": null,
+                  "commonAncestor": null,
                   "isMergeConflict": false
                 }
               }

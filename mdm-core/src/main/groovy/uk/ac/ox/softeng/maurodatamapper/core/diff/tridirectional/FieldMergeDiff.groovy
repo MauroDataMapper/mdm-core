@@ -21,7 +21,7 @@ package uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class FieldMergeDiff<F> extends TriDirectionalDiff<F> {
+class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<FieldMergeDiff> {
 
     String fieldName
 
@@ -78,5 +78,12 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> {
     @Override
     String toString() {
         "${fieldName} :: ${source} <> ${target} :: ${commonAncestor}"
+    }
+
+    @Override
+    int compareTo(FieldMergeDiff that) {
+        if (this.diffType == FieldMergeDiff.simpleName && that.diffType == ArrayMergeDiff.simpleName) return -1
+        if (this.diffType == ArrayMergeDiff.simpleName && that.diffType == FieldMergeDiff.simpleName) return 1
+        this.fieldName <=> that.fieldName
     }
 }

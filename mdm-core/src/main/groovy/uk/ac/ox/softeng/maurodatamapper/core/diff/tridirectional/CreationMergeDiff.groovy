@@ -5,7 +5,7 @@ import uk.ac.ox.softeng.maurodatamapper.core.diff.Diffable
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> {
+class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> implements Comparable<CreationMergeDiff> {
 
     CreationMergeDiff(Class<C> targetClass) {
         super(targetClass)
@@ -55,5 +55,10 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> {
     @Override
     String toString() {
         "Created :: ${createdIdentifier}"
+    }
+
+    @Override
+    int compareTo(CreationMergeDiff that) {
+        this.createdIdentifier <=> that.createdIdentifier
     }
 }

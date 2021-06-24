@@ -5,7 +5,7 @@ model {
 }
 
 json(arrayMergeDiff.fieldName) {
-    if (arrayMergeDiff.deleted) deleted g.render(arrayMergeDiff.deleted)
-    if (arrayMergeDiff.created) created g.render(arrayMergeDiff.created)
-    if (arrayMergeDiff.modified) modified g.render(arrayMergeDiff.modified.sort {it.sourceIdentifier})
+    if (arrayMergeDiff.created) created g.render(arrayMergeDiff.created.sort())
+    if (arrayMergeDiff.deleted) deleted g.render(arrayMergeDiff.deleted.sort())
+    if (arrayMergeDiff.modified) modified g.render(arrayMergeDiff.modified.sort())
 }
