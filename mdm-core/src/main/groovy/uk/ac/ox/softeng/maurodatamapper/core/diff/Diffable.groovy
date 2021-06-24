@@ -27,4 +27,6 @@ interface Diffable<T extends Diffable> {
     ObjectDiff<T> diff(T obj)
 
     String getDiffIdentifier()
+
+    String getPathPrefix()
 }

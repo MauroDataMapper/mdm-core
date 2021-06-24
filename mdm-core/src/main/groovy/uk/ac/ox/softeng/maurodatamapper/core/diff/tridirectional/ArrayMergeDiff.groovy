@@ -59,6 +59,10 @@ class ArrayMergeDiff<C extends Diffable> extends FieldMergeDiff<Collection<C>> {
         super.forFieldName(fieldName) as ArrayMergeDiff<C>
     }
 
+    ArrayMergeDiff<C> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+        super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as ArrayMergeDiff<C>
+    }
+
     @Override
     ArrayMergeDiff<C> withSource(Collection<C> lhs) {
         super.withSource(lhs) as ArrayMergeDiff<C>
@@ -79,12 +83,18 @@ class ArrayMergeDiff<C extends Diffable> extends FieldMergeDiff<Collection<C>> {
     }
 
     @Override
-    Integer getNumberOfDiffs() {
-        created.size() + deleted.size() + ((modified.sum {it.getNumberOfDiffs()} ?: 0) as Integer)
+    ArrayMergeDiff<C> getValidOnly() {
+        super.getValidOnly() as ArrayMergeDiff<C>
     }
 
-    boolean hasDiffs() {
+    @Override
+    boolean hasDiff() {
         getNumberOfDiffs() != 0
+    }
+
+    @Override
+    Integer getNumberOfDiffs() {
+        created.size() + deleted.size() + ((modified.sum {it.getNumberOfDiffs()} ?: 0) as Integer)
     }
 
     @Override

@@ -8,6 +8,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
 
+    protected String fullyQualifiedObjectPath
     private Boolean mergeConflict
     private T commonAncestor
 
@@ -23,10 +24,15 @@ abstract class TriDirectionalDiff<T> extends BiDirectionalDiff<T> {
 
         TriDirectionalDiff<T> diff = (TriDirectionalDiff<T>) o
 
-        if (left != diff.left) return false
-        if (right != diff.right) return false
+        if (source != diff.source) return false
+        if (target != diff.target) return false
 
         return true
+    }
+
+    TriDirectionalDiff<T> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+        this.fullyQualifiedObjectPath = fullyQualifiedObjectPath
+        this
     }
 
     @SuppressWarnings('GrDeprecatedAPIUsage')

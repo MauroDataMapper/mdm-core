@@ -24,13 +24,22 @@ class CreationMergeDiff<C extends Diffable> extends TriDirectionalDiff<C> implem
         created.diffIdentifier
     }
 
+    String getFullyQualifiedPath() {
+        String cleanedIdentifier = createdIdentifier.split('/').last()
+        "${fullyQualifiedObjectPath}|${created.pathPrefix}:${cleanedIdentifier}"
+    }
+
     boolean isSourceModificationAndTargetDeletion() {
         commonAncestor != null
     }
 
     @SuppressWarnings('GrDeprecatedAPIUsage')
-    CreationMergeDiff whichCreated(C object) {
+    CreationMergeDiff<C> whichCreated(C object) {
         withSource(object) as CreationMergeDiff<C>
+    }
+
+    CreationMergeDiff<C> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+        super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as CreationMergeDiff<C>
     }
 
     CreationMergeDiff<C> withCommonAncestor(C ca) {

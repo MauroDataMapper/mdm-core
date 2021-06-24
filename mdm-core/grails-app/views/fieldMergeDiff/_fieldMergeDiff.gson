@@ -4,7 +4,9 @@ model {
     FieldMergeDiff fieldMergeDiff
 }
 
-json(fieldMergeDiff.fieldName) {
+json {
+    fieldName fieldMergeDiff.fieldName
+    path fieldMergeDiff.fullyQualifiedPath
     source fieldMergeDiff.getSource()
     target fieldMergeDiff.getTarget()
     commonAncestor fieldMergeDiff.commonAncestor

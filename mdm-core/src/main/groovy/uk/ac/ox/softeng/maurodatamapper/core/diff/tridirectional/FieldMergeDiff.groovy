@@ -23,7 +23,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<FieldMergeDiff> {
 
-    String fieldName
+    private String fieldName
 
     FieldMergeDiff(Class<F> targetClass) {
         super(targetClass)
@@ -32,6 +32,10 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
     FieldMergeDiff<F> forFieldName(String fieldName) {
         this.fieldName = fieldName
         this
+    }
+
+    FieldMergeDiff<F> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+        super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as FieldMergeDiff<F>
     }
 
     @Override
@@ -53,6 +57,10 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
         super.asMergeConflict() as FieldMergeDiff<F>
     }
 
+    FieldMergeDiff<F> getValidOnly() {
+        hasDiff() ? this : null
+    }
+
     @Override
     boolean equals(o) {
         if (this.is(o)) return true
@@ -71,8 +79,16 @@ class FieldMergeDiff<F> extends TriDirectionalDiff<F> implements Comparable<Fiel
         1
     }
 
+    String getFullyQualifiedPath() {
+        "${fullyQualifiedObjectPath}:${fieldName}"
+    }
+
     boolean hasDiff() {
         source != target
+    }
+
+    String getFieldName() {
+        fieldName
     }
 
     @Override

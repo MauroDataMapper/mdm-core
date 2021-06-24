@@ -31,9 +31,19 @@ class DeletionMergeDiff<D extends Diffable> extends TriDirectionalDiff<D> implem
         mergeModificationDiff != null
     }
 
+    String getFullyQualifiedPath() {
+        String cleanedIdentifier = deletedIdentifier.split('/').last()
+        "${fullyQualifiedObjectPath}|${deleted.pathPrefix}:${cleanedIdentifier}"
+    }
+
     DeletionMergeDiff<D> whichDeleted(D object) {
         this.value = object
         withCommonAncestor object
+    }
+
+    @Override
+    DeletionMergeDiff<D> insideFullyQualifiedObjectPath(String fullyQualifiedObjectPath) {
+        super.insideFullyQualifiedObjectPath(fullyQualifiedObjectPath) as DeletionMergeDiff<D>
     }
 
     DeletionMergeDiff<D> withMergeModification(ObjectDiff<D> modifiedDiff) {
