@@ -114,6 +114,11 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
         ReferenceDataModel.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'rdm'
+    }
+
     ObjectDiff<ReferenceDataModel> diff(ReferenceDataModel otherDataModel) {
         modelDiffBuilder(ReferenceDataModel, this, otherDataModel)
             .appendList(ReferenceDataType, 'referenceDataTypes', this.referenceDataTypes, otherDataModel.referenceDataTypes)
@@ -122,7 +127,7 @@ class ReferenceDataModel implements Model<ReferenceDataModel>, ReferenceSummaryM
 
     def beforeValidate() {
         beforeValidateCatalogueItem()
-        this.referenceDataTypes?.each { it.beforeValidate() }
+        this.referenceDataTypes?.each {it.beforeValidate()}
         this.referenceDataElements?.each { it.beforeValidate() }
     }
 

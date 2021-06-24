@@ -45,6 +45,8 @@ trait CreatorAware {
 
     abstract String getDomainType()
 
+    abstract String getPathPrefix()
+
     @Deprecated(forRemoval = true)
     void setCreatedByUser(User user) {
         this.createdBy = user?.emailAddress

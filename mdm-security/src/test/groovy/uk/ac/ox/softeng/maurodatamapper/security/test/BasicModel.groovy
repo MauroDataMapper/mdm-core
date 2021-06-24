@@ -100,6 +100,11 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
         modelDiffBuilder(BasicModel, this, obj)
     }
 
+    @Override
+    String getPathPrefix() {
+        'bm'
+    }
+
     static BasicModel findByIdJoinClassifiers(UUID id) {
         new DetachedCriteria<BasicModel>(BasicModel).idEq(id).join('classifiers').get()
     }

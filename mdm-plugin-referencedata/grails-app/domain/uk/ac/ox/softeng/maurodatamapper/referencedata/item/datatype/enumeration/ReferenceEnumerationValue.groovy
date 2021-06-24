@@ -90,6 +90,10 @@ class ReferenceEnumerationValue implements ModelItem<ReferenceEnumerationValue, 
         ReferenceEnumerationValue.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'rev'
+    }
 
     @Override
     GormEntity getPathParent() {

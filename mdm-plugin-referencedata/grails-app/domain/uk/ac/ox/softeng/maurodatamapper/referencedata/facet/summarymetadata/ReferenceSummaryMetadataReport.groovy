@@ -52,7 +52,12 @@ class ReferenceSummaryMetadataReport implements CreatorAware {
 
     @Override
     String getDomainType() {
-        ReferenceSummaryMetadata.simpleName
+        ReferenceSummaryMetadataReport.simpleName
+    }
+
+    @Override
+    String getPathPrefix() {
+        'rsmr'
     }
 
     String getEditLabel() {

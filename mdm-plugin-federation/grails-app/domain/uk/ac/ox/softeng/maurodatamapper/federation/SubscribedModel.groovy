@@ -66,6 +66,11 @@ class SubscribedModel implements SecurableResource, EditHistoryAware {
     }
 
     @Override
+    String getPathPrefix() {
+        'subm'
+    }
+
+    @Override
     String getEditLabel() {
         "SubscribedModel:${id}"
     }

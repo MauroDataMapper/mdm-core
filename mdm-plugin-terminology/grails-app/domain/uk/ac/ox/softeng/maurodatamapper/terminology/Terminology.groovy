@@ -107,6 +107,11 @@ class Terminology implements Model<Terminology> {
     }
 
     @Override
+    String getPathPrefix() {
+        'te'
+    }
+
+    @Override
     String getEditLabel() {
         "Terminology:${label}"
     }

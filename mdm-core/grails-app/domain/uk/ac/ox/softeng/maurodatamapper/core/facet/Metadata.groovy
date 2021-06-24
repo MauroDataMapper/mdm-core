@@ -74,6 +74,10 @@ class Metadata implements MultiFacetItemAware, CreatorAware, Diffable<Metadata> 
         Metadata.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'md'
+    }
 
     @Override
     String toString() {

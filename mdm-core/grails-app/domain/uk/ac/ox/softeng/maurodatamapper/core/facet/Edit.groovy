@@ -49,6 +49,10 @@ class Edit implements CreatorAware {
         Edit.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'ed'
+    }
 
     @SuppressWarnings("UnnecessaryQualifiedReference")
     static List<Edit> findAllByResource(String resourceDomainType, UUID resourceId, Map pagination = [:]) {

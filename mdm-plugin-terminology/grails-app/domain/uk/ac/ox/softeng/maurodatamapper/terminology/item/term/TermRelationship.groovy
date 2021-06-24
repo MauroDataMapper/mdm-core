@@ -73,6 +73,11 @@ class TermRelationship implements ModelItem<TermRelationship, Terminology> {
         TermRelationship.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'tr'
+    }
+
     def beforeValidate() {
         label = relationshipType?.label
         beforeValidateModelItem()

@@ -126,6 +126,10 @@ class DataElement implements ModelItem<DataElement, DataModel>, MultiplicityAwar
         DataElement.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'de'
+    }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {

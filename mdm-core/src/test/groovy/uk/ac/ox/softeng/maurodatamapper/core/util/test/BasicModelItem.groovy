@@ -76,6 +76,10 @@ class BasicModelItem implements ModelItem<BasicModelItem, BasicModel>, GormEntit
         BasicModelItem.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'bmi'
+    }
 
     @Override
     String getEditLabel() {

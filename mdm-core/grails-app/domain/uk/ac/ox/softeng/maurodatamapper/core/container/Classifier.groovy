@@ -94,6 +94,10 @@ class Classifier implements Container {
         Classifier.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'cl'
+    }
 
     @Override
     Classifier getPathParent() {

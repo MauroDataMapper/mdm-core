@@ -163,6 +163,11 @@ class DataModel implements Model<DataModel>, SummaryMetadataAware, IndexedSiblin
         DataModel.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'dm'
+    }
+
     void setType(DataModelType type) {
         modelType = type.label
     }

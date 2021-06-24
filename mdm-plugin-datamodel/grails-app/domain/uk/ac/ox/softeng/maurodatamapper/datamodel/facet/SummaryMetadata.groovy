@@ -64,6 +64,11 @@ class SummaryMetadata implements MultiFacetItemAware, InformationAware, CreatorA
         SummaryMetadata.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'sm'
+    }
+
     String toString() {
         "${getClass().getName()} : ${label} : ${id ?: '(unsaved)'}"
     }

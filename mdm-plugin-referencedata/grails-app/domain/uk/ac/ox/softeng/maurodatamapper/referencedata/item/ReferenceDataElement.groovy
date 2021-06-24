@@ -110,6 +110,10 @@ class ReferenceDataElement implements ModelItem<ReferenceDataElement, ReferenceD
         ReferenceDataElement.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'rde'
+    }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {

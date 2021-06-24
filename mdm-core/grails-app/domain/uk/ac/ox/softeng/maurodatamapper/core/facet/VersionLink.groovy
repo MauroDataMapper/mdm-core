@@ -74,6 +74,10 @@ class VersionLink implements MultiFacetItemAware, CreatorAware {
         VersionLink.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'vl'
+    }
 
     @Override
     String getEditLabel() {

@@ -89,6 +89,11 @@ class DataClassComponent implements ModelItem<DataClassComponent, DataModel> {
     }
 
     @Override
+    String getPathPrefix() {
+        'dcc'
+    }
+
+    @Override
     GormEntity getPathParent() {
         dataFlow
     }

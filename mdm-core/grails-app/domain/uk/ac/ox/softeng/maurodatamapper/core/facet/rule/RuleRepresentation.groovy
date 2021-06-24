@@ -73,6 +73,11 @@ class RuleRepresentation implements Diffable<RuleRepresentation>, EditHistoryAwa
     }
 
     @Override
+    String getPathPrefix() {
+        'rr'
+    }
+
+    @Override
     String toString() {
         "${getClass().getName()} : ${language}/${representation} : ${id ?: '(unsaved)'}"
     }

@@ -101,6 +101,11 @@ class CodeSet implements Model<CodeSet> {
     }
 
     @Override
+    String getPathPrefix() {
+        'cs'
+    }
+
+    @Override
     String getEditLabel() {
         "CodeSet:${label}"
     }

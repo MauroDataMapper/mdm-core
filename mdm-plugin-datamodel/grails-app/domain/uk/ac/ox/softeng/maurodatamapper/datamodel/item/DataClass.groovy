@@ -165,6 +165,10 @@ class DataClass implements ModelItem<DataClass, DataModel>, MultiplicityAware, S
         DataClass.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'dc'
+    }
 
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {

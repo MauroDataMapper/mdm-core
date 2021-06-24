@@ -138,6 +138,11 @@ class CatalogueUser implements Principal, EditHistoryAware, CreatorAware, User {
         CatalogueUser.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'cu'
+    }
+
     boolean isDisabled() {
         disabled
     }

@@ -69,6 +69,11 @@ class VersionedFolder extends Folder implements VersionAware, VersionLinkAware {
         VersionedFolder.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'vf'
+    }
+
     static DetachedCriteria<VersionedFolder> by() {
         new DetachedCriteria<VersionedFolder>(VersionedFolder)
     }

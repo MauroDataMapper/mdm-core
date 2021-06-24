@@ -64,6 +64,11 @@ class ReferenceSummaryMetadata implements MultiFacetItemAware, InformationAware,
         ReferenceSummaryMetadata.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'rsm'
+    }
+
     String toString() {
         "${getClass().getName()} : ${label} : ${id ?: '(unsaved)'}"
     }

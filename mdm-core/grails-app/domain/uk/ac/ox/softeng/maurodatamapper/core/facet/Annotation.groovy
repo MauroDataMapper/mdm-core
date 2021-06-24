@@ -78,6 +78,11 @@ class Annotation implements MultiFacetItemAware, PathAware, InformationAware, Cr
     }
 
     @Override
+    String getPathPrefix() {
+        'ann'
+    }
+
+    @Override
     Annotation getPathParent() {
         parentAnnotation
     }

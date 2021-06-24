@@ -99,6 +99,10 @@ class Folder implements Container {
         Folder.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'fo'
+    }
 
     boolean hasChildFolders() {
         Folder.countByParentFolder(this)

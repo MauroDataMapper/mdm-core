@@ -52,7 +52,12 @@ class SummaryMetadataReport implements CreatorAware {
 
     @Override
     String getDomainType() {
-        SummaryMetadata.simpleName
+        SummaryMetadataReport.simpleName
+    }
+
+    @Override
+    String getPathPrefix() {
+        'smr'
     }
 
     String getEditLabel() {

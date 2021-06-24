@@ -91,6 +91,11 @@ class DataFlow implements ModelItem<DataFlow, DataModel> {
     }
 
     @Override
+    String getPathPrefix() {
+        'df'
+    }
+
+    @Override
     GormEntity getPathParent() {
         target
     }

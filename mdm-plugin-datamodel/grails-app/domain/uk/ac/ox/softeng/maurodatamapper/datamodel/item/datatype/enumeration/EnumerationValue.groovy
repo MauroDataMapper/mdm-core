@@ -91,6 +91,10 @@ class EnumerationValue implements ModelItem<EnumerationValue, DataModel> {
         EnumerationValue.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'ev'
+    }
 
     @Override
     GormEntity getPathParent() {

@@ -89,6 +89,11 @@ class TermRelationshipType implements ModelItem<TermRelationshipType, Terminolog
         TermRelationshipType.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'trt'
+    }
+
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         terminology.id

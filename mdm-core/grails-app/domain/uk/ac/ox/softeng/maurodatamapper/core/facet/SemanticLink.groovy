@@ -74,6 +74,10 @@ class SemanticLink implements MultiFacetItemAware, CreatorAware {
         SemanticLink.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'sl'
+    }
 
     @Override
     String getEditLabel() {

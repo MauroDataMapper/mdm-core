@@ -76,6 +76,10 @@ class Rule implements MultiFacetItemAware, CreatorAware, Diffable<Rule> {
         Rule.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'ru'
+    }
 
     @Override
     String toString() {

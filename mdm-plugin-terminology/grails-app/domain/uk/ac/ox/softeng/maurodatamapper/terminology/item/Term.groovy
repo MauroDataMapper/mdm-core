@@ -121,6 +121,11 @@ class Term implements ModelItem<Term, Terminology> {
         Term.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'tm'
+    }
+
     @Field(index = Index.YES, bridge = @FieldBridge(impl = UUIDBridge))
     UUID getModelId() {
         terminology.id

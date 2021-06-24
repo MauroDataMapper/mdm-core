@@ -76,6 +76,11 @@ class SecurableResourceGroupRole implements EditHistoryAware {
         SecurableResourceGroupRole.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'srgr'
+    }
+
     void setSecurableResource(SecurableResource securableResource, boolean justLoad) {
         this.securableResource = securableResource
         if (!justLoad) {

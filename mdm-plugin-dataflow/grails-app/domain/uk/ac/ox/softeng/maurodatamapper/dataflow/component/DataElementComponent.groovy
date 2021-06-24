@@ -88,6 +88,11 @@ class DataElementComponent implements ModelItem<DataElementComponent, DataModel>
     }
 
     @Override
+    String getPathPrefix() {
+        'dec'
+    }
+
+    @Override
     GormEntity getPathParent() {
         dataClassComponent
     }

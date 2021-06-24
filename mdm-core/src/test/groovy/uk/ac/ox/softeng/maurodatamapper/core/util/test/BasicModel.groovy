@@ -71,6 +71,11 @@ class BasicModel implements Model<BasicModel>, GormEntity<BasicModel> {
         BasicModel.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'bm'
+    }
+
     Set<BasicModelItem> getAllModelItems() {
         (modelItems ?: []) + modelItems.collect {it.getAllModelItems()}.flatten()
     }
