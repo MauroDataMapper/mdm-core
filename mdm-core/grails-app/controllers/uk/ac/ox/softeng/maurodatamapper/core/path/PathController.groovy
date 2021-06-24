@@ -42,8 +42,11 @@ class PathController extends RestfulController<CatalogueItem> implements MdmCont
         if (!catalogueItem) return notFound(CatalogueItem, params.path)
 
         respond(catalogueItem, [model: [userSecurityPolicyManager: currentUserSecurityPolicyManager,
-                                        catalogueItem: catalogueItem],
-                                view: 'show'])
+                                        catalogueItem            : catalogueItem],
+                                view : 'show'])
     }
 
+    def listAllPrefixMappings() {
+        respond pathService.listAllPrefixMappings()
+    }
 }

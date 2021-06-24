@@ -53,6 +53,11 @@ class ApiKey implements CreatorAware {
         ApiKey.simpleName
     }
 
+    @Override
+    String getPathPrefix() {
+        'ak'
+    }
+
     ApiKey() {
         refreshable = false
         name = DEFAULT_NAME

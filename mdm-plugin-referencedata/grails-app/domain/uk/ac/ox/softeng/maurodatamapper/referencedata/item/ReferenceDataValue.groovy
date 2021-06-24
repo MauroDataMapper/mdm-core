@@ -61,6 +61,11 @@ class ReferenceDataValue implements CreatorAware, Diffable<ReferenceDataValue> {
     }
 
     @Override
+    String getPathPrefix() {
+        'rdv'
+    }
+
+    @Override
     String getDiffIdentifier() {
         this.id
     }

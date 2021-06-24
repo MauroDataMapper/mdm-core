@@ -83,6 +83,11 @@ class SubscribedCatalogue implements SecurableResource, EditHistoryAware, Inform
     }
 
     @Override
+    String getPathPrefix() {
+        'subc'
+    }
+
+    @Override
     String getEditLabel() {
         "SubscribedCatalogue:${url}"
     }

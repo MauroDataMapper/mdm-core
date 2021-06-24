@@ -67,6 +67,7 @@ class UrlMappings {
             get '/properties'(controller: 'apiProperty', action: 'index') {
                 openAccess = true
             }
+            get '/path/prefixMappings'(controller: 'path', action: 'listAllPrefixMappings')
 
             group '/importer', {
                 get "/parameters/$ns?/$name?/$version?"(controller: 'importer', action: 'parameters')

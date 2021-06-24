@@ -22,9 +22,6 @@ import uk.ac.ox.softeng.maurodatamapper.core.traits.controller.MdmInterceptor
 class PathInterceptor implements MdmInterceptor {
 
     boolean before() {
-        // Allow anyone to retrieve by path as returned item will be constrained by what they can read
-        actionName == 'show'
+        true
     }
-
-
 }

@@ -23,11 +23,14 @@ import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
+import uk.ac.ox.softeng.maurodatamapper.traits.domain.CreatorAware
 import uk.ac.ox.softeng.maurodatamapper.util.Path
 import uk.ac.ox.softeng.maurodatamapper.util.PathNode
 
+import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -38,18 +41,29 @@ class PathService {
     @Autowired(required = false)
     List<CatalogueItemService> catalogueItemServices
 
-    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
+    GrailsApplication grailsApplication
+
+    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler()
+
+    Map<String, String> listAllPrefixMappings() {
+        grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)
+            .findAll {CreatorAware.isAssignableFrom(it.clazz) && !it.isAbstract()}
+            .collectEntries {grailsClass ->
+                CreatorAware domain = grailsClass.newInstance() as CreatorAware
+                [domain.pathPrefix, domain.domainType]
+            }.sort()
+    }
 
     CatalogueItem findCatalogueItemByPath(UserSecurityPolicyManager userSecurityPolicyManager, Map params) {
         Path path = new Path(params.path)
-        CatalogueItemService service = catalogueItemServices.find { it.handles(params.catalogueItemDomainType) }
+        CatalogueItemService service = catalogueItemServices.find {it.handles(params.catalogueItemDomainType)}
         CatalogueItem catalogueItem
 
         /*
         Iterate over nodes in the path
          */
         boolean first = true
-        path.pathNodes.each { PathNode node ->
+        path.pathNodes.each {PathNode node ->
             /*
             On first iteration, if params.catalogueItemId is provided then use this to get the top CatalogueItem by ID.
             Else if the service handles the typePrefix then use this service to find the top CatalogueItem by label.
@@ -88,7 +102,7 @@ class PathService {
             } else {
                 if (catalogueItem) {
                     //Try to find the child of this catalogue item by prefix and label
-                    service = catalogueItemServices.find { it.handlesPathPrefix(node.typePrefix) }
+                    service = catalogueItemServices.find {it.handlesPathPrefix(node.typePrefix)}
 
                     //Use the service to find a child CatalogueItem whose parent is catalogueItem and which has the specified label
                     //Missing method exception means the path tried to retrieve a type of parent that is not expected

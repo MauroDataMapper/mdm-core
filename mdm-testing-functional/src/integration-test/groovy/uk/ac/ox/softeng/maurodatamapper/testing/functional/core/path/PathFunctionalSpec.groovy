@@ -1164,5 +1164,26 @@ class PathFunctionalSpec extends FunctionalSpec {
 
         then: "The response is OK"
         verifyJsonResponse OK, getExpectedReferenceTypeJson()
-    }      
+    }
+
+    void 'Confirm all path prefixes are unique'() {
+        when:
+        GET('path/prefixMappings', STRING_ARG)
+        log.debug('{}', jsonResponseBody())
+
+        and:
+        GET('path/prefixMappings')
+
+        then:
+        verifyResponse(OK, response)
+
+        when:
+        Map<String, Map<String, String>> grouped = (responseBody() as Map<String, String>).groupBy {it.key}
+
+        then:
+        grouped.each {
+            log.debug('Checking {}', it.key)
+            assert it.value.size() == 1
+        }
+    }
 }
