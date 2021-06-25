@@ -167,216 +167,216 @@ class CodeSetFunctionalSpec extends ResourceFunctionalSpec<CodeSet> {
 
     String getExpectedMergeDiffJson() {
         '''{
-    "leftId": "${json-unit.matches:id}",
-    "rightId": "${json-unit.matches:id}",
-    "label": "Functional Test Model",
-    "count": 9,
-    "diffs": [
-        {
-            "description": {
-                "left": "DescriptionRight",
-                "right": "DescriptionLeft",
-                "isMergeConflict": true,
-                "commonAncestorValue": null
+  "leftId": "${json-unit.matches:id}",
+  "rightId": "${json-unit.matches:id}",
+  "label": "Functional Test Model",
+  "count": 9,
+  "diffs": [
+    {
+      "branchName": {
+        "left": "main",
+        "right": "source",
+        "isMergeConflict": false
+      }
+    },
+    {
+      "description": {
+        "left": "DescriptionRight",
+        "right": "DescriptionLeft",
+        "isMergeConflict": true,
+        "commonAncestorValue": null
+      }
+    },
+    {
+      "terms": {
+        "deleted": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "DAM: deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "label": "DAM: deleteAndModify",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
             }
-        },
-        {
-            "branchName": {
-                "left": "main",
-                "right": "source",
-                "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "DLO: deleteLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
+            },
+            "isMergeConflict": false
+          }
+        ],
+        "created": [
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "ALO: addLeftOnly",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": false
+          },
+          {
+            "value": {
+              "id": "${json-unit.matches:id}",
+              "label": "MAD: modifyAndDelete",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": false
+                }
+              ]
+            },
+            "isMergeConflict": true,
+            "commonAncestorValue": {
+              "id": "${json-unit.matches:id}",
+              "label": "MAD: modifyAndDelete",
+              "breadcrumbs": [
+                {
+                  "id": "${json-unit.matches:id}",
+                  "label": "Functional Test Model",
+                  "domainType": "Terminology",
+                  "finalised": true
+                }
+              ]
             }
-        },
-        {
-            "terms": {
-                "deleted": [
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "DAM: deleteAndModify",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "Terminology",
-                                    "finalised": false
-                                }
-                            ]
-                        },
-                        "isMergeConflict": true,
-                        "commonAncestorValue": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "DAM: deleteAndModify",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "Terminology",
-                                    "finalised": true
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "DLO: deleteLeftOnly",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "Terminology",
-                                    "finalised": false
-                                }
-                            ]
-                        },
-                        "isMergeConflict": false
-                    }
-                ],
-                "created": [
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "MAD: modifyAndDelete",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "Terminology",
-                                    "finalised": false
-                                }
-                            ]
-                        },
-                        "isMergeConflict": true,
-                        "commonAncestorValue": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "MAD: modifyAndDelete",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "Terminology",
-                                    "finalised": true
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "value": {
-                            "id": "${json-unit.matches:id}",
-                            "label": "ALO: addLeftOnly",
-                            "breadcrumbs": [
-                                {
-                                    "id": "${json-unit.matches:id}",
-                                    "label": "Functional Test Model",
-                                    "domainType": "Terminology",
-                                    "finalised": false
-                                }
-                            ]
-                        },
-                        "isMergeConflict": false
-                    }
-                ],
-                "modified": [
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "MAMRD: modifyAndModifyReturningDifference",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "Terminology",
-                                "finalised": false
-                            }
-                        ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "Terminology",
-                                "finalised": false
-                            }
-                        ],
-                        "count": 1,
-                        "diffs": [
-                            {
-                                "description": {
-                                    "left": "DescriptionRight",
-                                    "right": "DescriptionLeft",
-                                    "isMergeConflict": true,
-                                    "commonAncestorValue": null
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "MLO: modifyLeftOnly",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "Terminology",
-                                "finalised": false
-                            }
-                        ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "Terminology",
-                                "finalised": false
-                            }
-                        ],
-                        "count": 1,
-                        "diffs": [
-                            {
-                                "description": {
-                                    "left": null,
-                                    "right": "Description",
-                                    "isMergeConflict": false
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "leftId": "${json-unit.matches:id}",
-                        "rightId": "${json-unit.matches:id}",
-                        "label": "AAARD: addAndAddReturningDifference",
-                        "leftBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "Terminology",
-                                "finalised": false
-                            }
-                        ],
-                        "rightBreadcrumbs": [
-                            {
-                                "id": "${json-unit.matches:id}",
-                                "label": "Functional Test Model",
-                                "domainType": "Terminology",
-                                "finalised": false
-                            }
-                        ],
-                        "count": 1,
-                        "diffs": [
-                            {
-                                "description": {
-                                    "left": "DescriptionRight",
-                                    "right": "DescriptionLeft",
-                                    "isMergeConflict": true,
-                                    "commonAncestorValue": null
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    ]
+          }
+        ],
+        "modified": [
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "MLO: modifyLeftOnly",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": true
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": true
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": null,
+                  "right": "Description",
+                  "isMergeConflict": false
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "MAMRD: modifyAndModifyReturningDifference",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionRight",
+                  "right": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              }
+            ]
+          },
+          {
+            "leftId": "${json-unit.matches:id}",
+            "rightId": "${json-unit.matches:id}",
+            "label": "AAARD: addAndAddReturningDifference",
+            "leftBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": false
+              }
+            ],
+            "rightBreadcrumbs": [
+              {
+                "id": "${json-unit.matches:id}",
+                "label": "Functional Test Model",
+                "domainType": "Terminology",
+                "finalised": false
+              }
+            ],
+            "count": 1,
+            "diffs": [
+              {
+                "description": {
+                  "left": "DescriptionRight",
+                  "right": "DescriptionLeft",
+                  "isMergeConflict": true,
+                  "commonAncestorValue": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }'''
     }
 

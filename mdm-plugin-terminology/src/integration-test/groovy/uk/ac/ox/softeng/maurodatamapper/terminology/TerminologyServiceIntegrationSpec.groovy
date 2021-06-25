@@ -17,6 +17,7 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.terminology
 
+import uk.ac.ox.softeng.maurodatamapper.core.diff.tridirectional.MergeDiff
 import uk.ac.ox.softeng.maurodatamapper.core.gorm.constraint.callable.VersionAwareConstraints
 import uk.ac.ox.softeng.maurodatamapper.terminology.test.BaseTerminologyIntegrationSpec
 import uk.ac.ox.softeng.maurodatamapper.util.GormUtils
@@ -357,15 +358,15 @@ class TerminologyServiceIntegrationSpec extends BaseTerminologyIntegrationSpec {
         right.branchName == 'right'
 
         when:
-        def mergeDiff = terminologyService.getMergeDiffForModels(terminologyService.get(left.id), terminologyService.get(right.id))
+        MergeDiff mergeDiff = terminologyService.getMergeDiffForModels(terminologyService.get(left.id), terminologyService.get(right.id))
 
         then:
-        mergeDiff.diffs.size == 1
-        mergeDiff.diffs[0].fieldName == 'branchName'
-        mergeDiff.diffs[0].left == 'right'
-        mergeDiff.diffs[0].right == 'left'
-        mergeDiff.diffs[0].isMergeConflict
-        mergeDiff.diffs[0].commonAncestor == VersionAwareConstraints.DEFAULT_BRANCH_NAME
+        mergeDiff.size() == 1
+        mergeDiff.first().fieldName == 'branchName'
+        mergeDiff.first().target == 'right'
+        mergeDiff.first().source == 'left'
+        mergeDiff.first().isMergeConflict()
+        mergeDiff.first().commonAncestor == VersionAwareConstraints.DEFAULT_BRANCH_NAME
     }
 }
 
