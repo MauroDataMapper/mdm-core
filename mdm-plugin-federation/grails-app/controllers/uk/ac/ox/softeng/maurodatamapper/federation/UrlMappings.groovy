@@ -33,6 +33,8 @@ class UrlMappings {
                 '/subscribedModels'(resources: 'subscribedModel', excludes: DEFAULT_EXCLUDES)
             }
             post "/subscribedModels/$subscribedModelId/federate"(controller: 'subscribedModel', action: 'federate')
+
+            get '/published/models'(controller: 'publish', action: 'index')
         }
     }
 }

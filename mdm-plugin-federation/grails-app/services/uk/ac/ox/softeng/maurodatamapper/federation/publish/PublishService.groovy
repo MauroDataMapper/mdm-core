@@ -15,12 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.federation.atom
+package uk.ac.ox.softeng.maurodatamapper.federation.publish
 
 import uk.ac.ox.softeng.maurodatamapper.core.authority.AuthorityService
 import uk.ac.ox.softeng.maurodatamapper.core.model.Model
 import uk.ac.ox.softeng.maurodatamapper.core.model.ModelService
-import uk.ac.ox.softeng.maurodatamapper.federation.publish.PublishService
+import uk.ac.ox.softeng.maurodatamapper.federation.PublishedModel
 import uk.ac.ox.softeng.maurodatamapper.security.UserSecurityPolicyManager
 
 import grails.gorm.transactions.Transactional
@@ -29,15 +29,27 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Transactional
 @Slf4j
-class FeedService {
+class PublishService {
 
-    PublishService publishService
     AuthorityService authorityService
 
     @Autowired(required = false)
     List<ModelService> modelServices
 
-    List<Model> findModels(UserSecurityPolicyManager userSecurityPolicyManager) {
-        publishService.findAllReadableModelsToPublish(userSecurityPolicyManager)
+    List<Model> findAllReadableModelsToPublish(UserSecurityPolicyManager userSecurityPolicyManager) {
+        List<Model> models = []
+        modelServices.each {
+            List<Model> readableModels = it.findAllReadableModels(userSecurityPolicyManager, false, true, false)
+            // Only publish finalised models which belong to this instance of MDM
+            List<Model> publishableModels = readableModels.findAll { Model model ->
+                model.finalised && model.authority.id == authorityService.getDefaultAuthority().id
+            } as List<Model>
+            models.addAll(publishableModels)
+        }
+        models
+    }
+
+    List<PublishedModel> findAllPublishedReadableModels(UserSecurityPolicyManager userSecurityPolicyManager) {
+        findAllReadableModelsToPublish(userSecurityPolicyManager).collect { new PublishedModel(it) }
     }
 }
