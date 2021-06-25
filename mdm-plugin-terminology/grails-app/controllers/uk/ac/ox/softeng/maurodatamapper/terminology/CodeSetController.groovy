@@ -23,6 +23,7 @@ import uk.ac.ox.softeng.maurodatamapper.terminology.item.Term
 import uk.ac.ox.softeng.maurodatamapper.terminology.item.TermService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.exporter.CodeSetExporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.terminology.provider.importer.CodeSetImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.util.Utils
 
 import grails.gorm.transactions.Transactional
 import org.springframework.beans.factory.annotation.Autowired
@@ -60,6 +61,14 @@ class CodeSetController extends ModelController<CodeSet> {
         updateResource instance
 
         updateResponse instance
+    }
+
+    @Override
+    protected List<CodeSet> listAllReadableResources(Map params) {
+        if (params.termId) {
+            return codeSetService.findAllByReadableTermId(Utils.toUuid(params.termId))
+        }
+        super.listAllReadableResources(params)
     }
 
     @Override

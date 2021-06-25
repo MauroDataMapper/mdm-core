@@ -179,6 +179,11 @@ class CodeSetService extends ModelService<CodeSet> {
         CodeSet.byDeleted().list(pagination)
     }
 
+    List<CodeSet> findAllByReadableTermId(UUID termId){
+        // finds term and returns associated code sets
+        Term.findById(termId).getCodeSets().asList()
+    }
+
     @Override
     int countByAuthorityAndLabelAndBranchNameAndNotFinalised(Authority authority, String label, String branchName) {
         CodeSet.countByAuthorityAndLabelAndBranchNameAndFinalised(authority, label, branchName, false)

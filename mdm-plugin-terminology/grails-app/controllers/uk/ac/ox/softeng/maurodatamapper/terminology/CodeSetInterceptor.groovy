@@ -75,6 +75,11 @@ class CodeSetInterceptor extends ModelInterceptor {
             return true
         }
 
+        if (isIndex() && params.containsKey('terminologyId')) {
+            // checks user's accessibility to resources based on terminologyId
+            return currentUserSecurityPolicyManager.userCanReadSecuredResourceId(Terminology , Utils.toUuid(params.get('terminologyId')))
+        }
+
         checkModelActionsAuthorised()
     }
 }
