@@ -1425,9 +1425,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         String rightId = responseBody().id
 
         when:
-        GET("$leftId/mergeDiff/$mainId?style=new", STRING_ARG)
+        GET("$leftId/mergeDiff/$mainId?isLegacy=false", STRING_ARG)
         log.debug('{}', jsonResponseBody())
-        GET("$leftId/mergeDiff/$mainId?style=new")
+        GET("$leftId/mergeDiff/$mainId?isLegacy=false")
 
         then:
         verifyResponse OK, response
@@ -1435,9 +1435,9 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         responseBody().sourceId == leftId
 
         when:
-        GET("$rightId/mergeDiff/$mainId?style=new", STRING_ARG)
+        GET("$rightId/mergeDiff/$mainId?isLegacy=false", STRING_ARG)
         log.debug('{}', jsonResponseBody())
-        GET("$rightId/mergeDiff/$mainId?style=new")
+        GET("$rightId/mergeDiff/$mainId?isLegacy=false")
 
         then:
         verifyResponse OK, response
@@ -1456,7 +1456,7 @@ class DataModelFunctionalSpec extends ResourceFunctionalSpec<DataModel> {
         Map<String, String> mergeData = buildComplexDataModelsForMerging()
 
         when:
-        GET("$mergeData.source/mergeDiff/$mergeData.target?style=new", STRING_ARG)
+        GET("$mergeData.source/mergeDiff/$mergeData.target?isLegacy=false", STRING_ARG)
 
         then:
         verifyJsonResponse OK, expectedMergeDiffJson
